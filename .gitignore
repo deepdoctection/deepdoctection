@@ -1,0 +1,16 @@
+venv
+.idea
+*.egg-info
+.coverage
+htmlcov
+__pycache__
+dummy.py
+datasets
+experiments
+weights
+snippets.py
+/notebooks/.ipynb_checkpoints/
+.DS_Store
+.ipynb_checkpoints/
+/code/
+/personal/
