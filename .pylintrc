@@ -1,0 +1,28 @@
+[MASTER]
+disable=
+    R0801, # Similar lines in 2 files
+    W0201, # attribute-defined-outside-init
+    R1710, # inconsistent-return-statements
+    W0401, # wildcard-import
+    W0614, # unused-wildcard-import
+    R0401,  # cyclic import
+    W0511  # fixme
+extension-pkg-whitelist=
+    cv2
+
+
+[FORMAT]
+max-module-lines=2000
+max-line-length=120
+good-names=x,y,k,n,dp,df,el,ex,cx,cy,w,h,l,i,rs,cs,p6,H1,H2,H3,B1,B2,B3,B1_proposal,B2_proposal,GroupNorm,c2,c3,c4,c5,G
+
+[DESIGN]
+
+max-args=8
+max-branches=18
+max-attributes=14
+max-locals=36
+max-returns=8
+max-statements=55
+
+[MISCELLANEOUS]
