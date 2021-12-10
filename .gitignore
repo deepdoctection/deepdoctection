@@ -5,7 +5,6 @@ venv
 htmlcov
 __pycache__
 dummy.py
-datasets
 experiments
 weights
 snippets.py
