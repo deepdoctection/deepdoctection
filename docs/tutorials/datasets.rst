@@ -74,7 +74,7 @@ for example, the annotation file can be loaded with SerializerCoco. The instance
 sample is streamed individually.
 
 A mapping is required for the transformation, which transfers raw data into the core data model. Here, too, there
-are some functions for different annotation syntaxes in the mapper package.
+are some functions for different annotation syntax in the mapper package.
 
 .. code:: python
 

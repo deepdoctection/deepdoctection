@@ -11,5 +11,5 @@ documents or individual pages are successively read in a directory and transferr
 
 Example:
 
-We want to build a pipeline in which AWS Textract is to be used as the OCR component and the deep doctection's own
+We want to build a pipeline in which AWS Textract is to be used as the OCR component and **deep**\doctection's own
 table extraction component. A .JSONL file is to be output which contains the complete Deep Doctection Core data model.
