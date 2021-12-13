@@ -42,14 +42,13 @@ DIST_DEPS = [
     "scipy",
     "networkx",
     "mock",
-    "dataflow @ git+https://github.com/tensorpack/dataflow.git",
-]
+    "dataflow @ git+https://github.com/tensorpack/dataflow.git"]
 
 if sys.platform == "linux":
     DIST_DEPS.append("python-prctl")
 
 # uncomment when building requirement file for docs
-#DIST_DEPS = ["tensorpack"]
+#DIST_DEPS.append("tensorpack")
 #TF_DEPS = []
 
 TF_DEPS = ["tensorpack"]
