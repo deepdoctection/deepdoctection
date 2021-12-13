@@ -25,6 +25,4 @@ formats: all
 # Do not forget do undo (1) and (2) once finished generating the file.
 python:
   install:
-    - method: pip
-      path: .
     - requirements: requirements_rtd.txt
