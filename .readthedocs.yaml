@@ -14,10 +14,9 @@ sphinx:
   configuration: docs/conf.py
 
 # Optionally declare the Python requirements required to build your docs
-# RTD does not support installation of prctl which is a requirement for the package. To update requirements_rtd.txt
-# do (1) uncomment line 47,48 in setup, (2) replace requirements.txt with requirements_rtd.txt in up-req-files.
-# Do not forget do undo (1) and (2) once finished generating the file.
+# RTD does not support installation of prctl which is a requirement for the package. To update requirements.txt in docs/
+# do (1) uncomment line 47,48 in setup, in up-req-files. Do not forget do undo (1) once finished generating the file.
 python:
   version: 3.8
   install:
-    - requirements: requirements_rtd.txt
+    - requirements: docs/requirements.txt
