@@ -41,6 +41,7 @@ DIST_DEPS = [
     "scikit-learn",
     "scipy",
     "networkx",
+    "mock",
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
 ]
 
