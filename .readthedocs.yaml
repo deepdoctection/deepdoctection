@@ -8,21 +8,16 @@ version: 1
 # Set the version of Python and other tools you might need
 build:
   os: ubuntu-20.04
-  tools:
-    python: "3.8"
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/conf.py
-
-# If using Sphinx, optionally build your docs in additional formats such as PDF
-# formats:
-formats: all
 
 # Optionally declare the Python requirements required to build your docs
 # RTD does not support installation of prctl which is a requirement for the package. To update requirements_rtd.txt
 # do (1) uncomment line 47,48 in setup, (2) replace requirements.txt with requirements_rtd.txt in up-req-files.
 # Do not forget do undo (1) and (2) once finished generating the file.
 python:
+  version: 3.8
   install:
     - requirements: requirements_rtd.txt
