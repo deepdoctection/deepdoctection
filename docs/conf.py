@@ -14,16 +14,22 @@ import os
 import sys
 import mock
 
+mod = sys.modules['tensorflow'] = mock.Mock(name='tensorflow')
+mod.__version__ = mod.VERSION = '2.4.1'
 
-MOCK_MODULES = ['h5py','lmdb','tensorflow']
+MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','tensorflow.python.training',
+                'tensorflow.python.client','tensorflow.python.framework','tensorflow.python.platform',
+                'tensorflow.python.tools','tensorflow.contrib.graph_editor']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock(name=mod_name)
 
+
+
 # Todo: Replace that HACK so that sphinx can find the package
 import dataflow.dataflow
 
-sys.path.insert(0, os.path.abspath('../deep_doctection'))
+sys.path.insert(0, os.path.abspath('../deep_doctection/'))
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
 
 about = {}

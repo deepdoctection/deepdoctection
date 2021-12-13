@@ -24,7 +24,13 @@ import importlib.util
 from ...utils.detection_types import Requirement
 
 
-_TF_AVAILABLE = importlib.util.find_spec("tensorflow") is not None
+_TF_AVAILABLE = False
+
+try:
+    _TF_AVAILABLE = importlib.util.find_spec("tensorflow") is not None
+except ValueError:
+    pass
+
 _TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: https://www.tensorflow.org/install/gpu"
 
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
