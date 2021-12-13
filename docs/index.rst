@@ -42,4 +42,4 @@ different approaches. Read more about :ref:`Why deepdoctection ?`
    :maxdepth: 1
    :caption: API
 
-   modules/index
+   modules/deep_doctection
