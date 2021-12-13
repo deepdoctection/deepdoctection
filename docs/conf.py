@@ -14,9 +14,6 @@ import os
 import sys
 import mock
 
-# Todo: Replace that HACK so that sphinx can find the package
-import dataflow.dataflow
-
 sys.path.insert(0, os.path.abspath('../deep_doctection/'))
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
 
@@ -28,6 +25,9 @@ MOCK_MODULES = ['h5py','lmdb']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock(name=mod_name)
+
+# Todo: Replace that HACK so that sphinx can find the package
+import dataflow.dataflow
 
 # -- Project information -----------------------------------------------------
 
