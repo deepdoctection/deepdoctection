@@ -27,7 +27,7 @@ for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock(name=mod_name)
 
 # Todo: Replace that HACK so that sphinx can find the package
-import dataflow.dataflow
+import dataflow
 
 # -- Project information -----------------------------------------------------
 
