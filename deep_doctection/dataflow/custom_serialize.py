@@ -24,7 +24,7 @@ import os
 from typing import Optional, Union, List
 
 from jsonlines import Reader, Writer  # type: ignore
-from dataflow import DataFlow, MapData, JoinData, CacheData  # type: ignore  # type: ignore
+from . import DataFlow, MapData, JoinData, CacheData  # type: ignore  # type: ignore
 
 from pycocotools.coco import COCO
 

@@ -22,7 +22,7 @@ from typing import List, Any, Optional, Callable, Iterable
 
 import numpy as np
 
-from dataflow import CacheData, DataFromList, DataFromIterable  # type: ignore
+from . import CacheData, DataFromList, DataFromIterable  # type: ignore
 
 from ..utils.logger import logger
 
