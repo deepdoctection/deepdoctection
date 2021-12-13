@@ -25,7 +25,7 @@ __all__ = [
     "__copyright__",
 ]
 
-__title__ = "Deep-Doctection"
+__title__ = "deep_doctection"
 __summary__ = "Repository for Document AI"
 __uri__ = "https://github.com/deepdoctection/deepdoctection"
 
