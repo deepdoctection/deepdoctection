@@ -22,6 +22,8 @@ kiwisolver==1.3.2
     # via matplotlib
 matplotlib==3.5.1
     # via pycocotools
+mock==4.0.3
+    # via Deep-Doctection (setup.py)
 msgpack==1.0.3
     # via
     #   dataflow

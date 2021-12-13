@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import mock
 
 # Todo: Replace that HACK so that sphinx can find the package
 import dataflow.dataflow
@@ -23,6 +24,10 @@ about = {}
 with open(os.path.join(ROOT, "__about__.py")) as about_file:
     exec(about_file.read(), about)
 
+MOCK_MODULES = ['h5py','lmdb']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock(name=mod_name)
 
 # -- Project information -----------------------------------------------------
 
