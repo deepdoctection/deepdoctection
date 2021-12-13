@@ -11,7 +11,7 @@ https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.html
 To make it easier to use, we re-import dataflow into the package of the same name.
 """
 
-from dataflow import *  # type: ignore # pylint: disable=W0622
+from dataflow.dataflow import *  # type: ignore # pylint: disable=W0622
 from .custom import *
 from .stats import *
 from .common import *
