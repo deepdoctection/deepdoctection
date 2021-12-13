@@ -53,7 +53,7 @@ The essential execution script of the pipeline component is the :meth:`serve`, w
 coordinates the prediction, transformation and enrichment of the result.
 
 In contrast to the Pipeline Component, Predictor Pipeline Components contain a Predictor. Predictors can be anything:
-object detectors, language models and they can be written in any DL-library as the core functions of **deep**doctection
+object detectors, language models and they can be written in any DL-library as the core functions of **deep**\doctection
 are platform agnostic. Predictors contain the smallest possible number of parameters in order to be able to carry out
 the prediction. The predictions are also returned raw and must be transferred to the :meth:`serve` image convention.
 

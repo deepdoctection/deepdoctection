@@ -3,7 +3,7 @@
 
 ## Requirements
 
-If you want to do the interesting stuff with **deep**doctection you will need a GPU. 
+If you want to do the interesting stuff with **deep**\doctection you will need a GPU. 
 
 You can run some notebooks on Google Colab. However, if you want to do something more elaborate which will take 
 more time it is better to look for something else.
@@ -18,7 +18,7 @@ more time it is better to look for something else.
 The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
 some code components will have some issues on Windows.
 
-**deep**doctection might depend on other open source packages that have to be installed separately. 
+**deep**\doctection might depend on other open source packages that have to be installed separately. 
 
 If you want to use Tesseract for extracting text using OCR:
 - [Tesseract](https://github.com/tesseract-ocr/tesseract)

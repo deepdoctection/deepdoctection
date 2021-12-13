@@ -1,7 +1,7 @@
 Tutorials
 ==============================
 
-The tutorials offer a deeper introduction to **deep**doctection and cover topics to enable experiments and further
+The tutorials offer a deeper introduction to **deep**\doctection and cover topics to enable experiments and further
 development. For a more application-related access, we refer to the notebooks.
 
 .. toctree::
