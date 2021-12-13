@@ -49,7 +49,7 @@ however, remains: How can this great work be made more usable? Deep-Doctection a
 underlying datasets are publicly accessible.
 
 Document Analysis consists of many facets, but often models try to solve one task. In order to achieve a usable service,
-one has to integrate different solutions in a framework. **deep**doctection offers a framework so that you can call
+one has to integrate different solutions in a framework. **deep**\doctection offers a framework so that you can call
 different services one after the other in a **pipeline** using just a few command lines.
 
 :ref:`Pipelines`
@@ -67,7 +67,7 @@ Fine Tuning
 that it is impossible for anyone to provide a representative dataset. This is made even more difficult by the fact
 that business documents represent business secrets and are therefore not freely available. Fine-tuning allows the model
 to get a bias in such a way that predictions are optimized on the class of documents they are fine tuned on.
-**deep**doctection offers a simple training interface for the models, so that pre-trained models can be fine-tuned with
+**deep**\doctection offers a simple training interface for the models, so that pre-trained models can be fine-tuned with
 specially created datasets and new tasks can also be carried out.
 
 
@@ -83,7 +83,7 @@ or trained from scratch with a few lines of code.
 Evaluation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For **evaluation**, tools such as metrics are necessary to monitor the performance of the learning development using
-objective criteria. **deep**doctection provides a simple evaluation interface so that an evaluation of the predictor can
+For **evaluation**\, tools such as metrics are necessary to monitor the performance of the learning development using
+objective criteria. **deep**\doctection provides a simple evaluation interface so that an evaluation of the predictor can
 be scripted in just a few lines by selecting the predictor, metric and dataset.
 
