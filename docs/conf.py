@@ -14,7 +14,7 @@ import os
 import sys
 
 # Todo: Replace that HACK so that sphinx can find the package
-# import dataflow.dataflow
+import dataflow.dataflow
 
 sys.path.insert(0, os.path.abspath('../deep_doctection/'))
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
