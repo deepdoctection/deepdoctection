@@ -36,7 +36,7 @@ about = {}
 with open(os.path.join(ROOT, "__about__.py")) as about_file:
     exec(about_file.read(), about)
 
-#import deep_doctection
+import deep_doctection
 
 
 
