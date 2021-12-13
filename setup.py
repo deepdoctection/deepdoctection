@@ -48,7 +48,12 @@ DIST_DEPS = [
 if sys.platform == "linux":
     DIST_DEPS.append("python-prctl")
 
+# uncomment when building requirement file for docs
+#DIST_DEPS = ["tensorpack"]
+#TF_DEPS = []
+
 TF_DEPS = ["tensorpack"]
+
 AWS_DEPS = ["boto3"]
 HF_DEPS = ["transformers"]
 
