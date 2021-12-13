@@ -22,11 +22,11 @@ from typing import List, Any, Optional, Callable, Iterable
 
 import numpy as np
 
-from . import CacheData, DataFromList, DataFromIterable  # type: ignore
+from dataflow import CacheData, DataFromList, DataFromIterable  # type: ignore
 
 from ..utils.logger import logger
 
-__all__ = ["CustomDataFromList", "CustomDataFromIterable"]
+__all__ = ["CacheData","CustomDataFromList", "CustomDataFromIterable"]
 
 
 def _get_cache(self: CacheData) -> List[Any]:

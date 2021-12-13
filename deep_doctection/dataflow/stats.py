@@ -23,7 +23,7 @@ from typing import Optional, Union, Tuple, Any
 import numpy as np
 import numpy.typing as npt
 
-from . import ProxyDataFlow, DataFlow  # type: ignore
+from dataflow.dataflow import ProxyDataFlow, DataFlow  # type: ignore
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
