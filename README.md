@@ -36,8 +36,8 @@ for researchers who would like to see how well their new model fits into an extr
 5. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
    models**.  
    
-Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, these **tutorials** for more topics as 
-well as the full **documentation**. 
+Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full 
+[**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#). 
 
 
 ## Requirements
