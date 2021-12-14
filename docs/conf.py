@@ -14,6 +14,8 @@ import os
 import sys
 import mock
 
+
+# Mock the following modules for building the docs in rtd
 mod = sys.modules['tensorflow'] = mock.Mock(name='tensorflow')
 mod.__version__ = mod.VERSION = '2.4.1'
 
@@ -24,12 +26,16 @@ MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','te
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock(name=mod_name)
 
-
+ON_RTD = (os.environ.get('READTHEDOCS') == 'True')
 
 # Todo: Replace that HACK so that sphinx can find the package
 import dataflow.dataflow
 
-sys.path.insert(0, os.path.abspath('../'))
+if ON_RTD:
+    sys.path.insert(0, os.path.abspath('../'))
+else:
+    sys.path.insert(0, os.path.abspath('../deep_doctection'))
+
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
 
 about = {}
@@ -46,7 +52,9 @@ project = about["__title__"]
 copyright = about["__copyright__"]
 author = about["__author__"]
 
+
 # The full version, including alpha/beta/rc tags
+
 release = about["__version__"]
 
 
