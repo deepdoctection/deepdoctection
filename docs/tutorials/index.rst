@@ -7,6 +7,7 @@ development. For a more application-related access, we refer to the notebooks.
 .. toctree::
   :maxdepth: 1
 
+  get_started_notebook
   architecture
   datasets
   pipelines

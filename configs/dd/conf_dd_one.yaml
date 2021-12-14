@@ -4,7 +4,7 @@ CONFIG:
   TPITEM: configs/dd/conf_frcnn_rows.yaml
   TESS_OCR: configs/dd/conf_tesseract.yaml
 WEIGHTS:
-  TPLAYOUT: layout/model-2033500.data-00000-of-00001
+  TPLAYOUT: layout/model-2026500.data-00000-of-00001
   TPCELL: cell/model-2840000.data-00000-of-00001
   TPITEM: item/model-1750000.data-00000-of-00001
 SEGMENTATION:

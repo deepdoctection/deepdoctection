@@ -33,7 +33,7 @@ different approaches. Read more about :ref:`Why deepdoctection ?`
    manual/install.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Tutorials
 
    tutorials/index
