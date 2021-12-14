@@ -16,6 +16,7 @@ The focus should be on application. **deep**doctection is made for data scientis
 departments in process optimization. For analysts who have to investigate into large sets of documents. And also maybe 
 for researchers who would like to see how well their new model fits into an extraction pipeline.
 
+![image info](./notebooks/pics/dd_rm_sample.jpg)
 
 ## Characteristics
 

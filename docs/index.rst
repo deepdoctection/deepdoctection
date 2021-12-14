@@ -3,8 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Documentation
-==============================
 
 .. image:: ../notebooks/pics/dd_logo.png
    :align: center
