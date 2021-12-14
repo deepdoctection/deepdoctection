@@ -204,7 +204,7 @@ def analyzer_detection_recipe(
     if filter_categories is None:
         filter_categories = all_categories
 
-    analyzer = get_dd_analyzer(tables=tables, ocr=words, table_refinement=False)
+    analyzer = get_dd_analyzer(tables=tables, ocr=words, table_refinement=True)
     df = analyzer.analyze(**kwargs)
     df = MapData(df, filter_cat(filter_categories, all_categories))  # type: ignore # pylint: disable=E1120
     df = MapData(df, image_to_prodigy)
