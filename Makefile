@@ -108,7 +108,7 @@ install-dev-dependencies: install-tf-dependencies install-transformers-dependenc
 
 install-jupyterlab-setup: check-venv
 	@echo "--> Installing Jupyter Lab"
-	pip install "jupyterlab>=2.0.0,<3.0.0"
+	pip install jupyterlab>=3.0.0
 	@echo "--> Done installing Jupyter Lab"
 
 install-prodigy-setup: check-venv install-jupyterlab-setup
@@ -116,7 +116,8 @@ install-prodigy-setup: check-venv install-jupyterlab-setup
 	pip install $(PRODIGY_PATH)
 	@echo "--> Done installing Prodigy"
 	@echo "--> Installing Jupyter Lab Prodigy plugin"
-	jupyter labextension install jupyterlab-prodigy
+	pip install jupyterlab-prodigy
+	jupyter labextension list
 	@echo "--> Done installing Jupyter Lab Prodigy plugin"
 	@echo ""
 
