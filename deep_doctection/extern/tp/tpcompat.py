@@ -76,7 +76,8 @@ class TensorpackPredictor(ABC):
         """
         :param model: Model, either as ModelDescWithConfig or derived from that class.
         :param path_weights: Model weights of the prediction config.
-        :param ignore_mismatch: when True will ignore mismatches between checkpoint weights and models
+        :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
+                                if a pre-trained model is to be fine-tuned on a custom dataset.
         """
         self._model = model
         self.path_weights = path_weights
