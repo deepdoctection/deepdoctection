@@ -26,3 +26,14 @@ DD package.
 
 Functions that, as wrappers, standardize the transition from external API to DD API.
 """
+
+from .tpdetect import TPFrcnnDetector
+from .texocr import TextractOcrDetector
+from .tessocr import TesseractOcrDetector
+from .pdf_utils import *
+from .model import ModelCatalog
+from .base import *
+
+
+__all__ = ["TPFrcnnDetector","TextractOcrDetector","TesseractOcrDetector","decrypt_pdf_document",
+           "get_pdf_file_reader","get_pdf_file_writer","PDFStreamer","ModelCatalog","PredictorBase", "ObjectDetector"]
