@@ -72,7 +72,8 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
                            dummy 'BG' category.
         :param config_overwrite: Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"]
-        :param ignore_mismatch:
+        :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
+                                if a pre-trained model is to be fine-tuned on a custom dataset.
         """
 
         self.categories = copy(categories)
