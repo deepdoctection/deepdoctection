@@ -12,7 +12,7 @@ For this purpose, we want to try to improve the table extraction in the
 we are trying to address, we need to say a little more about processing
 table extraction.
 
-.. figure:: ./pics/dd_table.png
+.. figure:: ../../notebooks/pics/dd_table.png
    :alt: title
 
    title

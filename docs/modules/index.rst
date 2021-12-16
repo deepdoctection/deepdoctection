@@ -2,7 +2,7 @@ API Documentation
 ==============================
 
 .. toctree::
-  :maxdepth: 1
+  :maxdepth: 2
 
   deep_doctection.analyzer
   deep_doctection.dataflow
