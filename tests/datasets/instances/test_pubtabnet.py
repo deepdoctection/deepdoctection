@@ -35,16 +35,16 @@ def test_dataset_pubtabnet_returns_image() -> None:
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir= get_test_path # type: ignore
-    pubtabnet.dataflow.annotation_files={"all":"test_file.jsonl"}
+    pubtabnet.dataflow.get_workdir = get_test_path  # type: ignore
+    pubtabnet.dataflow.annotation_files = {"all": "test_file.jsonl"}
     df = pubtabnet.dataflow.build()
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==3
+    assert len(df_list) == 3
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file",MagicMock(side_effect=get_white_image))
+@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_pubtabnet_with_load_image_returns_image() -> None:
     """
     test dataset publaynet returns image
@@ -52,10 +52,10 @@ def test_dataset_pubtabnet_with_load_image_returns_image() -> None:
 
     # Arrange
     pubtabnet = Pubtabnet()
-    pubtabnet.dataflow.get_workdir= get_test_path  # type: ignore
-    pubtabnet.dataflow.annotation_files={"all":"test_file.jsonl"}
+    pubtabnet.dataflow.get_workdir = get_test_path  # type: ignore
+    pubtabnet.dataflow.annotation_files = {"all": "test_file.jsonl"}
     df = pubtabnet.dataflow.build(load_image=True)
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==3
+    assert len(df_list) == 3

@@ -26,7 +26,7 @@ from io import BytesIO
 
 from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
 
-__all__ = ["decrypt_pdf_document","get_pdf_file_reader","get_pdf_file_writer","PDFStreamer"]
+__all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer"]
 
 
 def decrypt_pdf_document(path: str) -> None:

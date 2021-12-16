@@ -26,7 +26,7 @@ from dataflow import CacheData, DataFromList, DataFromIterable  # type: ignore
 
 from ..utils.logger import logger
 
-__all__ = ["CacheData","CustomDataFromList", "CustomDataFromIterable"]
+__all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
 
 
 def _get_cache(self: CacheData) -> List[Any]:

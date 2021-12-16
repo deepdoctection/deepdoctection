@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 import pycocotools.mask as coco_mask
 
-from dataflow.dataflow.imgaug import ImageAugmentor, ResizeTransform
+from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform
 
 
 class CustomResize(ImageAugmentor):

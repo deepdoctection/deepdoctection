@@ -34,15 +34,16 @@ def test_dataset_publaynet_returns_image() -> None:
 
     # Arrange
     publaynet = Publaynet()
-    publaynet.dataflow.get_workdir= get_test_path  # type: ignore
-    publaynet.dataflow.annotation_files={"val":"test_file.json"}
+    publaynet.dataflow.get_workdir = get_test_path  # type: ignore
+    publaynet.dataflow.annotation_files = {"val": "test_file.json"}
     df = publaynet.dataflow.build()
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==6
+    assert len(df_list) == 6
 
-@patch("deep_doctection.mapper.cocostruct.load_image_from_file",MagicMock(side_effect=get_white_image))
+
+@patch("deep_doctection.mapper.cocostruct.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_publaynet_with_load_image_returns_image() -> None:
     """
     test dataset publaynet returns image
@@ -50,10 +51,10 @@ def test_dataset_publaynet_with_load_image_returns_image() -> None:
 
     # Arrange
     publaynet = Publaynet()
-    publaynet.dataflow.get_workdir= get_test_path  # type: ignore
-    publaynet.dataflow.annotation_files={"val":"test_file.json"}
+    publaynet.dataflow.get_workdir = get_test_path  # type: ignore
+    publaynet.dataflow.annotation_files = {"val": "test_file.json"}
     df = publaynet.dataflow.build(load_image=True)
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==6
+    assert len(df_list) == 6

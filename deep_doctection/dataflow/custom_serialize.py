@@ -24,17 +24,16 @@ import os
 from typing import Optional, Union, List
 
 from jsonlines import Reader, Writer  # type: ignore
-from dataflow.dataflow import DataFlow, MapData, JoinData
-from .custom import CacheData  # type: ignore  # type: ignore
+from dataflow.dataflow import DataFlow, MapData, JoinData  # type: ignore
 
 from pycocotools.coco import COCO
 
-from ..extern.pdf_utils import PDFStreamer
+from ..utils.pdf_utils import PDFStreamer
 from ..utils.logger import logger
 from ..utils.fs import is_file_extension
 from ..utils.timer import timed_operation
 from ..utils.tqdm import get_tqdm
-from .custom import CustomDataFromList, CustomDataFromIterable
+from .custom import CustomDataFromList, CustomDataFromIterable, CacheData
 from .common import FlattenData
 
 __all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc"]

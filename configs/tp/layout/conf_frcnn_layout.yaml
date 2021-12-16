@@ -1,41 +1,42 @@
+TAG: casc_rcnn_R_101_FPN_GN_4CONV1FC
 BACKBONE:
   BOTTLENECK: resnet
   FREEZE_AFFINE: false
   FREEZE_AT: 2
   NORM: GN
   RESNET_NUM_BLOCKS:
-  - 3
-  - 4
-  - 23
-  - 3
+    - 3
+    - 4
+    - 23
+    - 3
   TF_PAD_MODE: false
 CASCADE:
   BBOX_REG_WEIGHTS:
-  - - 10.0
-    - 10.0
-    - 5.0
-    - 5.0
-  - - 20.0
-    - 20.0
-    - 10.0
-    - 10.0
-  - - 30.0
-    - 30.0
-    - 15.0
-    - 15.0
+    - - 10.0
+      - 10.0
+      - 5.0
+      - 5.0
+    - - 20.0
+      - 20.0
+      - 10.0
+      - 10.0
+    - - 30.0
+      - 30.0
+      - 15.0
+      - 15.0
   IOUS:
-  - 0.5
-  - 0.6
-  - 0.7
+    - 0.5
+    - 0.6
+    - 0.7
 DATA:
   TRAIN_NUM_WORKERS: 12
 FPN:
   ANCHOR_STRIDES: !!python/tuple
-  - 4
-  - 8
-  - 16
-  - 32
-  - 64
+    - 4
+    - 8
+    - 16
+    - 32
+    - 64
   CASCADE: true
   FRCNN_CONV_HEAD_DIM: 256
   FRCNN_FC_HEAD_DIM: 1024
@@ -47,10 +48,10 @@ FPN:
 FRCNN:
   BATCH_PER_IM: 512
   BBOX_REG_WEIGHTS:
-  - 10.0
-  - 10.0
-  - 5.0
-  - 5.0
+    - 10.0
+    - 10.0
+    - 5.0
+    - 5.0
   FG_RATIO: 0.25
   FG_THRESH: 0.5
 MODE_MASK: false
@@ -60,28 +61,28 @@ MRCNN:
 PREPROC:
   MAX_SIZE: 1333
   PIXEL_MEAN:
-  - 123.675
-  - 116.28
-  - 103.53
+    - 123.675
+    - 116.28
+    - 103.53
   PIXEL_STD:
-  - 58.395
-  - 57.12
-  - 57.375
+    - 58.395
+    - 57.12
+    - 57.375
   SHORT_EDGE_SIZE: 800
   TRAIN_SHORT_EDGE_SIZE:
-  - 800
-  - 800
+    - 800
+    - 800
 RPN:
   ANCHOR_RATIOS: !!python/tuple
-  - 0.5
-  - 1.0
-  - 2.0
+    - 0.5
+    - 1.0
+    - 2.0
   ANCHOR_SIZES: !!python/tuple
-  - 32
-  - 64
-  - 128
-  - 256
-  - 512
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
   ANCHOR_STRIDE: 16
   BATCH_PER_IM: 256
   CROWD_OVERLAP_THRESH: 9.99
@@ -100,8 +101,8 @@ RPN:
 OUTPUT:
   FRCNN_NMS_THRESH: 0.001
   RESULTS_PER_IM: 100
-  RESULT_SCORE_THRESH: 0.05
-  NMS_THRESH_CLASS_AGNOSTIC: 0.1
+  RESULT_SCORE_THRESH: 0.1
+  NMS_THRESH_CLASS_AGNOSTIC: 0.001
 TRAINER: replicated
 TRAIN:
   LR_SCHEDULE: 1x

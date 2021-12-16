@@ -19,10 +19,11 @@
 Tensorflow related utils.
 """
 
+import multiprocessing as mp
 import importlib.util
 
 from ...utils.detection_types import Requirement
-
+from ...utils.metacfg import AttrDict
 
 _TF_AVAILABLE = False
 
@@ -84,3 +85,29 @@ def get_tensorpack_requirement() -> Requirement:
     Returns Tensorpack requirement
     """
     return "tensorpack", tensorpack_available(), _TP_ERR_MSG
+
+
+_S = AttrDict()
+
+_S.mp_context_set = False
+_S.tf_2_enabled = is_tfv2()
+
+_S.freeze()
+
+
+def set_mp_spawn() -> None:
+    """
+    Sets multiprocessing method to "spawn".
+
+    from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/train.py:
+
+          "spawn/forkserver" is safer than the default "fork" method and
+          produce more deterministic behavior & memory saving
+          However its limitation is you cannot pass a lambda function to subprocesses.
+    """
+
+    if not _S.mp_context_set:
+        _S.freeze(False)
+        mp.set_start_method("spawn")
+        _S.mp_context_set = True
+        _S.freeze()

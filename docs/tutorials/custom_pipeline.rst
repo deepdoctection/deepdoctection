@@ -69,7 +69,7 @@ and outputting the extracts.
 
     path = os.path.join(get_package_path(),"notebooks/pics/samples/sample_3")
 
-.. figure:: ./pics/samples/sample_3/sample_3.png
+.. figure:: ../../notebooks/pics/samples/sample_3/sample_3.png
    :alt: title
 
    title

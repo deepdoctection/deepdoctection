@@ -19,35 +19,8 @@
 Module for funcs and constants that maintain general settings
 """
 
-import multiprocessing as mp
 
 from ..utils.metacfg import AttrDict
-from ..extern.tp.tfutils import is_tfv2
-
-_S = AttrDict()
-
-_S.mp_context_set = False
-_S.tf_2_enabled = is_tfv2()
-
-_S.freeze()
-
-
-def set_mp_spawn() -> None:
-    """
-    Sets multiprocessing method to "spawn".
-
-    from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/train.py:
-
-          "spawn/forkserver" is safer than the default "fork" method and
-          produce more deterministic behavior & memory saving
-          However its limitation is you cannot pass a lambda function to subprocesses.
-    """
-
-    if not _S.mp_context_set:
-        _S.freeze(False)
-        mp.set_start_method("spawn")
-        _S.mp_context_set = True
-        _S.freeze()
 
 
 names = AttrDict()

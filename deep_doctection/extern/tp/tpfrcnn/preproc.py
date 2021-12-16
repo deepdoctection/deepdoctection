@@ -13,8 +13,7 @@ from typing import Tuple, List, Any, Optional
 import numpy as np
 
 # pylint: disable=import-error
-from tensorpack.dataflow import imgaug
-from tensorpack.dataflow.imgaug import ImageAugmentor
+from tensorpack.dataflow.imgaug import ImageAugmentor, AugmentorList
 
 # pylint: enable=import-error
 
@@ -50,7 +49,7 @@ def augment(dp: JsonDict, imgaug_list: List[ImageAugmentor], add_mask: bool) -> 
     gt_boxes = dp["gt_boxes"]
     if gt_boxes.ndim == 1:
         print("stop")
-    augmentations = imgaug.AugmentorList(imgaug_list)
+    augmentations = AugmentorList(imgaug_list)
     tf_ms = augmentations.get_transform(image)
     image_aug = tf_ms.apply_image(image)
     points = box_to_point4(gt_boxes)

@@ -53,7 +53,7 @@ from ..extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
 from ..extern.tp.tpfrcnn.common import CustomResize
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..mapper.utils import LabelSummarizer
-from ..utils.settings import set_mp_spawn
+from ..extern.tp.tfutils import set_mp_spawn
 from ..utils.utils import string_to_dict
 from ..utils.logger import logger, log_once
 from ..utils.tqdm import get_tqdm

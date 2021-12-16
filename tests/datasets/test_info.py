@@ -33,8 +33,9 @@ class TestDatasetCategories:
         """
         categories = ["FOO", "BAK", "BAZ"]
         sub_categories = {
-        "BAK": {"sub": ["BAK_11", "BAK_12"], "sub_2": ["BAK_21", "BAK_22"]},
-        "FOO": {"cat": ["FOO_1", "FOO_2", "FOO_3"]}}
+            "BAK": {"sub": ["BAK_11", "BAK_12"], "sub_2": ["BAK_21", "BAK_22"]},
+            "FOO": {"cat": ["FOO_1", "FOO_2", "FOO_3"]},
+        }
 
         return DatasetCategories(init_categories=categories, init_sub_categories=sub_categories)
 
@@ -73,7 +74,7 @@ class TestDatasetCategories:
         }
 
     @staticmethod
-    def test_filter_and_check_categories() ->None:
+    def test_filter_and_check_categories() -> None:
         """
         Categories are filtered and meth: is_filtered works properly
         """
@@ -86,10 +87,10 @@ class TestDatasetCategories:
 
         # Act
         cats.set_cat_to_sub_cat({"BAK": "sub", "FOO": "cat"})
-        cats.filter_categories(categories = ["FOO_1","BAZ","BAK_11"])
+        cats.filter_categories(categories=["FOO_1", "BAZ", "BAK_11"])
 
         # Assert
-        assert cats.get_categories(name_as_key=True, filtered=True)=={"FOO_1":"1","BAZ":"3","BAK_11":"2"}
+        assert cats.get_categories(name_as_key=True, filtered=True) == {"FOO_1": "1", "BAZ": "3", "BAK_11": "2"}
         assert cats.is_filtered()
 
     @staticmethod
@@ -102,8 +103,7 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Assert
-        assert cats.get_sub_categories()=={"BAK":["sub","sub_2"],"FOO":["cat"]}
-
+        assert cats.get_sub_categories() == {"BAK": ["sub", "sub_2"], "FOO": ["cat"]}
 
     @staticmethod
     def test_set_sub_categories_and_check_sub_categories() -> None:
@@ -113,7 +113,11 @@ class TestDatasetCategories:
 
         # Arrange
         cats = TestDatasetCategories.setup()
-        cats.set_cat_to_sub_cat({"FOO":"cat"})
+        cats.set_cat_to_sub_cat({"FOO": "cat"})
 
         # Act
-        assert cats.get_sub_categories(categories=["FOO_1", "FOO_2", "FOO_3"])=={"FOO_1":[],"FOO_2":[],"FOO_3":[]}
+        assert cats.get_sub_categories(categories=["FOO_1", "FOO_2", "FOO_3"]) == {
+            "FOO_1": [],
+            "FOO_2": [],
+            "FOO_3": [],
+        }

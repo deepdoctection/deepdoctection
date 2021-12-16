@@ -76,16 +76,16 @@ def _paste_mask(box, mask, shape, mrcnn_accurate_paste):
     # but it's hard to do better, because the network does not know the "original" scale
     mask = (cv2.resize(mask, (w, h)) > 0.5).astype("uint8")
     ret = np.zeros(shape, dtype="uint8")
-    ret[y_0: y_1 + 1, x_0: x_1 + 1] = mask
+    ret[y_0 : y_1 + 1, x_0 : x_1 + 1] = mask
     return ret
 
 
 def tp_predict_image(
-        np_img: np.ndarray,
-        predictor: OfflinePredictor,
-        preproc_short_edge_size: int,
-        preproc_max_size: int,
-        mrcnn_accurate_paste: bool,
+    np_img: np.ndarray,
+    predictor: OfflinePredictor,
+    preproc_short_edge_size: int,
+    preproc_max_size: int,
+    mrcnn_accurate_paste: bool,
 ):
     """
     Run detection on one image, using the TF callable. This function should handle the preprocessing internally.

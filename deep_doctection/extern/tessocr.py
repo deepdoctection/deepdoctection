@@ -22,10 +22,10 @@ Tesseract OCR engine for text extraction
 from typing import Optional, List
 
 from ..utils.settings import names
-from ..extern.base import ObjectDetector, DetectionResult
-from ..extern.tesseract import predict_text
 from ..utils.metacfg import set_config_by_yaml, config_to_cli_str
 from ..utils.detection_types import ImageType, Requirement
+from .base import ObjectDetector, DetectionResult
+from .tesseract.tesseract import predict_text
 from .tesseract.tessutils import get_py_tesseract_requirement, get_tesseract_requirement
 
 

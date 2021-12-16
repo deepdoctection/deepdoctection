@@ -26,7 +26,7 @@ from typing import List, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 
-__all__ = ["PredictorBase","ObjectDetector","DetectionResult"]
+__all__ = ["PredictorBase", "ObjectDetector", "DetectionResult"]
 
 
 class PredictorBase(ABC):  # pylint: disable=R0903

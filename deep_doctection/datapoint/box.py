@@ -94,7 +94,7 @@ class BoundingBox:
 
         if not self.absolute_coords:
             assert (
-                    self.ulx < 1 and self.uly < 1 and self.lrx < 1 and self.lry < 1
+                self.ulx < 1 and self.uly < 1 and self.lrx < 1 and self.lry < 1
             ), "coordinates must be between 0 and 1"
 
     @property
@@ -147,9 +147,8 @@ class BoundingBox:
         if mode == "xywh":
             return np.array([self.ulx, self.uly, self.width, self.height], dtype=np.float32) * np_box_scale
         return (
-                np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry],
-                         dtype=np.float32)
-                * np_poly_scale
+            np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry], dtype=np.float32)
+            * np_poly_scale
         )
 
     def to_list(self, mode: str, scale_x: float = 1, scale_y: float = 1.0) -> List[float]:
@@ -191,12 +190,12 @@ class BoundingBox:
         ]
 
     def transform(
-            self,
-            image_width: float,
-            image_height: float,
-            absolute_coords: bool = False,
-            as_list: bool = True,
-            mode: str = "xyxy",
+        self,
+        image_width: float,
+        image_height: float,
+        absolute_coords: bool = False,
+        as_list: bool = True,
+        mode: str = "xyxy",
     ) -> Union[npt.NDArray[np.float32], List[float]]:
         """
         Transforms bounding box coordinates into absolute or relative coords. As values are saved in terms of the
@@ -278,9 +277,9 @@ def crop_box_from_image(np_image: ImageType, crop_box: BoundingBox) -> ImageType
 
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-           np.int32(np.floor(crop_box.uly)): min(np.int32(np.ceil(crop_box.lry)), np_max_y),  # type: ignore
-           np.int32(np.floor(crop_box.ulx)): min(np.int32(np.ceil(crop_box.lrx)), np_max_x),  # type: ignore
-           ]
+        np.int32(np.floor(crop_box.uly)) : min(np.int32(np.ceil(crop_box.lry)), np_max_y),  # type: ignore
+        np.int32(np.floor(crop_box.ulx)) : min(np.int32(np.ceil(crop_box.lrx)), np_max_x),  # type: ignore
+    ]
 
 
 def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -> BoundingBox:
@@ -298,10 +297,10 @@ def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -
     assert local_box.absolute_coords and embedding_box.absolute_coords, "absolute coords required"
     assert embedding_box.ulx is not None and embedding_box.uly is not None
     assert (
-            local_box.ulx is not None
-            and local_box.uly is not None
-            and local_box.lrx is not None
-            and local_box.lry is not None
+        local_box.ulx is not None
+        and local_box.uly is not None
+        and local_box.lrx is not None
+        and local_box.lry is not None
     )
     return BoundingBox(
         absolute_coords=True,
@@ -328,10 +327,10 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
     assert embedding_box.ulx is not None and embedding_box.uly is not None
     assert embedding_box.width is not None and embedding_box.height is not None
     assert (
-            global_box.ulx is not None
-            and global_box.uly is not None
-            and global_box.lrx is not None
-            and global_box.lry is not None
+        global_box.ulx is not None
+        and global_box.uly is not None
+        and global_box.lrx is not None
+        and global_box.lry is not None
     )
     return BoundingBox(
         absolute_coords=True,

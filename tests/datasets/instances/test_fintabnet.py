@@ -27,9 +27,9 @@ from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
 
 
-@patch("deep_doctection.mapper.pubstruct.convert_pdf_bytes_to_np_array",MagicMock(side_effect=get_white_image))
-@patch("deep_doctection.mapper.pubstruct.load_bytes_from_pdf_file",MagicMock(return_value=b"\x01\x02"))
-@patch("deep_doctection.datasets.instances.fintabnet.set_mp_spawn",MagicMock())
+@patch("deep_doctection.mapper.pubstruct.convert_pdf_bytes_to_np_array", MagicMock(side_effect=get_white_image))
+@patch("deep_doctection.mapper.pubstruct.load_bytes_from_pdf_file", MagicMock(return_value=b"\x01\x02"))
+@patch("deep_doctection.datasets.instances.fintabnet.set_mp_spawn", MagicMock())
 def test_dataset_fintabnet_returns_image() -> None:
     """
     test dataset fintabnet returns image
@@ -37,19 +37,18 @@ def test_dataset_fintabnet_returns_image() -> None:
 
     # Arrange
     fintabnet = Fintabnet()
-    fintabnet.dataflow.get_workdir= get_test_path # type: ignore
-    fintabnet.dataflow.annotation_files={"val":"test_file_fintab.jsonl"}
+    fintabnet.dataflow.get_workdir = get_test_path  # type: ignore
+    fintabnet.dataflow.annotation_files = {"val": "test_file_fintab.jsonl"}
     df = fintabnet.dataflow.build(use_multi_proc=False)
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==4
+    assert len(df_list) == 4
 
 
-
-@patch("deep_doctection.mapper.pubstruct.convert_pdf_bytes_to_np_array",MagicMock(side_effect=get_white_image))
-@patch("deep_doctection.mapper.pubstruct.load_bytes_from_pdf_file",MagicMock(return_value=b"\x01\x02"))
-@patch("deep_doctection.datasets.instances.fintabnet.set_mp_spawn",MagicMock())
+@patch("deep_doctection.mapper.pubstruct.convert_pdf_bytes_to_np_array", MagicMock(side_effect=get_white_image))
+@patch("deep_doctection.mapper.pubstruct.load_bytes_from_pdf_file", MagicMock(return_value=b"\x01\x02"))
+@patch("deep_doctection.datasets.instances.fintabnet.set_mp_spawn", MagicMock())
 def test_dataset_fintabnet_with_load_image_returns_image() -> None:
     """
     test dataset fintabnet returns image
@@ -57,11 +56,11 @@ def test_dataset_fintabnet_with_load_image_returns_image() -> None:
 
     # Arrange
     fintabnet = Fintabnet()
-    fintabnet.dataflow.get_workdir= get_test_path  # type: ignore
-    fintabnet.dataflow.annotation_files={"val":"test_file_fintab.jsonl"}
-    df = fintabnet.dataflow.build(load_image=True,use_multi_proc=False)
+    fintabnet.dataflow.get_workdir = get_test_path  # type: ignore
+    fintabnet.dataflow.annotation_files = {"val": "test_file_fintab.jsonl"}
+    df = fintabnet.dataflow.build(load_image=True, use_multi_proc=False)
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==4
+    assert len(df_list) == 4
     assert df_list[0].image is not None

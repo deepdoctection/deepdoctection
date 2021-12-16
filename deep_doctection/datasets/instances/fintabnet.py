@@ -39,7 +39,6 @@ from ...utils.settings import names
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...dataflow.common import FlattenData
 from ...dataflow import MultiProcessMapData, MapData, DataFlow  # type: ignore
-from ...utils.settings import set_mp_spawn
 from ...utils.detection_types import JsonDict
 from ...utils.logger import logger
 from ...utils.utils import to_bool
@@ -48,51 +47,61 @@ from ...mapper.pubstruct import pub_to_image
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...datapoint.image import Image
+from ...extern.tp.tfutils import set_mp_spawn
 from ..base import _BuiltInDataset
 from ..info import DatasetInfo, DatasetCategories
 from ..dataflow_builder import DataFlowBaseBuilder
 
 _NAME = "fintabnet"
-_DESCRIPTION = "FinTabNet dataset contains complex tables from the annual reports of S&P 500 companies with detailed" \
-               " table structure annotations to help train and test structure recognition. " \
-               "To generate the cell structure labels, one uses token matching between the PDF and HTML version" \
-               " of each article from public records and filings. Financial tables often have diverse styles when " \
-               "compared to ones in scientific and government documents, with fewer graphical lines and larger" \
-               " gaps within each table and more colour variations. Fintabnet can be used for training cell " \
-               "detection models as well as for semantic table understanding algorithms. " \
-               "For detection it has cell bounding box annotations as well as precisely described table semantics " \
-               "like row - and column numbers and row and col spans. The dataflow builder can also " \
-               "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on " \
-               "the table structure are available: maximum cell numbers, maximal row and column numbers and their " \
-               "minimum equivalents can be used as filter condition. Header information of cells are not available. " \
-               "As work around you can artificially add header sub-category to every first row cell. " \
-               "All later row cells will receive a no header  sub-category. Note, that this assumption " \
-               "will generate noise."
-_LICENSE = "Community Data License Agreement – Permissive – Version 1.0  ---- " \
-           "This is the Community Data License Agreement – Permissive, Version 1.0 (“Agreement”).  " \
-           "Data is provided to You under this Agreement by each of the Data Providers.  Your exercise of any of" \
-           " the rights and permissions granted below constitutes Your acceptance and agreement to be bound by" \
-           " the terms and conditions of this Agreement."
-_URL = "https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/" \
-       "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
+_DESCRIPTION = (
+    "FinTabNet dataset contains complex tables from the annual reports of S&P 500 companies with detailed"
+    " table structure annotations to help train and test structure recognition. "
+    "To generate the cell structure labels, one uses token matching between the PDF and HTML version"
+    " of each article from public records and filings. Financial tables often have diverse styles when "
+    "compared to ones in scientific and government documents, with fewer graphical lines and larger"
+    " gaps within each table and more colour variations. Fintabnet can be used for training cell "
+    "detection models as well as for semantic table understanding algorithms. "
+    "For detection it has cell bounding box annotations as well as precisely described table semantics "
+    "like row - and column numbers and row and col spans. The dataflow builder can also "
+    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on "
+    "the table structure are available: maximum cell numbers, maximal row and column numbers and their "
+    "minimum equivalents can be used as filter condition. Header information of cells are not available. "
+    "As work around you can artificially add header sub-category to every first row cell. "
+    "All later row cells will receive a no header  sub-category. Note, that this assumption "
+    "will generate noise."
+)
+_LICENSE = (
+    "Community Data License Agreement – Permissive – Version 1.0  ---- "
+    "This is the Community Data License Agreement – Permissive, Version 1.0 (“Agreement”).  "
+    "Data is provided to You under this Agreement by each of the Data Providers.  Your exercise of any of"
+    " the rights and permissions granted below constitutes Your acceptance and agreement to be bound by"
+    " the terms and conditions of this Agreement."
+)
+_URL = (
+    "https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/"
+    "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
+)
 _SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
 _LOCATION = "/datasets/fintabnet"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "FinTabNet_1.0.0_table_train.jsonl",
-                                                       "test": "FinTabNet_1.0.0_table_test.jsonl",
-                                                       "val": "FinTabNet_1.0.0_table_val.jsonl"}
+_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+    "train": "FinTabNet_1.0.0_table_train.jsonl",
+    "test": "FinTabNet_1.0.0_table_test.jsonl",
+    "val": "FinTabNet_1.0.0_table_val.jsonl",
+}
 _INIT_CATEGORIES = [names.C.TAB, names.C.CELL, names.C.ITEM]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
-_SUB_CATEGORIES = {names.C.CELL: {names.C.HEAD: [names.C.HEAD, names.C.BODY],
-                                  names.C.RN: [], names.C.CN: [], names.C.RS: [],
-                                  names.C.CS: []}, names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
-                   names.C.HEAD: {names.C.RN: [],
-                                  names.C.CN: [],
-                                  names.C.RS: [],
-                                  names.C.CS: []},
-                   names.C.BODY: {names.C.RN: [],
-                                  names.C.CN: [],
-                                  names.C.RS: [],
-                                  names.C.CS: []}}
+_SUB_CATEGORIES = {
+    names.C.CELL: {
+        names.C.HEAD: [names.C.HEAD, names.C.BODY],
+        names.C.RN: [],
+        names.C.CN: [],
+        names.C.RS: [],
+        names.C.CS: [],
+    },
+    names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
+    names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+    names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+}
 
 
 class Fintabnet(_BuiltInDataset):
@@ -101,8 +110,7 @@ class Fintabnet(_BuiltInDataset):
     """
 
     def _info(self) -> DatasetInfo:
-        return DatasetInfo(
-            name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -166,41 +174,67 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
 
-        pub_mapper = pub_to_image(self.categories.get_categories(name_as_key=True, init=True),
-                                  # type: ignore  # pylint: disable=E1120  # 259
-                                  load_image, fake_score=False, rows_and_cols=rows_and_cols)
+        pub_mapper = pub_to_image(
+            self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
+            # pylint: disable=E1120  # 259
+            load_image,
+            fake_score=False,
+            rows_and_cols=rows_and_cols,
+        )
         if use_multi_proc:
-            df = MultiProcessMapData(df, num_proc=1 if buffer_size < 3 else 4, map_func=pub_mapper,
-                                     strict=use_multi_proc_strict,
-                                     buffer_size=buffer_size)
+            df = MultiProcessMapData(
+                df,
+                num_proc=1 if buffer_size < 3 else 4,
+                map_func=pub_mapper,
+                strict=use_multi_proc_strict,
+                buffer_size=buffer_size,
+            )
         else:
             df = MapData(df, pub_mapper)
 
         if kwargs.get("build_mode", "") == "table":
+
             @cur  # type: ignore
             def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
                 return image_ann_to_image(dp, category_names=category_names)
 
-            df = MapData(df, _crop_and_add_image(  # pylint: disable=E1120
-                category_names=[names.C.TAB, names.C.CELL, names.C.HEAD, names.C.BODY,  # type: ignore
-                                names.C.ITEM, names.C.ROW, names.C.COL]))
+            df = MapData(
+                df,
+                _crop_and_add_image(  # pylint: disable=E1120
+                    category_names=[
+                        names.C.TAB,
+                        names.C.CELL,
+                        names.C.HEAD,
+                        names.C.BODY,  # type: ignore
+                        names.C.ITEM,
+                        names.C.ROW,
+                        names.C.COL,
+                    ]
+                ),
+            )
             ann_to_sub_image = maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
                 category_names_sub_image=names.C.TAB,  # type: ignore
-                category_names=[names.C.CELL, names.C.HEAD, names.C.BODY,
-                                names.C.ITEM, names.C.ROW, names.C.COL])
+                category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
+            )
             df = MapData(df, ann_to_sub_image)
             df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=names.C.TAB)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 
         if self.categories.is_cat_to_sub_cat():  # type: ignore
-            df = MapData(df, cat_to_sub_cat(self.categories.get_categories(name_as_key=True),  # type: ignore
-                                            self.categories.cat_to_sub_cat))  # type: ignore
+            df = MapData(
+                df,
+                cat_to_sub_cat(
+                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
+                ),
+            )
 
         if self.categories.is_filtered():  # type: ignore
-            df = MapData(df, filter_cat(  # pylint: disable=E1120
-                self.categories.get_categories(as_dict=False,  # type: ignore
-                                               filtered=True),
-                self.categories.get_categories(as_dict=False,  # type: ignore
-                                               filtered=False)))
+            df = MapData(
+                df,
+                filter_cat(  # pylint: disable=E1120
+                    self.categories.get_categories(as_dict=False, filtered=True),  # type: ignore
+                    self.categories.get_categories(as_dict=False, filtered=False),  # type: ignore
+                ),
+            )
         return df

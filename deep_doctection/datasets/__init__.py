@@ -31,5 +31,15 @@ from .dataflow_builder import DataFlowBaseBuilder
 from .instances import *
 from .save import *
 
-__all__ = ["DatasetBase", "DatasetInfo", "DatasetCategories", "DataFlowBaseBuilder",
-           "DatasetRegistry", "Pubtabnet", "Publaynet", "Fintabnet", "LayoutTest", "dataflow_to_jsonl"]
+__all__ = [
+    "DatasetBase",
+    "DatasetInfo",
+    "DatasetCategories",
+    "DataFlowBaseBuilder",
+    "DatasetRegistry",
+    "Pubtabnet",
+    "Publaynet",
+    "Fintabnet",
+    "LayoutTest",
+    "dataflow_to_jsonl",
+]
