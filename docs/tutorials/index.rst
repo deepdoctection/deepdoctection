@@ -11,6 +11,7 @@ development. For a more application-related access, we refer to the notebooks th
 
   get_started_notebook
   custom_pipeline
+  fine_tune
 
 .. toctree::
   :maxdepth: 1

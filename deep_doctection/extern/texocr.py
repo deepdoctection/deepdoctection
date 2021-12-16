@@ -22,9 +22,9 @@ AWS Textract OCR engine for text extraction
 from typing import List
 
 from ..utils.settings import names
-from ..extern.base import ObjectDetector, DetectionResult
-from ..extern.textract import predict_text
 from ..utils.detection_types import ImageType, Requirement
+from .base import ObjectDetector, DetectionResult
+from .textract.textract import predict_text
 from .textract.texutils import get_aws_requirement, get_boto3_requirement, boto3_available
 
 if boto3_available():

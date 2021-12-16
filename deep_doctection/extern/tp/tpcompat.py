@@ -67,9 +67,9 @@ class TensorpackPredictor(ABC):
           the configuration.
 
         - :meth:`predict` the interface of this class for calling the OfflinePredictor and returning the results. This
-          method will be used throughout in the context of pipeline components. If there are some pre- or post-processing
-          steps, you can place them here. However, do not convert the returned results into DD objects as there is an
-          explicit class available for this.
+          method will be used throughout in the context of pipeline components. If there are some pre- or
+          post-processing steps, you can place them here. However, do not convert the returned results into DD objects
+          as there is an explicit class available for this.
     """
 
     def __init__(self, model: ModelDescWithConfig, path_weights: str, ignore_mismatch: bool) -> None:

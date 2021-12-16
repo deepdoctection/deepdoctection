@@ -43,6 +43,7 @@ def test_dataset_registry_registered_new_dataset() -> None:
         """
         TestDataset
         """
+
         def _info(self) -> DatasetInfo:
             """
             Processing an image through the whole pipeline component.
@@ -61,10 +62,9 @@ def test_dataset_registry_registered_new_dataset() -> None:
             """
             return MagicMock()
 
-
     # Act
     DatasetRegistry.register_dataset("testdata", TestDataset)
     test = DatasetRegistry.get_dataset("testdata")
 
     # Assert
-    assert isinstance(test,TestDataset)
+    assert isinstance(test, TestDataset)

@@ -19,7 +19,7 @@
 Init file for mapper package. Contains everything that is related to transformation between datapoints
 
 """
-from typing import Callable
+from typing import Callable, Optional
 
 from .cats import *
 from .cocostruct import *

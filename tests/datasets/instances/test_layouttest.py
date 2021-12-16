@@ -20,7 +20,6 @@ Testing module datasets.instances.layouttest
 """
 
 
-
 from deep_doctection.datasets import LayoutTest
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
@@ -33,14 +32,15 @@ def test_dataset_layouttest_returns_image() -> None:
 
     # Arrange
     layouttest = LayoutTest()
-    layouttest.dataflow.get_workdir= get_test_path  # type: ignore
-    layouttest.dataflow.splits={"test":""}
-    layouttest.dataflow.annotation_files={"test":"test_layout.jsonl"}
+    layouttest.dataflow.get_workdir = get_test_path  # type: ignore
+    layouttest.dataflow.splits = {"test": ""}
+    layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
     df = layouttest.dataflow.build()
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==2
+    assert len(df_list) == 2
+
 
 def test_dataset_layouttest_with_load_image_returns_image() -> None:
     """
@@ -49,12 +49,12 @@ def test_dataset_layouttest_with_load_image_returns_image() -> None:
 
     # Arrange
     layouttest = LayoutTest()
-    layouttest.dataflow.get_workdir= get_test_path  # type: ignore
-    layouttest.dataflow.splits={"test":""}
-    layouttest.dataflow.annotation_files={"test":"test_layout.jsonl"}
+    layouttest.dataflow.get_workdir = get_test_path  # type: ignore
+    layouttest.dataflow.splits = {"test": ""}
+    layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
     df = layouttest.dataflow.build(load_image=True)
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list)==2
+    assert len(df_list) == 2
     assert df_list[0].image is not None

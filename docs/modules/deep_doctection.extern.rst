@@ -27,14 +27,6 @@ deep\_doctection.extern.model
    :undoc-members:
    :show-inheritance:
 
-deep\_doctection.extern.pdf\_utils
------------------------------------------
-
-.. automodule:: deep_doctection.extern.pdf_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 deep\_doctection.extern.recipes
 --------------------------------------
 

@@ -50,13 +50,17 @@ from ..base import _BuiltInDataset
 from ..info import DatasetCategories
 
 _NAME = "funsd"
-_DESCRIPTION = "FUNSD: Form Understanding in Noisy Scanned Documents. A dataset for Text Detection, Optical Character" \
-               " Recognition, Spatial Layout Analysis and Form Understanding."
-_LICENSE = "Use of the FUNSD Dataset is solely for non-commercial, research and educational purposes. The FUNSD  " \
-           "Dataset include annotations and images of real scanned forms. Licensee’s use of the images is governed " \
-           "by a copyright. Licensee is solely responsible for determining what additional licenses, clearances, " \
-           "consents and releases, if any, must be obtained for its use of the images. Original images are part of " \
-           "the dataset RVL-CDIP."
+_DESCRIPTION = (
+    "FUNSD: Form Understanding in Noisy Scanned Documents. A dataset for Text Detection, Optical Character"
+    " Recognition, Spatial Layout Analysis and Form Understanding."
+)
+_LICENSE = (
+    "Use of the FUNSD Dataset is solely for non-commercial, research and educational purposes. The FUNSD  "
+    "Dataset include annotations and images of real scanned forms. Licensee’s use of the images is governed "
+    "by a copyright. Licensee is solely responsible for determining what additional licenses, clearances, "
+    "consents and releases, if any, must be obtained for its use of the images. Original images are part of "
+    "the dataset RVL-CDIP."
+)
 
 _URL = "https://guillaumejaume.github.io/FUNSD/download/"
 _SPLITS = {"train": "training_data", "test": "testing_data"}
@@ -74,8 +78,7 @@ class Funsd(_BuiltInDataset):
     """
 
     def _info(self) -> DatasetInfo:
-        return DatasetInfo(
-            name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -109,8 +112,9 @@ class FunsdBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        path_ann_files = os.path.join(self.get_workdir(), self.splits[split],
-                                      self.annotation_files[split])  # type: ignore
+        path_ann_files = os.path.join(
+            self.get_workdir(), self.splits[split], self.annotation_files[split]  # type: ignore
+        )
         df = SerializerFiles.load(path_ann_files, ".json", max_datapoints)
 
         def load_json(path_ann: str) -> JsonDict:
@@ -125,11 +129,20 @@ class FunsdBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_json)
 
         # Map
-        category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A,
-                                  "header": names.C.HEAD}
-        df = MapData(df,
-                     xfund_to_image(load_image, False, category_names_mapping))  # type: ignore # pylint: disable=E1120
+        category_names_mapping = {
+            "other": names.C.O,
+            "question": names.C.Q,
+            "answer": names.C.A,
+            "header": names.C.HEAD,
+        }
+        df = MapData(
+            df, xfund_to_image(load_image, False, category_names_mapping)  # type: ignore # pylint: disable=E1120
+        )
         if self.categories.is_cat_to_sub_cat():  # type: ignore
-            df = MapData(df, cat_to_sub_cat(self.categories.get_categories(name_as_key=True),  # type: ignore
-                                            self.categories.cat_to_sub_cat))  # type: ignore
+            df = MapData(
+                df,
+                cat_to_sub_cat(
+                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
+                ),
+            )
         return df

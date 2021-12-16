@@ -42,17 +42,18 @@ DIST_DEPS = [
     "scipy",
     "networkx",
     "mock",
-    "dataflow @ git+https://github.com/tensorpack/dataflow.git"]
+    "dataflow @ git+https://github.com/tensorpack/dataflow.git",
+]
 
 # when building requirements.txt for rtd comment the following two lines
 if sys.platform == "linux":
     DIST_DEPS.append("python-prctl")
 
 # when building requirements.txt for rtd uncomment the following lines
-#DIST_DEPS.append("tensorpack")
-#DIST_DEPS.append("boto3")
-#DIST_DEPS.append("transformers")
-#TF_DEPS, AWS_DEPS,HF_DEPS = [], [], []
+# DIST_DEPS.append("tensorpack")
+# DIST_DEPS.append("boto3")
+# DIST_DEPS.append("transformers")
+# TF_DEPS, AWS_DEPS,HF_DEPS = [], [], []
 
 # when building requirements.txt for rtd comment the following lines
 TF_DEPS = ["tensorpack"]

@@ -45,20 +45,30 @@ from ..base import _BuiltInDataset
 from ..info import DatasetCategories
 
 _NAME = "xfund"
-_DESCRIPTION = "XFUND is a multilingual form understanding benchmark dataset that includes human-labeled forms with " \
-               "key-value pairs in 7 languages (Chinese, Japanese, Spanish, French, Italian, German, Portuguese)."
-_LICENSE = "The content of this project itself is licensed under the Attribution-NonCommercial-ShareAlike 4.0 " \
-           "International (CC BY-NC-SA 4.0) Portions of the source code are based on the transformers project. " \
-           "Microsoft Open Source Code of Conduct"
+_DESCRIPTION = (
+    "XFUND is a multilingual form understanding benchmark dataset that includes human-labeled forms with "
+    "key-value pairs in 7 languages (Chinese, Japanese, Spanish, French, Italian, German, Portuguese)."
+)
+_LICENSE = (
+    "The content of this project itself is licensed under the Attribution-NonCommercial-ShareAlike 4.0 "
+    "International (CC BY-NC-SA 4.0) Portions of the source code are based on the transformers project. "
+    "Microsoft Open Source Code of Conduct"
+)
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
 _SPLITS = {"train": "train", "val": "val"}
 _LOCATION = "/datasets/xfund"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": ["de.train.json", "es.train.json", "fr.train.json",
-                                                                 "it.train.json", "ja.train.json", "pt.train.json",
-                                                                 "zh.train.json"],
-                                                       "val": ["de.val.json", "es.val.json", "fr.val.json",
-                                                               "it.val.json", "ja.val.json", "pt.val.json",
-                                                               "zh.val.json"]}
+_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+    "train": [
+        "de.train.json",
+        "es.train.json",
+        "fr.train.json",
+        "it.train.json",
+        "ja.train.json",
+        "pt.train.json",
+        "zh.train.json",
+    ],
+    "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
+}
 _INIT_CATEGORIES = [names.C.WORD]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
 _SUB_CATEGORIES = {names.C.WORD: {names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD]}}
@@ -72,8 +82,7 @@ class Xfund(_BuiltInDataset):
     """
 
     def _info(self) -> DatasetInfo:
-        return DatasetInfo(
-            name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -117,8 +126,11 @@ class XfundBuilder(DataFlowBaseBuilder):
             raise ValueError("Not all languages available")
 
         # Load
-        path_ann_files = [os.path.join(self.get_workdir(), ann_file) for ann_file in self.annotation_files[split]
-                          if ann_file.split(".")[0] in languages]
+        path_ann_files = [
+            os.path.join(self.get_workdir(), ann_file)
+            for ann_file in self.annotation_files[split]
+            if ann_file.split(".")[0] in languages
+        ]
 
         datapoints = []
         for path_ann in path_ann_files:
@@ -134,12 +146,21 @@ class XfundBuilder(DataFlowBaseBuilder):
             return dp
 
         df = MapData(df, replace_filename)
-        category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A,
-                                  "header": names.C.HEAD}
-        df = MapData(df,
-                     xfund_to_image(load_image, False, category_names_mapping))  # type: ignore # pylint: disable=E1120
+        category_names_mapping = {
+            "other": names.C.O,
+            "question": names.C.Q,
+            "answer": names.C.A,
+            "header": names.C.HEAD,
+        }
+        df = MapData(
+            df, xfund_to_image(load_image, False, category_names_mapping)  # type: ignore # pylint: disable=E1120
+        )
 
         if self.categories.is_cat_to_sub_cat():  # type: ignore
-            df = MapData(df, cat_to_sub_cat(self.categories.get_categories(name_as_key=True),  # type: ignore
-                                            self.categories.cat_to_sub_cat))  # type: ignore
+            df = MapData(
+                df,
+                cat_to_sub_cat(
+                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
+                ),
+            )
         return df

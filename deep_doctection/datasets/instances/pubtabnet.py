@@ -44,24 +44,30 @@ from ..base import _BuiltInDataset
 from ..info import DatasetCategories
 
 _NAME = "pubtabnet"
-_DESCRIPTION = "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of " \
-               "tabular data annotated with the corresponding HTML representation of the tables. The table images" \
-               " are extracted from the scientific publications included in the PubMed Central Open Access Subset" \
-               " (commercial use collection). Table regions are identified by matching the PDF format and" \
-               " the XML format of the articles in the PubMed Central Open Access Subset. More details are" \
-               " available in our paper 'Image-based table recognition: data, model, and evaluation'. " \
-               "Pubtabnet can be used for training cell detection models as well as for semantic table " \
-               "understanding algorithms. For detection it has cell bounding box annotations as " \
-               "well as precisely described table semantics like row - and column numbers and row and col spans. " \
-               "Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also " \
-               "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on " \
-               "the table structure are available: maximum cell numbers, maximal row and column numbers and their " \
-               "minimum equivalents can be used as filter condition"
-_LICENSE = "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement" \
-           " – Permissive – Version 1.0 License. IBM does not own the copyright of the images." \
-           " Use of the images must abide by the PMC Open Access Subset Terms of Use."
-_URL = "https://dax-cdn.cdn.appdomain.cloud/dax-pubtabnet/2.0.0/" \
-       "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
+_DESCRIPTION = (
+    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of "
+    "tabular data annotated with the corresponding HTML representation of the tables. The table images"
+    " are extracted from the scientific publications included in the PubMed Central Open Access Subset"
+    " (commercial use collection). Table regions are identified by matching the PDF format and"
+    " the XML format of the articles in the PubMed Central Open Access Subset. More details are"
+    " available in our paper 'Image-based table recognition: data, model, and evaluation'. "
+    "Pubtabnet can be used for training cell detection models as well as for semantic table "
+    "understanding algorithms. For detection it has cell bounding box annotations as "
+    "well as precisely described table semantics like row - and column numbers and row and col spans. "
+    "Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also "
+    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on "
+    "the table structure are available: maximum cell numbers, maximal row and column numbers and their "
+    "minimum equivalents can be used as filter condition"
+)
+_LICENSE = (
+    "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement"
+    " – Permissive – Version 1.0 License. IBM does not own the copyright of the images."
+    " Use of the images must abide by the PMC Open Access Subset Terms of Use."
+)
+_URL = (
+    "https://dax-cdn.cdn.appdomain.cloud/dax-pubtabnet/2.0.0/"
+    "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
+)
 _SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
 
 _LOCATION = "/datasets/pubtabnet"
@@ -69,19 +75,18 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"all": "PubTabNet_2.0.0.j
 
 _INIT_CATEGORIES = [names.C.CELL, names.C.ITEM]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
-_SUB_CATEGORIES = {names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
-                   names.C.CELL: {names.C.HEAD: [names.C.HEAD, names.C.BODY],
-                                  names.C.RN: [],
-                                  names.C.CN: [],
-                                  names.C.RS: [],
-                                  names.C.CS: []}, names.C.HEAD: {names.C.RN: [],
-                                                                  names.C.CN: [],
-                                                                  names.C.RS: [],
-                                                                  names.C.CS: []},
-                   names.C.BODY: {names.C.RN: [],
-                                  names.C.CN: [],
-                                  names.C.RS: [],
-                                  names.C.CS: []}}
+_SUB_CATEGORIES = {
+    names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
+    names.C.CELL: {
+        names.C.HEAD: [names.C.HEAD, names.C.BODY],
+        names.C.RN: [],
+        names.C.CN: [],
+        names.C.RS: [],
+        names.C.CS: [],
+    },
+    names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+    names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+}
 
 
 class Pubtabnet(_BuiltInDataset):
@@ -90,8 +95,7 @@ class Pubtabnet(_BuiltInDataset):
     """
 
     def _info(self) -> DatasetInfo:
-        return DatasetInfo(
-            name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -141,18 +145,30 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
 
         df = MapData(df, replace_filename)
         df = MapData(df, lambda dp: dp if dp["split"] == split else None)
-        pub_mapper = pub_to_image(self.categories.get_categories(name_as_key=True, init=True),
-                                  # type: ignore  # pylint: disable=E1120  # 259
-                                  load_image, fake_score=False, rows_and_cols=rows_and_cols)
+        pub_mapper = pub_to_image(
+            self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
+            # pylint: disable=E1120  # 259
+            load_image,
+            fake_score=False,
+            rows_and_cols=rows_and_cols,
+        )
 
         df = MapData(df, pub_mapper)
         assert self.categories is not None  # avoid many typing issues
         if self.categories.is_cat_to_sub_cat():
-            df = MapData(df, cat_to_sub_cat(self.categories.get_categories(name_as_key=True),  # type: ignore
-                                            self.categories.cat_to_sub_cat))
+            df = MapData(
+                df,
+                cat_to_sub_cat(
+                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
+                ),
+            )
 
         if self.categories.is_filtered():
-            df = MapData(df, filter_cat(self.categories.get_categories(as_dict=False, filtered=True),
-                                        # pylint: disable=E1120
-                                        self.categories.get_categories(as_dict=False, filtered=False)))  # type: ignore
+            df = MapData(
+                df,
+                filter_cat(  # type: ignore # pylint: disable=E1120
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
+                ),
+            )
         return df

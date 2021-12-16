@@ -41,6 +41,14 @@ deep\_doctection.utils.metacfg
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.utils.pdf\_utils
+-----------------------------------------
+
+.. automodule:: deep_doctection.utils.pdf_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.utils.settings
 --------------------------------------
 

@@ -11,6 +11,7 @@ from .utils import delete_keys_from_dict, string_to_dict, split_string
 from .identifier import is_uuid_like, get_uuid_from_str, get_uuid
 from .metacfg import *
 from .settings import *
+from .pdf_utils import *
 
 __all__ = [
     "is_file_extension",
@@ -32,5 +33,8 @@ __all__ = [
     "string_to_dict",
     "split_string",
     "names",
-    "",
+    "decrypt_pdf_document",
+    "get_pdf_file_reader",
+    "get_pdf_file_writer",
+    "PDFStreamer",
 ]

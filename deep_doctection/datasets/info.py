@@ -112,7 +112,7 @@ class DatasetCategories:
         self._cat_to_sub_cat: Optional[Dict[str, str]] = None
 
     def get_categories(
-            self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
+        self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
     ) -> Union[Dict[str, str], List[str]]:
         """
         Get categories of a dataset. The returned value also respects modifications of the inventory like filtered
@@ -144,8 +144,9 @@ class DatasetCategories:
             return _get_dict(self._categories_update, name_as_key)
         return self._categories_update
 
-    def get_sub_categories(self, categories: Optional[Union[str, List[str]]] = None) -> Dict[
-            str, Union[str, List[str]]]:
+    def get_sub_categories(
+        self, categories: Optional[Union[str, List[str]]] = None
+    ) -> Dict[str, Union[str, List[str]]]:
         """
         Returns a dict of list with a category name and their sub categories.
 
@@ -161,8 +162,9 @@ class DatasetCategories:
 
         sub_cat: Dict[str, Union[str, List[str]]] = {}
         for cat in categories:  # pylint: disable=R1702
-            assert cat in self.get_categories(as_dict=False, filtered=True), \
-                f"{cat} not in categories, maybe has been replaced with sub category"
+            assert cat in self.get_categories(
+                as_dict=False, filtered=True
+            ), f"{cat} not in categories, maybe has been replaced with sub category"
             sub_cat_dict = self.init_sub_categories.get(cat)
             if sub_cat_dict is None:
                 if self._cat_to_sub_cat:

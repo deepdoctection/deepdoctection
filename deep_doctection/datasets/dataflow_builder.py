@@ -41,9 +41,9 @@ class DataFlowBaseBuilder(ABC):
     """
 
     def __init__(
-            self,
-            location: str,
-            annotation_files: Optional[Dict[str, Union[str, List[str]]]] = None,
+        self,
+        location: str,
+        annotation_files: Optional[Dict[str, Union[str, List[str]]]] = None,
     ):
         """
         :param location: Relative path of the physical dataset.

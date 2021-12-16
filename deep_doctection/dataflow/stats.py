@@ -95,6 +95,7 @@ class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
 
         logger.info("____________________ CALCULATING MEAN ____________________")
 
+        len_df: Optional[int]
         try:
             len_df = len(self.ds)
         except NotImplementedError:
