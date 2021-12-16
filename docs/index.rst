@@ -32,7 +32,7 @@ different approaches. Read more about :ref:`Why deepdoctection ?`
 
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials
+   :caption: Notebooks and Tutorials
 
    tutorials/index
 
