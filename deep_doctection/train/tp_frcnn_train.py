@@ -37,7 +37,7 @@ from tensorpack.callbacks import (
 from tensorpack.tfutils import SmartInit
 from tensorpack.train import TrainConfig, HorovodTrainer, SyncMultiGPUTrainerReplicated, launch_train_with_config
 from tensorpack.input_source import QueueInput
-
+from tensorpack.utils import logger
 # todo: check how dataflow import is directly possible without having AssertionError
 from tensorpack.dataflow import DataFlow, MapData, DataFromList, MultiProcessMapData, imgaug
 
@@ -55,7 +55,7 @@ from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..mapper.utils import LabelSummarizer
 from ..extern.tp.tfutils import set_mp_spawn
 from ..utils.utils import string_to_dict
-from ..utils.logger import logger, log_once
+from ..utils.logger import log_once
 from ..utils.tqdm import get_tqdm
 from ..utils.metacfg import AttrDict
 from ..utils.detection_types import JsonDict
@@ -302,7 +302,6 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
             ]
         )
 
-    callbacks = []
     if config.TRAINER == "horovod" and hvd.rank() > 0:
         session_init = None
     else:
