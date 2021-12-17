@@ -226,11 +226,11 @@ import numpy as np
 # pylint: disable=import-error
 from tensorpack.utils.gpu import get_num_gpu
 from tensorpack.tfutils import collect_env_info
+from tensorpack.utils import logger
 
 # pylint: enable=import-error
 
 from .....utils.metacfg import AttrDict
-from .....utils.logger import logger, set_logger_dir
 
 try:
     import horovod.tensorflow as hvd
@@ -315,7 +315,7 @@ def train_frcnn_config(config: AttrDict) -> Tuple[List[Tuple[int, int]], List[Tu
             logger.set_logger_dir(config.TRAIN.LOG_DIR, "d")
     else:
         assert "OMPI_COMM_WORLD_SIZE" not in os.environ
-        set_logger_dir(config.TRAIN.LOG_DIR, "d")
+        logger.set_logger_dir(config.TRAIN.LOG_DIR, "d")
         number_gpu = get_num_gpu()
     logger.info("Environment Information:\n %s", collect_env_info())
 
