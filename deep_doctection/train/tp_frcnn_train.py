@@ -20,7 +20,7 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Type
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
@@ -38,6 +38,7 @@ from tensorpack.tfutils import SmartInit
 from tensorpack.train import TrainConfig, HorovodTrainer, SyncMultiGPUTrainerReplicated, launch_train_with_config
 from tensorpack.input_source import QueueInput
 from tensorpack.utils import logger
+
 # todo: check how dataflow import is directly possible without having AssertionError
 from tensorpack.dataflow import DataFlow, MapData, DataFromList, MultiProcessMapData, imgaug
 
@@ -66,6 +67,7 @@ from ..pipe.registry import PipelineComponentRegistry
 from ..pipe.base import PredictorPipelineComponent
 from ..eval.tp_eval_callback import EvalCallback
 from ..eval.registry import MetricRegistry
+from ..eval.base import MetricBase
 from ..datasets.base import DatasetBase
 
 
@@ -187,6 +189,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[List[str]] = None,
     metric_name: Optional[str] = None,
+    metric: Optional[Type[MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
@@ -207,7 +210,9 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
     :param dataset_val: the dataset to use for validation.
     :param build_val_config: same as 'build_train_config' but for validation
-    :param metric_name: A metric to choose for validation
+    :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
+                        metric setting pass a metric explicitly.
+    :param metric: A metric to choose for validation.
     :param pipeline_component_name: A pipeline component to use for validation.
     """
 
@@ -273,10 +278,11 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     if (
         config.TRAIN.EVAL_PERIOD > 0
         and dataset_val is not None
-        and metric_name is not None
+        and (metric_name is not None or metric is not None)
         and pipeline_component_name is not None
     ):
-        metric = MetricRegistry.get_metric(metric_name)
+        if metric_name is not None:
+            metric = MetricRegistry.get_metric(metric_name)
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
@@ -294,7 +300,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
                     dataset_val,
                     category_names,
                     dataset_val.dataflow.categories.cat_to_sub_cat,  # type: ignore
-                    metric,
+                    metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
                     **build_val_dict
