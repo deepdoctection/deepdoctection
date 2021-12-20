@@ -28,6 +28,7 @@ from deep_doctection.datapoint import Image
 from deep_doctection.datasets import DatasetCategories
 from deep_doctection.eval import CocoMetric, Evaluator
 from deep_doctection.extern.base import DetectionResult
+from deep_doctection.extern.tpdetect import TPFrcnnDetector
 from deep_doctection.pipe.layout import ImageLayoutService
 
 
@@ -49,7 +50,8 @@ class TestEvaluator:
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([image_with_anns]))
         self._dataset.dataflow.categories = categories
 
-        self._layout_detector = MagicMock()
+        self._layout_detector = MagicMock(spec=TPFrcnnDetector)
+        self._layout_detector.tp_predictor = MagicMock()
         self._pipe_component = ImageLayoutService(self._layout_detector)
         self._layout_detector.predict = MagicMock(return_value=detection_results)
         self._metric = CocoMetric

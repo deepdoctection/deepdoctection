@@ -2,7 +2,7 @@ TAG: casc_rcnn_X_32xd4_50_FPN_GN_2FC
 BACKBONE:
   BOTTLENECK: resnext_32xd4
   FREEZE_AFFINE: false
-  FREEZE_AT: 2
+  FREEZE_AT: 0
   NORM: GN
   RESNET_NUM_BLOCKS:
     - 3

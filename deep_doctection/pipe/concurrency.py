@@ -59,6 +59,7 @@ class MultiThreadPipelineComponent:
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
     ) -> None:
+
         """
         :param pipeline_components: list of identical pipeline component. Number of threads created is determined by
                                     :func:`len`
@@ -66,6 +67,7 @@ class MultiThreadPipelineComponent:
                               component
         :param post_proc_func: pass a function, that reads and returns an image. Will execute after entering the pipe
                                component
+        :param max_datapoints: max datapoints to process
         """
 
         self.pipe_components = pipeline_components
@@ -81,13 +83,8 @@ class MultiThreadPipelineComponent:
 
         :param df: A list or a dataflow of Image
         """
-        if isinstance(df, DataFlow):
-            df.reset_state()
-        for idx, dp in enumerate(df):
-            if self.max_datapoints is not None:
-                if self.max_datapoints >= idx:
-                    break
-            self.input_queue.put(dp)
+
+        self._put_datapoints_to_queue(df)
 
     def start(self) -> List[Image]:
         """
@@ -104,14 +101,19 @@ class MultiThreadPipelineComponent:
             for component in self.pipe_components:
                 futures.append(
                     executor.submit(
-                        self._thread_predict, self.input_queue, component, pbar, self.pre_proc_func, self.post_proc_func
+                        self._thread_predict_on_queue,
+                        self.input_queue,
+                        component,
+                        pbar,
+                        self.pre_proc_func,
+                        self.post_proc_func,
                     )
                 )
             all_results = list(itertools.chain(*[fut.result() for fut in futures]))
         return all_results
 
     @staticmethod
-    def _thread_predict(
+    def _thread_predict_on_queue(
         input_queue: queue.Queue,  # type: ignore
         component: PipelineComponent,
         tqdm_bar: Optional[tqdm.tqdm] = None,
@@ -135,3 +137,12 @@ class MultiThreadPipelineComponent:
                 outputs.append(out)
                 tqdm_bar.update(1)
         return outputs
+
+    def _put_datapoints_to_queue(self, df: Union[DataFlow, List[Image]]) -> None:
+        if isinstance(df, DataFlow):
+            df.reset_state()
+        for idx, dp in enumerate(df):
+            if self.max_datapoints is not None:
+                if self.max_datapoints >= idx:
+                    break
+            self.input_queue.put(dp)

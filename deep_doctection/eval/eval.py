@@ -32,6 +32,7 @@ from ..mapper.cats import remove_cats
 from ..utils.logger import logger
 from ..dataflow import MapData, DataFromList  # type: ignore
 from ..mapper.misc import maybe_load_image, maybe_remove_image
+from ..extern.tpdetect import TPFrcnnDetector
 
 
 class Evaluator:  # pylint: disable=R0903
@@ -69,11 +70,27 @@ class Evaluator:  # pylint: disable=R0903
             "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
             num_threads,
         )
-        pipeline_components: List[PipelineComponent]
-        pipeline_components = [predictor_pipe_component]
-        for _ in range(num_threads):
-            pipeline_components.append(copy(predictor_pipe_component))
+        pipeline_components: List[PipelineComponent] = []
 
+        # try to copy as little as possible
+        assert isinstance(predictor_pipe_component.predictor, TPFrcnnDetector)
+        tmp_tp_predictor = predictor_pipe_component.predictor.tp_predictor
+        tmp_predictor = predictor_pipe_component.predictor
+        tmp_dp_manager = predictor_pipe_component.dp_manager
+        predictor_pipe_component.dp_manager = None  # type: ignore
+        predictor_pipe_component.predictor = None  # type: ignore
+        tmp_predictor.tp_predictor = None
+        for _ in range(num_threads - 1):
+            copy_pipe_component = copy(predictor_pipe_component)
+            copy_pipe_component.predictor = copy(tmp_predictor)
+            copy_pipe_component.predictor.tp_predictor = copy(tmp_tp_predictor)
+            copy_pipe_component.dp_manager = copy(tmp_dp_manager)
+            pipeline_components.append(copy_pipe_component)
+
+        predictor_pipe_component.dp_manager = tmp_dp_manager
+        predictor_pipe_component.predictor = tmp_predictor
+        predictor_pipe_component.predictor.tp_predictor = tmp_tp_predictor
+        pipeline_components.append(predictor_pipe_component)
         self.dataset = dataset
 
         self.pipe_component = MultiThreadPipelineComponent(

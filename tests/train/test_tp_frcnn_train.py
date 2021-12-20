@@ -76,7 +76,7 @@ def test_get_train_dataflow(
 @patch("deep_doctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deep_doctection.train.tp_frcnn_train.ModelSaver")
 @patch("deep_doctection.train.tp_frcnn_train.PeriodicCallback")
-@patch("deep_doctection.extern.tp.tpfrcnn.config.config.set_logger_dir")
+@patch("tensorpack.utils.logger.set_logger_dir")
 @patch("deep_doctection.train.tp_frcnn_train.launch_train_with_config")
 @patch("deep_doctection.train.tp_frcnn_train.set_mp_spawn")
 def test_train_faster_rcnn(
