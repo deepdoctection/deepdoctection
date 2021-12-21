@@ -335,7 +335,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
                 if table_ann is not None:
                     table_ann.dump_relationship(names.C.CHILD, cell_ann.annotation_id)
 
-        summary_ann = SummaryAnnotation()
+        summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
             names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=number_of_rows), image.image_id
         )
