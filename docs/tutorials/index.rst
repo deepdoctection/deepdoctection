@@ -5,6 +5,7 @@ ________________________________________________________
 Tutorials offer a deeper introduction to **deep**\doctection and cover topics to enable experiments and further
 development. For a more application-related access, we refer to the notebooks that can found in the respective folder.
 
+
 .. toctree::
   :maxdepth: 1
   :caption: Notebooks
@@ -21,3 +22,8 @@ development. For a more application-related access, we refer to the notebooks th
   datasets
   pipelines
 
+.. toctree::
+  :maxdepth: 1
+  :caption: Scripts
+
+  scripts

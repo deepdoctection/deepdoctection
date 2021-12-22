@@ -1,5 +1,5 @@
-Fine Tuning
-===========
+Evaluating and Fine Tuning
+==========================
 
 Introduction
 ------------
@@ -12,7 +12,7 @@ For this purpose, we want to try to improve the table extraction in the
 we are trying to address, we need to say a little more about processing
 table extraction.
 
-.. figure:: ../../notebooks/pics/dd_table.png
+.. figure:: ./pics/dd_table.png
    :alt: title
 
    title
@@ -33,32 +33,35 @@ Cell recognition was carried out on the
 PubTabNet contains approx. 500K tables from the field of medical
 research.
 
-We want to fine-tune cell recognition on a dataset that comes from a
-completely different domain, namely financial reports. For this we use
-`FinTabNet <https://arxiv.org/pdf/2005.00589.pdf>`__, a data set that
-contains around 100K tables from that domain.
+The current model was configured in such a way that not only table cells
+are recognized, but header cells are also differentiated from body
+cells.
+
+We want to train the model further on the same dataset. However, we want
+to replace the header of the model and only recognize cells without any
+further distinction. Furthermore, want to keep the number of pixels in
+the image larger in the hope that relatively small cells can be better
+recognized.
 
 Dataset
 -------
 
 In order to fine-tune on your own data set, you should create your one
 dataset instance based on the example of the existing datasets. We use a
-DatasetRegistry to be able to access the dataset directly. Before we
-start fine tuning, let’s take a look at the dataset. It will show you
-the advantage of the concept within this framework and how it easily
-integrates into the training scripts.
+DatasetRegistry to be able to access the built-in dataset directly.
+Before we start fine tuning, let’s take a look at the dataset. It will
+show you the advantage of the concept within this framework and how it
+easily integrates into the training scripts.
 
 .. code:: ipython3
 
     import os
     
-    from matplotlib import pyplot as plt
-    
     from deep_doctection.utils import get_weights_dir_path,get_configs_dir_path
     from deep_doctection.datasets import DatasetRegistry
-    from deep_doctection.mapper import to_page
-    from deep_doctection.dataflow import MapData
-    from deep_doctection.train import train_faster_rcnn
+    from deep_doctection.eval import MetricRegistry, Evaluator
+    from deep_doctection.extern.tpdetect import TPFrcnnDetector
+    from deep_doctection.pipe.layout import ImageLayoutService
 
 .. code:: ipython3
 
@@ -72,251 +75,334 @@ integrates into the training scripts.
 
 .. code:: ipython3
 
-    fintabnet = DatasetRegistry.get_dataset("fintabnet")
-    fintabnet.dataset_info.description
+    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet.dataset_info.description
 
 
 
 
 .. parsed-literal::
 
-    'FinTabNet dataset contains complex tables from the annual reports of S&P 500 companies with detailed table structure annotations to help train and test structure recognition. To generate the cell structure labels, one uses token matching between the PDF and HTML version of each article from public records and filings. Financial tables often have diverse styles when compared to ones in scientific and government documents, with fewer graphical lines and larger gaps within each table and more colour variations. Fintabnet can be used for training cell detection models as well as for semantic table understanding algorithms. For detection it has cell bounding box annotations as well as precisely described table semantics like row - and column numbers and row and col spans. The dataflow builder can also return captions of bounding boxes of rows and columns. Moreover, various filter conditions on the table structure are available: maximum cell numbers, maximal row and column numbers and their minimum equivalents can be used as filter condition. Header information of cells are not available. As work around you can artificially add header sub-category to every first row cell. All later row cells will receive a no header  sub-category. Note, that this assumption will generate noise.'
+    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of tabular data annotated with the corresponding HTML representation of the tables. The table images are extracted from the scientific publications included in the PubMed Central Open Access Subset (commercial use collection). Table regions are identified by matching the PDF format and the XML format of the articles in the PubMed Central Open Access Subset. More details are available in our paper 'Image-based table recognition: data, model, and evaluation'. Pubtabnet can be used for training cell detection models as well as for semantic table understanding algorithms. For detection it has cell bounding box annotations as well as precisely described table semantics like row - and column numbers and row and col spans. Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also return captions of bounding boxes of rows and columns. Moreover, various filter conditions on the table structure are available: maximum cell numbers, maximal row and column numbers and their minimum equivalents can be used as filter condition"
 
 
 
 We refer to the in depths tutorial for more details about the
 construction of datasets and the architecture of **deep**\ doctection.
 Nevertheless, we will briefly go into the individual steps to display a
-sample from Fintabnet. The dataset has a method dataflow.build that
+sample from Pubtabnet. The dataset has a method dataflow.build that
 returns a generator where samples can be streamed from.
+
+Let’s display a tiny fraction of annotations that is available for each
+datapoint. ``df_dict["annotations"][0]`` displays all informations that
+are available for one cell, i.e. sub categories, like row and column
+number, header information and bounding boxes.
 
 .. code:: ipython3
 
-    df = fintabnet.dataflow.build(split="train",load_image=True,use_multi_proc=False)
-    df = MapData(df,to_page)
+    df = pubtabnet.dataflow.build(split="train")
     df.reset_state()
     df_iter = iter(df)
+    df_dict = next(df_iter).as_dict()
+    df_dict["file_name"],df_dict["location"],df_dict["image_id"], df_dict["annotations"][0]
+
+
 
 
 .. parsed-literal::
 
-    [32m[1216 18:55.28 @fintabnet.py:160][0m [32mINF[0m Logic will currently display only ONE table per page, even if there are more !!
+    ('PMC4840965_004_00.png',
+     '/home/janis/Public/deepdoctection/datasets/pubtabnet/train/PMC4840965_004_00.png',
+     'c87ee674-4ddc-3efe-a74e-dfe25da5d7b3',
+     {'active': True,
+      'annotation_id': '84cbfafb-c878-323a-afcf-6159206f2e49',
+      'category_name': 'CELL',
+      'category_id': '1',
+      'score': None,
+      'sub_categories': {'ROW_NUMBER': {'active': True,
+        'annotation_id': '37cd395e-a09d-3f73-b7e5-98c0d284c75f',
+        'category_name': 'ROW_NUMBER',
+        'category_id': '28',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       'COLUMN_NUMBER': {'active': True,
+        'annotation_id': '626c0980-5a45-3223-b7c8-39bc3648722c',
+        'category_name': 'COLUMN_NUMBER',
+        'category_id': '3',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       'ROW_SPAN': {'active': True,
+        'annotation_id': '02458dd5-e774-3cf6-a299-5546d9c63880',
+        'category_name': 'ROW_SPAN',
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       'COLUMN_SPAN': {'active': True,
+        'annotation_id': '87df3823-d8f8-3839-ae67-2690f1ff0379',
+        'category_name': 'COLUMN_SPAN',
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       'HEAD': {'active': True,
+        'annotation_id': '446896bf-f176-349b-bd46-d41aa3397dbb',
+        'category_name': 'BODY',
+        'category_id': '<property object at 0x7f102ab0f770>',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}}},
+      'relationships': {},
+      'bounding_box': {'absolute_coords': True,
+       'ulx': 336.0,
+       'uly': 381.0,
+       'lrx': 376.0,
+       'lry': 391.0},
+      'image': None})
 
 
-1.) Datasets have dataflow components. Dataflows allow efficient loading
-and mapping of data and thus represent the bloodstream of deep
-doctection. The build method creates a dataflow of the dataset. By
-selecting certain parameters, for example, a split can be selected or it
-can be determined whether the underlying image should be loaded.
 
-2.) In the second line, the core data model is mapped to an easily
-consumable page object. Parsed results can be queried and visualized in
-the page object.
-
-3.) The reset_state () method of the dataflow must be called before
-iterating the dataflow and belongs to the Dataflow API.
-
-4.) We want to use the next method to look at samples, so we create an
-iterator.
-
-After we have created a page object, we enter the annotations in the
-image with viz () and visualize them.
+“CELL” label is the main category. It is possible to change the
+representation of an annotation by swapping categories with sub
+categories.
 
 .. code:: ipython3
 
-    table=next(df_iter)
-    image = table.viz()
-    plt.figure(figsize = (20,10))
-    plt.axis('off')
-    plt.imshow(image)
+    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEAD"})
 
-.. figure:: https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/output_7_1.png
-   :alt: title
 
-   title
+.. parsed-literal::
 
-The sample shows that tables are not cropped from the image. Our method
-however requires that the cell predictor requires tables only without
-surronding. The build method for this particular dataset, however has a
-optional parameter ``build_mode`` such that the dataflow returns tables
-only, once you pass the value ‘table’. The coordinates of the cells are
-also converted to the coordinate system of the cropped image.
+    [32m[1221 17:51.36 @info.py:205][0m [32mINF[0m Will reset all previous updates
 
-Training Tensorpack Predictor
------------------------------
 
-For the training, we use a training script which stems from the training
-of the Faster-RCNN model from Tensorpack. Let’s collect all necessary
-inputs:
+.. code:: ipython3
 
--  We take the model config for the cell detector. It is important to
-   note that the hyperparameter for this detector differs slightly from
-   the standard Faster-RCNN config for taking into account that cells
-   are generally smaller and have in general a length/height ratio >=1.
--  We take the pre-trained cell weights.
--  We choose fintabnet for training and evaluation for which the
-   datasets is pre-splitted.
--  Config overwrites specifies the train setting. We define 1 epoch to
-   have 500 pass throughs. (Note, that the term of one epoch is
-   different than in most of the literature.) We set the learning rate
-   to be .001 which is quite common for fine tuning this model. We set
-   the schedule to have 50K iterations and set a random resizing of the
-   train dataset between 600 and 1.2K pixels.
--  The other settings affect the dataset dataflow build config. As
-   already mentioned we need to crop tables from the images. As we crop
-   them at the beginning, we have to store these images in memory. This
-   is not ideal but peculiar for this dataset and requires either a
-   large memory or a small training dataset. We choose 15k samples. As
-   we only use parts of the images this might ok, but you can set this
-   setting lower if you RAM is not that large.
+    df = pubtabnet.dataflow.build(split="train")
+    df.reset_state()
+    df_iter = iter(df)
+    df_dict = next(df_iter).as_dict()
+    df_dict["annotations"][0]
+
+
+
+
+.. parsed-literal::
+
+    {'active': True,
+     'annotation_id': '84cbfafb-c878-323a-afcf-6159206f2e49',
+     'category_name': 'BODY',
+     'category_id': '2',
+     'score': None,
+     'sub_categories': {'ROW_NUMBER': {'active': True,
+       'annotation_id': '37cd395e-a09d-3f73-b7e5-98c0d284c75f',
+       'category_name': 'ROW_NUMBER',
+       'category_id': '28',
+       'score': None,
+       'sub_categories': {},
+       'relationships': {}},
+      'COLUMN_NUMBER': {'active': True,
+       'annotation_id': '626c0980-5a45-3223-b7c8-39bc3648722c',
+       'category_name': 'COLUMN_NUMBER',
+       'category_id': '3',
+       'score': None,
+       'sub_categories': {},
+       'relationships': {}},
+      'ROW_SPAN': {'active': True,
+       'annotation_id': '02458dd5-e774-3cf6-a299-5546d9c63880',
+       'category_name': 'ROW_SPAN',
+       'category_id': '1',
+       'score': None,
+       'sub_categories': {},
+       'relationships': {}},
+      'COLUMN_SPAN': {'active': True,
+       'annotation_id': '87df3823-d8f8-3839-ae67-2690f1ff0379',
+       'category_name': 'COLUMN_SPAN',
+       'category_id': '1',
+       'score': None,
+       'sub_categories': {},
+       'relationships': {}},
+      'HEAD': {'active': True,
+       'annotation_id': 'e9749db2-464c-3144-84f9-f939a4f15a43',
+       'category_name': 'BODY',
+       'category_id': '<property object at 0x7f63b575f770>',
+       'score': None,
+       'sub_categories': {},
+       'relationships': {}}},
+     'relationships': {},
+     'bounding_box': {'absolute_coords': True,
+      'ulx': 336.0,
+      'uly': 381.0,
+      'lrx': 376.0,
+      'lry': 391.0},
+     'image': None}
+
+
+
+Evaluation
+----------
+
+We want to evaluate the current model and use the evaluator framework
+for this. An evaluator needs a dataset on which to run the evaluation,
+as well as a predictor and a metric. The predictor must be wraped into a
+pipeline component, which is why we use the ImageLayoutService.
+
+We take the COCO metric for the problem, but define settings that
+deviate from the standard. We have to consider the following issues,
+which differ from ordinary object detection tasks:
+
+-  The objects to be identified are generally smaller
+-  There are many objects to identify.
+
+.. code:: ipython3
+
+    coco_metric = MetricRegistry.get_metric("coco")
+    coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
 
 .. code:: ipython3
 
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
     path_weights = os.path.join(get_weights_dir_path(),"cell/model-2840000.data-00000-of-00001")
     
-    dataset_train = fintabnet
     
-    config_overwrite=["TRAIN.STEPS_PER_EPOCH=500","TRAIN.EVAL_PERIOD=20","TRAIN.BASE_LR=1e-3","TRAIN.LR_SCHEDULE=[50000]","PREPROC.TRAIN_SHORT_EDGE_SIZE=[600,1200]"]
-    build_train_config=["build_mode=table","load_image=True","max_datapoints=10000","use_multi_proc=False"]
-    dataset_val = fintabnet
-    build_val_config = ["build_mode=table","load_image=True","max_datapoints=1000","use_multi_proc=False"]
+    categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
+    cell_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    
+    layout_service =  ImageLayoutService(cell_detector)
+    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
 
-Finally, we set a directory to save the checkpoints and log the training
-progress. For evaluation we use the traditional coco metric which
-returns mean average precision and mean average recall.
+
+We start the evaluation with the run method. max_datapoints limits the
+number of samples in the evaluation to 100 data records. The val split
+is used by default. If this is not available, it must be given as an
+argument along with other possible build configurations.
+
+.. code:: ipython3
+
+    output= evaluator.run(category_names=["HEAD","BODY"],max_datapoints=100)
+
+
+.. parsed-literal::
+
+    [32m[1221 17:52.32 @logger.py:193][0m [32mINF[0m Loading annotations for 'val' split from Pubtabnet will take some time...
+    [32m[1221 17:53.14 @logger.py:193][0m [32mINF[0m dp: 549232 is malformed, err: IndexError,
+                msg: list assignment index out of range in: <frame at 0x6bdcd40, file '/home/janis/Public/deepdoctection/deep_doctection/mapper/pubstruct.py', line 258, code pub_to_image_uncur> will be filtered
+    [32m[1221 17:53.15 @eval.py:132][0m [32mINF[0m Predicting objects...
+
+
+.. parsed-literal::
+
+    100%|██████████| 99/99 [00:12<00:00,  7.68it/s]
+
+.. parsed-literal::
+
+    [32m[1221 17:53.28 @eval.py:137][0m [32mINF[0m Starting evaluation...
+
+
+.. parsed-literal::
+
+    
+
+
+.. parsed-literal::
+
+    creating index...
+    index created!
+    creating index...
+    index created!
+    Running per image evaluation...
+    Evaluate annotation type *bbox*
+    DONE (t=7.36s).
+    Accumulating evaluation results...
+    DONE (t=0.12s).
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.930
+     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.768
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.590
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.689
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.644
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.584
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.708
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.711
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.665
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.741
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.695
+
+
+Training Tensorpack Predictor
+-----------------------------
+
+For the training, we use a training script that stems from the training
+of the Faster-RCNN model from Tensorpack. Let’s collect all necessary
+inputs:
+
+-  We take the model config of the cell detector. It is important to
+   note that the hyperparameter for this detector differs slightly from
+   the standard Faster-RCNN config, taking into account that cells are
+   generally smaller and have a length/height ratio >=1.
+
+-  We take the pre-trained cell weights.
+
+-  Since we are completely replacing the model head (we are changing the
+   number of categories) we have to plan a longer training schedule. We
+   use the standard training schedule 1xDetectron, which corresponds to
+   a training schedule for a detection task with pre-trained backbone.
+   This training schedule takes about 2.5 days on a GPU (RTX 3090) and
+   is already included in the configs and therefore does not need to be
+   passed explicitly. The most important training configurations, such
+   as the learning rate schedule, are also derived from this
+   specification.
+
+-  In the configs we overwrite some configurations for callbacks and the
+   trainable variables: We train all the variables of the backbone as we
+   change the image size. We evaluate and save the model every 20
+   epochs. (Attention: An epoch is defined differently here than the
+   passage of a dataset).
+
+.. code:: ipython3
+
+    from deep_doctection.train import train_faster_rcnn
+    
+    
+    path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
+    path_weights = os.path.join(get_weights_dir_path(),"cell/model-2840000.data-00000-of-00001")
+    
+    
+    config_overwrite=["TRAIN.EVAL_PERIOD=20","PREPROC.TRAIN_SHORT_EDGE_SIZE=[400,600]","TRAIN.CHECKPOINT_PERIOD=20","BACKBONE.FREEZE_AT=0"]
+
+The other configs refer to dataset and metric settings we discussed
+before.
+
+.. code:: ipython3
+
+    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet.dataflow.categories.filter_categories(categories="CELL")
+    dataset_train = pubtabnet
+    
+    build_train_config=["max_datapoints=500000"]
+    
+    dataset_val = pubtabnet
+    build_val_config = ["max_datapoints=4000"]
+    
+    coco_metric = MetricRegistry.get_metric("coco")
+    coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
+
+We can now start training. Make sure that the log directory is set
+correctly. If such a directory already exists, the existing one will be
+deleted and created again!
 
 .. code:: ipython3
 
     train_faster_rcnn(path_config_yaml=path_config_yaml,
-                      dataset_train=fintabnet,
+                      dataset_train=pubtabnet,
                       path_weights=path_weights,
                       config_overwrite=config_overwrite,
-                      log_dir="/path/to/dir/test_train",
+                      log_dir="/path/to/log_dir",
                       build_train_config=build_train_config,
                       dataset_val=dataset_val,
                       build_val_config=build_val_config,
-                      metric_name="coco",
+                      metric=coco_metric,
                       pipeline_component_name="ImageLayoutService"
                       )
-
-
-.. parsed-literal::
-
-    [32m[1216 18:55.36 @logger.py:93][0m [32mINF[0m Argv: ['/usr/lib/python3/dist-packages/ipykernel_launcher.py', '-f', '/home/janis/.local/share/jupyter/runtime/kernel-60921085-da62-4658-8f59-98ccb0e43f95.json'] 
-    [32m[1216 18:55.37 @config.py:320][0m [32mINF[0m Environment Information:
-     -----------------------  ------------------------------------------------------------------------------------------------
-    sys.platform             linux
-    Python                   3.8.10 (default, Sep 28 2021, 16:10:42) [GCC 9.3.0]
-    Tensorpack               v0.11-0-gdb541e8e @/home/janis/Public/deepdoctection/venv/lib/python3.8/site-packages/tensorpack
-    Numpy                    1.21.4
-    TensorFlow               2.4.1/unknown @/usr/lib/python3/dist-packages/tensorflow
-    TF Compiler Version      9.3.0
-    TF CUDA support          True
-    TF MKL support           False
-    TF XLA support           False
-    Nvidia Driver            /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.460.73.01
-    CUDA libs                /usr/lib/x86_64-linux-gnu/libcudart.so.11.1.74
-    CUDNN libs
-    TF compute capabilities  52,60,61,70,75,80,86
-    TF built with CUDA       11.1
-    TF built with CUDNN      8
-    NCCL libs                /usr/lib/x86_64-linux-gnu/libnccl.so.2.8.4
-    CUDA_VISIBLE_DEVICES     Unspecified
-    GPU 0                    GeForce RTX 3090
-    Free RAM                 48.37/62.52 GB
-    CPU Count                24
-    Horovod                  0.22.1 @/usr/local/lib/python3.8/dist-packages/horovod
-    cv2                      4.5.3
-    msgpack                  1.0.2
-    python-prctl             True
-    -----------------------  ------------------------------------------------------------------------------------------------
-    [32m[1216 18:55.37 @config.py:353][0m [32mINF[0m Warm Up Schedule (steps, value): [(0, 1e-05), (1000, 0.001)]
-    [32m[1216 18:55.37 @config.py:354][0m [32mINF[0m LR Schedule (epochs, value): [(2, 0.001)]
-    [32m[1216 18:55.37 @config.py:357][0m [32mINF[0m Config: ------------------------------------------
-     {'BACKBONE': {'BOTTLENECK': 'resnext_32xd4',
-                  'FREEZE_AFFINE': False,
-                  'FREEZE_AT': 2,
-                  'NORM': 'GN',
-                  'RESNET_NUM_BLOCKS': [3, 4, 6, 3],
-                  'TF_PAD_MODE': False},
-     'CASCADE': {'BBOX_REG_WEIGHTS': [[10.0, 10.0, 5.0, 5.0], [20.0, 20.0, 10.0, 10.0],
-                                      [30.0, 30.0, 15.0, 15.0]],
-                 'IOUS': [0.5, 0.6, 0.7]},
-     'DATA': {'CLASS_DICT': {0: 'BG', '1': 'TABLE', '2': 'CELL', '3': 'ITEM'},
-              'CLASS_NAMES': ['TABLE', 'CELL', 'ITEM', 'BG'],
-              'NUM_CATEGORY': 3,
-              'TRAIN_NUM_WORKERS': 12},
-     'FPN': {'ANCHOR_STRIDES': (4, 8, 16, 32, 64),
-             'CASCADE': True,
-             'FRCNN_CONV_HEAD_DIM': 256,
-             'FRCNN_FC_HEAD_DIM': 1024,
-             'FRCNN_HEAD_FUNC': 'fastrcnn_2fc_head',
-             'MRCNN_HEAD_FUNC': 'maskrcnn_up4conv_head',
-             'NORM': 'GN',
-             'NUM_CHANNEL': 256,
-             'PROPOSAL_MODE': 'Level',
-             'RESOLUTION_REQUIREMENT': 32},
-     'FRCNN': {'BATCH_PER_IM': 512,
-               'BBOX_REG_WEIGHTS': [10.0, 10.0, 5.0, 5.0],
-               'FG_RATIO': 0.25,
-               'FG_THRESH': 0.5},
-     'MODE_MASK': False,
-     'MRCNN': {'ACCURATE_PASTE': True, 'HEAD_DIM': 256},
-     'NUM_GPUS': 1,
-     'OUTPUT': {'FRCNN_NMS_THRESH': 0.01,
-                'NMS_THRESH_CLASS_AGNOSTIC': 0.001,
-                'RESULTS_PER_IM': 800,
-                'RESULT_SCORE_THRESH': 0.4},
-     'PREPROC': {'MAX_SIZE': 1408.0,
-                 'PIXEL_MEAN': [238.32, 238.22, 238.21],
-                 'PIXEL_STD': [8.75, 8.569, 9.14],
-                 'SHORT_EDGE_SIZE': 800,
-                 'TRAIN_SHORT_EDGE_SIZE': [600, 1200]},
-     'RPN': {'ANCHOR_RATIOS': (0.25, 0.5, 1.0),
-             'ANCHOR_SIZES': (8, 16, 32, 64, 128),
-             'ANCHOR_STRIDE': 8,
-             'BATCH_PER_IM': 512,
-             'CROWD_OVERLAP_THRESH': 9.99,
-             'FG_RATIO': 0.5,
-             'HEAD_DIM': 1024,
-             'MIN_SIZE': 0,
-             'NEGATIVE_ANCHOR_THRESH': 0.3,
-             'NUM_ANCHOR': 15,
-             'PER_LEVEL_NMS_TOPK': 1000,
-             'POSITIVE_ANCHOR_THRESH': 0.7,
-             'POST_NMS_TOPK': 1000,
-             'PRE_NMS_TOPK': 6000,
-             'PROPOSAL_NMS_THRESH': 0.7,
-             'TRAIN_PER_LEVEL_NMS_TOPK': 2000,
-             'TRAIN_POST_NMS_TOPK': 2000,
-             'TRAIN_PRE_NMS_TOPK': 12000},
-     'TAG': 'casc_rcnn_X_32xd4_50_FPN_GN_2FC',
-     'TRAIN': {'BASE_LR': 0.001,
-               'CHECKPOINT_PERIOD': 20,
-               'EVAL_PERIOD': 20,
-               'LOG_DIR': '/home/janis/Documents/test_train',
-               'LR_SCHEDULE': [50000],
-               'NUM_GPUS': 1,
-               'STARTING_EPOCH': 1,
-               'STEPS_PER_EPOCH': 500,
-               'WARMUP': 1000,
-               'WARMUP_INIT_LR': 1e-05,
-               'WEIGHT_DECAY': 0.0001},
-     'TRAINER': 'replicated'}
-    [32m[1216 18:55.37 @tp_frcnn_train.py:138][0m [32mINF[0m Loading dataset into memory
-
-
-.. parsed-literal::
-
-      0%|          |0/10000[00:00<?,?it/s]
-
-.. parsed-literal::
-
-    [32m[1216 18:55.37 @logger.py:193][0m [5m[35mWRN[0m Datapoint have images as np arrays stored and they will be loaded into memory. To avoid OOM set 'load_image'=False in dataflow build config. This will load images when needed and reduce memory costs!!!
-
-
-.. parsed-literal::
-
-     34%|###4      |3402/10000[13:59<37:07, 2.96it/s]
-
