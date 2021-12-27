@@ -77,8 +77,6 @@ class ModelCatalog:
                 "1DPzfMnBsd1cg_CXQq7_EJhZxwWslkFw1?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
         },
-
-
     }
 
     @staticmethod

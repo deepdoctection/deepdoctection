@@ -18,6 +18,9 @@
 """
 Module for mapping annotations from image to layout lm input structure
 """
+
+from typing import List
+
 import numpy as np
 from cv2 import INTER_LINEAR
 from transformers import PreTrainedTokenizer
@@ -51,13 +54,14 @@ def image_to_layoutlm(
     all_tokens = []
     all_boxes = []
     all_ann_ids = []
-
+    words: List[str] = []
     for ann in anns:
         char_cat = ann.get_sub_category(names.C.CHARS)
         assert isinstance(char_cat, ContainerAnnotation)
         word = char_cat.value
+        assert isinstance(word, str)
+        words.append(word)
         word_tokens = tokenizer.tokenize(word)
-
         all_tokens.extend(word_tokens)
         if ann.image is not None:
             box = ann.image.get_embedding(dp.image_id)
@@ -71,8 +75,14 @@ def image_to_layoutlm(
             all_boxes.extend([box] * len(word_tokens))
             all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
 
+    all_boxes = [[0, 0, 0, 0]] + all_boxes + [[1000, 1000, 1000, 1000]]
+    all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
+    all_tokens = ["CLS"] + all_tokens + ["SEP"]
+
     boxes = np.asarray(all_boxes, dtype="float32")
     boxes = box_to_point4(boxes)
+
+    encoding = tokenizer(" ".join(words), return_tensors="pt")
 
     resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
     image = resizer.apply_image(dp.image)
@@ -83,5 +93,8 @@ def image_to_layoutlm(
     output["ids"] = all_ann_ids
     output["boxes"] = boxes.tolist()
     output["words"] = all_tokens
+    output["input_ids"] = encoding["input_ids"]
+    output["attention_mask"] = encoding["attention_mask"]
+    output["token_type_ids"] = encoding["token_type_ids"]
 
     return output
