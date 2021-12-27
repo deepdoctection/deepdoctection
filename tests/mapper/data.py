@@ -1731,9 +1731,102 @@ class DatapointXfund:
     dp = _SAMPLE_XFUND["documents"][0]  # type: ignore
 
     category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A, "header": names.C.HEAD}
+    layout_input = {
+        "image": np.ones((1000, 1000, 3)),
+        "ids": [
+            "CLS",
+            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+            "SEP",
+        ],
+        "boxes": [
+            [0.0, 0.0, 0.0, 0.0],
+            [325.0, 184.0, 578.0, 230.0],
+            [325.0, 184.0, 578.0, 230.0],
+            [325.0, 184.0, 578.0, 230.0],
+            [325.0, 184.0, 578.0, 230.0],
+            [586.0, 186.0, 834.0, 232.0],
+            [586.0, 186.0, 834.0, 232.0],
+            [586.0, 186.0, 834.0, 232.0],
+            [586.0, 186.0, 834.0, 232.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1058.0, 413.0, 1701.0, 482.0],
+            [1000.0, 1000.0, 1000.0, 1000.0],
+        ],
+        "words": [
+            "CLS",
+            "aka",
+            "##de",
+            "##mis",
+            "##ches",
+            "aus",
+            "##lands",
+            "##am",
+            "##t",
+            "be",
+            "##wer",
+            "##bu",
+            "##ng",
+            "##sf",
+            "##or",
+            "##mu",
+            "##lar",
+            "SEP",
+        ],
+        "input_ids": [
+            [
+                101,
+                9875,
+                3207,
+                15630,
+                8376,
+                17151,
+                8653,
+                3286,
+                2102,
+                2022,
+                13777,
+                8569,
+                3070,
+                22747,
+                2953,
+                12274,
+                8017,
+                102,
+            ]
+        ],
+        "attention_mask": [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]],
+        "token_type_ids": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+    }
 
     def get_category_names_mapping(self) -> Dict[str, str]:
         """
         category_names_mapping
         """
         return self.category_names_mapping
+
+    def get_layout_input(self) -> JsonDict:
+        """
+        layout_input
+        """
+        return self.layout_input

@@ -202,3 +202,11 @@ def fixture_xfund_category_names() -> Dict[str, str]:
     """
 
     return DatapointXfund().get_category_names_mapping()
+
+
+@fixture(name="layoutlm_input")
+def fixture_layoutlm_input() -> JsonDict:
+    """
+    Layoutlm input
+    """
+    return DatapointXfund().get_layout_input()

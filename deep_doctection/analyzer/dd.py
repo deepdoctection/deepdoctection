@@ -43,7 +43,7 @@ _DD_ONE = "configs/dd/conf_dd_one.yaml"
 
 
 def get_dd_analyzer(
-        tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
+    tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **Deep-Doctection Analyzer**.
