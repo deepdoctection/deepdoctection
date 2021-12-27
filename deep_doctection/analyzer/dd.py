@@ -43,7 +43,7 @@ _DD_ONE = "configs/dd/conf_dd_one.yaml"
 
 
 def get_dd_analyzer(
-    tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
+        tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **Deep-Doctection Analyzer**.
@@ -91,7 +91,7 @@ def get_dd_analyzer(
 
     # setup tables
     if tables:
-        categories_cell = {"1": names.C.CELL, "2": names.C.CELL}
+        categories_cell = {"1": names.C.CELL}
         cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
         cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
         d_cell = TPFrcnnDetector(
@@ -99,7 +99,7 @@ def get_dd_analyzer(
             cell_weights_path,
             categories_cell,
         )
-        cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6, 2: 6}, True)
+        cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
         pipe_component_list.append(cell)
 
         categories_item = {"1": names.C.ROW, "2": names.C.COL}
