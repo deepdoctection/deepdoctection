@@ -61,6 +61,24 @@ class ModelCatalog:
                 "1rlwvCnki5gCPojA1A2f-ztXvacYQ61CJ?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
         },
+        "item/model-2750000.data-00000-of-00001": {
+            "config": "configs/dd/conf_frcnn_rows",
+            "size": [823690432, 26583],
+            "urls": [
+                "1v86gz7014QzqxtWpJT7osT9kpxRYqp9c?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
+                "1wdT9QahyNMHHkSm4kHRqInTEHU2Uztu5?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
+            ],
+        },
+        "cell/model-3550000.data-00000-of-00001": {
+            "config": "configs/dd/conf_frcnn_cell",
+            "size": [823653532, 26583],
+            "urls": [
+                "1t0q8FKa7lak24M7RKT5kCNHzM3PhnTpp?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
+                "1DPzfMnBsd1cg_CXQq7_EJhZxwWslkFw1?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
+            ],
+        },
+
+
     }
 
     @staticmethod
