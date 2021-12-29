@@ -34,6 +34,7 @@ from ..pipe.doctectionpipe import DoctectionPipe
 from ..extern.tpdetect import TPFrcnnDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.model import ModelDownloadManager
+from ..extern.tp.tfutils import disable_tp_layer_logging
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import names
 from ..utils.systools import get_package_path
@@ -79,6 +80,7 @@ def get_dd_analyzer(
     cfg = set_config_by_yaml(os.path.join(p_path, _DD_ONE))
     logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
     pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
+    disable_tp_layer_logging()
 
     # setup layout
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}

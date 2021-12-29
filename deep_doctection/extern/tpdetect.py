@@ -102,7 +102,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         if len(config_overwrite):
             hyper_param_config.update_args(config_overwrite)
 
-        model_frcnn_config(config=hyper_param_config, categories=categories)
+        model_frcnn_config(config=hyper_param_config, categories=categories, print_summary=False)
         return ResNetFPNModel(config=hyper_param_config)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
