@@ -22,6 +22,7 @@ Tensorflow related utils.
 import multiprocessing as mp
 import importlib.util
 
+from tensorpack.models import disable_layer_logging
 from ...utils.detection_types import Requirement
 from ...utils.metacfg import AttrDict
 
@@ -36,7 +37,6 @@ _TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: https://www.tensorflow.org/
 
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
 _TP_ERR_MSG = "Tensorpack must be installed: >>make install-tf-dependencies"
-
 
 def tf_available() -> bool:
     """
@@ -86,6 +86,12 @@ def get_tensorpack_requirement() -> Requirement:
     """
     return "tensorpack", tensorpack_available(), _TP_ERR_MSG
 
+
+def disable_tp_layer_logging() -> None:
+    """
+    Disables TP layer logging, if not already set
+    """
+    disable_layer_logging()
 
 _S = AttrDict()
 
