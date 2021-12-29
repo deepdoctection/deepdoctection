@@ -106,3 +106,30 @@ class ObjectDetector(PredictorBase):  # pylint: disable=R0903
         Abstract method predict
         """
         raise NotImplementedError
+
+
+@dataclass
+class TokenClassResult:
+    """
+    Simple mutable storage for token classification results
+
+     :attr:`token`: token string
+
+     :attr:`class_id`: category id
+
+     :attr:`class_name`: category name
+    """
+
+
+class TokenClassifier(PredictorBase):
+    """
+    Abstract base class for token classifiers. If you want to connect external token classifiers with Deep-Doctection
+    predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
+    """
+
+    @abstractmethod
+    def predict(self, **encodings: str) -> List[TokenClassResult]:
+        """
+        Abstract method predict
+        """
+    raise NotImplementedError
