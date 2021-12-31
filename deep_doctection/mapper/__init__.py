@@ -23,6 +23,7 @@ from typing import Callable, Optional
 
 from .cats import *
 from .cocostruct import *
+from .laylmstruct import *
 from .match import *
 from .misc import *
 from .pagestruct import *
@@ -39,6 +40,7 @@ __all__ = [
     "remove_cats",
     "coco_to_image",
     "image_to_coco",
+    "image_to_layoutlm",
     "match_anns_by_intersection",
     "to_image",
     "maybe_load_image",

@@ -26,7 +26,7 @@ from typing import List, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 
-__all__ = ["PredictorBase", "ObjectDetector", "DetectionResult"]
+__all__ = ["PredictorBase", "ObjectDetector", "DetectionResult","TokenClassifier", "TokenClassResult"]
 
 
 class PredictorBase(ABC):  # pylint: disable=R0903
@@ -113,12 +113,22 @@ class TokenClassResult:
     """
     Simple mutable storage for token classification results
 
-     :attr:`token`: token string
+     :attr:`id`: uuid of token (not unique)
+
+     :attr:`token_id`: token id
+
+     :attr:`token`: token
 
      :attr:`class_id`: category id
 
      :attr:`class_name`: category name
     """
+
+    id: str
+    token_id: int
+    token: str
+    class_id: int
+    class_name: str = ""
 
 
 class TokenClassifier(PredictorBase):
@@ -132,4 +142,4 @@ class TokenClassifier(PredictorBase):
         """
         Abstract method predict
         """
-    raise NotImplementedError
+        raise NotImplementedError

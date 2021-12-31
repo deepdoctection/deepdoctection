@@ -19,6 +19,14 @@ deep\_doctection.extern.base
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.extern.hflayoutlm
+-----------------------------------
+
+.. automodule:: deep_doctection.extern.hflayoutlm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.extern.model
 -----------------------------------
 

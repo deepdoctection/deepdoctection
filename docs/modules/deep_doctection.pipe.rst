@@ -91,5 +91,10 @@ deep\_doctection.pipe.text
    :show-inheritance:
 
 
+deep\_doctection.pipe.tokenclass
+---------------------------------
 
-
+.. automodule:: deep_doctection.pipe.tokenclass
+   :members:
+   :undoc-members:
+   :show-inheritance:

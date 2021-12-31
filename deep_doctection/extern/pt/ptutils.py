@@ -39,3 +39,14 @@ def get_pytorch_requirement() -> Requirement:
     Returns HF Pytorch requirement
     """
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
+
+
+def set_torch_auto_device() -> "torch.device":
+    """
+    Returns cuda device if available, otherwise cpu
+    """
+    if pytorch_available():
+        import torch
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        raise ModuleNotFoundError
