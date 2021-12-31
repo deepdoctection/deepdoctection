@@ -16,7 +16,8 @@
 # limitations under the License.
 
 """
-Module for mapping annotations from image to layout lm input structure
+Module for mapping annotations from image to layout lm input structure. Heavily inspired by the notebooks
+https://github.com/NielsRogge/Transformers-Tutorials
 """
 
 from typing import List
@@ -27,6 +28,7 @@ from transformers import PreTrainedTokenizer
 
 from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
 
+from ..extern.pt.ptutils import pytorch_available
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.image import Image
 from ..datapoint.convert import box_to_point4, point4_to_box
@@ -34,6 +36,8 @@ from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .utils import cur
 
+if pytorch_available():
+    import torch
 
 @cur  # type: ignore
 def image_to_layoutlm(
@@ -88,11 +92,12 @@ def image_to_layoutlm(
     image = resizer.apply_image(dp.image)
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
+    boxes = torch.clamp(torch.round(torch.tensor([boxes.tolist()])),min=0.,max=1000.).int()
 
     output["image"] = image
     output["ids"] = all_ann_ids
-    output["boxes"] = boxes.tolist()
-    output["words"] = all_tokens
+    output["boxes"] = boxes
+    output["tokens"] = all_tokens
     output["input_ids"] = encoding["input_ids"]
     output["attention_mask"] = encoding["attention_mask"]
     output["token_type_ids"] = encoding["token_type_ids"]
