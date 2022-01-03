@@ -19,13 +19,15 @@
 HF Layoutlm model for diverse downstream tasks.
 """
 
-from typing import List, Dict, Union, Optional
+from typing import List, Union, Optional, Dict
 from copy import copy
 
+from ..utils.settings import names
 from ..utils.detection_types import Requirement
 from .hf.hfutils import transformers_available
 from .pt.ptutils import pytorch_available
 from .base import LMTokenClassifier, TokenClassResult
+
 
 if pytorch_available():
     import torch
@@ -37,6 +39,8 @@ if transformers_available():
     from transformers import LayoutLMForTokenClassification
 
 
+
+
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
     """
     A wrapper class for :class:`transformers.LayoutLMForTokenClassification` to use within a pipeline component.
@@ -45,8 +49,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     classification and other things please use another model of the family.
     """
 
-    def __init__(self,categories_semantics: Optional[List[str]] = None, categories_bio: Optional[List[str]] = None,
-                 categories_explicit: Optional[List[str]]=None):
+    def __init__(
+        self,
+        categories_semantics: Optional[List[str]] = None,
+        categories_bio: Optional[List[str]] = None,
+        categories_explicit: Optional[List[str]] = None,
+    ):
         """
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
                                      entities self. To be consistent with detectors use only values >0. Conversion will
@@ -61,8 +69,11 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             assert categories_semantics is not None
             assert categories_bio is not None
 
-        self._categories = categories_explicit if categories_explicit is not None else \
-            self._categories_orig_to_categories(categories_semantics,categories_bio)
+        self._categories : Dict[int,str] = (
+            dict(enumerate(categories_explicit))
+            if categories_explicit is not None
+            else self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
+        )
         self.device = set_torch_auto_device()
         self.model = LayoutLMForTokenClassification.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
 
@@ -70,7 +81,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def predict(self, **encodings: Union[List[str], torch.Tensor]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[List[str], torch.Tensor]) -> List[TokenClassResult]:  # type: ignore
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -89,25 +100,36 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "boxes" in encodings
         assert "tokens" in encodings
 
-        results = predict_token_classes(encodings["ids"], encodings["input_ids"],encodings["attention_mask"],
-                                        encodings["token_type_ids"], encodings["boxes"],encodings["tokens"], self.model)
+        results = predict_token_classes(
+            encodings["ids"],  # type: ignore
+            encodings["input_ids"],  # type: ignore
+            encodings["attention_mask"],  # type: ignore
+            encodings["token_type_ids"],  # type: ignore
+            encodings["boxes"],  # type: ignore
+            encodings["tokens"],  # type: ignore
+            self.model,
+        )
 
         return self._map_category_names(results)
 
     @staticmethod
-    def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]):
+    def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]) -> Dict[int,str]:
         categories_semantics, categories_bio = copy(categories_semantics), copy(categories_bio)
-        categories_list = [x + "-" + y for x in categories_bio if x!="O" for y in categories_semantics if y!="OTHER"] + \
-                          ["O"]
-        return {idx: cat_name for idx, cat_name in enumerate(categories_list)}
+        categories_list = [
+            x + "-" + y for x in categories_bio if x != names.NER.O for y in categories_semantics if y != names.C.O
+        ] + [names.NER.O]
+        return dict(enumerate(categories_list))
 
     def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
         for result in token_results:
             result.class_name = self._categories[result.class_id]
-            result.semantic_name = result.class_name.split("-")[1] if "-" in  result.class_name else "OTHER"
-            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else "O"
+            result.semantic_name = result.class_name.split("-")[1] if "-" in result.class_name else names.C.O
+            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else names.NER.O
         return token_results
 
     @property
-    def categories(self):
+    def categories(self) -> Dict[int,str]:
+        """
+        categories
+        """
         return self._categories

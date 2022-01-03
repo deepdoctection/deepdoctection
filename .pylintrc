@@ -7,8 +7,7 @@ disable=
     W0614, # unused-wildcard-import
     R0401,  # cyclic import
     W0511  # fixme
-extension-pkg-whitelist=
-    cv2
+extension-pkg-whitelist= cv2
 
 
 [FORMAT]
@@ -26,3 +25,4 @@ max-returns=8
 max-statements=55
 
 [MISCELLANEOUS]
+

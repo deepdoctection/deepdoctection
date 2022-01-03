@@ -60,7 +60,7 @@ def test_image_to_layoutlm(
 
     # Assert
     assert len(output["ids"]) == 18
-    assert output["boxes"].shape == (1,18,4)
+    assert output["boxes"].shape == (1, 18, 4)
     assert output["tokens"] == layoutlm_input["tokens"]
     assert output["input_ids"] == layoutlm_input["input_ids"]
     assert output["attention_mask"] == layoutlm_input["attention_mask"]

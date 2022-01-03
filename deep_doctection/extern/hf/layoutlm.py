@@ -21,15 +21,22 @@ Module for inference on layoutlm model
 
 from typing import List
 
-import torch
 
-from ..base import TokenClassResult
+from torch import Tensor
 from transformers import LayoutLMForTokenClassification
+from ..base import TokenClassResult
 
 
-def predict_token_classes(uuids: List[str], input_ids: torch.Tensor, attention_mask: torch.Tensor,
-                          token_type_ids: torch.Tensor, boxes: torch.Tensor, tokens: List[str],
-                          model: LayoutLMForTokenClassification) -> List[TokenClassResult]:
+
+def predict_token_classes(
+    uuids: List[str],
+    input_ids: Tensor,
+    attention_mask: Tensor,
+    token_type_ids: Tensor,
+    boxes: Tensor,
+    tokens: List[str],
+    model: LayoutLMForTokenClassification,
+) -> List[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -42,6 +49,8 @@ def predict_token_classes(uuids: List[str], input_ids: torch.Tensor, attention_m
     """
     outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
     token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
-    input_ids = input_ids.squeeze().tolist()
-    return [TokenClassResult(id=out[0],token_id=out[1],class_id=out[2],token=out[3]) for out in zip(uuids, input_ids,
-            token_class_predictions,tokens)]
+    input_ids_list = input_ids.squeeze().tolist()
+    return [
+        TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
+        for out in zip(uuids, input_ids_list, token_class_predictions, tokens)
+    ]

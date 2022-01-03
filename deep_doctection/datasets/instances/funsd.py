@@ -69,8 +69,12 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "annotations", "
 
 _INIT_CATEGORIES = [names.C.WORD]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
-_SUB_CATEGORIES = {names.C.WORD: {names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD], names.NER.TAG:
-    [names.NER.I, names.NER.O, names.NER.B]}}
+_SUB_CATEGORIES = {
+    names.C.WORD: {
+        names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD],
+        names.NER.TAG: [names.NER.I, names.NER.O, names.NER.B],
+    }
+}
 
 
 class Funsd(_BuiltInDataset):

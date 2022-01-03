@@ -38,6 +38,7 @@ _TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: https://www.tensorflow.org/
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
 _TP_ERR_MSG = "Tensorpack must be installed: >>make install-tf-dependencies"
 
+
 def tf_available() -> bool:
     """
     Returns True if TF is installed
@@ -92,6 +93,7 @@ def disable_tp_layer_logging() -> None:
     Disables TP layer logging, if not already set
     """
     disable_layer_logging()
+
 
 _S = AttrDict()
 
