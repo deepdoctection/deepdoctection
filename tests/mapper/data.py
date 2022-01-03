@@ -32,10 +32,9 @@ from deep_doctection.datapoint import (
     convert_np_array_to_b64,
 )
 from deep_doctection.datasets.info import DatasetCategories
+from deep_doctection.extern.base import TokenClassResult
 from deep_doctection.utils.detection_types import ImageType, JsonDict
 from deep_doctection.utils.settings import names
-from deep_doctection.extern.base import TokenClassResult
-
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",
@@ -1838,21 +1837,50 @@ class DatapointXfund:
         List of TokenClassResult
         """
         uuids = self.layout_input["ids"]
-        input_ids =self.layout_input["input_ids"][0]
-        token_class_predictions=[0,1,1,0,1,2,1,1,1,0,0,0,1,2,1,0,1,1]
-        tokens=self.layout_input["tokens"]
-        return [TokenClassResult(id=out[0],token_id=out[1],class_id=out[2],token=out[3]) for out in zip(uuids, input_ids,
-                token_class_predictions,tokens)]
+        input_ids = self.layout_input["input_ids"][0]  # type: ignore
+        token_class_predictions = [0, 1, 1, 0, 1, 2, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 1, 1]
+        tokens = self.layout_input["tokens"]
+        return [
+            TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
+            for out in zip(uuids, input_ids, token_class_predictions, tokens)  # type: ignore
+        ]
 
     @staticmethod
     def get_categories_semantics() -> List[str]:
+        """
+        categories semantics
+        """
         return ["FOO"]
 
     @staticmethod
     def get_categories_bio() -> List[str]:
-        return ["B","I","O"]
+        """
+        categories bio
+        """
+        return ["B", "I", "O"]
 
     @staticmethod
     def get_token_class_names() -> List[str]:
-        return ["B-FOO","I-FOO","I-FOO","B-FOO","I-FOO","O","I-FOO","I-FOO","I-FOO","B-FOO","B-FOO","B-FOO","I-FOO","O","I-FOO","B-FOO",
-                "I-FOO","I-FOO"]
+        """
+        token class names
+        """
+        return [
+            "B-FOO",
+            "I-FOO",
+            "I-FOO",
+            "B-FOO",
+            "I-FOO",
+            "O",
+            "I-FOO",
+            "I-FOO",
+            "I-FOO",
+            "B-FOO",
+            "B-FOO",
+            "B-FOO",
+            "I-FOO",
+            "O",
+            "I-FOO",
+            "B-FOO",
+            "I-FOO",
+            "I-FOO",
+        ]

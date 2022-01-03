@@ -23,7 +23,7 @@ from typing import Callable, Optional
 
 from .cats import *
 from .cocostruct import *
-from .laylmstruct import *
+from .laylmstruct import *  # pylint: disable = W0622
 from .match import *
 from .misc import *
 from .pagestruct import *

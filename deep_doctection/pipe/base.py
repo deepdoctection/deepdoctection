@@ -112,7 +112,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
     Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .
     """
 
-    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func:  DefaultMapper):
+    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func: DefaultMapper):
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: Language model for token classification

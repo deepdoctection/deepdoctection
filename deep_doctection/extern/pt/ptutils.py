@@ -41,12 +41,12 @@ def get_pytorch_requirement() -> Requirement:
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
 
 
-def set_torch_auto_device() -> "torch.device":
+def set_torch_auto_device() -> "torch.device":  # type: ignore
     """
     Returns cuda device if available, otherwise cpu
     """
     if pytorch_available():
-        import torch
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    else:
-        raise ModuleNotFoundError
+        from torch import device, cuda  # type: ignore # pylint: disable=C0415, E0611
+
+        return device("cuda" if cuda.is_available() else "cpu")
+    raise ModuleNotFoundError

@@ -21,13 +21,15 @@ Dataclasses for generating fixtures in conftest
 from dataclasses import dataclass
 from typing import List, Tuple, Union
 
+import numpy as np
+
 from deep_doctection.datapoint import (
     BoundingBox,
     CategoryAnnotation,
     ContainerAnnotation,
     ImageAnnotation,
 )
-from deep_doctection.extern.base import DetectionResult
+from deep_doctection.extern.base import DetectionResult, TokenClassResult
 from deep_doctection.utils.detection_types import JsonDict
 from deep_doctection.utils.settings import names
 
@@ -1424,3 +1426,61 @@ def get_textract_response() -> JsonDict:
     sample aws textract response
     """
     return _SAMPLE_TEXTRACT
+
+
+_LAYOUT_INPUT = {
+    "image": np.ones((1000, 1000, 3)),
+    "ids": [
+        "CLS",
+        "3a696daf-15d5-3b88-be63-02912ef35cfb",
+        "37d79fd7-ab87-30fe-b460-9b6e62e901b9",
+        "5d40236e-430c-3d56-a8a3-fe9e46b872ac",
+        "f8227d59-ea7f-342a-97fa-23df1f189762",
+        "SEP",
+    ],
+    "boxes": [
+        [0.0, 0.0, 0.0, 0.0],
+        [110.0, 165.0, 130.0, 180.0],
+        [140.0, 162.0, 180.0, 180.0],
+        [100.0, 320.0, 130.0, 340.0],
+        [175.0, 320.0, 205.0, 340.0],
+        [1000.0, 1000.0, 1000.0, 1000.0],
+    ],
+    "tokens": ["CLS", "hello", "world", "bye", "word", "SEP"],
+    "input_ids": [[101, 9875, 3207, 15630, 8569, 102]],
+    "attention_mask": [[1, 1, 1, 1, 1, 1]],
+    "token_type_ids": [[0, 0, 0, 0, 0, 0]],
+}
+
+
+def get_layoutlm_input() -> JsonDict:
+    """
+    layout lm model input from tokenizer
+    """
+    return _LAYOUT_INPUT
+
+
+def get_token_class_result() -> List[TokenClassResult]:
+    """
+    token class result
+    """
+    uuids = _LAYOUT_INPUT["ids"]
+    input_ids = _LAYOUT_INPUT["input_ids"]
+    token_class_predictions = [0, 1, 1, 2, 2, 0]
+    tokens = _LAYOUT_INPUT["tokens"]
+    class_name = ["O", "B-FOO", "B-FOO", "I-FOO", "I-FOO", "O"]
+    semantic_name = ["OTHER", "FOO", "FOO", "FOO", "FOO", "OTHER"]
+    bio_tag = ["O", "B", "B", "I", "I", "O"]
+    return [
+        TokenClassResult(
+            uuid=out[0],
+            token_id=out[1],
+            class_id=out[2],
+            token=out[3],
+            class_name=out[4],
+            semantic_name=out[5],
+            bio_tag=out[6],
+        )
+        for out in zip(uuids, input_ids[0], token_class_predictions, tokens, class_name,  # type: ignore
+                       semantic_name, bio_tag)
+    ]

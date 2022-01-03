@@ -25,11 +25,12 @@ from .base import *
 from .cell import *
 from .common import *
 from .concurrency import *
+from .doctectionpipe import *
 from .layout import *
 from .registry import *
 from .segment import *
 from .text import *
-from .doctectionpipe import *
+from .tokenclass import *
 
 
 __all__ = [
@@ -48,4 +49,5 @@ __all__ = [
     "TableSegmentationRefinementService",
     "TextExtractionService",
     "TextOrderService",
+    "LMTokenClassifierService",
 ]

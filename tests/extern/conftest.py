@@ -20,10 +20,11 @@ Fixtures for extern package testing
 """
 from typing import List
 
-from pytest import  fixture
+from pytest import fixture
 
 from deep_doctection.utils.detection_types import JsonDict
 
+from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
 
 
@@ -36,7 +37,7 @@ def fixture_layoutlm_input() -> JsonDict:
 
 
 @fixture(name="categories_semantics")
-def fixture_categories_semantics() ->List[str]:
+def fixture_categories_semantics() -> List[str]:
     """
     Categories semantics
     """
@@ -58,3 +59,8 @@ def fixture_token_class_names() -> List[str]:
     """
     return DatapointXfund().get_token_class_names()
 
+
+@fixture(name="textract_response")
+def fixture_textract_response() -> JsonDict:
+    """fixture textract_response"""
+    return get_textract_response()

@@ -32,19 +32,22 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
 
     def serve(self, dp: Image) -> None:
-        image_to_lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)
+        image_to_lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)  # type: ignore
         lm_input = image_to_lm_input(dp)
         lm_output = self.language_model.predict(**lm_input)
 
         # turn to word level predictions
-        lm_output = [token for token in lm_output if token.token_id not in [self.tokenizer.cls_token_id,
-                                                                            self.tokenizer.sep_token_id,
-                                                                            self.tokenizer.pad_token_id]
-                     and not token.token.startswith("##")]
+        lm_output = [
+            token
+            for token in lm_output
+            if token.token_id
+            not in [self.tokenizer.cls_token_id, self.tokenizer.sep_token_id, self.tokenizer.pad_token_id]
+            and not token.token.startswith("##")
+        ]
 
         words_populated: List[str] = []
         for token in lm_output:
-            if token.id not in words_populated:
-                self.dp_manager.set_category_annotation(token.semantic_name, None, names.C.SE, token.id)
-                self.dp_manager.set_category_annotation(token.bio_tag, None, names.NER.TAG, token.id)
-                words_populated.append(token.id)
+            if token.uuid not in words_populated:
+                self.dp_manager.set_category_annotation(token.semantic_name, None, names.C.SE, token.uuid)
+                self.dp_manager.set_category_annotation(token.bio_tag, None, names.NER.TAG, token.uuid)
+                words_populated.append(token.uuid)
