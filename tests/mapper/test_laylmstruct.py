@@ -48,7 +48,7 @@ def test_image_to_layoutlm(
         "token_type_ids": layoutlm_input["token_type_ids"],
     }
     tokenizer = MagicMock(return_value=tokenizer_output)
-    word_output = copy(layoutlm_input["words"])
+    word_output = copy(layoutlm_input["tokens"])
     word_output.pop(0)
     word_output.pop(-1)
     word_output = [word_output[0:6], word_output[6:13], word_output[13:16]]
@@ -60,8 +60,8 @@ def test_image_to_layoutlm(
 
     # Assert
     assert len(output["ids"]) == 18
-    assert len(output["boxes"]) == 18
-    assert output["words"] == layoutlm_input["words"]
+    assert output["boxes"].shape == (1,18,4)
+    assert output["tokens"] == layoutlm_input["tokens"]
     assert output["input_ids"] == layoutlm_input["input_ids"]
     assert output["attention_mask"] == layoutlm_input["attention_mask"]
     assert output["token_type_ids"] == layoutlm_input["token_type_ids"]

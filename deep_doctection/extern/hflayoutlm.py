@@ -16,9 +16,10 @@
 # limitations under the License.
 
 """
-HF Layoutlm models for diverse downstream tasks.
+HF Layoutlm model for diverse downstream tasks.
 """
-from typing import List, Dict, Union
+
+from typing import List, Dict, Union, Optional
 from copy import copy
 
 from ..utils.detection_types import Requirement
@@ -44,13 +45,24 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     classification and other things please use another model of the family.
     """
 
-    def __init__(self,categories_semantics: List[str], categories_bio: List[str]):
+    def __init__(self,categories_semantics: Optional[List[str]] = None, categories_bio: Optional[List[str]] = None,
+                 categories_explicit: Optional[List[str]]=None):
         """
-        :param categories_semantics: A dict with key (indices) and values (category names). To be consistent with
-                                     detectors use only values >0. Conversion will be done internally.
+        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
+                                     entities self. To be consistent with detectors use only values >0. Conversion will
+                                     be done internally.
+        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
+                               consistent with detectors use only values>0. Conversion will be done internally.
+        :param categories_explicit: If you have a pre-trained model you can pass a complete list of NER categories, i.e.
+                                    semantics and tags explicitly.
         """
 
-        self._categories = self._categories_orig_to_categories(categories_semantics,categories_bio)
+        if categories_explicit is None:
+            assert categories_semantics is not None
+            assert categories_bio is not None
+
+        self._categories = categories_explicit if categories_explicit is not None else \
+            self._categories_orig_to_categories(categories_semantics,categories_bio)
         self.device = set_torch_auto_device()
         self.model = LayoutLMForTokenClassification.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
 
@@ -84,18 +96,16 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     @staticmethod
     def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]):
-        categories_semantics = copy(categories_semantics)
-        categories_bio = copy(categories_bio)
-        categories_list = [x+"-"+ y for x in categories_bio for y in categories_semantics if y!="OTHER"]
-        categories_list = [x for x in categories_list if not x.startswith("O")]
-        categories_list.insert(9,"O")
+        categories_semantics, categories_bio = copy(categories_semantics), copy(categories_bio)
+        categories_list = [x + "-" + y for x in categories_bio if x!="O" for y in categories_semantics if y!="OTHER"] + \
+                          ["O"]
         return {idx: cat_name for idx, cat_name in enumerate(categories_list)}
 
     def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
         for result in token_results:
             result.class_name = self._categories[result.class_id]
-            result.semantic_name = result.class_name.split("-")[0] if "-" in  result.class_name else "OTHER"
-            result.bio_tag = result.class_name.split("-")[1] if "i" in  result.class_name else "O"
+            result.semantic_name = result.class_name.split("-")[1] if "-" in  result.class_name else "OTHER"
+            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else "O"
         return token_results
 
     @property

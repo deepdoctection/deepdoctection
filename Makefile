@@ -57,6 +57,9 @@ test:
 test-des-tf:
 	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "not requires_tf" tests
 
+test-des-pt:
+	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "not requires_pt" tests
+
 qa: check-format lint analyze test
 
 up-reqs: up-pip up-req-files install-dependencies

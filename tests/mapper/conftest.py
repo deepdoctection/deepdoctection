@@ -19,7 +19,7 @@
 """
 Fixtures for mapper package testing
 """
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 from pytest import fixture
 
@@ -210,3 +210,5 @@ def fixture_layoutlm_input() -> JsonDict:
     Layoutlm input
     """
     return DatapointXfund().get_layout_input()
+
+
