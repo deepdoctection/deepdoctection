@@ -34,6 +34,8 @@ from deep_doctection.datapoint import (
 from deep_doctection.datasets.info import DatasetCategories
 from deep_doctection.utils.detection_types import ImageType, JsonDict
 from deep_doctection.utils.settings import names
+from deep_doctection.extern.base import TokenClassResult
+
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",
@@ -1773,7 +1775,7 @@ class DatapointXfund:
             [1058.0, 413.0, 1701.0, 482.0],
             [1000.0, 1000.0, 1000.0, 1000.0],
         ],
-        "words": [
+        "tokens": [
             "CLS",
             "aka",
             "##de",
@@ -1830,3 +1832,27 @@ class DatapointXfund:
         layout_input
         """
         return self.layout_input
+
+    def get_token_class_results(self) -> List[TokenClassResult]:
+        """
+        List of TokenClassResult
+        """
+        uuids = self.layout_input["ids"]
+        input_ids =self.layout_input["input_ids"][0]
+        token_class_predictions=[0,1,1,0,1,2,1,1,1,0,0,0,1,2,1,0,1,1]
+        tokens=self.layout_input["tokens"]
+        return [TokenClassResult(id=out[0],token_id=out[1],class_id=out[2],token=out[3]) for out in zip(uuids, input_ids,
+                token_class_predictions,tokens)]
+
+    @staticmethod
+    def get_categories_semantics() -> List[str]:
+        return ["FOO"]
+
+    @staticmethod
+    def get_categories_bio() -> List[str]:
+        return ["B","I","O"]
+
+    @staticmethod
+    def get_token_class_names() -> List[str]:
+        return ["B-FOO","I-FOO","I-FOO","B-FOO","I-FOO","O","I-FOO","I-FOO","I-FOO","B-FOO","B-FOO","B-FOO","I-FOO","O","I-FOO","B-FOO",
+                "I-FOO","I-FOO"]
