@@ -23,11 +23,12 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 
-from typing import Dict
+from typing import Dict, Any
 
-from ..extern.base import ObjectDetector
+from ..extern.base import ObjectDetector, LMTokenClassifier
 from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
+from ..mapper import DefaultMapper
 from .anngen import DatapointManager
 
 
@@ -104,6 +105,22 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         """
         super().__init__(category_id_mapping)
         self.predictor = predictor
+
+
+class LanguageModelPipelineComponent(PipelineComponent, ABC):
+    """
+    Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .
+    """
+
+    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func:  DefaultMapper):
+        """
+        :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
+        :param language_model: Language model for token classification
+        """
+        super().__init__(None)
+        self.tokenizer = tokenizer
+        self.language_model = language_model
+        self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
 
 class Pipeline(ABC):  # pylint: disable=R0903
