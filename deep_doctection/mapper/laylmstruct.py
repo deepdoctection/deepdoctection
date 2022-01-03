@@ -69,7 +69,6 @@ def image_to_layoutlm(
         all_tokens.extend(word_tokens)
         if ann.image is not None:
             box = ann.image.get_embedding(dp.image_id)
-            box = box.to_list(mode="xyxy")
         else:
             box = ann.bounding_box
         assert box is not None

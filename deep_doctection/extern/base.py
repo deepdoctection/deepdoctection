@@ -26,7 +26,7 @@ from typing import List, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 
-__all__ = ["PredictorBase", "ObjectDetector", "DetectionResult","TokenClassifier", "TokenClassResult"]
+__all__ = ["PredictorBase", "ObjectDetector", "DetectionResult","LMTokenClassifier", "TokenClassResult"]
 
 
 class PredictorBase(ABC):  # pylint: disable=R0903
@@ -122,6 +122,10 @@ class TokenClassResult:
      :attr:`class_id`: category id
 
      :attr:`class_name`: category name
+
+     :attr:`semantic_name`: semantic name
+
+     :attr:`bio_tag`: bio tag
     """
 
     id: str
@@ -129,9 +133,11 @@ class TokenClassResult:
     token: str
     class_id: int
     class_name: str = ""
+    semantic_name: str = ""
+    bio_tag: str = ""
 
 
-class TokenClassifier(PredictorBase):
+class LMTokenClassifier(PredictorBase):
     """
     Abstract base class for token classifiers. If you want to connect external token classifiers with Deep-Doctection
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
