@@ -32,9 +32,7 @@ for researchers who would like to see how well their new model fits into an extr
 
 3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline.
 
-4. Use custom recipes to **review your predictions with Prodigy** (license required).  
-
-5. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
+4. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
    models**.  
    
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full 
