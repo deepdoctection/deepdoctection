@@ -89,6 +89,13 @@ make install-kernel-deepdoc
 Many utils, concepts and some models are inspired and taken from [Tensorpack](https://github.com/tensorpack) . 
 We heavily make use of [Dataflow](https://github.com/tensorpack/dataflow) for loading and streaming data.  
 
+
+## Problems
+
+We try hard to eliminate bugs. We also know that the code is not free of issues. We welcome all issues relevant to this
+repo and try to address them as quickly as possible.
+
+
 ## Citing **deep**doctection
 
 If you use **deep**doctection in your research or in your project, please cite:
@@ -101,3 +108,9 @@ If you use **deep**doctection in your research or in your project, please cite:
   year={2021}
 }
 ```
+
+
+## License
+
+Distributed under the Apache 2.0 License. Check [LICENSE](https://github.com/deepdoctection/deepdoctection/blob/master/LICENSE) 
+for additional information.
