@@ -66,17 +66,6 @@ For running notebooks setup of a kernel pointing to the venv is required.
 make install-kernel-deepdoc
 ```
 
-## Prodigy and Jupyter Lab
-
-**deep**doctection has some useful recipes that can be used to review online prediction results with 
-[Prodigy](https://prodi.gy/). Prodigy is licensed software and must be purchased separately. When purchased, however you 
-can easily install Prodigy and Jupyter Lab with its extension using the Makefile:
-
-Copy the path to the wheel to (Makefile: line 7) PRODIGY_PATH.
-
-```
-make install-prodigy-setup
-```
 
 ## AWS Textract
 
