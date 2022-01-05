@@ -31,7 +31,7 @@ from ..mapper.data import DatapointXfund
 
 
 def get_token_class_results(  # type: ignore
-    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model    # pylint: disable=W0613
+    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model  # pylint: disable=W0613
 ) -> List[TokenClassResult]:
     """
     token class result list
@@ -81,8 +81,8 @@ class TestHFLayoutLmTokenClassifier:
         assert model.categories == {0: "B-FOO", 1: "I-FOO", 2: "O"}
 
         # Arrange
-        categories_explicit_list = ["FOO","BAK","O"]
-        categories_explicit = {0:"FOO", 1:"BAK", 2:"O"}
+        categories_explicit_list = ["FOO", "BAK", "O"]
+        categories_explicit = {0: "FOO", 1: "BAK", 2: "O"}
 
         # Act
         model = HFLayoutLmTokenClassifier(categories_explicit=categories_explicit_list)

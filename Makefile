@@ -62,9 +62,9 @@ test-des-pt:
 
 qa: check-format lint analyze test
 
-up-reqs: up-pip up-req-files install-dependencies
+up-reqs: up-pip up-req-files install-dd
 
-up-reqs-dev: up-reqs install-dev-dependencies
+up-reqs-dev: up-reqs install-dd-dev install-dd-test
 
 up-pip: check-venv
 	@echo "--> Updating pip"
@@ -83,30 +83,37 @@ up-req-files: check-venv
 	pip-compile --output-file requirements.txt setup.py
 	@echo "--> Done updating Python requirements"
 
-install-dependencies: check-venv
+install-dd: check-venv
 	@echo "--> Installing dependencies"
 	pip install -r requirements.txt -e .
 	@echo "--> Done installing dependencies"
 	@echo ""
 
-install-tf-dependencies: install-dependencies
+install-dd-tf: install-dd
 	@echo "--> Installing tensorflow dependencies"
 	pip install -e ".[tf]"
 	@echo "--> Done installing tensorflow dependencies"
 	@echo ""
 
-install-transformers-dependencies: install-dependencies
-	@echo "--> Installing HF transformers dependencies"
-	pip install -e ".[hf]"
-	@echo "--> Done installing HF transformers dependencies"
+install-dd-pt: install-dd
+	@echo "--> Installing PT dependencies"
+	pip install -e ".[pt]"
+	@echo "--> Done installing PT dependencies"
 	@echo ""
 
-install-dev-dependencies: install-tf-dependencies install-transformers-dependencies
+install-dd-all: check-venv install-dd-tf install-dd-pt install-dd-aws
+
+install-dd-dev: install-dd-all
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
+	@echo "--> Done installing dev dependencies"
+	@echo ""
+
+install-dd-test: install-dd-all
+	@echo "--> Installing dev dependencies"
 	pip install -e ".[test]"
 	pip install -U pytest
-	@echo "--> Done installing dependencies"
+	@echo "--> Done installing dev dependencies"
 	@echo ""
 
 install-jupyterlab-setup: check-venv
@@ -124,18 +131,20 @@ install-prodigy-setup: check-venv install-jupyterlab-setup
 	@echo "--> Done installing Jupyter Lab Prodigy plugin"
 	@echo ""
 
-install-kernel-deepdoc: check-venv up-reqs-dev
-	@echo "--> Installing IPkernel setup and setup kernel deepdoctection"
+install-kernel-dd: check-venv install-dd-all
+	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
 	pip install --user ipykernel
 	$(PYTHON) -m ipykernel install --user --name=deep-doc
-	@echo "--> Done installing kernel deepdoctection"
+	@echo "--> Done installing kernel deep-doctection"
 
-install-docker-env:  check-venv up-reqs-dev install-kernel-deepdoc
+install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
-install-aws-dependencies: check-venv
+install-dd-aws: check-venv
 	@echo "--> Installing aws dependencies"
 	pip install -e ".[aws]"
 	@echo "--> Done installing aws dependencies"
+
+
 
 check-venv:
 ifndef VIRTUAL_ENV

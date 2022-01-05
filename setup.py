@@ -58,14 +58,14 @@ if sys.platform == "linux":
 # when building requirements.txt for rtd comment the following lines
 TF_DEPS = ["tensorpack"]
 AWS_DEPS = ["boto3"]
-HF_DEPS = ["transformers"]
+PT_DEPS = ["transformers"]
 
 # recommonmark add .md files to rst easily
 DEV_DEPS = ["types-PyYAML", "types-tabulate", "sphinx", "sphinx_rtd_theme", "recommonmark"]
 
 TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
-EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "aws": AWS_DEPS, "hf": HF_DEPS}
+EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "aws": AWS_DEPS, "pt": PT_DEPS}
 
 setup(
     name=about["__title__"],

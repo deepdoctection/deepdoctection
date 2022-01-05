@@ -39,8 +39,6 @@ if transformers_available():
     from transformers import LayoutLMForTokenClassification
 
 
-
-
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
     """
     A wrapper class for :class:`transformers.LayoutLMForTokenClassification` to use within a pipeline component.
@@ -69,7 +67,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             assert categories_semantics is not None
             assert categories_bio is not None
 
-        self._categories : Dict[int,str] = (
+        self._categories: Dict[int, str] = (
             dict(enumerate(categories_explicit))
             if categories_explicit is not None
             else self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
@@ -113,7 +111,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._map_category_names(results)
 
     @staticmethod
-    def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]) -> Dict[int,str]:
+    def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]) -> Dict[int, str]:
         categories_semantics, categories_bio = copy(categories_semantics), copy(categories_bio)
         categories_list = [
             x + "-" + y for x in categories_bio if x != names.NER.O for y in categories_semantics if y != names.C.O
@@ -128,7 +126,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return token_results
 
     @property
-    def categories(self) -> Dict[int,str]:
+    def categories(self) -> Dict[int, str]:
         """
         categories
         """
