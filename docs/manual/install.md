@@ -13,7 +13,16 @@ more time it is better to look for something else.
 - Python >=3.8
 - NVIDIA CUDA 11.0
 - CUDNN8
+
+Most components currently available require Tensorflow. 
+
 - Tensorflow >=2.4.1
+
+There will be some additional components available that require Pytorch. If these are used
+
+- Pytorch >=1.8.1 
+
+will be necessary to have in the base installation.
 
 The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
 some code components will have some issues on Windows.
@@ -55,30 +64,61 @@ cd deepdoctection
 make clean
 make venv
 source venv/bin/activate
-make up-reqs-dev
+make install-dd-tf
 ```
+
+This installation will give you the basic usage of this package and will allow you to run the tutorial notebooks.
+
+There are options to install features which require additional dependencies. E.g, if you want to call AWS Textract OCR
+while a pipeline you can get the necessary components via 
+
+```
+install-dd-aws
+```
+
+Run 
+
+```
+install-dd-all
+```
+
+to install everything which is available. 
+
 
 ## IPkernel and jupyter notebooks
 
 For running notebooks setup of a kernel pointing to the venv is required.
 
 ```
-make install-kernel-deepdoc
+make install-kernel-dd
 ```
 
-
-## AWS Textract
-
-AWS Textract OCR service can be called in a pipeline. To make use of this service install the necessary components
-
-```
-make install-aws-dependencies
-```
 
 ## Testing the environment
 
-You can check if the installation has been successful by running the tests.
+To check, if the installation has been throughout successful you can run some tests. You need to install the test 
+dependencies for that.
+
+```
+make install-dd-test
+```
+
+To run the test cases:
 
 ```
 make test
+```
+
+## Developing for the environment
+
+To make a full dev installation with update of requirements, run
+
+```
+make up-reqs-dev
+```
+
+Before submitting a PR, format, lint, type-check the code and run the tests:
+
+```
+make format-and-qa
 ```

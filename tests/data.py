@@ -1481,6 +1481,7 @@ def get_token_class_result() -> List[TokenClassResult]:
             semantic_name=out[5],
             bio_tag=out[6],
         )
-        for out in zip(uuids, input_ids[0], token_class_predictions, tokens, class_name,  # type: ignore
-                       semantic_name, bio_tag)
+        for out in zip(
+            uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag  # type: ignore
+        )
     ]

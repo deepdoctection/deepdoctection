@@ -27,7 +27,6 @@ from transformers import LayoutLMForTokenClassification
 from ..base import TokenClassResult
 
 
-
 def predict_token_classes(
     uuids: List[str],
     input_ids: Tensor,

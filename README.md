@@ -41,7 +41,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 
 ## Requirements
 
-You will need a GPU to run the **d**d-Analyzer or to train a pipeline component.
+You will need a GPU to run the **dd**-Analyzer or to train a pipeline component.
 
 - Python >=3.8
 - NVIDIA CUDA 11.0
@@ -74,19 +74,20 @@ cd deepdoctection
 make clean
 make venv
 source venv/bin/activate
-make up-reqs-dev
+make install-dd-tf
 ```
 
 If you want to access the **deep**doctection package through jupyter, create an IPkernel in your venv. 
 
 ```
-make install-kernel-deepdoc
+make install-kernel-dd
 ```
 
+For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
 
 ## Credits
 
-Many utils, concepts and some models are inspired and taken from [Tensorpack](https://github.com/tensorpack) . 
+Many utils, concepts and some models are inspired and taken from [**Tensorpack**](https://github.com/tensorpack) . 
 We heavily make use of [Dataflow](https://github.com/tensorpack/dataflow) for loading and streaming data.  
 
 
