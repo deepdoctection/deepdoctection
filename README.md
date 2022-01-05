@@ -44,7 +44,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 You will need a GPU to run the **dd**-Analyzer or to train a pipeline component.
 
 - Python >=3.8
-- NVIDIA CUDA 11.0
+- NVIDIA CUDA 11.1
 - CUDNN8
 - Tensorflow >=2.4.1
 
