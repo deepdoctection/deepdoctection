@@ -61,13 +61,13 @@ MRCNN:
 PREPROC:
   MAX_SIZE: 1333
   PIXEL_MEAN:
-    - 123.675
-    - 116.28
     - 103.53
+    - 116.28
+    - 123.675
   PIXEL_STD:
-    - 58.395
-    - 57.12
     - 57.375
+    - 57.12
+    - 58.395
   SHORT_EDGE_SIZE: 800
   TRAIN_SHORT_EDGE_SIZE:
     - 800
