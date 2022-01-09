@@ -1,0 +1,28 @@
+_BASE_: "Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "/home/janis/Files/D2_Test/model_layout.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+    STRIDE_IN_1X1: False
+    NORM: "GN"
+  FPN:
+    NORM: "GN"
+  ROI_HEADS:
+    NAME: "CascadeROIHeads"
+    NUM_CLASSES: 5
+  ROI_BOX_HEAD:
+    CLS_AGNOSTIC_BBOX_REG: True
+  PIXEL_MEAN:
+    - 103.53
+    - 116.28
+    - 123.675
+  PIXEL_STD:
+    - 57.375
+    - 57.12
+    - 58.395
+INPUT:
+  MIN_SIZE_TEST: 800
+  MIN_SIZE_TRAIN: !!python/tuple
+    - 800
+    - 1200
