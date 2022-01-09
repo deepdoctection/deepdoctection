@@ -7,7 +7,7 @@ BACKBONE:
   RESNET_NUM_BLOCKS:
     - 3
     - 4
-    - 23
+    - 6
     - 3
   TF_PAD_MODE: false
 CASCADE:
@@ -40,8 +40,8 @@ FPN:
   CASCADE: true
   FRCNN_CONV_HEAD_DIM: 256
   FRCNN_FC_HEAD_DIM: 1024
-  FRCNN_HEAD_FUNC: fastrcnn_4conv1fc_gn_head
-  MRCNN_HEAD_FUNC: maskrcnn_up4conv_gn_head
+  FRCNN_HEAD_FUNC: fastrcnn_2fc_head
+  MRCNN_HEAD_FUNC: None
   NORM: GN
   NUM_CHANNEL: 256
   PROPOSAL_MODE: Level
@@ -71,7 +71,7 @@ PREPROC:
   SHORT_EDGE_SIZE: 800
   TRAIN_SHORT_EDGE_SIZE:
     - 800
-    - 800
+    - 1200
 RPN:
   ANCHOR_RATIOS: !!python/tuple
     - 0.5
@@ -105,7 +105,7 @@ OUTPUT:
   NMS_THRESH_CLASS_AGNOSTIC: 0.001
 TRAINER: replicated
 TRAIN:
-  LR_SCHEDULE: 1x
+  LR_SCHEDULE: 4x
   EVAL_PERIOD: 50
   CHECKPOINT_PERIOD: 20
   WEIGHT_DECAY: 1e-4
