@@ -111,7 +111,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
 
         # Map
         df = MapDataComponent(
-            df, lambda dp: self.get_workdir() + self.location + "/" + self.get_split(split) + "/" + dp, "file_name"
+            df, lambda dp: self.get_workdir() + self.get_split(split) + "/" + dp, "file_name"
         )
         coco_mapper = coco_to_image(  # type: ignore # pylint: disable=E1120  # 259
             self.categories.get_categories(init=True),  # type: ignore
