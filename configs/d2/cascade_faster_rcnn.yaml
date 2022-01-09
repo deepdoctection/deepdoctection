@@ -1,0 +1,35 @@
+_BASE_: "./Base-RCNN-FPN.yaml"
+MODEL:
+  WEIGHTS: "catalog://ImageNetPretrained/FAIR/X-152-32x8d-IN5k"
+  RESNETS:
+    STRIDE_IN_1X1: False
+    NUM_GROUPS: 32
+    WIDTH_PER_GROUP: 4
+    DEPTH: 50
+    DEFORM_ON_PER_STAGE: [False, True, True, True]
+    NORM: GN
+  ROI_HEADS:
+    NAME: "CascadeROIHeads"
+  ROI_BOX_HEAD:
+    NAME: "FastRCNNConvFCHead"
+    NUM_FC: 2
+    NORM: "GN"
+    CLS_AGNOSTIC_BBOX_REG: True
+  ROI_MASK_HEAD:
+    NUM_CONV: 8
+    NORM: "GN"
+  RPN:
+    POST_NMS_TOPK_TRAIN: 2000
+SOLVER:
+  IMS_PER_BATCH: 128
+  STEPS: (35000, 45000)
+  MAX_ITER: 50000
+  BASE_LR: 0.16
+INPUT:
+  MIN_SIZE_TRAIN: (640, 864)
+  MIN_SIZE_TRAIN_SAMPLING: "range"
+  MAX_SIZE_TRAIN: 1440
+  CROP:
+    ENABLED: True
+TEST:
+  EVAL_PERIOD: 2500
