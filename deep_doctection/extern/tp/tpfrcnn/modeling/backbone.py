@@ -274,7 +274,7 @@ def resnet_fpn_backbone(image, cfg):
 
     bottleneck = resnet_bottleneck if cfg.BACKBONE.BOTTLENECK == "resnet" else resnext32x4d_bottleneck
     with backbone_scope(cfg=cfg, freeze=freeze_at > 1):
-        c2 = resnet_group("group0", l, resnet_bottleneck, 64, num_blocks[0], 1, cfg)
+        c2 = resnet_group("group0", l, bottleneck, 64, num_blocks[0], 1, cfg)
     with backbone_scope(cfg=cfg, freeze=False):
         c3 = resnet_group("group1", c2, bottleneck, 128, num_blocks[1], 2, cfg)
         c4 = resnet_group("group2", c3, bottleneck, 256, num_blocks[2], 2, cfg)
