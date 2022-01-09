@@ -271,7 +271,8 @@ def model_frcnn_config(config: AttrDict, categories: Dict[str, str], print_summa
     config.PREPROC.MAX_SIZE = np.ceil(config.PREPROC.MAX_SIZE / size_mult) * size_mult
     assert config.FPN.PROPOSAL_MODE in ["Level", "Joint"]
     assert config.FPN.FRCNN_HEAD_FUNC.endswith("_head")
-    assert config.FPN.MRCNN_HEAD_FUNC.endswith("_head")
+    if config.MODE_MASK:
+        assert config.FPN.MRCNN_HEAD_FUNC.endswith("_head")
     assert config.FPN.NORM in ["None", "GN"]
 
     if config.FPN.CASCADE:
