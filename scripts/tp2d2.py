@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+# File: tp2d2.py
+
+# Copyright 2021 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+A script to convert TP checkpoints to D2 checkpoints
+"""
+import pickle
+from collections import OrderedDict
+
+import numpy as np
+
+from tensorpack.tfutils.varmanip import load_checkpoint_vars
+
+from deep_doctection.utils import set_config_by_yaml
+
+
+def _pop_opt_weights(name, weights):
+    if name + "/Momentum" in weights:
+        weights.pop(name + "/Momentum")
+    if name + "/AccumGrad" in weights:
+        weights.pop(name + "/AccumGrad")
+    return weights
+
+
+def convert_weights_tp_to_d2(weights, cfg):
+
+    d2_weights = OrderedDict()
+
+    def _convert_conv(src, dst):
+        if src + "/W" in weights:
+            src_w = weights.pop(src + "/W").transpose()
+            _pop_opt_weights(src + "/W", weights)
+            d2_weights[dst + ".weight"] = src_w
+
+        if src + "/b" in weights:
+            d2_weights[dst + ".bias"] = weights.pop(src + "/b")
+            _pop_opt_weights(src + "/b", weights)
+
+        if src + "/gn/gamma" in weights:
+            d2_weights[dst + ".norm.weight"] = weights.pop(src + "/gn/gamma")
+            d2_weights[dst + ".norm.bias"] = weights.pop(src + "/gn/beta")
+            _pop_opt_weights(src + "/gn/gamma", weights)
+            _pop_opt_weights(src + "/gn/beta", weights)
+
+        if src + "/gamma" in weights:
+            d2_weights[dst + ".norm.weight"] = weights.pop(src + "/gamma")
+            d2_weights[dst + ".norm.bias"] = weights.pop(src + "/beta")
+            _pop_opt_weights(src + "/gn/gamma", weights)
+            _pop_opt_weights(src + "/gn/beta", weights)
+
+    def _convert_fc(src,dst):
+        d2_weights[dst + ".weight"] = weights.pop(src + "/W").transpose()
+        d2_weights[dst + ".bias"] = weights.pop(src + "/b").transpose()
+        _pop_opt_weights(src + "/W", weights)
+        _pop_opt_weights(src + "/b", weights)
+
+    # the convertion
+    d2_backbone_prefix = "backbone.bottom_up."
+
+    # first conv
+    _convert_conv("conv0",d2_backbone_prefix +"stem.conv1")
+
+    # four backbone groups
+    for grpid in range(4):
+        # numb blocks in third group
+        num_resnet_blocks = 6 if cfg.BACKBONE.RESNET_NUM_BLOCKS[2]==6 else 23
+        for blkid in range([3, 4, num_resnet_blocks ,3 ][grpid]):
+            _convert_conv(f"group{grpid}/block{blkid}/conv1",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.conv1")
+            _convert_conv(f"group{grpid}/block{blkid}/conv2",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.conv2")
+            _convert_conv(f"group{grpid}/block{blkid}/conv3",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.conv3")
+
+           # skip connection
+            if blkid == 0:
+                _convert_conv(f"group{grpid}/block{blkid}/convshortcut",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.shortcut")
+
+    # FPN lateral and posthoc
+    for lvl in range(2, 6):
+        _convert_conv(f"fpn/lateral_1x1_c{lvl}", f"backbone.fpn_lateral{lvl}")
+        _convert_conv(f"fpn/gn_c{lvl}", f"backbone.fpn_lateral{lvl}")
+        _convert_conv(f"fpn/posthoc_3x3_p{lvl}", f"backbone.fpn_output{lvl}")
+        _convert_conv(f"fpn/gn_p{lvl}", f"backbone.fpn_output{lvl}")
+
+    # RPN
+    _convert_conv("rpn/conv0", "proposal_generator.rpn_head.conv" )
+    _convert_conv("rpn/class","proposal_generator.rpn_head.objectness_logits")
+    _convert_conv("rpn/box", "proposal_generator.rpn_head.anchor_deltas")
+
+    def _convert_box_predictor(src, dst):
+        assert cfg.FPN.CASCADE
+        _convert_fc(src + "/box", dst + ".bbox_pred")
+        _convert_fc(src + "/class", dst + ".cls_score")
+
+        num_class = d2_weights[dst + ".cls_score.weight"].shape[0]
+        idxs = np.roll(np.arange(num_class), 1)
+        d2_weights[dst + ".cls_score.weight"] = d2_weights[dst + ".cls_score.weight"][idxs, :]
+        d2_weights[dst + ".cls_score.bias"] = d2_weights[dst + ".cls_score.bias"][idxs]
+
+    if cfg.FPN.CASCADE:
+        for k in range(3):
+            for i in range(2 if cfg.FPN.FRCNN_HEAD_FUNC=="fastrcnn_2fc_head" else 1):
+                _convert_fc(f"cascade_rcnn_stage{k+1}/head/fc{i+6}",f"roi_heads.box_head.{k}.fc{i+1}")
+            _convert_box_predictor(f"cascade_rcnn_stage{k+1}/outputs",f"roi_heads.box_predictor.{k}")
+
+    if cfg.MODE_MASK:
+        raise NotImplementedError
+
+    weights.pop("global_step")
+    weights.pop("learning_rate")
+    weights.pop("apply_gradients/AccumGrad/counter")
+    return {"__author__": "deepdoctection", "model": d2_weights}
+
+
+if __name__ == '__main__':
+
+    path_config = "/home/janis/Public/deepdoctection/configs/tp/layout/conf_frcnn_layout.yaml"
+    path_model = "/home/janis/Documents/train/layout/model-4.data-00000-of-00001"
+    path_output_model = "/home/janis/Files/D2_Test/model_layout.pkl"
+
+    cfg = set_config_by_yaml(path_config)
+    tp_dict = load_checkpoint_vars(path_model)
+    d2_dict =  convert_weights_tp_to_d2(tp_dict,cfg)
+    with open(path_output_model, 'wb') as handle:
+        pickle.dump(d2_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
