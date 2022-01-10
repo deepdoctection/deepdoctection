@@ -48,14 +48,20 @@ class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
     def __init__(
         self,
         df: DataFlow,
-        axis: Optional[Union[int, Tuple[int]]] = None,
+        axis: Optional[Union[int, Tuple[int,int,int]]] = None,
         key: Optional[str] = None,
         max_datapoints: Optional[int] = None,
     ):
         """
         :param df: the dataflow to test
         :param axis: The axis along which to calculate the mean. It will always calculate the mean along
-                     the dataflow length axis.
+                     the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
+                     use
+
+                     .. code-block:: python
+
+                         MeanFromDataFlow(df,key="image",axis=(0,1,2)).start()
+
         :param key: The datapoint key giving the values to evaluate the mean. If None it tries to use
                     the whole datapoint.
         :param max_datapoints: Will stop considering datapoints with index>max_datapoints.
