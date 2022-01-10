@@ -9,14 +9,17 @@ This file is modified from
 https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/predict.py
 """
 
+from typing import List
+
 import cv2
 import numpy as np
 
 from scipy import interpolate
 
 from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
-from .common import CustomResize, clip_boxes
 from ...base import DetectionResult
+from ...common import CustomResize
+from .common import clip_boxes
 
 
 def _scale_box(box, scale):
@@ -86,7 +89,7 @@ def tp_predict_image(
     preproc_short_edge_size: int,
     preproc_max_size: int,
     mrcnn_accurate_paste: bool,
-):
+) -> List[DetectionResult]:
     """
     Run detection on one image, using the TF callable. This function should handle the preprocessing internally.
 
@@ -95,7 +98,7 @@ def tp_predict_image(
     :param preproc_short_edge_size: the short edge to resize to
     :param preproc_max_size: upper bound of one edge when resizing
     :param mrcnn_accurate_paste: whether to paste accurately
-    :return: DetectionResult (namedtuple)
+    :return: list of DetectionResult
     """
     orig_shape = np_img.shape[:2]
     resizer = CustomResize(preproc_short_edge_size, preproc_max_size)
