@@ -71,7 +71,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
         Conv2D,
         data_format="channels_first",
         activation=tf.identity,
-        use_bias= not use_gn,
+        use_bias=not use_gn,
         kernel_initializer=tfv1.variance_scaling_initializer(scale=1.0),
     ):
         lat_2345 = [Conv2D(f"lateral_1x1_c{i + 2}", c, num_channel, 1) for i, c in enumerate(features)]
