@@ -136,7 +136,8 @@ class Image:
     def image(self, image: Optional[Union[str, ImageType, bytes]]) -> None:
         """
         Sets the image for internal storage. Will convert to numpy array before storing internally.
-
+        Note: If the input is an np.array, ensure that the image is in BGR-format as this is the standard
+        format for the whole package.
         :param image: Accepts numpy arrays, base64 encodings or bytes generated from pdf documents.
                       Everything else will be rejected.
         """
