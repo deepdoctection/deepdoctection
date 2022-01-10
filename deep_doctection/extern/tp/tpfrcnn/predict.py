@@ -17,9 +17,10 @@ import numpy as np
 from scipy import interpolate
 
 from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
+
 from ...base import DetectionResult
-from ...common import CustomResize
-from .common import clip_boxes
+
+from .common import clip_boxes, CustomResize
 
 
 def _scale_box(box, scale):

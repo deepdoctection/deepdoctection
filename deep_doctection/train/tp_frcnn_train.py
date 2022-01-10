@@ -51,10 +51,10 @@ from ..extern.tp.tpfrcnn.preproc import augment, anchors_and_labels
 from ..extern.tp.tfutils import disable_tfv2
 from ..extern.tp.tpfrcnn.config.config import model_frcnn_config, train_frcnn_config
 from ..extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
-from ..extern.common import CustomResize
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..mapper.utils import LabelSummarizer
 from ..extern.tp.tfutils import set_mp_spawn
+from ..extern.tp.tpfrcnn.common import CustomResize
 from ..utils.utils import string_to_dict
 from ..utils.logger import log_once
 from ..utils.tqdm import get_tqdm

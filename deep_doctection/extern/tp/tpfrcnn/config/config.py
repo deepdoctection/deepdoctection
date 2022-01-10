@@ -196,7 +196,13 @@ Train configs
 
 **TRAIN**
 
-.LR_SCHEDULE: "1x" schedule in detectron
+.LR_SCHEDULE: "1x" schedule in detectron.  LR_SCHEDULE means equivalent steps when the total batch size is 8.
+               It can be either a string like "3x" that refers to standard convention, or a list of int.
+               LR_SCHEDULE=3x is the same as LR_SCHEDULE=[420000, 500000, 540000], which
+               means to decrease LR at steps 420k and 500k and stop training at 540k.
+               When the total bs!=8, the actual iterations to decrease learning rate, and
+               the base learning rate are computed from BASE_LR and LR_SCHEDULE.
+               Therefore, there is *no need* to modify the config if you only change the number of GPUs.
 
 .EVAL_PERIOD: Will call eval callback every eval period
 

@@ -65,9 +65,9 @@ PREPROC:
     - 238.14
     - 238.145
   PIXEL_STD:
-    - 57.375
-    - 57.12
-    - 58.395
+    - 7.961
+    - 7.876
+    - 7.81
   SHORT_EDGE_SIZE: 800
   TRAIN_SHORT_EDGE_SIZE:
     - 800

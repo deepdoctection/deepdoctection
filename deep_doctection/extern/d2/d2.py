@@ -27,7 +27,8 @@ import numpy as np
 import torch
 from torch import nn
 
-from ..common import CustomResize
+import detectron2.data.transforms as T
+
 from ..base import DetectionResult
 
 
@@ -44,8 +45,10 @@ def d2_predict_image(np_img: np.ndarray,predictor: nn.Module,  preproc_short_edg
     :return: list of DetectionResult
     """
     height, width = np_img.shape[:2]
-    resizer = CustomResize(preproc_short_edge_size, preproc_max_size)
-    resized_img = resizer.augment(np_img)
+    resizer = T.ResizeShortestEdge(
+        [preproc_short_edge_size, preproc_short_edge_size], preproc_max_size
+    )
+    resized_img = resizer.get_transform(np_img).apply_image(np_img)
     image = torch.as_tensor(resized_img.astype("float32").transpose(2,0,1))
     inputs = {"image": image, "height": height, "width": width}
     predictions = predictor([inputs])[0]
