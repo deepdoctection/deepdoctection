@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: hfutils.py
+# File: d2utils.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -16,26 +16,26 @@
 # limitations under the License.
 
 """
-HF transformers related utils
+Detectron2 related utils
 """
 
 import importlib.util
 
 from ...utils.detection_types import Requirement
 
-_TRANSFORMERS_AVAILABLE = importlib.util.find_spec("transformers") is not None
-_TRANSFORMERS_ERR_MSG = "Transformers must be installed: >>install-dd-pt"
+_DETECTRON2_AVAILABLE = importlib.util.find_spec("detectron2") is not None
+_DETECTRON2_ERR_MSG = "Detectron2 must be installed: >>install-dd-pt"
 
 
-def transformers_available() -> bool:
+def detectron2_available() -> bool:
     """
-    Returns True if HF Transformers is installed
+    Returns True if Detectron2 is installed
     """
-    return bool(_TRANSFORMERS_AVAILABLE)
+    return bool(_DETECTRON2_AVAILABLE)
 
 
-def get_transformers_requirement() -> Requirement:
+def get_detectron2_requirement() -> Requirement:
     """
-    Returns HF Transformers requirement
+    Returns Detectron2 requirement
     """
-    return "transformers", transformers_available(), _TRANSFORMERS_ERR_MSG
+    return "detectron2", detectron2_available(), _DETECTRON2_ERR_MSG
