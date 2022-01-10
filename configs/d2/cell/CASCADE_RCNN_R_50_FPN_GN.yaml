@@ -1,6 +1,6 @@
 _BASE_: "Base-RCNN-FPN.yaml"
 MODEL:
-  WEIGHTS: "/home/janis/Files/D2_Test/model_cell.pkl"
+  WEIGHTS: ""
   MASK_ON: False
   RESNETS:
     DEPTH: 50
