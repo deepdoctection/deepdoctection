@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-TP Faster RCNN model as predictor for Deep-Doctection pipeline
+TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
@@ -37,11 +37,11 @@ if tensorpack_available():
 
 class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
     """
-    Tensorpack Faster-RCNN implementation with FPN and Cascade-RCNN. The backbones Resnet-50, Resnet-101 and their
+    Tensorpack Faster-RCNN implementation with FPN and optional Cascade-RCNN. The backbones Resnet-50, Resnet-101 and their
     Resnext counterparts are also available. Normalization options (group normalization, synchronized batch
-    normalization) are also available.
+    normalization) for backbone in FPN can be chosen as well.
 
-    Current masks are not included in the data model. However, Mask-RCNN is implemented in this version.
+    Currently, masks are not included in the data model. However, Mask-RCNN is implemented in this version.
 
     There are hardly any adjustments to the original implementation of Tensorpack. As post-processing, another round
     of NMS can be carried out for the output, which operates on a class-agnostic basis. For a discussion, see
@@ -57,14 +57,14 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         ignore_mismatch: bool = False,
     ):
         """
-        Set up the predictor
+        Set up the predictor.
 
         The configuration of the model is stored in a yaml-file, which needs to be passed through. For more details,
         please check
 
         https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/config.py .
 
-        Mask-Mode can be used as well here.
+        Mask-Mode could be used as well here provided the data structure is established.
 
         :param path_yaml: The path to the yaml config
         :param path_weights: The path to the model checkpoint
@@ -79,7 +79,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         self.categories = copy(categories)
         model = TPFrcnnDetector.set_model(path_yaml, categories, config_overwrite)
         super().__init__(model, path_weights, ignore_mismatch)
-        assert self._number_gpus > 0, "Model currently only support inference with GPU"
+        assert self._number_gpus > 0, "Model only support inference with GPU"
 
     @staticmethod
     def set_model(

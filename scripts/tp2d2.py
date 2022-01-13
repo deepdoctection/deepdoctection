@@ -18,55 +18,44 @@
 """
 A script to convert TP checkpoints to D2 checkpoints
 """
+
 import pickle
 from collections import OrderedDict
-
-import numpy as np
+from copy import copy
 
 from tensorpack.tfutils.varmanip import load_checkpoint_vars
-
 from deep_doctection.utils import set_config_by_yaml
-
-
-def _pop_opt_weights(name, weights):
-    if name + "/Momentum" in weights:
-        weights.pop(name + "/Momentum")
-    if name + "/AccumGrad" in weights:
-        weights.pop(name + "/AccumGrad")
-    return weights
 
 
 def convert_weights_tp_to_d2(weights, cfg):
 
     d2_weights = OrderedDict()
+    all_keys = copy(list(weights.keys()))
+    for t in all_keys:
+        if t.endswith("/AccumGrad"):
+            weights.pop(t)
+        if t.endswith("/Momentum"):
+            weights.pop(t)
 
     def _convert_conv(src, dst):
         if src + "/W" in weights:
-            src_w = weights.pop(src + "/W").transpose()
-            _pop_opt_weights(src + "/W", weights)
-            d2_weights[dst + ".weight"] = src_w
+            src_w = weights.pop(src + "/W")
+            d2_weights[dst + ".weight"] = src_w.transpose(3,2,0,1)
 
         if src + "/b" in weights:
             d2_weights[dst + ".bias"] = weights.pop(src + "/b")
-            _pop_opt_weights(src + "/b", weights)
 
         if src + "/gn/gamma" in weights:
             d2_weights[dst + ".norm.weight"] = weights.pop(src + "/gn/gamma")
             d2_weights[dst + ".norm.bias"] = weights.pop(src + "/gn/beta")
-            _pop_opt_weights(src + "/gn/gamma", weights)
-            _pop_opt_weights(src + "/gn/beta", weights)
 
         if src + "/gamma" in weights:
             d2_weights[dst + ".norm.weight"] = weights.pop(src + "/gamma")
             d2_weights[dst + ".norm.bias"] = weights.pop(src + "/beta")
-            _pop_opt_weights(src + "/gn/gamma", weights)
-            _pop_opt_weights(src + "/gn/beta", weights)
 
     def _convert_fc(src,dst):
         d2_weights[dst + ".weight"] = weights.pop(src + "/W").transpose()
         d2_weights[dst + ".bias"] = weights.pop(src + "/b").transpose()
-        _pop_opt_weights(src + "/W", weights)
-        _pop_opt_weights(src + "/b", weights)
 
     # the convertion
     d2_backbone_prefix = "backbone.bottom_up."
@@ -83,7 +72,7 @@ def convert_weights_tp_to_d2(weights, cfg):
             _convert_conv(f"group{grpid}/block{blkid}/conv2",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.conv2")
             _convert_conv(f"group{grpid}/block{blkid}/conv3",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.conv3")
 
-           # skip connection
+            # skip connection
             if blkid == 0:
                 _convert_conv(f"group{grpid}/block{blkid}/convshortcut",d2_backbone_prefix + f"res{grpid + 2}.{blkid}.shortcut")
 
@@ -104,10 +93,8 @@ def convert_weights_tp_to_d2(weights, cfg):
         _convert_fc(src + "/box", dst + ".bbox_pred")
         _convert_fc(src + "/class", dst + ".cls_score")
 
-        num_class = d2_weights[dst + ".cls_score.weight"].shape[0]
-        idxs = np.roll(np.arange(num_class), 1)
-        d2_weights[dst + ".cls_score.weight"] = d2_weights[dst + ".cls_score.weight"][idxs, :]
-        d2_weights[dst + ".cls_score.bias"] = d2_weights[dst + ".cls_score.bias"][idxs]
+        d2_weights[dst + ".cls_score.weight"] = d2_weights[dst + ".cls_score.weight"]
+        d2_weights[dst + ".cls_score.bias"] = d2_weights[dst + ".cls_score.bias"]
 
     if cfg.FPN.CASCADE:
         for k in range(3):
@@ -126,13 +113,12 @@ def convert_weights_tp_to_d2(weights, cfg):
 
 if __name__ == '__main__':
 
-    path_config = "/home/janis/Public/deepdoctection/configs/tp/layout/conf_frcnn_layout.yaml"
-    path_model = "/home/janis/Documents/train/layout/model-4.data-00000-of-00001"
-    path_output_model = "/home/janis/Files/D2_Test/model_layout.pkl"
+    path_config = "path/to/yaml_config"
+    path_model = "path/to/tp_checkpoint"
+    path_output_model = "path/to/d2_checkpoint"
 
     cfg = set_config_by_yaml(path_config)
     tp_dict = load_checkpoint_vars(path_model)
     d2_dict =  convert_weights_tp_to_d2(tp_dict,cfg)
     with open(path_output_model, 'wb') as handle:
         pickle.dump(d2_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-

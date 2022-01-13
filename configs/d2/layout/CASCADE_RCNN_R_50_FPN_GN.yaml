@@ -5,24 +5,29 @@ MODEL:
   RESNETS:
     DEPTH: 50
     STRIDE_IN_1X1: False
+    NUM_GROUPS: 32
+    WIDTH_PER_GROUP: 4
     NORM: "GN"
   FPN:
     NORM: "GN"
   ROI_HEADS:
     NAME: "CascadeROIHeads"
     NUM_CLASSES: 5
+    SCORE_THRESH_TEST: 0.1
+    NMS_THRESH_TEST: 0.001
   ROI_BOX_HEAD:
     CLS_AGNOSTIC_BBOX_REG: True
   PIXEL_MEAN:
-    - 103.53
-    - 116.28
-    - 123.675
+    - 238.234
+    - 238.14
+    - 238.145
   PIXEL_STD:
-    - 57.375
-    - 57.12
-    - 58.395
+    - 7.961
+    - 7.876
+    - 7.81
 INPUT:
   MIN_SIZE_TEST: 800
   MIN_SIZE_TRAIN: !!python/tuple
     - 800
     - 1200
+NMS_THRESH_CLASS_AGNOSTIC: 0.001
