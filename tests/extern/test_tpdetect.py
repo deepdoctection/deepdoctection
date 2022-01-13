@@ -76,7 +76,7 @@ class TestTPFrcnnDetector:
     @patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
     def test_tp_frcnn_does_not_build_when_no_gpu(path_to_tp_frcnn_yaml: str, categories: Dict[str, str]) -> None:
         """
-        TP FRCNN need one GPU for predicting. Construction fails, when no GPU is found
+        TP FRCNN needs one GPU for predicting. Construction fails, when no GPU is found
         """
         # Arrange, Act & Assert
         with raises(AssertionError):
@@ -115,7 +115,6 @@ class TestTPFrcnnDetector:
         results = frcnn.predict(np_image)
 
         # Assert
-
         assert len(results) == 2
         first_detect_result = results[0]
         second_detect_result = results[1]

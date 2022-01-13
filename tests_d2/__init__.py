@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: test_d2detect.py
+# File: __init__.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -15,18 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from deep_doctection.extern.d2.d2utils import detectron2_available
-from deep_doctection.extern.pt.ptutils import pytorch_available
-
-if pytorch_available():
-    import torch
-
-if detectron2_available():
-    from detectron2.structures import Instances, Boxes
-
-def get_mock_instances():
-    boxes = torch.Tensor([[1.0, 1.6, 2.0, 4.6],[12.0, 12.0, 12.0, 12.0]])
-    scores = torch.Tensor([0.93,0.54])
-
-    return
+"""
+Cannot place these tests under the general test folder as this will result in a python segmentation error
+"""
