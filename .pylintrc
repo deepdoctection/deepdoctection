@@ -9,6 +9,8 @@ disable=
     W0511  # fixme
 extension-pkg-whitelist= cv2
 
+[TYPECHECK]
+generated-members=torch.*
 
 [FORMAT]
 max-module-lines=2000

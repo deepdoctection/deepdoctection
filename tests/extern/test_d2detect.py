@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: conftest.py
+# File: test_d2detect.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -15,21 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module fixtures
-"""
 
-from typing import Optional
+from deep_doctection.extern.d2.d2utils import detectron2_available
+from deep_doctection.extern.pt.ptutils import pytorch_available
 
-import numpy as np
+if pytorch_available():
+    import torch
 
-from deep_doctection.utils.detection_types import ImageType
+if detectron2_available():
+    from detectron2.structures import Instances, Boxes
 
+def get_mock_instances():
+    boxes = torch.Tensor([[1.0, 1.6, 2.0, 4.6],[12.0, 12.0, 12.0, 12.0]])
+    scores = torch.Tensor([0.93,0.54])
 
-def get_white_image(path: str) -> Optional[ImageType]:
-    """
-    white image
-    """
-    if path:
-        return np.ones((794, 596, 3), dtype=np.int32) * 255  # type: ignore
-    return None
+    return

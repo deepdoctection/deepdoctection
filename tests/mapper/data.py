@@ -653,7 +653,7 @@ class DatapointCoco:
     """
 
     dp = _SAMPLE_COCO
-    white_image: ImageType = np.ones((794, 596, 3), dtype=np.int32) * 255
+    white_image: ImageType = np.ones((794, 596, 3), dtype=np.int32) * 255  # type: ignore
     white_image_string = convert_np_array_to_b64(white_image)
     categories = {"1": "text", "2": "title", "3": "table", "4": "figure", "5": "list"}
     first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
@@ -716,7 +716,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
     categories = {"1": "CELL", "2": "ITEM"}
     categories_as_names = {v: k for k, v in categories.items()}
     first_ann_box = Box(475, 162, 10, 9)
-    white_image: ImageType = np.ones((1334, 996, 3), dtype=np.int32) * 255
+    white_image: ImageType = np.ones((1334, 996, 3), dtype=np.int32) * 255  # type: ignore
     white_image_string = convert_np_array_to_b64(white_image)
 
     def get_white_image(self, path: str, type_id: str = "np") -> Union[str, ImageType]:
@@ -918,7 +918,7 @@ class DatapointImage:
 
     def __init__(self) -> None:
         self.image: Image = Image(file_name="sample.png", location="/to/path")
-        _img_np: ImageType = np.ones((34, 96, 3), dtype=np.int32) * 255
+        _img_np: ImageType = np.ones((34, 96, 3), dtype=np.int32) * 255  # type: ignore
         self.image.image = _img_np
         box = BoundingBox(ulx=2.6, uly=3.7, lrx=4.6, lry=5.7, absolute_coords=True)
         ann = ImageAnnotation(category_name="FOO", bounding_box=box, score=0.53, category_id="1")

@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Dict, Union, List
 
 from ..utils.systools import get_package_path
-from ..dataflow import DataFlow  # type: ignore
+from ..dataflow import DataFlow
 from .info import DatasetCategories
 
 

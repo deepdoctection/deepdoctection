@@ -20,6 +20,8 @@ A script to convert TP checkpoints to D2 checkpoints
 """
 
 import pickle
+import numpy as np
+
 from collections import OrderedDict
 from copy import copy
 
@@ -93,8 +95,10 @@ def convert_weights_tp_to_d2(weights, cfg):
         _convert_fc(src + "/box", dst + ".bbox_pred")
         _convert_fc(src + "/class", dst + ".cls_score")
 
-        d2_weights[dst + ".cls_score.weight"] = d2_weights[dst + ".cls_score.weight"]
-        d2_weights[dst + ".cls_score.bias"] = d2_weights[dst + ".cls_score.bias"]
+        num_class = d2_weights[dst + ".cls_score.weight"].shape[0]
+        idx = np.roll(np.arange(num_class),shift=-1)
+        d2_weights[dst + ".cls_score.weight"] = d2_weights[dst + ".cls_score.weight"][idx, :]
+        d2_weights[dst + ".cls_score.bias"] = d2_weights[dst + ".cls_score.bias"][idx]
 
     if cfg.FPN.CASCADE:
         for k in range(3):
