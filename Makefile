@@ -46,13 +46,14 @@ check-format:
 	isort --check tests setup.py
 
 lint:
-	pylint deep_doctection tests
+	pylint deep_doctection tests tests_d2
 
 analyze:
-	mypy -p deep_doctection -p tests
+	mypy -p deep_doctection -p tests -p tests_d2
 
 test:
 	pytest --cov=deep_doctection --cov-branch --cov-report=html tests
+	pytest --cov=deep_doctection --cov-branch --cov-report=html tests_d2
 
 test-des-tf:
 	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "not requires_tf" tests

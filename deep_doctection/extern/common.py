@@ -25,13 +25,14 @@ from tensorpack.dataflow.imgaug import ResizeTransform
 
 from ..utils.detection_types import ImageType
 
+
 class InferenceResize:  # pylint: disable=R0903
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size. This is
     the inference version of :class:`extern.tp.frcnn.common.CustomResize` .
     """
 
-    def __init__(self, short_edge_length: int, max_size: int, interp: int =cv2.INTER_LINEAR) -> None:
+    def __init__(self, short_edge_length: int, max_size: int, interp: int = cv2.INTER_LINEAR) -> None:
         """
         :param short_edge_length ([int, int]): a [min, max] interval from which to sample the shortest edge length.
         :param max_size (int): maximum allowed longest edge length.

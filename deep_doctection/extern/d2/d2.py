@@ -22,8 +22,6 @@ Module for inference on D2 model
 
 from typing import List, Dict
 
-import numpy as np
-
 import torch
 from torch import nn
 

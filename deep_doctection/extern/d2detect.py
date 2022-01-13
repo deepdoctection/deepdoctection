@@ -136,7 +136,7 @@ class D2FrcnnDetector(ObjectDetector):
         """
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
-            result.class_id = str(result.class_id+1)
+            result.class_id = result.class_id + 1
         return detection_results
 
     @classmethod
@@ -144,5 +144,5 @@ class D2FrcnnDetector(ObjectDetector):
         return [get_pytorch_requirement(), get_detectron2_requirement()]
 
     @classmethod
-    def _map_to_d2_categories(cls,categories: Dict[str, str]) -> Dict[str, str]:
-        return {str(int(k)-1): v for k, v in categories.items()}
+    def _map_to_d2_categories(cls, categories: Dict[str, str]) -> Dict[str, str]:
+        return {str(int(k) - 1): v for k, v in categories.items()}

@@ -61,7 +61,7 @@ def fixture_image_results() -> DatapointImage:
 @fixture(name="path_to_tp_frcnn_yaml")
 def fixture_path_to_tp_frcnn_yaml() -> str:
     """
-    path to frcnn yaml file
+    path to tp frcnn yaml file
     """
     return get_package_path() + "/configs/tp/layout/conf_frcnn_layout.yaml"
 
