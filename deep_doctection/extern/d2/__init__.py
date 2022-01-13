@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: xxx.py
+# File: __init__.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #

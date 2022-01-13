@@ -19,8 +19,8 @@ from scipy import interpolate
 from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
 
 from ...base import DetectionResult
-
-from .common import clip_boxes, CustomResize
+from ...common import InferenceResize
+from .common import clip_boxes
 
 
 def _scale_box(box, scale):
@@ -102,8 +102,8 @@ def tp_predict_image(
     :return: list of DetectionResult
     """
     orig_shape = np_img.shape[:2]
-    resizer = CustomResize(preproc_short_edge_size, preproc_max_size)
-    resized_img = resizer.augment(np_img)
+    resizer = InferenceResize(preproc_short_edge_size,preproc_max_size)
+    resized_img = resizer.get_transform(np_img).apply_image(np_img)
     scale = np.sqrt(resized_img.shape[0] * 1.0 / np_img.shape[0] * resized_img.shape[1] / np_img.shape[1])
     boxes, score, labels, *masks = predictor(resized_img)
 

@@ -16,5 +16,122 @@
 # limitations under the License.
 
 """
-
+D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
+import torch.cuda
+
+from copy import copy
+from typing import List, Optional, Dict
+
+from ..utils.detection_types import ImageType, Requirement
+from .base import ObjectDetector, DetectionResult
+
+from .pt.ptutils import get_pytorch_requirement
+from .d2.d2utils import  detectron2_available, get_detectron2_requirement
+from .d2.d2 import d2_predict_image
+
+if detectron2_available():
+    from detectron2.config import get_cfg, CfgNode
+    from detectron2.modeling import build_model, GeneralizedRCNN
+    from detectron2.checkpoint import DetectionCheckpointer
+
+
+class D2FrcnnDetector(ObjectDetector):
+    """
+    D2 Faster-RCNN implementation with all the available backbones, normalizations throughout the model
+    as well as FPN, optional Cascade-RCNN and many more.
+
+    Currently, masks are not included in the data model.
+
+    There are no adjustment to the original implementation of Detectron2. Only one post-processing step is followed by
+    the standard D2 output that takes into account of the situation that detected objects are disjoint. For more infos
+    on this topic, see https://github.com/facebookresearch/detectron2/issues/978 .
+    """
+
+    def __init__(self, path_yaml: str, path_weights: str,
+                 categories: Dict[str,str], config_overwrite: List[str] = None, device: Optional[str]= "cuda"):
+        """
+        Set up the predictor.
+
+        The configuration of the model uses the full stack of build model tools of D2. For more information
+        please check https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config .
+
+        :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
+                          the highest level .yaml file.
+        :param path_weights: The path to the model checkpoint.
+        :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
+                           dummy 'BG' category. Note, that this convention is different from the builtin D2 framework,
+                           where models in the model zoo are trained with 'BG' class having the highest index.
+        :param config_overwrite:  Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
+                                 ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
+        """
+
+        self.categories = copy(categories)
+        if config_overwrite is None:
+            config_overwrite = []
+
+        d2_conf_list = ["MODEL.WEIGHTS",path_weights]
+        for conf in config_overwrite:
+            key, val = conf.split("=", maxsplit=1)
+            d2_conf_list.extend([key,val])
+
+        self.cfg = self._set_config(path_yaml,d2_conf_list,device)
+        self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
+        self._instantiate_d2_predictor()
+
+    @staticmethod
+    def _set_config(path_yaml: str, d2_conf_list: List[str], device: str) -> CfgNode:
+        cfg = get_cfg()
+        # additional attribute with default value, so that the true value can be loaded from the configs
+        cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
+        cfg.merge_from_file(path_yaml)
+        cfg.merge_from_list(d2_conf_list)
+        if not torch.cuda.is_available() or device =="cpu":
+            cfg.MODEL.DEVICE = "cpu"
+        cfg.freeze()
+        return cfg
+
+    @staticmethod
+    def set_model(config: CfgNode) -> GeneralizedRCNN:
+        """
+        Build the D2 model. It uses the available builtin tools of D2
+
+        :param config: Model config
+        :return: The GeneralizedRCNN model
+        """
+        return build_model(config.clone()).eval()
+
+    def _instantiate_d2_predictor(self) -> None:
+        checkpointer = DetectionCheckpointer(self.d2_predictor)
+        checkpointer.load(self.cfg.MODEL.WEIGHTS)
+
+    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+        """
+        Prediction per image.
+
+        :param np_img: image as numpy array
+        :return: A list of DetectionResult
+        """
+        detection_results = d2_predict_image(
+            np_img,
+            self.d2_predictor,
+            self.cfg.INPUT.MIN_SIZE_TEST,
+            self.cfg.INPUT.MAX_SIZE_TEST,
+            self.cfg.NMS_THRESH_CLASS_AGNOSTIC
+        )
+        return self._map_category_names(detection_results)
+
+    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+        """
+        Populating category names to detection results
+
+        :param detection_results: list of detection results
+        :return: List of detection results with attribute class_name populated
+        """
+        for result in detection_results:
+            result.class_name = self.categories[str(result.class_id)]
+        return detection_results
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_pytorch_requirement(), get_detectron2_requirement()]
