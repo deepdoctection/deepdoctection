@@ -37,8 +37,8 @@ if tensorpack_available():
 
 class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
     """
-    Tensorpack Faster-RCNN implementation with FPN and optional Cascade-RCNN. The backbones Resnet-50, Resnet-101 and their
-    Resnext counterparts are also available. Normalization options (group normalization, synchronized batch
+    Tensorpack Faster-RCNN implementation with FPN and optional Cascade-RCNN. The backbones Resnet-50, Resnet-101 and
+    their Resnext counterparts are also available. Normalization options (group normalization, synchronized batch
     normalization) for backbone in FPN can be chosen as well.
 
     Currently, masks are not included in the data model. However, Mask-RCNN is implemented in this version.

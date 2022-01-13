@@ -17,12 +17,6 @@ import pycocotools.mask as coco_mask
 from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform
 
 
-"""
-This class is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
-"""
-
-
 class CustomResize(ImageAugmentor):
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size.

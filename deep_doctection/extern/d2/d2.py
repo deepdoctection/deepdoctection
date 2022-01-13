@@ -32,27 +32,32 @@ from detectron2.layers import batched_nms
 
 from ..common import InferenceResize
 from ..base import DetectionResult
+from ...utils.detection_types import ImageType
 
 
-def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agnostic) -> Dict[str,Instances]:
+def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agnostic: float) -> Dict[str, Instances]:
     """
     D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
-    First, all BG detections (class index 0) need to be filtered out, second apply a class agnostic NMS.
+    Apply a class agnostic NMS.
 
     :param predictions: Prediction outputs from the model.
     :param nms_thresh_class_agnostic: Nms being performed over all class predictions
     :return: filtered predictions outputs
     """
-    instances =  predictions["instances"]
-    fg_instances = instances[instances.pred_classes > 0]
-    class_masks = torch.ones(fg_instances.pred_classes.shape,dtype=torch.uint8)
-    keep = batched_nms(fg_instances.pred_boxes.tensor, fg_instances.scores, class_masks, nms_thresh_class_agnostic)
-    fg_instances_keep = fg_instances[keep]
+    instances = predictions["instances"]
+    class_masks = torch.ones(instances.pred_classes.shape, dtype=torch.uint8)
+    keep = batched_nms(instances.pred_boxes.tensor, instances.scores, class_masks, nms_thresh_class_agnostic)
+    fg_instances_keep = instances[keep]
     return {"instances": fg_instances_keep}
 
 
-def d2_predict_image(np_img: np.ndarray, predictor: nn.Module,  preproc_short_edge_size: int,
-                     preproc_max_size: int, nms_thresh_class_agnostic: float ) -> List[DetectionResult]:
+def d2_predict_image(
+    np_img: ImageType,
+    predictor: nn.Module,
+    preproc_short_edge_size: int,
+    preproc_max_size: int,
+    nms_thresh_class_agnostic: float,
+) -> List[DetectionResult]:
     """
     Run detection on one image, using the D2 model callable. It will also handle the preprocessing internally which
     is using a custom resizing within some bounds.
@@ -65,16 +70,21 @@ def d2_predict_image(np_img: np.ndarray, predictor: nn.Module,  preproc_short_ed
     :return: list of DetectionResult
     """
     height, width = np_img.shape[:2]
-    resizer = InferenceResize(preproc_short_edge_size,preproc_max_size)
+    resizer = InferenceResize(preproc_short_edge_size, preproc_max_size)
     resized_img = resizer.get_transform(np_img).apply_image(np_img)
-    image = torch.as_tensor(resized_img.astype("float32").transpose(2,0,1))
+    image = torch.as_tensor(resized_img.astype("float32").transpose(2, 0, 1))
 
-    with torch.no_grad():
+    with torch.no_grad():  # type: ignore
         inputs = {"image": image, "height": height, "width": width}
         predictions = predictor([inputs])[0]
-        predictions = _d2_post_processing(predictions,  nms_thresh_class_agnostic)
+        predictions = _d2_post_processing(predictions, nms_thresh_class_agnostic)
     instances = predictions["instances"]
-    results = [DetectionResult(instances[k].pred_boxes.tensor.tolist()[0],
-                               instances[k].scores.tolist()[0],
-                               instances[k].pred_classes.tolist()[0]) for k in range(len(instances))]
+    results = [
+        DetectionResult(
+            instances[k].pred_boxes.tensor.tolist()[0],
+            instances[k].scores.tolist()[0],
+            instances[k].pred_classes.tolist()[0],
+        )
+        for k in range(len(instances))
+    ]
     return results

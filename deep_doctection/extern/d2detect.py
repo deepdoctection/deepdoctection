@@ -18,16 +18,16 @@
 """
 D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
-import torch.cuda
 
 from copy import copy
 from typing import List, Optional, Dict
 
+import torch.cuda
+
 from ..utils.detection_types import ImageType, Requirement
 from .base import ObjectDetector, DetectionResult
-
 from .pt.ptutils import get_pytorch_requirement
-from .d2.d2utils import  detectron2_available, get_detectron2_requirement
+from .d2.d2utils import detectron2_available, get_detectron2_requirement
 from .d2.d2 import d2_predict_image
 
 if detectron2_available():
@@ -48,8 +48,14 @@ class D2FrcnnDetector(ObjectDetector):
     on this topic, see https://github.com/facebookresearch/detectron2/issues/978 .
     """
 
-    def __init__(self, path_yaml: str, path_weights: str,
-                 categories: Dict[str,str], config_overwrite: List[str] = None, device: Optional[str]= "cuda"):
+    def __init__(
+        self,
+        path_yaml: str,
+        path_weights: str,
+        categories: Dict[str, str],
+        config_overwrite: Optional[List[str]] = None,
+        device: str = "cuda",
+    ):
         """
         Set up the predictor.
 
@@ -66,16 +72,16 @@ class D2FrcnnDetector(ObjectDetector):
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
         """
 
-        self.categories = copy(categories)
+        self._categories_d2 = self._map_to_d2_categories(copy(categories))
         if config_overwrite is None:
             config_overwrite = []
 
-        d2_conf_list = ["MODEL.WEIGHTS",path_weights]
+        d2_conf_list = ["MODEL.WEIGHTS", path_weights]
         for conf in config_overwrite:
             key, val = conf.split("=", maxsplit=1)
-            d2_conf_list.extend([key,val])
+            d2_conf_list.extend([key, val])
 
-        self.cfg = self._set_config(path_yaml,d2_conf_list,device)
+        self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
         self._instantiate_d2_predictor()
 
@@ -86,7 +92,7 @@ class D2FrcnnDetector(ObjectDetector):
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
         cfg.merge_from_file(path_yaml)
         cfg.merge_from_list(d2_conf_list)
-        if not torch.cuda.is_available() or device =="cpu":
+        if not torch.cuda.is_available() or device == "cpu":
             cfg.MODEL.DEVICE = "cpu"
         cfg.freeze()
         return cfg
@@ -117,7 +123,7 @@ class D2FrcnnDetector(ObjectDetector):
             self.d2_predictor,
             self.cfg.INPUT.MIN_SIZE_TEST,
             self.cfg.INPUT.MAX_SIZE_TEST,
-            self.cfg.NMS_THRESH_CLASS_AGNOSTIC
+            self.cfg.NMS_THRESH_CLASS_AGNOSTIC,
         )
         return self._map_category_names(detection_results)
 
@@ -129,9 +135,14 @@ class D2FrcnnDetector(ObjectDetector):
         :return: List of detection results with attribute class_name populated
         """
         for result in detection_results:
-            result.class_name = self.categories[str(result.class_id)]
+            result.class_name = self._categories_d2[str(result.class_id)]
+            result.class_id = str(result.class_id+1)
         return detection_results
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_detectron2_requirement()]
+
+    @classmethod
+    def _map_to_d2_categories(cls,categories: Dict[str, str]) -> Dict[str, str]:
+        return {str(int(k)-1): v for k, v in categories.items()}

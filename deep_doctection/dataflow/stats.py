@@ -48,7 +48,7 @@ class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
     def __init__(
         self,
         df: DataFlow,
-        axis: Optional[Union[int, Tuple[int], Tuple[int,int], Tuple[int,int,int]]] = None,
+        axis: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int, int]]] = None,
         key: Optional[str] = None,
         max_datapoints: Optional[int] = None,
     ):
@@ -174,7 +174,7 @@ class StdFromDataFlow(ProxyDataFlow):  # type: ignore
     def __init__(
         self,
         df: DataFlow,
-        axis: Optional[Union[int, Tuple[int], Tuple[int,int], Tuple[int,int,int]]] = None,
+        axis: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int, int]]] = None,
         key: Optional[str] = None,
         max_datapoints: Optional[int] = None,
     ):
