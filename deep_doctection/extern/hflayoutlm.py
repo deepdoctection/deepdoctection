@@ -24,8 +24,12 @@ from copy import copy
 
 from ..utils.settings import names
 from ..utils.detection_types import Requirement
-from .hf.hfutils import transformers_available
-from .pt.ptutils import pytorch_available
+from ..utils.file_utils import (
+    pytorch_available,
+    get_pytorch_requirement,
+    transformers_available,
+    get_transformers_requirement,
+)
 from .base import LMTokenClassifier, TokenClassResult
 
 
@@ -33,8 +37,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from .pt.ptutils import get_pytorch_requirement, set_torch_auto_device
-    from .hf.hfutils import get_transformers_requirement
+    from .pt.ptutils import set_torch_auto_device
     from .hf.layoutlm import predict_token_classes
     from transformers import LayoutLMForTokenClassification
 

@@ -24,9 +24,9 @@ from typing import Optional, List
 from ..utils.settings import names
 from ..utils.metacfg import set_config_by_yaml, config_to_cli_str
 from ..utils.detection_types import ImageType, Requirement
+from ..utils.file_utils import get_tesseract_requirement, get_py_tesseract_requirement
 from .base import ObjectDetector, DetectionResult
 from .tesseract.tesseract import predict_text
-from .tesseract.tessutils import get_py_tesseract_requirement, get_tesseract_requirement
 
 
 class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903

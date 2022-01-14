@@ -25,8 +25,8 @@ from unittest.mock import MagicMock, patch
 from pytest import mark, raises
 
 from deep_doctection.extern.base import DetectionResult
-from deep_doctection.extern.tp.tfutils import tf_available
 from deep_doctection.utils.detection_types import ImageType
+from deep_doctection.utils.file_utils import tf_available
 
 if tf_available():
     from deep_doctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import (

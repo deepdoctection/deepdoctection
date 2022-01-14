@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deep_doctection.datasets import DatasetBase
-from deep_doctection.extern.tp.tfutils import tf_available
+from deep_doctection.utils.file_utils import tf_available
 from deep_doctection.utils.metacfg import set_config_by_yaml
 
 from ..test_utils import collect_datapoint_from_dataflow

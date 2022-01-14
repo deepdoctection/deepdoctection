@@ -35,6 +35,7 @@ DIST_DEPS = [
     "pycocotools",
     "pypdf2",
     "numpy==1.21.1",
+    "packaging>=20.0",
     "pdf2image",
     "pyyaml",
     "pytesseract",

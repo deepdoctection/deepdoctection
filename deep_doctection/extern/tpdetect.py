@@ -24,15 +24,14 @@ from typing import Dict, Optional, List, Union
 
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.detection_types import ImageType, Requirement
+from ..utils.file_utils import tensorpack_available, get_tensorpack_requirement
 from .base import ObjectDetector, DetectionResult
-from .tp.tfutils import tensorpack_available
 
 if tensorpack_available():
     from .tp.tpcompat import TensorpackPredictor
     from .tp.tpfrcnn.config.config import model_frcnn_config
     from .tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
     from .tp.tpfrcnn.predict import tp_predict_image
-    from .tp.tfutils import get_tensorpack_requirement
 
 
 class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):

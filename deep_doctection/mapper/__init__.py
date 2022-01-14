@@ -20,8 +20,7 @@ Init file for mapper package. Contains everything that is related to transformat
 
 """
 from typing import Callable, Optional
-from ..extern.pt.ptutils import pytorch_available
-from ..extern.hf.hfutils import transformers_available
+from ..utils.file_utils import pytorch_available, transformers_available
 
 from .cats import *
 from .cocostruct import *

@@ -23,8 +23,8 @@ from typing import List
 import numpy as np
 
 from ...utils.detection_types import ImageType
+from ...utils.file_utils import py_tesseract_available
 from ..base import DetectionResult
-from .tessutils import py_tesseract_available
 
 if py_tesseract_available():
     from pytesseract import image_to_data, Output  # type: ignore
