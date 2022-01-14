@@ -24,8 +24,7 @@ from typing import Dict, List
 from unittest.mock import MagicMock, patch
 from pytest import mark, raises
 
-from deep_doctection.extern.d2.d2utils import detectron2_available
-from deep_doctection.extern.pt.ptutils import pytorch_available
+from deep_doctection.utils.file_utils import pytorch_available, detectron2_available
 
 from deep_doctection.extern.d2detect import D2FrcnnDetector
 from deep_doctection.utils.detection_types import ImageType
@@ -60,7 +59,7 @@ class TestD2FrcnnDetector:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deep_doctection.extern.d2.d2utils.detectron2_available",MagicMock(return_value=False))
+    @patch("deep_doctection.utils.file_utils.detectron2_available",MagicMock(return_value=False))
     def test_d2_does_not_build_when_d2_not_available(path_to_d2_frcnn_yaml: str, categories: Dict[str,str]) -> None:
         """
         D2 FRCNN does only build when detectron2 is properly installed

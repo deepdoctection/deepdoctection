@@ -25,9 +25,8 @@ from typing import List, Optional, Dict
 import torch.cuda
 
 from ..utils.detection_types import ImageType, Requirement
+from ..utils.file_utils import get_pytorch_requirement, get_detectron2_requirement, detectron2_available
 from .base import ObjectDetector, DetectionResult
-from .pt.ptutils import get_pytorch_requirement
-from .d2.d2utils import detectron2_available, get_detectron2_requirement
 from .d2.d2 import d2_predict_image
 
 if detectron2_available():
