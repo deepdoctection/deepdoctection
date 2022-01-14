@@ -23,6 +23,7 @@ import os
 from typing import List, Dict, Tuple, Optional
 
 import numpy as np
+
 from ..utils.settings import names
 from ..datapoint import ImageAnnotation, BoundingBox, CategoryAnnotation
 from ..datapoint.annotation import SummaryAnnotation

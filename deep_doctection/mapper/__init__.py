@@ -20,10 +20,12 @@ Init file for mapper package. Contains everything that is related to transformat
 
 """
 from typing import Callable, Optional
+from ..extern.pt.ptutils import pytorch_available
+from ..extern.hf.hfutils import transformers_available
 
 from .cats import *
 from .cocostruct import *
-from .laylmstruct import *  # pylint: disable = W0622
+
 from .match import *
 from .misc import *
 from .pagestruct import *
@@ -32,6 +34,9 @@ from .pubstruct import *
 from .tpstruct import *
 from .utils import *
 from ..datapoint.image import Image
+
+if pytorch_available() and transformers_available():
+    from .laylmstruct import *  # pylint: disable = W0622
 
 __all__ = [
     "cat_to_sub_cat",

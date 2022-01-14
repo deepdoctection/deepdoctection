@@ -26,18 +26,15 @@ import numpy as np
 from cv2 import INTER_LINEAR
 from transformers import PreTrainedTokenizer
 
+from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
 from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
 
-from ..extern.pt.ptutils import pytorch_available
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.image import Image
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .utils import cur
-
-if pytorch_available():
-    from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
 
 
 @cur  # type: ignore
