@@ -45,10 +45,6 @@ DIST_DEPS = [
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
 ]
 
-# when building requirements.txt for rtd comment the following two lines
-if sys.platform == "linux":
-    DIST_DEPS.append("python-prctl")
-
 # when building requirements.txt for rtd uncomment the following lines
 # DIST_DEPS.append("tensorpack")
 # DIST_DEPS.append("boto3")
@@ -62,6 +58,10 @@ PT_DEPS = ["transformers", "detectron2 @ git+https://github.com/facebookresearch
 
 # recommonmark add .md files to rst easily
 DEV_DEPS = ["types-PyYAML", "types-tabulate", "sphinx", "sphinx_rtd_theme", "recommonmark"]
+
+# when building requirements.txt for rtd comment the following two lines
+if sys.platform == "linux":
+    DEV_DEPS.append("python-prctl")
 
 TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
