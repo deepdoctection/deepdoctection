@@ -58,8 +58,6 @@ pytesseract==0.3.8
     # via deep-doctection (setup.py)
 python-dateutil==2.8.2
     # via matplotlib
-python-prctl==1.8.1
-    # via deep-doctection (setup.py)
 pyyaml==5.4.1
     # via deep-doctection (setup.py)
 pyzmq==22.1.0
