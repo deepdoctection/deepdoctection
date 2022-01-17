@@ -23,8 +23,10 @@ from abc import ABC, abstractmethod
 from typing import Optional, Dict, Union, List
 
 from ..utils.systools import get_package_path
-from ..dataflow import DataFlow
+from ..dataflow import DataFlow  # type: ignore
 from .info import DatasetCategories
+
+__all__ = ["DataFlowBaseBuilder"]
 
 
 class DataFlowBaseBuilder(ABC):

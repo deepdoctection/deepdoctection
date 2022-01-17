@@ -41,7 +41,6 @@ __all__ = [
     "convert_np_array_to_b64",
     "convert_np_array_to_b64_b",
     "convert_pdf_bytes_to_np_array",
-    "as_dict",
     "box_to_point4",
     "point4_to_box",
 ]

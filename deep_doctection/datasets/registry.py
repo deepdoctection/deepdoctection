@@ -26,6 +26,10 @@ from typing import Dict, List, Type
 from deep_doctection.datasets import instances
 from deep_doctection.datasets.base import DatasetBase
 
+
+__all__ = ["DatasetRegistry"]
+
+
 _DATASETS: Dict[str, Type[DatasetBase]] = dict(
     (m[1]().dataset_info.name, m[1])
     for m in inspect.getmembers(instances, inspect.isclass)
