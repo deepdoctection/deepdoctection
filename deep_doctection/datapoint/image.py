@@ -32,8 +32,6 @@ from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_p
 from .box import BoundingBox, crop_box_from_image, global_to_local_coords, intersection_box
 from .annotation import *  # pylint: disable=W0401, W0614
 
-__all__ = ["Image"]
-
 
 @dataclass
 class Image:

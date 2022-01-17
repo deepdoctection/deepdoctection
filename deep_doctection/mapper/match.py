@@ -28,9 +28,6 @@ from ..extern.tp.tpfrcnn.common import np_iou
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 
 
-__all__=["match_anns_by_intersection"]
-
-
 def match_anns_by_intersection(
     dp: Image,
     parent_ann_category_names: Union[str, List[str]],

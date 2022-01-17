@@ -26,7 +26,6 @@ from ..datapoint import Image, BoundingBox, ImageAnnotation
 from ..utils.detection_types import JsonDict
 from .utils import MappingContextManager, maybe_get_fake_score, cur
 
-__all__ = ["prodigy_to_image", "image_to_prodigy"]
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
 

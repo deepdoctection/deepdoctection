@@ -25,12 +25,6 @@ from collections import defaultdict
 from ..datapoint.image import Image
 from .utils import cur
 
-__all__ = ["cat_to_sub_cat",
-           "re_assign_cat_ids",
-           "filter_cat",
-           "image_to_cat_id",
-           "remove_cats"]
-
 
 @cur  # type: ignore
 def cat_to_sub_cat(
