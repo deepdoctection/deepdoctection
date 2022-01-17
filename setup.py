@@ -55,6 +55,9 @@ DIST_DEPS = [
 # when building requirements.txt for rtd comment the following lines
 TF_DEPS = ["tensorpack"]
 AWS_DEPS = ["boto3"]
+
+# even though transformers works for certain models in Tensorflow, we currently support only models
+# in Pytorch
 PT_DEPS = ["transformers", "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"]
 
 # recommonmark add .md files to rst easily

@@ -21,20 +21,24 @@ Module for inference on layoutlm model
 
 from typing import List
 
-
-from torch import Tensor
-from transformers import LayoutLMForTokenClassification
+from ...utils.file_utils import pytorch_available, transformers_available
 from ..base import TokenClassResult
+
+if pytorch_available():
+    from torch import Tensor  # pylint: disable=W0611
+
+if transformers_available():
+    from transformers import LayoutLMForTokenClassification  # pylint: disable=W0611
 
 
 def predict_token_classes(
     uuids: List[str],
-    input_ids: Tensor,
-    attention_mask: Tensor,
-    token_type_ids: Tensor,
-    boxes: Tensor,
+    input_ids: "Tensor",
+    attention_mask: "Tensor",
+    token_type_ids: "Tensor",
+    boxes: "Tensor",
     tokens: List[str],
-    model: LayoutLMForTokenClassification,
+    model: "LayoutLMForTokenClassification",
 ) -> List[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token

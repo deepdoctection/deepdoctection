@@ -24,9 +24,7 @@ from typing import List
 
 import numpy as np
 from cv2 import INTER_LINEAR
-from transformers import PreTrainedTokenizer
 
-from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
 from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
 
 from ..datapoint.annotation import ContainerAnnotation
@@ -34,7 +32,14 @@ from ..datapoint.image import Image
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
+from ..utils.file_utils import transformers_available, pytorch_available
 from .maputils import cur
+
+if pytorch_available():
+    from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
+
+if transformers_available():
+    from transformers import PreTrainedTokenizer  # pylint: disable = W0611
 
 
 __all__ = ["image_to_layoutlm"]
@@ -42,7 +47,7 @@ __all__ = ["image_to_layoutlm"]
 
 @cur  # type: ignore
 def image_to_layoutlm(
-    dp: Image, tokenizer: PreTrainedTokenizer, input_width: int = 1000, input_height: int = 1000
+    dp: Image, tokenizer: "PreTrainedTokenizer", input_width: int = 1000, input_height: int = 1000
 ) -> JsonDict:
     """
     Maps an image to a dict that can be consumed by a tokenizer and ultimately be passed

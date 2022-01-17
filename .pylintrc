@@ -11,6 +11,7 @@ extension-pkg-whitelist= cv2
 
 [TYPECHECK]
 generated-members=torch.*
+ignored-modules=torch, transformers, detectron2, boto3
 
 [FORMAT]
 max-module-lines=2000

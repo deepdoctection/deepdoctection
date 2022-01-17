@@ -23,9 +23,11 @@ from copy import copy
 from typing import List
 from unittest.mock import MagicMock
 
+from pytest import mark
+
 from deep_doctection.datapoint import Image
 from deep_doctection.extern.base import TokenClassResult
-from deep_doctection.mapper import image_to_layoutlm
+from deep_doctection.mapper.laylmstruct import image_to_layoutlm
 from deep_doctection.pipe import LMTokenClassifierService
 from deep_doctection.utils.detection_types import JsonDict
 from deep_doctection.utils.settings import names
@@ -37,6 +39,7 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
     """
 
     @staticmethod
+    @mark.requires_pt
     def test_pass_datapoint(
         dp_image_with_layout_and_word_annotations: Image,
         layoutlm_input: JsonDict,

@@ -31,14 +31,13 @@ from ..utils.file_utils import (
     get_transformers_requirement,
 )
 from .base import LMTokenClassifier, TokenClassResult
-
+from .pt.ptutils import set_torch_auto_device
+from .hf.layoutlm import predict_token_classes
 
 if pytorch_available():
-    import torch
+    import torch  # pylint: disable=W0611
 
 if transformers_available():
-    from .pt.ptutils import set_torch_auto_device
-    from .hf.layoutlm import predict_token_classes
     from transformers import LayoutLMForTokenClassification
 
 
@@ -82,7 +81,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def predict(self, **encodings: Union[List[str], torch.Tensor]) -> List[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 

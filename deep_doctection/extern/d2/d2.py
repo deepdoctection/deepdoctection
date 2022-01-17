@@ -22,18 +22,23 @@ Module for inference on D2 model
 
 from typing import List, Dict
 
-import torch
-from torch import nn
-
-from detectron2.structures import Instances
-from detectron2.layers import batched_nms
-
 from ..common import InferenceResize
 from ..base import DetectionResult
 from ...utils.detection_types import ImageType
+from ...utils.file_utils import pytorch_available, detectron2_available
+
+if pytorch_available():
+    import torch
+    from torch import nn  # pylint: disable=W0611
+
+if detectron2_available():
+    from detectron2.structures import Instances  # pylint: disable=W0611
+    from detectron2.layers import batched_nms
 
 
-def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agnostic: float) -> Dict[str, Instances]:
+def _d2_post_processing(
+    predictions: Dict[str, "Instances"], nms_thresh_class_agnostic: float
+) -> Dict[str, "Instances"]:
     """
     D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
     Apply a class agnostic NMS.
@@ -51,7 +56,7 @@ def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agno
 
 def d2_predict_image(
     np_img: ImageType,
-    predictor: nn.Module,
+    predictor: "nn.Module",
     preproc_short_edge_size: int,
     preproc_max_size: int,
     nms_thresh_class_agnostic: float,
