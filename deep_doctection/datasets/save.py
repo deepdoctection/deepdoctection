@@ -25,9 +25,6 @@ from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData, SerializerJsonlines  # type: ignore
 
 
-__all__ = ["dataflow_to_jsonl"]
-
-
 def dataflow_to_jsonl(df: DataFlow, path: str, file_name: str, max_datapoints: Optional[int] = None) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate

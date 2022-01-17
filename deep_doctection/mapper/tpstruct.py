@@ -27,9 +27,6 @@ from ..datapoint.image import Image
 from .utils import cur
 
 
-__all__ = ["image_to_tp_frcnn_training"]
-
-
 @cur  # type: ignore
 def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[JsonDict]:
     """

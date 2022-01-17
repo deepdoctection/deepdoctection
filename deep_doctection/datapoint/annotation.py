@@ -32,9 +32,6 @@ from .box import BoundingBox
 from .convert import as_dict
 
 
-__all__ = ["Annotation", "CategoryAnnotation", "ImageAnnotation", "SummaryAnnotation", "ContainerAnnotation"]
-
-
 @dataclass  # type: ignore
 class Annotation(ABC):
     """

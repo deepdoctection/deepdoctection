@@ -1,4 +1,4 @@
-TAG: casc_rcnn_R_50_FPN_GN_2FC
+TAG: casc_rcnn_X_32xd4_50_FPN_GN_2FC
 BACKBONE:
   BOTTLENECK: resnext_32xd4
   FREEZE_AFFINE: false

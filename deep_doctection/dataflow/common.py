@@ -22,7 +22,6 @@ from typing import Any
 
 from dataflow.dataflow import ProxyDataFlow  # type: ignore
 
-__all__ = ["FlattenData"]
 
 
 class FlattenData(ProxyDataFlow):  # type: ignore

@@ -30,8 +30,6 @@ from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
 from .utils import MappingContextManager, maybe_get_fake_score, cur
 
-__all__ = ["xfund_to_image"]
-
 
 @cur  # type: ignore
 def xfund_to_image(
