@@ -10,6 +10,7 @@ https://github.com/huggingface/transformers/blob/master/src/transformers/file_ut
 """
 
 from shutil import which
+
 import importlib.util
 import importlib_metadata  # type: ignore
 

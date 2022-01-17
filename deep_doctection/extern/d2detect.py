@@ -22,16 +22,22 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 from copy import copy
 from typing import List, Optional, Dict
 
-import torch.cuda
-
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_pytorch_requirement, get_detectron2_requirement, detectron2_available
+from ..utils.file_utils import (
+    get_pytorch_requirement,
+    get_detectron2_requirement,
+    detectron2_available,
+    pytorch_available,
+)
 from .base import ObjectDetector, DetectionResult
 from .d2.d2 import d2_predict_image
 
+if pytorch_available():
+    import torch.cuda
+
 if detectron2_available():
-    from detectron2.config import get_cfg, CfgNode
-    from detectron2.modeling import build_model, GeneralizedRCNN
+    from detectron2.config import get_cfg, CfgNode  # pylint: disable=W0611
+    from detectron2.modeling import build_model, GeneralizedRCNN  # pylint: disable=W0611
     from detectron2.checkpoint import DetectionCheckpointer
 
 
@@ -85,7 +91,7 @@ class D2FrcnnDetector(ObjectDetector):
         self._instantiate_d2_predictor()
 
     @staticmethod
-    def _set_config(path_yaml: str, d2_conf_list: List[str], device: str) -> CfgNode:
+    def _set_config(path_yaml: str, d2_conf_list: List[str], device: str) -> "CfgNode":
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
@@ -97,7 +103,7 @@ class D2FrcnnDetector(ObjectDetector):
         return cfg
 
     @staticmethod
-    def set_model(config: CfgNode) -> GeneralizedRCNN:
+    def set_model(config: "CfgNode") -> "GeneralizedRCNN":
         """
         Build the D2 model. It uses the available builtin tools of D2
 
