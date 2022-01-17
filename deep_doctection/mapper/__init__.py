@@ -20,11 +20,12 @@ Init file for mapper package. Contains everything that is related to transformat
 
 """
 from typing import Callable, Optional
+
 from ..utils.file_utils import pytorch_available, transformers_available
+from ..datapoint.image import Image
 
 from .cats import *
 from .cocostruct import *
-
 from .match import *
 from .misc import *
 from .pagestruct import *
@@ -32,36 +33,12 @@ from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
 from .utils import *
-from ..datapoint.image import Image
+from .xfundstruct import *
+
 
 if pytorch_available() and transformers_available():
     from .laylmstruct import *  # pylint: disable = W0622
 
-__all__ = [
-    "cat_to_sub_cat",
-    "filter_cat",
-    "image_to_cat_id",
-    "remove_cats",
-    "coco_to_image",
-    "image_to_coco",
-    "image_to_layoutlm",
-    "match_anns_by_intersection",
-    "to_image",
-    "maybe_load_image",
-    "maybe_remove_image",
-    "image_ann_to_image",
-    "maybe_ann_to_sub_image",
-    "to_page",
-    "page_dict_to_page",
-    "prodigy_to_image",
-    "image_to_prodigy",
-    "pub_to_image",
-    "image_to_tp_frcnn_training",
-    "MappingContextManager",
-    "DefaultMapper",
-    "cur",
-    "LabelSummarizer",
-]
 
 # Mapper
 Mapper = Callable[[Image], Optional[Image]]
