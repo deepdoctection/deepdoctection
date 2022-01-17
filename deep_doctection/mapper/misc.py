@@ -28,6 +28,14 @@ from ..utils.fs import load_image_from_file, is_file_extension, get_load_image_f
 from .utils import MappingContextManager, cur
 
 
+__all__ = ["to_image",
+           "maybe_load_image",
+           "maybe_remove_image",
+           "image_ann_to_image",
+           "maybe_ann_to_sub_image"
+           ]
+
+
 def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
     """
     Mapping an input from :class:`dataflow.SerializerFiles` or similar to an Image

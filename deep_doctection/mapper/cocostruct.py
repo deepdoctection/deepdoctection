@@ -31,7 +31,9 @@ from ..datapoint.image import Image
 from ..utils.fs import load_image_from_file
 from ..utils.detection_types import JsonDict
 
-__all__ = ["coco_to_image", "image_to_coco"]
+
+__all__ = ["coco_to_image",
+           "image_to_coco"]
 
 
 @cur  # type: ignore

@@ -31,7 +31,11 @@ from ..utils.detection_types import MapFunc
 from ..utils.logger import log_once, logger
 from ..utils.detection_types import BaseExceptionType
 
-__all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "cur"]
+__all__ = ["MappingContextManager",
+           "DefaultMapper",
+           "maybe_get_fake_score",
+           "LabelSummarizer",
+           "cur"]
 
 
 class MappingContextManager:
