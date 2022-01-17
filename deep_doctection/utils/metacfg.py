@@ -25,8 +25,6 @@ from typing import Dict, Any, List
 
 import yaml
 
-__all__ = ["AttrDict", "save_config_to_yaml", "set_config_by_yaml", "config_to_cli_str"]
-
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")

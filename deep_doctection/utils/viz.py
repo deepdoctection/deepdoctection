@@ -35,6 +35,8 @@ import numpy.typing as npt
 
 from .detection_types import ImageType
 
+__all__ = ["draw_text","draw_boxes", "interactive_imshow"]
+
 _COLORS = (
     np.array(
         [

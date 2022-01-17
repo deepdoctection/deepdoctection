@@ -31,7 +31,7 @@ from typing import Optional
 from datetime import datetime
 from termcolor import colored
 
-__all__ = ["set_logger_dir", "auto_set_dir", "get_logger_dir"]
+__all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 
 class _Formatter(logging.Formatter):
