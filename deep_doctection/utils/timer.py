@@ -26,6 +26,7 @@ from time import perf_counter as timer
 
 from .logger import logger
 
+__all__ = ["timed_operation"]
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")

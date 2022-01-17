@@ -35,7 +35,6 @@ def is_uuid_like(input_id: str) -> bool:
     :param input_id: An input string
     :return: A boolean output
     """
-
     try:
         uuid.UUID(str(input_id))
         return True

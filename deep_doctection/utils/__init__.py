@@ -4,37 +4,59 @@
 """
 Init file for utils package
 """
+from typing import Optional, Tuple, Union, no_type_check
 
-from .fs import is_file_extension, get_load_image_func, load_bytes_from_pdf_file, load_image_from_file
-from .systools import sub_path, get_package_path, get_configs_dir_path, get_weights_dir_path
-from .utils import delete_keys_from_dict, string_to_dict, split_string
-from .identifier import is_uuid_like, get_uuid_from_str, get_uuid
+from .file_utils import *
+from .fs import *
+from .identifier import *
+from .logger import *
 from .metacfg import *
-from .settings import *
 from .pdf_utils import *
+from .settings import *
+from .systools import *
+from .timer import *
+from .tqdm import *
+from .utils import *
+from .viz import *
 
-__all__ = [
-    "is_file_extension",
-    "sub_path",
-    "get_package_path",
-    "get_configs_dir_path",
-    "get_weights_dir_path",
-    "delete_keys_from_dict",
-    "is_uuid_like",
-    "get_uuid_from_str",
-    "get_uuid",
-    "get_load_image_func",
-    "load_bytes_from_pdf_file",
-    "load_image_from_file",
-    "AttrDict",
-    "save_config_to_yaml",
-    "set_config_by_yaml",
-    "config_to_cli_str",
-    "string_to_dict",
-    "split_string",
-    "names",
-    "decrypt_pdf_document",
-    "get_pdf_file_reader",
-    "get_pdf_file_writer",
-    "PDFStreamer",
-]
+
+__all__ = []
+
+
+@no_type_check
+def _global_import(name, prefix: Optional[Union[str,Tuple[str, ...]]] = None,
+                   suffix: Optional[Union[str,Tuple[str, ...]]] = None):
+    prefix_default = prefix is None
+    suffix_default = suffix is None
+    p = __import__(name, globals(), None, level=1)  # pylint: disable=C0103
+    lst = p.__all__ if '__all__' in dir(p) else dir(p)
+    for k in lst:
+        if not k.startswith('__'):
+            if prefix_default and suffix_default:
+                globals()[k] = p.__dict__[k]
+                __all__.append(k)
+            elif not prefix_default:
+                if k.startswith(prefix):
+                    globals()[k] = p.__dict__[k]
+                    __all__.append(k)
+            elif not suffix_default:
+                if k.endswith(suffix):
+                    globals()[k] = p.__dict__[k]
+                    __all__.append(k)
+
+
+_global_import("file_utils",suffix=("_available","_requirement"))
+_global_import("metacfg",prefix=("set_config_by_yaml","save_config_to_yaml","config_to_cli_str"))
+_global_import("utils", prefix = ("delete_keys_from_dict","split_string","string_to_dict"))
+_global_import("settings",prefix="names")
+
+# pylint: disable=undefined-variable
+__all__.extend(fs.__all__)  # type: ignore
+__all__.extend(identifier.__all__)  # type: ignore
+__all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
+__all__.extend(pdf_utils.__all__)  # type: ignore
+__all__.extend(systools.__all__)  # type: ignore
+__all__.extend(timer.__all__)  # type: ignore
+__all__.extend(["get_tqdm"])
+__all__.extend(viz.__all__)  # type: ignore
+# pylint: enable=undefined-variable
