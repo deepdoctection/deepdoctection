@@ -16,15 +16,34 @@ import mock
 
 
 # Mock the following modules for building the docs in rtd
+# Tensorflow, Tensorpack and everything that is related to
 mod = sys.modules['tensorflow'] = mock.Mock(name='tensorflow')
 mod.__version__ = mod.VERSION = '2.4.1'
+mod.__spec__ = mock.Mock(name='tensorflow')
 
 MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','tensorflow.python.training',
                 'tensorflow.python.client','tensorflow.python.framework','tensorflow.python.platform',
                 'tensorflow.python.tools','tensorflow.contrib.graph_editor']
 
+
+# Pytorch
+MOCK_MODULES.extend(['torch','torch.cuda'])
+
+# Detectron2
+MOCK_MODULES.extend(['detectron2',
+                     'detectron2.structures',
+                     'detectron2.layers',
+                     'detectron2.config',
+                     'detectron2.modeling',
+                     'detectron2.checkpoint'])
+
+# Transformers
+MOCK_MODULES.extend(['transformers'])
+
+
 for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock(name=mod_name)
+    mod = sys.modules[mod_name] = mock.Mock(name=mod_name)
+    mod.__spec__ = mock.Mock(name=mod_name)
 
 ON_RTD = (os.environ.get('READTHEDOCS') == 'True')
 
@@ -43,7 +62,6 @@ with open(os.path.join(ROOT, "__about__.py")) as about_file:
     exec(about_file.read(), about)
 
 import deep_doctection
-
 
 
 # -- Project information -----------------------------------------------------

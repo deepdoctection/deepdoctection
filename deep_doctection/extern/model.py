@@ -28,6 +28,9 @@ from ..utils.fs import download
 from ..utils.systools import get_weights_dir_path
 
 
+__all__ = ["ModelCatalog", "ModelDownloadManager"]
+
+
 class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well

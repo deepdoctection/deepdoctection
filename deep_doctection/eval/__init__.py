@@ -20,9 +20,8 @@ Init file for eval package. Contains metrics (customized for special tasks), eva
 for training.
 """
 
-from .cocometric import CocoMetric
 from .accmetric import *
-from .eval import Evaluator
-from .registry import MetricRegistry
-
-__all__ = ["CocoMetric", "AccuracyMetric", "ConfusionMetric", "Evaluator", "MetricRegistry"]
+from .base import *
+from .cocometric import *
+from .eval import *
+from .registry import *

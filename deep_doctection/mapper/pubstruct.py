@@ -31,7 +31,7 @@ from ..datapoint.image import Image
 from ..datapoint.convert import convert_pdf_bytes_to_np_array
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file, is_file_extension, load_bytes_from_pdf_file
-from .utils import MappingContextManager, maybe_get_fake_score, cur
+from .maputils import MappingContextManager, maybe_get_fake_score, cur
 
 __all__ = ["pub_to_image"]
 

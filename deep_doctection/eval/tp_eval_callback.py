@@ -22,22 +22,23 @@ Module for EvalCallback in Tensorpack
 from itertools import count
 from typing import Optional, Union, List, Dict, Type
 
-# pylint: disable=import-error
-from tensorpack.utils.gpu import get_num_gpu
-from tensorpack.callbacks import Callback
-from tensorpack.predict import OnlinePredictor
-
-# pylint: enable=import-error
 
 from ..pipe.base import PredictorPipelineComponent
 from ..extern.tpdetect import TPFrcnnDetector
 from ..datasets import DatasetBase
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict
+from ..utils.file_utils import tensorpack_available
 
 from .base import MetricBase
 from .eval import Evaluator
 
+# pylint: disable=import-error
+if tensorpack_available():
+    from tensorpack.utils.gpu import get_num_gpu
+    from tensorpack.callbacks import Callback
+    from tensorpack.predict import OnlinePredictor
+# pylint: enable=import-error
 
 try:
     import horovod.tensorflow as hvd  # type: ignore  # pylint: disable=W0611
@@ -47,6 +48,8 @@ except ImportError:
 
 # The following class is modified from
 # https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/eval.py
+
+__all__ = ["EvalCallback"]
 
 
 class EvalCallback(Callback):  # type: ignore  # pylint: disable=R0903

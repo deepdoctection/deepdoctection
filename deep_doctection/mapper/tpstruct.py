@@ -24,7 +24,7 @@ import numpy as np
 
 from ..utils.detection_types import JsonDict
 from ..datapoint.image import Image
-from .utils import cur
+from .maputils import cur
 
 
 @cur  # type: ignore

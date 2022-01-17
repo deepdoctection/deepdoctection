@@ -27,6 +27,9 @@ from ..datapoint.image import Image
 from .base import PredictorPipelineComponent, PipelineComponent
 
 
+__all__ = ["TextExtractionService", "TextOrderService"]
+
+
 class TextExtractionService(PredictorPipelineComponent):
     """
     Pipeline component for extracting text. Any detector can be selected, provided that it can evaluate a

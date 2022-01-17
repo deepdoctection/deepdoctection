@@ -60,17 +60,17 @@ MRCNN:
 PREPROC:
   MAX_SIZE: 1333
   PIXEL_MEAN:
-    - 238.32
-    - 238.22
-    - 238.21
+    - 238.33
+    - 238.24
+    - 238.23
   PIXEL_STD:
     - 8.75
     - 8.569
     - 9.14
-  SHORT_EDGE_SIZE: 400
+  SHORT_EDGE_SIZE: 600
   TRAIN_SHORT_EDGE_SIZE:
     - 400
-    - 800
+    - 600
 RPN:
   ANCHOR_RATIOS: !!python/tuple
     - 0.25

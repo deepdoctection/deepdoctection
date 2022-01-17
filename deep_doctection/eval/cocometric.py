@@ -28,10 +28,12 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 from ..utils.detection_types import JsonDict
-from ..dataflow import DataFlow  # type: ignore
+from ..dataflow import DataFlow
 from ..mapper.cocostruct import image_to_coco
 from ..datasets.info import DatasetCategories
 from .base import MetricBase
+
+__all__ = ["CocoMetric"]
 
 
 _COCOEVAL_DEFAULTS = [

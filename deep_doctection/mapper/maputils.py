@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: utils.py
+# File: maputils.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -31,11 +31,7 @@ from ..utils.detection_types import MapFunc
 from ..utils.logger import log_once, logger
 from ..utils.detection_types import BaseExceptionType
 
-__all__ = ["MappingContextManager",
-           "DefaultMapper",
-           "maybe_get_fake_score",
-           "LabelSummarizer",
-           "cur"]
+__all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "cur"]
 
 
 class MappingContextManager:

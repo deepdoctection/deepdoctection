@@ -30,8 +30,7 @@ from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 
 
-__all__ = ["to_page",
-           "page_dict_to_page"]
+__all__ = ["to_page", "page_dict_to_page"]
 
 
 def _to_float(value: Optional[float32]) -> float:

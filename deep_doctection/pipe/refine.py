@@ -34,12 +34,7 @@ from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.settings import names
 
-__all__ = [
-    "TableSegmentationRefinementService",
-    "connected_component_tiles",
-    "generate_rectangle_tiling",
-    "rectangle_cells",
-]
+__all__ = ["TableSegmentationRefinementService"]
 
 
 def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, int], str]]:

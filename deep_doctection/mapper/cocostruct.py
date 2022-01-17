@@ -23,7 +23,7 @@ import os
 from typing import Dict, Optional, List, Tuple
 
 
-from .utils import MappingContextManager, maybe_get_fake_score, cur
+from .maputils import MappingContextManager, maybe_get_fake_score, cur
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox

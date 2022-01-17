@@ -29,7 +29,7 @@ from concurrent.futures import ThreadPoolExecutor
 import tqdm  # type: ignore
 
 
-from ..dataflow import DataFlow  # type: ignore
+from ..dataflow import DataFlow
 from ..utils.tqdm import get_tqdm
 from ..datapoint.image import Image
 from .base import PipelineComponent

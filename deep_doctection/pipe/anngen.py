@@ -25,7 +25,7 @@ from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation, Containe
 from ..datapoint.box import BoundingBox, local_to_global_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
-from ..mapper.utils import MappingContextManager
+from ..mapper.maputils import MappingContextManager
 from ..utils.settings import names
 
 
