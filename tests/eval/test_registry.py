@@ -22,7 +22,7 @@ Testing the module eval.registry
 from typing import Any, List, Tuple, Union
 from unittest.mock import MagicMock
 
-from deep_doctection.dataflow import DataFlow
+from deep_doctection.dataflow import DataFlow  # type: ignore
 from deep_doctection.datasets.info import DatasetCategories
 from deep_doctection.eval import MetricRegistry
 from deep_doctection.eval.base import MetricBase

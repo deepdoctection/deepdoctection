@@ -38,25 +38,3 @@ from .image import *
 from .annotation import *
 from .convert import *
 from .doc import *
-
-__all__ = [
-    "BoundingBox",
-    "intersection_box",
-    "crop_box_from_image",
-    "local_to_global_coords",
-    "global_to_local_coords",
-    "merge_boxes",
-    "Image",
-    "Annotation",
-    "CategoryAnnotation",
-    "ImageAnnotation",
-    "ContainerAnnotation",
-    "convert_b64_to_np_array",
-    "convert_np_array_to_b64",
-    "SummaryAnnotation",
-    "LayoutSegment",
-    "Cell",
-    "TableSegment",
-    "Table",
-    "Page",
-]

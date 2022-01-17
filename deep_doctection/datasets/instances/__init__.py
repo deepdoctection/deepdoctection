@@ -31,11 +31,12 @@ If not sure use
     print(dataset_instance.dataflow.get_workdir())
 """
 
+from .fintabnet import *
+from .funsd import *
+from .layouttest import *
 from .publaynet import *
 from .pubtabnet import *
-from .layouttest import *
-from .fintabnet import *
 from .xfund import *
-from .funsd import *
+
 
 __all__ = ["Publaynet", "Pubtabnet", "LayoutTest", "Fintabnet", "Xfund", "Funsd"]
