@@ -21,15 +21,13 @@ Module for pipeline with Tensorpack predictors
 
 import os
 from typing import Optional, Union, Dict, List
-from ..mapper.utils import cur
+from ..mapper.maputils import cur
 from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..mapper.misc import to_image
 from ..mapper.pagestruct import to_page
 from .base import Pipeline
-
-__all__ = ["DoctectionPipe"]
 
 
 class DoctectionPipe(Pipeline):  # pylint: disable=W0221

@@ -28,11 +28,14 @@ from termcolor import colored
 from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
 
 from ..mapper.cats import image_to_cat_id
-from ..dataflow import DataFlow  # type: ignore
+from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..utils.detection_types import JsonDict
 
 from .base import MetricBase
+
+
+__all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
 def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks: Optional[List[int]] = None) -> float:

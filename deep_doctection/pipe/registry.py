@@ -31,6 +31,10 @@ from .segment import *
 from .text import *
 from .refine import *
 
+
+__all__ = ["PipelineComponentRegistry"]
+
+
 _PIPELINE_COMPONENT: Dict[str, Type[PipelineComponent]] = dict(
     m
     for m in [m for m in inspect.getmembers(sys.modules[__name__], inspect.isclass) if m[0] not in ["ImageType"]]

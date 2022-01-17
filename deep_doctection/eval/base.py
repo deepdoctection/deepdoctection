@@ -22,10 +22,10 @@ Module for the base class for evaluations and metrics
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple, Optional, Callable, Union
 
-from ..dataflow import DataFlow  # type: ignore
+from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..utils.detection_types import JsonDict
-from ..mapper.utils import DefaultMapper
+from ..mapper.maputils import DefaultMapper
 
 
 class MetricBase(ABC):

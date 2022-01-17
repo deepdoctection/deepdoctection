@@ -24,7 +24,7 @@ from typing import Dict, Optional
 
 from ..datapoint import Image, BoundingBox, ImageAnnotation
 from ..utils.detection_types import JsonDict
-from .utils import MappingContextManager, maybe_get_fake_score, cur
+from .maputils import MappingContextManager, maybe_get_fake_score, cur
 
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"

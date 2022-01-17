@@ -58,10 +58,10 @@ deep\_doctection.mapper.tpstruct
    :undoc-members:
    :show-inheritance:
 
-deep\_doctection.mapper.utils
+deep\_doctection.mapper.maputils
 ------------------------------------
 
-.. automodule:: deep_doctection.mapper.utils
+.. automodule:: deep_doctection.mapper.maputils
    :members:
    :undoc-members:
    :show-inheritance:

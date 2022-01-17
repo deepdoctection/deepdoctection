@@ -29,8 +29,6 @@ from ..utils.fs import is_file_extension
 from ..mapper.pagestruct import page_dict_to_page
 from ..dataflow.custom_serialize import SerializerJsonlines
 
-__all__ = ["load_page", "load_document"]
-
 
 def load_page(path: str) -> Page:
     """

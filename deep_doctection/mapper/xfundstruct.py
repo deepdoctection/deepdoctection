@@ -28,7 +28,7 @@ from ..datapoint import Image, BoundingBox, ImageAnnotation, CategoryAnnotation,
 from ..utils.settings import names
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
-from .utils import MappingContextManager, maybe_get_fake_score, cur
+from .maputils import MappingContextManager, maybe_get_fake_score, cur
 
 
 @cur  # type: ignore

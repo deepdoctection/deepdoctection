@@ -34,7 +34,7 @@ from ..datapoint.image import Image
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
-from .utils import cur
+from .maputils import cur
 
 
 __all__ = ["image_to_layoutlm"]
@@ -79,7 +79,7 @@ def image_to_layoutlm(
             all_boxes.extend([box] * len(word_tokens))
             all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
 
-    all_boxes = [[0., 0., 0., 0.]] + all_boxes + [[1000., 1000., 1000., 1000.]]
+    all_boxes = [[0.0, 0.0, 0.0, 0.0]] + all_boxes + [[1000.0, 1000.0, 1000.0, 1000.0]]
     all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
     all_tokens = ["CLS"] + all_tokens + ["SEP"]
 

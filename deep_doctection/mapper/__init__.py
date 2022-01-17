@@ -32,7 +32,7 @@ from .pagestruct import *
 from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
-from .utils import *
+from .maputils import *
 from .xfundstruct import *
 
 

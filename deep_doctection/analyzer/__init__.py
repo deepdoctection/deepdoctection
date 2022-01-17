@@ -20,5 +20,4 @@ Package for pre-built pipelines
 """
 
 from .dd import *
-
-__all__ = ["get_dd_analyzer"]
+from .tools import *

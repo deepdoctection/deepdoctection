@@ -40,6 +40,9 @@ from ..utils.settings import names
 from ..utils.systools import get_package_path
 from ..utils.logger import logger
 
+
+__all__ = ["get_dd_analyzer"]
+
 _DD_ONE = "configs/dd/conf_dd_one.yaml"
 
 

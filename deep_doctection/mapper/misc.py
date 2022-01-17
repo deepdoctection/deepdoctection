@@ -25,7 +25,7 @@ from typing import Union, Dict, Optional, List
 from ..datapoint.convert import convert_pdf_bytes_to_np_array
 from ..datapoint.image import Image
 from ..utils.fs import load_image_from_file, is_file_extension, get_load_image_func
-from .utils import MappingContextManager, cur
+from .maputils import MappingContextManager, cur
 
 
 def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:

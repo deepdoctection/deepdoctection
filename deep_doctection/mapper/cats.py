@@ -23,7 +23,7 @@ builder method of a dataset.
 from typing import Optional, Union, List, Dict
 from collections import defaultdict
 from ..datapoint.image import Image
-from .utils import cur
+from .maputils import cur
 
 
 @cur  # type: ignore

@@ -22,12 +22,10 @@ Module for calling  :func:`pytesseract.image_to_data`
 from typing import List
 import numpy as np
 
-from ...utils.detection_types import ImageType
-from ...utils.file_utils import py_tesseract_available
-from ..base import DetectionResult
+from pytesseract import image_to_data, Output  # type: ignore
 
-if py_tesseract_available():
-    from pytesseract import image_to_data, Output  # type: ignore
+from ...utils.detection_types import ImageType
+from ..base import DetectionResult
 
 
 __all__ = ["predict_text"]

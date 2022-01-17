@@ -18,6 +18,5 @@
 """
 Init module for train package
 """
-from .tp_frcnn_train import train_faster_rcnn, get_train_dataflow
 
-__all__ = ["train_faster_rcnn", "get_train_dataflow"]
+from .tp_frcnn_train import *

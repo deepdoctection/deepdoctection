@@ -26,7 +26,7 @@ import numpy as np
 from ..utils.settings import names
 from ..datapoint.image import Image
 from ..mapper.match import match_anns_by_intersection
-from ..mapper.utils import MappingContextManager
+from ..mapper.maputils import MappingContextManager
 from .base import PipelineComponent
 
 

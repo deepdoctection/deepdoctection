@@ -33,10 +33,10 @@ from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..extern.tp.tpfrcnn.common import np_iou
 from ..mapper.match import match_anns_by_intersection
-from ..mapper.utils import MappingContextManager
+from ..mapper.maputils import MappingContextManager
 from ..utils.settings import names
 
-__all__ = ["TableSegmentationService", "SegmentationResult", "tile_tables_with_items_per_table", "stretch_items"]
+__all__ = ["TableSegmentationService", "SegmentationResult"]
 
 
 @dataclass

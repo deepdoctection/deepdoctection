@@ -52,7 +52,7 @@ from ..extern.tp.tfutils import disable_tfv2
 from ..extern.tp.tpfrcnn.config.config import model_frcnn_config, train_frcnn_config
 from ..extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
 from ..mapper.tpstruct import image_to_tp_frcnn_training
-from ..mapper.utils import LabelSummarizer
+from ..mapper.maputils import LabelSummarizer
 from ..extern.tp.tfutils import set_mp_spawn
 from ..extern.tp.tpfrcnn.common import CustomResize
 from ..utils.utils import string_to_dict
@@ -69,6 +69,9 @@ from ..eval.tp_eval_callback import EvalCallback
 from ..eval.registry import MetricRegistry
 from ..eval.base import MetricBase
 from ..datasets.base import DatasetBase
+
+
+__all__ = ["train_faster_rcnn"]
 
 
 class LoadAugmentAddAnchors:  # pylint: disable=R0903

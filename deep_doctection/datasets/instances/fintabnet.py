@@ -42,7 +42,7 @@ from ...dataflow import MultiProcessMapData, MapData, DataFlow  # type: ignore
 from ...utils.detection_types import JsonDict
 from ...utils.logger import logger
 from ...utils.utils import to_bool
-from ...mapper.utils import cur
+from ...mapper.maputils import cur
 from ...mapper.pubstruct import pub_to_image
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.cats import cat_to_sub_cat, filter_cat

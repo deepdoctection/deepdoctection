@@ -21,7 +21,7 @@ Some classes used throughout the various external libraries.
 
 import cv2
 
-from tensorpack.dataflow.imgaug import ResizeTransform
+from dataflow.dataflow.imgaug import ResizeTransform  # type: ignore
 
 from ..utils.detection_types import ImageType
 
