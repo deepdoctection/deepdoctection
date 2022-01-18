@@ -1,12 +1,18 @@
 CONFIG:
-  TPLAYOUT: configs/dd/conf_frcnn_layout.yaml
-  TPCELL: configs/dd/conf_frcnn_cell.yaml
-  TPITEM: configs/dd/conf_frcnn_rows.yaml
+  TPLAYOUT: configs/dd/tp/conf_frcnn_layout.yaml
+  TPCELL: configs/dd/tp/conf_frcnn_cell.yaml
+  TPITEM: configs/dd/tp/conf_frcnn_rows.yaml
+  D2LAYOUT: configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2CELL: configs/dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2ITEM: configs/dd/d2/rows/CASCADE_RCNN_R_50_FPN_GN.yaml
   TESS_OCR: configs/dd/conf_tesseract.yaml
 WEIGHTS:
   TPLAYOUT: layout/model-2026500.data-00000-of-00001
   TPCELL: cell/model-3550000.data-00000-of-00001
   TPITEM: item/model-2750000.data-00000-of-00001
+  D2LAYOUT: layout/model-2026500.data-00000-of-00001
+  D2CELL: cell/model-3550000.data-00000-of-00001
+  D2ITEM: item/model-2750000.data-00000-of-00001
 SEGMENTATION:
   ASSIGNMENT_RULE: ioa
   IOU_THRESHOLD_ROWS: 0.01

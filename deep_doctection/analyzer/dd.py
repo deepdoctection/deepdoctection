@@ -20,7 +20,7 @@ Module for Deep-Doctection Analyzer
 """
 
 import os
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Tuple
 
 
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
@@ -31,7 +31,6 @@ from ..pipe.segment import TableSegmentationService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.text import TextExtractionService, TextOrderService
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..extern.tpdetect import TPFrcnnDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.model import ModelDownloadManager
 from ..extern.tp.tfutils import disable_tp_layer_logging
@@ -39,11 +38,41 @@ from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import names
 from ..utils.systools import get_package_path
 from ..utils.logger import logger
+from ..utils.file_utils import tf_available, pytorch_available
+
+if tf_available():
+    from ..extern.tpdetect import TPFrcnnDetector
+    from tensorpack.utils.gpu import get_num_gpu
+
+if pytorch_available():
+    from torch import cuda
+    from ..extern.d2detect import D2FrcnnDetector
 
 
 __all__ = ["get_dd_analyzer"]
 
 _DD_ONE = "configs/dd/conf_dd_one.yaml"
+
+
+def _auto_select_lib_and_device() -> Tuple[str,str]:
+    """
+    Select the DL library and subsequently the device. In summary:
+
+    If TF is available, use TF unless a GPU is not available, in which case choose PT. If CUDA is not available and PT
+    is not installed raise ImportError.
+    """
+    if tf_available() :
+        if get_num_gpu() >= 1:
+            return "TP", "cuda"
+        elif pytorch_available():
+            return "PT", "cpu"
+    elif pytorch_available():
+        if cuda.is_available():
+            return "PT", "gpu"
+        else:
+            return "PT", "cpu"
+    else:
+        raise ImportError("Must use Detectron2 and Pytorch if CUDA is not available. Please install Pytorch separately")
 
 
 def get_dd_analyzer(
@@ -77,40 +106,80 @@ def get_dd_analyzer(
     :param language: Select a specific language. Pre-selecting layout will increase ocr precision.
     """
 
-    logger.info("Will establish with table: %s and ocr: %s", tables, ocr)
-    # setup path
+    lib, device = _auto_select_lib_and_device()
     p_path = get_package_path()
+    # Set up of the configuration and logging
     cfg = set_config_by_yaml(os.path.join(p_path, _DD_ONE))
     logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
+
+    _LOG_MSG = """Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists
+    tables and figures. \n
+    """
+    if tables:
+        _LOG_MSG = _LOG_MSG + """ As tables have been chosen, a table recognition system will be invoked. This means, 
+        that the interior of each detected table will be segmented into cells, rows and column and every cell will
+        be labeled with its row and column position as well as its spans. \n
+        """
+
+    if ocr:
+        _LOG_MSG = _LOG_MSG + """ OCR will be performed and each words will be assigned to the detected layout 
+        compartment, if possible. Finally, words will be stringed together according to its reading order.
+        """
+    logger.info(_LOG_MSG)
+
     pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
+
+    # will silent all TP loggings while building the tower
     disable_tp_layer_logging()
 
-    # setup layout
+    # setup layout service
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
-    layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
-    layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
-    assert layout_weights_path is not None
-    d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
+
+    if lib == "TP":
+        layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
+        layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
+        assert layout_weights_path is not None
+        d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
+    else:
+        layout_config_path = os.path.join(p_path, cfg.CONFIG.D2LAYOUT)
+        layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2LAYOUT)
+        assert layout_weights_path is not None
+        d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=device)
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
     pipe_component_list.append(layout)
 
-    # setup tables
+    # setup tables service
     if tables:
         categories_cell = {"1": names.C.CELL}
-        cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
-        cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
-        d_cell = TPFrcnnDetector(
-            cell_config_path,
-            cell_weights_path,
-            categories_cell,
-        )
+        categories_item = {"1": names.C.ROW, "2": names.C.COL}
+
+        if lib == "TP":
+            cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
+            cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
+            d_cell = TPFrcnnDetector(
+                cell_config_path,
+                cell_weights_path,
+                categories_cell,
+            )
+            item_config_path = os.path.join(p_path, cfg.CONFIG.TPITEM)
+            item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPITEM)
+            d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
+        else:
+            cell_config_path = os.path.join(p_path, cfg.CONFIG.D2CELL)
+            cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2CELL)
+            d_cell = D2FrcnnDetector(
+                cell_config_path,
+                cell_weights_path,
+                categories_cell,
+                device = device
+            )
+            item_config_path = os.path.join(p_path, cfg.CONFIG.D2ITEM)
+            item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2ITEM)
+            d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item,device=device)
+
         cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
         pipe_component_list.append(cell)
 
-        categories_item = {"1": names.C.ROW, "2": names.C.COL}
-        item_config_path = os.path.join(p_path, cfg.CONFIG.TPITEM)
-        item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPITEM)
-        d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         item = SubImageLayoutService(d_item, names.C.TAB, {1: 7, 2: 8}, True)
         pipe_component_list.append(item)
 

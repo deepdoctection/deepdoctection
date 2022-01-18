@@ -9,6 +9,7 @@ Utilities for maintaining dependencies and dealing with external library package
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
 
+import os
 from shutil import which
 
 import importlib.util
@@ -17,7 +18,6 @@ import importlib_metadata  # type: ignore
 from packaging import version
 
 from .detection_types import Requirement
-
 
 # Tensorflow and Tensorpack dependencies
 _TF_AVAILABLE = False
@@ -94,7 +94,7 @@ def get_tensorpack_requirement() -> Requirement:
     return "tensorpack", tensorpack_available(), _TP_ERR_MSG
 
 
-# Pytorch related dependencies
+ # Pytorch related dependencies
 _PYTORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 _PYTORCH_ERR_MSG = "Pytorch must be installed: https://pytorch.org/get-started/locally/#linux-pip"
 
