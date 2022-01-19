@@ -39,10 +39,13 @@ numpy==1.21.1
     #   scipy
 opencv-python==4.5.3.56
     # via deep-doctection (setup.py)
+packaging==21.3
+    # via deep-doctection (setup.py)
 pdf2image==1.16.0
     # via deep-doctection (setup.py)
-pillow==8.3.1
+pillow==9.0.0
     # via
+    #   deep-doctection (setup.py)
     #   matplotlib
     #   pdf2image
     #   pytesseract
@@ -51,7 +54,9 @@ psutil==5.8.0
 pycocotools==2.0.2
     # via deep-doctection (setup.py)
 pyparsing==2.4.7
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   packaging
 pypdf2==1.26.0
     # via deep-doctection (setup.py)
 pytesseract==0.3.8
