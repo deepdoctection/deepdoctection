@@ -29,6 +29,7 @@ with open(os.path.join(ROOT, "__about__.py")) as about_file:
     exec(about_file.read(), about)
 
 DIST_DEPS = [
+    "importlib-metadata",
     "jsonlines",
     "types-termcolor",
     "opencv-python",
