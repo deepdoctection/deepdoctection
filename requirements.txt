@@ -10,6 +10,8 @@ cython==0.29.24
     # via pycocotools
 dataflow @ git+https://github.com/tensorpack/dataflow.git
     # via deep-doctection (setup.py)
+importlib-metadata==4.10.1
+    # via deep-doctection (setup.py)
 joblib==1.1.0
     # via scikit-learn
 jsonlines==2.0.0
@@ -87,6 +89,8 @@ tqdm==4.62.0
     # via dataflow
 types-termcolor==1.1.0
     # via deep-doctection (setup.py)
+zipp==3.7.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
