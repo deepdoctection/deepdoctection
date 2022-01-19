@@ -112,20 +112,18 @@ def get_dd_analyzer(
     cfg = set_config_by_yaml(os.path.join(p_path, _DD_ONE))
     logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
 
-    _LOG_MSG = """Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists
-    tables and figures. \n
-    """
+    logger.info("Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists "
+                "tables and figures.")
+
     if tables:
-        _LOG_MSG = _LOG_MSG + """ As tables have been chosen, a table recognition system will be invoked. This means, 
-        that the interior of each detected table will be segmented into cells, rows and column and every cell will
-        be labeled with its row and column position as well as its spans. \n
-        """
+        logger.info("As tables have been chosen, a table recognition system will be invoked. This means, "
+                    "that the interior of each detected table will be segmented into cells, rows and column and every "
+                    "cell will be labeled with its row and column position as well as its spans.")
 
     if ocr:
-        _LOG_MSG = _LOG_MSG + """ OCR will be performed and each words will be assigned to the detected layout 
-        compartment, if possible. Finally, words will be stringed together according to its reading order.
-        """
-    logger.info(_LOG_MSG)
+        logger.info(" OCR will be performed and each words will be assigned to the detected layout "
+                    "compartment, if possible. Finally, words will be stringed together according to its"
+                    " reading order.")
 
     pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
 
