@@ -22,7 +22,7 @@ Module for ModelCatalog and ModelDownloadManager
 import os
 from copy import copy
 from typing import Dict, List, Union, Any
-
+from huggingface_hub import hf_hub_url,cached_download
 from ..utils.logger import logger
 from ..utils.fs import download
 from ..utils.systools import get_weights_dir_path
@@ -40,45 +40,60 @@ class ModelCatalog:
 
     MODELS: Dict[str, Any] = {
         "layout/model-2026500.data-00000-of-00001": {
-            "config": "configs/dd/conf_frcnn_layout",
+            "config": "configs/dd/tp/conf_frcnn_layout",
             "size": [1134895140, 58919],
             "urls": [
                 "1d8_BBWRGbhMmqZs46TyIPVcO7KBb_mJW?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",  # pylint:
                 # disable=C0301
                 "11kfvkgwMSUf3ERUvMW03DUm3AhWi-cNj?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",  # pylint: disable=C0301
             ],
+            "hf_repo_id": "deepdoctection/CASC_RCNN_R101_FPN_GN_PUBLAYNET",
+            "hf_model_name": "model-2026500",
+            "tp_model": True
         },
         "cell/model-2840000.data-00000-of-00001": {
-            "config": "configs/dd/conf_frcnn_cell",
+            "config": "configs/dd/tp/conf_frcnn_cell",
             "size": [823690432, 26583],
             "urls": [
                 "1MgaXIcrPCDmc9j1t6EOGdpEjJ4CXY3Au?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
                 "1xyn1TFlSR-rdb3fgiEQ7px9c7JH1Fhlk?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
+            "hf_repo_id": "",
+            "hf_model_name": "",
+            "tp_model": True
         },
         "item/model-1750000.data-00000-of-00001": {
-            "config": "configs/dd/conf_frcnn_rows",
+            "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [823690432, 26567],
             "urls": [
                 "1JryTMNLxigri_Q-4pzElBxfkj_AOAEQE?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
                 "1rlwvCnki5gCPojA1A2f-ztXvacYQ61CJ?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
+            "hf_repo_id": "",
+            "hf_model_name": "",
+            "tp_model": True
         },
         "item/model-2750000.data-00000-of-00001": {
-            "config": "configs/dd/conf_frcnn_rows",
+            "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [823690432, 26583],
             "urls": [
                 "1v86gz7014QzqxtWpJT7osT9kpxRYqp9c?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
                 "1wdT9QahyNMHHkSm4kHRqInTEHU2Uztu5?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
+            "hf_repo_id": "",
+            "hf_model_name": "",
+            "tp_model": True
         },
         "cell/model-3550000.data-00000-of-00001": {
-            "config": "configs/dd/conf_frcnn_cell",
+            "config": "configs/dd/tp/conf_frcnn_cell",
             "size": [823653532, 26583],
             "urls": [
                 "1t0q8FKa7lak24M7RKT5kCNHzM3PhnTpp?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
                 "1DPzfMnBsd1cg_CXQq7_EJhZxwWslkFw1?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
             ],
+            "hf_repo_id": "",
+            "hf_model_name": "",
+            "tp_model": True
         },
     }
 
@@ -163,23 +178,52 @@ class ModelDownloadManager:  # pylint: disable=R0903
     """
 
     @staticmethod
-    def maybe_download_weights(path_weights: str) -> str:
+    def maybe_download_weights(path_weights: str, from_hf_hub: bool = False) -> str:
         """
         Check if the path pointing to weight points to some registered weights. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
 
         :param path_weights: A path to some model weights
+        :param from_hf_hub: If True, will use model download from the Huggingface hub
         :return: Absolute path to model weights if model is registered
         """
 
         absolute_path = os.path.join(get_weights_dir_path(), path_weights)
+        file_names : List[str] = []
         if ModelCatalog.is_registered(path_weights):
             profile = ModelCatalog.get_profile(path_weights)
-            file_names = get_tp_weight_names(path_weights)
-            for size, url, file_name in zip(profile["size"], profile["urls"], file_names):
-                directory, _ = os.path.split(absolute_path)
-                download(str(url), directory, file_name, int(size))
+            if profile["tp_model"]:
+                file_names = get_tp_weight_names(path_weights)
+            if from_hf_hub:
+                ModelDownloadManager._load_from_hf_hub(profile,absolute_path,file_names)
+            else:
+                ModelDownloadManager._load_from_gd(profile, absolute_path, file_names)
+
             return absolute_path
 
         logger.info("Will use not registered model. Make sure path to weights is correctly set")
         return absolute_path
+
+    @staticmethod
+    def _load_from_hf_hub(profile:  Dict[str, Union[str,List[Union[int, str]]]],
+                          absolute_path: str,
+                          file_names: List[str]) -> None:
+        repo_id = profile["hf_repo_id"]
+        if not file_names:
+            file_names = profile["hf_model_name"]
+        for expect_size, file_name in zip(profile["size"],file_names):
+            directory, _ = os.path.split(absolute_path)
+            url = hf_hub_url(repo_id=repo_id, filename= file_name)
+            f_path = cached_download(url,cache_dir=directory, force_filename=file_name)
+            stat_info = os.stat(f_path)
+            size = stat_info.st_size
+            assert size > 0, f"Downloaded an empty file from {url}!"
+            if expect_size is not None and size != expect_size:
+                logger.error("File downloaded from %s does not match the expected size!", url)
+                logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
+
+    @staticmethod
+    def _load_from_gd(profile:  Dict[str, List[Union[int, str]]], absolute_path: str, file_names: List[str]) -> None:
+        for size, url, file_name in zip(profile["size"], profile["urls"], file_names):
+            directory, _ = os.path.split(absolute_path)
+            download(str(url), directory, file_name, int(size))
