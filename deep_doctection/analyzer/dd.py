@@ -73,7 +73,9 @@ def _auto_select_lib_and_device() -> Tuple[str,str]:
         else:
             return "PT", "cpu"
     else:
-        raise ImportError("Must use Detectron2 and Pytorch if CUDA is not available. Please install Pytorch separately")
+        raise ImportError("Neither Pytorch not Tensorflow are installed. You must install at least one of them before "
+                          "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
+                          "with Pytorch.")
 
 
 def get_dd_analyzer(
