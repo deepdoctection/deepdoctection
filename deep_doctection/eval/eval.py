@@ -30,9 +30,12 @@ from ..pipe.base import PredictorPipelineComponent, PipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..mapper.cats import remove_cats
 from ..utils.logger import logger
+from ..utils.file_utils import tensorpack_available
 from ..dataflow import MapData, DataFromList  # type: ignore
 from ..mapper.misc import maybe_load_image, maybe_remove_image
-from ..extern.tpdetect import TPFrcnnDetector
+
+if tensorpack_available():
+    from ..extern.tpdetect import TPFrcnnDetector
 
 
 class Evaluator:  # pylint: disable=R0903
@@ -73,6 +76,7 @@ class Evaluator:  # pylint: disable=R0903
         pipeline_components: List[PipelineComponent] = []
 
         # try to copy as little as possible
+        # TODO: remove copying procedure outside class
         assert isinstance(predictor_pipe_component.predictor, TPFrcnnDetector)
         tmp_tp_predictor = predictor_pipe_component.predictor.tp_predictor
         tmp_predictor = predictor_pipe_component.predictor

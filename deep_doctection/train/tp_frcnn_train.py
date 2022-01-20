@@ -53,7 +53,6 @@ from ..extern.tp.tpfrcnn.config.config import model_frcnn_config, train_frcnn_co
 from ..extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..mapper.maputils import LabelSummarizer
-from ..extern.tp.tfutils import set_mp_spawn
 from ..extern.tp.tpfrcnn.common import CustomResize
 from ..utils.utils import string_to_dict
 from ..utils.logger import log_once
@@ -62,6 +61,7 @@ from ..utils.metacfg import AttrDict
 from ..utils.detection_types import JsonDict
 from ..utils.fs import get_load_image_func
 from ..utils.metacfg import set_config_by_yaml
+from ..utils.file_utils import set_mp_spawn
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.registry import PipelineComponentRegistry
 from ..pipe.base import PredictorPipelineComponent

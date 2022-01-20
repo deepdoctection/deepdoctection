@@ -24,8 +24,33 @@ from typing import Union, List
 
 import numpy as np
 import numpy.typing as npt
+from numpy import float32
+
+import pycocotools.mask as coco_mask
 
 from ..utils.detection_types import ImageType
+
+
+# Much faster than utils/np_box_ops
+def np_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Calculate iou for two arrays of bounding boxes
+
+    :param box_a: Array of shape Nx4
+    :param box_b: Array of shape Mx4
+
+    :return: Array of shape NxM
+    """
+
+    def to_xywh(box):
+        box = box.copy()
+        box[:, 2] -= box[:, 0]
+        box[:, 3] -= box[:, 1]
+        return box
+
+    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))
+    # can accelerate even more, if using float32
+    return ret.astype("float32")
 
 
 @dataclass

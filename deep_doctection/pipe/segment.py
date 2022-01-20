@@ -29,9 +29,8 @@ from numpy import float32
 
 from .base import PipelineComponent
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import BoundingBox
+from ..datapoint.box import BoundingBox, np_iou
 from ..datapoint.image import Image
-from ..extern.tp.tpfrcnn.common import np_iou
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.maputils import MappingContextManager
 from ..utils.settings import names

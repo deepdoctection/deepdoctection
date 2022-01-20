@@ -33,15 +33,16 @@ from ..pipe.text import TextExtractionService, TextOrderService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.model import ModelDownloadManager
-from ..extern.tp.tfutils import disable_tp_layer_logging
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import names
 from ..utils.systools import get_package_path
 from ..utils.logger import logger
-from ..utils.file_utils import tf_available, pytorch_available
+from ..utils.file_utils import tf_available, pytorch_available, tensorpack_available
 
-if tf_available():
+
+if tf_available() and tensorpack_available():
     from ..extern.tpdetect import TPFrcnnDetector
+    from ..extern.tp.tfutils import disable_tp_layer_logging
     from tensorpack.utils.gpu import get_num_gpu
 
 if pytorch_available():

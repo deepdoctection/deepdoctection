@@ -24,7 +24,7 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..datapoint.annotation import ImageAnnotation
-from ..extern.tp.tpfrcnn.common import np_iou
+from ..datapoint.box import np_iou
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 
 
