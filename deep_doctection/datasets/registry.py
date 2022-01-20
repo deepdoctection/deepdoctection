@@ -31,7 +31,7 @@ __all__ = ["DatasetRegistry"]
 
 
 _DATASETS: Dict[str, Type[DatasetBase]] = dict(
-    (m[1]().dataset_info.name, m[1])
+    (m[1]._name, m[1])
     for m in inspect.getmembers(instances, inspect.isclass)
     if issubclass(m[1], DatasetBase) and m[0] != "DatasetBase"
 )

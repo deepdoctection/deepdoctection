@@ -109,6 +109,8 @@ class Fintabnet(_BuiltInDataset):
     Fintabnet
     """
 
+    _name = _NAME
+
     def _info(self) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 

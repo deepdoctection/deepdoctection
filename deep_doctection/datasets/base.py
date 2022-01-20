@@ -21,6 +21,7 @@ Module for the base class of datasets.
 
 import os
 from abc import abstractmethod, ABC
+from typing import Optional
 
 from .info import DatasetInfo, DatasetCategories
 from .dataflow_builder import DataFlowBaseBuilder
@@ -105,6 +106,8 @@ class _BuiltInDataset(DatasetBase, ABC):
     """
     Dataclass for built-in dataset. Do not use this it
     """
+
+    _name : Optional[None] = None
 
     @staticmethod
     def is_built_in() -> bool:
