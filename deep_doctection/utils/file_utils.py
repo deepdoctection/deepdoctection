@@ -9,7 +9,9 @@ Utilities for maintaining dependencies and dealing with external library package
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
 
+
 from shutil import which
+import multiprocessing as mp
 
 import importlib.util
 import importlib_metadata  # type: ignore
@@ -17,6 +19,7 @@ import importlib_metadata  # type: ignore
 from packaging import version
 
 from .detection_types import Requirement
+from .metacfg import AttrDict
 
 # Tensorflow and Tensorpack dependencies
 _TF_AVAILABLE = False
@@ -221,3 +224,26 @@ def get_aws_requirement() -> Requirement:
     Return AWS CLI requirement
     """
     return "aws", aws_available(), _AWS_ERR_MSG
+
+
+_S = AttrDict()
+_S.mp_context_set = False
+_S.freeze()
+
+
+def set_mp_spawn() -> None:
+    """
+    Sets multiprocessing method to "spawn".
+
+    from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/train.py:
+
+          "spawn/forkserver" is safer than the default "fork" method and
+          produce more deterministic behavior & memory saving
+          However its limitation is you cannot pass a lambda function to subprocesses.
+    """
+
+    if not _S.mp_context_set:
+        _S.freeze(False)
+        mp.set_start_method("spawn")
+        _S.mp_context_set = True
+        _S.freeze()

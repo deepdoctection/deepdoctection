@@ -58,29 +58,3 @@ def disable_tp_layer_logging() -> None:
     Disables TP layer logging, if not already set
     """
     disable_layer_logging()
-
-
-_S = AttrDict()
-
-_S.mp_context_set = False
-_S.tf_2_enabled = is_tfv2()
-
-_S.freeze()
-
-
-def set_mp_spawn() -> None:
-    """
-    Sets multiprocessing method to "spawn".
-
-    from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/train.py:
-
-          "spawn/forkserver" is safer than the default "fork" method and
-          produce more deterministic behavior & memory saving
-          However its limitation is you cannot pass a lambda function to subprocesses.
-    """
-
-    if not _S.mp_context_set:
-        _S.freeze(False)
-        mp.set_start_method("spawn")
-        _S.mp_context_set = True
-        _S.freeze()
