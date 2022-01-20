@@ -233,15 +233,10 @@ import numpy as np
 from tensorpack.utils.gpu import get_num_gpu
 from tensorpack.tfutils import collect_env_info
 from tensorpack.utils import logger
-
 # pylint: enable=import-error
 
 from .....utils.metacfg import AttrDict
 
-try:
-    import horovod.tensorflow as hvd
-except ImportError:
-    hvd = None
 
 __all__ = ["train_frcnn_config", "model_frcnn_config"]
 
@@ -310,20 +305,12 @@ def train_frcnn_config(config: AttrDict) -> Tuple[List[Tuple[int, int]], List[Tu
         # don't autotune if augmentation is on
         os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
     os.environ["TF_AUTOTUNE_THRESHOLD"] = "1"
-    assert config.TRAINER in ["horovod", "replicated"], config.TRAINER
+    assert config.TRAINER in ["replicated"], config.TRAINER
 
     # setup NUM_GPUS
-    is_horovod = config.TRAINER == "horovod"
-    if is_horovod:
-        hvd.init()
-        number_gpu = hvd.size()
-        logger.info("Horovod Rank= %s, Size= %s, LocalRank= %s", hvd.rank(), hvd.size(), hvd.local_rank())
-        if hvd.rank() == 0:
-            logger.set_logger_dir(config.TRAIN.LOG_DIR, "d")
-    else:
-        assert "OMPI_COMM_WORLD_SIZE" not in os.environ
-        logger.set_logger_dir(config.TRAIN.LOG_DIR, "d")
-        number_gpu = get_num_gpu()
+    assert "OMPI_COMM_WORLD_SIZE" not in os.environ
+    logger.set_logger_dir(config.TRAIN.LOG_DIR, "d")
+    number_gpu = get_num_gpu()
     logger.info("Environment Information:\n %s", collect_env_info())
 
     assert number_gpu > 0, "Has to train with GPU!"

@@ -42,10 +42,6 @@ from tensorpack.utils import logger
 # todo: check how dataflow import is directly possible without having AssertionError
 from tensorpack.dataflow import DataFlow, MapData, DataFromList, MultiProcessMapData, imgaug
 
-try:
-    import horovod.tensorflow as hvd  # type: ignore
-except ImportError:
-    hvd = None
 
 from ..extern.tp.tpfrcnn.preproc import augment, anchors_and_labels
 from ..extern.tp.tfutils import disable_tfv2
@@ -311,10 +307,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
             ]
         )
 
-    if config.TRAINER == "horovod" and hvd.rank() > 0:
-        session_init = None
-    else:
-        session_init = SmartInit(path_weights, ignore_mismatch=True)
+    session_init = SmartInit(path_weights, ignore_mismatch=True)
 
     factor = 8.0 / config.TRAIN.NUM_GPUS
 
@@ -328,8 +321,5 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         starting_epoch=config.TRAIN.STARTING_EPOCH,
     )
 
-    if config.TRAINER == "horovod":
-        trainer = HorovodTrainer(average=False)
-    else:
-        trainer = SyncMultiGPUTrainerReplicated(config.TRAIN.NUM_GPUS, average=False)
+    trainer = SyncMultiGPUTrainerReplicated(config.TRAIN.NUM_GPUS, average=False)
     launch_train_with_config(train_cfg, trainer)

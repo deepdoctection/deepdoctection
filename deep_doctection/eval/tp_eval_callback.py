@@ -40,11 +40,6 @@ if tensorpack_available():
     from tensorpack.predict import OnlinePredictor
 # pylint: enable=import-error
 
-try:
-    import horovod.tensorflow as hvd  # type: ignore  # pylint: disable=W0611
-except ImportError:
-    hvd = None
-
 
 # The following class is modified from
 # https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/eval.py
