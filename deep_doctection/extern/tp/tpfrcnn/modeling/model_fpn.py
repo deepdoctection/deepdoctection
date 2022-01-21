@@ -55,7 +55,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
         :return: tf.Tensor
         """
         try:
-            resize = tf.compat.v2.image.resize_images
+            resize = tfv1.image.resize_images
             with tf.name_scope(name):
                 shp2d = tf.shape(x)[2:]
                 x = tf.transpose(x, [0, 2, 3, 1])
