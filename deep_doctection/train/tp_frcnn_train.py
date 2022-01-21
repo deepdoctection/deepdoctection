@@ -35,7 +35,7 @@ from tensorpack.callbacks import (
     GPUUtilizationTracker,
 )
 from tensorpack.tfutils import SmartInit
-from tensorpack.train import TrainConfig, HorovodTrainer, SyncMultiGPUTrainerReplicated, launch_train_with_config
+from tensorpack.train import TrainConfig, SyncMultiGPUTrainerReplicated, launch_train_with_config
 from tensorpack.input_source import QueueInput
 from tensorpack.utils import logger
 

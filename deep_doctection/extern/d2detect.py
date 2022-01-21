@@ -33,7 +33,7 @@ from .base import ObjectDetector, DetectionResult
 from .d2.d2 import d2_predict_image
 
 if pytorch_available():
-    import torch.cuda
+    import torch.cuda  # type: ignore
 
 if detectron2_available():
     from detectron2.config import get_cfg, CfgNode  # pylint: disable=W0611

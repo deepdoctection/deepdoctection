@@ -96,7 +96,7 @@ class DefaultMapper:  # pylint: disable=R0903
         :param dp: datapoint within a dataflow
         :return: The return value of the invoked function with default arguments.
         """
-        return self.func(dp, *self.argument_args, **self.argument_kwargs)  # type: ignore #5485
+        return self.func(dp, *self.argument_args, **self.argument_kwargs)
 
 
 def cur(func: MapFunc) -> DefaultMapper:

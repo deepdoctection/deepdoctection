@@ -192,7 +192,7 @@ def fixture_datapoint_xfund() -> Dict[str, Any]:
     Datapoint as received from Xfund dataset
     """
 
-    return DatapointXfund().dp
+    return DatapointXfund().dp  # type: ignore
 
 
 @fixture(name="xfund_category_names")

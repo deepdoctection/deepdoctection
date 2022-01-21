@@ -11,10 +11,12 @@ https://github.com/huggingface/transformers/blob/master/src/transformers/file_ut
 
 
 from shutil import which
+from typing import Tuple
+
 import multiprocessing as mp
 
 import importlib.util
-import importlib_metadata  # type: ignore
+import importlib_metadata
 
 from packaging import version
 
@@ -46,7 +48,7 @@ def get_tensorflow_requirement() -> Requirement:
 
     tf_requirement_satisfied = False
     if tf_available():
-        candidates = (
+        candidates : Tuple[str,...] = (
             "tensorflow",
             "tensorflow-cpu",
             "tensorflow-gpu",
@@ -61,7 +63,7 @@ def get_tensorflow_requirement() -> Requirement:
         tf_version = "0.0"
         for pkg in candidates:
             try:
-                tf_version = importlib_metadata.version(pkg)
+                tf_version = importlib_metadata.version(pkg)  # type: ignore
                 break
             except importlib_metadata.PackageNotFoundError:
                 pass

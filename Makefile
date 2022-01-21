@@ -105,13 +105,15 @@ install-dd-pt: install-dd
 
 install-dd-all: check-venv install-dd-tf install-dd-pt install-dd-aws
 
-install-dd-dev: install-dd-all
+install-dd-all-dev: check-venv install-dd-all install-dd-test install-dd-dev
+
+install-dd-dev: check-venv
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
 	@echo "--> Done installing dev dependencies"
 	@echo ""
 
-install-dd-test: install-dd-all
+install-dd-test: check-venv
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[test]"
 	pip install -U pytest

@@ -85,7 +85,7 @@ def choose_items_by_iou(
         reference_item_proposals_boxes = item_proposals_boxes
         triangle_ind = np.triu_indices(len(item_proposals))  # type: ignore
 
-    iou_matrix = np_iou(item_proposals_boxes, reference_item_proposals_boxes)  # type: ignore
+    iou_matrix = np_iou(item_proposals_boxes, reference_item_proposals_boxes)
 
     if triangle_ind is not None:
         iou_matrix[triangle_ind] = 0

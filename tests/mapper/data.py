@@ -1729,7 +1729,7 @@ class DatapointXfund:
     Xfund datapoint sample
     """
 
-    dp = _SAMPLE_XFUND["documents"][0]  # type: ignore
+    dp = _SAMPLE_XFUND["documents"][0]
 
     category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A, "header": names.C.HEAD}
     layout_input = {

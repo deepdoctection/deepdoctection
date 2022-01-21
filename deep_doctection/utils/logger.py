@@ -164,7 +164,7 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
     """
 
     mod = sys.modules["__main__"]
-    basename = os.path.basename(mod.__file__)
+    basename = str(os.path.basename(mod.__file__))  # type: ignore
     auto_dir_name = os.path.join("train_log", basename[: basename.rfind(".")])
     if name:
         auto_dir_name += "_%s" % name if os.name == "nt" else ":%s" % name  # pylint: disable=C0209

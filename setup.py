@@ -35,7 +35,7 @@ DIST_DEPS = [
     "opencv-python",
     "pycocotools",
     "pypdf2",
-    "numpy>=1.21.1",
+    "numpy",
     "packaging>=20.0",
     "pdf2image",
     "pyyaml",

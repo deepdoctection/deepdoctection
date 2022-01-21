@@ -55,27 +55,28 @@ __all__ = ["get_dd_analyzer"]
 _DD_ONE = "configs/dd/conf_dd_one.yaml"
 
 
-def _auto_select_lib_and_device() -> Tuple[str,str]:
+def _auto_select_lib_and_device() -> Tuple[str, str]:
     """
     Select the DL library and subsequently the device. In summary:
 
     If TF is available, use TF unless a GPU is not available, in which case choose PT. If CUDA is not available and PT
     is not installed raise ImportError.
     """
-    if tf_available() :
+    if tf_available():
         if get_num_gpu() >= 1:
             return "TP", "cuda"
-        elif pytorch_available():
+        if pytorch_available():
             return "PT", "cpu"
-    elif pytorch_available():
+        raise ImportError("No GPU is available. You must install Pytorch in order to run on a CPU")
+    if pytorch_available():
         if cuda.is_available():
             return "PT", "gpu"
-        else:
-            return "PT", "cpu"
-    else:
-        raise ImportError("Neither Pytorch not Tensorflow are installed. You must install at least one of them before "
-                          "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
-                          "with Pytorch.")
+        return "PT", "cpu"
+    raise ImportError(
+        "Neither Pytorch not Tensorflow are installed. You must install at least one of them before "
+        "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
+        "with Pytorch."
+    )
 
 
 def get_dd_analyzer(
@@ -115,18 +116,24 @@ def get_dd_analyzer(
     cfg = set_config_by_yaml(os.path.join(p_path, _DD_ONE))
     logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
 
-    logger.info("Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists "
-                "tables and figures.")
+    logger.info(
+        "Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists "
+        "tables and figures."
+    )
 
     if tables:
-        logger.info("As tables have been chosen, a table recognition system will be invoked. This means, "
-                    "that the interior of each detected table will be segmented into cells, rows and column and every "
-                    "cell will be labeled with its row and column position as well as its spans.")
+        logger.info(
+            "As tables have been chosen, a table recognition system will be invoked. This means, "
+            "that the interior of each detected table will be segmented into cells, rows and column and every "
+            "cell will be labeled with its row and column position as well as its spans."
+        )
 
     if ocr:
-        logger.info(" OCR will be performed and each words will be assigned to the detected layout "
-                    "compartment, if possible. Finally, words will be stringed together according to its"
-                    " reading order.")
+        logger.info(
+            " OCR will be performed and each words will be assigned to the detected layout "
+            "compartment, if possible. Finally, words will be stringed together according to its"
+            " reading order."
+        )
 
     pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
 
@@ -136,6 +143,7 @@ def get_dd_analyzer(
     # setup layout service
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
 
+    d_layout : Union[D2FrcnnDetector,TPFrcnnDetector]
     if lib == "TP":
         layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
@@ -153,7 +161,8 @@ def get_dd_analyzer(
     if tables:
         categories_cell = {"1": names.C.CELL}
         categories_item = {"1": names.C.ROW, "2": names.C.COL}
-
+        d_cell : Optional[Union[D2FrcnnDetector,TPFrcnnDetector]]
+        d_item : Union[D2FrcnnDetector,TPFrcnnDetector]
         if lib == "TP":
             cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
@@ -168,15 +177,10 @@ def get_dd_analyzer(
         else:
             cell_config_path = os.path.join(p_path, cfg.CONFIG.D2CELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2CELL)
-            d_cell = D2FrcnnDetector(
-                cell_config_path,
-                cell_weights_path,
-                categories_cell,
-                device = device
-            )
+            d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=device)
             item_config_path = os.path.join(p_path, cfg.CONFIG.D2ITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2ITEM)
-            d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item,device=device)
+            d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=device)
 
         cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
         pipe_component_list.append(cell)

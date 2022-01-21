@@ -88,8 +88,8 @@ def match_anns_by_intersection(
     )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
-        iou_matrix = np_iou(child_ann_boxes, parent_ann_boxes)  # type: ignore
-        output = iou_matrix > iou_threshold
+        iou_matrix = np_iou(child_ann_boxes, parent_ann_boxes)
+        output = iou_matrix > iou_threshold  # type: ignore
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:
         ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))  # type: ignore
