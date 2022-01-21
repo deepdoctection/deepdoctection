@@ -42,13 +42,13 @@ def np_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDAr
     :return: Array of shape NxM
     """
 
-    def to_xywh(box):
+    def to_xywh(box: npt.NDArray[float32]) -> npt.NDArray[float32]:
         box = box.copy()
         box[:, 2] -= box[:, 0]
         box[:, 3] -= box[:, 1]
         return box
 
-    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))
+    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))  # type: ignore
     # can accelerate even more, if using float32
     return ret.astype("float32")
 

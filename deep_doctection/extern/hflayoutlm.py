@@ -38,7 +38,7 @@ if pytorch_available():
     import torch  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification
+    from transformers import LayoutLMForTokenClassification  # type: ignore
 
 
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
@@ -81,7 +81,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -101,12 +101,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "tokens" in encodings
 
         results = predict_token_classes(
-            encodings["ids"],  # type: ignore
-            encodings["input_ids"],  # type: ignore
-            encodings["attention_mask"],  # type: ignore
-            encodings["token_type_ids"],  # type: ignore
-            encodings["boxes"],  # type: ignore
-            encodings["tokens"],  # type: ignore
+            encodings["ids"],
+            encodings["input_ids"],
+            encodings["attention_mask"],
+            encodings["token_type_ids"],
+            encodings["boxes"],
+            encodings["tokens"],
             self.model,
         )
 

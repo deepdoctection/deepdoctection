@@ -19,10 +19,7 @@
 Tensorflow related utils.
 """
 
-import multiprocessing as mp
-
 from tensorpack.models import disable_layer_logging
-from ...utils.metacfg import AttrDict
 
 
 def is_tfv2() -> bool:

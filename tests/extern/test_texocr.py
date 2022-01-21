@@ -20,6 +20,7 @@ Testing module extern.texocr
 """
 
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deep_doctection.extern.texocr import TextractOcrDetector

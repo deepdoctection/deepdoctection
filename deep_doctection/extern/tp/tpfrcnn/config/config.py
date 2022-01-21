@@ -233,6 +233,7 @@ import numpy as np
 from tensorpack.utils.gpu import get_num_gpu
 from tensorpack.tfutils import collect_env_info
 from tensorpack.utils import logger
+
 # pylint: enable=import-error
 
 from .....utils.metacfg import AttrDict

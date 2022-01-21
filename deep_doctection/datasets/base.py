@@ -107,7 +107,7 @@ class _BuiltInDataset(DatasetBase, ABC):
     Dataclass for built-in dataset. Do not use this it
     """
 
-    _name : Optional[None] = None
+    _name: Optional[str] = None
 
     @staticmethod
     def is_built_in() -> bool:

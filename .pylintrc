@@ -25,7 +25,7 @@ max-branches=18
 max-attributes=14
 max-locals=36
 max-returns=8
-max-statements=55
+max-statements=65
 
 [MISCELLANEOUS]
 
