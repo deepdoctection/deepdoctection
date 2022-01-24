@@ -117,9 +117,11 @@ def convert_weights_tp_to_d2(weights, cfg):
 
 if __name__ == '__main__':
 
-    path_config = "path/to/yaml_config"
-    path_model = "path/to/tp_checkpoint"
-    path_output_model = "path/to/d2_checkpoint"
+    #path_config = "path/to/yaml_config"
+    #path_model = "path/to/tp_checkpoint"
+    path_config = "/home/janis/Public/deepdoctection/configs/tp/layout/conf_frcnn_layout.yaml"
+    path_model = "/home/janis/Documents/train/layout_3/model-800000.data-00000-of-00001"
+    path_output_model = "/home/janis/Documents/d2/layout/d2_layout.pkl"
 
     cfg = set_config_by_yaml(path_config)
     tp_dict = load_checkpoint_vars(path_model)
