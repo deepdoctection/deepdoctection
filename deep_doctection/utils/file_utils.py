@@ -48,7 +48,7 @@ def get_tensorflow_requirement() -> Requirement:
 
     tf_requirement_satisfied = False
     if tf_available():
-        candidates : Tuple[str,...] = (
+        candidates: Tuple[str, ...] = (
             "tensorflow",
             "tensorflow-cpu",
             "tensorflow-gpu",
