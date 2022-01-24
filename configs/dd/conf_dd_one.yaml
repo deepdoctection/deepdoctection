@@ -8,8 +8,8 @@ CONFIG:
   TESS_OCR: configs/dd/conf_tesseract.yaml
 WEIGHTS:
   TPLAYOUT: layout/model-800000_inf_only.data-00000-of-00001
-  TPCELL: cell/model-3550000.data-00000-of-00001
-  TPITEM: item/model-2750000.data-00000-of-00001
+  TPCELL: cell/model-1800000_inf_only.data-00000-of-00001
+  TPITEM: item/model-1370000_inf_only.data-00000-of-00001
   D2LAYOUT:
   D2CELL:
   D2ITEM:

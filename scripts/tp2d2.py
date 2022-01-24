@@ -131,10 +131,10 @@ if __name__ == '__main__':
 
     #path_config = "path/to/yaml_config"
     #path_model = "path/to/tp_checkpoint"
-    path_config = "/home/janis/Public/deepdoctection/configs/tp/rows/conf_frcnn_rows.yaml"
-    path_model = "/home/janis/Documents/train/rows_2/model-1370000.data-00000-of-00001"
+    path_config = "/home/janis/Public/deepdoctection/configs/tp/cell/conf_frcnn_cell.yaml"
+    path_model = "/home/janis/Documents/train/cell_21/model-1800000.data-00000-of-00001"
     path_output_model = "/home/janis/Documents/d2/layout/d2_layout.pkl"
-    path_output_tp_model = "/home/janis/Documents/tp_inference/rows/model-1370000_inf_only"
+    path_output_tp_model = "/home/janis/Documents/tp_inference/cell/model-1800000_inf_only"
     """
     cfg = set_config_by_yaml(path_config)
     tp_dict = load_checkpoint_vars(path_model)
