@@ -143,7 +143,7 @@ def get_dd_analyzer(
     # setup layout service
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
 
-    d_layout : Union[D2FrcnnDetector,TPFrcnnDetector]
+    d_layout: Union[D2FrcnnDetector, TPFrcnnDetector]
     if lib == "TF":
         layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
@@ -161,8 +161,8 @@ def get_dd_analyzer(
     if tables:
         categories_cell = {"1": names.C.CELL}
         categories_item = {"1": names.C.ROW, "2": names.C.COL}
-        d_cell : Optional[Union[D2FrcnnDetector,TPFrcnnDetector]]
-        d_item : Union[D2FrcnnDetector,TPFrcnnDetector]
+        d_cell: Optional[Union[D2FrcnnDetector, TPFrcnnDetector]]
+        d_item: Union[D2FrcnnDetector, TPFrcnnDetector]
         if lib == "TF":
             cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)

@@ -22,7 +22,7 @@ Module for ModelCatalog and ModelDownloadManager
 import os
 from copy import copy
 from typing import Dict, List, Union, Any
-from huggingface_hub import hf_hub_url,cached_download
+from huggingface_hub import hf_hub_url, cached_download  # type: ignore
 from ..utils.logger import logger
 from ..utils.fs import download
 from ..utils.systools import get_weights_dir_path
@@ -44,42 +44,42 @@ class ModelCatalog:
             "size": [274552244, 7907],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "model-800000_inf_only",
-            "tp_model": True
+            "tp_model": True,
         },
         "cell/model-1800000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_cell",
             "size": [274503056, 8056],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "model-1800000_inf_only",
-            "tp_model": True
+            "tp_model": True,
         },
         "item/model-1370000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [274515344, 7904],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "model-1370000_inf_only",
-            "tp_model": True
+            "tp_model": True,
         },
         "item/model-1370000.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [823546048, 25787],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
             "hf_model_name": "model-1370000",
-            "tp_model": True
+            "tp_model": True,
         },
         "layout/model-800000.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_layout",
             "size": [823656748, 25796],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
             "hf_model_name": "model-800000",
-            "tp_model": True
+            "tp_model": True,
         },
         "cell/model-1800000.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_cell",
             "size": [823509160, 25905],
             "hf_repo_id": "ddeepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
             "hf_model_name": "model-1800000",
-            "tp_model": True
+            "tp_model": True,
         },
     }
 
@@ -136,7 +136,7 @@ class ModelCatalog:
         :return: A dict of model/weights profiles
         """
         profile = copy(ModelCatalog.MODELS[path_weights])
-        profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile.get("urls","")]
+        profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile.get("urls", "")]
         return profile
 
 
@@ -175,13 +175,13 @@ class ModelDownloadManager:  # pylint: disable=R0903
         """
 
         absolute_path = os.path.join(get_weights_dir_path(), path_weights)
-        file_names : List[str] = []
+        file_names: List[str] = []
         if ModelCatalog.is_registered(path_weights):
             profile = ModelCatalog.get_profile(path_weights)
             if profile["tp_model"]:
                 file_names = get_tp_weight_names(path_weights)
             if from_hf_hub:
-                ModelDownloadManager._load_from_hf_hub(profile,absolute_path,file_names)
+                ModelDownloadManager._load_from_hf_hub(profile, absolute_path, file_names)
             else:
                 ModelDownloadManager._load_from_gd(profile, absolute_path, file_names)
 
@@ -191,16 +191,16 @@ class ModelDownloadManager:  # pylint: disable=R0903
         return absolute_path
 
     @staticmethod
-    def _load_from_hf_hub(profile:  Dict[str, Union[str,List[Union[int, str]]]],
-                          absolute_path: str,
-                          file_names: List[str]) -> None:
+    def _load_from_hf_hub(
+        profile: Dict[str, Any], absolute_path: str, file_names: List[str]
+    ) -> None:
         repo_id = profile["hf_repo_id"]
         if not file_names:
             file_names = profile["hf_model_name"]
-        for expect_size, file_name in zip(profile["size"],file_names):
+        for expect_size, file_name in zip(profile["size"], file_names):
             directory, _ = os.path.split(absolute_path)
-            url = hf_hub_url(repo_id=repo_id, filename= file_name)
-            f_path = cached_download(url,cache_dir=directory, force_filename=file_name)
+            url = hf_hub_url(repo_id=repo_id, filename=file_name)
+            f_path = cached_download(url, cache_dir=directory, force_filename=file_name)
             stat_info = os.stat(f_path)
             size = stat_info.st_size
             assert size > 0, f"Downloaded an empty file from {url}!"
@@ -209,7 +209,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
                 logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
 
     @staticmethod
-    def _load_from_gd(profile:  Dict[str, List[Union[int, str]]], absolute_path: str, file_names: List[str]) -> None:
+    def _load_from_gd(profile: Dict[str, List[Union[int, str]]], absolute_path: str, file_names: List[str]) -> None:
         for size, url, file_name in zip(profile["size"], profile["urls"], file_names):
             directory, _ = os.path.split(absolute_path)
             download(str(url), directory, file_name, int(size))
