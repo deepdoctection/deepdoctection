@@ -164,7 +164,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
     """
 
     @staticmethod
-    def maybe_download_weights(path_weights: str, from_hf_hub: bool = False) -> str:
+    def maybe_download_weights(path_weights: str, from_hf_hub: bool = True) -> str:
         """
         Check if the path pointing to weight points to some registered weights. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
