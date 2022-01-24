@@ -43,10 +43,8 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 
 You will need a GPU to run the **dd**-Analyzer or to train a pipeline component.
 
-- Python >=3.8
-- NVIDIA CUDA 11.1
-- CUDNN8
-- Tensorflow >=2.4.1
+- Python 3.8 or higher
+- Tensorflow 2.4.1 or higher
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/Dockerfile) is provided, please follow the official instructions on how to use it. 
