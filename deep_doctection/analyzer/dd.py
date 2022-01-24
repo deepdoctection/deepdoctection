@@ -64,7 +64,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     """
     if tf_available():
         if get_num_gpu() >= 1:
-            return "TP", "cuda"
+            return "TF", "cuda"
         if pytorch_available():
             return "PT", "cpu"
         raise ImportError("No GPU is available. You must install Pytorch in order to run on a CPU")
@@ -144,7 +144,7 @@ def get_dd_analyzer(
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
 
     d_layout : Union[D2FrcnnDetector,TPFrcnnDetector]
-    if lib == "TP":
+    if lib == "TF":
         layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
         assert layout_weights_path is not None
@@ -163,7 +163,7 @@ def get_dd_analyzer(
         categories_item = {"1": names.C.ROW, "2": names.C.COL}
         d_cell : Optional[Union[D2FrcnnDetector,TPFrcnnDetector]]
         d_item : Union[D2FrcnnDetector,TPFrcnnDetector]
-        if lib == "TP":
+        if lib == "TF":
             cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
             d_cell = TPFrcnnDetector(
