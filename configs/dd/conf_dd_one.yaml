@@ -7,7 +7,7 @@ CONFIG:
   D2ITEM: configs/dd/d2/rows/CASCADE_RCNN_R_50_FPN_GN.yaml
   TESS_OCR: configs/dd/conf_tesseract.yaml
 WEIGHTS:
-  TPLAYOUT: layout/model-2026500.data-00000-of-00001
+  TPLAYOUT: layout/model-800000_inf_only.data-00000-of-00001
   TPCELL: cell/model-3550000.data-00000-of-00001
   TPITEM: item/model-2750000.data-00000-of-00001
   D2LAYOUT:
