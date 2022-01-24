@@ -29,19 +29,6 @@ from tensorpack.tfutils.varmanip import load_checkpoint_vars, save_checkpoint_va
 from deep_doctection.utils import set_config_by_yaml
 
 
-def reduce_tp_model_size(weights):
-    all_keys = copy(list(weights.keys()))
-    for t in all_keys:
-        if t.endswith("/AccumGrad"):
-            weights.pop(t)
-        if t.endswith("/Momentum"):
-            weights.pop(t)
-    weights.pop("global_step")
-    weights.pop("learning_rate")
-    weights.pop("apply_gradients/AccumGrad/counter")
-    return weights
-
-
 def convert_weights_tp_to_d2(weights, cfg):
     d2_weights = OrderedDict()
     all_keys = copy(list(weights.keys()))
@@ -129,22 +116,16 @@ def convert_weights_tp_to_d2(weights, cfg):
 
 if __name__ == '__main__':
 
-    #path_config = "path/to/yaml_config"
-    #path_model = "path/to/tp_checkpoint"
-    path_config = "/home/janis/Public/deepdoctection/configs/tp/cell/conf_frcnn_cell.yaml"
-    path_model = "/home/janis/Documents/train/cell_21/model-1800000.data-00000-of-00001"
-    path_output_model = "/home/janis/Documents/d2/layout/d2_layout.pkl"
-    path_output_tp_model = "/home/janis/Documents/tp_inference/cell/model-1800000_inf_only"
-    """
+    path_config = "path/to/yaml_config"
+    path_model = "path/to/tp_checkpoint"
+    path_output_model = "/path/to/output/d2_weights.pkl"
+
     cfg = set_config_by_yaml(path_config)
     tp_dict = load_checkpoint_vars(path_model)
     d2_dict =  convert_weights_tp_to_d2(tp_dict,cfg)
     with open(path_output_model, 'wb') as handle:
         pickle.dump(d2_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    """
-    tp_dict = load_checkpoint_vars(path_model)
-    tp_dict = reduce_tp_model_size(tp_dict)
-    save_checkpoint_vars(tp_dict, path_output_tp_model)
+
 
 
 

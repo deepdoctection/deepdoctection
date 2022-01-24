@@ -36,6 +36,7 @@ DIST_DEPS = [
     "pycocotools",
     "pypdf2",
     "numpy",
+    "huggingface_hub",
     "packaging>=20.0",
     "pdf2image",
     "pyyaml",

@@ -39,60 +39,25 @@ class ModelCatalog:
     S_PREFIX = "https://www.googleapis.com/drive/v3/files"
 
     MODELS: Dict[str, Any] = {
-        "layout/model-2026500.data-00000-of-00001": {
+        "layout/model-800000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_layout",
-            "size": [1134895140, 58919],
-            "urls": [
-                "1d8_BBWRGbhMmqZs46TyIPVcO7KBb_mJW?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",  # pylint:
-                # disable=C0301
-                "11kfvkgwMSUf3ERUvMW03DUm3AhWi-cNj?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",  # pylint: disable=C0301
-            ],
-            "hf_repo_id": "deepdoctection/CASC_RCNN_R101_FPN_GN_PUBLAYNET",
-            "hf_model_name": "model-2026500",
+            "size": [274552244, 7907],
+            "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+            "hf_model_name": "model-800000_inf_only",
             "tp_model": True
         },
-        "cell/model-2840000.data-00000-of-00001": {
+        "cell/model-1800000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_cell",
-            "size": [823690432, 26583],
-            "urls": [
-                "1MgaXIcrPCDmc9j1t6EOGdpEjJ4CXY3Au?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-                "1xyn1TFlSR-rdb3fgiEQ7px9c7JH1Fhlk?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-            ],
-            "hf_repo_id": "",
-            "hf_model_name": "",
+            "size": [274503056, 8056],
+            "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+            "hf_model_name": "model-1800000_inf_only",
             "tp_model": True
         },
-        "item/model-1750000.data-00000-of-00001": {
+        "item/model-1370000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_rows",
-            "size": [823690432, 26567],
-            "urls": [
-                "1JryTMNLxigri_Q-4pzElBxfkj_AOAEQE?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-                "1rlwvCnki5gCPojA1A2f-ztXvacYQ61CJ?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-            ],
-            "hf_repo_id": "",
-            "hf_model_name": "",
-            "tp_model": True
-        },
-        "item/model-2750000.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_rows",
-            "size": [823690432, 26583],
-            "urls": [
-                "1v86gz7014QzqxtWpJT7osT9kpxRYqp9c?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-                "1wdT9QahyNMHHkSm4kHRqInTEHU2Uztu5?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-            ],
-            "hf_repo_id": "",
-            "hf_model_name": "",
-            "tp_model": True
-        },
-        "cell/model-3550000.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_cell",
-            "size": [823653532, 26583],
-            "urls": [
-                "1t0q8FKa7lak24M7RKT5kCNHzM3PhnTpp?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-                "1DPzfMnBsd1cg_CXQq7_EJhZxwWslkFw1?alt=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-            ],
-            "hf_repo_id": "",
-            "hf_model_name": "",
+            "size": [274515344, 7904],
+            "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+            "hf_model_name": "model-1370000_inf_only",
             "tp_model": True
         },
     }
@@ -150,7 +115,7 @@ class ModelCatalog:
         :return: A dict of model/weights profiles
         """
         profile = copy(ModelCatalog.MODELS[path_weights])
-        profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile["urls"]]
+        profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile.get("urls","")]
         return profile
 
 
