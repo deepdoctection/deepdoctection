@@ -41,10 +41,11 @@ def reduce_model(weights):
 
 
 if __name__ == '__main__':
-    path_model = "/home/janis/Public/deepdoctection/weights/layout/model-2026500.data-00000-of-00001"
+
+    path_model = "/path/to/dir/model"
     path, file_name = os.path.split(path_model)
     file_name,_ = file_name.split(".")
     tp_dict = load_checkpoint_vars(path_model)
     reduce_model(tp_dict)
-    path_target = path + "/" + file_name + "_reduced"
+    path_target = path + "/" + file_name + "_inf_only"
     save_checkpoint_vars(tp_dict, path_target)
