@@ -35,8 +35,11 @@ for researchers who would like to see how well their new model fits into an extr
 4. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
    models**.
 
-**[NEW]** 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
+5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
 You can acquire more details in the respective model cards. 
+
+**Please note: All previous models have been changed and re-trained. A consistent repo can be found since 
+commit 5cd5f99. Older versions will not work.** 
 
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
 [**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#).
