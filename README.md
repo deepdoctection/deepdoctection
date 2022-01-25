@@ -38,6 +38,8 @@ for researchers who would like to see how well their new model fits into an extr
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full 
 [**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#). 
 
+[NEW] 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
+You can acquire more details in the respective model cards. 
 
 ## Requirements
 
