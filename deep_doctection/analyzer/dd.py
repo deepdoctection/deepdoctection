@@ -73,7 +73,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
             return "PT", "gpu"
         return "PT", "cpu"
     raise ImportError(
-        "Neither Pytorch not Tensorflow are installed. You must install at least one of them before "
+        "Neither Pytorch nor Tensorflow are installed. You must install at least one of them before "
         "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
         "with Pytorch."
     )
@@ -138,7 +138,8 @@ def get_dd_analyzer(
     pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
 
     # will silent all TP loggings while building the tower
-    disable_tp_layer_logging()
+    if tensorpack_available():
+        disable_tp_layer_logging()
 
     # setup layout service
     categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}

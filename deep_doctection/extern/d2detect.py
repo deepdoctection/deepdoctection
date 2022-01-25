@@ -73,7 +73,7 @@ class D2FrcnnDetector(ObjectDetector):
         :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
                            dummy 'BG' category. Note, that this convention is different from the builtin D2 framework,
                            where models in the model zoo are trained with 'BG' class having the highest index.
-        :param config_overwrite:  Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
+        :param config_overwrite:  Overwrite some hyper parameters defined by the yaml file with some new values. E.g.
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
         """
 
@@ -85,7 +85,7 @@ class D2FrcnnDetector(ObjectDetector):
         for conf in config_overwrite:
             key, val = conf.split("=", maxsplit=1)
             d2_conf_list.extend([key, val])
-
+        self.categories = copy(categories)
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
         self._instantiate_d2_predictor()

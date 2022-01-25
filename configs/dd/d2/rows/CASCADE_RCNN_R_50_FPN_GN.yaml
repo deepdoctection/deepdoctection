@@ -12,7 +12,7 @@ MODEL:
     NORM: "GN"
   ROI_HEADS:
     NAME: "CascadeROIHeads"
-    NUM_CLASSES: 1
+    NUM_CLASSES: 2
   ROI_BOX_HEAD:
     CLS_AGNOSTIC_BBOX_REG: True
   PIXEL_MEAN:
