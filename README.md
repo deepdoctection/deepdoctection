@@ -49,7 +49,7 @@ You will need a GPU to run the **dd**-Analyzer or to train a pipeline component.
 - Tensorflow 2.4.1 or higher
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
-[Dockerfile](./docker/Dockerfile) is provided, please follow the official instructions on how to use it. 
+[Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
 
 
 Depending on the pipeline you want to use, you will be notified if further installations are necessary, e.g.
