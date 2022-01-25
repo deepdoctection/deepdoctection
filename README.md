@@ -33,13 +33,13 @@ for researchers who would like to see how well their new model fits into an extr
 3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline.
 
 4. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
-   models**.  
-   
-Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full 
-[**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#). 
+   models**.
 
-[NEW] 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
+**[NEW]** 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
 You can acquire more details in the respective model cards. 
+
+Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
+[**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#).
 
 ## Requirements
 
