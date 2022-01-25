@@ -135,7 +135,7 @@ install-prodigy-setup: check-venv install-jupyterlab-setup
 	@echo "--> Done installing Jupyter Lab Prodigy plugin"
 	@echo ""
 
-install-kernel-dd: check-venv install-dd-all
+install-kernel-dd: check-venv
 	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
 	pip install --user ipykernel
 	$(PYTHON) -m ipykernel install --user --name=deep-doc
