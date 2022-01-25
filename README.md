@@ -82,7 +82,7 @@ make venv
 source venv/bin/activate
 ```
 
-For Tensoflow, run
+For Tensorflow, run
  
 ```
 make install-dd-tf
