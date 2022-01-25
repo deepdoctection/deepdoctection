@@ -47,13 +47,13 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 
 - Linux **or** macOS
 - Python >=  3.8
-- Pytorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
+- PyTorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
 
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
 
-**deep**doctection uses Tensorpack as training framework as well as their vision models for layout analysis. 
-For Pytorch, Detectron2 is used. All models have been trained on Tensorflow and converted into Detectron2 consumable 
-artefacts. The prediction results in PyTorch are therefore slightly worse. 
+**deep**doctection uses Tensorpack as training framework as well as its vision models for layout analysis. 
+For PyTorch, Detectron2 is used. All models have been trained on Tensorflow and converted into Detectron2 consumable 
+artefacts. Prediction results in PyTorch are therefore slightly worse. 
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
@@ -88,7 +88,7 @@ For Tensoflow, run
 make install-dd-tf
 ```
 
-If you want to use the Pytorch framework, run:
+If you want to use the PyTorch framework, run:
 
 ```
 make install-dd-pt
