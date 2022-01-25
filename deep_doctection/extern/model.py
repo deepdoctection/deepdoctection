@@ -81,6 +81,27 @@ class ModelCatalog:
             "hf_model_name": "model-1800000",
             "tp_model": True,
         },
+        "layout/d2_model-800000-layout.pkl": {
+            "config": "configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "size": [274568239],
+            "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+            "hf_model_name": "d2_model-800000-layout.pkl",
+            "tp_model": False,
+        },
+        "cell/d2_model-1800000-cell.pkl": {
+            "config": "configs/dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "size": [274519039],
+            "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+            "hf_model_name": "d2_model-1800000-cell.pkl",
+            "tp_model": False,
+        },
+        "item/d2_model-1370000-item.pkl": {
+            "config": "configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "size": [274531339],
+            "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+            "hf_model_name": "d2_model-1370000-item.pkl",
+            "tp_model": False,
+        },
     }
 
     @staticmethod
@@ -128,7 +149,7 @@ class ModelCatalog:
         return False
 
     @staticmethod
-    def get_profile(path_weights: str) -> Dict[str, List[Union[int, str]]]:
+    def get_profile(path_weights: str) -> Dict[str, Any]:
         """
         Returns the profile of given local weights, i.e. the config file, size and urls.
 
@@ -180,6 +201,9 @@ class ModelDownloadManager:  # pylint: disable=R0903
             profile = ModelCatalog.get_profile(path_weights)
             if profile["tp_model"]:
                 file_names = get_tp_weight_names(path_weights)
+            else:
+                assert isinstance(profile["hf_model_name"], str)
+                file_names.append(profile["hf_model_name"])
             if from_hf_hub:
                 ModelDownloadManager._load_from_hf_hub(profile, absolute_path, file_names)
             else:
