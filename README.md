@@ -38,22 +38,25 @@ for researchers who would like to see how well their new model fits into an extr
 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
 You can acquire more details in the respective model cards. 
 
-**Please note: All previous models have been changed and re-trained. A consistent repo can be found since 
-commit 5cd5f99. Older versions will not work.** 
+**Please note: All previous models have been changed and re-trained. Older versions from now on will not work.** 
 
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
 [**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#).
 
 ## Requirements
 
-You will need a GPU to run the **dd**-Analyzer or to train a pipeline component.
+- Linux **or** macOS
+- Python >=  3.8
+- Pytorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
 
-- Python 3.8 or higher
-- Tensorflow 2.4.1 or higher
+You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
+
+**deep**doctection uses Tensorpack as training framework as well as their vision models for layout analysis. 
+For Pytorch, Detectron2 is used. All models have been trained on Tensorflow and converted into Detectron2 consumable 
+artefacts. The prediction results in PyTorch are therefore slightly worse. 
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
-
 
 Depending on the pipeline you want to use, you will be notified if further installations are necessary, e.g.
 
@@ -77,7 +80,18 @@ cd deepdoctection
 make clean
 make venv
 source venv/bin/activate
+```
+
+For Tensoflow, run
+ 
+```
 make install-dd-tf
+```
+
+If you want to use the Pytorch framework, run:
+
+```
+make install-dd-pt
 ```
 
 If you want to access the **deep**doctection package through jupyter, create an IPkernel in your venv. 
