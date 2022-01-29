@@ -37,6 +37,7 @@ def prodigy_to_image(
     load_image: bool,
     fake_score: bool,
     path_reference_ds: str = "",
+    accept_only_answer: bool = False
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from Prodigy database to an Image
@@ -49,8 +50,12 @@ def prodigy_to_image(
                        will be added.
     :param path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file
                               of the datapoint can be found.
+    :param accept_only_answer: Filter every datapoint that has the answer 'reject' or 'ignore'.
     :return: Image
     """
+
+    if accept_only_answer and dp.get("answer")!="accept":
+        return None
 
     file_name: Optional[str] = None
     meta = dp.get("meta")
