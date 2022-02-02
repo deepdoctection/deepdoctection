@@ -220,14 +220,14 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     build_train_dict: Dict[str, str] = {}
     if build_train_config is not None:
         build_train_dict = string_to_dict(",".join(build_train_config))
-        if "split" not in build_train_dict:
-            build_train_dict["split"] = "train"
+    if "split" not in build_train_dict:
+        build_train_dict["split"] = "train"
 
     build_val_dict: Dict[str, str] = {}
     if build_val_config is not None:
         build_val_dict = string_to_dict(",".join(build_val_config))
-        if "split" not in build_val_dict:
-            build_val_dict["split"] = "val"
+    if "split" not in build_val_dict:
+        build_val_dict["split"] = "val"
 
     config_overwrite = [] if config_overwrite is None else config_overwrite
 
