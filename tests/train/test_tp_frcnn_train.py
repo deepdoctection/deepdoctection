@@ -45,6 +45,7 @@ def set_num_gpu_to_one() -> int:
 
 
 @mark.requires_tf
+@patch("deep_doctection.mapper.tpstruct.os.path.isfile",MagicMock(return_value=True))
 @patch("deep_doctection.train.tp_frcnn_train.set_mp_spawn")
 def test_get_train_dataflow(
     set_mp_spawn: Any, test_dataset: DatasetBase, path_to_tp_frcnn_yaml: str  # pylint: disable=W0613
@@ -72,6 +73,7 @@ def test_get_train_dataflow(
 
 
 @mark.requires_tf
+@patch("deep_doctection.mapper.tpstruct.os.path.isfile",MagicMock(return_value=True))
 @patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deep_doctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deep_doctection.train.tp_frcnn_train.ModelSaver")
