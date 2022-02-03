@@ -37,7 +37,8 @@ def prodigy_to_image(
     load_image: bool,
     fake_score: bool,
     path_reference_ds: str = "",
-    accept_only_answer: bool = False
+    accept_only_answer: bool = False,
+    category_name_mapping: Optional[Dict[str, str]] = None
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from Prodigy database to an Image
@@ -51,6 +52,7 @@ def prodigy_to_image(
     :param path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file
                               of the datapoint can be found.
     :param accept_only_answer: Filter every datapoint that has the answer 'reject' or 'ignore'.
+    :param category_name_mapping: Map incoming category names, e.g. {"source_name":"target_name"}
     :return: Image
     """
 
@@ -95,8 +97,15 @@ def prodigy_to_image(
         spans = dp.get("spans", [])
 
         for span in spans:
-            upper_left = list(map(float, span["points"][0]))
-            lower_right = list(map(float, span["points"][2]))
+            ulx, uly = list(map(float, span["points"][0]))
+            lrx,lry = list(map(float, span["points"][2]))
+            ulx = min(max(ulx,0), image.width if image.width else ulx)
+            uly = min(max(uly,0), image.height if image.height else uly)
+            lrx = min(max(lrx,0), image.width if image.width else lrx)
+            lry = min(max(lry,0), image.height if image.height else lry)
+            upper_left = [ulx, uly]
+            lower_right = [lrx, lry]
+
             bbox = BoundingBox(
                 absolute_coords=True, ulx=upper_left[0], uly=upper_left[1], lrx=lower_right[0], lry=lower_right[1]
             )
@@ -109,10 +118,17 @@ def prodigy_to_image(
             if not score:
                 score = maybe_get_fake_score(fake_score)
 
+            if category_name_mapping is not None:
+                label = category_name_mapping.get(span["label"])
+                if not label:
+                    label = span["label"]
+            else:
+                label = span["label"]
+
             annotation = ImageAnnotation(
-                category_name=span["label"],
+                category_name=label,
                 bounding_box=bbox,
-                category_id=categories_name_as_key[span["label"]],
+                category_id=categories_name_as_key[label],
                 score=score,
                 external_id=external_id,
             )

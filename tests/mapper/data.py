@@ -623,7 +623,7 @@ _SAMPLE_PRODIGY = {
             "w": 1442,
             "h": 1875.3,
             "type": "rect",
-            "points": [[100, 223.7], [100, 2099], [1542, 2099], [1542, 223.7]],
+            "points": [[1, 2.7], [1, 29], [15, 29], [15, 2.7]],
         },
         {
             "label": "TITLE",
@@ -632,7 +632,7 @@ _SAMPLE_PRODIGY = {
             "w": 364.6,
             "h": 68.8,
             "type": "rect",
-            "points": [[1181.6, 99.2], [1181.6, 168], [1546.2, 168], [1546.2, 99.2]],
+            "points": [[11.6, 9.2], [11.6, 18], [16.2, 18], [16.2, 9.2]],
         },
     ],
     "_input_hash": -2030256107,
@@ -872,7 +872,7 @@ class DatapointProdigy:
 
     dp = _SAMPLE_PRODIGY
     categories = {"TEXT": "1", "TITLE": "2", "TABLE": "3", "FIGURE": "4", "LIST": "5"}
-    first_ann_box = Box(100, 223.7, 1442, 1875.3)
+    first_ann_box = Box(1, 2.7, 14, 26.3)
 
     def get_width(self, image_loaded: bool) -> float:
         """
