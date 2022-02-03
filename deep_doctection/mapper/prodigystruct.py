@@ -98,7 +98,7 @@ def prodigy_to_image(
 
         for span in spans:
             ulx, uly = list(map(float, span["points"][0]))
-            lrx,lry = list(map(float, span["points"][2]))
+            lrx, lry = list(map(float, span["points"][2]))
             ulx = min(max(ulx,0), image.width if image.width else ulx)
             uly = min(max(uly,0), image.height if image.height else uly)
             lrx = min(max(lrx,0), image.width if image.width else lrx)
