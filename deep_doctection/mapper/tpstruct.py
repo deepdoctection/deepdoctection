@@ -59,7 +59,7 @@ def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
 
     output["gt_boxes"] = np.asarray(all_boxes, dtype="float32")
     output["gt_labels"] = np.asarray(all_categories, dtype="int32")
-    if not os.path.isfile(dp.location):
+    if not os.path.isfile(dp.location) and dp.image is None:
         return None
 
     output["file_name"] = dp.location  # full path
