@@ -95,11 +95,11 @@ class ModelCatalog:
             "hf_model_name": "d2_model-1800000-cell.pkl",
             "tp_model": False,
         },
-        "item/d2_model-1370000-item.pkl": {
+        "item/d2_model-1620000-item.pkl": {
             "config": "configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
             "size": [274531339],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-            "hf_model_name": "d2_model-1370000-item.pkl",
+            "hf_model_name": "d2_model-1620000-item.pkl",
             "tp_model": False,
         },
     }
