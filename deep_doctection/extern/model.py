@@ -53,18 +53,18 @@ class ModelCatalog:
             "hf_model_name": "model-1800000_inf_only",
             "tp_model": True,
         },
-        "item/model-1370000_inf_only.data-00000-of-00001": {
+        "item/model-1620000_inf_only.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [274515344, 7904],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-            "hf_model_name": "model-1370000_inf_only",
+            "hf_model_name": "model-1620000_inf_only",
             "tp_model": True,
         },
-        "item/model-1370000.data-00000-of-00001": {
+        "item/model-1620000.data-00000-of-00001": {
             "config": "configs/dd/tp/conf_frcnn_rows",
             "size": [823546048, 25787],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
-            "hf_model_name": "model-1370000",
+            "hf_model_name": "model-1620000",
             "tp_model": True,
         },
         "layout/model-800000.data-00000-of-00001": {
