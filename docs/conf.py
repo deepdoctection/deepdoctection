@@ -23,7 +23,7 @@ mod.__spec__ = mock.Mock(name='tensorflow')
 
 MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','tensorflow.python.training',
                 'tensorflow.python.client','tensorflow.python.framework','tensorflow.python.platform',
-                'tensorflow.python.tools','tensorflow.contrib.graph_editor']
+                'tensorflow.python.tools','tensorflow.contrib.graph_editor','pycocotools']
 
 
 # Pytorch
