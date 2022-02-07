@@ -3,26 +3,14 @@
 
 ## Requirements
 
-If you want to do the interesting stuff with **deep**doctection you will need a GPU. 
+- Linux **or** macOS
+- Python >=  3.8
+- PyTorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
 
-You can run some notebooks on Google Colab. However, if you want to do something more elaborate which will take 
-more time it is better to look for something else.
+You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
-## Software Requirements
-
-- Python >=3.8
-- NVIDIA CUDA 11.0
-- CUDNN8
-
-Most components currently available require Tensorflow. 
-
-- Tensorflow >=2.4.1
-
-There will be some additional components available that require Pytorch. If these are used
-
-- Pytorch >=1.8.1 
-
-will be necessary to have in the base installation.
+For fine-tuning layout models **deep**doctection uses Tensorpack as training
+framework and therefore only Tensorflow training scripts are provided.
 
 The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
 some code components will have some issues on Windows.
@@ -64,7 +52,18 @@ cd deepdoctection
 make clean
 make venv
 source venv/bin/activate
+```
+
+For Tensorflow, run 
+
+```
 make install-dd-tf
+```
+
+If you want to use the PyTorch framework, run:
+
+```
+make install-dd-pt
 ```
 
 This installation will give you the basic usage of this package and will allow you to run the tutorial notebooks.
