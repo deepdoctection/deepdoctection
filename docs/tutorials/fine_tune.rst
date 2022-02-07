@@ -1,7 +1,7 @@
 Evaluating and Fine Tuning
 ==========================
 
-Introduction
+Intro
 ------------
 
 We show how a model can be fine-tuned for a specific task and how the
@@ -241,8 +241,8 @@ categories.
 
 
 
-Evaluation
-----------
+Evaluating model
+-----------------
 
 We want to evaluate the current model and use the evaluator framework
 for this. An evaluator needs a dataset on which to run the evaluation,
@@ -299,12 +299,6 @@ argument along with other possible build configurations.
 .. parsed-literal::
 
     [32m[1221 17:53.28 @eval.py:137][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
-
 
 .. parsed-literal::
 
