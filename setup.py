@@ -40,7 +40,6 @@ DIST_DEPS = [
     "packaging>=20.0",
     "pdf2image",
     "pyyaml",
-    "pytesseract",
     "scikit-learn",
     "scipy",
     "networkx",

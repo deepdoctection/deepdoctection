@@ -9,10 +9,11 @@ Utilities for maintaining dependencies and dealing with external library package
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
 
-
+import string
+import subprocess
 from shutil import which
-from typing import Tuple
-
+from typing import Tuple, Union
+from os import environ
 import multiprocessing as mp
 
 import importlib.util
@@ -163,20 +164,6 @@ _TESS_AVAILABLE = which("tesseract") is not None
 _TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
 
 
-def py_tesseract_available() -> bool:
-    """
-    Returns True if Pytesseract is installed
-    """
-    return bool(_PYTESS_AVAILABLE)
-
-
-def get_py_tesseract_requirement() -> Requirement:
-    """
-    Returns Pytesseract requirement
-    """
-    return "pytesseract", py_tesseract_available(), _PYTESS_ERR_MSG
-
-
 def tesseract_available() -> bool:
     """
     Returns True if Tesseract is installed
@@ -184,11 +171,47 @@ def tesseract_available() -> bool:
     return bool(_TESS_AVAILABLE)
 
 
+# copy paste from https://github.com/madmaze/pytesseract/blob/master/pytesseract/pytesseract.py
+
+
+class TesseractNotFound(BaseException):
+    """
+    Exception class for Tesseract being not found
+    """
+
+
+def get_tesseract_version() -> Union[int, version.Version,version.LegacyVersion]:
+    """
+    Returns Version object of the Tesseract version. We need at least Tesseract 3.05
+    """
+    try:
+        output = subprocess.check_output(
+            ["tesseract", '--version'],
+            stderr=subprocess.STDOUT,
+            env=environ,
+            stdin=subprocess.DEVNULL,
+        )
+    except OSError:
+        raise TesseractNotFound()
+
+    raw_version = output.decode("utf-8")
+    str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(' ')
+    str_version, *_ = str_version.partition('-')
+
+    current_version = version.parse(str_version)
+
+    if current_version >= version.Version('4.0'):
+        return current_version
+    return 0
+
+
 def get_tesseract_requirement() -> Requirement:
     """
-    Returns Tesseract requirement
+    Returns Tesseract requirement. The minimum version must be 3.05
     """
-    return "tesseract", tesseract_available(), _TESS_ERR_MSG
+    if get_tesseract_version():
+        return "tesseract", True, _TESS_ERR_MSG
+    return "tesseract", False, _TESS_ERR_MSG
 
 
 # Textract related dependencies
