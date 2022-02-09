@@ -1,11 +1,7 @@
 .PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test
 
 UNAME_S := $(shell uname -s)
-
-ifeq ($(UNAME_S),Linux)
-PLATFORM=linux
 PRODIGY_PATH=
-endif
 
 
 PYTHON=python3.8
