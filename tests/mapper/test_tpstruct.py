@@ -19,6 +19,7 @@
 Testing module mapper.tpstruct
 """
 from unittest.mock import MagicMock, patch
+
 from numpy.testing import assert_allclose, assert_array_equal
 
 from deep_doctection.datapoint.image import Image
@@ -27,7 +28,7 @@ from deep_doctection.mapper.tpstruct import image_to_tp_frcnn_training
 from .data import DatapointImage
 
 
-@patch("deep_doctection.mapper.tpstruct.os.path.isfile",MagicMock(return_value=True))
+@patch("deep_doctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: DatapointImage) -> None:
     """
     testing image_to_tp_frcnn_training is mapping correctly
@@ -41,7 +42,7 @@ def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: Datap
     expected_output = image_results.get_tp_frcnn_training_anns()
 
     assert output.keys() == expected_output.keys()
-    assert_allclose(output["gt_boxes"], expected_output["gt_boxes"])  # type: ignore
-    assert_array_equal(output["gt_labels"], expected_output["gt_labels"])  # type: ignore
-    assert_array_equal(output["image"], expected_output["image"])  # type: ignore
+    assert_allclose(output["gt_boxes"], expected_output["gt_boxes"])
+    assert_array_equal(output["gt_labels"], expected_output["gt_labels"])
+    assert_array_equal(output["image"], expected_output["image"])
     assert output["file_name"] == expected_output["file_name"]

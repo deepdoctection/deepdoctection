@@ -21,7 +21,7 @@ Testing the module mapper.misc
 from typing import Dict, Union
 from unittest.mock import MagicMock, patch
 
-from numpy import ones
+from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark
 
@@ -29,7 +29,7 @@ from deep_doctection.datapoint import Image
 from deep_doctection.mapper.misc import to_image
 
 _TEST_IMAGE = Image(file_name="test_image.png", location="test/to/path/test_image.png")
-_TEST_IMAGE.image = ones((4, 3, 3))
+_TEST_IMAGE.image = ones((4, 3, 3), dtype=float32)
 
 
 @mark.parametrize(

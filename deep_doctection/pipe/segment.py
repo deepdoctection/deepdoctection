@@ -83,7 +83,7 @@ def choose_items_by_iou(
 
     else:
         reference_item_proposals_boxes = item_proposals_boxes
-        triangle_ind = np.triu_indices(len(item_proposals))  # type: ignore
+        triangle_ind = np.triu_indices(len(item_proposals))
 
     iou_matrix = np_iou(item_proposals_boxes, reference_item_proposals_boxes)
 
@@ -97,7 +97,7 @@ def choose_items_by_iou(
             item_proposals[el].deactivate()
 
     else:
-        unique_indices = np.unique(indices_to_deactivate)  # type: ignore
+        unique_indices = np.unique(indices_to_deactivate)
         for idx, el in enumerate(item_proposals):
             if idx not in unique_indices:
                 item_proposals[idx].deactivate()

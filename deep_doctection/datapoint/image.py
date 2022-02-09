@@ -445,7 +445,7 @@ class Image:
 
         image_copy = deepcopy(self)
         image_copy._annotations = []  # pylint: disable=W0212
-        image_copy.image = np.ones((1, 1, 3))
+        image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
         export_dict = image_copy.as_dict()
         export_dict["annotations"] = []
         export_dict["image"] = self.get_image(type_id="b64")

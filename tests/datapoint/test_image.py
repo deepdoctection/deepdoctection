@@ -21,7 +21,7 @@ Testing the module datapoint.image
 
 from typing import Union
 
-from numpy import ones
+from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
@@ -255,7 +255,7 @@ class TestImage:
         """
         # Arrange
         test_image = Image(location=image.loc, file_name=image.file_name)
-        test_image.image = ones((24, 85, 3))
+        test_image.image = ones((24, 85, 3), dtype=float32)
         cat_1 = ImageAnnotation(
             category_name="FOO",
             bounding_box=BoundingBox(ulx=15.0, uly=20.0, width=10.0, height=8.0, absolute_coords=True),
@@ -283,7 +283,7 @@ class TestImage:
 
         # Arrange
         test_image = Image(location=image.loc, file_name=image.file_name)
-        test_image.image = ones((24, 85, 3))
+        test_image.image = ones((24, 85, 3), dtype=float32)
         cat_1 = ImageAnnotation(
             category_name="FOO",
             bounding_box=BoundingBox(ulx=15.0, uly=20.0, width=10.0, height=8.0, absolute_coords=True),
