@@ -84,4 +84,4 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [ get_tesseract_requirement()]
+        return [get_tesseract_requirement()]

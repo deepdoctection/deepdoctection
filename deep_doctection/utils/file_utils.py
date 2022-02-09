@@ -180,27 +180,27 @@ class TesseractNotFound(BaseException):
     """
 
 
-def get_tesseract_version() -> Union[int, version.Version,version.LegacyVersion]:
+def get_tesseract_version() -> Union[int, version.Version, version.LegacyVersion]:
     """
     Returns Version object of the Tesseract version. We need at least Tesseract 3.05
     """
     try:
         output = subprocess.check_output(
-            ["tesseract", '--version'],
+            ["tesseract", "--version"],
             stderr=subprocess.STDOUT,
             env=environ,
             stdin=subprocess.DEVNULL,
         )
     except OSError:
-        raise TesseractNotFound()
+        raise TesseractNotFound() from OSError
 
     raw_version = output.decode("utf-8")
-    str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(' ')
-    str_version, *_ = str_version.partition('-')
+    str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(" ")
+    str_version, *_ = str_version.partition("-")
 
     current_version = version.parse(str_version)
 
-    if current_version >= version.Version('4.0'):
+    if current_version >= version.Version("4.0"):
         return current_version
     return 0
 

@@ -38,7 +38,7 @@ def prodigy_to_image(
     fake_score: bool,
     path_reference_ds: str = "",
     accept_only_answer: bool = False,
-    category_name_mapping: Optional[Dict[str, str]] = None
+    category_name_mapping: Optional[Dict[str, str]] = None,
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from Prodigy database to an Image
@@ -56,7 +56,7 @@ def prodigy_to_image(
     :return: Image
     """
 
-    if accept_only_answer and dp.get("answer")!="accept":
+    if accept_only_answer and dp.get("answer") != "accept":
         return None
 
     file_name: Optional[str] = None
@@ -99,10 +99,10 @@ def prodigy_to_image(
         for span in spans:
             ulx, uly = list(map(float, span["points"][0]))
             lrx, lry = list(map(float, span["points"][2]))
-            ulx = min(max(ulx,0), image.width if image.width else ulx)
-            uly = min(max(uly,0), image.height if image.height else uly)
-            lrx = min(max(lrx,0), image.width if image.width else lrx)
-            lry = min(max(lry,0), image.height if image.height else lry)
+            ulx = min(max(ulx, 0), image.width if image.width else ulx)
+            uly = min(max(uly, 0), image.height if image.height else uly)
+            lrx = min(max(lrx, 0), image.width if image.width else lrx)
+            lry = min(max(lry, 0), image.height if image.height else lry)
             upper_left = [ulx, uly]
             lower_right = [lrx, lry]
 
@@ -124,6 +124,7 @@ def prodigy_to_image(
                     label = span["label"]
             else:
                 label = span["label"]
+            assert isinstance(label, str)
 
             annotation = ImageAnnotation(
                 category_name=label,
@@ -153,7 +154,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
     img_str = dp.get_image(type_id="b64")
     if img_str is None:
         img_str = ""
-    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str
+    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str  # type: ignore
     output["text"] = dp.file_name
     output["image_id"] = dp.image_id
 

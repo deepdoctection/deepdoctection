@@ -26,13 +26,11 @@ from glob import iglob
 from errno import ENOENT
 from os import environ, remove
 from os.path import normcase, normpath, realpath
-
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union, Optional, Iterator, Tuple
 from tempfile import NamedTemporaryFile
+from contextlib import contextmanager
 
 import numpy as np
-
-from contextlib import contextmanager
 from cv2 import imwrite
 
 from ...utils.detection_types import ImageType
@@ -46,7 +44,12 @@ __all__ = ["predict_text"]
 
 
 class TesseractError(RuntimeError):
-    def __init__(self, status, message):
+    """
+    Tesseract Error
+    """
+
+    def __init__(self, status: int, message: str) -> None:
+        super().__init__()
         self.status = status
         self.message = message
         self.args = (status, message)
@@ -57,30 +60,26 @@ def _subprocess_args() -> Dict[str, Any]:
     # for reference and comments.
 
     kwargs = {
-        'stdin': subprocess.PIPE,
-        'stderr': subprocess.PIPE,
-        'startupinfo': None,
-        'env': environ,
+        "stdin": subprocess.PIPE,
+        "stderr": subprocess.PIPE,
+        "startupinfo": None,
+        "env": environ,
+        "stdout": subprocess.PIPE,
     }
-
-    if hasattr(subprocess, 'STARTUPINFO'):
-        kwargs['startupinfo'] = subprocess.STARTUPINFO()
-        kwargs['startupinfo'].dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        kwargs['startupinfo'].wShowWindow = subprocess.SW_HIDE
-
-    kwargs['stdout'] = subprocess.PIPE
 
     return kwargs
 
 
-def _build_tesseract_args(lang: str, config: str, nice: int, input_file_name: str,
-                          output_file_name_base: str):
+def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, output_file_name_base: str) -> List[str]:
+    """
+    Generates a tesseract cmd as list of string with given inputs
+    """
     cmd_args: List[str] = []
 
-    if not sys.platform.startswith('win32') and nice != 0:
-        cmd_args += ('nice', '-n', str(nice))
+    if not sys.platform.startswith("win32") and nice != 0:
+        cmd_args += ("nice", "-n", str(nice))
 
-    cmd_args += ('tesseract', input_file_name, output_file_name_base, "-l", lang)
+    cmd_args += ("tesseract", input_file_name, output_file_name_base, "-l", lang)
 
     if config:
         cmd_args += shlex.split(config)
@@ -91,7 +90,12 @@ def _build_tesseract_args(lang: str, config: str, nice: int, input_file_name: st
 
 
 @contextmanager
-def timeout_manager(proc, seconds=None):
+def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
+    """
+    Manager for time handling while Tesseract being called
+    :param proc: process
+    :param seconds: seconds to wait
+    """
     try:
         if not seconds:
             yield proc.communicate()[1]
@@ -104,7 +108,7 @@ def timeout_manager(proc, seconds=None):
             proc.terminate()
             proc.kill()
             proc.returncode = -1
-            raise RuntimeError('Tesseract process timeout')
+            raise RuntimeError("Tesseract process timeout")  # pylint: disable=W0707
     finally:
         proc.stdin.close()
         proc.stdout.close()
@@ -112,40 +116,45 @@ def timeout_manager(proc, seconds=None):
 
 
 @contextmanager
-def save(image):
+def save(image: Union[str, ImageType]) -> Iterator[Tuple[str, str]]:
+    """
+    Save image temporarily and handle the clean-up once not necessary anymore
+    :param image: image as string or numpy array
+    """
     try:
-        with NamedTemporaryFile(prefix='tess_', delete=False) as f:
+        with NamedTemporaryFile(prefix="tess_", delete=False) as file:
             if isinstance(image, str):
-                yield f.name, realpath(normpath(normcase(image)))
+                yield file.name, realpath(normpath(normcase(image)))
                 return
-            input_file_name = f.name + ".PNG"
+            input_file_name = file.name + ".PNG"
             imwrite(input_file_name, image)
-            yield f.name, input_file_name
+            yield file.name, input_file_name
     finally:
-        for file_name in iglob(f.name + '*' if f.name else f.name):
+        for file_name in iglob(file.name + "*" if file.name else file.name):
             try:
                 remove(file_name)
-            except OSError as e:
-                if e.errno != ENOENT:
-                    raise e
+            except OSError as error:
+                if error.errno != ENOENT:
+                    raise error
 
 
-def _run_tesseract(tesseract_args: List[str]):
+def _run_tesseract(tesseract_args: List[str]) -> None:
     try:
-        proc = subprocess.Popen(tesseract_args, **_subprocess_args())
-    except OSError as e:
-        if e.errno != ENOENT:
-            raise e
-        raise TesseractNotFound("Tesseract not found. Please install or add to your PATH.")
+        proc = subprocess.Popen(tesseract_args, **_subprocess_args())  # pylint: disable=R1732
+    except OSError as error:
+        if error.errno != ENOENT:
+            raise error from error
+        raise TesseractNotFound("Tesseract not found. Please install or add to your PATH.") from error
 
     with timeout_manager(proc, 0) as error_string:
         if proc.returncode:
-            raise TesseractError(proc.returncode, ' '.join(
-                line for line in error_string.decode("utf-8").splitlines()
-            ).strip())
+            raise TesseractError(
+                proc.returncode,
+                " ".join(line for line in error_string.decode("utf-8").splitlines()).strip(),  # type: ignore
+            )
 
 
-def image_to_dict(image: ImageType ,lang: str, config: str) -> Dict[str, List[str,int,float]]:
+def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
     This is more or less :func:pytesseract.image_to_data with a dict as returned value.
     What happens under the hood is:
@@ -164,18 +173,11 @@ def image_to_dict(image: ImageType ,lang: str, config: str) -> Dict[str, List[st
     """
 
     with save(image) as (tmp_name, input_file_name):
-        kwargs = {
-            "lang": lang,
-            "config": config,
-            "nice": 0,
-            "input_file_name": input_file_name,
-            "output_file_name_base": tmp_name,
-        }
-        _run_tesseract(_build_tesseract_args(**kwargs))
-        with open(kwargs["output_file_name_base"]+".tsv","rb") as output_file:
-            output =  output_file.read().decode("utf-8")
-        result = {}
-        rows = [row.split("\t") for row in output.strip().split('\n')]
+        _run_tesseract(_input_to_cli_str(lang, config, 0, input_file_name, tmp_name))
+        with open(tmp_name + ".tsv", "rb") as output_file:
+            output = output_file.read().decode("utf-8")
+        result: Dict[str, List[Union[str, int, float]]] = {}
+        rows = [row.split("\t") for row in output.strip().split("\n")]
         if len(rows) < 2:
             return result
         header = rows.pop(0)
@@ -183,20 +185,20 @@ def image_to_dict(image: ImageType ,lang: str, config: str) -> Dict[str, List[st
         if len(rows[-1]) < length:
             # Fixes bug that occurs when last text string in TSV is null, and
             # last row is missing a final cell in TSV file
-            rows[-1].append('')
+            rows[-1].append("")
 
         str_col_idx = -1
         str_col_idx += length
 
         for i, head in enumerate(header):
-            result[head] = list()
+            result[head] = []
             for row in rows:
                 if len(row) <= i:
                     continue
 
                 val = row[i]
                 if row[i].isdigit() and i != -1:
-                    val = int(row[i])
+                    val = int(row[i])  # type: ignore
                 result[head].append(val)
 
         return result
@@ -215,7 +217,7 @@ def predict_text(np_img: ImageType, supported_languages: str, config: str) -> Li
     """
 
     np_img = np_img.astype(np.uint8)
-    results = image_to_dict(np_img,lang=supported_languages,config=config)
+    results = image_to_dict(np_img, supported_languages, config)
     all_results = []
 
     for caption in zip(

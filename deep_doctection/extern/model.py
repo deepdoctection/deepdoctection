@@ -215,9 +215,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
         return absolute_path
 
     @staticmethod
-    def _load_from_hf_hub(
-        profile: Dict[str, Any], absolute_path: str, file_names: List[str]
-    ) -> None:
+    def _load_from_hf_hub(profile: Dict[str, Any], absolute_path: str, file_names: List[str]) -> None:
         repo_id = profile["hf_repo_id"]
         if not file_names:
             file_names = profile["hf_model_name"]
