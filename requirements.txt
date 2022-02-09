@@ -61,7 +61,6 @@ pillow==9.0.0
     # via
     #   matplotlib
     #   pdf2image
-    #   pytesseract
 psutil==5.8.0
     # via dataflow
 pycocotools==2.0.2
@@ -71,8 +70,6 @@ pyparsing==2.4.7
     #   matplotlib
     #   packaging
 pypdf2==1.26.0
-    # via deep-doctection (setup.py)
-pytesseract==0.3.8
     # via deep-doctection (setup.py)
 python-dateutil==2.8.2
     # via matplotlib
