@@ -197,8 +197,10 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
                     continue
 
                 val = row[i]
-                if row[i].isdigit() and i != -1:
+                if row[i].isdigit() and i != -1 and head != "text":
                     val = int(row[i])  # type: ignore
+                elif head == "text":
+                    val = str(row[i])
                 result[head].append(val)
 
         return result
