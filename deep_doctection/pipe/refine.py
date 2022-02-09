@@ -305,11 +305,10 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     cells_ann_list = []
     for row_number in range(1, number_of_rows + 1):
         cells_of_row = list(
-            filter(
+            sorted(filter(
                 lambda cell: cell.get_sub_category(names.C.RN).category_id == str(row_number),  # pylint: disable=W0640
                 cells,
-            )
-        )
+            ),key=lambda cell: cell.get_sub_category(names.C.CN).category_id))
         row_list = [
             (
                 int(cell.get_sub_category(names.C.RN).category_id),
