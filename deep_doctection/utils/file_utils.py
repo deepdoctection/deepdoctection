@@ -216,7 +216,7 @@ def get_tesseract_requirement() -> Requirement:
 
 # Textract related dependencies
 _BOTO3_AVAILABLE = importlib.util.find_spec("boto3") is not None
-_BOTO3_ERR_MSG = "Boto3 must be installed: >>make install-aws-dependencies"
+_BOTO3_ERR_MSG = "Boto3 must be installed: >>install-dd-aws"
 
 _AWS_CLI_AVAILABLE = which("aws") is not None
 _AWS_ERR_MSG = "AWS CLI must be installed https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
