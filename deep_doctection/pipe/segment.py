@@ -280,6 +280,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         cell_names,
         segment_rule,
         threshold_rows,
+        True,
         child_ann_ids,
         child_ann_ids,
     )
@@ -290,6 +291,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         cell_names,
         segment_rule,
         threshold_cols,
+        True,
         child_ann_ids,
         child_ann_ids,
     )

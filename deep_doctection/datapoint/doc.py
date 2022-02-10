@@ -160,8 +160,8 @@ class Table:
         A string output for a table.
         """
         output = ""
-        for row in range(self.number_rows):  # pylint: disable=W0640
-            output += f"______________ row: {row + 1} ______________\n"
+        for row in range(1,self.number_rows):  # pylint: disable=W0640
+            output += f"______________ row: {row} ______________\n"
             cells_row = sorted(
                 list(filter(lambda x: x.row_number == row, self.cells)),  # pylint: disable=W0640
                 key=lambda x: x.col_number,

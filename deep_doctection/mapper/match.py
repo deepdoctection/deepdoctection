@@ -34,6 +34,7 @@ def match_anns_by_intersection(
     child_ann_category_names: Union[str, List[str]],
     matching_rule: str,
     threshold: Optional[np.float32] = None,
+    use_weighted_intersections: bool = False,
     parent_ann_ids: Optional[Union[List[str], str]] = None,
     child_ann_ids: Optional[Union[str, List[str]]] = None,
 ) -> Tuple[Any, Any, List[ImageAnnotation], List[ImageAnnotation]]:
@@ -62,6 +63,11 @@ def match_anns_by_intersection(
     :param matching_rule: intersection measure type, either "iou" or "ioa"
     :param threshold: Threshold, for a given matching rule. Will assign every child ann with iou/ioa above the threshold
                       to the parental annotation.
+    :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
+                                       the ioa_matrix it will use a weighted ioa in order to take into account that
+                                       intersections with more cells will likely decrease the ioa value. By multiplying
+                                       the ioa with the number of all intersection for each child this value calibrate
+                                       the ioa.
     :param parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candi-
                            dates which are not in the list.
     :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
@@ -92,6 +98,14 @@ def match_anns_by_intersection(
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:
         ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))  # type: ignore
+
+        def _weighted_ioa_matrix(a):
+            sum_of_rows = (a != 0).sum(1)
+            multiplier = np.transpose(sum_of_rows * np.ones((a.shape[1],a.shape[0])))
+            return multiplier * a
+
+        if use_weighted_intersections:
+            ioa_matrix = _weighted_ioa_matrix(ioa_matrix)
         output = ioa_matrix > ioa_threshold
         child_index, parent_index = output.nonzero()
     else:

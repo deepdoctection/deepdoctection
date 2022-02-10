@@ -204,7 +204,7 @@ def _tiling_to_cell_position(inputs: Set[Tuple[int, int]]) -> Tuple[int, int, in
 
 
 def _html_cell(
-    cell_position: Union[Tuple[int, int, int, int]], position_filled_list: List[Tuple[int, int]]
+    cell_position: Union[Tuple[int, int, int, int],Tuple], position_filled_list: List[Tuple[int, int]]
 ) -> List[str]:
     """
     Html table cell string generation
@@ -214,9 +214,9 @@ def _html_cell(
         pass
     else:
         if cell_position[2] != 1:
-            html.append(f",rowspan={cell_position[2]}")
+            html.append(f" rowspan={cell_position[2]}")
         if cell_position[3] != 1:
-            html.append(f",colspan={cell_position[3]}")
+            html.append(f" colspan={cell_position[3]}")
         if cell_position[2] != 1 or cell_position[3] != 1:
             position_filled_list.extend(
                 [
@@ -258,11 +258,11 @@ def _html_row(
             if cell_position_list:
                 cell_position = cell_position_list[0]
                 cell_id = row_ann_id_list.pop(0)
+                ret_html = _html_cell(cell_position, position_filled_list)
+                ret_html.insert(1, cell_id)
             else:
                 cell_position = ()  # type: ignore
-                cell_id = ""
-            ret_html = _html_cell(cell_position, position_filled_list)
-            ret_html.insert(1, cell_id)
+                ret_html = _html_cell(cell_position, position_filled_list)
             html.extend(ret_html)
     html.append("</tr>")
     return html
