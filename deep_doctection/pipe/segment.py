@@ -251,10 +251,8 @@ def segment_table(  # pylint: disable=R0913, R0914
     item_names: Union[str, List[str]],
     cell_names: Union[str, List[str]],
     segment_rule: str,
-    iou_threshold_rows: Optional[np.float32] = None,
-    iou_threshold_cols: Optional[np.float32] = None,
-    ioa_threshold_rows: Optional[np.float32] = None,
-    ioa_threshold_cols: Optional[np.float32] = None,
+    threshold_rows: Optional[np.float32] = None,
+    threshold_cols: Optional[np.float32] = None,
 ) -> List[SegmentationResult]:
     """
     Segments a table,i.e. produces for each cell a SegmentationResult. It uses numbered rows and columns that have to
@@ -268,13 +266,9 @@ def segment_table(  # pylint: disable=R0913, R0914
     :param item_names: A list of item names (e.g. "ROW" and "COLUMN")
     :param cell_names: A list of cell names (e.g. "CELL")
     :param segment_rule: 'iou' or 'ioa'
-    :param iou_threshold_rows: the iou threshold of a cell with a row in order to conclude that the cell belongs
+    :param threshold_rows: the iou/ioa threshold of a cell with a row in order to conclude that the cell belongs
                                to the row.
-    :param iou_threshold_cols: the iou threshold of a cell with a column in order to conclude that the cell belongs
-                               to the column.
-    :param ioa_threshold_rows: the ioa threshold of a cell with a row in order to conclude that the cell belongs
-                               to the row.
-    :param ioa_threshold_cols: the ioa threshold of a cell with a column in order to conclude that the cell belongs
+    :param threshold_cols: the iou/ioa threshold of a cell with a column in order to conclude that the cell belongs
                                to the column.
     :return: A list of len(number of cells) of SegmentationResult.
     """
@@ -285,8 +279,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[0],
         cell_names,
         segment_rule,
-        iou_threshold_rows,
-        ioa_threshold_rows,
+        threshold_rows,
         child_ann_ids,
         child_ann_ids,
     )
@@ -296,8 +289,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[1],
         cell_names,
         segment_rule,
-        iou_threshold_cols,
-        ioa_threshold_cols,
+        threshold_cols,
         child_ann_ids,
         child_ann_ids,
     )
@@ -371,20 +363,16 @@ class TableSegmentationService(PipelineComponent):
     def __init__(  # pylint: disable=R0913
         self,
         segment_rule: str,
-        iou_threshold_rows: np.float32,
-        iou_threshold_cols: np.float32,
-        ioa_threshold_rows: np.float32,
-        ioa_threshold_cols: np.float32,
+        threshold_rows: np.float32,
+        threshold_cols: np.float32,
         tile_table_with_items: bool,
         remove_iou_threshold_rows: np.float32,
         remove_iou_threshold_cols: np.float32,
     ):
         """
         :param segment_rule: rule to assign cell to row, columns resp. must be either iou or ioa
-        :param iou_threshold_rows: iou threshold for rows
-        :param iou_threshold_cols: iou threshold for columns
-        :param ioa_threshold_rows: iou threshold for rows
-        :param ioa_threshold_cols: ioa threshold for columns
+        :param threshold_rows: iou/ioa threshold for rows
+        :param threshold_cols: iou/ioa threshold for columns
         :param tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of
                                       the adjacent row. Will do a similar shifting with columns.
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
@@ -393,10 +381,8 @@ class TableSegmentationService(PipelineComponent):
         assert segment_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         super().__init__(None)
         self.segment_rule = segment_rule
-        self.iou_threshold_rows = iou_threshold_rows
-        self.iou_threshold_cols = iou_threshold_cols
-        self.ioa_threshold_rows = ioa_threshold_rows
-        self.ioa_threshold_cols = ioa_threshold_cols
+        self.threshold_rows = threshold_rows
+        self.threshold_cols = threshold_cols
         self.tile_table = tile_table_with_items
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
@@ -444,10 +430,8 @@ class TableSegmentationService(PipelineComponent):
                 self._item_names,
                 self._cell_names,
                 self.segment_rule,
-                self.iou_threshold_rows,
-                self.iou_threshold_cols,
-                self.ioa_threshold_rows,
-                self.ioa_threshold_cols,
+                self.threshold_rows,
+                self.threshold_cols,
             )
             for segment_result in raw_table_segments:
                 self.dp_manager.set_category_annotation(

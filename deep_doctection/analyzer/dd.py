@@ -191,10 +191,10 @@ def get_dd_analyzer(
 
         table_segmentation = TableSegmentationService(
             cfg.SEGMENTATION.ASSIGNMENT_RULE,
-            cfg.SEGMENTATION.IOU_THRESHOLD_ROWS,
-            cfg.SEGMENTATION.IOU_THRESHOLD_COLS,
-            cfg.SEGMENTATION.IOA_THRESHOLD_ROWS,
-            cfg.SEGMENTATION.IOA_THRESHOLD_COLS,
+            cfg.SEGMENTATION.IOU_THRESHOLD_ROWS if cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
+            else cfg.SEGMENTATION.IOA_THRESHOLD_ROWS,
+            cfg.SEGMENTATION.IOU_THRESHOLD_COLS if cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
+            else cfg.SEGMENTATION.IOA_THRESHOLD_COLS,
             cfg.SEGMENTATION.FULL_TABLE_TILING,
             cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
             cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
@@ -218,8 +218,8 @@ def get_dd_analyzer(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
             child_categories=names.C.WORD,
             matching_rule=cfg.WORD_MATCHING.RULE,
-            iou_threshold=cfg.WORD_MATCHING.IOU_THRESHOLD,
-            ioa_threshold=cfg.WORD_MATCHING.IOA_THRESHOLD,
+            threshold=cfg.WORD_MATCHING.IOU_THRESHOLD if cfg.WORD_MATCHING.RULE in ["iou"] else
+            cfg.WORD_MATCHING.IOA_THRESHOLD,
         )
         pipe_component_list.append(match)
 

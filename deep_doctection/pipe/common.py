@@ -45,23 +45,20 @@ class MatchingService(PipelineComponent):
         parent_categories: Union[str, List[str]],
         child_categories: Union[str, List[str]],
         matching_rule: str,
-        iou_threshold: Optional[np.float32] = None,
-        ioa_threshold: Optional[np.float32] = None,
+        threshold: Optional[np.float32] = None,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
         :param matching_rule: "iou" or "ioa"
-        :param iou_threshold: value between [0,1]
-        :param ioa_threshold: value between [0,1]
+        :param threshold: iou/ioa threshold. Value between [0,1]
         """
         super().__init__(None)
         self.parent_categories = parent_categories
         self.child_categories = child_categories
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
-        self.iou_threshold = iou_threshold
-        self.ioa_threshold = ioa_threshold
+        self.threshold = threshold
 
     def serve(self, dp: Image) -> None:
         """
@@ -75,8 +72,7 @@ class MatchingService(PipelineComponent):
             parent_ann_category_names=self.parent_categories,
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
-            iou_threshold=self.iou_threshold,
-            ioa_threshold=self.ioa_threshold,
+            threshold=self.threshold,
         )
 
         with MappingContextManager(dp_name=dp.file_name):

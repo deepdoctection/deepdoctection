@@ -33,8 +33,7 @@ def match_anns_by_intersection(
     parent_ann_category_names: Union[str, List[str]],
     child_ann_category_names: Union[str, List[str]],
     matching_rule: str,
-    iou_threshold: Optional[np.float32] = None,
-    ioa_threshold: Optional[np.float32] = None,
+    threshold: Optional[np.float32] = None,
     parent_ann_ids: Optional[Union[List[str], str]] = None,
     child_ann_ids: Optional[Union[str, List[str]]] = None,
 ) -> Tuple[Any, Any, List[ImageAnnotation], List[ImageAnnotation]]:
@@ -61,8 +60,8 @@ def match_anns_by_intersection(
     :param parent_ann_category_names: single str or list of category names
     :param child_ann_category_names: single str or list of category names
     :param matching_rule: intersection measure type, either "iou" or "ioa"
-    :param iou_threshold: Threshold, if iou chosen. When choosing the other rule, will do nothing.
-    :param ioa_threshold: Threshold, if ioa chosen. When choosing the other rule, will do nothing.
+    :param threshold: Threshold, for a given matching rule. Will assign every child ann with iou/ioa above the threshold
+                      to the parental annotation.
     :param parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candi-
                            dates which are not in the list.
     :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
@@ -71,11 +70,11 @@ def match_anns_by_intersection(
     """
 
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
-
+    iou_threshold, ioa_threshold = 0, 0
     if matching_rule in ["iou"]:
-        assert iou_threshold is not None, "matching rule iou requires iou_threshold to be passed"
+        iou_threshold = threshold
     else:
-        assert ioa_threshold is not None, "matching rule ioa requires iou_threshold to be passed"
+        ioa_threshold = threshold
 
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
