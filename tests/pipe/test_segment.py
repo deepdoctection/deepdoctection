@@ -89,10 +89,8 @@ class TestTableSegmentationService:
 
         self.table_segmentation_service = TableSegmentationService(
             self._segment_rule,
-            self._iou_threshold_rows,
-            self._iou_threshold_cols,
-            self._ioa_threshold_rows,
-            self._ioa_threshold_cols,
+            self._iou_threshold_rows if self._segment_rule in ["iou"] else self._ioa_threshold_rows,
+            self._iou_threshold_cols if self._segment_rule in ["iou"] else self._ioa_threshold_cols,
             self._tile_table_with_items,
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
@@ -217,10 +215,8 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
 
         self.tp_table_segmentation_service = TableSegmentationService(
             self._segment_rule,
-            self._iou_threshold_rows,
-            self._iou_threshold_cols,
-            self._ioa_threshold_rows,
-            self._ioa_threshold_cols,
+            self._iou_threshold_rows if self._segment_rule in ["iou"] else self._ioa_threshold_rows,
+            self._iou_threshold_cols if self._segment_rule in ["iou"] else self._ioa_threshold_cols,
             self._tile_table_with_items,
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
