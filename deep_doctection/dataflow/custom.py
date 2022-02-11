@@ -67,6 +67,8 @@ class CustomDataFromList(DataFromList):  # type: ignore
                                list and re-balance the sample. Only the output list of the re-balancing function will be
                                considered.
         """
+        if shuffle:
+            logger.info("Make sure to call .reset_state() for the dataflow otherwise an error will be raised")
         super().__init__(lst, shuffle)
         self.max_datapoints = max_datapoints
         self.rebalance_func = rebalance_func

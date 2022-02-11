@@ -27,6 +27,7 @@ from ..dataflow import DataFlow, MapData  # type: ignore
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..mapper.misc import to_image
 from ..mapper.pagestruct import to_page
+from ..utils.fs import maybe_path_or_pdf
 from .base import Pipeline
 
 
@@ -43,19 +44,21 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
     def _entry(self, **kwargs: str) -> DataFlow:
         dataset_dataflow = kwargs.get("dataset_dataflow")
         path = kwargs.get("path")
+        shuffle = kwargs.get("shuffle", False)
+        doc_path = None
+        path_type = maybe_path_or_pdf(path)
+        if path_type == 2:
+            doc_path = path
+            path = None
         file_type = kwargs.get("file_type", [".jpg", ".png"])
-        doc_path = kwargs.get("doc_path")
         max_datapoints = kwargs.get("max_datapoints")
 
-        assert (path is None or doc_path is None) or (
-            path is not None or doc_path is not None
-        ), "pass either path to image dir or pdf doc but not both"
         assert path is not None or doc_path is not None or dataset_dataflow is not None, (
             "path either dataset " "dataflow or path or " "doc_path with arguments"
         )
 
         if isinstance(path, str):
-            df = DoctectionPipe.path_to_dataflow(path, file_type)
+            df = DoctectionPipe.path_to_dataflow(path, file_type, shuffle=shuffle)
         if isinstance(doc_path, str):
             df = DoctectionPipe.doc_to_dataflow(
                 path=doc_path, max_datapoints=int(max_datapoints) if max_datapoints is not None else None
@@ -66,17 +69,19 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         return df
 
     @staticmethod
-    def path_to_dataflow(path: str, file_type: Union[str, List[str]], max_datapoints: Optional[int] = None) -> DataFlow:
+    def path_to_dataflow(path: str, file_type: Union[str, List[str]], max_datapoints: Optional[int] = None,
+                         shuffle: bool = False) -> DataFlow:
         """
         Processing method for directories
 
         :param path: path to directory
         :param file_type: file type to consider (single str or list of strings)
         :param max_datapoints: max number of datapoints to consider
+        :param shuffle: Shuffle file names in order to stream them randomly
         :return: dataflow
         """
         assert os.path.isdir(path), f"{path} not a directory"
-        df = SerializerFiles.load(path, file_type, max_datapoints)
+        df = SerializerFiles.load(path, file_type, max_datapoints, shuffle)
 
         def _to_image(dp: str) -> Optional[Image]:
             _, file_name = os.path.split(dp)
@@ -123,8 +128,8 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         :param kwargs key path: A path to a directory in which either image documents or pdf files are located. It is
                                 assumed that the pdf documents consist of only one page. If there are multiple pages,
                                 only the first page is processed through the pipeline.
+                                Alternatively, a path to a pdf document with multiple pages.
         :param kwargs key file_type: Selection of the file type, if: args: `path` is passed
-        :param kwargs key doc_path: A path to a PDF document
         :param kwargs key max_datapoints: Stops processing as soon as max_datapoints images have been processed
         :return: dataflow
         """

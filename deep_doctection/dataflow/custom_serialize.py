@@ -123,6 +123,8 @@ class SerializerFiles:
         :param sort: If set to "True" it will sort all selected files by its string
         :return: dataflow to iterate from
         """
+        if shuffle:
+            sort = False
         it1 = os.walk(path, topdown=False)
         it2 = os.walk(path, topdown=False)
         df1 = CustomDataFromIterable(it1)
@@ -140,7 +142,7 @@ class SerializerFiles:
             df_list = CacheData(df).get_cache()
             if sort:
                 df_list.sort()
-            df = CustomDataFromList(df_list, max_datapoints=max_datapoints, shuffle=shuffle)
+            df = CustomDataFromList(df_list, max_datapoints=max_datapoints, shuffle=False)
         elif shuffle:
             df_list = CacheData(df).get_cache()
             df = CustomDataFromList(df_list, shuffle=shuffle)
