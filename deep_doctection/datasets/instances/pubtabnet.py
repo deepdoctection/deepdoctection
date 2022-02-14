@@ -70,7 +70,7 @@ _URL = (
 )
 _SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
 
-_LOCATION = "/datasets/pubtabnet"
+_LOCATION = "/pubtabnet"
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"all": "PubTabNet_2.0.0.jsonl"}
 
 _INIT_CATEGORIES = [names.C.CELL, names.C.ITEM]

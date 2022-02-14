@@ -64,7 +64,7 @@ _LICENSE = (
 
 _URL = "https://guillaumejaume.github.io/FUNSD/download/"
 _SPLITS = {"train": "training_data", "test": "testing_data"}
-_LOCATION = "/datasets/funsd"
+_LOCATION = "/funsd"
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "annotations", "test": "annotations"}
 
 _INIT_CATEGORIES = [names.C.WORD]

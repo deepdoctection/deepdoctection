@@ -82,7 +82,7 @@ _URL = (
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
 _SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
-_LOCATION = "/datasets/fintabnet"
+_LOCATION = "/fintabnet"
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
