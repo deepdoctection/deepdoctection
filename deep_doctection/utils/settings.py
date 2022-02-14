@@ -19,10 +19,11 @@
 Module for funcs and constants that maintain general settings
 """
 
+import os
 
 from ..utils.metacfg import AttrDict
 
-
+# naming convention for all categories and NER tags
 names = AttrDict()
 
 _N = names
@@ -66,3 +67,12 @@ _N.NER.B = "B"
 _N.NER.I = "I"
 
 _N.freeze()
+
+FILE_PATH = os.path.split(__file__)[0]
+PATH = os.path.dirname(os.path.dirname(FILE_PATH))
+
+dd_cache_home = os.path.expanduser(os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "deepdoctection"))
+MODEL_DIR = os.path.join(dd_cache_home, "weights")
+
+
+CONFIGS = os.path.join(os.path.dirname(os.path.dirname(os.path.split(__file__)[0])), "configs")
