@@ -56,7 +56,7 @@ _LICENSE = (
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
 _SPLITS = {"train": "train", "val": "val"}
-_LOCATION = "/datasets/xfund"
+_LOCATION = "/xfund"
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
     "train": [
         "de.train.json",

@@ -62,7 +62,7 @@ _URL = (
 )
 _SPLITS = {"train": "/train", "val": "/val"}
 
-_LOCATION = "/datasets/publaynet"
+_LOCATION = "/publaynet"
 
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "train.json", "val": "val.json"}
 _INIT_CATEGORIES = [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB, names.C.FIG]

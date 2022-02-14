@@ -57,7 +57,7 @@ _URL = [
     "=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
 ]
 _SPLITS = {"test": "test", "predict": "predict"}
-_LOCATION = "/datasets/testlayout"
+_LOCATION = "/testlayout"
 
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
     "test": "xrf_layout_test.jsonl",
