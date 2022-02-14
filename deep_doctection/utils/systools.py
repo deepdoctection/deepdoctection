@@ -21,9 +21,9 @@ module for various basic functions that are needed everywhere
 
 import os
 
-from .settings import PATH, MODEL_DIR, CONFIGS
+from .settings import PATH, MODEL_DIR, CONFIGS, DATASET_DIR
 
-__all__ = ["sub_path", "get_package_path", "get_configs_dir_path", "get_weights_dir_path"]
+__all__ = ["sub_path", "get_package_path", "get_configs_dir_path", "get_weights_dir_path", "get_dataset_dir_path"]
 
 
 def get_package_path() -> str:
@@ -45,6 +45,13 @@ def get_configs_dir_path() -> str:
     :return: full base path to the configs dir
     """
     return CONFIGS
+
+
+def get_dataset_dir_path() -> str:
+    """
+    :return: full base path to the dataset dir
+    """
+    return DATASET_DIR
 
 
 def sub_path(anchor_dir: str, *paths: str) -> str:

@@ -22,7 +22,7 @@ Module for DataflowBase class.
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Union, List
 
-from ..utils.systools import get_package_path
+from ..utils.systools import get_dataset_dir_path
 from ..dataflow import DataFlow
 from .info import DatasetCategories
 
@@ -96,7 +96,7 @@ class DataFlowBaseBuilder(ABC):
 
         :return: local workdir
         """
-        return get_package_path() + self.location
+        return get_dataset_dir_path() + self.location
 
     @abstractmethod
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
