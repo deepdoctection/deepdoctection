@@ -74,5 +74,6 @@ PATH = os.path.dirname(os.path.dirname(FILE_PATH))
 dd_cache_home = os.path.expanduser(os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "deepdoctection"))
 MODEL_DIR = os.path.join(dd_cache_home, "weights")
 
-
 CONFIGS = os.path.join(os.path.dirname(os.path.dirname(os.path.split(__file__)[0])), "configs")
+
+DATASET_DIR = os.path.join(dd_cache_home, "datasets")
