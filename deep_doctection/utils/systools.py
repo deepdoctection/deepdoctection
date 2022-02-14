@@ -21,13 +21,9 @@ module for various basic functions that are needed everywhere
 
 import os
 
+from .settings import PATH, MODEL_DIR, CONFIGS
+
 __all__ = ["sub_path", "get_package_path", "get_configs_dir_path", "get_weights_dir_path"]
-
-
-FILE_PATH = os.path.split(__file__)[0]
-PATH = os.path.dirname(os.path.dirname(FILE_PATH))
-MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.split(__file__)[0])), "weights")
-CONFIGS = os.path.join(os.path.dirname(os.path.dirname(os.path.split(__file__)[0])), "configs")
 
 
 def get_package_path() -> str:
