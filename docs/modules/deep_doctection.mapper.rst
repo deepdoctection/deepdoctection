@@ -18,6 +18,14 @@ deep\_doctection.mapper.cocostruct
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.mapper.iiitarstruct
+-----------------------------------------
+
+.. automodule:: deep_doctection.mapper.iiitarstruct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.mapper.match
 ------------------------------------
 

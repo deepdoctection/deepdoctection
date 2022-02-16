@@ -18,6 +18,14 @@ deep\_doctection.datasets.instances.funsd
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.datasets.instances.iiitar13k
+----------------------------------------------------
+
+.. automodule:: deep_doctection.datasets.instances.iiitar13k
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.datasets.instances.layouttest
 -----------------------------------------------------
 
