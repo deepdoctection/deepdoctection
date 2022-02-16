@@ -83,7 +83,7 @@ def choose_items_by_iou(
 
     else:
         reference_item_proposals_boxes = item_proposals_boxes
-        triangle_ind = np.triu_indices(len(item_proposals))
+        triangle_ind = np.triu_indices(len(item_proposals))  # type: ignore
 
     iou_matrix = np_iou(item_proposals_boxes, reference_item_proposals_boxes)
 
@@ -97,7 +97,7 @@ def choose_items_by_iou(
             item_proposals[el].deactivate()
 
     else:
-        unique_indices = np.unique(indices_to_deactivate)
+        unique_indices = np.unique(indices_to_deactivate)  # type: ignore
         for idx, el in enumerate(item_proposals):
             if idx not in unique_indices:
                 item_proposals[idx].deactivate()
@@ -279,7 +279,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[0],
         cell_names,
         segment_rule,
-        threshold_rows,
+        threshold_rows,  # type: ignore
         True,
         child_ann_ids,
         child_ann_ids,
@@ -290,7 +290,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[1],
         cell_names,
         segment_rule,
-        threshold_cols,
+        threshold_cols,  # type: ignore
         True,
         child_ann_ids,
         child_ann_ids,

@@ -15,9 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ...test_utils import collect_datapoint_from_dataflow, get_test_path
+"""
+Testing module datasets.instances.iiitar13k
+"""
 
 from deep_doctection.datasets import IIITar13K
+
+from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
 def test_dataset_iiitar13k_returns_image() -> None:
@@ -27,7 +31,7 @@ def test_dataset_iiitar13k_returns_image() -> None:
 
     # Arrange
     iiitar13k = IIITar13K()
-    iiitar13k.dataflow.get_workdir = get_test_path
+    iiitar13k.dataflow.get_workdir = get_test_path  # type: ignore
     iiitar13k.dataflow.annotation_files = {"val": ""}
     df = iiitar13k.dataflow.build()
 

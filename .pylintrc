@@ -28,4 +28,5 @@ max-returns=8
 max-statements=65
 
 [MISCELLANEOUS]
-
+unsafe-load-any-extension=y # https://pylint.pycqa.org/en/2.6/technical_reference/c_extensions.html that is esp. needed
+                            # for lxml

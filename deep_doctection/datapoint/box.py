@@ -292,7 +292,7 @@ def crop_box_from_image(np_image: ImageType, crop_box: BoundingBox) -> ImageType
     """
 
     np_max_y, np_max_x = np_image.shape[0:2]
-    return np_image[  # type: ignore
+    return np_image[
         np.int32(np.floor(crop_box.uly)) : min(np.int32(np.ceil(crop_box.lry)), np_max_y),  # type: ignore
         np.int32(np.floor(crop_box.ulx)) : min(np.int32(np.ceil(crop_box.lrx)), np_max_x),  # type: ignore
     ]

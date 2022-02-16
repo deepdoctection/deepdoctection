@@ -1892,19 +1892,39 @@ class IIITar13KJson:
     Xfund datapoint sample already converted to json format
     """
 
-    dp = {'annotation': '2004', 'filename':
-        '/home/janis/.cache/deepdoctection/datasets/iiitar13k/validation_xml/ar_alphabet_2004_eng_32.xml',
-        'path': '/home/cvit/Desktop/Phase2_OpenText_Annotation/Annual_Report/Alphabet/2004/NASDAQ_GOOG_2004_80.png',
-        'database': 'Unknown', 'width': '1100', 'height': '850', 'depth': '3', 'segmented': '0',
-        'objects': [{'name': 'table', 'pose': 'Unspecified', 'truncated': '0', 'difficult': 0, 'xmin': 127,
-                       'ymin': 202, 'xmax': 1006, 'ymax': 580}]}
+    dp = {
+        "annotation": "2004",
+        "filename": "/home/janis/.cache/deepdoctection/datasets/iiitar13k/validation_xml/ar_alphabet_2004_eng_32.xml",
+        "path": "/home/cvit/Desktop/Phase2_OpenText_Annotation/Annual_Report/Alphabet/2004/NASDAQ_GOOG_2004_80.png",
+        "database": "Unknown",
+        "width": "1100",
+        "height": "850",
+        "depth": "3",
+        "segmented": "0",
+        "objects": [
+            {
+                "name": "table",
+                "pose": "Unspecified",
+                "truncated": "0",
+                "difficult": 0,
+                "xmin": 127,
+                "ymin": 202,
+                "xmax": 1006,
+                "ymax": 580,
+            }
+        ],
+    }
 
     categories_name_as_keys = {names.C.TAB: "1", names.C.LOGO: "2", names.C.FIG: "3", names.C.SIGN: "4"}
-    category_names_mapping = {"natural_image": names.C.FIG,"figure":names.C.FIG,
-                              "logo":names.C.LOGO,"signature":names.C.SIGN,
-                              "table":names.C.TAB}
+    category_names_mapping = {
+        "natural_image": names.C.FIG,
+        "figure": names.C.FIG,
+        "logo": names.C.LOGO,
+        "signature": names.C.SIGN,
+        "table": names.C.TAB,
+    }
 
-    first_ann_box = Box(ulx=127,uly=202,w=1006-127,h=580-202)
+    first_ann_box = Box(ulx=127, uly=202, w=1006 - 127, h=580 - 202)
 
     def get_category_names_mapping(self) -> Dict[str, str]:
         """
@@ -1912,23 +1932,23 @@ class IIITar13KJson:
         """
         return self.category_names_mapping
 
-    def get_number_anns(self):
+    def get_number_anns(self) -> int:
         """
         number of annotations
         """
         return len(self.dp["objects"])
 
-    def get_width(self):
+    def get_width(self) -> float:
         """
         imager width
         """
-        return float(self.dp["width"])
+        return float(self.dp["width"])  # type: ignore
 
-    def get_height(self):
+    def get_height(self) -> float:
         """
         imager height
         """
-        return float(self.dp["height"])
+        return float(self.dp["height"])  # type: ignore
 
     def get_first_ann_box(self) -> Box:
         """
@@ -1943,10 +1963,8 @@ class IIITar13KJson:
         """
         return names.C.TAB
 
-    def get_categories_name_as_keys(self) -> Dict[str,str]:
+    def get_categories_name_as_keys(self) -> Dict[str, str]:
+        """
+        categories name as keys
+        """
         return self.categories_name_as_keys
-
-
-
-
-

@@ -44,18 +44,19 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
     def _entry(self, **kwargs: str) -> DataFlow:
         dataset_dataflow = kwargs.get("dataset_dataflow")
         path = kwargs.get("path")
+        assert path is not None or dataset_dataflow is not None, "pass either path or dataset_dataflow as argument"
         shuffle = kwargs.get("shuffle", False)
+        assert isinstance(shuffle, bool)
+
         doc_path = None
-        path_type = maybe_path_or_pdf(path)
-        if path_type == 2:
-            doc_path = path
-            path = None
+        if path:
+            path_type = maybe_path_or_pdf(path)
+            if path_type == 2:
+                doc_path = path
+                path = None
+
         file_type = kwargs.get("file_type", [".jpg", ".png"])
         max_datapoints = kwargs.get("max_datapoints")
-
-        assert path is not None or doc_path is not None or dataset_dataflow is not None, (
-            "path either dataset " "dataflow or path or " "doc_path with arguments"
-        )
 
         if isinstance(path, str):
             df = DoctectionPipe.path_to_dataflow(path, file_type, shuffle=shuffle)
@@ -69,8 +70,9 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         return df
 
     @staticmethod
-    def path_to_dataflow(path: str, file_type: Union[str, List[str]], max_datapoints: Optional[int] = None,
-                         shuffle: bool = False) -> DataFlow:
+    def path_to_dataflow(
+        path: str, file_type: Union[str, List[str]], max_datapoints: Optional[int] = None, shuffle: bool = False
+    ) -> DataFlow:
         """
         Processing method for directories
 

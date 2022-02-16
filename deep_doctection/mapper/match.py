@@ -21,6 +21,7 @@ Module for matching detections according to various matching rules
 
 from typing import List, Optional, Union, Tuple, Any
 import numpy as np
+from numpy.typing import NDArray
 
 from ..datapoint.image import Image
 from ..datapoint.annotation import ImageAnnotation
@@ -33,7 +34,7 @@ def match_anns_by_intersection(
     parent_ann_category_names: Union[str, List[str]],
     child_ann_category_names: Union[str, List[str]],
     matching_rule: str,
-    threshold: Optional[np.float32] = None,
+    threshold: np.float32,
     use_weighted_intersections: bool = False,
     parent_ann_ids: Optional[Union[List[str], str]] = None,
     child_ann_ids: Optional[Union[str, List[str]]] = None,
@@ -61,10 +62,10 @@ def match_anns_by_intersection(
     :param parent_ann_category_names: single str or list of category names
     :param child_ann_category_names: single str or list of category names
     :param matching_rule: intersection measure type, either "iou" or "ioa"
-    :param threshold: Threshold, for a given matching rule. Will assign every child ann with iou/ioa above the threshold
-                      to the parental annotation.
+    :param threshold: Threshold, for mat given matching rule. Will assign every child ann with iou/ioa above the
+                      threshold to the parental annotation.
     :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
-                                       the ioa_matrix it will use a weighted ioa in order to take into account that
+                                       the ioa_matrix it will use mat weighted ioa in order to take into account that
                                        intersections with more cells will likely decrease the ioa value. By multiplying
                                        the ioa with the number of all intersection for each child this value calibrate
                                        the ioa.
@@ -76,11 +77,11 @@ def match_anns_by_intersection(
     """
 
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
-    iou_threshold, ioa_threshold = 0, 0
+    iou_threshold, ioa_threshold = 0.0, 0.0
     if matching_rule in ["iou"]:
-        iou_threshold = threshold
+        iou_threshold = threshold  # type: ignore
     else:
-        ioa_threshold = threshold
+        ioa_threshold = threshold  # type: ignore
 
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
@@ -94,15 +95,15 @@ def match_anns_by_intersection(
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
         iou_matrix = np_iou(child_ann_boxes, parent_ann_boxes)
-        output = iou_matrix > iou_threshold  # type: ignore
+        output = iou_matrix > iou_threshold
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:
         ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))  # type: ignore
 
-        def _weighted_ioa_matrix(a):
-            sum_of_rows = (a != 0).sum(1)
-            multiplier = np.transpose(sum_of_rows * np.ones((a.shape[1],a.shape[0])))
-            return multiplier * a
+        def _weighted_ioa_matrix(mat: NDArray[np.float32]) -> NDArray[np.float32]:
+            sum_of_rows = (mat != 0).sum(1)
+            multiplier = np.transpose(sum_of_rows * np.ones((mat.shape[1], mat.shape[0])))
+            return multiplier * mat
 
         if use_weighted_intersections:
             ioa_matrix = _weighted_ioa_matrix(ioa_matrix)

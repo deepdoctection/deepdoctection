@@ -33,7 +33,7 @@ from .data import (
     DatapointProdigy,
     DatapointPubtabnet,
     DatapointXfund,
-    IIITar13KJson
+    IIITar13KJson,
 )
 
 
@@ -241,7 +241,7 @@ def fixture_xfund_category_names_mapping() -> Dict[str, str]:
 
 
 @fixture(name="iiitar13k_results")
-def fixture_iiitar13k_results() ->  IIITar13KJson:
+def fixture_iiitar13k_results() -> IIITar13KJson:
     """
     iiitar13k results
     """

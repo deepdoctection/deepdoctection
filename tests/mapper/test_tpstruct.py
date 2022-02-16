@@ -42,7 +42,7 @@ def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: Datap
     expected_output = image_results.get_tp_frcnn_training_anns()
 
     assert output.keys() == expected_output.keys()
-    assert_allclose(output["gt_boxes"], expected_output["gt_boxes"])
-    assert_array_equal(output["gt_labels"], expected_output["gt_labels"])
-    assert_array_equal(output["image"], expected_output["image"])
+    assert_allclose(output["gt_boxes"], expected_output["gt_boxes"])  # type: ignore
+    assert_array_equal(output["gt_labels"], expected_output["gt_labels"])  # type: ignore
+    assert_array_equal(output["image"], expected_output["image"])  # type: ignore
     assert output["file_name"] == expected_output["file_name"]

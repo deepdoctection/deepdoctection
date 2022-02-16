@@ -167,7 +167,7 @@ def test_crop_image(np_image: ImageType, crop_box: BoundingBox, expected_np_arra
     cropped_image = crop_box_from_image(np_image, crop_box)
 
     # Assert
-    assert_array_equal(cropped_image, expected_np_array)
+    assert_array_equal(cropped_image, expected_np_array)  # type: ignore
 
 
 @mark.parametrize(

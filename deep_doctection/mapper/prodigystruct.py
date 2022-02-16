@@ -154,7 +154,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
     img_str = dp.get_image(type_id="b64")
     if img_str is None:
         img_str = ""
-    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str  # type: ignore
+    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str
     output["text"] = dp.file_name
     output["image_id"] = dp.image_id
 

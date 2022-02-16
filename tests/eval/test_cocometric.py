@@ -71,7 +71,7 @@ class TestCocoMetric:
 
         # Arrange
         CocoMetric.set_params(
-            area_range=[[0 ** 2, 1e5 ** 2], [0 ** 2, 1 ** 2], [1 ** 2, 100 ** 2], [100 ** 2, 1e5 ** 2]],  # type: ignore
+            area_range=[[0**2, 1e5**2], [0**2, 1**2], [1**2, 100**2], [100**2, 1e5**2]],  # type: ignore
             max_detections=[1, 2, 3],
         )
 
