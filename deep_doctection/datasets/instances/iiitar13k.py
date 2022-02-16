@@ -37,7 +37,6 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
 """
 
 import os
-import json
 
 from typing import Union, Dict, List
 from lxml import etree
