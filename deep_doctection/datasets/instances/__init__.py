@@ -37,6 +37,7 @@ from .layouttest import *
 from .publaynet import *
 from .pubtabnet import *
 from .xfund import *
+from .iiitar13k import *
 
 
-__all__ = ["Publaynet", "Pubtabnet", "LayoutTest", "Fintabnet", "Xfund", "Funsd"]
+__all__ = ["Publaynet", "Pubtabnet", "LayoutTest", "Fintabnet", "Xfund", "Funsd", "IIITar13K"]

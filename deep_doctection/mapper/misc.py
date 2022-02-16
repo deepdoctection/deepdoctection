@@ -20,12 +20,14 @@ Module for small mapping functions
 """
 
 import os
+import ast
 from typing import Union, Dict, Optional, List
 from lxml import etree
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array
 from ..datapoint.image import Image
 from ..utils.fs import load_image_from_file, is_file_extension, get_load_image_func
+from ..utils.detection_types import JsonDict
 from .maputils import MappingContextManager, cur
 
 
@@ -37,6 +39,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
     :param dpi: dot per inch definition for pdf resolution when converting to numpy array
     :return: Image
     """
+
     file_name: Optional[str]
     location: Optional[str]
 
@@ -106,6 +109,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
     :param crop_image: Will add numpy array to :attr:`image.image`
     :return: Image
     """
+
     img_anns = dp.get_annotation_iter(category_names=category_names)
     for ann in img_anns:
         dp.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=crop_image)
@@ -134,8 +138,8 @@ def maybe_ann_to_sub_image(
 
     return dp
 
-
-def xml_to_dict(dp: str, xslt_obj: etree.XSLT):
+@cur
+def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.
 
@@ -145,12 +149,18 @@ def xml_to_dict(dp: str, xslt_obj: etree.XSLT):
 
            with open(path_xslt) as xsl_file:
                xslt_file = xsl_file.read().encode('utf-8')
-           xslt_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
-
+           xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
+           xslt_obj = etree.XSLT(xml_obj)
            df = MapData(df, xml_to_dict(xslt_obj))
 
     :param dp: string representing the xml
     :param xslt_obj: xslt object to parse the string
     :return: parsed xml
     """
-    return xslt_obj(dp)
+
+    output =  str(xslt_obj(dp["xml"]))
+    output= ast.literal_eval(output.replace('<?xml version="1.0"?>',''))
+    dp.pop("xml")
+    dp["json"] = output
+    return dp
+
