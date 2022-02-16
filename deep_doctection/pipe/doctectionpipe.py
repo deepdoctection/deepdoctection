@@ -54,6 +54,8 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
             if path_type == 2:
                 doc_path = path
                 path = None
+            elif not path_type:
+                raise ValueError("Pass only a path to a directory or to a pdf file")
 
         file_type = kwargs.get("file_type", [".jpg", ".png"])
         max_datapoints = kwargs.get("max_datapoints")
