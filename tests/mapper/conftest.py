@@ -33,6 +33,7 @@ from .data import (
     DatapointProdigy,
     DatapointPubtabnet,
     DatapointXfund,
+    IIITar13KJson
 )
 
 
@@ -210,3 +211,38 @@ def fixture_layoutlm_input() -> JsonDict:
     Layoutlm input
     """
     return DatapointXfund().get_layout_input()
+
+
+@fixture(name="datapoint_iiitar13kjson")
+def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
+    """
+    Datapoint as received from iiitar13k dataset already converted into json format
+    """
+
+    return IIITar13KJson().dp
+
+
+@fixture(name="iiitar13k_categories_name_as_keys")
+def fixture_iiitar13k_categories_name_as_keys() -> Dict[str, str]:
+    """
+    iiitar13k category names dict
+    """
+
+    return IIITar13KJson().get_categories_name_as_keys()
+
+
+@fixture(name="iiitar13k_category_names_mapping")
+def fixture_xfund_category_names_mapping() -> Dict[str, str]:
+    """
+    iiitar13k category names mapping
+    """
+
+    return IIITar13KJson().get_category_names_mapping()
+
+
+@fixture(name="iiitar13k_results")
+def fixture_iiitar13k_results() ->  IIITar13KJson:
+    """
+    iiitar13k results
+    """
+    return IIITar13KJson()
