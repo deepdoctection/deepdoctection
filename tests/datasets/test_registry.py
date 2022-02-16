@@ -31,7 +31,7 @@ def test_dataset_registry_has_all_build_in_datasets_registered() -> None:
     """
     test dataset registry has all pipeline components registered
     """
-    assert len(DatasetRegistry.get_dataset_names()) == 6
+    assert len(DatasetRegistry.get_dataset_names()) == 7
 
 
 def test_dataset_registry_registered_new_dataset() -> None:
