@@ -72,7 +72,7 @@ class MatchingService(PipelineComponent):
             parent_ann_category_names=self.parent_categories,
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
-            threshold=self.threshold,
+            threshold=self.threshold,  # type: ignore
         )
 
         with MappingContextManager(dp_name=dp.file_name):

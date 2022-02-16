@@ -44,7 +44,7 @@ class TestMatchingService:
             self._parent_categories,
             self._child_categories,
             self._matching_rule,
-            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,
+            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,  # type: ignore
         )
 
     def test_integration_pipeline_component(self, dp_image_fully_segmented_unrelated_words: Image) -> None:

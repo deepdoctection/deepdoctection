@@ -32,16 +32,18 @@ from ..utils.fs import load_image_from_file
 from ..utils.detection_types import JsonDict
 
 
-@cur
-def iiitar_to_image(dp: JsonDict,
-                    categories_name_as_key: Dict[str, str],
-                    load_image: bool,
-                    filter_empty_image: bool,
-                    fake_score: bool,
-                    category_name_mapping: Optional[Dict[str, str]] = None) -> Optional[Image]:
+@cur  # type: ignore
+def iiitar_to_image(
+    dp: JsonDict,
+    categories_name_as_key: Dict[str, str],
+    load_image: bool,
+    filter_empty_image: bool,
+    fake_score: bool,
+    category_name_mapping: Optional[Dict[str, str]] = None,
+) -> Optional[Image]:
     """
     Map a dataset in a structure equivalent to iiitar13k annotation style to image format
-    
+
     :param dp: a datapoint in serialized iiitar13k format. Note that another conversion from xml to
                a dict structure is required.
     :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
@@ -53,13 +55,15 @@ def iiitar_to_image(dp: JsonDict,
     :return: Image
     """
 
-    anns = dp.get("objects")
+    anns = dp.get("objects", [])
     if not anns and filter_empty_image:
         return None
 
     with MappingContextManager(dp.get("filename")) as mapping_context:
-        image = Image(file_name=os.path.split(dp["filename"])[1].replace(".xml",".jpg"),
-                      location=dp["filename"].replace(".xml",".jpg").replace("xml","images"))
+        image = Image(
+            file_name=os.path.split(dp["filename"])[1].replace(".xml", ".jpg"),
+            location=dp["filename"].replace(".xml", ".jpg").replace("xml", "images"),
+        )
 
         if load_image:
             image.image = load_image_from_file(image.location)  # type: ignore
@@ -71,7 +75,7 @@ def iiitar_to_image(dp: JsonDict,
             y_1 = min(max(ann["ymin"], 0), image.height if image.height else float(dp.get("height", 0)))
             y_2 = min(max(ann["ymax"], 0), image.height if image.height else float(dp.get("height", 0)))
 
-            bbox = BoundingBox(absolute_coords=True, ulx=x_1, uly=y_1, lrx=x_2,lry=y_2)
+            bbox = BoundingBox(absolute_coords=True, ulx=x_1, uly=y_1, lrx=x_2, lry=y_2)
 
             if category_name_mapping is not None:
                 label = category_name_mapping.get(ann["name"])

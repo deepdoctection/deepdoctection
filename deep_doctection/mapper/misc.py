@@ -22,7 +22,7 @@ Module for small mapping functions
 import os
 import ast
 from typing import Union, Dict, Optional, List
-from lxml import etree
+from lxml import etree  # type: ignore
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array
 from ..datapoint.image import Image
@@ -138,7 +138,8 @@ def maybe_ann_to_sub_image(
 
     return dp
 
-@cur
+
+@cur  # type: ignore
 def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.
@@ -158,9 +159,8 @@ def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     :return: parsed xml
     """
 
-    output =  str(xslt_obj(dp["xml"]))
-    output= ast.literal_eval(output.replace('<?xml version="1.0"?>',''))
+    output = str(xslt_obj(dp["xml"]))
+    output = ast.literal_eval(output.replace('<?xml version="1.0"?>', ""))
     dp.pop("xml")
     dp["json"] = output
     return dp
-

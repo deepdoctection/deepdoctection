@@ -163,4 +163,4 @@ def point4_to_box(points: NDArray[np.float32]) -> NDArray[np.float32]:
     points = points.reshape((-1, 4, 2))
     min_xy = points.min(axis=1)  # nx2
     max_xy = points.max(axis=1)  # nx2
-    return np.concatenate((min_xy, max_xy), axis=1)
+    return np.concatenate((min_xy, max_xy), axis=1)  # type: ignore
