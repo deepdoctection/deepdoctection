@@ -10,11 +10,14 @@
 **deep**doctection is a Python package that enables document analysis pipelines to be built using deep learning models.
 
 Extracting information from documents is difficult. Documents often have a complex visual structure and the information 
-they contain is not tagged. **deep**doctection is a tool box that is intended to facilitate entry into this topic.
+they contain is not tagged. **deep**doctection is a tool box that is intended to facilitate entry into this topic. 
 
 The focus should be on application. **deep**doctection is made for data scientists who are tasked with supporting
 departments in process optimization. For analysts who have to investigate into large sets of documents. And also maybe 
 for researchers who would like to see how well their new model fits into an extraction pipeline.
+
+It currently focuses on raw text extraction. For further text processing tasks, use one of the many other great NLP 
+libraries.
 
 ![image info](./notebooks/pics/dd_rm_sample.jpg)
 
@@ -22,10 +25,13 @@ for researchers who would like to see how well their new model fits into an extr
 
 1. Use an **off the shelf analyzer** for restructuring your **PDF** or **scanned documents**:
          
-   - layout recognition with deep neural networks (Mask-RCNN and more)
+   - layout recognition with deep neural networks (Mask-RCNN and more) trained on large public datasets
    - table extraction with full table semantics (rows, columns, multi line cell spans), again with DNN
    - OCR and word assignment to detected layouts components
    - reading order 
+
+   Off the shelf actually means off the shelf. The results will look okay, but outputs useful for downstream tasks will 
+   only come when the models are adapted to actual use case documents. Therefore:
 
 2. **Fine-tune pre-trained DNN** on your own labeled dataset. Use generally acknowledged metrics for evaluating training
     improvements.
@@ -36,9 +42,7 @@ for researchers who would like to see how well their new model fits into an extr
    models**.
 
 5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
-You can acquire more details in the respective model cards. 
-
-**Please note: All previous models have been changed and re-trained. Older versions from now on will not work.** 
+You can acquire more details in the respective model cards.
 
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
 [**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#).
