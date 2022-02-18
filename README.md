@@ -19,7 +19,7 @@ for researchers who would like to see how well their new model fits into an extr
 It currently focuses on raw text extraction. For further text processing tasks, use one of the many other great NLP 
 libraries.
 
-![image info](./notebooks/pics/dd_rm_sample.jpg)
+![image info](./notebooks/pics/dd_rm_sample.png)
 
 ## Characteristics
 
