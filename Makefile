@@ -83,37 +83,45 @@ up-req-files: check-venv
 
 install-dd: check-venv
 	@echo "--> Installing dependencies"
-	pip install -r requirements.txt -e .
+	pip install -r requirements.txt .
 	@echo "--> Done installing dependencies"
 	@echo ""
 
 install-dd-tf: install-dd
 	@echo "--> Installing tensorflow dependencies"
-	pip install -e ".[tf]"
+	pip install ".[tf]"
 	@echo "--> Done installing tensorflow dependencies"
 	@echo ""
 
 install-dd-pt: install-dd
 	@echo "--> Installing PT dependencies"
-	pip install -e ".[pt]"
+	pip install ".[pt]"
 	@echo "--> Done installing PT dependencies"
 	@echo ""
 
 install-dd-all: check-venv install-dd-tf install-dd-pt install-dd-aws
 
-install-dd-all-dev: check-venv install-dd-all install-dd-test install-dd-dev
+install-dd-all-dev: check-venv install-dd-dev install-dd-test
 
 install-dd-dev: check-venv
+	@echo "--> Installing requirements dependencies"
+	pip install -r requirements.txt -e .
+	@echo "--> Installing tensorflow dependencies"
+	pip install -e ".[tf]"
+	@echo "--> Installing pytorch dependencies"
+	pip install -e ".[pt]"
+	@echo "--> Installing aws dependencies"
+	pip install -e ".[aws]"
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
 	@echo "--> Done installing dev dependencies"
 	@echo ""
 
 install-dd-test: check-venv
-	@echo "--> Installing dev dependencies"
+	@echo "--> Installing test dependencies"
 	pip install -e ".[test]"
 	pip install -U pytest
-	@echo "--> Done installing dev dependencies"
+	@echo "--> Done installing test dependencies"
 	@echo ""
 
 install-jupyterlab-setup: check-venv
@@ -141,7 +149,7 @@ install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
 install-dd-aws: check-venv
 	@echo "--> Installing aws dependencies"
-	pip install -e ".[aws]"
+	pip install ".[aws]"
 	@echo "--> Done installing aws dependencies"
 
 
