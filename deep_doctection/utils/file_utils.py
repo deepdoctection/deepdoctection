@@ -214,6 +214,61 @@ def get_tesseract_requirement() -> Requirement:
     return "tesseract", False, _TESS_ERR_MSG
 
 
+# Poppler utils or resp. pdftoppm and pdftocairo for Linux platforms
+_PDF_TO_PPM_AVAILABLE = which("pdftoppm") is not None
+_PDF_TO_CAIRO_AVAILABLE = which("pdftocairo") is not None
+_POPPLER_ERR_MSG = "Poppler is not found. Please check that Poppler is installed and it is added to your path"
+
+
+def pdf_to_ppm_available() -> bool:
+    return bool(_PDF_TO_PPM_AVAILABLE)
+
+
+def pdf_to_cairo_available() -> bool:
+    return bool(_PDF_TO_CAIRO_AVAILABLE)
+
+
+class PopplerNotFound(BaseException):
+    """
+    Exception class for Poppler being not found
+    """
+
+
+def get_poppler_version():
+    """
+    Returns Version object of the Poppler version. We need at least Tesseract 3.05
+    """
+
+    if pdf_to_ppm_available():
+        command = "pdftoppm"
+    elif pdf_to_cairo_available():
+        command = "pdftocairo"
+    else:
+        return 0
+
+    try:
+        output = subprocess.check_output([command, "-v"],
+                                         stderr = subprocess.STDOUT,
+                                         env = environ,
+                                         stdin= subprocess.DEVNULL
+                                         )
+    except OSError:
+        raise PopplerNotFound() from OSError
+
+    raw_version = output.decode("utf-8")
+    list_version = raw_version.split("\n")[0].split(" ")[-1].split(".")
+
+    current_version = version.parse(".".join(list_version[:2]))
+
+    return current_version
+
+
+def get_poppler_requirement() -> Requirement:
+    if get_poppler_version():
+        return "poppler", True, _POPPLER_ERR_MSG
+    return "poppler", False, _POPPLER_ERR_MSG
+
+
 # Textract related dependencies
 _BOTO3_AVAILABLE = importlib.util.find_spec("boto3") is not None
 _BOTO3_ERR_MSG = "Boto3 must be installed: >>install-dd-aws"
