@@ -39,7 +39,6 @@ DIST_DEPS = [
     "lxml",
     "huggingface_hub",
     "packaging>=20.0",
-    "pdf2image",
     "pyyaml",
     "scikit-learn",
     "scipy",
