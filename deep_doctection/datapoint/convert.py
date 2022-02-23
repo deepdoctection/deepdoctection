@@ -42,7 +42,7 @@ __all__ = [
     "convert_b64_to_np_array",
     "convert_np_array_to_b64",
     "convert_np_array_to_b64_b",
-    "convert_pdf_bytes_to_np_array",
+    "convert_pdf_bytes_to_np_array_v2",
     "box_to_point4",
     "point4_to_box",
 ]
