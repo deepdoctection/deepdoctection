@@ -120,7 +120,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
              (captured text), 'block_num' (block number) and 'lin_num' (line number).
     """
 
-    with save_tmp_file(image,"tess_") as (tmp_name, input_file_name):
+    with save_tmp_file(image, "tess_") as (tmp_name, input_file_name):
         _run_tesseract(_input_to_cli_str(lang, config, 0, input_file_name, tmp_name))
         with open(tmp_name + ".tsv", "rb") as output_file:
             output = output_file.read().decode("utf-8")

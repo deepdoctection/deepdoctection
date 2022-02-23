@@ -125,12 +125,14 @@ class PDFStreamer:
             writer.write(buffer)
             yield buffer.getvalue(), k
 
+
 # The following functions are modified versions from the Python poppler wrapper
 # https://github.com/Belval/pdf2image/blob/master/pdf2image/pdf2image.py
 
 
-def _input_to_cli_str(input_file_name: str, output_file_name: str, dpi: int,
-                      size: Optional[Tuple[int,int]]= None) -> List[str]:
+def _input_to_cli_str(
+    input_file_name: str, output_file_name: str, dpi: int, size: Optional[Tuple[int, int]] = None
+) -> List[str]:
 
     cmd_args: List[str] = []
 
@@ -149,8 +151,8 @@ def _input_to_cli_str(input_file_name: str, output_file_name: str, dpi: int,
     cmd_args.append(output_file_name)
 
     if size:
-        assert len(size)==2, size
-        assert isinstance(size[0],int) and isinstance(size[1],int), size
+        assert len(size) == 2, size
+        assert isinstance(size[0], int) and isinstance(size[1], int), size
         cmd_args.extend(["-scale-to-x", str(size[0])])
         cmd_args.extend(["-scale-to-y", str(size[1])])
 
@@ -171,11 +173,11 @@ class PopplerError(RuntimeError):
 
 def _run_poppler(poppler_args: List[str]) -> None:
     try:
-        proc = subprocess.Popen(poppler_args)
+        proc = subprocess.Popen(poppler_args)  # pylint: disable=R1732
     except OSError as error:
         if error.errno != ENOENT:
             raise error from error
-        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.")
+        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.") from error
 
     with timeout_manager(proc, 0) as error_string:
         if proc.returncode:
@@ -185,7 +187,7 @@ def _run_poppler(poppler_args: List[str]) -> None:
             )
 
 
-def pdf_to_np_array(pdf_bytes,size: Optional[Tuple[int,int]]= None, dpi: int=200) -> ImageType:
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> ImageType:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via pdftoppm resp. pdftocairo if the former is not available.
@@ -196,7 +198,7 @@ def pdf_to_np_array(pdf_bytes,size: Optional[Tuple[int,int]]= None, dpi: int=200
     :return: numpy array
     """
 
-    with save_tmp_file(pdf_bytes,"pdf_") as (tmp_name, input_file_name):
+    with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
         _run_poppler(_input_to_cli_str(input_file_name, tmp_name, dpi, size))
         image = imread(tmp_name + "-1.png", IMREAD_COLOR)
 

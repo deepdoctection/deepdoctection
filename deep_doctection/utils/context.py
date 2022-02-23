@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: xxx.py
+# File: context.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -15,14 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Some useful contextmanagers for various tasks
+"""
+
 import subprocess
 
 from errno import ENOENT
-from os import remove
+from os import remove, path
+
 from typing import Union, Optional, Iterator, Tuple
 from tempfile import NamedTemporaryFile
 from contextlib import contextmanager
-from os.path import normcase, normpath, realpath
 
 from glob import iglob
 
@@ -31,7 +35,7 @@ from cv2 import imwrite
 
 from .detection_types import ImageType
 
-__all__ = ["timeout_manager","save_tmp_file"]
+__all__ = ["timeout_manager", "save_tmp_file"]
 
 
 @contextmanager
@@ -73,13 +77,13 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
     try:
         with NamedTemporaryFile(prefix=prefix, delete=False) as file:
             if isinstance(image, str):
-                yield file.name, realpath(normpath(normcase(image)))
+                yield file.name, path.realpath(path.normpath(path.normcase(image)))
                 return
             if isinstance(image, (np.ndarray, np.generic)):
                 input_file_name = file.name + ".PNG"
                 imwrite(input_file_name, image)
                 yield file.name, input_file_name
-            if isinstance(image,bytes):
+            if isinstance(image, bytes):
                 input_file_name = file.name
                 file.write(image)
                 file.flush()

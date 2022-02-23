@@ -19,21 +19,25 @@
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
 
-
+"""
+Utilities for developers only. These are not visible to users and should not appear in docs.
+"""
+import inspect
 import functools
+
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Callable, Any
 from . import logger
 
-__all__ = []
+__all__: List[str] = []
 
 # Copy and paste from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/develop.py
 
-_DEPRECATED_LOG_NUM = defaultdict(int)
+_DEPRECATED_LOG_NUM = defaultdict(int)  # type: ignore
 
 
-def log_deprecated(name: str ="", text: str ="", eos: str ="", max_num_warnings=None) -> None:
+def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> None:
     """
     Log deprecation warning.
 
@@ -44,25 +48,25 @@ def log_deprecated(name: str ="", text: str ="", eos: str ="", max_num_warnings=
     """
     assert name or text
     if eos:
-        eos = "after " + datetime(*map(int, eos.split("-"))).strftime("%d %b")
+        eos = "after " + datetime(*map(int, eos.split("-"))).strftime("%d %b")  # type: ignore # pylint: disable=C0209
     if name:
         if eos:
-            warn_msg = "%s will be deprecated %s. %s" % (name, eos, text)
+            info_msg = f"{name} will be deprecated {eos}. {text}"
         else:
-            warn_msg = "%s was deprecated. %s" % (name, text)
+            info_msg = f"{name} was deprecated. {text}"
     else:
-        warn_msg = text
+        info_msg = text
         if eos:
-            warn_msg += " Legacy period ends %s" % eos
+            info_msg += f" Legacy period ends {eos}"
 
     if max_num_warnings is not None:
-        if _DEPRECATED_LOG_NUM[warn_msg] >= max_num_warnings:
+        if _DEPRECATED_LOG_NUM[info_msg] >= max_num_warnings:
             return
-        _DEPRECATED_LOG_NUM[warn_msg] += 1
-    logger.warn("[Deprecated] " + warn_msg)
+        _DEPRECATED_LOG_NUM[info_msg] += 1
+    logger.info("[Deprecated] %s", info_msg)
 
 
-def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int]=None):
+def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> Callable[[Any], Any]:
     """
 
     :param text: same as :func:`log_deprecated`.
@@ -79,23 +83,22 @@ def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int]=No
                 pass
     """
 
-    def get_location():
-        import inspect
+    def get_location() -> str:
         frame = inspect.currentframe()
         if frame:
             callstack = inspect.getouterframes(frame)[-1]
-            return '%s:%i' % (callstack[1], callstack[2])
-        else:
-            stack = inspect.stack(0)
-            entry = stack[2]
-            return '%s:%i' % (entry[1], entry[2])
+            return f"{callstack[1]}:{callstack[2]}"
+        stack = inspect.stack(0)
+        entry = stack[2]
+        return f"{entry[1]}:{entry[2]}"
 
-    def deprecated_inner(func):
+    def deprecated_inner(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
         @functools.wraps(func)
-        def new_func(*args, **kwargs):
-            name = "{} [{}]".format(func.__name__, get_location())
+        def new_func(*args, **kwargs):  # type: ignore
+            name = f"{func.__name__} [{get_location()}]"
             log_deprecated(name, text, eos, max_num_warnings=max_num_warnings)
             return func(*args, **kwargs)
-        return new_func
-    return deprecated_inner
 
+        return new_func
+
+    return deprecated_inner
