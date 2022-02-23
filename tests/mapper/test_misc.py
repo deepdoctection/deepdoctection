@@ -42,7 +42,7 @@ _TEST_IMAGE.image = ones((4, 3, 3), dtype=float32)
     ],
 )
 @patch("deep_doctection.mapper.misc.load_image_from_file", MagicMock(return_value=ones((4, 3, 3))))
-@patch("deep_doctection.mapper.misc.convert_pdf_bytes_to_np_array", MagicMock(return_value=ones((4, 3, 3))))
+@patch("deep_doctection.mapper.misc.convert_pdf_bytes_to_np_array_v2", MagicMock(return_value=ones((4, 3, 3))))
 def test_to_image(datapoint: Union[str, Dict[str, Union[str, bytes]]], expected_image: Image) -> None:
     """
     Image is properly constructed

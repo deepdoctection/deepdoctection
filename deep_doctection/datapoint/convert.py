@@ -114,7 +114,7 @@ def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
     return b_image
 
 
-@deprecated("Use convert_pdf_bytes_to_np_array_v2","2022-02-23")
+@deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
 def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
     """
     Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed.
@@ -127,7 +127,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
     :return: Image as numpy array.
     """
-    from pdf2image import convert_from_bytes
+    from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415
 
     assert which("pdftoppm") is not None, "convert_pdf_bytes_to_np_array requires poppler to be installed"
 

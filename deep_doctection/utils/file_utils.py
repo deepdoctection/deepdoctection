@@ -221,10 +221,16 @@ _POPPLER_ERR_MSG = "Poppler is not found. Please check that Poppler is installed
 
 
 def pdf_to_ppm_available() -> bool:
+    """
+    Returns True if pdftoppm is installed
+    """
     return bool(_PDF_TO_PPM_AVAILABLE)
 
 
 def pdf_to_cairo_available() -> bool:
+    """
+    Returns True if pdftocairo is installed
+    """
     return bool(_PDF_TO_CAIRO_AVAILABLE)
 
 
@@ -234,7 +240,7 @@ class PopplerNotFound(BaseException):
     """
 
 
-def get_poppler_version():
+def get_poppler_version() -> Union[int, version.Version, version.LegacyVersion]:
     """
     Returns Version object of the Poppler version. We need at least Tesseract 3.05
     """
@@ -247,16 +253,14 @@ def get_poppler_version():
         return 0
 
     try:
-        output = subprocess.check_output([command, "-v"],
-                                         stderr = subprocess.STDOUT,
-                                         env = environ,
-                                         stdin= subprocess.DEVNULL
-                                         )
+        output = subprocess.check_output(
+            [command, "-v"], stderr=subprocess.STDOUT, env=environ, stdin=subprocess.DEVNULL
+        )
     except OSError:
         raise PopplerNotFound() from OSError
 
     raw_version = output.decode("utf-8")
-    list_version = raw_version.split("\n")[0].split(" ")[-1].split(".")
+    list_version = raw_version.split("\n", maxsplit=1)[0].split(" ")[-1].split(".")
 
     current_version = version.parse(".".join(list_version[:2]))
 
@@ -264,6 +268,9 @@ def get_poppler_version():
 
 
 def get_poppler_requirement() -> Requirement:
+    """
+    Returns Poppler requirement. The minimum version is not required in our setting
+    """
     if get_poppler_version():
         return "poppler", True, _POPPLER_ERR_MSG
     return "poppler", False, _POPPLER_ERR_MSG
