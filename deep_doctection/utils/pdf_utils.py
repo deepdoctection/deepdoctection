@@ -150,7 +150,7 @@ def _input_to_cli_str(input_file_name: str, output_file_name: str, dpi: int,
 
     if size:
         assert len(size)==2, size
-        assert size[0] is not None and size[1] is not None
+        assert isinstance(size[0],int) and isinstance(size[1],int), size
         cmd_args.extend(["-scale-to-x", str(size[0])])
         cmd_args.extend(["-scale-to-y", str(size[1])])
 
