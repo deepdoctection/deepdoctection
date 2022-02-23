@@ -57,12 +57,8 @@ packaging==21.3
     # via
     #   deep-doctection (setup.py)
     #   huggingface-hub
-pdf2image==1.16.0
-    # via deep-doctection (setup.py)
 pillow==9.0.0
-    # via
-    #   matplotlib
-    #   pdf2image
+    # via matplotlib
 psutil==5.8.0
     # via dataflow
 pycocotools==2.0.2
