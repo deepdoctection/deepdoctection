@@ -139,7 +139,7 @@ def _input_to_cli_str(input_file_name: str, output_file_name: str, dpi: int,
     elif pdf_to_cairo_available():
         command = "pdftocairo"
     else:
-        raise PopplerNotFound()
+        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.")
 
     if platform.system() == "Windows":
         command = command + ".exe"

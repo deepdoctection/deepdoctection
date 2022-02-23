@@ -245,6 +245,7 @@ class TestPdfPage:  # pylint: disable=R0903
     loc = "/testlocation/test"
     file_name = "test_image_0.pdf"
     np_array_shape = (3301, 2550, 3)
+    np_array_shape_default = (792, 612, 3)
 
     def get_image_as_pdf_bytes(self) -> bytes:
         """
