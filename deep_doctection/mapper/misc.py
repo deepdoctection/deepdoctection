@@ -24,7 +24,7 @@ import ast
 from typing import Union, Dict, Optional, List
 from lxml import etree  # type: ignore
 
-from ..datapoint.convert import convert_pdf_bytes_to_np_array
+from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.fs import load_image_from_file, is_file_extension, get_load_image_func
 from ..utils.detection_types import JsonDict
@@ -62,7 +62,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
                 pdf_bytes = dp.get("pdf_bytes")
                 if pdf_bytes is not None:
                     if isinstance(pdf_bytes, bytes):
-                        dp_image.image = convert_pdf_bytes_to_np_array(pdf_bytes, dpi=dpi)
+                        dp_image.image = convert_pdf_bytes_to_np_array_v2(pdf_bytes, dpi=dpi)
             else:
                 dp_image.image = load_image_from_file(location)  # type: ignore
 

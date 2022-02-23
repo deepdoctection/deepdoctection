@@ -18,18 +18,14 @@
 """
 Dataclass Image
 """
-from copy import deepcopy
-
-from dataclasses import dataclass, field
-from typing import Optional, List, Union, Dict, Iterable, Any
+from typing import Iterable
 
 import numpy as np
 
-from ..utils import is_uuid_like, get_uuid
 from ..utils.detection_types import ImageType
 
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array, as_dict
-from .box import BoundingBox, crop_box_from_image, global_to_local_coords, intersection_box
+from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
+from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .annotation import *  # pylint: disable=W0401, W0614
 
 
@@ -147,7 +143,7 @@ class Image:
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         elif isinstance(image, bytes):
-            self._image = convert_pdf_bytes_to_np_array(image, dpi=300)
+            self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=300)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         else:

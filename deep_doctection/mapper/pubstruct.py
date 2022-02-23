@@ -28,7 +28,7 @@ from ..utils.settings import names
 from ..datapoint import ImageAnnotation, BoundingBox, CategoryAnnotation
 from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.image import Image
-from ..datapoint.convert import convert_pdf_bytes_to_np_array
+from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file, is_file_extension, load_bytes_from_pdf_file
 from .maputils import MappingContextManager, maybe_get_fake_score, cur
@@ -273,7 +273,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
             np_image = load_image_from_file(dp["filename"])
         if is_file_extension(dp["filename"], ".pdf"):
             pdf_bytes = load_bytes_from_pdf_file(dp["filename"])
-            np_image = convert_pdf_bytes_to_np_array(pdf_bytes)
+            np_image = convert_pdf_bytes_to_np_array_v2(pdf_bytes)
             dp = _convert_boxes(dp, np_image.shape[0])
 
         if load_image and np_image is not None:
