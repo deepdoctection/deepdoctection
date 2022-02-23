@@ -19,14 +19,23 @@
 Module with pdf processing tools
 """
 
+import subprocess
 import os
+import platform
+
+from errno import ENOENT
 from shutil import which, copyfile
-from typing import Generator, Tuple
+from typing import Generator, Tuple, List, Optional
 from io import BytesIO
+from cv2 import imread, IMREAD_COLOR
 
 from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
 
-__all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer"]
+from .file_utils import pdf_to_ppm_available, pdf_to_cairo_available, PopplerNotFound
+from .context import timeout_manager, save_tmp_file
+from .detection_types import ImageType
+
+__all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
 
 def decrypt_pdf_document(path: str) -> None:
@@ -115,3 +124,80 @@ class PDFStreamer:
             writer.addPage(self.file_reader.getPage(k))
             writer.write(buffer)
             yield buffer.getvalue(), k
+
+# The following functions are modified versions from the Python poppler wrapper
+# https://github.com/Belval/pdf2image/blob/master/pdf2image/pdf2image.py
+
+
+def _input_to_cli_str(input_file_name: str, output_file_name: str, dpi: int,
+                      size: Optional[Tuple[int,int]]= None) -> List[str]:
+
+    cmd_args: List[str] = []
+
+    if pdf_to_ppm_available():
+        command = "pdftoppm"
+    elif pdf_to_cairo_available():
+        command = "pdftocairo"
+    else:
+        raise PopplerNotFound()
+
+    if platform.system() == "Windows":
+        command = command + ".exe"
+    cmd_args.append(command)
+    cmd_args.extend(["-r", str(dpi), input_file_name])
+    cmd_args.append("-png")
+    cmd_args.append(output_file_name)
+
+    if size:
+        assert len(size)==2, size
+        assert size[0] is not None and size[1] is not None
+        cmd_args.extend(["-scale-to-x", str(size[0])])
+        cmd_args.extend(["-scale-to-y", str(size[1])])
+
+    return cmd_args
+
+
+class PopplerError(RuntimeError):
+    """
+    Poppler Error
+    """
+
+    def __init__(self, status: int, message: str) -> None:
+        super().__init__()
+        self.status = status
+        self.message = message
+        self.args = (status, message)
+
+
+def _run_poppler(poppler_args: List[str]) -> None:
+    try:
+        proc = subprocess.Popen(poppler_args)
+    except OSError as error:
+        if error.errno != ENOENT:
+            raise error from error
+        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.")
+
+    with timeout_manager(proc, 0) as error_string:
+        if proc.returncode:
+            raise PopplerError(
+                proc.returncode,
+                " ".join(line for line in error_string.decode("utf-8").splitlines()).strip(),  # type: ignore
+            )
+
+
+def pdf_to_np_array(pdf_bytes,size: Optional[Tuple[int,int]]= None, dpi: int=200) -> ImageType:
+    """
+    Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
+    file and then call poppler via pdftoppm resp. pdftocairo if the former is not available.
+
+    :param pdf_bytes: Bytes representing the PDF file
+    :param size: Size of the resulting image(s), uses (width, height) standard
+    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
+    :return: numpy array
+    """
+
+    with save_tmp_file(pdf_bytes,"pdf_") as (tmp_name, input_file_name):
+        _run_poppler(_input_to_cli_str(input_file_name, tmp_name, dpi, size))
+        image = imread(tmp_name + "-1.png", IMREAD_COLOR)
+
+    return image

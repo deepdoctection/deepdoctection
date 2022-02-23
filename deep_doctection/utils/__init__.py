@@ -6,6 +6,7 @@ Init file for utils package
 """
 from typing import Optional, Tuple, Union, no_type_check
 
+from .context import *
 from .file_utils import *
 from .fs import *
 from .identifier import *
@@ -52,6 +53,7 @@ _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string
 _global_import("settings", prefix="names")
 
 # pylint: disable=undefined-variable
+__all__.extend(context.__all__)
 __all__.extend(fs.__all__)  # type: ignore
 __all__.extend(identifier.__all__)  # type: ignore
 __all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
