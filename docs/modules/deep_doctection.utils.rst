@@ -1,6 +1,14 @@
 deep\_doctection.utils
 ==============================
 
+deep\_doctection.utils.context
+----------------------------------------------
+
+.. automodule:: deep_doctection.utils.context
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.utils.detection\_types
 ----------------------------------------------
 

@@ -22,19 +22,16 @@ import subprocess
 import sys
 import shlex
 
-from glob import iglob
 from errno import ENOENT
-from os import environ, remove
-from os.path import normcase, normpath, realpath
-from typing import List, Dict, Any, Union, Optional, Iterator, Tuple
-from tempfile import NamedTemporaryFile
-from contextlib import contextmanager
+from os import environ
+from typing import List, Dict, Any, Union
+
 
 import numpy as np
-from cv2 import imwrite
 
 from ...utils.detection_types import ImageType
 from ...utils.file_utils import TesseractNotFound
+from ...utils.context import timeout_manager, save_tmp_file
 from ..base import DetectionResult
 
 
@@ -89,55 +86,6 @@ def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, o
     return cmd_args
 
 
-@contextmanager
-def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
-    """
-    Manager for time handling while Tesseract being called
-    :param proc: process
-    :param seconds: seconds to wait
-    """
-    try:
-        if not seconds:
-            yield proc.communicate()[1]
-            return
-
-        try:
-            _, error_string = proc.communicate(timeout=seconds)
-            yield error_string
-        except subprocess.TimeoutExpired:
-            proc.terminate()
-            proc.kill()
-            proc.returncode = -1
-            raise RuntimeError("Tesseract process timeout")  # pylint: disable=W0707
-    finally:
-        proc.stdin.close()
-        proc.stdout.close()
-        proc.stderr.close()
-
-
-@contextmanager
-def save(image: Union[str, ImageType]) -> Iterator[Tuple[str, str]]:
-    """
-    Save image temporarily and handle the clean-up once not necessary anymore
-    :param image: image as string or numpy array
-    """
-    try:
-        with NamedTemporaryFile(prefix="tess_", delete=False) as file:
-            if isinstance(image, str):
-                yield file.name, realpath(normpath(normcase(image)))
-                return
-            input_file_name = file.name + ".PNG"
-            imwrite(input_file_name, image)
-            yield file.name, input_file_name
-    finally:
-        for file_name in iglob(file.name + "*" if file.name else file.name):
-            try:
-                remove(file_name)
-            except OSError as error:
-                if error.errno != ENOENT:
-                    raise error
-
-
 def _run_tesseract(tesseract_args: List[str]) -> None:
     try:
         proc = subprocess.Popen(tesseract_args, **_subprocess_args())  # pylint: disable=R1732
@@ -172,7 +120,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
              (captured text), 'block_num' (block number) and 'lin_num' (line number).
     """
 
-    with save(image) as (tmp_name, input_file_name):
+    with save_tmp_file(image,"tess_") as (tmp_name, input_file_name):
         _run_tesseract(_input_to_cli_str(lang, config, 0, input_file_name, tmp_name))
         with open(tmp_name + ".tsv", "rb") as output_file:
             output = output_file.read().decode("utf-8")
