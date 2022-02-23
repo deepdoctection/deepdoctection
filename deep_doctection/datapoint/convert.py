@@ -32,9 +32,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 from PyPDF2 import PdfFileReader  # type: ignore
-from pdf2image import convert_from_bytes  # type: ignore
+
 
 from ..utils.detection_types import ImageType
+from ..utils.pdf_utils import pdf_to_np_array
+from ..utils.develop import deprecated
 
 __all__ = [
     "convert_b64_to_np_array",
@@ -112,6 +114,7 @@ def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
     return b_image
 
 
+@deprecated("Use convert_pdf_bytes_to_np_array_v2","2022-02-23")
 def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
     """
     Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed.
@@ -124,6 +127,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
     :return: Image as numpy array.
     """
+    from pdf2image import convert_from_bytes
 
     assert which("pdftoppm") is not None, "convert_pdf_bytes_to_np_array requires poppler to be installed"
 
@@ -135,6 +139,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     buffered = BytesIO()
 
     if dpi is None:
+
         image = convert_from_bytes(pdf_bytes, size=(width, height))[0]
     else:
         image = convert_from_bytes(pdf_bytes, dpi=dpi)[0]
@@ -143,6 +148,29 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     image = base64.b64encode(buffered.getvalue()).decode("utf-8")
     np_array = convert_b64_to_np_array(image)
     return np_array
+
+
+def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
+    """
+    Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed. This
+    function, however does not rely on the wrapper pdf2image but uses a function of this lib which calls poppler
+    directly.
+
+    :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
+                      :func:`utils.fs.load_bytes_from_pdf_file`
+    :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
+    :return: Image as numpy array.
+    """
+
+    with BytesIO(pdf_bytes) as pdf_file:
+        pdf = PdfFileReader(pdf_file).getPage(0)
+    shape = pdf.mediaBox
+    height = shape[3] - shape[1]
+    width = shape[2] - shape[0]
+
+    if dpi is None:
+        return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))
+    return pdf_to_np_array(pdf_bytes, dpi=dpi)
 
 
 def box_to_point4(boxes: NDArray[np.float32]) -> NDArray[np.float32]:

@@ -30,6 +30,8 @@ __all__ = ["timed_operation"]
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
+
+
 @contextmanager
 def timed_operation(message: str, log_start: bool = False) -> Generator[Any, None, None]:
     """
