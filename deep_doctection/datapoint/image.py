@@ -178,6 +178,24 @@ class Image:
         annotations setter. Only defined for technical reasons. Cannot change the underlying attribute from here.
         """
 
+    @property
+    def pdf_bytes(self) -> Optional[bytes]:
+        """
+        pdf_bytes. This attribute will be set dynamically and is not part of the core Image data model
+        """
+        if hasattr(self,"pdf_bytes"):
+            return self.pdf_bytes
+        return None
+
+    @pdf_bytes.setter
+    def pdf_bytes(self, pdf_bytes: bytes) -> None:
+        """
+        pdf_bytes setter
+        """
+        assert isinstance(pdf_bytes, bytes)
+        if not hasattr(self,"pdf_bytes"):
+            setattr(self,"pdf_bytes", pdf_bytes)
+
     def clear_image(self) -> None:
         """
         Removes the :attr:`Image.image`. Useful, if the image must be a lightweight object.
