@@ -147,12 +147,6 @@ install-kernel-dd: check-venv
 
 install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
-install-dd-aws: check-venv
-	@echo "--> Installing aws dependencies"
-	pip install ".[aws]"
-	@echo "--> Done installing aws dependencies"
-
-
 
 check-venv:
 ifndef VIRTUAL_ENV

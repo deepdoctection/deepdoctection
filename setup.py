@@ -51,11 +51,10 @@ DIST_DEPS = [
 # DIST_DEPS.append("tensorpack")
 # DIST_DEPS.append("boto3")
 # DIST_DEPS.append("transformers")
-# TF_DEPS, AWS_DEPS,HF_DEPS = [], [], []
+# TF_DEPS, HF_DEPS = [], [], []
 
 # when building requirements.txt for rtd comment the following lines
 TF_DEPS = ["tensorpack"]
-AWS_DEPS = ["boto3"]
 
 # even though transformers works for certain models in Tensorflow, we currently support only models
 # in Pytorch
@@ -70,7 +69,7 @@ if sys.platform == "linux":
 
 TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
-EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "aws": AWS_DEPS, "pt": PT_DEPS}
+EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
     name=about["__title__"],
