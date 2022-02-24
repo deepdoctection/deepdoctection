@@ -87,7 +87,8 @@ class DetectionResult:
 
 class ObjectDetector(PredictorBase):  # pylint: disable=R0903
     """
-    Abstract base class. Use this to connect external detectors with Deep-Doctection predictors on images.
+    Abstract base class for object detection. This can be anything ranging from layout detection to OCR.
+    Use this to connect external detectors with Deep-Doctection predictors on images.
 
     **Example:**
 
@@ -100,6 +101,20 @@ class ObjectDetector(PredictorBase):  # pylint: disable=R0903
 
     @abstractmethod
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError
+
+
+class PdfMiner(PredictorBase):
+    """
+    Abstract base class for mining information from PDF documents. Reads in a bytes stream from a PDF document page.
+    Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
+    """
+
+    @abstractmethod
+    def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
         """
         Abstract method predict
         """
