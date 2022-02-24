@@ -276,7 +276,7 @@ def get_poppler_requirement() -> Requirement:
 
 # Pdfminer.six related dependencies
 _PDFMINER_SIX_AVAILABLE = importlib.util.find_spec("pdfminer") is not None
-_PDFMINER_SIX_ERR_MSG = "pdfminer.six must be installed. Use pip install pdfminer.six"
+_PDFMINER_SIX_ERR_MSG = "pdfminer.six must be installed. >> pip install pdfminer.six"
 
 
 def pdfminer_six_available() -> bool:
@@ -295,7 +295,7 @@ def get_pdfminer_six_requirement() -> Requirement:
 
 # Textract related dependencies
 _BOTO3_AVAILABLE = importlib.util.find_spec("boto3") is not None
-_BOTO3_ERR_MSG = "Boto3 must be installed: >>install-dd-aws"
+_BOTO3_ERR_MSG = "Boto3 must be installed: >> pip install boto3"
 
 _AWS_CLI_AVAILABLE = which("aws") is not None
 _AWS_ERR_MSG = "AWS CLI must be installed https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
