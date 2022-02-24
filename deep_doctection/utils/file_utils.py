@@ -157,8 +157,6 @@ def get_detectron2_requirement() -> Requirement:
 
 
 # Tesseract related dependencies
-_PYTESS_AVAILABLE = importlib.util.find_spec("pytesseract") is not None
-_PYTESS_ERR_MSG = "Pytesseract must be installed: https://pypi.org/project/pytesseract/"
 
 _TESS_AVAILABLE = which("tesseract") is not None
 _TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
@@ -274,6 +272,25 @@ def get_poppler_requirement() -> Requirement:
     if get_poppler_version():
         return "poppler", True, _POPPLER_ERR_MSG
     return "poppler", False, _POPPLER_ERR_MSG
+
+
+# Pdfminer.six related dependencies
+_PDFMINER_SIX_AVAILABLE = importlib.util.find_spec("pdfminer") is not None
+_PDFMINER_SIX_ERR_MSG = "pdfminer.six must be installed. Use pip install pdfminer.six"
+
+
+def pdfminer_six_available() -> bool:
+    """
+    Returns True if pdfminer.six is installed
+    """
+    return bool(_PDFMINER_SIX_AVAILABLE)
+
+
+def get_pdfminer_six_requirement() -> Requirement:
+    """
+    Returns pdfminer.six requirement.
+    """
+    return "pdfminer", False, _PDFMINER_SIX_ERR_MSG
 
 
 # Textract related dependencies
