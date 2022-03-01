@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Module for calling  :func:`pytesseract.image_to_data`
+Module for calling  tesseract
 """
+
 import subprocess
 import sys
 import shlex
@@ -156,7 +157,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
 
 def predict_text(np_img: ImageType, supported_languages: str, config: str) -> List[DetectionResult]:
     """
-    Calls pytesseract :func:`pytesseract.image_to_data` with some given configs. It requires Tesseract to be installed.
+    Calls tesseract directly with some given configs. Requires Tesseract to be installed.
 
     :param np_img: Image in np.array.
     :param supported_languages: To improve ocr extraction quality it is helpful to pre-select the language of the
