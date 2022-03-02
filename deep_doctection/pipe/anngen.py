@@ -22,7 +22,7 @@ Module for datapoint populating helpers
 from typing import Optional, Dict, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation, ContainerAnnotation, SummaryAnnotation
-from ..datapoint.box import BoundingBox, local_to_global_coords
+from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
@@ -90,6 +90,8 @@ class DatapointManager:
         to_annotation_id: Optional[str] = None,
         to_image: bool = False,
         crop_image: bool = False,
+        detect_result_max_width: Optional[float] = None,
+        detect_result_max_height: Optional[float] = None
     ) -> Optional[str]:
         """
         Creating an image annotation from a raw DetectionResult dataclass. Beside dumping the annotation to the Image
@@ -106,7 +108,10 @@ class DatapointManager:
         :param to_image: If True will populate :attr:`image`.
         :param crop_image: Makes only sense if to_image=True and if a numpy array is stored in the original image.
                            Will generate :attr:`Image.image`.
-
+        :param detect_result_max_width: If detect result has a different scaling scheme from the image it refers to,
+                                        pass the max width possible so coords can be rescaled.
+        :param detect_result_max_height: If detect result has a different scaling scheme from the image it refers to,
+                                        pass the max height possible so coords can be rescaled.
         :return: the annotation_id of the generated image annotation
         """
         self.assert_datapoint_passed()
@@ -119,6 +124,10 @@ class DatapointManager:
                 lry=detect_result.box[3],
                 absolute_coords=True,
             )
+            if detect_result_max_width and detect_result_max_height:
+                box = rescale_coords(box,detect_result_max_width, detect_result_max_height,
+                                     self._datapoint.width,
+                                     self._datapoint.height)
             ann = ImageAnnotation(
                 category_name=detect_result.class_name,
                 bounding_box=box,

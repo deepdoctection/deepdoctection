@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and DDoctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from ..utils.detection_types import ImageType, Requirement
 
@@ -115,8 +115,8 @@ class PdfMiner(PredictorBase):
 
     def __init__(self):
         super().__init__()
-        self.page_width: Optional[float] = None
-        self.page_height: Optional[float] = None
+        self._pdf_bytes: Optional[bytes] = None
+        self._page: Any = None
 
     @abstractmethod
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
