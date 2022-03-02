@@ -274,23 +274,23 @@ def get_poppler_requirement() -> Requirement:
     return "poppler", False, _POPPLER_ERR_MSG
 
 
-# Pdfminer.six related dependencies
-_PDFMINER_SIX_AVAILABLE = importlib.util.find_spec("pdfminer") is not None
-_PDFMINER_SIX_ERR_MSG = "pdfminer.six must be installed. >> pip install pdfminer.six"
+# Pdfplumber.six related dependencies
+_PDFPLUMBER_AVAILABLE = importlib.util.find_spec("pdfplumber") is not None
+_PDFPLUMBER_ERR_MSG = "pdfplumber must be installed. >> pip install pdfplumber"
 
 
-def pdfminer_six_available() -> bool:
+def pdfplumber_available() -> bool:
     """
-    Returns True if pdfminer.six is installed
+    Returns True if pdfplumber is installed
     """
-    return bool(_PDFMINER_SIX_AVAILABLE)
+    return bool(_PDFPLUMBER_AVAILABLE)
 
 
-def get_pdfminer_six_requirement() -> Requirement:
+def get_pdfplumber_requirement() -> Requirement:
     """
-    Returns pdfminer.six requirement.
+    Returns pdfplumber requirement.
     """
-    return "pdfminer", False, _PDFMINER_SIX_ERR_MSG
+    return "pdfplumber", pdfplumber_available(), _PDFPLUMBER_ERR_MSG
 
 
 # Textract related dependencies
