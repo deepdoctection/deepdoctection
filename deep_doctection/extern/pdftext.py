@@ -19,7 +19,7 @@
 PDFPlumber text extraction engine
 """
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from ..utils.file_utils import pdfplumber_available, get_pdfplumber_requirement
 from ..utils.settings import names
@@ -54,14 +54,31 @@ class PDFPlumberTextDetector(PdfMiner):
 
         with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
             with open(tmp_name, 'rb') as fin:
-                pdf = PDF(fin)
-                page = pdf.pages[0]
-                self.page_width = page.bbox[2]
-                self.page_height = page.bbox[3]
-                words = page.extract_words()
+                _pdf = PDF(fin)
+                self._page = _pdf.pages[0]
+                self._pdf_bytes = pdf_bytes
+                words = self._page.extract_words()
         detect_results = list(map(_to_detect_result,words))
         return detect_results
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_pdfplumber_requirement()]
+
+    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float,float]:
+        """
+        Get the width and height of the full page
+        :param pdf_bytes: pdf_bytes generating the pdf
+        :return: width and height
+        """
+
+        if self._pdf_bytes == pdf_bytes:
+            return self._page.bbox[2],self._page.bbox[3]
+        # if the pdf bytes is not equal to the cached pdf, will recalculate values
+        with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
+            with open(tmp_name, 'rb') as fin:
+                _pdf = PDF(fin)
+                self._page = _pdf.pages[0]
+                self._pdf_bytes = pdf_bytes
+        return self._page.bbox[2], self._page.bbox[3]
+
