@@ -30,8 +30,8 @@ libraries.
    - OCR and word assignment to detected layouts components
    - reading order 
 
-   Off the shelf actually means off the shelf. The results will look okay, but outputs useful for downstream tasks will 
-   only come when the models are adapted to actual documents you deal with. Therefore:
+   Off the shelf actually means off the shelf. The results will look okay, but useful outputs for downstream tasks will 
+   only come out when models are adapted to actual documents you deal with. Therefore:
 
 2. **Fine-tune pre-trained DNN** on your own labeled dataset. Use generally acknowledged metrics for evaluating training
     improvements.

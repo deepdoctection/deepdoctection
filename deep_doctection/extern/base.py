@@ -60,9 +60,9 @@ class DetectionResult:
 
     :attr:`box`: [ulx,uly,lrx,lry]
 
-    :attr:`score`: prediction score
-
     :attr:`class_id`: category id
+
+    :attr:`score`: prediction score
 
     :attr:`mask`: binary mask
 
@@ -76,8 +76,8 @@ class DetectionResult:
     """
 
     box: List[float]
-    score: float
     class_id: int
+    score: Optional[float] = None
     mask: Optional[List[float]] = None
     class_name: str = ""
     text: Optional[str] = None
