@@ -56,6 +56,8 @@ class PDFPlumberTextDetector(PdfMiner):
             with open(tmp_name, 'rb') as fin:
                 pdf = PDF(fin)
                 page = pdf.pages[0]
+                self.page_width = page.bbox[2]
+                self.page_height = page.bbox[3]
                 words = page.extract_words()
         detect_results = list(map(_to_detect_result,words))
         return detect_results
