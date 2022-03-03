@@ -30,7 +30,7 @@ from ..utils.file_utils import (
     transformers_available,
     get_transformers_requirement,
 )
-from .base import LMTokenClassifier, TokenClassResult
+from .base import LMTokenClassifier, TokenClassResult, PredictorBase
 from .pt.ptutils import set_torch_auto_device
 from .hf.layoutlm import predict_token_classes
 
@@ -68,6 +68,10 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         if categories_explicit is None:
             assert categories_semantics is not None
             assert categories_bio is not None
+
+        self.categories_semantics = categories_semantics
+        self.categories_bio = categories_bio
+        self.categories_ecplicit = categories_explicit
 
         self._categories: Dict[int, str] = (
             dict(enumerate(categories_explicit))
@@ -133,3 +137,6 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         categories
         """
         return self._categories
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.categories_semantics,self.categories_bio,self.categories_ecplicit)

@@ -52,6 +52,13 @@ class PredictorBase(ABC):  # pylint: disable=R0903
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def clone(self) -> "PredictorBase":
+        """
+        Clone an instance
+        """
+        raise NotImplementedError
+
 
 @dataclass
 class DetectionResult:
@@ -131,6 +138,9 @@ class PdfMiner(PredictorBase):
         Abstract method get_width_height
         """
         raise NotImplementedError
+
+    def clone(self) -> PredictorBase:
+        return self.__class__()
 
 
 @dataclass
