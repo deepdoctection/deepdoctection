@@ -173,15 +173,15 @@ class PopplerError(RuntimeError):
 
 def _run_poppler(poppler_args: List[str]) -> None:
     try:
-        proc = subprocess.Popen(poppler_args) # pylint: disable=R1732
+        proc = subprocess.Popen(poppler_args)  # pylint: disable=R1732
     except OSError as error:
         if error.errno != ENOENT:
             raise error from error
         raise PopplerNotFound("Poppler not found. Please install or add to your PATH.") from error
 
-    with timeout_manager(proc, 0) as error_string:
+    with timeout_manager(proc, 0):
         if proc.returncode:
-            raise PopplerError(status=proc.returncode,message="Syntax Error: PDF cannot be read with Poppler")
+            raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
 def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> ImageType:

@@ -58,6 +58,6 @@ class ImageLayoutService(PredictorPipelineComponent):
 
     def serve(self, dp: Image) -> None:
         assert dp.image is not None
-        detect_result_list = self.predictor.predict(dp.image)
+        detect_result_list = self.predictor.predict(dp.image)  # type: ignore
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)

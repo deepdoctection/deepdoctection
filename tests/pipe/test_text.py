@@ -22,8 +22,10 @@ Testing module pipe.text
 from typing import List
 from unittest.mock import MagicMock
 
+from pytest import raises
+
 from deep_doctection.datapoint import BoundingBox, Image, ImageAnnotation
-from deep_doctection.extern.base import DetectionResult, ObjectDetector
+from deep_doctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deep_doctection.pipe.text import TextExtractionService, TextOrderService
 from deep_doctection.utils.settings import names
 
@@ -60,6 +62,55 @@ class TestTextExtractionService:
 
         embedding_bbox = first_text_ann.image.get_embedding(dp.image_id)  # type: ignore
         assert embedding_bbox == first_text_ann.bounding_box
+
+
+class TestTextExtractionServiceWithPdfPlumberDetector:
+    """
+    Test TextExtractionServiceWithPdfPlumberDetector with PdfPlumberTextDetector
+    """
+
+    def setup_method(self) -> None:
+        """
+        setup necessary components
+        """
+
+        self._text_extract_detector = MagicMock(spec=PdfMiner)
+        self.text_extraction_service = TextExtractionService(self._text_extract_detector)
+
+    def test_integration_pipeline_component(
+        self, dp_image_fully_segmented_fully_tiled: Image, word_detect_result: List[DetectionResult]
+    ) -> None:
+        """
+        Integration test through calling :meth:`pass_datapoint` of pipeline component
+        """
+
+        # Arrange
+        dp_image_fully_segmented_fully_tiled.pdf_bytes = b"some bytes"
+        self._text_extract_detector.predict = MagicMock(return_value=word_detect_result)
+        self._text_extract_detector.get_width_height = MagicMock(return_value=(600, 400))
+
+        # Act
+        dp = self.text_extraction_service.pass_datapoint(dp_image_fully_segmented_fully_tiled)
+        anns = dp.get_annotation(category_names=names.C.WORD)
+
+        # Assert
+        first_text_ann = anns[0]
+
+        embedding_bbox = first_text_ann.image.get_embedding(dp.image_id)  # type: ignore
+        assert embedding_bbox == first_text_ann.bounding_box
+
+
+def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> None:
+    """
+    Testing TextExtractionService does not build when instantiating with a PdfMiner and passing some ROI
+    """
+
+    # Arrange
+    text_extract_detector = MagicMock(spec=PdfMiner)
+
+    # Act and Assert
+    with raises(AssertionError):
+        TextExtractionService(text_extract_detector, extract_from_roi=names.C.TAB)
 
 
 class TestTextExtractionServiceWithSubImage:

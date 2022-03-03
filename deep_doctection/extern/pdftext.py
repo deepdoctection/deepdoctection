@@ -24,18 +24,20 @@ from typing import List, Dict, Tuple
 from ..utils.file_utils import pdfplumber_available, get_pdfplumber_requirement
 from ..utils.settings import names
 from ..utils.detection_types import Requirement
-from ..utils.context import  save_tmp_file
+from ..utils.context import save_tmp_file
 from .base import PdfMiner, DetectionResult
 
 if pdfplumber_available():
-    from pdfplumber.pdf import PDF
+    from pdfplumber.pdf import PDF  # type: ignore
 
 
-def _to_detect_result(word: Dict[str,str]):
-    return DetectionResult(box=[float(word["x0"]),float(word["top"]),
-                                float(word["x1"]),float(word["bottom"])],
-                           class_id=1, text=word["text"],
-                           class_name=names.C.WORD)
+def _to_detect_result(word: Dict[str, str]) -> DetectionResult:
+    return DetectionResult(
+        box=[float(word["x0"]), float(word["top"]), float(word["x1"]), float(word["bottom"])],
+        class_id=1,
+        text=word["text"],
+        class_name=names.C.WORD,
+    )
 
 
 class PdfPlumberTextDetector(PdfMiner):
@@ -52,13 +54,13 @@ class PdfPlumberTextDetector(PdfMiner):
         :return: A list of DetectionResult
         """
 
-        with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
-            with open(tmp_name, 'rb') as fin:
+        with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, _):
+            with open(tmp_name, "rb") as fin:
                 _pdf = PDF(fin)
                 self._page = _pdf.pages[0]
                 self._pdf_bytes = pdf_bytes
                 words = self._page.extract_words()
-        detect_results = list(map(_to_detect_result,words))
+        detect_results = list(map(_to_detect_result, words))
         return detect_results
 
     @classmethod
@@ -75,10 +77,9 @@ class PdfPlumberTextDetector(PdfMiner):
         if self._pdf_bytes == pdf_bytes:
             return self._page.bbox[2], self._page.bbox[3]
         # if the pdf bytes is not equal to the cached pdf, will recalculate values
-        with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
-            with open(tmp_name, 'rb') as fin:
+        with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, _):
+            with open(tmp_name, "rb") as fin:
                 _pdf = PDF(fin)
                 self._page = _pdf.pages[0]
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
-

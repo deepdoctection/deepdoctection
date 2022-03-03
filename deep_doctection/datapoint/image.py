@@ -183,8 +183,8 @@ class Image:
         """
         pdf_bytes. This attribute will be set dynamically and is not part of the core Image data model
         """
-        if hasattr(self,"_pdf_bytes"):
-            return self._pdf_bytes
+        if hasattr(self, "_pdf_bytes"):
+            return self._pdf_bytes  # type: ignore
         return None
 
     @pdf_bytes.setter
@@ -193,8 +193,8 @@ class Image:
         pdf_bytes setter
         """
         assert isinstance(pdf_bytes, bytes)
-        if not hasattr(self,"_pdf_bytes"):
-            setattr(self,"_pdf_bytes", pdf_bytes)
+        if not hasattr(self, "_pdf_bytes"):
+            setattr(self, "_pdf_bytes", pdf_bytes)
 
     def clear_image(self) -> None:
         """

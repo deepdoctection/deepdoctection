@@ -26,6 +26,7 @@ from deep_doctection.utils.detection_types import JsonDict
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
+from .data import PDF_BYTES, PDF_BYTES_2
 
 
 @fixture(name="layoutlm_input")
@@ -64,3 +65,19 @@ def fixture_token_class_names() -> List[str]:
 def fixture_textract_response() -> JsonDict:
     """fixture textract_response"""
     return get_textract_response()
+
+
+@fixture(name="pdf_bytes")
+def fixture_pdf_bytes() -> bytes:
+    """
+    fixture pdf bytes
+    """
+    return PDF_BYTES
+
+
+@fixture(name="pdf_bytes_page_2")
+def fixture_pdf_bytes_page_2() -> bytes:
+    """
+    fixture pdf bytes
+    """
+    return PDF_BYTES_2

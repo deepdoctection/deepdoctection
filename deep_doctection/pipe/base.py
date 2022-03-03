@@ -99,8 +99,9 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     numpy array and return DetectResults are currently permitted.
     """
 
-    def __init__(self, predictor: Union[ObjectDetector, PdfMiner],
-                 category_id_mapping: Optional[Dict[int, int]]) -> None:
+    def __init__(
+        self, predictor: Union[ObjectDetector, PdfMiner], category_id_mapping: Optional[Dict[int, int]]
+    ) -> None:
         """
         :param predictor: An Object detector for predicting
         """

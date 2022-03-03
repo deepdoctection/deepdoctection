@@ -59,7 +59,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         dp_image = Image(file_name=file_name, location=location)  # type: ignore
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
-                dp_image.pdf_bytes = dp.get("pdf_bytes")
+                dp_image.pdf_bytes = dp.get("pdf_bytes")  # type: ignore
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)

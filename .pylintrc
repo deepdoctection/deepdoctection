@@ -22,7 +22,7 @@ good-names=x,y,k,n,dp,df,el,ex,cx,cy,w,h,l,i,rs,cs,p6,H1,H2,H3,B1,B2,B3,B1_propo
 
 max-args=8
 max-branches=20
-max-attributes=14
+max-attributes=15
 max-locals=36
 max-returns=8
 max-statements=65
