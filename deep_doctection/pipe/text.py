@@ -22,7 +22,7 @@ from typing import List, Union, Optional, Tuple, Dict
 
 from ..utils.settings import names
 from ..utils.detection_types import ImageType
-from ..extern.base import ObjectDetector, DetectionResult, PdfMiner
+from ..extern.base import ObjectDetector, PdfMiner
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from .base import PredictorPipelineComponent, PipelineComponent
@@ -65,6 +65,10 @@ class TextExtractionService(PredictorPipelineComponent):
 
         super().__init__(text_extract_detector, category_id_mapping)
         self.extract_from_category = extract_from_roi
+        if self.extract_from_category:
+            assert isinstance(self.predictor, ObjectDetector), (
+                "Predicting from a cropped image requires to pass an " "object detector."
+            )
 
     def serve(self, dp: Image) -> None:
         text_rois = self.get_text_rois(dp)
@@ -73,16 +77,15 @@ class TextExtractionService(PredictorPipelineComponent):
             if isinstance(text_roi, ImageAnnotation):
                 ann_id = text_roi.annotation_id
             predictor_input = self.get_predictor_input(text_roi)
-            detect_result_list: List[DetectionResult] = []
+            assert predictor_input is not None
             width, height = None, None
-            if predictor_input is not None:
-                detect_result_list = self.predictor.predict(predictor_input)
+            detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
-                width, height = self.predictor.get_width_height(predictor_input)
+                width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
             for detect_result in detect_result_list:
-                word_ann_id = self.dp_manager.set_image_annotation(detect_result, ann_id, True,
-                                                                   detect_result_max_width=width,
-                                                                   detect_result_max_height=height)
+                word_ann_id = self.dp_manager.set_image_annotation(
+                    detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
+                )
                 if word_ann_id is not None:
                     self.dp_manager.set_container_annotation(
                         names.C.CHARS,
@@ -104,8 +107,6 @@ class TextExtractionService(PredictorPipelineComponent):
         """
 
         if self.extract_from_category:
-            assert isinstance(self.predictor, ObjectDetector), "Predicting from a cropped image requires to pass an " \
-                                                               "object detector."
             return dp.get_annotation(category_names=self.extract_from_category)  # type: ignore
         return [dp]
 

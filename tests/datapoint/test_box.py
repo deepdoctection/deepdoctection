@@ -22,7 +22,7 @@ Testing the module datapoint.box
 from typing import List
 
 from numpy import asarray
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 from pytest import mark, raises
 
 from deep_doctection.datapoint import (
@@ -32,6 +32,7 @@ from deep_doctection.datapoint import (
     intersection_box,
     local_to_global_coords,
     merge_boxes,
+    rescale_coords,
 )
 from deep_doctection.utils.detection_types import ImageType
 
@@ -253,3 +254,55 @@ def test_merge_boxes(box_list: List[BoundingBox], expected_box: BoundingBox) -> 
 
     # Assert
     assert merged_box == expected_box
+
+
+@mark.parametrize(
+    "box,current_total_width,current_total_height,scaled_total_width,scaled_total_height,expected_box",
+    [
+        (
+            BoundingBox(absolute_coords=True, ulx=100, uly=150, lrx=200, lry=200),
+            500,
+            700,
+            1000,
+            2100,
+            BoundingBox(absolute_coords=True, ulx=200, uly=450, lrx=400, lry=600),
+        ),
+        (
+            BoundingBox(absolute_coords=False, ulx=0.7, uly=0.3, lrx=0.85, lry=0.4),
+            500,
+            700,
+            1000,
+            2100,
+            BoundingBox(absolute_coords=False, ulx=0.7, uly=0.3, lrx=0.85, lry=0.4),
+        ),
+        (
+            BoundingBox(absolute_coords=True, ulx=35.5, uly=47, lrx=92, lry=81),
+            500,
+            700,
+            100,
+            210,
+            BoundingBox(absolute_coords=True, ulx=7.1, uly=14.1, lrx=18.4, lry=24.3),
+        ),
+    ],
+)
+def test_rescale_coords(
+    box: BoundingBox,
+    current_total_width: float,
+    current_total_height: float,
+    scaled_total_width: float,
+    scaled_total_height: float,
+    expected_box: BoundingBox,
+) -> None:
+    """
+    Test func: rescale_coords returns rescaled BoundingBox, if coordinates are in absolute coords terms
+    """
+
+    # Act
+    rescaled_box = rescale_coords(
+        box, current_total_width, current_total_height, scaled_total_width, scaled_total_height
+    )
+
+    # Assert
+    np_box = rescaled_box.to_np_array(mode="xyxy")
+    np_expected_box = expected_box.to_np_array(mode="xyxy")
+    assert_almost_equal(np_box, np_expected_box, decimal=3)  # type: ignore

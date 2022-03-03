@@ -376,8 +376,13 @@ def merge_boxes(*boxes: BoundingBox) -> BoundingBox:
     return BoundingBox(absolute_coords=absolute_coords, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
 
 
-def rescale_coords(box: BoundingBox, current_total_width: float, current_total_height: float,
-                   scaled_total_width: float, scaled_total_height: float) -> BoundingBox:
+def rescale_coords(
+    box: BoundingBox,
+    current_total_width: float,
+    current_total_height: float,
+    scaled_total_width: float,
+    scaled_total_height: float,
+) -> BoundingBox:
     """
     Generating a bounding box with scaled coordinates. Will rescale x coordinate with *
     (current_total_width/scaled_total_width), resp. y coordinate with * (current_total_height/scaled_total_height),
@@ -393,11 +398,13 @@ def rescale_coords(box: BoundingBox, current_total_width: float, current_total_h
 
     if not box.absolute_coords:
         return box
-    scale_width = scaled_total_width/ current_total_width
-    scale_height = scaled_total_height/current_total_height
+    scale_width = scaled_total_width / current_total_width
+    scale_height = scaled_total_height / current_total_height
 
-    return BoundingBox(absolute_coords=True,
-                       ulx=box.ulx*scale_width,
-                       uly=box.uly*scale_height,
-                       lrx=box.lrx*scale_width,
-                       lry=box.lry*scale_height)
+    return BoundingBox(
+        absolute_coords=True,
+        ulx=box.ulx * scale_width,
+        uly=box.uly * scale_height,
+        lrx=box.lrx * scale_width,
+        lry=box.lry * scale_height,
+    )

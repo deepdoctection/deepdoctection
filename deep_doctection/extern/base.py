@@ -113,7 +113,7 @@ class PdfMiner(PredictorBase):
     Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._pdf_bytes: Optional[bytes] = None
         self._page: Any = None
@@ -126,7 +126,7 @@ class PdfMiner(PredictorBase):
         raise NotImplementedError
 
     @abstractmethod
-    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float,float]:
+    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
         """
         Abstract method get_width_height
         """

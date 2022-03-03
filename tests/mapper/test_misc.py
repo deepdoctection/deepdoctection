@@ -31,6 +31,9 @@ from deep_doctection.mapper.misc import to_image
 _TEST_IMAGE = Image(file_name="test_image.png", location="test/to/path/test_image.png")
 _TEST_IMAGE.image = ones((4, 3, 3), dtype=float32)
 
+_TEST_IMAGE_2 = Image(file_name="test_image.pdf", location="test/to/path/test_image.pdf")
+_TEST_IMAGE_2.image = ones((4, 3, 3), dtype=float32)
+
 
 @mark.parametrize(
     "datapoint,expected_image",
@@ -38,7 +41,7 @@ _TEST_IMAGE.image = ones((4, 3, 3), dtype=float32)
         ("test/to/path/test_image.png", _TEST_IMAGE),
         ({"file_name": "test_image.png", "location": "test/to/path/test_image.png"}, _TEST_IMAGE),
         ({"file_name": "test_image.png", "path": "test/to/path"}, _TEST_IMAGE),
-        ({"file_name": "test_image.png", "path": "test/to/path", "pdf_bytes": b"some_bytes"}, _TEST_IMAGE),
+        ({"file_name": "test_image.pdf", "path": "test/to/path", "pdf_bytes": b"some_bytes"}, _TEST_IMAGE_2),
     ],
 )
 @patch("deep_doctection.mapper.misc.load_image_from_file", MagicMock(return_value=ones((4, 3, 3))))
@@ -60,3 +63,6 @@ def test_to_image(datapoint: Union[str, Dict[str, Union[str, bytes]]], expected_
     assert dp.file_name == expected_image.file_name
     assert dp.location == expected_image.location
     assert_array_equal(dp.get_image("np"), expected_image.image)  # type: ignore
+
+    if dp.file_name.endswith("pdf"):
+        assert dp.pdf_bytes == datapoint["pdf_bytes"]  # type: ignore

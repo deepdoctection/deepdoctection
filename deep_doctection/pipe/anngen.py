@@ -91,7 +91,7 @@ class DatapointManager:
         to_image: bool = False,
         crop_image: bool = False,
         detect_result_max_width: Optional[float] = None,
-        detect_result_max_height: Optional[float] = None
+        detect_result_max_height: Optional[float] = None,
     ) -> Optional[str]:
         """
         Creating an image annotation from a raw DetectionResult dataclass. Beside dumping the annotation to the Image
@@ -125,9 +125,13 @@ class DatapointManager:
                 absolute_coords=True,
             )
             if detect_result_max_width and detect_result_max_height:
-                box = rescale_coords(box,detect_result_max_width, detect_result_max_height,
-                                     self._datapoint.width,
-                                     self._datapoint.height)
+                box = rescale_coords(
+                    box,
+                    detect_result_max_width,
+                    detect_result_max_height,
+                    self.datapoint.width,
+                    self.datapoint.height,
+                )
             ann = ImageAnnotation(
                 category_name=detect_result.class_name,
                 bounding_box=box,
