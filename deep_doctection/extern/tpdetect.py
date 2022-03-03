@@ -25,7 +25,7 @@ from typing import Dict, Optional, List, Union
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import tensorpack_available, get_tensorpack_requirement
-from .base import ObjectDetector, DetectionResult
+from .base import ObjectDetector, DetectionResult, PredictorBase
 
 if tensorpack_available():
     from .tp.tpcompat import TensorpackPredictor
@@ -74,8 +74,9 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
-
+        self.path_yaml = path_yaml
         self.categories = copy(categories)
+        self.config_overwrite = config_overwrite
         model = TPFrcnnDetector.set_model(path_yaml, categories, config_overwrite)
         super().__init__(model, path_weights, ignore_mismatch)
         assert self._number_gpus > 0, "Model only support inference with GPU"
@@ -134,3 +135,9 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_tensorpack_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.path_yaml,self.path_weights,self.categories,self.config_overwrite,
+                              self.ignore_mismatch)
+
+
