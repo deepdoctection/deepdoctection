@@ -38,7 +38,7 @@ def _to_detect_result(word: Dict[str,str]):
                            class_name=names.C.WORD)
 
 
-class PDFPlumberTextDetector(PdfMiner):
+class PdfPlumberTextDetector(PdfMiner):
     """
     Text miner based on the pdfminer.six engine. To convert pdfminers result, especially group character to get word
     level results we use pdfplumber.
@@ -65,7 +65,7 @@ class PDFPlumberTextDetector(PdfMiner):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pdfplumber_requirement()]
 
-    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float,float]:
+    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
         """
         Get the width and height of the full page
         :param pdf_bytes: pdf_bytes generating the pdf
@@ -73,7 +73,7 @@ class PDFPlumberTextDetector(PdfMiner):
         """
 
         if self._pdf_bytes == pdf_bytes:
-            return self._page.bbox[2],self._page.bbox[3]
+            return self._page.bbox[2], self._page.bbox[3]
         # if the pdf bytes is not equal to the cached pdf, will recalculate values
         with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
             with open(tmp_name, 'rb') as fin:
