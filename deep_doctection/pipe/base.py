@@ -20,12 +20,12 @@
 Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 from typing import Dict, Any
 
-from ..extern.base import ObjectDetector, LMTokenClassifier
+from ..extern.base import ObjectDetector, LMTokenClassifier, PdfMiner
 from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
 from ..mapper import DefaultMapper
@@ -99,7 +99,8 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     numpy array and return DetectResults are currently permitted.
     """
 
-    def __init__(self, predictor: ObjectDetector, category_id_mapping: Optional[Dict[int, int]]) -> None:
+    def __init__(self, predictor: Union[ObjectDetector, PdfMiner],
+                 category_id_mapping: Optional[Dict[int, int]]) -> None:
         """
         :param predictor: An Object detector for predicting
         """

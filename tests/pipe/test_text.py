@@ -23,7 +23,7 @@ from typing import List
 from unittest.mock import MagicMock
 
 from deep_doctection.datapoint import BoundingBox, Image, ImageAnnotation
-from deep_doctection.extern.base import DetectionResult
+from deep_doctection.extern.base import DetectionResult, ObjectDetector
 from deep_doctection.pipe.text import TextExtractionService, TextOrderService
 from deep_doctection.utils.settings import names
 
@@ -38,7 +38,7 @@ class TestTextExtractionService:
         setup necessary components
         """
 
-        self._text_extract_detector = MagicMock()
+        self._text_extract_detector = MagicMock(spec=ObjectDetector)
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
     def test_integration_pipeline_component(
@@ -73,7 +73,7 @@ class TestTextExtractionServiceWithSubImage:
         setup necessary components
         """
 
-        self._text_extract_detector = MagicMock()
+        self._text_extract_detector = MagicMock(spec=ObjectDetector)
         self.text_extraction_service = TextExtractionService(self._text_extract_detector, extract_from_roi=names.C.TAB)
 
     def test_integration_pipeline_component(
