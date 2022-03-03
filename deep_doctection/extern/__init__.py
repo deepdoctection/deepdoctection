@@ -35,6 +35,7 @@ from .hflayoutlm import *
 from .model import *
 from .tessocr import *
 from .texocr import *  # type: ignore
+from .pdftext import *
 
 if tensorpack_available():
     from .tpdetect import *
