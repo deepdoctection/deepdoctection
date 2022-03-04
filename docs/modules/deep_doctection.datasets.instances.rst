@@ -42,6 +42,14 @@ deep\_doctection.datasets.instances.publaynet
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.datasets.instances.pubtables1m
+----------------------------------------------------
+
+.. automodule:: deep_doctection.datasets.instances.pubtables1m
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.datasets.instances.pubtabnet
 ----------------------------------------------------
 
