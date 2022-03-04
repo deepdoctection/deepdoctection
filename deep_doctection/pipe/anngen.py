@@ -19,6 +19,7 @@
 Module for datapoint populating helpers
 """
 
+from copy import copy
 from typing import Optional, Dict, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation, ContainerAnnotation, SummaryAnnotation
