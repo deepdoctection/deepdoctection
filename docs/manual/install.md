@@ -54,6 +54,12 @@ make venv
 source venv/bin/activate
 ```
 
+The installation process will not install the deep frameworks (e.g. Tensorflow or Pytorch) and
+therefore to be done by the user itself. We recommend installing the latest version of Tensorflow (2.7) as 
+this version is compatible with the required numpy version. Lower versions will not break the code, 
+but you will see a compatibility error during the installation process.
+
+
 For Tensorflow, run 
 
 ```
@@ -69,11 +75,7 @@ make install-dd-pt
 This installation will give you the basic usage of this package and will allow you to run the tutorial notebooks.
 
 There are options to install features which require additional dependencies. E.g, if you want to call AWS Textract OCR
-while a pipeline you can get the necessary components via 
-
-```
-install-dd-aws
-```
+within a pipeline you will need the boto3. Please install those packages by yourself.  
 
 Run 
 
@@ -81,7 +83,7 @@ Run
 install-dd-all
 ```
 
-to install everything which is available. 
+to install the Tensorflow and Pytorch version in one environment. 
 
 
 ## IPkernel and jupyter notebooks
@@ -102,15 +104,24 @@ dependencies for that.
 make install-dd-test
 ```
 
-To run the test cases:
+To run the test cases, use
 
 ```
-make test
+make test-des-pt
 ```
+
+if you decided to run in Tensorflow framework. This will run all tests that do not 
+require Pytorch. Run
+
+```
+make test-des-tf
+```
+
+otherwise. 
 
 ## Developing for the environment
 
-To make a full dev installation with update of requirements, run
+To make a full development installation with update of requirements, run
 
 ```
 make up-reqs-dev

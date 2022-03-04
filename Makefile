@@ -62,7 +62,7 @@ qa: check-format lint analyze test
 
 up-reqs: up-pip up-req-files install-dd
 
-up-reqs-dev: up-reqs install-dd-dev install-dd-test
+up-reqs-dev: up-reqs install-dd-all-dev
 
 up-pip: check-venv
 	@echo "--> Updating pip"
@@ -99,7 +99,7 @@ install-dd-pt: install-dd
 	@echo "--> Done installing PT dependencies"
 	@echo ""
 
-install-dd-all: check-venv install-dd-tf install-dd-pt install-dd-aws
+install-dd-all: check-venv install-dd-tf install-dd-pt
 
 install-dd-all-dev: check-venv install-dd-dev install-dd-test
 

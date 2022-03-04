@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: pdfminertext.py
+# File: pdftext.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #

@@ -55,6 +55,14 @@ deep\_doctection.extern.model
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.extern.pdftext
+-----------------------------------
+
+.. automodule:: deep_doctection.extern.pdftext
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.extern.tessocr
 ------------------------------------
 
