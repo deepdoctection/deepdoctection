@@ -23,19 +23,14 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from typing import Optional, Union, List, Dict, Any, Type
-from copy import copy
 from ..datasets.base import DatasetBase
 from .base import MetricBase
 from ..pipe.base import PredictorPipelineComponent, PipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..mapper.cats import remove_cats
 from ..utils.logger import logger
-from ..utils.file_utils import tensorpack_available
 from ..dataflow import MapData, DataFromList  # type: ignore
 from ..mapper.misc import maybe_load_image, maybe_remove_image
-
-if tensorpack_available():
-    from ..extern.tpdetect import TPFrcnnDetector
 
 
 class Evaluator:  # pylint: disable=R0903
@@ -75,25 +70,10 @@ class Evaluator:  # pylint: disable=R0903
         )
         pipeline_components: List[PipelineComponent] = []
 
-        # try to copy as little as possible
-        # TODO: remove copying procedure outside class
-        assert isinstance(predictor_pipe_component.predictor, TPFrcnnDetector)
-        tmp_tp_predictor = predictor_pipe_component.predictor.tp_predictor
-        tmp_predictor = predictor_pipe_component.predictor
-        tmp_dp_manager = predictor_pipe_component.dp_manager
-        predictor_pipe_component.dp_manager = None  # type: ignore
-        predictor_pipe_component.predictor = None  # type: ignore
-        tmp_predictor.tp_predictor = None
         for _ in range(num_threads - 1):
-            copy_pipe_component = copy(predictor_pipe_component)
-            copy_pipe_component.predictor = copy(tmp_predictor)
-            copy_pipe_component.predictor.tp_predictor = copy(tmp_tp_predictor)
-            copy_pipe_component.dp_manager = copy(tmp_dp_manager)
+            copy_pipe_component = predictor_pipe_component.clone()
             pipeline_components.append(copy_pipe_component)
 
-        predictor_pipe_component.dp_manager = tmp_dp_manager
-        predictor_pipe_component.predictor = tmp_predictor
-        predictor_pipe_component.predictor.tp_predictor = tmp_tp_predictor
         pipeline_components.append(predictor_pipe_component)
         self.dataset = dataset
 
