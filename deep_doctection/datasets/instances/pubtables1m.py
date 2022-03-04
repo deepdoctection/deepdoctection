@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: pubtables.py
+# File: pubtables1m.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -54,36 +54,35 @@ from ..base import _BuiltInDataset
 from ..info import DatasetCategories
 
 
-_NAME = "iiitar13k"
+_NAME = "pubtables1m"
 
 _DESCRIPTION = (
     "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in "
-    "Documents] ...This dataset, IIIT-AR-13K, is created by manually annotating the bounding boxes of "
-    "graphical or page objects in publicly available annual reports. This dataset contains a total of 13K "
-    "annotated page images with objects in five different popular categories — table, figure, natural "
-    "image, logo, and signature. This is the largest manually annotated dataset for graphical object "
-    "detection. Annual reports created in multiple languages for several years from various companies "
-    "bring high diversity into this dataset."
+    "Documents] ...we release PubTables1M, a dataset of nearly one million tables from PubMed Central Open Access"
+    " scientific articles, with complete bounding box annotations for both table detection and structure recognition."
+    " In addition to being the largest dataset of its kind, PubTables1M addresses issues such as inherent ambiguity"
+    " and lack of consistency in the source annotations, attempting to provide definitive ground truth labels through"
+    " a thorough canonicalization and quality control process. "
 )
 
-_LICENSE = "NN"
+_LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
 
-_URL = "http://cvit.iiit.ac.in/usodi/iiitar13k.php"
+_URL = "https://msropendata.com/datasets/505fcbe3-1383-42b1-913a-f651b8b712d3"
 
-_SPLITS = {"train": "training_images", "val": "validation_images", "test": "test_images"}
-_LOCATION = "/iiitar13k"
+_SPLITS = {"train": "train", "val": "val", "test": "test"}
+_LOCATION = "/PubTables1M-Detection-PASCAL-VOC"
 _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
-    "train": "training_xml",
-    "val": "validation_xml",
-    "test": "test_xml",
+    "train": "train",
+    "val": "val",
+    "test": "test",
 }
 
-_INIT_CATEGORIES = [names.C.TAB, names.C.LOGO, names.C.FIG, names.C.SIGN]
+_INIT_CATEGORIES = [names.C.TAB]
 
 
-class IIITar13K(_BuiltInDataset):
+class Pubtables1M(_BuiltInDataset):
     """
-    IIITar13K
+    Pubtables1M
     """
 
     _name = _NAME
@@ -94,13 +93,13 @@ class IIITar13K(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
 
-    def _builder(self) -> "IIITar13KBuilder":
-        return IIITar13KBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
+    def _builder(self) -> "Pubtables1MBuilder":
+        return Pubtables1MBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 
-class IIITar13KBuilder(DataFlowBaseBuilder):
+class Pubtables1MBuilder(DataFlowBaseBuilder):
     """
-    IIITar13K dataflow builder
+    Pubtables1M dataflow builder
     """
 
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
@@ -148,7 +147,9 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         df = MapData(df, xml_to_dict(xslt_obj))  # pylint: disable = E1120
 
         def _map_file_name(dp: JsonDict) -> JsonDict:
-            dp["json"]["filename"] = dp["file_name"]
+            path, file_name = os.path.split(dp["file_name"])
+            path = os.path.join(os.path.split(path)[0],"images")
+            dp["json"]["filename"] = os.path.join(path,file_name.replace(".xml",".jpg"))
             return dp["json"]
 
         df = MapData(df, _map_file_name)
