@@ -19,6 +19,7 @@
 """
 Module for the base class for building pipelines
 """
+from copy import copy
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
@@ -92,6 +93,12 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
         """
         return MapData(df, self.pass_datapoint)
 
+    def clone(self) -> "PipelineComponent":
+        """
+        Clone an instance
+        """
+        raise NotImplementedError
+
 
 class PredictorPipelineComponent(PipelineComponent, ABC):
     """
@@ -108,6 +115,11 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         super().__init__(category_id_mapping)
         self.predictor = predictor
 
+    def clone(self) -> PipelineComponent:
+        predictor = self.predictor.clone()
+        assert isinstance(predictor, (ObjectDetector,PdfMiner))
+        return self.__class__(predictor,copy(self.dp_manager.category_id_mapping))
+
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
     """
@@ -123,6 +135,9 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.tokenizer = tokenizer
         self.language_model = language_model
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__(copy(self.tokenizer),copy(self.language_model),copy(self.mapping_to_lm_input_func))
 
 
 class Pipeline(ABC):  # pylint: disable=R0903
