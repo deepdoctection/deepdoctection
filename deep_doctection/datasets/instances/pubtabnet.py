@@ -123,6 +123,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
                               Note, that the type of the item (i.e. being a row or a column) can be inferred from the
                               sub category added. Note further, that "ITEM" are not originally part of the annotations
                               and are inferred from cell positions and their associated table semantic. Default: True
+        :param fake_score: Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """
@@ -135,6 +136,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             max_datapoints = max_datapoints if split == "train" else 500777 + max_datapoints
         load_image = kwargs.get("load_image", False)
         rows_and_cols = kwargs.get("rows_and_cols", False)
+        fake_score = kwargs.get("fake_score", False)
 
         # Load
         path = os.path.join(self.get_workdir(), self.annotation_files["all"])  # type: ignore
@@ -151,7 +153,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
             # pylint: disable=E1120  # 259
             load_image,
-            fake_score=False,
+            fake_score=fake_score,
             rows_and_cols=rows_and_cols,
         )
 

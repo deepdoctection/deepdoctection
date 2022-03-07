@@ -106,7 +106,7 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
         load_image = kwargs.get("load_image", False)
-        fake_score = kwargs.get("fake_score", True)
+        fake_score = kwargs.get("fake_score", False)
 
         # Load
         path = os.path.join(
