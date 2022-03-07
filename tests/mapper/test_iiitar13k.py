@@ -23,14 +23,14 @@ from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
 
-from deep_doctection.mapper.iiitarstruct import iiitar_to_image
+from deep_doctection.mapper.pascalstruct import pascal_voc_dict_to_image
 from deep_doctection.utils.detection_types import JsonDict
 
 from .data import IIITar13KJson
 
 
-@patch("deep_doctection.mapper.cocostruct.load_image_from_file", MagicMock())
-def test_iiitar13k_to_image(
+@patch("deep_doctection.mapper.pascalstruct.load_image_from_file", MagicMock())
+def test_pascal_voc_dict_to_image(
     datapoint_iiitar13kjson: JsonDict,
     iiitar13k_categories_name_as_keys: Dict[str, str],
     iiitar13k_category_names_mapping: Dict[str, str],
@@ -42,7 +42,7 @@ def test_iiitar13k_to_image(
     """
 
     # Act
-    iiitar13k_to_image_mapper = iiitar_to_image(  # type: ignore
+    iiitar13k_to_image_mapper = pascal_voc_dict_to_image(  # type: ignore
         iiitar13k_categories_name_as_keys, False, False, False, iiitar13k_category_names_mapping
     )
     dp = iiitar13k_to_image_mapper(datapoint_iiitar13kjson)

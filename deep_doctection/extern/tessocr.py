@@ -25,7 +25,7 @@ from ..utils.settings import names
 from ..utils.metacfg import set_config_by_yaml, config_to_cli_str
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tesseract_requirement
-from .base import ObjectDetector, DetectionResult
+from .base import ObjectDetector, DetectionResult, PredictorBase
 from .tesseract.tesseract import predict_text
 
 
@@ -62,6 +62,8 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
         if len(config_overwrite):
             hyper_param_config.update_args(config_overwrite)
 
+        self.path_yaml = path_yaml
+        self.config_overwrite = config_overwrite
         self.config = hyper_param_config
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -85,3 +87,6 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_tesseract_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.path_yaml,self.config_overwrite)
