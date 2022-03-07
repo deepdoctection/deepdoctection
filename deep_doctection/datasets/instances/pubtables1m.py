@@ -138,9 +138,9 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
 
         with open(
-                os.path.join(get_package_path(), "deep_doctection/datasets/instances/xsl/pascal_voc.xsl"),
-                "r",
-                encoding="utf-8",
+            os.path.join(get_package_path(), "deep_doctection/datasets/instances/xsl/pascal_voc.xsl"),
+            "r",
+            encoding="utf-8",
         ) as xsl_file:
             xslt_file = xsl_file.read().encode("utf-8")
         xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding="utf-8"))
@@ -150,8 +150,8 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
 
         def _map_file_name(dp: JsonDict) -> JsonDict:
             path, file_name = os.path.split(dp["file_name"])
-            path = os.path.join(os.path.split(path)[0],"images")
-            dp["json"]["filename"] = os.path.join(path,file_name.replace(".xml",".jpg"))
+            path = os.path.join(os.path.split(path)[0], "images")
+            dp["json"]["filename"] = os.path.join(path, file_name.replace(".xml", ".jpg"))
             return dp["json"]
 
         df = MapData(df, _map_file_name)
@@ -162,9 +162,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={
-                    "table": names.C.TAB
-                },
+                category_name_mapping={"table": names.C.TAB},
             ),
         )
 

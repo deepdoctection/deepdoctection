@@ -31,7 +31,7 @@ from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
 from ..mapper import DefaultMapper
 from .anngen import DatapointManager
-from ..extern.tpdetect import TPFrcnnDetector
+
 
 class PipelineComponent(ABC):  # pylint: disable=R0903
     """
@@ -117,8 +117,8 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
 
     def clone(self) -> PipelineComponent:
         predictor = self.predictor.clone()
-        assert isinstance(predictor, (ObjectDetector,PdfMiner))
-        return self.__class__(predictor,copy(self.dp_manager.category_id_mapping))
+        assert isinstance(predictor, (ObjectDetector, PdfMiner))
+        return self.__class__(predictor, copy(self.dp_manager.category_id_mapping))
 
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
@@ -137,7 +137,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(copy(self.tokenizer),copy(self.language_model),copy(self.mapping_to_lm_input_func))
+        return self.__class__(copy(self.tokenizer), copy(self.language_model), copy(self.mapping_to_lm_input_func))
 
 
 class Pipeline(ABC):  # pylint: disable=R0903

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: test_pubtables1m.py
+# File: test_dd.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -16,25 +16,16 @@
 # limitations under the License.
 
 """
-Testing module datasets.instances.pubtables1m
+Testing module analyzer.dd. This test case requires a GPU and should be considered as integration test
 """
 
-from deep_doctection.datasets import Pubtables1M
-
-from ...test_utils import collect_datapoint_from_dataflow, get_test_path
+from deep_doctection.analyzer import get_dd_analyzer
 
 
-def test_dataset_pubtables1m_returns_image() -> None:
+def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
-    test dataset pubtales1m return image
+
     """
 
     # Arrange
-    pubtables = Pubtables1M()
-    pubtables.dataflow.get_workdir = get_test_path  # type: ignore
-    pubtables.dataflow.annotation_files = {"val": ""}
-    df = pubtables.dataflow.build()
-
-    # Act
-    df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list) == 1
+    analyzer = get_dd_analyzer()

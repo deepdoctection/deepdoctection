@@ -139,4 +139,4 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._categories
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.categories_semantics,self.categories_bio,self.categories_ecplicit)
+        return self.__class__(self.categories_semantics, self.categories_bio, self.categories_ecplicit)

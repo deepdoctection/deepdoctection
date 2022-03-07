@@ -29,7 +29,7 @@ from ..utils.file_utils import (
     detectron2_available,
     pytorch_available,
 )
-from .base import ObjectDetector, DetectionResult
+from .base import ObjectDetector, DetectionResult, PredictorBase
 from .d2.d2 import d2_predict_image
 
 if pytorch_available():
@@ -80,12 +80,16 @@ class D2FrcnnDetector(ObjectDetector):
         self._categories_d2 = self._map_to_d2_categories(copy(categories))
         if config_overwrite is None:
             config_overwrite = []
-
+        self.path_weights = path_weights
         d2_conf_list = ["MODEL.WEIGHTS", path_weights]
         for conf in config_overwrite:
             key, val = conf.split("=", maxsplit=1)
             d2_conf_list.extend([key, val])
+
+        self.path_yaml = path_yaml
         self.categories = copy(categories)
+        self.config_overwrite = config_overwrite
+        self.device = device
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
         self._instantiate_d2_predictor()
@@ -151,3 +155,6 @@ class D2FrcnnDetector(ObjectDetector):
     @classmethod
     def _map_to_d2_categories(cls, categories: Dict[str, str]) -> Dict[str, str]:
         return {str(int(k) - 1): v for k, v in categories.items()}
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
