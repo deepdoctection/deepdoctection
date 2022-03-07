@@ -18,10 +18,19 @@ deep\_doctection.mapper.cocostruct
    :undoc-members:
    :show-inheritance:
 
-deep\_doctection.mapper.iiitarstruct
+deep\_doctection.mapper.laylmstruct
 -----------------------------------------
 
-.. automodule:: deep_doctection.mapper.iiitarstruct
+.. automodule:: deep_doctection.mapper.laylmstruct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+deep\_doctection.mapper.maputils
+------------------------------------
+
+.. automodule:: deep_doctection.mapper.maputils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -42,6 +51,22 @@ deep\_doctection.mapper.misc
    :undoc-members:
    :show-inheritance:
 
+deep\_doctection.mapper.pagestruct
+-----------------------------------------
+
+.. automodule:: deep_doctection.mapper.pagestruct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+deep\_doctection.mapper.pascalstruct
+-----------------------------------------
+
+.. automodule:: deep_doctection.mapper.pascalstruct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.mapper.prodigystruct
 --------------------------------------------
 
@@ -49,6 +74,8 @@ deep\_doctection.mapper.prodigystruct
    :members:
    :undoc-members:
    :show-inheritance:
+
+
 
 deep\_doctection.mapper.pubstruct
 ----------------------------------------
@@ -66,13 +93,7 @@ deep\_doctection.mapper.tpstruct
    :undoc-members:
    :show-inheritance:
 
-deep\_doctection.mapper.maputils
-------------------------------------
 
-.. automodule:: deep_doctection.mapper.maputils
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 deep\_doctection.mapper.xfundstruct
 ------------------------------------
