@@ -33,7 +33,7 @@ from ..utils.detection_types import JsonDict
 
 
 @cur  # type: ignore
-def iiitar_to_image(
+def pascal_voc_dict_to_image(
     dp: JsonDict,
     categories_name_as_key: Dict[str, str],
     load_image: bool,

@@ -34,6 +34,7 @@ from .pubstruct import *
 from .tpstruct import *
 from .maputils import *
 from .xfundstruct import *
+from .pascalstruct import *
 
 
 if pytorch_available() and transformers_available():
