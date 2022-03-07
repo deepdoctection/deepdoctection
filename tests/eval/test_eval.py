@@ -51,6 +51,7 @@ class TestEvaluator:
         self._dataset.dataflow.categories = categories
 
         self._layout_detector = MagicMock(spec=TPFrcnnDetector)
+        self._layout_detector.clone = MagicMock(return_value = MagicMock(spec=TPFrcnnDetector))
         self._layout_detector.tp_predictor = MagicMock()
         self._pipe_component = ImageLayoutService(self._layout_detector)
         self._layout_detector.predict = MagicMock(return_value=detection_results)

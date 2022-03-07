@@ -31,7 +31,7 @@ from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
 from ..mapper import DefaultMapper
 from .anngen import DatapointManager
-
+from ..extern.tpdetect import TPFrcnnDetector
 
 class PipelineComponent(ABC):  # pylint: disable=R0903
     """
