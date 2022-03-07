@@ -144,6 +144,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                                When setting use_multi_proc to True is will use several processes depending on the number
                                of CPUs available.
         :param use_multi_proc_strict: Will use strict mode in multiprocessing.
+        :param fake_score: Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """
@@ -155,6 +156,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         load_image = kwargs.get("load_image", False)
         use_multi_proc = to_bool(kwargs.get("use_multi_proc", True))
         use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", True))
+        fake_score = kwargs.get("fake_score", False)
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -180,7 +182,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
             # pylint: disable=E1120  # 259
             load_image,
-            fake_score=False,
+            fake_score=fake_score,
             rows_and_cols=rows_and_cols,
         )
         if use_multi_proc:

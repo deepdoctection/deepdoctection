@@ -110,6 +110,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
         :param max_datapoints: Will stop iterating after max_datapoints. Default: None
         :param load_image: Will load the image for each datapoint.  Default: False
+        :param fake_score: Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """
@@ -117,6 +118,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)
         max_datapoints = kwargs.get("max_datapoints")
+        fake_score = kwargs.get("fake_score", False)
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -159,7 +161,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
                 load_image,
                 filter_empty_image=True,
-                fake_score=False,
+                fake_score=fake_score,
                 category_name_mapping={
                     "table": names.C.TAB
                 },

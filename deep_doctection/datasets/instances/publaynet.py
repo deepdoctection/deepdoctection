@@ -98,6 +98,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
         :param max_datapoints: Will stop iterating after max_datapoints. Default: None
         :param load_image: Will load the image for each datapoint.  Default: False
+        :param fake_score: Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """
@@ -106,6 +107,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
         load_image = kwargs.get("load_image", False)
+        fake_score = kwargs.get("fake_score", False)
 
         # Load
         path = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
@@ -117,7 +119,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
             self.categories.get_categories(init=True),  # type: ignore
             load_image,
             filter_empty_image=True,
-            fake_score=False,
+            fake_score=fake_score,
         )
         df = MapData(df, coco_mapper)
 
