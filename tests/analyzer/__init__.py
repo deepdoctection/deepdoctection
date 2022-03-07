@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: test_pubtables1m.py
+# File: xxx.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -14,27 +14,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Testing module datasets.instances.pubtables1m
-"""
-
-from deep_doctection.datasets import Pubtables1M
-
-from ...test_utils import collect_datapoint_from_dataflow, get_test_path
-
-
-def test_dataset_pubtables1m_returns_image() -> None:
-    """
-    test dataset pubtales1m return image
-    """
-
-    # Arrange
-    pubtables = Pubtables1M()
-    pubtables.dataflow.get_workdir = get_test_path  # type: ignore
-    pubtables.dataflow.annotation_files = {"val": ""}
-    df = pubtables.dataflow.build()
-
-    # Act
-    df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list) == 1

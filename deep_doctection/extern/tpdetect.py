@@ -137,7 +137,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         return [get_tensorpack_requirement()]
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.path_yaml,self.path_weights,self.categories,self.config_overwrite,
-                              self.ignore_mismatch)
-
-
+        return self.__class__(
+            self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
+        )

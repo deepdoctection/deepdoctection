@@ -24,7 +24,7 @@ from typing import List
 from ..utils.settings import names
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_aws_requirement, get_boto3_requirement, boto3_available
-from .base import ObjectDetector, DetectionResult
+from .base import ObjectDetector, DetectionResult, PredictorBase
 from .textract.textract import predict_text
 
 if boto3_available():
@@ -63,3 +63,6 @@ class TextractOcrDetector(ObjectDetector):
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_aws_requirement(), get_boto3_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__()

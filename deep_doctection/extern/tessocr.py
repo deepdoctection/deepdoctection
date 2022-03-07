@@ -89,4 +89,4 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
         return [get_tesseract_requirement()]
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.path_yaml,self.config_overwrite)
+        return self.__class__(self.path_yaml, self.config_overwrite)
