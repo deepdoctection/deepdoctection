@@ -424,3 +424,5 @@ def fixture_textract_response() -> JsonDict:
 def fixture_token_class_result() -> List[TokenClassResult]:
     """fixture token_class_result"""
     return get_token_class_result()
+
+

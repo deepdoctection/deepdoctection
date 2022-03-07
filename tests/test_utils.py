@@ -26,6 +26,7 @@ from dataflow import DataFlow  # type: ignore
 
 from deep_doctection.datapoint import Annotation
 from deep_doctection.utils import sub_path
+from deep_doctection.utils.systools import get_package_path
 
 
 def get_test_path() -> str:
@@ -33,6 +34,13 @@ def get_test_path() -> str:
     get path to test objects
     """
     return sub_path(os.path.split(__file__)[0], "tests/test_objects")
+
+
+def get_integration_test_path() -> str:
+    """
+    fixture integration test path
+    """
+    return os.path.join(get_package_path(),"notebooks/pics/samples/sample_2")
 
 
 def collect_datapoint_from_dataflow(df: DataFlow) -> List[Any]:
