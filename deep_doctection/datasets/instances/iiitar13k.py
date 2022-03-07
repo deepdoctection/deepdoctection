@@ -47,7 +47,7 @@ from ...utils.detection_types import JsonDict
 from ...utils.systools import get_package_path
 from ...mapper.misc import xml_to_dict
 from ...mapper.maputils import cur
-from ...mapper.iiitarstruct import iiitar_to_image
+from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...datasets.info import DatasetInfo
 from ..dataflow_builder import DataFlowBaseBuilder
 
@@ -138,7 +138,7 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_xml(utf8_parser))  # pylint: disable=E1120
 
         with open(
-            os.path.join(get_package_path(), "deep_doctection/datasets/instances/xsl/iiitar13k.xsl"),
+            os.path.join(get_package_path(), "deep_doctection/datasets/instances/xsl/pascal_voc.xsl"),
             "r",
             encoding="utf-8",
         ) as xsl_file:
@@ -155,7 +155,7 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         df = MapData(df, _map_file_name)
         df = MapData(
             df,
-            iiitar_to_image(  # type: ignore # pylint: disable = E1120
+            pascal_voc_dict_to_image(  # type: ignore # pylint: disable = E1120
                 self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
                 load_image,
                 filter_empty_image=True,
