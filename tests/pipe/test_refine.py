@@ -23,15 +23,15 @@ from typing import List, Set, Tuple
 
 from pytest import mark
 
-from deep_doctection.datapoint import ContainerAnnotation, Image
-from deep_doctection.pipe.refine import (
+from deepdoctection.datapoint import ContainerAnnotation, Image
+from deepdoctection.pipe.refine import (
     TableSegmentationRefinementService,
     _html_table,
     connected_component_tiles,
     generate_rectangle_tiling,
     rectangle_cells,
 )
-from deep_doctection.utils.settings import names
+from deepdoctection.utils.settings import names
 
 
 @mark.parametrize(

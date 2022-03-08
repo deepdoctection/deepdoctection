@@ -25,9 +25,9 @@ import numpy as np
 
 from pytest import fixture
 
-from deep_doctection.utils.systools import get_package_path
-from deep_doctection.utils.settings import names
-from deep_doctection.utils.detection_types import ImageType
+from deepdoctection.utils.systools import get_package_path
+from deepdoctection.utils.settings import names
+from deepdoctection.utils.detection_types import ImageType
 
 
 @fixture(name="path_to_d2_frcnn_yaml")

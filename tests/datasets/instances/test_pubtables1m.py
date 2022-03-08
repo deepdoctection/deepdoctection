@@ -19,7 +19,7 @@
 Testing module datasets.instances.pubtables1m
 """
 
-from deep_doctection.datasets import Pubtables1M
+from deepdoctection.datasets import Pubtables1M
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 

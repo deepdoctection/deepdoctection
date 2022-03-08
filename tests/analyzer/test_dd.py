@@ -20,8 +20,8 @@ Testing module analyzer.dd. This test case requires a GPU and should be consider
 """
 from pytest import mark
 
-from deep_doctection.analyzer import get_dd_analyzer
-from deep_doctection.datapoint import Page
+from deepdoctection.analyzer import get_dd_analyzer
+from deepdoctection.datapoint import Page
 from ..test_utils import get_integration_test_path, collect_datapoint_from_dataflow
 
 

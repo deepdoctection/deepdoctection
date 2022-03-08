@@ -19,7 +19,7 @@
 Testing module datasets.instances.iiitar13k
 """
 
-from deep_doctection.datasets import IIITar13K
+from deepdoctection.datasets import IIITar13K
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 

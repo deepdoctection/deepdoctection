@@ -23,15 +23,15 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from deep_doctection.datasets import DatasetBase
-from deep_doctection.utils.file_utils import tf_available
-from deep_doctection.utils.metacfg import set_config_by_yaml
+from deepdoctection.datasets import DatasetBase
+from deepdoctection.utils.file_utils import tf_available
+from deepdoctection.utils.metacfg import set_config_by_yaml
 
 from ..test_utils import collect_datapoint_from_dataflow
 
 if tf_available():
-    from deep_doctection.extern.tp.tpfrcnn.config.config import model_frcnn_config
-    from deep_doctection.train.tp_frcnn_train import (
+    from deepdoctection.extern.tp.tpfrcnn.config.config import model_frcnn_config
+    from deepdoctection.train.tp_frcnn_train import (
         get_train_dataflow,
         train_faster_rcnn,
     )
@@ -45,8 +45,8 @@ def set_num_gpu_to_one() -> int:
 
 
 @mark.requires_tf
-@patch("deep_doctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
-@patch("deep_doctection.train.tp_frcnn_train.set_mp_spawn")
+@patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
+@patch("deepdoctection.train.tp_frcnn_train.set_mp_spawn")
 def test_get_train_dataflow(
     set_mp_spawn: Any, test_dataset: DatasetBase, path_to_tp_frcnn_yaml: str  # pylint: disable=W0613
 ) -> None:
@@ -73,14 +73,14 @@ def test_get_train_dataflow(
 
 
 @mark.requires_tf
-@patch("deep_doctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
-@patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
-@patch("deep_doctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
-@patch("deep_doctection.train.tp_frcnn_train.ModelSaver")
-@patch("deep_doctection.train.tp_frcnn_train.PeriodicCallback")
+@patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
+@patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
+@patch("deepdoctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
+@patch("deepdoctection.train.tp_frcnn_train.ModelSaver")
+@patch("deepdoctection.train.tp_frcnn_train.PeriodicCallback")
 @patch("tensorpack.utils.logger.set_logger_dir")
-@patch("deep_doctection.train.tp_frcnn_train.launch_train_with_config")
-@patch("deep_doctection.train.tp_frcnn_train.set_mp_spawn")
+@patch("deepdoctection.train.tp_frcnn_train.launch_train_with_config")
+@patch("deepdoctection.train.tp_frcnn_train.set_mp_spawn")
 def test_train_faster_rcnn(
     set_mp_spawn: Any,  # pylint: disable=W0613
     patch_launch_train_with_config: Any,

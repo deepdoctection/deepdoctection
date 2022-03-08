@@ -21,10 +21,10 @@ Testing module datasets.instances.registry
 
 from unittest.mock import MagicMock
 
-from deep_doctection.datasets.base import DatasetBase
-from deep_doctection.datasets.dataflow_builder import DataFlowBaseBuilder
-from deep_doctection.datasets.info import DatasetCategories, DatasetInfo
-from deep_doctection.datasets.registry import DatasetRegistry
+from deepdoctection.datasets.base import DatasetBase
+from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder
+from deepdoctection.datasets.info import DatasetCategories, DatasetInfo
+from deepdoctection.datasets.registry import DatasetRegistry
 
 
 def test_dataset_registry_has_all_build_in_datasets_registered() -> None:

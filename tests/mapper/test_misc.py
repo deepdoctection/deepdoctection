@@ -25,8 +25,8 @@ from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark
 
-from deep_doctection.datapoint import Image
-from deep_doctection.mapper.misc import to_image
+from deepdoctection.datapoint import Image
+from deepdoctection.mapper.misc import to_image
 
 _TEST_IMAGE = Image(file_name="test_image.png", location="test/to/path/test_image.png")
 _TEST_IMAGE.image = ones((4, 3, 3), dtype=float32)
@@ -44,8 +44,8 @@ _TEST_IMAGE_2.image = ones((4, 3, 3), dtype=float32)
         ({"file_name": "test_image.pdf", "path": "test/to/path", "pdf_bytes": b"some_bytes"}, _TEST_IMAGE_2),
     ],
 )
-@patch("deep_doctection.mapper.misc.load_image_from_file", MagicMock(return_value=ones((4, 3, 3))))
-@patch("deep_doctection.mapper.misc.convert_pdf_bytes_to_np_array_v2", MagicMock(return_value=ones((4, 3, 3))))
+@patch("deepdoctection.mapper.misc.load_image_from_file", MagicMock(return_value=ones((4, 3, 3))))
+@patch("deepdoctection.mapper.misc.convert_pdf_bytes_to_np_array_v2", MagicMock(return_value=ones((4, 3, 3))))
 def test_to_image(datapoint: Union[str, Dict[str, Union[str, bytes]]], expected_image: Image) -> None:
     """
     Image is properly constructed

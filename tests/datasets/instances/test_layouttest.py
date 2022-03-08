@@ -20,7 +20,7 @@ Testing module datasets.instances.layouttest
 """
 
 
-from deep_doctection.datasets import LayoutTest
+from deepdoctection.datasets import LayoutTest
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 

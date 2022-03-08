@@ -24,10 +24,10 @@ from unittest.mock import MagicMock
 
 from pytest import raises
 
-from deep_doctection.datapoint import BoundingBox, Image, ImageAnnotation
-from deep_doctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
-from deep_doctection.pipe.text import TextExtractionService, TextOrderService
-from deep_doctection.utils.settings import names
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
+from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
+from deepdoctection.pipe.text import TextExtractionService, TextOrderService
+from deepdoctection.utils.settings import names
 
 
 class TestTextExtractionService:

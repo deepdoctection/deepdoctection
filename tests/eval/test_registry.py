@@ -22,11 +22,11 @@ Testing the module eval.registry
 from typing import Any, List, Tuple, Union
 from unittest.mock import MagicMock
 
-from deep_doctection.dataflow import DataFlow
-from deep_doctection.datasets.info import DatasetCategories
-from deep_doctection.eval import MetricRegistry
-from deep_doctection.eval.base import MetricBase
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.dataflow import DataFlow
+from deepdoctection.datasets.info import DatasetCategories
+from deepdoctection.eval import MetricRegistry
+from deepdoctection.eval.base import MetricBase
+from deepdoctection.utils.detection_types import JsonDict
 
 
 def test_metric_registry_has_all_build_in_metric_registered() -> None:

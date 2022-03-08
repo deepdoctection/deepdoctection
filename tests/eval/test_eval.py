@@ -23,13 +23,13 @@ from unittest.mock import MagicMock
 
 from pytest import fixture
 
-from deep_doctection.dataflow import DataFromList  # type: ignore
-from deep_doctection.datapoint import Image
-from deep_doctection.datasets import DatasetCategories
-from deep_doctection.eval import CocoMetric, Evaluator
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.extern.tpdetect import TPFrcnnDetector
-from deep_doctection.pipe.layout import ImageLayoutService
+from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.datapoint import Image
+from deepdoctection.datasets import DatasetCategories
+from deepdoctection.eval import CocoMetric, Evaluator
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.extern.tpdetect import TPFrcnnDetector
+from deepdoctection.pipe.layout import ImageLayoutService
 
 
 class TestEvaluator:

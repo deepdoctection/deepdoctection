@@ -22,17 +22,17 @@ from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
 
-from deep_doctection.datapoint.annotation import SummaryAnnotation
-from deep_doctection.datapoint.box import BoundingBox
-from deep_doctection.mapper import pub_to_image
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.datapoint.annotation import SummaryAnnotation
+from deepdoctection.datapoint.box import BoundingBox
+from deepdoctection.mapper import pub_to_image
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_pub_to_image(
     datapoint_pubtabnet: JsonDict,
     categories_name_as_key_pubtabnet: Dict[str, str],
@@ -90,7 +90,7 @@ def test_pub_to_image(
     assert summary_ann.get_sub_category(names.C.NCS).category_id == datapoint.get_summary_ann_sub_category_col_span_id()
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_pub_to_image_when_items_are_added(
     datapoint_pubtabnet: JsonDict, categories_name_as_key_pubtabnet: Dict[str, str]
 ) -> None:

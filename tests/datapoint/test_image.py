@@ -25,13 +25,13 @@ from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
-from deep_doctection.datapoint import (
+from deepdoctection.datapoint import (
     BoundingBox,
     CategoryAnnotation,
     Image,
     ImageAnnotation,
 )
-from deep_doctection.utils import get_uuid
+from deepdoctection.utils import get_uuid
 
 from ..test_utils import anns_to_ids
 from .conftest import TestPdfPage, WhiteImage  # pylint: disable=W0611

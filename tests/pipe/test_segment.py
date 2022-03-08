@@ -23,13 +23,13 @@ from typing import List
 
 from numpy import float32
 
-from deep_doctection.datapoint import BoundingBox, CategoryAnnotation, Image
-from deep_doctection.pipe.segment import (
+from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image
+from deepdoctection.pipe.segment import (
     TableSegmentationService,
     stretch_items,
     tile_tables_with_items_per_table,
 )
-from deep_doctection.utils.settings import names
+from deepdoctection.utils.settings import names
 
 
 def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: Image) -> None:

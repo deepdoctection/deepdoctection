@@ -19,11 +19,11 @@
 Testing module eval.accmetric
 """
 
-from deep_doctection.dataflow import DataFromList  # type: ignore
-from deep_doctection.datapoint.image import Image
-from deep_doctection.datasets.info import DatasetCategories
-from deep_doctection.eval.accmetric import AccuracyMetric
-from deep_doctection.utils.settings import names
+from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.datapoint.image import Image
+from deepdoctection.datasets.info import DatasetCategories
+from deepdoctection.eval.accmetric import AccuracyMetric
+from deepdoctection.utils.settings import names
 
 
 class TestAccuracyMetric:

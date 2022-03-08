@@ -23,9 +23,9 @@ Testing the module mapper.prodigystruct
 from math import isclose
 from typing import Dict
 
-from deep_doctection.datapoint.image import Image
-from deep_doctection.mapper import image_to_prodigy, prodigy_to_image
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.datapoint.image import Image
+from deepdoctection.mapper import image_to_prodigy, prodigy_to_image
+from deepdoctection.utils.detection_types import JsonDict
 
 from .data import DatapointImage, DatapointProdigy
 

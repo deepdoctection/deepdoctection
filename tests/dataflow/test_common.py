@@ -21,7 +21,7 @@ Testing the module dataflow.common
 
 from typing import List
 
-from deep_doctection.dataflow import CustomDataFromList, FlattenData
+from deepdoctection.dataflow import CustomDataFromList, FlattenData
 
 from ..test_utils import collect_datapoint_from_dataflow
 

@@ -23,9 +23,9 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 
-from deep_doctection.extern.base import TokenClassResult
-from deep_doctection.extern.hflayoutlm import HFLayoutLmTokenClassifier
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.extern.hflayoutlm import HFLayoutLmTokenClassifier
+from deepdoctection.utils.detection_types import JsonDict
 
 from ..mapper.data import DatapointXfund
 
@@ -46,8 +46,8 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deep_doctection.extern.pt.ptutils.pytorch_available", MagicMock(return_value=False))
-    @patch("deep_doctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
+    @patch("deepdoctection.extern.pt.ptutils.pytorch_available", MagicMock(return_value=False))
+    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
         """
         HFLayoutLmTokenClassifier needs pytorch. Construction fails, when requirement is not satisfied
@@ -59,7 +59,7 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deep_doctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
+    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
         """
         HFLayoutLmTokenClassifier creates a full category set depending on semantics, tagging or by passing the
@@ -92,8 +92,8 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deep_doctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
-    @patch("deep_doctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
+    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
+    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
         layoutlm_input: JsonDict,
         categories_semantics: List[str],

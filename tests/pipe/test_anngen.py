@@ -21,9 +21,9 @@ Testing module pipe.anngen
 
 from typing import List
 
-from deep_doctection.datapoint import Image, ImageAnnotation
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.pipe.anngen import DatapointManager
+from deepdoctection.datapoint import Image, ImageAnnotation
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.pipe.anngen import DatapointManager
 
 
 class TestDatapointManager:

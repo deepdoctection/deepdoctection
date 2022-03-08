@@ -22,7 +22,7 @@ Testing module datasets.instances.pubtabnet
 
 from unittest.mock import MagicMock, patch
 
-from deep_doctection.datasets import Pubtabnet
+from deepdoctection.datasets import Pubtabnet
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
@@ -44,7 +44,7 @@ def test_dataset_pubtabnet_returns_image() -> None:
     assert len(df_list) == 3
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_white_image))
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_pubtabnet_with_load_image_returns_image() -> None:
     """
     test dataset publaynet returns image

@@ -34,31 +34,31 @@ venv:
 format-and-qa: format qa
 
 format:
-	black --line-length 120 deep_doctection tests setup.py
+	black --line-length 120 deepdoctection tests setup.py
 	isort --skip deep_doctection tests setup.py
 
 check-format:
-	black --line-length 120 --check deep_doctection tests setup.py
+	black --line-length 120 --check deepdoctection tests setup.py
 	isort --check tests setup.py
 
 lint:
-	pylint deep_doctection tests tests_d2
+	pylint deepdoctection tests tests_d2
 
 analyze:
-	mypy -p deep_doctection -p tests -p tests_d2
+	mypy -p deepdoctection -p tests -p tests_d2
 
 test:
-	pytest --cov=deep_doctection --cov-branch --cov-report=html tests
-	pytest --cov=deep_doctection --cov-branch --cov-report=html tests_d2
+	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-des-tf:
-	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "not requires_tf" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf" tests
 
 test-des-pt:
-	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "not requires_pt" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
 
 test-integration:
-	pytest --cov=deep_doctection --cov-branch --cov-report=html -m "integration" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
 
 qa: check-format lint analyze test
 

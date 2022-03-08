@@ -53,7 +53,7 @@ import dataflow.dataflow
 if ON_RTD:
     sys.path.insert(0, os.path.abspath('../'))
 else:
-    sys.path.insert(0, os.path.abspath('../deep_doctection'))
+    sys.path.insert(0, os.path.abspath('../deepdoctection'))
 
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
 
@@ -61,7 +61,7 @@ about = {}
 with open(os.path.join(ROOT, "__about__.py")) as about_file:
     exec(about_file.read(), about)
 
-import deep_doctection
+import deepdoctection
 
 
 # -- Project information -----------------------------------------------------

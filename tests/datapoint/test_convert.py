@@ -18,7 +18,7 @@
 """
 Testing module datapoint.convert
 """
-from deep_doctection.datapoint import convert_pdf_bytes_to_np_array_v2
+from deepdoctection.datapoint import convert_pdf_bytes_to_np_array_v2
 
 from .conftest import TestPdfPage
 

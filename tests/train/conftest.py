@@ -26,11 +26,11 @@ from typing import Union
 import numpy as np
 from pytest import fixture
 
-from deep_doctection.dataflow import DataFlow, DataFromList  # type: ignore
-from deep_doctection.datapoint import BoundingBox, Image, ImageAnnotation
-from deep_doctection.datasets.base import DatasetBase
-from deep_doctection.datasets.dataflow_builder import DataFlowBaseBuilder
-from deep_doctection.datasets.info import DatasetCategories, DatasetInfo
+from deepdoctection.dataflow import DataFlow, DataFromList  # type: ignore
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
+from deepdoctection.datasets.base import DatasetBase
+from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder
+from deepdoctection.datasets.info import DatasetCategories, DatasetInfo
 
 _NAME = "test_set"
 _LOCATION = "/path/to/dir"

@@ -25,12 +25,12 @@ from unittest.mock import MagicMock
 
 from pytest import mark
 
-from deep_doctection.datapoint import Image
-from deep_doctection.extern.base import TokenClassResult
-from deep_doctection.mapper.laylmstruct import image_to_layoutlm
-from deep_doctection.pipe import LMTokenClassifierService
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.datapoint import Image
+from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.mapper.laylmstruct import image_to_layoutlm
+from deepdoctection.pipe import LMTokenClassifierService
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 
 class TestLMTokenClassifierService:  # pylint: disable=R0903

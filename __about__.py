@@ -25,11 +25,11 @@ __all__ = [
     "__copyright__",
 ]
 
-__title__ = "deep_doctection"
+__title__ = "deepdoctection"
 __summary__ = "Repository for Document AI"
 __uri__ = "https://github.com/deepdoctection/deepdoctection"
 
-__version__ = "0.01"
+__version__ = "0.10"
 
 __author__ = "Dr. Janis Meyer"
 

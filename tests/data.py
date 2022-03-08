@@ -23,15 +23,15 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from deep_doctection.datapoint import (
+from deepdoctection.datapoint import (
     BoundingBox,
     CategoryAnnotation,
     ContainerAnnotation,
     ImageAnnotation,
 )
-from deep_doctection.extern.base import DetectionResult, TokenClassResult
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 
 @dataclass
