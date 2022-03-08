@@ -21,9 +21,9 @@ Testing module pipe.layout
 
 from unittest.mock import MagicMock
 
-from deep_doctection.datapoint import Image, ImageAnnotation
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.pipe.layout import ImageLayoutService
+from deepdoctection.datapoint import Image, ImageAnnotation
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.pipe.layout import ImageLayoutService
 
 
 class TestImageLayoutService:

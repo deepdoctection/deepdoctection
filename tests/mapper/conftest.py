@@ -23,8 +23,8 @@ from typing import Any, Dict, Optional, Union
 
 from pytest import fixture
 
-from deep_doctection.datapoint import Image
-from deep_doctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.datapoint import Image
+from deepdoctection.utils.detection_types import ImageType, JsonDict
 
 from .data import (
     DatapointCoco,

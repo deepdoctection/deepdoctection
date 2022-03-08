@@ -22,8 +22,8 @@ Testing the module datapoint.annotation
 import pytest
 from pytest import mark
 
-from deep_doctection.datapoint import CategoryAnnotation
-from deep_doctection.utils import get_uuid
+from deepdoctection.datapoint import CategoryAnnotation
+from deepdoctection.utils import get_uuid
 
 from .conftest import CatAnn
 

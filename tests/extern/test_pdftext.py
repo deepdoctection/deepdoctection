@@ -19,7 +19,7 @@
 Testing module extern.pdftext
 """
 
-from deep_doctection.extern.pdftext import PdfPlumberTextDetector
+from deepdoctection.extern.pdftext import PdfPlumberTextDetector
 
 
 class TestPdfPlumberTextDetector:

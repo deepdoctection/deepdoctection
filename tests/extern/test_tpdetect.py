@@ -24,15 +24,15 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.utils.detection_types import ImageType
-from deep_doctection.utils.file_utils import tf_available
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils.file_utils import tf_available
 
 if tf_available():
-    from deep_doctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import (
+    from deepdoctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import (
         ResNetFPNModel,
     )
-    from deep_doctection.extern.tpdetect import TPFrcnnDetector
+    from deepdoctection.extern.tpdetect import TPFrcnnDetector
 
 
 def set_num_gpu_to_zero() -> int:
@@ -73,7 +73,7 @@ class TestTPFrcnnDetector:
 
     @staticmethod
     @mark.requires_tf
-    @patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
+    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
     def test_tp_frcnn_does_not_build_when_no_gpu(path_to_tp_frcnn_yaml: str, categories: Dict[str, str]) -> None:
         """
         TP FRCNN needs one GPU for predicting. Construction fails, when no GPU is found
@@ -84,7 +84,7 @@ class TestTPFrcnnDetector:
 
     @staticmethod
     @mark.requires_tf
-    @patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
+    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
     def test_tp_frcnn_returns_fpn_model(path_to_tp_frcnn_yaml: str, categories: Dict[str, str]) -> None:
         """
         TP FRCNN builds RestNetFPN model is construction is successful.
@@ -97,10 +97,10 @@ class TestTPFrcnnDetector:
 
     @staticmethod
     @mark.requires_tf
-    @patch("deep_doctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
-    @patch("deep_doctection.extern.tp.tpcompat.TensorpackPredictor._build_config", MagicMock())
-    @patch("deep_doctection.extern.tp.tpcompat.TensorpackPredictor.get_predictor", MagicMock())
-    @patch("deep_doctection.extern.tpdetect.tp_predict_image", MagicMock(side_effect=get_mock_detection_results))
+    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
+    @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor._build_config", MagicMock())
+    @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor.get_predictor", MagicMock())
+    @patch("deepdoctection.extern.tpdetect.tp_predict_image", MagicMock(side_effect=get_mock_detection_results))
     def test_tp_frcnn_predicts_image(
         path_to_tp_frcnn_yaml: str, categories: Dict[str, str], np_image: ImageType
     ) -> None:

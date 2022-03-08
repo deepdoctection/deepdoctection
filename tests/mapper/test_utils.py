@@ -23,7 +23,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from deep_doctection.mapper import DefaultMapper, LabelSummarizer
+from deepdoctection.mapper import DefaultMapper, LabelSummarizer
 
 
 class TestDefaultMapper:  # pylint: disable=R0903

@@ -25,9 +25,9 @@ from typing import List
 import numpy as np
 from pytest import fixture
 
-from deep_doctection.datapoint import BoundingBox, Image, ImageAnnotation
-from deep_doctection.datasets import DatasetCategories
-from deep_doctection.extern.base import DetectionResult
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
+from deepdoctection.datasets import DatasetCategories
+from deepdoctection.extern.base import DetectionResult
 
 
 @fixture(name="datapoint_image")

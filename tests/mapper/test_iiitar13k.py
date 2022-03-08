@@ -23,13 +23,13 @@ from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
 
-from deep_doctection.mapper.pascalstruct import pascal_voc_dict_to_image
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.mapper.pascalstruct import pascal_voc_dict_to_image
+from deepdoctection.utils.detection_types import JsonDict
 
 from .data import IIITar13KJson
 
 
-@patch("deep_doctection.mapper.pascalstruct.load_image_from_file", MagicMock())
+@patch("deepdoctection.mapper.pascalstruct.load_image_from_file", MagicMock())
 def test_pascal_voc_dict_to_image(
     datapoint_iiitar13kjson: JsonDict,
     iiitar13k_categories_name_as_keys: Dict[str, str],

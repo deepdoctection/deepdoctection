@@ -25,7 +25,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 from pytest import fixture
 
-from deep_doctection.datapoint import (
+from deepdoctection.datapoint import (
     BoundingBox,
     CategoryAnnotation,
     ContainerAnnotation,
@@ -33,11 +33,11 @@ from deep_doctection.datapoint import (
     ImageAnnotation,
     local_to_global_coords,
 )
-from deep_doctection.datasets import DatasetCategories
-from deep_doctection.extern.base import DetectionResult, TokenClassResult
-from deep_doctection.utils.detection_types import ImageType, JsonDict
-from deep_doctection.utils.settings import names
-from deep_doctection.utils.systools import get_package_path
+from deepdoctection.datasets import DatasetCategories
+from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.utils.settings import names
+from deepdoctection.utils.systools import get_package_path
 
 from .data import Annotations, get_layoutlm_input, get_token_class_result
 from .mapper.data import DatapointImage

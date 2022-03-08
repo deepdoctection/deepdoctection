@@ -23,8 +23,8 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from deep_doctection.extern.texocr import TextractOcrDetector
-from deep_doctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.extern.texocr import TextractOcrDetector
+from deepdoctection.utils.detection_types import ImageType, JsonDict
 
 
 class TestTextractOcrDetector:  # pylint: disable=R0903
@@ -35,9 +35,9 @@ class TestTextractOcrDetector:  # pylint: disable=R0903
     @staticmethod
     @mark.requires_tf
     @mark.requires_pt
-    @patch("deep_doctection.extern.texocr.get_aws_requirement", MagicMock(return_value=("boto3", True, "")))
-    @patch("deep_doctection.extern.texocr.get_boto3_requirement", MagicMock(return_value=("aws", True, "")))
-    @patch("deep_doctection.extern.texocr.boto3", MagicMock())
+    @patch("deepdoctection.extern.texocr.get_aws_requirement", MagicMock(return_value=("boto3", True, "")))
+    @patch("deepdoctection.extern.texocr.get_boto3_requirement", MagicMock(return_value=("aws", True, "")))
+    @patch("deepdoctection.extern.texocr.boto3", MagicMock())
     def test_textract_ocr_predicts_image(np_image: ImageType, textract_response: JsonDict) -> None:
         """
         Detector calls predict_text and returns only detected word blocks

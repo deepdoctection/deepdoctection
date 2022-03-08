@@ -22,11 +22,11 @@ Testing module pipe.cell
 from typing import List
 from unittest.mock import MagicMock
 
-from deep_doctection.datapoint import BoundingBox, Image
-from deep_doctection.datasets import DatasetCategories
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
-from deep_doctection.utils.settings import names
+from deepdoctection.datapoint import BoundingBox, Image
+from deepdoctection.datasets import DatasetCategories
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
+from deepdoctection.utils.settings import names
 
 
 def test_detect_result_generator(

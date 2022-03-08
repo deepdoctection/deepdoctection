@@ -24,9 +24,9 @@ from typing import Any, Iterable, List, Optional, Union
 
 from dataflow import DataFlow  # type: ignore
 
-from deep_doctection.datapoint import Annotation
-from deep_doctection.utils import sub_path
-from deep_doctection.utils.systools import get_package_path
+from deepdoctection.datapoint import Annotation
+from deepdoctection.utils import sub_path
+from deepdoctection.utils.systools import get_package_path
 
 
 def get_test_path() -> str:

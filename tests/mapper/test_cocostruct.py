@@ -26,15 +26,15 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from numpy.testing import assert_allclose
 
-from deep_doctection.datapoint import Image
-from deep_doctection.mapper import coco_to_image, image_to_coco
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.datapoint import Image
+from deepdoctection.mapper import coco_to_image, image_to_coco
+from deepdoctection.utils.detection_types import JsonDict
 
 from .conftest import get_coco_white_image
 from .data import DatapointCoco, DatapointImage
 
 
-@patch("deep_doctection.mapper.cocostruct.load_image_from_file", MagicMock(side_effect=get_coco_white_image))
+@patch("deepdoctection.mapper.cocostruct.load_image_from_file", MagicMock(side_effect=get_coco_white_image))
 def test_coco_to_image(datapoint_coco: JsonDict, categories_coco: Dict[str, str], coco_results: DatapointCoco) -> None:
     """
     testing coco_to_image is mapping correctly

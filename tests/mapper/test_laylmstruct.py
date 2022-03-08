@@ -27,13 +27,13 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from pytest import mark
 
-from deep_doctection.mapper.laylmstruct import image_to_layoutlm
-from deep_doctection.mapper.xfundstruct import xfund_to_image
-from deep_doctection.utils.detection_types import JsonDict
+from deepdoctection.mapper.laylmstruct import image_to_layoutlm
+from deepdoctection.mapper.xfundstruct import xfund_to_image
+from deepdoctection.utils.detection_types import JsonDict
 
 
 @mark.requires_pt
-@patch("deep_doctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
+@patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
 def test_image_to_layoutlm(
     datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str], layoutlm_input: JsonDict
 ) -> None:

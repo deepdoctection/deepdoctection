@@ -20,7 +20,7 @@ Testing the module dataflow.custom_serialize
 """
 import os
 
-from deep_doctection.dataflow import (
+from deepdoctection.dataflow import (
     CustomDataFromList,
     SerializerCoco,
     SerializerFiles,

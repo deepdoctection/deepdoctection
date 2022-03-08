@@ -26,7 +26,7 @@ from collections import OrderedDict
 from copy import copy
 
 from tensorpack.tfutils.varmanip import load_checkpoint_vars, save_checkpoint_vars
-from deep_doctection.utils import set_config_by_yaml
+from deepdoctection.utils import set_config_by_yaml
 
 
 def convert_weights_tp_to_d2(weights, cfg):

@@ -19,9 +19,9 @@
 Testing module pipe.registry
 """
 
-from deep_doctection.datapoint.image import Image
-from deep_doctection.pipe.base import PipelineComponent
-from deep_doctection.pipe.registry import PipelineComponentRegistry
+from deepdoctection.datapoint.image import Image
+from deepdoctection.pipe.base import PipelineComponent
+from deepdoctection.pipe.registry import PipelineComponentRegistry
 
 
 def test_pipe_registry_has_all_build_in_pipe_component_registered() -> None:

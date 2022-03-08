@@ -22,15 +22,15 @@ Testing module mapper.xfundstruct
 from typing import Dict
 from unittest.mock import MagicMock, patch
 
-from deep_doctection.mapper.xfundstruct import xfund_to_image
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.mapper.xfundstruct import xfund_to_image
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 from .conftest import get_always_pubtabnet_white_image
 
 
 @patch(
-    "deep_doctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_always_pubtabnet_white_image)
+    "deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_always_pubtabnet_white_image)
 )
 def test_xfund_to_image(datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str]) -> None:
     """

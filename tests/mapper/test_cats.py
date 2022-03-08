@@ -23,22 +23,22 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from deep_doctection.datapoint import CategoryAnnotation, Image
-from deep_doctection.mapper import (
+from deepdoctection.datapoint import CategoryAnnotation, Image
+from deepdoctection.mapper import (
     cat_to_sub_cat,
     filter_cat,
     image_to_cat_id,
     pub_to_image,
     remove_cats,
 )
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: DatapointPubtabnet) -> None:
     """
     test func: cat_to_sub_cat replaces categories with sub categories correctly
@@ -76,7 +76,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         assert str(len(cols)) == datapoint.get_summary_ann_sub_category_col_id()
 
 
-@patch("deep_doctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: DatapointPubtabnet) -> None:
     """
     test func:`filter_categories` removes categories correctly. Also tests that category ids are re assigned correctly

@@ -1,3 +1,7 @@
+.. figure:: ./pics/dd_logo.png
+   :alt: title
+
+   title
 
 Getting started
 ===============
@@ -15,7 +19,8 @@ contain document pages and tables from medical research articles. This
 means that there is already a bias in the training data set and it is
 not to be expected that the layout analysis would deliver results with
 the precision as on documents from medical studies. To improve the
-results we refer to the Fine Tuning Tutorial
+results we refer to the **Fine Tuning Tutorial**, where we deal with
+improving the parsing results on business reports.
 
 Choosing the kernel
 -------------------
@@ -25,7 +30,7 @@ described. If a virtual environment and a kernel have been created using
 the make files, the deep-doc kernel can be chosen using the kernel
 selection on the notebook.
 
-.. figure:: ../../notebooks/pics/dd_kernel.png
+.. figure:: ./pics/dd_kernel.png
    :alt: title
 
    title
@@ -39,7 +44,7 @@ cell.
     import cv2
     from matplotlib import pyplot as plt
     from IPython.core.display import HTML
-    from deep_doctection.utils.systools import get_package_path
+    from deepdoctection.utils.systools import get_package_path
 
 Sample
 ------
@@ -54,18 +59,10 @@ Let’s first look at a sample page we want to process.
     plt.axis('off')
     plt.imshow(image)
 
+.. figure:: ./pics/samples/sample_2/sample_2.png
+   :alt: title
 
-
-
-.. parsed-literal::
-
-    <matplotlib.image.AxesImage at 0x7f0dabf07490>
-
-
-
-
-.. image:: ../../notebooks/pics/samples/sample_2/sample_2.png
-
+   title
 
 Analyzer
 --------
@@ -76,7 +73,7 @@ version.
 
 .. code:: ipython3
 
-    from deep_doctection.analyzer import get_dd_analyzer
+    from deepdoctection.analyzer import get_dd_analyzer
 
 Knowing the language in advance will increase the text output
 significantly. As the document is german, we will pass a customizing:
@@ -89,32 +86,36 @@ language=‘deu’.
 Pipeline components
 -------------------
 
-We will not go into details of the entire configuration. However, the
-top line is important. It says that all optional components are set to
-‘True’ by default.
+The analyzer is an example of a pipeline that can be built depending on
+the problem you want to tackle. The pipeline is made up of the building
+blocks as described in the diagram
 
-``Will establish with table: True and ocr: True``
+.. figure:: ./pics/dd_pipeline.png
+   :alt: title
 
-The analyzer therefore performs layout recognition, table segmentation
-and OCR extraction. These steps represent the components that are going
-to be performed using neural networks.
+   title
 
-In addition, there are other components that are rule-based: These
-include, for example, a refinement process for table segmentation,
-matching the OCR-determined words to the layout results and a heuristic
-determination of the reading order.
+The default setting performs layout recognition, table segmentation and
+OCR extraction. You can sitch table segmentation and OCR off in order to
+get less but quicker results.
+
+Beside detection and OCR tasks, some other components are needed
+e.g. text matching and reading order. Text matching for instance tries
+to match words to detected layout formats based on the intersection over
+area measure. Both components are purely rule based. While this might
+give good results for text matching, determining the reading order for
+complex components will be not give satisfying results.
 
 Analyze methods
 ---------------
 
 The ``analyze`` method has various transfer parameters. The ``path``
-parameter can be used to transfer a path to a directory to the analyzer.
-In this directory, all individual pages can processed successively
-provided they have a file name suffix ‘.png’ or ‘.jpg’.
-
-It is also possible to transfer a path to a PDF document using the
-``doc_path`` parameter. When the analyzer is started, the individual
-pages of the entire document are successively analyzed.
+parameter can be used to transfer a path to a directory to the analyzer
+or to a PDF document. If the path points to a directory, all individual
+pages can processed successively provided they have a file name suffix
+‘.png’ or ‘.jpg’. If you path points to a PDF document with multiple
+pages the analyzer will work iteratively work through all document
+pages.
 
 .. code:: ipython3
 
@@ -124,7 +125,7 @@ pages of the entire document are successively analyzed.
 
 .. parsed-literal::
 
-    [32m[1214 10:40:05 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+    [32m[0308 09:12:22 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
 
 
 You can see when running the cell that not much has happened. Indeed,
@@ -184,18 +185,10 @@ positions can be seen in the cell names.
     plt.axis('off')
     plt.imshow(image)
 
+.. figure:: https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/output_16_1.png
+   :alt: title
 
-
-
-.. parsed-literal::
-
-    <matplotlib.image.AxesImage at 0x7f0c80746430>
-
-
-
-
-.. image:: pics/output_16_1.png
-
+   title
 
 The next methods are devoted to the text output.
 
@@ -212,13 +205,14 @@ contents are not included here.
     
     Festlegung der VV und angemessene Risikoadjustierung
     Die VV-Pools der DWS Gruppe werden einer angemessenen Anpassung der Risiken unterzogen, die die Adjustierung ex ante als auch ex post umfasst. Die angewandte robuste Methode soll sicherstellen, dass bei der Festlegung der VV sowohl der risikoadjustierten Leistung als auch der Kapital- und Liquiditätsausstattung der DWS Gruppe Rechnung getragen wird. Die Er- mittlung des Gesamtbetrags der VV orientiert sich primär an (i) der Tragfähigkeit für die DWS Gruppe (das heißt, was „kann” die DWS Gruppe langfristig an VV im Einklang mit regulatorischen ‚Anforderungen gewähren) und (il) der Leistung (das heißt, was „sollte” die DWS Gruppe an VV gewähren, um für eine angemessene leistungsbezogene Vergütung zu sorgen und gleichzeitig den langfristigen Erfolg des Unternehmens zu sichern)
-    Die DWS Gruppe hat für die Festlegung der auf Ebene der individuellen Mitarbeiter die „Grundsätze für die Festlegung der variablen Vergütung” eingeführt. Diese enthalten Informationen über die Faktoren und Messgrößen, die bei Entscheidungen zur IVV berücksichtigt werden müssen. Dazu zählen beispielsweise Investmentperformance, Kundenbindung, Erwägungen zur Unternehmenskultur sowie Zielvereinbarungen und Leistungsbeurteilung im Rahmen des „Ganzheitliche Leistung“-Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli- narmaßnahmen sowie deren Einfluss auf die VV einbezogen
+    Die DWS Gruppe hat für die Festlegung der VV auf Ebene der individuellen Mitarbeiter die „Grundsätze für die Festlegung der variablen Vergütung” eingeführt. Diese enthalten Informationen über die Faktoren und Messgrößen, die bei Entscheidungen zur IVV berücksichtigt werden müssen. Dazu zählen beispielsweise Investmentperformance, Kundenbindung, Erwägungen zur Unternehmenskultur sowie Zielvereinbarungen und Leistungsbeurteilung im Rahmen des „Ganzheitliche Leistung“-Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli- narmaßnahmen sowie deren Einfluss auf die VV einbezogen
+    Bei per Ermessensentscheidung erfolgenden Sub-Pool-Zuteilungen verwendet das DWS DCC die internen (finanziellen und nichtfinanziellen) Balanced Scorecard-Kennzahlen zur Erstellung differenzierter und leistungsbezogener VV-Pools,
     Vergütung für das Jahr 2018
     Nach der hervorragenden Entwicklung im Jahr 2017 hatte die globale Vermögensverwaltungsbranche 2018 mit einigen Schwierigkeiten zu kämpfen. Gründe waren ungünstige Marktbedin- gungen, stärkere geopolitische Spannungen und die negative Stimmung unter den Anlegern, vor allem am europäischen Retail-Miarkt. Auch die DWS Gruppe blieb von dieser Entwicklung nicht verschont.
-    der im März 2019 für das Performance-Jahr 2018 gewährten wurde die Gruppenkomponente allen berechtigten Mitarbeitern auf Basis der Bewertung der vier festgelegten Leistungs- kennzahlen gewährt. Der Vorstand der Deutsche Bank AG hat für 2018 unter Berücksichtigung der beträchtlichen Leistungen der Mitarbeiter und in seinem Ermessen einen Zielerreichungsgrad von 70 % festgelegt
     Identifi ierung von Risikoträgern
-    Gemäß Gesetz vom 17. Dezember 2010 über die Organismen für gemeinsame Anlagen (in seiner jeweils gültigen Fassung) sowie den ESMA-Leitlinien unter Berücksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt („Risikoträger"). Das Identifizierungsverfahren basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr verwalteten Fonds: (a) Geschäftsführung/Senior Management, (b) Portfolio-/ Investmentmanager, (c) Kontrollfunktionen, (d) Mitarbeiter mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikoträger) mit wesentlichem Einfluss, (f} sonstige Mitarbeiter in der gleichen Vergütungsstufe wie sonstige Risikoträger. Mindestens 40 % der VV für Risikoträger werden aufgeschoben vergeben. Des Weiteren werden für wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewährt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfallbedingungen unterworfen, um eine angemessene nachträgliche Risikoadjustierung zu gewähr- leisten. Bei einem VV-Betrag von weniger als EUR 50.000 erhalten Risikoträger ihre gesamte VV in bar und ohne Aufschub.
-    Vergütungsdaten für Delegierte, an die die Gesellschaft Portfolio- oder Risikomanagementaufgaben übertragen hat, sind nicht in Tabelle erfasst. Unter Berücksichtigung diverser Vergütungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeiträge) oder Nicht-(direkte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergütungen für Fahrzeuge, Mobiltelefone, usw.) umfassen „Senior Management” umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfüllt die Definition als Führungskräfte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Führungskräfte identifiziert.
+    Gemäß Gesetz vom 17. Dezember 2010 über die Organismen für gemeinsame Anlagen (in seiner jeweils gültigen Fassung) sowie den ESMA-Leitlinien unter Berücksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt („Risikoträger"). Das Identifizierungsverfahren basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr verwalteten Fonds: (a) Geschäftsführung/Senior Management, (b) Portfolio-/ Investmentmanager, (c) Kontrollfunktionen, (d) Mitarbeiter mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikoträger) mit wesentlichem Einfluss, (f} sonstige Mitarbeiter in der gleichen Vergütungsstufe wie sonstige Risikoträger. Mindestens 40 % der VV für Risikoträger werden aufgeschoben vergeben. Des Weiteren werden für wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewährt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfallbedingungen unterworfen, um eine angemessene nachträgliche Risikoadjustierung zu gewähr- leisten. Bei einem VV-Betrag von weniger als EUR 50.000 erhalten Risikoträger ihre gesamte \VV in bar und ohne Aufschub.
+    Zusammenfassung der Informationen zur Vergütung für die Gesellschaft für 2018 '
+    Vergütungsdaten für Delegierte, an die die Gesellschaft Portfolio- oder Risikomanagementaufgaben übertragen hat, sind nicht in der Tabelle erfasst. Unter Berücksichtigung diverser Vergütungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeiträge) oder Nicht-(direkte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergütungen für Fahrzeuge, Mobiltelefone, usw.) umfassen „Senior Management” umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfüllt die Definition als Führungskräfte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Führungskräfte identifiziert.
 
 
 Tables are stored in page.tables which is a python list of table
@@ -245,25 +239,24 @@ objects. Obviously, only one table has been detected.
 .. parsed-literal::
 
     ______________ row: 1 ______________
-    ______________ row: 2 ______________
     row: 1, col: 1, rs: 1, cs: 1, text: Jahresdurchschnitt der Mitarbeiterzahl 
     row: 1, col: 2, rs: 1, cs: 1, text: 139 
-    ______________ row: 3 ______________
+    ______________ row: 2 ______________
     row: 2, col: 1, rs: 1, cs: 1, text: Gesamtvergütung ? 
     row: 2, col: 2, rs: 1, cs: 1, text: EUR 15.315.952 
-    ______________ row: 4 ______________
+    ______________ row: 3 ______________
     row: 3, col: 1, rs: 1, cs: 1, text: Fixe Vergütung 
     row: 3, col: 2, rs: 1, cs: 1, text: EUR 13.151.856 
-    ______________ row: 5 ______________
+    ______________ row: 4 ______________
     row: 4, col: 1, rs: 1, cs: 1, text: Variable Vergütung 
     row: 4, col: 2, rs: 1, cs: 1, text: EUR 2.164.096 
-    ______________ row: 6 ______________
+    ______________ row: 5 ______________
     row: 5, col: 1, rs: 1, cs: 1, text: davon: Carried Interest 
     row: 5, col: 2, rs: 1, cs: 1, text: EURO 
-    ______________ row: 7 ______________
+    ______________ row: 6 ______________
     row: 6, col: 1, rs: 1, cs: 1, text: Gesamtvergütung für Senior Management ® 
     row: 6, col: 2, rs: 1, cs: 1, text: EUR 1.468.434 
-    ______________ row: 8 ______________
+    ______________ row: 7 ______________
     row: 7, col: 1, rs: 1, cs: 1, text: Gesamtvergütung für sonstige Risikoträger 
     row: 7, col: 2, rs: 1, cs: 1, text: EUR 324.229 
     
@@ -282,7 +275,7 @@ that visually reproduces the recognized structure well.
 
 .. raw:: html
 
-    <table><tr><td>139</td><td>Jahresdurchschnitt der Mitarbeiterzahl</td></tr><tr><td>EUR 15.315.952</td><td>Gesamtvergütung ?</td></tr><tr><td>EUR 13.151.856</td><td>Fixe Vergütung</td></tr><tr><td>EUR 2.164.096</td><td>Variable Vergütung</td></tr><tr><td>EURO</td><td>davon: Carried Interest</td></tr><tr><td>EUR 1.468.434</td><td>Gesamtvergütung für Senior Management ®</td></tr><tr><td>EUR 324.229</td><td>Gesamtvergütung für sonstige Risikoträger</td></tr><tr><td>EUR 554.046</td><td>Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen</td></tr></table>
+    <table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr><td>Gesamtvergütung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergütung</td><td>EUR 13.151.856</td></tr><tr><td>Variable Vergütung</td><td>EUR 2.164.096</td></tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergütung für Senior Management ®</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergütung für sonstige Risikoträger</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>
 
 
 

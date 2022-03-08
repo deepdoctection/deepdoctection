@@ -23,7 +23,7 @@ from typing import List
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from deep_doctection.dataflow import (
+from deepdoctection.dataflow import (
     CustomDataFromList,
     MeanFromDataFlow,
     StdFromDataFlow,

@@ -18,7 +18,7 @@
 """
 Testing the module datasets.info
 """
-from deep_doctection.datasets import DatasetCategories
+from deepdoctection.datasets import DatasetCategories
 
 
 class TestDatasetCategories:

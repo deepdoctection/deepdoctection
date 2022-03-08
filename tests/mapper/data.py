@@ -25,16 +25,16 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from deep_doctection.datapoint import (
+from deepdoctection.datapoint import (
     BoundingBox,
     Image,
     ImageAnnotation,
     convert_np_array_to_b64,
 )
-from deep_doctection.datasets.info import DatasetCategories
-from deep_doctection.extern.base import TokenClassResult
-from deep_doctection.utils.detection_types import ImageType, JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.datasets.info import DatasetCategories
+from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.utils.settings import names
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",

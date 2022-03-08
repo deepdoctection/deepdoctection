@@ -21,8 +21,8 @@ Testing the module eval.cocometric
 import numpy as np
 from numpy.testing import assert_allclose
 
-from deep_doctection.dataflow import DataFromList  # type: ignore
-from deep_doctection.eval.cocometric import CocoMetric
+from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.eval.cocometric import CocoMetric
 
 from ..conftest import get_image_results
 

@@ -20,7 +20,7 @@ Testing the module dataflow.custom
 """
 from typing import Any, List
 
-from deep_doctection.dataflow import CacheData, CustomDataFromList
+from deepdoctection.dataflow import CacheData, CustomDataFromList
 
 
 def test_dataflow_cached_in_list(datapoint_list: List[Any]) -> None:

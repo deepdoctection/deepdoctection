@@ -19,9 +19,9 @@
 Testing module pipe.common
 """
 
-from deep_doctection.datapoint import Image
-from deep_doctection.pipe import MatchingService
-from deep_doctection.utils import names
+from deepdoctection.datapoint import Image
+from deepdoctection.pipe import MatchingService
+from deepdoctection.utils import names
 
 
 class TestMatchingService:

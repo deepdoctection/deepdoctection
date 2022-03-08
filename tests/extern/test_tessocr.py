@@ -23,10 +23,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from deep_doctection.extern.base import DetectionResult
-from deep_doctection.extern.tessocr import TesseractOcrDetector
-from deep_doctection.utils.detection_types import ImageType
-from deep_doctection.utils.file_utils import TesseractNotFound
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.extern.tessocr import TesseractOcrDetector
+from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils.file_utils import TesseractNotFound
 from tests.data import Annotations
 
 
@@ -45,7 +45,7 @@ class TestTesseractOcrDetector:
     """
 
     @staticmethod
-    @patch("deep_doctection.utils.subprocess.check_output", MagicMock(side_effect=OSError))
+    @patch("deepdoctection.utils.subprocess.check_output", MagicMock(side_effect=OSError))
     def test_tesseract_ocr_raises_tesseract_not_found_error_when_dependencies_not_satisfied(
         path_to_tesseract_yaml: str,
     ) -> None:
@@ -59,8 +59,8 @@ class TestTesseractOcrDetector:
             TesseractOcrDetector(path_yaml=path_to_tesseract_yaml)
 
     @staticmethod
-    @patch("deep_doctection.utils.file_utils.get_tesseract_version", MagicMock(return_value=3.15))
-    @patch("deep_doctection.extern.tessocr.predict_text", MagicMock(side_effect=get_mock_word_results))
+    @patch("deepdoctection.utils.file_utils.get_tesseract_version", MagicMock(return_value=3.15))
+    @patch("deepdoctection.extern.tessocr.predict_text", MagicMock(side_effect=get_mock_word_results))
     def test_tesseract_ocr_predicts_image(path_to_tesseract_yaml: str, np_image: ImageType) -> None:
         """
         Detector calls predict_text

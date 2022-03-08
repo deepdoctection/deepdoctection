@@ -25,7 +25,7 @@ from numpy import asarray
 from numpy.testing import assert_almost_equal, assert_array_equal
 from pytest import mark, raises
 
-from deep_doctection.datapoint import (
+from deepdoctection.datapoint import (
     BoundingBox,
     crop_box_from_image,
     global_to_local_coords,
@@ -34,7 +34,7 @@ from deep_doctection.datapoint import (
     merge_boxes,
     rescale_coords,
 )
-from deep_doctection.utils.detection_types import ImageType
+from deepdoctection.utils.detection_types import ImageType
 
 from .conftest import Box
 

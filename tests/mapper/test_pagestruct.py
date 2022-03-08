@@ -19,10 +19,10 @@
 Testing the module mapper.pagestruct
 """
 
-from deep_doctection.datapoint import CategoryAnnotation, Image
-from deep_doctection.mapper.pagestruct import page_dict_to_page, to_page
-from deep_doctection.utils.detection_types import JsonDict
-from deep_doctection.utils.settings import names
+from deepdoctection.datapoint import CategoryAnnotation, Image
+from deepdoctection.mapper.pagestruct import page_dict_to_page, to_page
+from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 from .data import DatapointPageDict
 
