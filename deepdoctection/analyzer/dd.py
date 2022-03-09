@@ -21,7 +21,7 @@ Module for Deep-Doctection Analyzer
 
 import os
 from typing import Optional, List, Union, Tuple
-
+from shutil import copyfile
 
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
 from ..pipe.cell import SubImageLayoutService
@@ -35,8 +35,9 @@ from ..extern.tessocr import TesseractOcrDetector
 from ..extern.model import ModelDownloadManager
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import names
-from ..utils.systools import get_package_path
+from ..utils.systools import get_package_path, get_configs_dir_path
 from ..utils.logger import logger
+from ..utils.fs import mkdir_p
 from ..utils.file_utils import tf_available, pytorch_available, tensorpack_available
 
 
@@ -52,7 +53,8 @@ if pytorch_available():
 
 __all__ = ["get_dd_analyzer"]
 
-_DD_ONE = "configs/dd/conf_dd_one.yaml"
+_DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
+_TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
 def _auto_select_lib_and_device() -> Tuple[str, str]:
@@ -77,6 +79,21 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
         "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
         "with Pytorch."
     )
+
+
+def _maybe_copy_config_to_cache(file_name: str) -> str:
+    """
+    Initial copying of config file from the package dir into the config cache.
+
+    :return: path to the copied file_name
+    """
+
+    absolute_path_source = os.path.join(get_package_path(), file_name)
+    absolute_path = os.path.join(get_configs_dir_path(), os.path.join("dd", os.path.split(file_name)[1]))
+    mkdir_p(os.path.split(absolute_path)[0])
+    if not os.path.isfile(absolute_path):
+        copyfile(absolute_path_source, absolute_path)
+    return absolute_path
 
 
 def get_dd_analyzer(
@@ -108,12 +125,15 @@ def get_dd_analyzer(
     :param table_refinement: Will rearrange cells such that generating html is possible
     :param ocr: Will do ocr, matching with layout and ordering words. Default set to True
     :param language: Select a specific language. Pre-selecting layout will increase ocr precision.
+
+    :return: A DoctectionPipe instance with the given configs
     """
 
     lib, device = _auto_select_lib_and_device()
-    p_path = get_package_path()
+    dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE)
     # Set up of the configuration and logging
-    cfg = set_config_by_yaml(os.path.join(p_path, _DD_ONE))
+
+    cfg = set_config_by_yaml(dd_one_config_path)
     logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
 
     logger.info(
@@ -146,13 +166,13 @@ def get_dd_analyzer(
 
     d_layout: Union[D2FrcnnDetector, TPFrcnnDetector]
     if lib == "TF":
-        layout_config_path = os.path.join(p_path, cfg.CONFIG.TPLAYOUT)
-        layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPLAYOUT)
+        layout_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPLAYOUT)
+        layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPLAYOUT)
         assert layout_weights_path is not None
         d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
     else:
-        layout_config_path = os.path.join(p_path, cfg.CONFIG.D2LAYOUT)
-        layout_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2LAYOUT)
+        layout_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2LAYOUT)
+        layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
         assert layout_weights_path is not None
         d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=device)
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
@@ -165,22 +185,22 @@ def get_dd_analyzer(
         d_cell: Optional[Union[D2FrcnnDetector, TPFrcnnDetector]]
         d_item: Union[D2FrcnnDetector, TPFrcnnDetector]
         if lib == "TF":
-            cell_config_path = os.path.join(p_path, cfg.CONFIG.TPCELL)
-            cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPCELL)
+            cell_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPCELL)
+            cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPCELL)
             d_cell = TPFrcnnDetector(
                 cell_config_path,
                 cell_weights_path,
                 categories_cell,
             )
-            item_config_path = os.path.join(p_path, cfg.CONFIG.TPITEM)
-            item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.TPITEM)
+            item_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPITEM)
+            item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPITEM)
             d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         else:
-            cell_config_path = os.path.join(p_path, cfg.CONFIG.D2CELL)
-            cell_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2CELL)
+            cell_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2CELL)
+            cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
             d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=device)
-            item_config_path = os.path.join(p_path, cfg.CONFIG.D2ITEM)
-            item_weights_path = ModelDownloadManager.maybe_download_weights(cfg.WEIGHTS.D2ITEM)
+            item_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2ITEM)
+            item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
             d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=device)
 
         cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
@@ -209,7 +229,8 @@ def get_dd_analyzer(
 
     # setup ocr
     if ocr:
-        tess_ocr_config_path = os.path.join(p_path, cfg.CONFIG.TESS_OCR)
+        _maybe_copy_config_to_cache(_TESSERACT)
+        tess_ocr_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TESS_OCR)
         d_tess_ocr = TesseractOcrDetector(
             tess_ocr_config_path, config_overwrite=[f"LANGUAGES={language}"] if language is not None else None
         )
