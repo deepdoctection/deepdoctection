@@ -124,9 +124,14 @@ def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
             ann["score"] = img_ann.score
         ann["iscrowd"] = 0
 
-        if img_ann.bounding_box is not None:
-            ann["area"] = img_ann.bounding_box.area
-            ann["bbox"] = img_ann.bounding_box.to_list(mode="xywh")
+        bounding_box = None
+        if img_ann.image is not None:
+            bounding_box = img_ann.image.get_embedding(dp.image_id)
+        elif img_ann.bounding_box is not None:
+            bounding_box = img_ann.bounding_box
+        if bounding_box is not None:
+            ann["area"] = bounding_box.area
+            ann["bbox"] = bounding_box.to_list(mode="xywh")
         anns.append(ann)
 
     return img, anns

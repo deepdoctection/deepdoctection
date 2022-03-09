@@ -149,14 +149,16 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         :return: dataflow
         """
 
-        set_mp_spawn()
         split = kwargs.get("split", "val")
         max_datapoints = kwargs.get("max_datapoints")
         rows_and_cols = kwargs.get("rows_and_cols", True)
         load_image = kwargs.get("load_image", False)
         use_multi_proc = to_bool(kwargs.get("use_multi_proc", True))
-        use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", True))
+        use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", False))
         fake_score = kwargs.get("fake_score", False)
+
+        if use_multi_proc or use_multi_proc_strict:
+            set_mp_spawn()
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
