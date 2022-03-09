@@ -1,4 +1,4 @@
-.. figure:: ./pics/dd_logo.png
+.. figure:: ../../notebooks/pics/dd_logo.png
    :alt: title
 
    title
@@ -30,7 +30,7 @@ described. If a virtual environment and a kernel have been created using
 the make files, the deep-doc kernel can be chosen using the kernel
 selection on the notebook.
 
-.. figure:: ./pics/dd_kernel.png
+.. figure:: ../../notebooks/pics/dd_kernel.png
    :alt: title
 
    title
@@ -59,7 +59,7 @@ Let’s first look at a sample page we want to process.
     plt.axis('off')
     plt.imshow(image)
 
-.. figure:: ./pics/samples/sample_2/sample_2.png
+.. figure:: ../../notebooks/pics/samples/sample_2/sample_2.png
    :alt: title
 
    title
@@ -90,7 +90,7 @@ The analyzer is an example of a pipeline that can be built depending on
 the problem you want to tackle. The pipeline is made up of the building
 blocks as described in the diagram
 
-.. figure:: ./pics/dd_pipeline.png
+.. figure:: ../../notebooks/pics/dd_pipeline.png
    :alt: title
 
    title
