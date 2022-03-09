@@ -25,7 +25,7 @@ from typing import Dict, List, Union, Any
 from huggingface_hub import hf_hub_url, cached_download  # type: ignore
 from ..utils.logger import logger
 from ..utils.fs import download
-from ..utils.systools import get_weights_dir_path, get_package_path, get_configs_dir_path
+from ..utils.systools import get_weights_dir_path, get_configs_dir_path
 
 
 __all__ = ["ModelCatalog", "ModelDownloadManager"]
@@ -92,7 +92,7 @@ class ModelCatalog:
             "size": [274568239],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "d2_model-800000-layout.pkl",
-            "hf_config_file": ["Base-RCNN-FPN.yaml","CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            "hf_config_file": ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             "tp_model": False,
         },
         "cell/d2_model-1800000-cell.pkl": {
@@ -100,7 +100,7 @@ class ModelCatalog:
             "size": [274519039],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "d2_model-1800000-cell.pkl",
-            "hf_config_file": ["Base-RCNN-FPN.yaml","CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            "hf_config_file": ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             "tp_model": False,
         },
         "item/d2_model-1620000-item.pkl": {
@@ -108,7 +108,7 @@ class ModelCatalog:
             "size": [274531339],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "d2_model-1620000-item.pkl",
-            "hf_config_file": ["Base-RCNN-FPN.yaml","CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            "hf_config_file": ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             "tp_model": False,
         },
     }
@@ -228,12 +228,21 @@ class ModelDownloadManager:  # pylint: disable=R0903
 
     @staticmethod
     def load_model_from_hf_hub(profile: Dict[str, Any], absolute_path: str, file_names: List[str]) -> None:
+        """
+        Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
+        path.
+
+        :param profile: Profile according to :func:`ModelCatalog.get_profile(path_weights)`
+        :param absolute_path: Absolute path (incl. file name) of target file
+        :param file_names: Optionally, replace the file name of the ModelCatalog. This is necessary e.g. for Tensorpack
+                           models
+        """
         repo_id = profile["hf_repo_id"]
         directory, _ = os.path.split(absolute_path)
         if not file_names:
             file_names = profile["hf_model_name"]
         for expect_size, file_name in zip(profile["size"], file_names):
-            size = ModelDownloadManager._load_from_hf_hub(repo_id,file_name,directory)
+            size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
                 logger.error("File downloaded from %s does not match the expected size!", repo_id)
                 logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
@@ -245,7 +254,15 @@ class ModelDownloadManager:  # pylint: disable=R0903
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def load_configs_from_hf_hub(profile: Dict[str,Any], absolute_path):
+    def load_configs_from_hf_hub(profile: Dict[str, Any], absolute_path: str) -> None:
+        """
+        Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
+        given path.
+
+        :param profile: Profile according to :func:`ModelCatalog.get_profile(path_weights)`
+        :param absolute_path:  Absolute path (incl. file name) of target file
+        """
+
         repo_id = profile["hf_repo_id"]
         directory, _ = os.path.split(absolute_path)
         for file_name in profile["hf_config_file"]:

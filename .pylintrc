@@ -25,7 +25,7 @@ max-branches=20
 max-attributes=15
 max-locals=36
 max-returns=8
-max-statements=65
+max-statements=66
 
 [MISCELLANEOUS]
 unsafe-load-any-extension=y # https://pylint.pycqa.org/en/2.6/technical_reference/c_extensions.html that is esp. needed

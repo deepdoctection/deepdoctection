@@ -40,7 +40,7 @@ def get_integration_test_path() -> str:
     """
     fixture integration test path
     """
-    return os.path.join(get_package_path(),"notebooks/pics/samples/sample_2")
+    return os.path.join(get_package_path(), "notebooks/pics/samples/sample_2")
 
 
 def collect_datapoint_from_dataflow(df: DataFlow) -> List[Any]:
