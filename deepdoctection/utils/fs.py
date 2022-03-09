@@ -34,7 +34,8 @@ from .detection_types import ImageType
 from .logger import logger
 from .tqdm import get_tqdm
 
-__all__ = ["load_image_from_file", "load_bytes_from_pdf_file", "get_load_image_func", "maybe_path_or_pdf", "download"]
+__all__ = ["load_image_from_file", "load_bytes_from_pdf_file", "get_load_image_func", "maybe_path_or_pdf", "download",
+           "mkdir_p"]
 
 
 def sizeof_fmt(num: float, suffix: str = "B") -> str:

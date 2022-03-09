@@ -25,7 +25,7 @@ from typing import Dict, List, Union, Any
 from huggingface_hub import hf_hub_url, cached_download  # type: ignore
 from ..utils.logger import logger
 from ..utils.fs import download
-from ..utils.systools import get_weights_dir_path, get_package_path
+from ..utils.systools import get_weights_dir_path, get_package_path, get_configs_dir_path
 
 
 __all__ = ["ModelCatalog", "ModelDownloadManager"]
@@ -40,7 +40,7 @@ class ModelCatalog:
 
     MODELS: Dict[str, Any] = {
         "layout/model-800000_inf_only.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_layout",
+            "config": "dd/tp/conf_frcnn_layout",
             "size": [274552244, 7907],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "model-800000_inf_only",
@@ -48,7 +48,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "cell/model-1800000_inf_only.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_cell",
+            "config": "dd/tp/conf_frcnn_cell",
             "size": [274503056, 8056],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "model-1800000_inf_only",
@@ -56,7 +56,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "item/model-1620000_inf_only.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_rows",
+            "config": "dd/tp/conf_frcnn_rows",
             "size": [274515344, 7904],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "model-1620000_inf_only",
@@ -64,7 +64,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "item/model-1620000.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_rows",
+            "config": "dd/tp/conf_frcnn_rows",
             "size": [823546048, 25787],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
             "hf_model_name": "model-1620000",
@@ -72,7 +72,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "layout/model-800000.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_layout",
+            "config": "dd/tp/conf_frcnn_layout",
             "size": [823656748, 25796],
             "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
             "hf_model_name": "model-800000",
@@ -80,15 +80,15 @@ class ModelCatalog:
             "tp_model": True,
         },
         "cell/model-1800000.data-00000-of-00001": {
-            "config": "configs/dd/tp/conf_frcnn_cell",
+            "config": "dd/tp/conf_frcnn_cell",
             "size": [823509160, 25905],
-            "hf_repo_id": "ddeepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
+            "hf_repo_id": "deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
             "hf_model_name": "model-1800000",
             "hf_config_file": ["conf_frcnn_cell.yaml"],
             "tp_model": True,
         },
         "layout/d2_model-800000-layout.pkl": {
-            "config": "configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
             "size": [274568239],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "d2_model-800000-layout.pkl",
@@ -96,7 +96,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "cell/d2_model-1800000-cell.pkl": {
-            "config": "configs/dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
             "size": [274519039],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "d2_model-1800000-cell.pkl",
@@ -104,7 +104,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "item/d2_model-1620000-item.pkl": {
-            "config": "configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
             "size": [274531339],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "d2_model-1620000-item.pkl",
@@ -194,7 +194,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
     """
 
     @staticmethod
-    def maybe_download_weights(path_weights: str, from_hf_hub: bool = True) -> str:
+    def maybe_download_weights_and_configs(path_weights: str, from_hf_hub: bool = True) -> str:
         """
         Check if the path pointing to weight points to some registered weights. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
@@ -204,7 +204,8 @@ class ModelDownloadManager:  # pylint: disable=R0903
         :return: Absolute path to model weights if model is registered
         """
 
-        absolute_path = os.path.join(get_weights_dir_path(), path_weights)
+        absolute_path_weights = os.path.join(get_weights_dir_path(), path_weights)
+
         file_names: List[str] = []
         if ModelCatalog.is_registered(path_weights):
             profile = ModelCatalog.get_profile(path_weights)
@@ -214,17 +215,19 @@ class ModelDownloadManager:  # pylint: disable=R0903
                 assert isinstance(profile["hf_model_name"], str)
                 file_names.append(profile["hf_model_name"])
             if from_hf_hub:
-                ModelDownloadManager._load_model_from_hf_hub(profile, absolute_path, file_names)
+                ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
+                absolute_path_configs = os.path.join(get_configs_dir_path(), profile["config"])
+                ModelDownloadManager.load_configs_from_hf_hub(profile, absolute_path_configs)
             else:
-                ModelDownloadManager._load_from_gd(profile, absolute_path, file_names)
+                ModelDownloadManager._load_from_gd(profile, absolute_path_weights, file_names)
 
-            return absolute_path
+            return absolute_path_weights
 
         logger.info("Will use not registered model. Make sure path to weights is correctly set")
-        return absolute_path
+        return absolute_path_weights
 
     @staticmethod
-    def _load_model_from_hf_hub(profile: Dict[str, Any], absolute_path: str, file_names: List[str]) -> None:
+    def load_model_from_hf_hub(profile: Dict[str, Any], absolute_path: str, file_names: List[str]) -> None:
         repo_id = profile["hf_repo_id"]
         directory, _ = os.path.split(absolute_path)
         if not file_names:
@@ -242,11 +245,11 @@ class ModelDownloadManager:  # pylint: disable=R0903
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def _load_configs_from_hf_hub(profile: Dict[str,Any], absolute_path):
+    def load_configs_from_hf_hub(profile: Dict[str,Any], absolute_path):
         repo_id = profile["hf_repo_id"]
         directory, _ = os.path.split(absolute_path)
         for file_name in profile["hf_config_file"]:
-            ModelDownloadManager._load_from_hf_hub(repo_id,file_name,directory)
+            ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
     def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str) -> int:

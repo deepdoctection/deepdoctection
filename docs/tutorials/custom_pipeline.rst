@@ -129,7 +129,7 @@ the ModelDownloadManager:
 ::
 
    from ..extern.model import ModelDownloadManager
-   ModelDownloadManager.maybe_download_weights("layout/model-2026500.data-00000-of-00001")
+   ModelDownloadManager.maybe_download_weights_and_configs("layout/model-2026500.data-00000-of-00001")
 
 .. code:: ipython3
 
