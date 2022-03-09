@@ -22,10 +22,13 @@ from pytest import mark
 
 from deepdoctection.analyzer import get_dd_analyzer
 from deepdoctection.datapoint import Page
-from ..test_utils import get_integration_test_path, collect_datapoint_from_dataflow
+
+from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
 
 @mark.integration
+@mark.requires_pt
+@mark.requires_tf
 def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting tables = False and ocr = False
@@ -35,7 +38,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     analyzer = get_dd_analyzer(tables=False, ocr=False)
 
     # Act
-    df = analyzer.analyze(path = get_integration_test_path())
+    df = analyzer.analyze(path=get_integration_test_path())
     output = collect_datapoint_from_dataflow(df)
 
     # Assert
@@ -49,6 +52,8 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
 
 
 @mark.integration
+@mark.requires_pt
+@mark.requires_tf
 def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting tables = True and ocr = False
@@ -58,7 +63,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     analyzer = get_dd_analyzer(tables=True, ocr=False)
 
     # Act
-    df = analyzer.analyze(path = get_integration_test_path())
+    df = analyzer.analyze(path=get_integration_test_path())
     output = collect_datapoint_from_dataflow(df)
 
     # Assert
@@ -69,24 +74,28 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert len(page.tables) == 1
     assert len(page.tables[0].cells) == 16
     assert len(page.tables[0].items) == 10
-    assert page.tables[0].html == "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>" \
-                                 "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>" \
-                                 "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
+    assert (
+        page.tables[0].html == "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
+        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
+        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
+    )
     assert page.height == 2339
     assert page.width == 1654
 
 
 @mark.integration
+@mark.requires_pt
+@mark.requires_tf
 def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting tables = True and ocr = True
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(tables=True, ocr= True)
+    analyzer = get_dd_analyzer(tables=True, ocr=True)
 
     # Act
-    df = analyzer.analyze(path = get_integration_test_path())
+    df = analyzer.analyze(path=get_integration_test_path())
     output = collect_datapoint_from_dataflow(df)
 
     # Assert
@@ -97,15 +106,15 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(page.tables) == 1
     assert len(page.tables[0].cells) == 16
     assert len(page.tables[0].items) == 10
-    assert page.tables[0].html == "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>" \
-                                  "<td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergiitung</td>" \
-                                  "<td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR 2.164.096</td>" \
-                                  "</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung" \
-                                  " fiir Senior Management °</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung" \
-                                  " fiir sonstige Risikotrager</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergiitung" \
-                                  " fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>"
+    assert (
+        page.tables[0].html == "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
+        "<td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergiitung</td>"
+        "<td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR 2.164.096</td>"
+        "</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung"
+        " fiir Senior Management °</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung"
+        " fiir sonstige Risikotrager</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergiitung"
+        " fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>"
+    )
     assert page.height == 2339
     assert page.width == 1654
     assert len(page.get_text()) == 4291
-
-

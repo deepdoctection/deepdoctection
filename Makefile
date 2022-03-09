@@ -58,7 +58,7 @@ test-des-pt:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
 
 test-integration:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration and requires_tf and requires_pt" tests
 
 qa: check-format lint analyze test
 
