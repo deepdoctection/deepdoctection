@@ -88,7 +88,7 @@ deepdoctection.mapper.pubstruct
 deepdoctection.mapper.tpstruct
 ---------------------------------------
 
-.. automodule:: deep_doctection.mapper.tpstruct
+.. automodule:: deepdoctection.mapper.tpstruct
    :members:
    :undoc-members:
    :show-inheritance:
@@ -98,7 +98,7 @@ deepdoctection.mapper.tpstruct
 deepdoctection.mapper.xfundstruct
 ------------------------------------
 
-.. automodule:: deep_doctection.mapper.xfundstruct
+.. automodule:: deepdoctection.mapper.xfundstruct
    :members:
    :undoc-members:
    :show-inheritance:

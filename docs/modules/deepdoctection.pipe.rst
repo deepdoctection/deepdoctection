@@ -76,7 +76,7 @@ deepdoctection.pipe.registry
 deepdoctection.pipe.table\_segmentation
 ------------------------------------------------
 
-.. automodule:: deep_doctection.pipe.segment
+.. automodule:: deepdoctection.pipe.segment
    :members:
    :undoc-members:
    :show-inheritance:

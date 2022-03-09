@@ -47,12 +47,12 @@ DIST_DEPS = [
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
 ]
 
-# when building requirements_.txt for rtd uncomment the following lines
-DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber"])
-TF_DEPS = []
+# when building requirements.txt for rtd uncomment the following lines
+#DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber"])
+#TF_DEPS = []
 
-# when building requirements_.txt for rtd comment the following lines
-# TF_DEPS = ["tensorpack"]
+# when building requirements.txt for rtd comment the following lines
+TF_DEPS = ["tensorpack"]
 
 # even though transformers works for certain models in Tensorflow, we currently support only models
 # in Pytorch
@@ -61,9 +61,9 @@ PT_DEPS = ["transformers", "detectron2 @ git+https://github.com/facebookresearch
 # recommonmark add .md files to rst easily
 DEV_DEPS = ["types-PyYAML", "types-tabulate", "sphinx", "sphinx_rtd_theme", "recommonmark"]
 
-# when building requirements_.txt for rtd comment the following two lines
-# if sys.platform == "linux":
-#    DEV_DEPS.append("python-prctl")
+# when building requirements.txt for rtd comment the following two lines
+if sys.platform == "linux":
+    DEV_DEPS.append("python-prctl")
 
 TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 

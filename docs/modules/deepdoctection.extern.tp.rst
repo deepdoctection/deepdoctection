@@ -6,7 +6,7 @@ deepdoctection.extern.tp
 .. toctree::
    :maxdepth: 4
 
-   deep_doctection.extern.tp.tpfrcnn
+   deepdoctection.extern.tp.tpfrcnn
 
 
 deepdoctection.extern.tp.tfutils

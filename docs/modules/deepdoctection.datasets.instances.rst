@@ -29,7 +29,7 @@ deepdoctection.datasets.instances.iiitar13k
 deepdoctection.datasets.instances.layouttest
 -----------------------------------------------------
 
-.. automodule:: deep_doctection.datasets.instances.layouttest
+.. automodule:: deepdoctection.datasets.instances.layouttest
    :members:
    :undoc-members:
    :show-inheritance:
