@@ -48,8 +48,8 @@ DIST_DEPS = [
 ]
 
 # when building requirements.txt for rtd uncomment the following lines
-#DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber"])
-#TF_DEPS = []
+# DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber"])
+# TF_DEPS = []
 
 # when building requirements.txt for rtd comment the following lines
 TF_DEPS = ["tensorpack"]
