@@ -127,7 +127,7 @@ class ModelCatalog:
         return os.path.join(get_weights_dir_path(), weights)
 
     @staticmethod
-    def get_full_path_configs(weights: str):
+    def get_full_path_configs(weights: str) -> str:
         """
         Return the absolute path of configs for some given weights.
 
