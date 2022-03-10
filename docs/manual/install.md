@@ -37,7 +37,7 @@ choose a docker image satisfying your needs and start within a few seconds.
 Image: nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04
 ```
 
-## Install
+## Install from source
 
 Download the repository or clone via
 
