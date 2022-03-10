@@ -70,14 +70,17 @@ Depending on the pipeline you want to use, you will be notified if further insta
 
 ## Installation
 
+We recommend using a virtual environment. 
+
+## Installation from source
+
 Download the repository or clone via
 
 ```
 git clone https://github.com/deepdoctection/deepdoctection.git
 ```
 
-We recommend using a virtual environment. There is a **Makefile** that guides you though the installation process. To get 
-started, try:
+There is a **Makefile** that guides you though the installation process. To get started, try:
 
 ```
 cd deepdoctection
@@ -96,12 +99,6 @@ If you want to use the PyTorch framework, run:
 
 ```
 make install-dd-pt
-```
-
-If you want to access the **deep**doctection package through jupyter, create an IPkernel in your venv. 
-
-```
-make install-kernel-dd
 ```
 
 For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
