@@ -70,12 +70,18 @@ _N.NER.I = "I"
 
 _N.freeze()
 
+# Some path settings
+
+# package path
 FILE_PATH = os.path.split(__file__)[0]
 PATH = os.path.dirname(os.path.dirname(FILE_PATH))
 
+# model cache directory
 dd_cache_home = os.path.expanduser(os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "deepdoctection"))
 MODEL_DIR = os.path.join(dd_cache_home, "weights")
 
+# configs cache directory
 CONFIGS = os.path.join(dd_cache_home, "configs")
 
+# dataset cache directory
 DATASET_DIR = os.path.join(dd_cache_home, "datasets")
