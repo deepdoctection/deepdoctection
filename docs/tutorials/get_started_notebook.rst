@@ -1,4 +1,4 @@
-.. figure:: ../../notebooks/pics/dd_logo.png
+.. figure:: ./pics/dd_logo.png
    :alt: title
 
    title
@@ -6,9 +6,18 @@
 Getting started
 ===============
 
+**deep**\ doctection is a package that can be used to extract text from
+complex structured documents. These can be native PDFs but also scans.
+In contrast to various text miners, the focus of deepdoctection is that
+Deep Learning is also part of the equipment. Neural networks and object
+detectors have proven to not only identify objects on photos, but also
+to limit structures like titles, tables, figures or lists. Another
+advantage is that Deep Learning models can be trained on your own data
+to improve accuracy.
+
 This introductory notebook introduces the **deep**\ doctection analyzer.
 The analyzer is a built-in pipeline, which offers a rudimentary
-framework to identify layout structures in documents and to extract its
+framework to identify layout structures in documents and to extract
 text. We will start with analyzing a business document.
 
 Before starting, however, we have to say:
@@ -22,6 +31,9 @@ the precision as on documents from medical studies. To improve the
 results we refer to the **Fine Tuning Tutorial**, where we deal with
 improving the parsing results on business reports.
 
+In the future, we hope to train more models that can accurately predict
+a wider range of document types.
+
 Choosing the kernel
 -------------------
 
@@ -30,7 +42,7 @@ described. If a virtual environment and a kernel have been created using
 the make files, the deep-doc kernel can be chosen using the kernel
 selection on the notebook.
 
-.. figure:: ../../notebooks/pics/dd_kernel.png
+.. figure:: ./pics/dd_kernel.png
    :alt: title
 
    title
@@ -59,7 +71,7 @@ Let’s first look at a sample page we want to process.
     plt.axis('off')
     plt.imshow(image)
 
-.. figure:: ../../notebooks/pics/samples/sample_2/sample_2.png
+.. figure:: ./pics/sample_2.png
    :alt: title
 
    title
@@ -90,7 +102,7 @@ The analyzer is an example of a pipeline that can be built depending on
 the problem you want to tackle. The pipeline is made up of the building
 blocks as described in the diagram
 
-.. figure:: ../../notebooks/pics/dd_pipeline.png
+.. figure:: ./pics/dd_pipeline.png
    :alt: title
 
    title
@@ -125,7 +137,7 @@ pages.
 
 .. parsed-literal::
 
-    [32m[0308 09:12:22 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+    [32m[0309 11:59:03 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
 
 
 You can see when running the cell that not much has happened. Indeed,
@@ -284,3 +296,14 @@ Finally, you can save the full results to a JSON file.
 .. code:: ipython3
 
     page.save(path)
+
+How to continue
+===============
+
+In this notebook we have shown how to use the built-in analyzer for text
+extraction from image documents.
+
+We recommend that the next step is to explore the notebook
+**Custom_Pipeline**. Here we go into more detail about the composition
+of pipelines and explain with an example how you can construct one
+yourself.
