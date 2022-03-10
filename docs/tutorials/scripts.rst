@@ -8,10 +8,10 @@ checkpoint.
 .. code:: ipython3
 
     import os
-    from deep_doctection.datasets import DatasetRegistry
-    from deep_doctection.eval import MetricRegistry
-    from deep_doctection.utils import get_configs_dir_path
-    from deep_doctection.train import train_faster_rcnn
+    from deepdoctection.datasets import DatasetRegistry
+    from deepdoctection.eval import MetricRegistry
+    from deepdoctection.utils import get_configs_dir_path
+    from deepdoctection.train import train_faster_rcnn
 
 .. code:: ipython3
 
@@ -36,7 +36,7 @@ checkpoint.
                       dataset_train=dataset_train,
                       path_weights=path_weights,
                       config_overwrite=config_overwrite,
-                      log_dir="/path/to/dir/train",
+                      log_dir="/home/janis/Documents/train",
                       build_train_config=build_train_config,
                       dataset_val=dataset_val,
                       build_val_config=build_val_config,
@@ -72,7 +72,7 @@ last checkpoint.
                        dataset_train=pubtabnet,
                        path_weights=path_weights,
                        config_overwrite=config_overwrite,
-                       log_dir="/path/to/dir/train",
+                       log_dir="/home/janis/Documents/train",
                        build_train_config=build_train_config,
                        dataset_val=dataset_val,
                        build_val_config=build_val_config,
@@ -88,11 +88,21 @@ checkpoint of current model.
 
 .. code:: ipython3
 
+    from os import listdir
+    from os.path import isfile
+    from deepdoctection.utils.fs import is_file_extension
+    from deepdoctection.extern import TPFrcnnDetector
+    from deepdoctection.pipe import ImageLayoutService
+    from deepdoctection.eval import Evaluator
+
+.. code:: ipython3
+
     pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
     coco_metric = MetricRegistry.get_metric("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
     
     #pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEAD"})
+    
     #pubtabnet.dataflow.categories.filter_categories(["HEAD","BODY"])
     
     pubtabnet.dataflow.categories.filter_categories("CELL")
@@ -100,8 +110,8 @@ checkpoint of current model.
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
     
-    mypath = "/path/to/dir"
-    onlyfiles = [f for f in listdir(mypath) if (isfile(join(mypath, f)) and is_file_extension(f,".data-00000-of-00001"))]
+    mypath = "/home/janis/Documents/train/cell_21/"
+    onlyfiles = [f for f in os.listdir(mypath) if (os.path.isfile(os.path.join(mypath, f)) and is_file_extension(f,".data-00000-of-00001"))]
     
     for file in onlyfiles:
         path_weights = mypath+file
@@ -109,10 +119,4 @@ checkpoint of current model.
         cell_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
         layout_service =  ImageLayoutService(cell_detector)
         evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
-        output= evaluator.run(category_names="CELL", max_datapoints=4000)
-
-
-
-
-
-
+        output= evaluator.run(category_names="CELL", max_datapoints=400)

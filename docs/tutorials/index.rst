@@ -13,7 +13,7 @@ development. For a more application-related access, we refer to the notebooks th
   get_started_notebook
   custom_pipeline_notebook
   datasets_and_eval_notebook
-  fine_tune
+  fine_tune_notebook
 
 .. toctree::
   :maxdepth: 1
