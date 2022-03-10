@@ -7,12 +7,15 @@ components for text extraction.
 This extensive tutorial already discusses many of the core components of
 this package.
 
+We formulate the requirement as follows:
+
 **Suppose we want to perform text extraction from complex structured
 documents. The documents essentially consist of text blocks and titles.
 There are no tables. We want to use the OCR payment service from AWS
-Textract. We also want to have a reading order for the text block, as
-the documents contain multiple columns. A JSON file is to be output that
-contains all layout and text extractions including the original image.**
+Textract. We also want to have a reading order for text blocks, as the
+documents contain multiple columns. The analysis results are to be
+returned in a JSON structure that contains all layout informations as
+well as the full text and the original image.**
 
 Processing steps
 ----------------
@@ -23,8 +26,8 @@ the pipeline, we want to carry out the following steps.
 -  Call Textract OCR service
 -  Call layout analysis
 -  Assign words to layouts blocks via an intersection based rule
--  Determine reading order at the level of layout blocks and further at
-   the level within layout blocks.
+-  Determine reading order at the level of layout blocks and at the word
+   level within one layout block.
 
 Pipeline component OCR service
 ------------------------------
@@ -44,9 +47,9 @@ open sourced OCR service like Tesseract.
 .. code:: ipython3
 
     import os
-    from deep_doctection.extern import TextractOcrDetector
-    from deep_doctection.pipe import TextExtractionService, DoctectionPipe
-    from deep_doctection.utils.systools import get_package_path
+    from deepdoctection.extern import TextractOcrDetector
+    from deepdoctection.pipe import TextExtractionService, DoctectionPipe
+    from deepdoctection.utils.systools import get_package_path
 
 .. code:: ipython3
 
@@ -69,7 +72,7 @@ and outputting the extracts.
 
     path = os.path.join(get_package_path(),"notebooks/pics/samples/sample_3")
 
-.. figure:: ../../notebooks/pics/samples/sample_3/sample_3.png
+.. figure:: ./pics/sample_3.png
    :alt: title
 
    title
@@ -89,7 +92,7 @@ type requires additional layout detections which we will adress later.
 
 .. parsed-literal::
 
-    [32m[1216 07:53:52 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+    [32m[0310 11:46:45 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
     processing sample_3.png
 
 
@@ -122,25 +125,44 @@ has to determine additional text blocks that frame individual columns. A
 built-in layout detector and the associated ImageLayoutService as a
 pipeline component are suitable for this.
 
+At this point it starts to depend on whether the DL framework Tensorflow
+or PyTorch is to be used. We assume that Tensorflow is installed, hence
+we need to import the Tensorflow related Detector TPFrcnnDetector. Use
+D2FrcnnDetector for PyTorch.
+
 We use the model config and the weights of the built-in analyzer. If you
 haven’t got through the starter tutorial you can download weights using
-the ModelDownloadManager:
+the ModelDownloadManager.
 
 ::
 
-   from ..extern.model import ModelDownloadManager
-   ModelDownloadManager.maybe_download_weights_and_configs("layout/model-2026500.data-00000-of-00001")
+   from deepdoctection.extern.model import ModelDownloadManager
+   ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")
+
+Download ``layout/d2_model-800000-layout.pkl`` instead, in case you use
+PyTorch.
 
 .. code:: ipython3
 
-    from deep_doctection.extern import TPFrcnnDetector    
-    from deep_doctection.pipe import ImageLayoutService
-    from deep_doctection.utils.systools import get_weights_dir_path, get_configs_dir_path
+    from deepdoctection.extern import TPFrcnnDetector, ModelCatalog    
+    from deepdoctection.pipe import ImageLayoutService
+    from deepdoctection.utils.systools import get_weights_dir_path, get_configs_dir_path
+
+When the model is downloaded from the hub, both the weights and the
+config file are loaded into the cache. The paths to both files are
+required in order to instantiate the detector. You can use the
+ModelCatalog to build the path.
+
+It is also necessary to pass a dict with the category-id/category names
+pairs. This mapping is standard and results from the dataset Publaynet
+on which this model was trained.
 
 .. code:: ipython3
 
-    config_yaml_path = os.path.join(get_configs_dir_path(),"tp/layout/conf_frcnn_layout.yaml")
-    weights_path = os.path.join(get_weights_dir_path(),"layout/model-2026500.data-00000-of-00001")
+    profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
+    
+    config_yaml_path = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
+    weights_path = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001") 
     categories_layout = {"1": "TEXT", "2": "TITLE", "3": "LIST", "4": "TABLE", "5": "FIGURE"}
     layout_detector = TPFrcnnDetector(config_yaml_path,weights_path,categories_layout)
 
@@ -173,7 +195,7 @@ Let’s rebuild a new pipeline and start the process again.
 
 .. parsed-literal::
 
-    [32m[1216 08:15:13 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+    [32m[0310 11:47:09 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
     processing sample_3.png
 
 
@@ -181,7 +203,7 @@ Let’s rebuild a new pipeline and start the process again.
 
 .. parsed-literal::
 
-    (561,
+    (558,
      ImageAnnotation(active=True, annotation_id='172d1585-9e41-3e79-b7ac-65c81e55340f', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='3bb03560-00ea-3a21-bab9-c3aa0ec938d3', category_name='CHARS', category_id='None', score=None, sub_categories={}, relationships={}, value='Anleihemärkte'), 'BLOCK': CategoryAnnotation(active=True, annotation_id='b7f36a28-09b4-3954-a002-9064471c365e', category_name='BLOCK', category_id='None', score=None, sub_categories={}, relationships={}), 'LINE': CategoryAnnotation(active=True, annotation_id='f152b47f-61f9-31b3-9904-bfc52a47c003', category_name='LINE', category_id='None', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
 
 
@@ -199,14 +221,14 @@ that box.
 
 .. code:: ipython3
 
-    from deep_doctection.pipe import MatchingService
+    from deepdoctection.pipe import MatchingService
 
 .. code:: ipython3
 
     matching_service = MatchingService(parent_categories=["TEXT","TITLE","CELL","LIST","TABLE","FIGURE"],
                             child_categories="WORD",
                             matching_rule="ioa",
-                            ioa_threshold=0.9)
+                            threshold=0.9)
     
     pipeline_component_list.append(matching_service )
 
@@ -214,7 +236,7 @@ Reading order service has a straight forward setup.
 
 .. code:: ipython3
 
-    from deep_doctection.pipe import TextOrderService
+    from deepdoctection.pipe import TextOrderService
 
 .. code:: ipython3
 
@@ -241,7 +263,7 @@ the output accordingly
 
 .. parsed-literal::
 
-    [32m[1216 08:26:10 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+    [32m[0310 11:47:24 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
     processing sample_3.png
 
 
@@ -257,12 +279,16 @@ get_text method.
 
     
     Anleihemärkte im Geschäftsjahr bis zum 31.12.2018
-    Schwieriges Marktumfeld
-    Zinswende nach Rekordtiefs bei Anleiherenditen?
-    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur in den USA und Europa, auch in den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder - ohne ein Übereinkommen - ungeordnet vollzogen wird. Im Gegensatz zu den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren. So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
-    Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt - unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% - 2,50% p. a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p. a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
+    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur den USA und Europa, auch den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder - ohne ein Übereinkommen - ungeordnet vollzogen wird. Im Gegensatz den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren. So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
+    Zinswende nach bei Anleiherenditen? Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt - unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% - 2,50% p. a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p. a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
     Entwicklung der Leitzinsen in den USA und im Euroraum % p.a.
-    
     Fiskalpolitik des US-Präsidenten Donald Trump in Form von Steuererleichterungen und einer Erhöhung der Staatsausgaben noch befeuert wurde. Vor die- sem Hintergrund verzeichneten die US-Bondmärkte einen spür- baren Renditeanstieg, der mit merklichen Kursermäßigungen einherging. Per saldo stiegen die Renditen zehnjähriger US- Staatsanleihen auf Jahressicht von 2,4% p.a. auf 3,1% p. a.
-    Diese Entwicklung in den USA hatte auf den Euroraum jedoch nur phasenweise und partiell, insgesamt aber kaum einen zinstreibenden Effekt auf Staats- anleihen aus den europäischen Kernmärkten wie beispielsweise Deutschland und Frankreich. So gaben zehnjährige deutsche Bundesanleihen im Jahresver- lauf 2018 unter Schwankungen per saldo sogar von 0,42% p.a. auf 0,25% p. a. nach. Vielmehr standen die Anleihemärkte der Euroländer - insbeson- dere ab dem zweiten Quartal 2018 - unter dem Einfluss der politischen und wirtschaftlichen Entwicklung in der Eurozone, vor allem in den Ländern mit hoher Verschuldung und nied- rigem Wirtschaftswachstum. In den Monaten Mai und Juni
+    Diese Entwicklung in den USA hatte auf den Euroraum jedoch nur phasenweise und partiell, insgesamt aber kaum einen zinstreibenden Effekt auf Staats- anleihen aus den europäischen Kernmärkten wie beispielsweise Deutschland und Frankreich. gaben zehnjährige deutsche Bundesanleihen im Jahresver- lauf 2018 unter Schwankungen per saldo sogar von 0,42% p.a. auf 0,25% p. a. nach. Vielmehr standen die Anleihemärkte der Euroländer - insbeson- dere ab dem zweiten Quartal 2018 - unter dem Einfluss der politischen und wirtschaftlichen Entwicklung in der Eurozone, vor allem in den Ländern mit hoher Verschuldung und nied- rigem Wirtschaftswachstum. den Monaten Mai und Juni
 
+
+How to continue
+===============
+
+In the next step we recommend the tutorial **Datasets_and_Eval**. Here,
+the data model of the package is explained in more detail. It also
+explains how to evaluate the precision of models using labeled data.

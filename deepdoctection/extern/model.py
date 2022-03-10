@@ -33,7 +33,7 @@ __all__ = ["ModelCatalog", "ModelDownloadManager"]
 
 class ModelCatalog:
     """
-    Catalog of some pre-trained models. The associated config file is available as well
+    Catalog of some pre-trained models. The associated config file is available as well.
     """
 
     S_PREFIX = "https://www.googleapis.com/drive/v3/files"
@@ -88,7 +88,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "layout/d2_model-800000-layout.pkl": {
-            "config": "dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274568239],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "d2_model-800000-layout.pkl",
@@ -96,7 +96,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "cell/d2_model-1800000-cell.pkl": {
-            "config": "dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274519039],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "d2_model-1800000-cell.pkl",
@@ -104,7 +104,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "item/d2_model-1620000-item.pkl": {
-            "config": "dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            "config": "dd/d2/item/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274531339],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "d2_model-1620000-item.pkl",
@@ -114,19 +114,37 @@ class ModelCatalog:
     }
 
     @staticmethod
-    def get_full_path_weights(path_weights: str) -> str:
+    def get_full_path_weights(weights: str) -> str:
         """
-        Returns the absolute path of weights
+        Returns the absolute path of weights.
 
-        :param path_weights: relative weight path
+        Note, that weights are sometimes not defined by only one file. The returned string will only represent one
+        file.
+
+        :param weights: weights
         :return: absolute weight path
         """
-        return os.path.join(get_weights_dir_path(), path_weights)
+        return os.path.join(get_weights_dir_path(), weights)
+
+    @staticmethod
+    def get_full_path_configs(weights: str):
+        """
+        Return the absolute path of configs for some given weights.
+
+        Note, that configs are sometimes not defined by only one file. The returned string will only represent one
+        file.
+
+        :param weights: weights
+        :return: absolute path to the config
+        """
+        profile = ModelCatalog.get_profile(weights)
+
+        return os.path.join(get_configs_dir_path(), profile["config"]) + ".yaml"
 
     @staticmethod
     def get_weights_names() -> List[str]:
         """
-        Get a list of available weights names
+        Get a list of available weights
 
         :return: A list of names
         """
@@ -147,37 +165,38 @@ class ModelCatalog:
         return [os.path.join(get_weights_dir_path(), key) for key in ModelCatalog.MODELS]
 
     @staticmethod
-    def is_registered(path_weights: str) -> bool:
+    def is_registered(weights: str) -> bool:
         """
-        Checks if a relative path of weights belongs to a registered model
-        :param path_weights: relative path
+        Checks if some weights belong to a registered model
+
+        :param weights: relative path
         :return: True if the weights are registered in :class:`ModelCatalog`
         """
-        if ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_weights_list():
+        if ModelCatalog.get_full_path_weights(weights) in ModelCatalog.get_weights_list():
             return True
         return False
 
     @staticmethod
-    def get_profile(path_weights: str) -> Dict[str, Any]:
+    def get_profile(weights: str) -> Dict[str, Any]:
         """
-        Returns the profile of given local weights, i.e. the config file, size and urls.
+        Returns the profile of given weights, i.e. the config file, size and urls.
 
-        :param path_weights: local weights
+        :param weights: local weights
         :return: A dict of model/weights profiles
         """
-        profile = copy(ModelCatalog.MODELS[path_weights])
+        profile = copy(ModelCatalog.MODELS[weights])
         profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile.get("urls", "")]
         return profile
 
 
-def get_tp_weight_names(path_weights: str) -> List[str]:
+def get_tp_weight_names(weights: str) -> List[str]:
     """
     Given a path to some model weights it will return all file names according to TP naming convention
 
-    :param path_weights: An path to some weights
+    :param weights: weights
     :return: A list of TP file names
     """
-    _, file_name = os.path.split(path_weights)
+    _, file_name = os.path.split(weights)
     prefix, _ = file_name.split(".")
     weight_names = []
     for suffix in ["data-00000-of-00001", "index"]:
@@ -194,29 +213,28 @@ class ModelDownloadManager:  # pylint: disable=R0903
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(path_weights: str, from_hf_hub: bool = True) -> str:
+    def maybe_download_weights_and_configs(weights: str, from_hf_hub: bool = True) -> str:
         """
-        Check if the path pointing to weight points to some registered weights. If yes, it will check if their weights
+        Check if some weights belong to some registered weights. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
 
-        :param path_weights: A path to some model weights
+        :param weights: A path to some model weights
         :param from_hf_hub: If True, will use model download from the Huggingface hub
         :return: Absolute path to model weights if model is registered
         """
 
-        absolute_path_weights = os.path.join(get_weights_dir_path(), path_weights)
-
+        absolute_path_weights = ModelCatalog.get_full_path_weights(weights)
         file_names: List[str] = []
-        if ModelCatalog.is_registered(path_weights):
-            profile = ModelCatalog.get_profile(path_weights)
+        if ModelCatalog.is_registered(weights):
+            profile = ModelCatalog.get_profile(weights)
             if profile["tp_model"]:
-                file_names = get_tp_weight_names(path_weights)
+                file_names = get_tp_weight_names(weights)
             else:
                 assert isinstance(profile["hf_model_name"], str)
                 file_names.append(profile["hf_model_name"])
             if from_hf_hub:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
-                absolute_path_configs = os.path.join(get_configs_dir_path(), profile["config"])
+                absolute_path_configs = ModelCatalog.get_full_path_configs(weights)
                 ModelDownloadManager.load_configs_from_hf_hub(profile, absolute_path_configs)
             else:
                 ModelDownloadManager._load_from_gd(profile, absolute_path_weights, file_names)
