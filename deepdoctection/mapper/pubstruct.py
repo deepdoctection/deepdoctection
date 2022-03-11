@@ -20,18 +20,18 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from ..utils.settings import names
-from ..datapoint import ImageAnnotation, BoundingBox, CategoryAnnotation
+from ..datapoint import BoundingBox, CategoryAnnotation, ImageAnnotation
 from ..datapoint.annotation import SummaryAnnotation
-from ..datapoint.image import Image
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
+from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.fs import load_image_from_file, is_file_extension, load_bytes_from_pdf_file
-from .maputils import MappingContextManager, maybe_get_fake_score, cur
+from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
+from ..utils.settings import names
+from .maputils import MappingContextManager, cur, maybe_get_fake_score
 
 __all__ = ["pub_to_image"]
 

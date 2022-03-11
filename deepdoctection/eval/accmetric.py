@@ -18,22 +18,19 @@
 """
 Module for Accuracy metric
 """
-from typing import List, Optional, Tuple, Any, Union, Dict
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 from numpy.typing import NDArray
+from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
-from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
 
-from ..mapper.cats import image_to_cat_id
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
+from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
-
 from .base import MetricBase
-
 
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 

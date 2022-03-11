@@ -20,6 +20,7 @@ tqdm related functions. (Settings, options, etc.)
 """
 
 from typing import Optional, Union
+
 from tqdm import tqdm  # type: ignore
 
 __all__ = ["get_tqdm"]

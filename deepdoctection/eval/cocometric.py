@@ -20,17 +20,16 @@ Module for metrics that require the COCOeval class.
 """
 
 from copy import copy
-from typing import List, Tuple, Optional, Dict, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from ..utils.detection_types import JsonDict
 from ..dataflow import DataFlow
-from ..mapper.cocostruct import image_to_coco
 from ..datasets.info import DatasetCategories
+from ..mapper.cocostruct import image_to_coco
+from ..utils.detection_types import JsonDict
 from .base import MetricBase
 
 __all__ = ["CocoMetric"]

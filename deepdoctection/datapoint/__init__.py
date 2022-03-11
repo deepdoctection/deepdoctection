@@ -33,8 +33,8 @@ The disadvantage of carrying out any redundant transformations and thus experien
 After all, the point here is not to provide an optimal processing environment.
 """
 
-from .box import *
-from .image import *
 from .annotation import *
+from .box import *
 from .convert import *
 from .doc import *
+from .image import *

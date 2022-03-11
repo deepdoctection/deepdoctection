@@ -31,16 +31,16 @@ Module for Pubtabnet dataset. Place the dataset as follows
 import os
 from typing import Dict, List, Union
 
-from ...utils.settings import names
+from ...dataflow import DataFlow, MapData  # type: ignore
+from ...dataflow.custom_serialize import SerializerJsonlines
+from ...datasets.info import DatasetInfo
+from ...mapper.cats import cat_to_sub_cat, filter_cat
+from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.logger import log_once
-from ...dataflow.custom_serialize import SerializerJsonlines
-from ..dataflow_builder import DataFlowBaseBuilder
-from ...dataflow import MapData, DataFlow  # type: ignore
-from ...datasets.info import DatasetInfo
-from ...mapper.pubstruct import pub_to_image
-from ...mapper.cats import cat_to_sub_cat, filter_cat
+from ...utils.settings import names
 from ..base import _BuiltInDataset
+from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 
 _NAME = "pubtabnet"

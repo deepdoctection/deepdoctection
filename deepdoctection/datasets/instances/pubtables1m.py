@@ -36,23 +36,21 @@ Module for PubTables1M-Detection-PASCAL-VOC dataset. Install the dataset followi
 """
 
 import os
+from typing import Dict, List, Union
 
-from typing import Union, Dict, List
 from lxml import etree  # type: ignore
 
 from ...dataflow import DataFlow, MapData, SerializerFiles  # type: ignore
-from ...utils.settings import names
-from ...utils.detection_types import JsonDict
-from ...utils.systools import get_package_path
-from ...mapper.misc import xml_to_dict
-from ...mapper.maputils import cur
-from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...datasets.info import DatasetInfo
-from ..dataflow_builder import DataFlowBaseBuilder
-
+from ...mapper.maputils import cur
+from ...mapper.misc import xml_to_dict
+from ...mapper.pascalstruct import pascal_voc_dict_to_image
+from ...utils.detection_types import JsonDict
+from ...utils.settings import names
+from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
+from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
-
 
 _NAME = "pubtables1m"
 

@@ -19,13 +19,13 @@
 Tesseract OCR engine for text extraction
 """
 
-from typing import Optional, List
+from typing import List, Optional
 
-from ..utils.settings import names
-from ..utils.metacfg import set_config_by_yaml, config_to_cli_str
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tesseract_requirement
-from .base import ObjectDetector, DetectionResult, PredictorBase
+from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
+from ..utils.settings import names
+from .base import DetectionResult, ObjectDetector, PredictorBase
 from .tesseract.tesseract import predict_text
 
 

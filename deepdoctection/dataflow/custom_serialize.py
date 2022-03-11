@@ -20,21 +20,19 @@ Adding some methods that convert incoming data to dataflows.
 """
 
 import os
+from typing import List, Optional, Union
 
-from typing import Optional, Union, List
-
+from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
 from jsonlines import Reader, Writer  # type: ignore
-from dataflow.dataflow import DataFlow, MapData, JoinData  # type: ignore
-
 from pycocotools.coco import COCO
 
-from ..utils.pdf_utils import PDFStreamer
-from ..utils.logger import logger
 from ..utils.fs import is_file_extension
+from ..utils.logger import logger
+from ..utils.pdf_utils import PDFStreamer
 from ..utils.timer import timed_operation
 from ..utils.tqdm import get_tqdm
-from .custom import CustomDataFromList, CustomDataFromIterable, CacheData
 from .common import FlattenData
+from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
 
 __all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc"]
 

@@ -19,13 +19,14 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import List, Optional, Union, Tuple, Any
+from typing import Any, List, Optional, Tuple, Union
+
 import numpy as np
 from numpy.typing import NDArray
 
-from ..datapoint.image import Image
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import np_iou
+from ..datapoint.image import Image
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 
 

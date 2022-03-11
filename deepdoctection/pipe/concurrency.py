@@ -19,19 +19,18 @@
 Module for multithreading tasks
 """
 
+import itertools
 import queue
 import sys
-import itertools
-from typing import List, Union, Optional, Callable
-from contextlib import ExitStack
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
+from typing import Callable, List, Optional, Union
 
 import tqdm  # type: ignore
 
-
 from ..dataflow import DataFlow
-from ..utils.tqdm import get_tqdm
 from ..datapoint.image import Image
+from ..utils.tqdm import get_tqdm
 from .base import PipelineComponent
 
 

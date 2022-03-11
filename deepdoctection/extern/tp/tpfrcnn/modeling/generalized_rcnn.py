@@ -11,7 +11,6 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modelin
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.models import l2_regularizer, regularize_cost
 from tensorpack.tfutils import optimizer
@@ -19,25 +18,24 @@ from tensorpack.tfutils.summary import add_moving_summary
 
 from ...tpcompat import ModelDescWithConfig
 from ..utils.box_ops import area as tf_area
-from . import model_frcnn
-from . import model_mrcnn
+from . import model_frcnn, model_mrcnn
 from .backbone import image_preprocess, resnet_fpn_backbone
 from .model_box import RPNAnchors, clip_boxes, crop_and_resize
 from .model_cascade import CascadeRCNNHead
 from .model_fpn import (
     fpn_model,
     generate_fpn_proposals,
+    get_all_anchors_fpn,
     multilevel_roi_align,
     multilevel_rpn_losses,
-    get_all_anchors_fpn,
 )
 from .model_frcnn import (
     BoxProposals,
     FastRCNNHead,
     fastrcnn_outputs,
     fastrcnn_predictions,
-    sample_fast_rcnn_targets,
     nms_post_processing,
+    sample_fast_rcnn_targets,
 )
 from .model_mrcnn import maskrcnn_loss, unpackbits_masks
 from .model_rpn import rpn_head

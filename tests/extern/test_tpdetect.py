@@ -29,9 +29,7 @@ from deepdoctection.utils.detection_types import ImageType
 from deepdoctection.utils.file_utils import tf_available
 
 if tf_available():
-    from deepdoctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import (
-        ResNetFPNModel,
-    )
+    from deepdoctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
     from deepdoctection.extern.tpdetect import TPFrcnnDetector
 
 

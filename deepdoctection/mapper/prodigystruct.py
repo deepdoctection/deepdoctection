@@ -22,10 +22,9 @@ Module for mapping annotations to and from prodigy data structure
 import os
 from typing import Dict, Optional
 
-from ..datapoint import Image, BoundingBox, ImageAnnotation
+from ..datapoint import BoundingBox, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict
-from .maputils import MappingContextManager, maybe_get_fake_score, cur
-
+from .maputils import MappingContextManager, cur, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
 

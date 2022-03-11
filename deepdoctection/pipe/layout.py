@@ -18,11 +18,11 @@
 """
 Module for layout pipeline component
 """
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from .base import PredictorPipelineComponent
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector
+from .base import PredictorPipelineComponent
 
 
 class ImageLayoutService(PredictorPipelineComponent):

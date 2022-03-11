@@ -20,34 +20,35 @@ Module for Deep-Doctection Analyzer
 """
 
 import os
-from typing import Optional, List, Union, Tuple
 from shutil import copyfile
+from typing import List, Optional, Tuple, Union
 
+from ..extern.model import ModelDownloadManager
+from ..extern.tessocr import TesseractOcrDetector
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
 from ..pipe.cell import SubImageLayoutService
 from ..pipe.common import MatchingService
-from ..pipe.layout import ImageLayoutService
-from ..pipe.segment import TableSegmentationService
-from ..pipe.refine import TableSegmentationRefinementService
-from ..pipe.text import TextExtractionService, TextOrderService
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..extern.tessocr import TesseractOcrDetector
-from ..extern.model import ModelDownloadManager
+from ..pipe.layout import ImageLayoutService
+from ..pipe.refine import TableSegmentationRefinementService
+from ..pipe.segment import TableSegmentationService
+from ..pipe.text import TextExtractionService, TextOrderService
+from ..utils.file_utils import pytorch_available, tensorpack_available, tf_available
+from ..utils.fs import mkdir_p
+from ..utils.logger import logger
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import names
-from ..utils.systools import get_package_path, get_configs_dir_path
-from ..utils.logger import logger
-from ..utils.fs import mkdir_p
-from ..utils.file_utils import tf_available, pytorch_available, tensorpack_available
-
+from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
-    from ..extern.tpdetect import TPFrcnnDetector
-    from ..extern.tp.tfutils import disable_tp_layer_logging
     from tensorpack.utils.gpu import get_num_gpu
+
+    from ..extern.tp.tfutils import disable_tp_layer_logging
+    from ..extern.tpdetect import TPFrcnnDetector
 
 if pytorch_available():
     from torch import cuda
+
     from ..extern.d2detect import D2FrcnnDetector
 
 

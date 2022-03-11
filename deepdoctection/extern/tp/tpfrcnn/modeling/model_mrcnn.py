@@ -11,16 +11,15 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modelin
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack.models import Conv2D, Conv2DTranspose, layer_register
 from tensorpack.tfutils.argscope import argscope
 from tensorpack.tfutils.common import get_tf_version_tuple
 from tensorpack.tfutils.scope_utils import under_name_scope
 from tensorpack.tfutils.summary import add_moving_summary
 
-# pylint: enable=import-error
-
 from .backbone import GroupNorm
+
+# pylint: enable=import-error
 
 
 @under_name_scope()

@@ -11,15 +11,15 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modelin
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.tfutils import get_current_tower_context
 
-# pylint: enable=import-error
-
-from ..utils.box_ops import pairwise_iou, area as tf_area
+from ..utils.box_ops import area as tf_area
+from ..utils.box_ops import pairwise_iou
 from .model_box import clip_boxes
 from .model_frcnn import BoxProposals, FastRCNNHead, fastrcnn_outputs
+
+# pylint: enable=import-error
 
 
 class CascadeRCNNHead:

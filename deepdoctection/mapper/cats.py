@@ -20,8 +20,9 @@ Categories related mapping functions. They can be set within a pipeline directly
 builder method of a dataset.
 """
 
-from typing import Optional, Union, List, Dict
 from collections import defaultdict
+from typing import Dict, List, Optional, Union
+
 from ..datapoint.image import Image
 from .maputils import cur
 

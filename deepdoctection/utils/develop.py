@@ -22,12 +22,12 @@
 """
 Utilities for developers only. These are not visible to users and should not appear in docs.
 """
-import inspect
 import functools
-
+import inspect
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Callable, Any
+from typing import Any, Callable, List, Optional
+
 from . import logger
 
 __all__: List[str] = []

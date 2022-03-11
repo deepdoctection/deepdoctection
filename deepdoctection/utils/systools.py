@@ -21,7 +21,7 @@ module for various basic functions that are needed everywhere
 
 import os
 
-from .settings import PATH, MODEL_DIR, CONFIGS, DATASET_DIR
+from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 
 __all__ = ["sub_path", "get_package_path", "get_configs_dir_path", "get_weights_dir_path", "get_dataset_dir_path"]
 

@@ -21,21 +21,19 @@ Init file for mapper package. Contains everything that is related to transformat
 """
 from typing import Callable, Optional
 
-from ..utils.file_utils import pytorch_available, transformers_available
 from ..datapoint.image import Image
-
+from ..utils.file_utils import pytorch_available, transformers_available
 from .cats import *
 from .cocostruct import *
+from .maputils import *
 from .match import *
 from .misc import *
 from .pagestruct import *
+from .pascalstruct import *
 from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
-from .maputils import *
 from .xfundstruct import *
-from .pascalstruct import *
-
 
 if pytorch_available() and transformers_available():
     from .laylmstruct import *  # pylint: disable = W0622

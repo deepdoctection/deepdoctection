@@ -24,15 +24,14 @@ from typing import List
 
 import numpy as np
 from cv2 import INTER_LINEAR
-
 from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
 
 from ..datapoint.annotation import ContainerAnnotation
-from ..datapoint.image import Image
 from ..datapoint.convert import box_to_point4, point4_to_box
+from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import names
-from ..utils.file_utils import transformers_available, pytorch_available
 from .maputils import cur
 
 if pytorch_available():

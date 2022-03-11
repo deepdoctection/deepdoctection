@@ -10,7 +10,6 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modelin
 """
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.models import Conv2D, FullyConnected, layer_register
 from tensorpack.tfutils.argscope import argscope
@@ -19,12 +18,11 @@ from tensorpack.tfutils.scope_utils import under_name_scope
 from tensorpack.tfutils.summary import add_moving_summary
 from tensorpack.utils.argtools import memoized_method
 
-# pylint: enable=import-error
-
 from ..utils.box_ops import pairwise_iou
-
-from .model_box import decode_bbox_target, encode_bbox_target
 from .backbone import GroupNorm
+from .model_box import decode_bbox_target, encode_bbox_target
+
+# pylint: enable=import-error
 
 
 @under_name_scope()

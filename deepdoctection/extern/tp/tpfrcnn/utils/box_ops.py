@@ -14,7 +14,6 @@ https://github.com/tensorflow/models/blob/master/object_detection/core/box_list_
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack.tfutils.scope_utils import under_name_scope
 
 # pylint: enable=import-error

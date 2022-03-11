@@ -35,7 +35,7 @@ format-and-qa: format qa
 
 format:
 	black --line-length 120 deepdoctection tests setup.py
-	isort --skip deep_doctection tests setup.py
+	isort  deepdoctection tests setup.py
 
 check-format:
 	black --line-length 120 --check deepdoctection tests setup.py

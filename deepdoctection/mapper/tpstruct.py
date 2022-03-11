@@ -23,8 +23,8 @@ from typing import Optional
 
 import numpy as np
 
-from ..utils.detection_types import JsonDict
 from ..datapoint.image import Image
+from ..utils.detection_types import JsonDict
 from .maputils import cur
 
 

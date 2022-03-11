@@ -22,17 +22,17 @@ enables html table representations
 
 from collections import defaultdict
 from copy import copy
-from itertools import product, chain
-from typing import List, Union, Optional, Set, Tuple, DefaultDict
+from itertools import chain, product
+from typing import DefaultDict, List, Optional, Set, Tuple, Union
 
 import networkx as nx  # type: ignore
 
-from .base import PipelineComponent
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.settings import names
+from .base import PipelineComponent
 
 __all__ = ["TableSegmentationRefinementService"]
 

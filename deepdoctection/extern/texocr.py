@@ -21,10 +21,10 @@ AWS Textract OCR engine for text extraction
 
 from typing import List
 
-from ..utils.settings import names
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_aws_requirement, get_boto3_requirement, boto3_available
-from .base import ObjectDetector, DetectionResult, PredictorBase
+from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
+from ..utils.settings import names
+from .base import DetectionResult, ObjectDetector, PredictorBase
 from .textract.textract import predict_text
 
 if boto3_available():

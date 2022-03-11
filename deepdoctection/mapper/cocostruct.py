@@ -20,16 +20,14 @@ Module for mapping annotations in coco style structure
 """
 
 import os
-from typing import Dict, Optional, List, Tuple
-
-
-from .maputils import MappingContextManager, maybe_get_fake_score, cur
+from typing import Dict, List, Optional, Tuple
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
-from ..utils.fs import load_image_from_file
 from ..utils.detection_types import JsonDict
+from ..utils.fs import load_image_from_file
+from .maputils import MappingContextManager, cur, maybe_get_fake_score
 
 
 @cur  # type: ignore

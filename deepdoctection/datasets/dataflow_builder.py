@@ -20,10 +20,10 @@ Module for DataflowBase class.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Union, List
+from typing import Dict, List, Optional, Union
 
-from ..utils.systools import get_dataset_dir_path
 from ..dataflow import DataFlow
+from ..utils.systools import get_dataset_dir_path
 from .info import DatasetCategories
 
 

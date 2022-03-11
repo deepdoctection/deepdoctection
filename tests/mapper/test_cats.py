@@ -24,13 +24,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from deepdoctection.datapoint import CategoryAnnotation, Image
-from deepdoctection.mapper import (
-    cat_to_sub_cat,
-    filter_cat,
-    image_to_cat_id,
-    pub_to_image,
-    remove_cats,
-)
+from deepdoctection.mapper import cat_to_sub_cat, filter_cat, image_to_cat_id, pub_to_image, remove_cats
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 

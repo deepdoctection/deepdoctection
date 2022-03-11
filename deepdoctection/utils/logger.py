@@ -20,15 +20,15 @@ The logger module itself has the common logging functions of Python's
     logger.error("Error happened!")
 """
 
-import os
-import logging
-import sys
-import shutil
 import errno
 import functools
-
-from typing import Optional
+import logging
+import os
+import shutil
+import sys
 from datetime import datetime
+from typing import Optional
+
 from termcolor import colored
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]

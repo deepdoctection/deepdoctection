@@ -19,15 +19,12 @@
 Dataclass for annotations and their derived classes.
 """
 
-from copy import deepcopy
-
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Union
 
-from typing import Optional, List, Union, Dict, Any
-
-from ..utils import is_uuid_like, get_uuid
-
+from ..utils import get_uuid, is_uuid_like
 from .box import BoundingBox
 from .convert import as_dict
 

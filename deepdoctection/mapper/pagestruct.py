@@ -19,16 +19,16 @@
 Module for mapping Images or exported dictionaries into page formats
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from numpy import float32
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.convert import convert_np_array_to_b64
-from ..datapoint.doc import Page, LayoutSegment, Cell, Table, TableSegment
+from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
-
 
 __all__ = ["to_page", "page_dict_to_page"]
 

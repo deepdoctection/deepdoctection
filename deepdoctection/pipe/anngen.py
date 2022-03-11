@@ -19,9 +19,9 @@
 Module for datapoint populating helpers
 """
 
-from typing import Optional, Dict, Union
+from typing import Dict, Optional, Union
 
-from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation, ContainerAnnotation, SummaryAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult

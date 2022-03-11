@@ -19,16 +19,13 @@
 """
 Module for the base class for building pipelines
 """
-from copy import copy
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from copy import copy
+from typing import Any, Dict, List, Optional, Union
 
-
-from typing import Dict, Any
-
-from ..extern.base import ObjectDetector, LMTokenClassifier, PdfMiner
-from ..datapoint.image import Image
 from ..dataflow import DataFlow, MapData  # type: ignore
+from ..datapoint.image import Image
+from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner
 from ..mapper import DefaultMapper
 from .anngen import DatapointManager
 

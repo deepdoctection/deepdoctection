@@ -24,11 +24,7 @@ from typing import List
 from numpy import float32
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image
-from deepdoctection.pipe.segment import (
-    TableSegmentationService,
-    stretch_items,
-    tile_tables_with_items_per_table,
-)
+from deepdoctection.pipe.segment import TableSegmentationService, stretch_items, tile_tables_with_items_per_table
 from deepdoctection.utils.settings import names
 
 

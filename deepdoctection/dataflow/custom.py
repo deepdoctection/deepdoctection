@@ -18,11 +18,10 @@
 """
 Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...)
 """
-from typing import List, Any, Optional, Callable, Iterable
+from typing import Any, Callable, Iterable, List, Optional
 
 import numpy as np
-
-from dataflow import CacheData, DataFromList, DataFromIterable  # type: ignore
+from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
 
 from ..utils.logger import logger
 

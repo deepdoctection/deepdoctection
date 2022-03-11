@@ -19,9 +19,9 @@
 Module for storing dataset info (e.g. general meta data or categories)
 """
 
-from itertools import chain
 from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Union
+from itertools import chain
+from typing import Dict, List, Optional, Union
 
 from ..utils.logger import logger
 

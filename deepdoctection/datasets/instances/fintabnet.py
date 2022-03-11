@@ -32,25 +32,24 @@ Module for Fintabnet dataset. Place the dataset as follows
 """
 
 import os
-
 from typing import Dict, List, Union
 
-from ...utils.settings import names
-from ...dataflow.custom_serialize import SerializerJsonlines
+from ...dataflow import DataFlow, MapData, MultiProcessMapData  # type: ignore
 from ...dataflow.common import FlattenData
-from ...dataflow import MultiProcessMapData, MapData, DataFlow  # type: ignore
-from ...utils.detection_types import JsonDict
-from ...utils.logger import logger
-from ...utils.utils import to_bool
-from ...utils.file_utils import set_mp_spawn
-from ...mapper.maputils import cur
-from ...mapper.pubstruct import pub_to_image
-from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
-from ...mapper.cats import cat_to_sub_cat, filter_cat
+from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datapoint.image import Image
+from ...mapper.cats import cat_to_sub_cat, filter_cat
+from ...mapper.maputils import cur
+from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
+from ...mapper.pubstruct import pub_to_image
+from ...utils.detection_types import JsonDict
+from ...utils.file_utils import set_mp_spawn
+from ...utils.logger import logger
+from ...utils.settings import names
+from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
-from ..info import DatasetInfo, DatasetCategories
 from ..dataflow_builder import DataFlowBaseBuilder
+from ..info import DatasetCategories, DatasetInfo
 
 _NAME = "fintabnet"
 _DESCRIPTION = (

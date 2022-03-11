@@ -19,20 +19,20 @@
 HF Layoutlm model for diverse downstream tasks.
 """
 
-from typing import List, Union, Optional, Dict
 from copy import copy
+from typing import Dict, List, Optional, Union
 
-from ..utils.settings import names
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import (
-    pytorch_available,
     get_pytorch_requirement,
-    transformers_available,
     get_transformers_requirement,
+    pytorch_available,
+    transformers_available,
 )
-from .base import LMTokenClassifier, TokenClassResult, PredictorBase
-from .pt.ptutils import set_torch_auto_device
+from ..utils.settings import names
+from .base import LMTokenClassifier, PredictorBase, TokenClassResult
 from .hf.layoutlm import predict_token_classes
+from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch  # pylint: disable=W0611

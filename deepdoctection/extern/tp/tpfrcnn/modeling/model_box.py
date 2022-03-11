@@ -14,8 +14,6 @@ import numpy as np
 
 # pylint: disable=import-error
 import tensorflow as tf
-
-
 from tensorpack.tfutils.scope_utils import under_name_scope
 
 # pylint: enable=import-error

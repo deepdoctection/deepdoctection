@@ -20,12 +20,12 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import Dict, Optional, List, Union
+from typing import Dict, List, Optional, Union
 
-from ..utils.metacfg import set_config_by_yaml
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import tensorpack_available, get_tensorpack_requirement
-from .base import ObjectDetector, DetectionResult, PredictorBase
+from ..utils.file_utils import get_tensorpack_requirement, tensorpack_available
+from ..utils.metacfg import set_config_by_yaml
+from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if tensorpack_available():
     from .tp.tpcompat import TensorpackPredictor

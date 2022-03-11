@@ -13,7 +13,6 @@ import numpy as np
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.models import Conv2D, layer_register
 from tensorpack.tfutils.argscope import argscope
@@ -21,9 +20,9 @@ from tensorpack.tfutils.scope_utils import auto_reuse_variable_scope, under_name
 from tensorpack.tfutils.summary import add_moving_summary
 from tensorpack.utils.argtools import memoized
 
-# pylint: enable=import-error
-
 from .model_box import clip_boxes
+
+# pylint: enable=import-error
 
 
 @layer_register(log_shape=True)

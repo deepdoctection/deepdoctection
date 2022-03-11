@@ -20,13 +20,12 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
-from typing import Union, List
+from typing import List, Union
 
 import numpy as np
 import numpy.typing as npt
-from numpy import float32
-
 import pycocotools.mask as coco_mask
+from numpy import float32
 
 from ..utils.detection_types import ImageType
 
