@@ -57,23 +57,20 @@ else:
 
 ROOT = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(__file__))))
 
-about = {}
-with open(os.path.join(ROOT, "__about__.py")) as about_file:
-    exec(about_file.read(), about)
 
 import deepdoctection
 
 
 # -- Project information -----------------------------------------------------
 
-project = about["__title__"]
-copyright = about["__copyright__"]
-author = about["__author__"]
+project = "deepdoctection"
+copyright = "Dr. Janis Meyer"
+author =  "Dr. Janis Meyer"
 
 
 # The full version, including alpha/beta/rc tags
 
-release = about["__version__"]
+release = "0.11"
 
 
 # -- General configuration ---------------------------------------------------
