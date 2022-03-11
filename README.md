@@ -70,7 +70,32 @@ Depending on the pipeline you want to use, you will be notified if further insta
 
 ## Installation
 
-We recommend using a virtual environment. 
+We recommend using a virtual environment. You can install the package via pip or from source.
+
+### Install with pip
+
+Since dataflow is not available via pip, it must be installed separately.
+
+```
+pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
+```
+
+Depending on which Deep Learning is available, use the following installation option:
+
+For Tensorflow, run
+
+```
+pip install deepdoctection[tf]
+```
+
+For PyTorch, 
+
+first install Detectron2 separately. Check the instruction [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
+Then run
+
+```
+pip install deepdoctection[pt]
+```
 
 ## Installation from source
 
