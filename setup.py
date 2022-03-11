@@ -24,10 +24,6 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 sys.path.insert(0, ROOT)
 
-about = {}
-with open(os.path.join(ROOT, "__about__.py")) as about_file:
-    exec(about_file.read(), about)
-
 DIST_DEPS = [
     "importlib-metadata",
     "jsonlines",
@@ -70,12 +66,12 @@ TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
-    name=about["__title__"],
-    version=about["__version__"],
-    author=about["__author__"],
-    url=about["__uri__"],
-    license=about["__license__"],
-    description=about["__summary__"],
+    name="deepdoctection",
+    version="0.10",
+    author="Dr. Janis Meyer",
+    url="https://github.com/deepdoctection/deepdoctection",
+    license="Apache License 2.0",
+    description="Repository for Document AI",
     install_requires=DIST_DEPS,
     extras_require=EXTRA_DEPS,
     packages=find_packages(),
