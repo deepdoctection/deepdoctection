@@ -20,9 +20,8 @@ Module for token classification pipeline
 """
 from typing import List
 
-from ..utils.settings import names
-
 from ..datapoint.image import Image
+from ..utils.settings import names
 from .base import LanguageModelPipelineComponent
 
 

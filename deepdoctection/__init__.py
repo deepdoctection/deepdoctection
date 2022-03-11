@@ -15,8 +15,7 @@ from .mapper import *  # pylint: disable = W0622
 from .pipe import *
 from .train import *
 from .utils import *
-
-from .utils.file_utils import tf_available, pytorch_available
+from .utils.file_utils import pytorch_available, tf_available
 from .utils.logger import logger
 
 if not tf_available() and not pytorch_available():

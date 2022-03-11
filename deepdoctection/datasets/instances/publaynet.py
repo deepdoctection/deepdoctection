@@ -30,16 +30,16 @@ Module for Publaynet dataset. Place the dataset as follows
 """
 
 import os
-from typing import Union, Dict, List
+from typing import Dict, List, Union
 
-from ...utils.settings import names
-from ..dataflow_builder import DataFlowBaseBuilder
-from ...dataflow import MapDataComponent, MapData, DataFlow  # type: ignore
+from ...dataflow import DataFlow, MapData, MapDataComponent  # type: ignore
 from ...dataflow.custom_serialize import SerializerCoco
 from ...datasets.info import DatasetInfo
-from ...mapper.cocostruct import coco_to_image
 from ...mapper.cats import filter_cat
+from ...mapper.cocostruct import coco_to_image
+from ...utils.settings import names
 from ..base import _BuiltInDataset
+from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 
 _NAME = "publaynet"

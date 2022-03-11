@@ -9,23 +9,22 @@ This file is modified from
 https://github.com/tensorpack/tensorpack/blob/1a79d595f7eda9dc9dc8428f4461680ed2222ab6/examples/FasterRCNN/data.py
 """
 
-from typing import Tuple, List, Any, Optional
+from typing import Any, List, Optional, Tuple
+
 import numpy as np
 
 # pylint: disable=import-error
-from tensorpack.dataflow.imgaug import ImageAugmentor, AugmentorList
+from tensorpack.dataflow.imgaug import AugmentorList, ImageAugmentor
 
-# pylint: enable=import-error
-
-from ....utils.logger import log_once
-from ....utils.detection_types import JsonDict, ImageType
 from ....datapoint.convert import box_to_point4, point4_to_box
-
+from ....utils.detection_types import ImageType, JsonDict
+from ....utils.logger import log_once
 from .common import filter_boxes_inside_shape, np_iou
-
+from .modeling.model_fpn import get_all_anchors_fpn
 from .utils.np_box_ops import area as np_area
 from .utils.np_box_ops import ioa as np_ioa
-from .modeling.model_fpn import get_all_anchors_fpn
+
+# pylint: enable=import-error
 
 
 class MalformedData(BaseException):

@@ -19,7 +19,7 @@
 Init module for train package
 """
 
-from ..utils.file_utils import tf_available, tensorpack_available
+from ..utils.file_utils import tensorpack_available, tf_available
 
 if tf_available() and tensorpack_available():
     from .tp_frcnn_train import *

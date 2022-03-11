@@ -18,18 +18,17 @@
 """
 Utility functions related to mapping tasks
 """
-import itertools
 import functools
-from typing import Optional, Any, Callable, Union, Dict, List
+import itertools
 from types import TracebackType
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.detection_types import MapFunc
+from ..utils.detection_types import BaseExceptionType, MapFunc
 from ..utils.logger import log_once, logger
-from ..utils.detection_types import BaseExceptionType
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "cur"]
 

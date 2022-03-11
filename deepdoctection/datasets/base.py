@@ -20,11 +20,11 @@ Module for the base class of datasets.
 """
 
 import os
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from typing import Optional
 
-from .info import DatasetInfo, DatasetCategories
 from .dataflow_builder import DataFlowBaseBuilder
+from .info import DatasetCategories, DatasetInfo
 
 
 class DatasetBase(ABC):

@@ -25,13 +25,12 @@ and
 https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py
 """
 import sys
-
-from typing import Tuple, Optional, List, Callable
+from typing import Callable, List, Optional, Tuple
 
 import cv2
 import numpy as np
-from numpy import float32
 import numpy.typing as npt
+from numpy import float32
 
 from .detection_types import ImageType
 

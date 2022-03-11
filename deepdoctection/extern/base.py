@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and DDoctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Any, Tuple
+from typing import Any, List, Optional, Tuple
 
 from ..utils.detection_types import ImageType, Requirement
 

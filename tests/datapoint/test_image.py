@@ -25,12 +25,7 @@ from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
-from deepdoctection.datapoint import (
-    BoundingBox,
-    CategoryAnnotation,
-    Image,
-    ImageAnnotation,
-)
+from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
 
 from ..test_utils import anns_to_ids

@@ -225,18 +225,18 @@ Train configs
 """
 
 import os
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 import numpy as np
-
-# pylint: disable=import-error
-from tensorpack.utils.gpu import get_num_gpu
 from tensorpack.tfutils import collect_env_info
 from tensorpack.utils import logger
 
-# pylint: enable=import-error
+# pylint: disable=import-error
+from tensorpack.utils.gpu import get_num_gpu
 
 from .....utils.metacfg import AttrDict
+
+# pylint: enable=import-error
 
 
 __all__ = ["train_frcnn_config", "model_frcnn_config"]

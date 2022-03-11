@@ -20,12 +20,10 @@ Module for DatasetRegistry
 """
 
 import inspect
-
 from typing import Dict, List, Type
 
 from deepdoctection.datasets import instances
 from deepdoctection.datasets.base import DatasetBase
-
 
 __all__ = ["DatasetRegistry"]
 

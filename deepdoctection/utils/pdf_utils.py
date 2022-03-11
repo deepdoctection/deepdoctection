@@ -19,21 +19,20 @@
 Module with pdf processing tools
 """
 
-import subprocess
 import os
 import platform
-
+import subprocess
 from errno import ENOENT
-from shutil import which, copyfile
-from typing import Generator, Tuple, List, Optional
 from io import BytesIO
-from cv2 import imread, IMREAD_COLOR
+from shutil import copyfile, which
+from typing import Generator, List, Optional, Tuple
 
+from cv2 import IMREAD_COLOR, imread
 from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
 
-from .file_utils import pdf_to_ppm_available, pdf_to_cairo_available, PopplerNotFound
-from .context import timeout_manager, save_tmp_file
+from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType
+from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 

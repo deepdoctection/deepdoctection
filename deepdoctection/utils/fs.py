@@ -19,15 +19,14 @@
 Methods and classes that incorporate filesystem operations as well as file checks
 """
 
-import os
 import errno
-
-from urllib.request import urlretrieve
+import os
 from base64 import b64encode
 from io import BytesIO
-from typing import Union, List, Optional, Callable
+from typing import Callable, List, Optional, Union
+from urllib.request import urlretrieve
 
-from cv2 import imread, IMREAD_COLOR
+from cv2 import IMREAD_COLOR, imread
 
 from ..utils.pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .detection_types import ImageType

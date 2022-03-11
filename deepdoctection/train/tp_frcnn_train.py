@@ -20,52 +20,49 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Optional, List, Dict, Type
+from typing import Dict, List, Optional, Type
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
-    PeriodicCallback,
-    ModelSaver,
-    ScheduledHyperParamSetter,
-    GPUMemoryTracker,
-    HostMemoryTracker,
-    ThroughputTracker,
     EstimatedTimeLeft,
-    SessionRunTimeout,
+    GPUMemoryTracker,
     GPUUtilizationTracker,
+    HostMemoryTracker,
+    ModelSaver,
+    PeriodicCallback,
+    ScheduledHyperParamSetter,
+    SessionRunTimeout,
+    ThroughputTracker,
 )
-from tensorpack.tfutils import SmartInit
-from tensorpack.train import TrainConfig, SyncMultiGPUTrainerReplicated, launch_train_with_config
-from tensorpack.input_source import QueueInput
-from tensorpack.utils import logger
 
 # todo: check how dataflow import is directly possible without having AssertionError
-from tensorpack.dataflow import DataFlow, MapData, DataFromList, MultiProcessMapData, imgaug
+from tensorpack.dataflow import DataFlow, DataFromList, MapData, MultiProcessMapData, imgaug
+from tensorpack.input_source import QueueInput
+from tensorpack.tfutils import SmartInit
+from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
+from tensorpack.utils import logger
 
-
-from ..extern.tp.tpfrcnn.preproc import augment, anchors_and_labels
+from ..datasets.base import DatasetBase
+from ..eval.base import MetricBase
+from ..eval.registry import MetricRegistry
+from ..eval.tp_eval_callback import EvalCallback
 from ..extern.tp.tfutils import disable_tfv2
+from ..extern.tp.tpfrcnn.common import CustomResize
 from ..extern.tp.tpfrcnn.config.config import model_frcnn_config, train_frcnn_config
 from ..extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
-from ..mapper.tpstruct import image_to_tp_frcnn_training
-from ..mapper.maputils import LabelSummarizer
-from ..extern.tp.tpfrcnn.common import CustomResize
-from ..utils.utils import string_to_dict
-from ..utils.logger import log_once
-from ..utils.tqdm import get_tqdm
-from ..utils.metacfg import AttrDict
-from ..utils.detection_types import JsonDict
-from ..utils.fs import get_load_image_func
-from ..utils.metacfg import set_config_by_yaml
-from ..utils.file_utils import set_mp_spawn
+from ..extern.tp.tpfrcnn.preproc import anchors_and_labels, augment
 from ..extern.tpdetect import TPFrcnnDetector
-from ..pipe.registry import PipelineComponentRegistry
+from ..mapper.maputils import LabelSummarizer
+from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
-from ..eval.tp_eval_callback import EvalCallback
-from ..eval.registry import MetricRegistry
-from ..eval.base import MetricBase
-from ..datasets.base import DatasetBase
-
+from ..pipe.registry import PipelineComponentRegistry
+from ..utils.detection_types import JsonDict
+from ..utils.file_utils import set_mp_spawn
+from ..utils.fs import get_load_image_func
+from ..utils.logger import log_once
+from ..utils.metacfg import AttrDict, set_config_by_yaml
+from ..utils.tqdm import get_tqdm
+from ..utils.utils import string_to_dict
 
 __all__ = ["train_faster_rcnn"]
 

@@ -23,12 +23,7 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from deepdoctection.datapoint import (
-    BoundingBox,
-    CategoryAnnotation,
-    ContainerAnnotation,
-    ImageAnnotation,
-)
+from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names

@@ -20,7 +20,7 @@ Utility functions, only related to builtin objects
 """
 
 from collections.abc import MutableMapping
-from typing import Union, List, Dict, Any, Set
+from typing import Any, Dict, List, Set, Union
 
 
 def delete_keys_from_dict(

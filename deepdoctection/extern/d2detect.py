@@ -20,25 +20,25 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
-    get_pytorch_requirement,
-    get_detectron2_requirement,
     detectron2_available,
+    get_detectron2_requirement,
+    get_pytorch_requirement,
     pytorch_available,
 )
-from .base import ObjectDetector, DetectionResult, PredictorBase
+from .base import DetectionResult, ObjectDetector, PredictorBase
 from .d2.d2 import d2_predict_image
 
 if pytorch_available():
     import torch.cuda  # type: ignore
 
 if detectron2_available():
-    from detectron2.config import get_cfg, CfgNode  # pylint: disable=W0611
-    from detectron2.modeling import build_model, GeneralizedRCNN  # pylint: disable=W0611
     from detectron2.checkpoint import DetectionCheckpointer
+    from detectron2.config import CfgNode, get_cfg  # pylint: disable=W0611
+    from detectron2.modeling import GeneralizedRCNN, build_model  # pylint: disable=W0611
 
 
 class D2FrcnnDetector(ObjectDetector):

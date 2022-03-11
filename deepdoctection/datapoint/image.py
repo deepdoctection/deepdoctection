@@ -23,10 +23,9 @@ from typing import Iterable
 import numpy as np
 
 from ..utils.detection_types import ImageType
-
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
-from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .annotation import *  # pylint: disable=W0401, W0614
+from .box import crop_box_from_image, global_to_local_coords, intersection_box
+from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
 @dataclass

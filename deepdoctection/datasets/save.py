@@ -20,9 +20,10 @@ Module for saving
 """
 
 from typing import Optional
-from ..utils.detection_types import JsonDict
-from ..datapoint.image import Image
+
 from ..dataflow import DataFlow, MapData, SerializerJsonlines  # type: ignore
+from ..datapoint.image import Image
+from ..utils.detection_types import JsonDict
 
 
 def dataflow_to_jsonl(df: DataFlow, path: str, file_name: str, max_datapoints: Optional[int] = None) -> None:

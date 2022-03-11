@@ -22,15 +22,16 @@ Module for :class:`Evaluator`
 
 __all__ = ["Evaluator"]
 
-from typing import Optional, Union, List, Dict, Any, Type
+from typing import Any, Dict, List, Optional, Type, Union
+
+from ..dataflow import DataFromList, MapData  # type: ignore
 from ..datasets.base import DatasetBase
-from .base import MetricBase
-from ..pipe.base import PredictorPipelineComponent, PipelineComponent
-from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..mapper.cats import remove_cats
-from ..utils.logger import logger
-from ..dataflow import MapData, DataFromList  # type: ignore
 from ..mapper.misc import maybe_load_image, maybe_remove_image
+from ..pipe.base import PipelineComponent, PredictorPipelineComponent
+from ..pipe.concurrency import MultiThreadPipelineComponent
+from ..utils.logger import logger
+from .base import MetricBase
 
 
 class Evaluator:  # pylint: disable=R0903

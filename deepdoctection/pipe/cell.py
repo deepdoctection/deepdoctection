@@ -20,11 +20,11 @@ Module for cell detection pipeline component
 """
 
 from collections import Counter, defaultdict
-from typing import List, Optional, Dict, Union
+from typing import Dict, List, Optional, Union
 
-from .base import PredictorPipelineComponent
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector, DetectionResult
+from ..extern.base import DetectionResult, ObjectDetector
+from .base import PredictorPipelineComponent
 
 
 class DetectResultGenerator:  # pylint: disable=R0903

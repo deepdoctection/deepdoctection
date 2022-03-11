@@ -19,24 +19,21 @@
 Conversion functions associated to functionalities of datapoint classes
 """
 
-import copy
 import base64
-
-from shutil import which
+import copy
+from dataclasses import fields, is_dataclass
 from io import BytesIO
-from typing import Optional, Any, Union
-from dataclasses import is_dataclass, fields
+from shutil import which
+from typing import Any, Optional, Union
 
 import cv2
 import numpy as np
 from numpy.typing import NDArray
-
 from PyPDF2 import PdfFileReader  # type: ignore
 
-
 from ..utils.detection_types import ImageType
-from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.develop import deprecated
+from ..utils.pdf_utils import pdf_to_np_array
 
 __all__ = [
     "convert_b64_to_np_array",

@@ -19,15 +19,15 @@
 Module for tools around processing documents with Pipelines.
 """
 
-import os
 import json
+import os
 
 from dataflow.dataflow import DataFlow, MapData  # type:ignore
 
-from ..datapoint.doc import Page
-from ..utils.fs import is_file_extension
-from ..mapper.pagestruct import page_dict_to_page
 from ..dataflow.custom_serialize import SerializerJsonlines
+from ..datapoint.doc import Page
+from ..mapper.pagestruct import page_dict_to_page
+from ..utils.fs import is_file_extension
 
 
 def load_page(path: str) -> Page:

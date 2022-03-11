@@ -19,7 +19,7 @@
 Module for MetricRegistry
 """
 
-from typing import Type, Dict, List
+from typing import Dict, List, Type
 
 from ..eval.base import MetricBase
 from .accmetric import AccuracyMetric, ConfusionMetric

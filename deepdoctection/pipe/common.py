@@ -19,14 +19,14 @@
 Module for common pipeline components
 """
 
-from typing import Union, Optional, List
+from typing import List, Optional, Union
 
 import numpy as np
 
-from ..utils.settings import names
 from ..datapoint.image import Image
-from ..mapper.match import match_anns_by_intersection
 from ..mapper.maputils import MappingContextManager
+from ..mapper.match import match_anns_by_intersection
+from ..utils.settings import names
 from .base import PipelineComponent
 
 

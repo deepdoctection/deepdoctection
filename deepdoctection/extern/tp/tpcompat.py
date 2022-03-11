@@ -20,17 +20,18 @@ Compatibility classes and methods related to Tensorpack package
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Dict, Union, Any
+from typing import Any, Dict, List, Tuple, Union
+
+from tensorpack.predict import OfflinePredictor, PredictConfig
+from tensorpack.tfutils import SmartInit
 
 # pylint: disable=import-error
 from tensorpack.train.model_desc import ModelDesc
 from tensorpack.utils.gpu import get_num_gpu
-from tensorpack.predict import OfflinePredictor, PredictConfig
-from tensorpack.tfutils import SmartInit
-
-# pylint: enable=import-error
 
 from deepdoctection.utils.metacfg import AttrDict
+
+# pylint: enable=import-error
 
 
 class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore  # pylint: disable=R0903

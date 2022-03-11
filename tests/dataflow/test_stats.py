@@ -23,11 +23,7 @@ from typing import List
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from deepdoctection.dataflow import (
-    CustomDataFromList,
-    MeanFromDataFlow,
-    StdFromDataFlow,
-)
+from deepdoctection.dataflow import CustomDataFromList, MeanFromDataFlow, StdFromDataFlow
 
 
 class TestMeanFromDataFlow:  # pylint: disable=too-few-public-methods

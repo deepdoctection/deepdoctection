@@ -21,12 +21,13 @@ Module for ModelCatalog and ModelDownloadManager
 
 import os
 from copy import copy
-from typing import Dict, List, Union, Any
-from huggingface_hub import hf_hub_url, cached_download  # type: ignore
-from ..utils.logger import logger
-from ..utils.fs import download
-from ..utils.systools import get_weights_dir_path, get_configs_dir_path
+from typing import Any, Dict, List, Union
 
+from huggingface_hub import cached_download, hf_hub_url  # type: ignore
+
+from ..utils.fs import download
+from ..utils.logger import logger
+from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
 __all__ = ["ModelCatalog", "ModelDownloadManager"]
 

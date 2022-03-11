@@ -20,24 +20,22 @@ Module for EvalCallback in Tensorpack
 """
 
 from itertools import count
-from typing import Optional, Union, List, Dict, Type
+from typing import Dict, List, Optional, Type, Union
 
-
-from ..pipe.base import PredictorPipelineComponent
-from ..extern.tpdetect import TPFrcnnDetector
 from ..datasets import DatasetBase
+from ..extern.tpdetect import TPFrcnnDetector
+from ..pipe.base import PredictorPipelineComponent
+from ..utils.file_utils import tensorpack_available
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict
-from ..utils.file_utils import tensorpack_available
-
 from .base import MetricBase
 from .eval import Evaluator
 
 # pylint: disable=import-error
 if tensorpack_available():
-    from tensorpack.utils.gpu import get_num_gpu
     from tensorpack.callbacks import Callback
     from tensorpack.predict import OnlinePredictor
+    from tensorpack.utils.gpu import get_num_gpu
 # pylint: enable=import-error
 
 

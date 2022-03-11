@@ -25,12 +25,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from deepdoctection.datapoint import (
-    BoundingBox,
-    Image,
-    ImageAnnotation,
-    convert_np_array_to_b64,
-)
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation, convert_np_array_to_b64
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict

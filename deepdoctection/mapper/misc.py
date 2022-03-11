@@ -19,15 +19,16 @@
 Module for small mapping functions
 """
 
-import os
 import ast
-from typing import Union, Dict, Optional, List
+import os
+from typing import Dict, List, Optional, Union
+
 from lxml import etree  # type: ignore
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils.fs import load_image_from_file, is_file_extension, get_load_image_func
 from ..utils.detection_types import JsonDict
+from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
 from .maputils import MappingContextManager, cur
 
 

@@ -19,10 +19,10 @@
 Typing for the whole package
 """
 
-from typing import Union, TYPE_CHECKING, Type, Dict, Any, Callable, Tuple, Protocol
+from typing import TYPE_CHECKING, Any, Callable, Dict, Protocol, Tuple, Type, Union
 
-from numpy import float32
 import numpy.typing as npt
+from numpy import float32
 
 
 # Type for a general dataclass

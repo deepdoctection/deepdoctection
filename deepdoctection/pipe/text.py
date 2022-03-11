@@ -18,15 +18,14 @@
 """
 Module for text extraction pipeline component
 """
-from typing import List, Union, Optional, Tuple, Dict
+from typing import Dict, List, Optional, Tuple, Union
 
-from ..utils.settings import names
-from ..utils.detection_types import ImageType
-from ..extern.base import ObjectDetector, PdfMiner
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from .base import PredictorPipelineComponent, PipelineComponent
-
+from ..extern.base import ObjectDetector, PdfMiner
+from ..utils.detection_types import ImageType
+from ..utils.settings import names
+from .base import PipelineComponent, PredictorPipelineComponent
 
 __all__ = ["TextExtractionService", "TextOrderService"]
 

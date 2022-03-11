@@ -19,10 +19,9 @@
 Some useful stuff about timing operations and stopwatch methods. Some of them are taken from the Tensorpack library
 """
 
-from typing import Generator, Any
-
 from contextlib import contextmanager
 from time import perf_counter as timer
+from typing import Any, Generator
 
 from .logger import logger
 

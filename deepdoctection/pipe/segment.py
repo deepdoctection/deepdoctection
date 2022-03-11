@@ -22,18 +22,18 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 from numpy import float32
 
-from .base import PipelineComponent
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox, np_iou
 from ..datapoint.image import Image
-from ..mapper.match import match_anns_by_intersection
 from ..mapper.maputils import MappingContextManager
+from ..mapper.match import match_anns_by_intersection
 from ..utils.settings import names
+from .base import PipelineComponent
 
 __all__ = ["TableSegmentationService", "SegmentationResult"]
 

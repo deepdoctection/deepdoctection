@@ -20,15 +20,15 @@ Module for mapping annotations to and from xfund data structure
 """
 
 import os
-from typing import Dict, Optional
 from collections import defaultdict
 from itertools import chain
+from typing import Dict, Optional
 
-from ..datapoint import Image, BoundingBox, ImageAnnotation, CategoryAnnotation, ContainerAnnotation
-from ..utils.settings import names
+from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
-from .maputils import MappingContextManager, maybe_get_fake_score, cur
+from ..utils.settings import names
+from .maputils import MappingContextManager, cur, maybe_get_fake_score
 
 
 @cur  # type: ignore

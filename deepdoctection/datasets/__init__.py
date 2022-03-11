@@ -27,6 +27,6 @@ DatasetBase derived instance to create a data set.
 from .base import *
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import *
+from .instances import *
 from .registry import DatasetRegistry
 from .save import *
-from .instances import *

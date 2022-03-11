@@ -20,20 +20,20 @@
 Module for inference on D2 model
 """
 
-from typing import List, Dict
+from typing import Dict, List
 
-from ..common import InferenceResize
-from ..base import DetectionResult
 from ...utils.detection_types import ImageType
-from ...utils.file_utils import pytorch_available, detectron2_available
+from ...utils.file_utils import detectron2_available, pytorch_available
+from ..base import DetectionResult
+from ..common import InferenceResize
 
 if pytorch_available():
     import torch
     from torch import nn  # pylint: disable=W0611
 
 if detectron2_available():
-    from detectron2.structures import Instances  # pylint: disable=W0611
     from detectron2.layers import batched_nms
+    from detectron2.structures import Instances  # pylint: disable=W0611
 
 
 def _d2_post_processing(

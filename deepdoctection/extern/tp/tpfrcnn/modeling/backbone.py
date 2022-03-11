@@ -15,7 +15,6 @@ import numpy as np
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.models import BatchNorm, Conv2D, MaxPooling, layer_register
 from tensorpack.tfutils import argscope

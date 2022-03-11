@@ -27,15 +27,14 @@ DD package.
 Functions that, as wrappers, standardize the transition from external API to DD API.
 """
 from ..utils.file_utils import tensorpack_available
-
 from .base import *
 from .common import *
 from .d2detect import *
 from .hflayoutlm import *
 from .model import *
+from .pdftext import *
 from .tessocr import *
 from .texocr import *  # type: ignore
-from .pdftext import *
 
 if tensorpack_available():
     from .tpdetect import *

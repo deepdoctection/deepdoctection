@@ -22,12 +22,12 @@ These data classes are intended for the consumer. They have no overhead and only
 evaluating the text extractions.
 """
 
-import os
-from typing import List, Optional
-from dataclasses import dataclass, field, asdict
 import json
-import cv2
+import os
+from dataclasses import asdict, dataclass, field
+from typing import List, Optional
 
+import cv2
 import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict

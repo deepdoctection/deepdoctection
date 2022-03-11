@@ -31,10 +31,7 @@ from ..test_utils import collect_datapoint_from_dataflow
 
 if tf_available():
     from deepdoctection.extern.tp.tpfrcnn.config.config import model_frcnn_config
-    from deepdoctection.train.tp_frcnn_train import (
-        get_train_dataflow,
-        train_faster_rcnn,
-    )
+    from deepdoctection.train.tp_frcnn_train import get_train_dataflow, train_faster_rcnn
 
 
 def set_num_gpu_to_one() -> int:

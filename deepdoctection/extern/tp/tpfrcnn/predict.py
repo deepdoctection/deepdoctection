@@ -13,9 +13,7 @@ from typing import List
 
 import cv2
 import numpy as np
-
 from scipy import interpolate
-
 from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
 
 from ...base import DetectionResult

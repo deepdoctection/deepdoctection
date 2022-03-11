@@ -10,11 +10,11 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modelin
 """
 
 import itertools
+
 import numpy as np
 
 # pylint: disable=import-error
 import tensorflow as tf
-
 from tensorpack import tfv1
 from tensorpack.models import Conv2D, FixedUnPooling, MaxPooling, layer_register
 from tensorpack.tfutils.argscope import argscope
@@ -23,12 +23,12 @@ from tensorpack.tfutils.summary import add_moving_summary
 from tensorpack.tfutils.tower import get_current_tower_context
 from tensorpack.utils.argtools import memoized
 
-# pylint: enable=import-error
-
 from ..utils.box_ops import area as tf_area
 from .backbone import GroupNorm
 from .model_box import roi_align
-from .model_rpn import generate_rpn_proposals, rpn_losses, get_all_anchors
+from .model_rpn import generate_rpn_proposals, get_all_anchors, rpn_losses
+
+# pylint: enable=import-error
 
 
 @layer_register(log_shape=True)

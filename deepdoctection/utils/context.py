@@ -20,15 +20,12 @@ Some useful contextmanagers for various tasks
 """
 
 import subprocess
-
-from errno import ENOENT
-from os import remove, path
-
-from typing import Union, Optional, Iterator, Tuple
-from tempfile import NamedTemporaryFile
 from contextlib import contextmanager
-
+from errno import ENOENT
 from glob import iglob
+from os import path, remove
+from tempfile import NamedTemporaryFile
+from typing import Iterator, Optional, Tuple, Union
 
 import numpy as np
 from cv2 import imwrite

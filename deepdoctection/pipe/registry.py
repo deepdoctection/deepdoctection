@@ -19,18 +19,17 @@
 Module for PipeRegistry
 """
 
-import sys
 import inspect
-from typing import Type, Dict, List
+import sys
+from typing import Dict, List, Type
 
 from .base import PipelineComponent
 from .cell import *
 from .common import *
 from .layout import *
+from .refine import *
 from .segment import *
 from .text import *
-from .refine import *
-
 
 __all__ = ["PipelineComponentRegistry"]
 

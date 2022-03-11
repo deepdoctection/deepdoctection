@@ -19,13 +19,13 @@
 PDFPlumber text extraction engine
 """
 
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
 
-from ..utils.file_utils import pdfplumber_available, get_pdfplumber_requirement
-from ..utils.settings import names
-from ..utils.detection_types import Requirement
 from ..utils.context import save_tmp_file
-from .base import PdfMiner, DetectionResult
+from ..utils.detection_types import Requirement
+from ..utils.file_utils import get_pdfplumber_requirement, pdfplumber_available
+from ..utils.settings import names
+from .base import DetectionResult, PdfMiner
 
 if pdfplumber_available():
     from pdfplumber.pdf import PDF  # type: ignore

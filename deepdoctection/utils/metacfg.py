@@ -20,8 +20,7 @@ Class AttrDict for maintaining configs and some functions for generating and sav
 """
 
 import pprint
-
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 import yaml
 

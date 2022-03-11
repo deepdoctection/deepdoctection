@@ -19,22 +19,19 @@
 Module for calling  tesseract
 """
 
+import shlex
 import subprocess
 import sys
-import shlex
-
 from errno import ENOENT
 from os import environ
-from typing import List, Dict, Any, Union
-
+from typing import Any, Dict, List, Union
 
 import numpy as np
 
+from ...utils.context import save_tmp_file, timeout_manager
 from ...utils.detection_types import ImageType
 from ...utils.file_utils import TesseractNotFound
-from ...utils.context import timeout_manager, save_tmp_file
 from ..base import DetectionResult
-
 
 __all__ = ["predict_text"]
 

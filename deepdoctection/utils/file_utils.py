@@ -9,16 +9,15 @@ Utilities for maintaining dependencies and dealing with external library package
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
 
+import importlib.util
+import multiprocessing as mp
 import string
 import subprocess
+from os import environ
 from shutil import which
 from typing import Tuple, Union
-from os import environ
-import multiprocessing as mp
 
-import importlib.util
 import importlib_metadata
-
 from packaging import version
 
 from .detection_types import Requirement
