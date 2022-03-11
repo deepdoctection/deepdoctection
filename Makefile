@@ -6,6 +6,11 @@ PRODIGY_PATH=
 
 PYTHON=python3.8
 
+test-build:
+	pip install --upgrade build
+	$(PYTHON) -m build
+	pip install --upgrade twine
+	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 clean: clean-build clean-pyc clean-test
 
