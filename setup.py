@@ -77,8 +77,8 @@ setup(
     packages=find_packages(),
     package_data={"deepdoctection": ["py.typed"]},
     classifiers=[
-        "Development Status :: Inception",
-        "License :: Apache License 2.0",
+        "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3.8",
