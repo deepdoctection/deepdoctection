@@ -20,7 +20,12 @@ import sys
 
 from setuptools import find_packages, setup
 
+
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
+
+with open(os.path.join(ROOT, 'README.md'), 'rb') as f:
+    long_description = f.read().decode('utf-8')
+
 
 sys.path.insert(0, ROOT)
 
@@ -31,7 +36,7 @@ DIST_DEPS = [
     "opencv-python",
     "pycocotools",
     "pypdf2",
-    "numpy",
+    "numpy>=1.21",
     "lxml",
     "huggingface_hub",
     "packaging>=20.0",
@@ -59,11 +64,13 @@ EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
     name="deepdoctection",
-    version="0.10",
+    version="0.11",
     author="Dr. Janis Meyer",
     url="https://github.com/deepdoctection/deepdoctection",
     license="Apache License 2.0",
     description="Repository for Document AI",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=DIST_DEPS,
     extras_require=EXTRA_DEPS,
     packages=find_packages(),
