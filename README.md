@@ -97,7 +97,7 @@ Then run
 pip install deepdoctection[pt]
 ```
 
-## Installation from source
+### Installation from source
 
 Download the repository or clone via
 

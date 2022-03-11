@@ -31,7 +31,7 @@ DIST_DEPS = [
     "opencv-python",
     "pycocotools",
     "pypdf2",
-    "numpy",
+    "numpy>=1.21",
     "lxml",
     "huggingface_hub",
     "packaging>=20.0",
@@ -67,7 +67,7 @@ EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
     name="deepdoctection",
-    version="0.10",
+    version="0.11",
     author="Dr. Janis Meyer",
     url="https://github.com/deepdoctection/deepdoctection",
     license="Apache License 2.0",
