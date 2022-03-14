@@ -82,21 +82,23 @@ class TextExtractionService(PredictorPipelineComponent):
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
             for detect_result in detect_result_list:
-                word_ann_id = self.dp_manager.set_image_annotation(
+                ann_id = self.dp_manager.set_image_annotation(
                     detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
                 )
-                if word_ann_id is not None:
+                if ann_id is not None:
                     self.dp_manager.set_container_annotation(
                         names.C.CHARS,
                         None,
                         names.C.CHARS,
-                        word_ann_id,
+                        ann_id,
                         detect_result.text if detect_result.text is not None else "",
                     )
-                    self.dp_manager.set_category_annotation(
-                        names.C.BLOCK, detect_result.block, names.C.BLOCK, word_ann_id
-                    )
-                    self.dp_manager.set_category_annotation(names.C.LINE, detect_result.line, names.C.LINE, word_ann_id)
+                    if detect_result.block:
+                        self.dp_manager.set_category_annotation(
+                            names.C.BLOCK, detect_result.block, names.C.BLOCK, ann_id
+                        )
+                    if detect_result.line:
+                        self.dp_manager.set_category_annotation(names.C.LINE, detect_result.line, names.C.LINE, ann_id)
 
     def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation]]:
         """
