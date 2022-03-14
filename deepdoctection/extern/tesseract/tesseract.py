@@ -25,6 +25,7 @@ import sys
 from errno import ENOENT
 from os import environ
 from typing import Any, Dict, List, Union
+from itertools import groupby
 
 import numpy as np
 
@@ -152,7 +153,27 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
         return result
 
 
-def predict_text(np_img: ImageType, supported_languages: str, config: str) -> List[DetectionResult]:
+def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
+    """
+    Generating text line DetectionResult based from Tesseracts word grouping. It generates line bounding boxes from
+    word bounding boxes.
+    :param detect_result_list: A list of detection result
+    :return: An extended list of detection result
+    """
+
+    for _,block_group_iter in groupby(detect_result_list,key=lambda x: x.block):
+        block_group=[]
+        for _, line_group_iter in groupby(list(block_group_iter),key=lambda x: x.line):
+            block_group.extend(list(line_group_iter))
+        ulx = min(detect_result.box[0] for detect_result in block_group)
+        uly = min(detect_result.box[1] for detect_result in block_group)
+        lrx = max(detect_result.box[2] for detect_result in block_group)
+        lry = max(detect_result.box[3] for detect_result in block_group)
+        detect_result_list.append(DetectionResult(box=[ulx,uly,lrx,lry],class_id=2))
+    return detect_result_list
+
+
+def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, config: str) -> List[DetectionResult]:
     """
     Calls tesseract directly with some given configs. Requires Tesseract to be installed.
 
@@ -160,6 +181,7 @@ def predict_text(np_img: ImageType, supported_languages: str, config: str) -> Li
     :param supported_languages: To improve ocr extraction quality it is helpful to pre-select the language of the
                                 detected text, if this in known in advance. Combinations are possible, e.g. "deu",
                                 "fr+eng".
+    :param text_lines: If True, it will return DetectionResults of Text lines as well.
     :param config: The config parameter passing to Tesseract. Consult also https://guides.nyu.edu/tesseract/usage
     :return: A list of tesseract extractions wrapped in DetectionResult
     """
@@ -188,5 +210,6 @@ def predict_text(np_img: ImageType, supported_languages: str, config: str) -> Li
                 class_id=1,
             )
             all_results.append(word)
-
+    if text_lines:
+        all_results = text_line_detect_result(all_results)
     return all_results
