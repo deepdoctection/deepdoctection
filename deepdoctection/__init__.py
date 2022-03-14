@@ -18,6 +18,8 @@ from .utils import *
 from .utils.file_utils import pytorch_available, tf_available
 from .utils.logger import logger
 
+__version__ = 0.11
+
 if not tf_available() and not pytorch_available():
     logger.info(
         "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
