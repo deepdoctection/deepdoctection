@@ -7,17 +7,17 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Bug** 💥
+Please describe the error you encoutered
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Expected behavior**  🧮 
+Describe what you would have expected
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Screenshots** 🖼
+If possible, please add a screenshot of the error message, if possible
 
 **Desktop (please complete the following information, if any other than the one in the install requirements):**
  - OS: [e.g. iOS]
 
-**Additional context**
-Add any other context about the problem here.
+**Additional context** 🧬
+If necessary add some context related to the problem
