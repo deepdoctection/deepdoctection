@@ -82,3 +82,6 @@ class MatchingService(PipelineComponent):
                 # todo: to avoid duplicated and crashes thereafter, choose argmax for assigning words to items
                 if len(parents_of_child) >= 1:
                     parents_of_child[0].dump_relationship(names.C.CHILD, ann.annotation_id)
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__(self.parent_categories,self.child_categories,self.matching_rule,self.threshold)
