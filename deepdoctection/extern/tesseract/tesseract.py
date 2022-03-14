@@ -164,10 +164,8 @@ def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[D
 
     for _,block_group_iter in groupby(detect_result_list,key=lambda x: x.block):
         block_group=[]
-        text = ""
         for _, line_group_iter in groupby(list(block_group_iter),key=lambda x: x.line):
             block_group.extend(list(line_group_iter))
-            #text +=
         ulx = min(detect_result.box[0] for detect_result in block_group)
         uly = min(detect_result.box[1] for detect_result in block_group)
         lrx = max(detect_result.box[2] for detect_result in block_group)

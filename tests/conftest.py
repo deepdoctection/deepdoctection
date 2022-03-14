@@ -101,7 +101,7 @@ def fixture_path_to_tesseract_yaml() -> str:
     """
     path to tesseract yaml file
     """
-    return get_package_path() + "/configs/ocr/conf_tesseract.yaml"
+    return get_package_path() + "/deepdoctection/configs/conf_tesseract.yaml"
 
 
 @fixture(name="dp_image")

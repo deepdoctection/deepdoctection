@@ -377,12 +377,12 @@ class Annotations:  # pylint: disable=R0904
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="foo"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="2"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
         ],
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="bak"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="4"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="5"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="5"),
         ],
     ]
 
@@ -390,22 +390,22 @@ class Annotations:  # pylint: disable=R0904
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="hello"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="1"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="1"),
         ],
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="world"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="2"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
         ],
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="bye"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="2"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="2"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
         ],
         [
             ContainerAnnotation(category_name=names.C.CHARS, value="world"),
             CategoryAnnotation(category_name=names.C.BLOCK, category_id="2"),
-            CategoryAnnotation(category_name=names.C.LINE, category_id="2"),
+            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
         ],
     ]
 

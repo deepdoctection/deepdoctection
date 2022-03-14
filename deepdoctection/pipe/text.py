@@ -82,23 +82,24 @@ class TextExtractionService(PredictorPipelineComponent):
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
             for detect_result in detect_result_list:
-                ann_id = self.dp_manager.set_image_annotation(
+                detect_ann_id = self.dp_manager.set_image_annotation(
                     detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
                 )
-                if ann_id is not None:
+                if detect_ann_id is not None:
                     self.dp_manager.set_container_annotation(
                         names.C.CHARS,
                         None,
                         names.C.CHARS,
-                        ann_id,
+                        detect_ann_id,
                         detect_result.text if detect_result.text is not None else "",
                     )
                     if detect_result.block:
                         self.dp_manager.set_category_annotation(
-                            names.C.BLOCK, detect_result.block, names.C.BLOCK, ann_id
+                            names.C.BLOCK, detect_result.block, names.C.BLOCK, detect_ann_id
                         )
                     if detect_result.line:
-                        self.dp_manager.set_category_annotation(names.C.LINE, detect_result.line, names.C.LINE, ann_id)
+                        self.dp_manager.set_category_annotation(names.C.TLINE, detect_result.line, names.C.TLINE,
+                                                                detect_ann_id)
 
     def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation]]:
         """
@@ -241,3 +242,6 @@ class TextOrderService(PipelineComponent):
                 self.dp_manager.set_category_annotation(
                     names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1]
                 )
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__()
