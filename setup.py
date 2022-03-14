@@ -22,6 +22,15 @@ from setuptools import find_packages, setup
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
+
+def get_version():
+    init_path = os.path.join(ROOT, "deepdoctection", "__init__.py")
+    init_py = open(init_path, "r").readlines()
+    version_line = [l.strip() for l in init_py if l.startswith("__version__")][0]
+    version = version_line.split("=")[-1].strip().strip("'\"")
+    return version
+
+
 sys.path.insert(0, ROOT)
 
 DIST_DEPS = [
@@ -67,7 +76,7 @@ EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
     name="deepdoctection",
-    version="0.11",
+    version=get_version(),
     author="Dr. Janis Meyer",
     url="https://github.com/deepdoctection/deepdoctection",
     license="Apache License 2.0",
