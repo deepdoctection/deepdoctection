@@ -32,6 +32,7 @@ import numpy as np
 from ...utils.context import save_tmp_file, timeout_manager
 from ...utils.detection_types import ImageType
 from ...utils.file_utils import TesseractNotFound
+from ...utils.settings import names
 from ..base import DetectionResult
 
 __all__ = ["predict_text"]
@@ -163,13 +164,20 @@ def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[D
 
     for _,block_group_iter in groupby(detect_result_list,key=lambda x: x.block):
         block_group=[]
+        text = ""
         for _, line_group_iter in groupby(list(block_group_iter),key=lambda x: x.line):
             block_group.extend(list(line_group_iter))
+            #text +=
         ulx = min(detect_result.box[0] for detect_result in block_group)
         uly = min(detect_result.box[1] for detect_result in block_group)
         lrx = max(detect_result.box[2] for detect_result in block_group)
         lry = max(detect_result.box[3] for detect_result in block_group)
-        detect_result_list.append(DetectionResult(box=[ulx,uly,lrx,lry],class_id=2))
+        if block_group:
+            detect_result_list.append(DetectionResult(box=[ulx,uly,lrx,lry],
+                                                      class_id=2,
+                                                      class_name=names.C.LINE,
+                                                      text=" ".join([detect_result.text for detect_result in block_group])
+                                                      ))
     return detect_result_list
 
 
@@ -208,6 +216,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
                 block=str(caption[6]),
                 line=str(caption[7]),
                 class_id=1,
+                class_name= names.C.WORD
             )
             all_results.append(word)
     if text_lines:

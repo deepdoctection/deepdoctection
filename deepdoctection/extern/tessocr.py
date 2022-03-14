@@ -24,7 +24,6 @@ from typing import List, Optional
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
-from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .tesseract.tesseract import predict_text
 
@@ -74,14 +73,9 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
         :return: A list of DetectionResult
         """
         detection_results = predict_text(
-            np_img, supported_languages=self.config.LANGUAGES, config=config_to_cli_str(self.config, "LANGUAGES")
+            np_img, supported_languages=self.config.LANGUAGES, text_lines=self.config.LINES,
+            config=config_to_cli_str(self.config, "LANGUAGES", "LINES")
         )
-        return TesseractOcrDetector._map_category_names(detection_results)
-
-    @staticmethod
-    def _map_category_names(detection_results: List[DetectionResult]) -> List[DetectionResult]:
-        for result in detection_results:
-            result.class_name = names.C.WORD
         return detection_results
 
     @classmethod

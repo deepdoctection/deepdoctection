@@ -31,7 +31,7 @@ from tests.data import Annotations
 
 
 def get_mock_word_results(
-    np_img: ImageType, supported_languages: str, config: str  # pylint: disable=W0613
+    np_img: ImageType, supported_languages: str, text_lines: bool, config: str  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns WordResults attr: word_results_list
