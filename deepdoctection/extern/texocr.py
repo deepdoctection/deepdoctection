@@ -41,6 +41,9 @@ class TextractOcrDetector(ObjectDetector):
     """
 
     def __init__(self, text_lines: bool = False) -> None:
+        """
+        :param text_lines: If True, it will return DetectionResults of Text lines as well.
+        """
         self.text_lines = text_lines
         self.client = boto3.client("textract")
 
