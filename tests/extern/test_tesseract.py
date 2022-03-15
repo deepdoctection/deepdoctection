@@ -21,6 +21,7 @@ Testing module extern.tesseract.tesseract
 
 
 from typing import List
+
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
@@ -51,5 +52,3 @@ def test_line_detect_result_returns_line(word_result_list_same_line: List[Detect
     assert line_detect_result.box == [10.0, 10.0, 38.0, 24.0]
     assert line_detect_result.class_id == 2
     assert line_detect_result.text == "foo bak"
-
-
