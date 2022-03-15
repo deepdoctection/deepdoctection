@@ -25,7 +25,7 @@ from typing import List
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.extern.tesseract.tesseract import text_line_detect_result
+from deepdoctection.extern.tesseract.tesseract import tesseract_line_to_detectresult
 
 from .data import WORD_RESULTS
 
@@ -40,11 +40,11 @@ def fixture_pdf_bytes_page_2() -> List[DetectionResult]:
 
 def test_line_detect_result_returns_line(word_result_list_same_line: List[DetectionResult]) -> None:
     """
-    Testing text_line_detect_result generates Line DetectionResult
+    Testing tesseract_line_to_detectresult generates Line DetectionResult
     """
 
     # Act
-    detect_result_list = text_line_detect_result(word_result_list_same_line)
+    detect_result_list = tesseract_line_to_detectresult(word_result_list_same_line)
 
     # Assert
     assert len(detect_result_list) == 3
