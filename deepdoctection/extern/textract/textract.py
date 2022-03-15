@@ -45,8 +45,8 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     ],
                     score=block["Confidence"] / 100,
                     text=block["Text"],
-                    class_id=1 if block["BlockType"]=="WORD" else 2,
-                    class_name=names.C.WORD if block["BlockType"]=="WORD" else names.C.LINE,
+                    class_id=1 if block["BlockType"] == "WORD" else 2,
+                    class_name=names.C.WORD if block["BlockType"] == "WORD" else names.C.LINE,
                 )
                 all_results.append(word)
 
