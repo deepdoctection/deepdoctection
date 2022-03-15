@@ -23,18 +23,19 @@ from typing import List
 
 from ...datapoint.convert import convert_np_array_to_b64_b
 from ...utils.detection_types import ImageType, JsonDict
+from ...utils.settings import names
 from ..base import DetectionResult
 
 __all__ = ["predict_text"]
 
 
-def _textract_to_detectresult(response: JsonDict, width: int, height: int) -> List[DetectionResult]:
+def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
     all_results: List[DetectionResult] = []
     blocks = response.get("Blocks")
 
     if blocks:
         for block in blocks:
-            if block["BlockType"] == "WORD":
+            if block["BlockType"] in ["WORD","LINE"]:
                 word = DetectionResult(
                     box=[
                         block["Geometry"]["Polygon"][0]["X"] * width,
@@ -44,25 +45,27 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int) -> Li
                     ],
                     score=block["Confidence"] / 100,
                     text=block["Text"],
-                    class_id=1,
+                    class_id=1 if block["BlockType"]=="WORD" else 2,
+                    class_name=names.C.WORD if block["BlockType"]=="WORD" else names.C.LINE,
                 )
                 all_results.append(word)
 
     return all_results
 
 
-def predict_text(np_img: ImageType, client) -> List[DetectionResult]:  # type:ignore
+def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type:ignore
     """
     Calls AWS Textract client (:meth:`detect_document_text`) and returns plain OCR results.
     AWS account required.
 
     :param client: botocore textract client
     :param np_img: Image in np.array.
+    :param text_lines: If True, it will return DetectionResults of Text lines as well.
     :return: A list of textract extractions wrapped in DetectionResult
     """
 
     width, height = np_img.shape[1], np_img.shape[0]
     b_img = convert_np_array_to_b64_b(np_img)
     response = client.detect_document_text(Document={"Bytes": b_img})
-    all_results = _textract_to_detectresult(response, width, height)
+    all_results = _textract_to_detectresult(response, width, height, text_lines)
     return all_results

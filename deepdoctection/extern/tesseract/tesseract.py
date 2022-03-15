@@ -35,7 +35,7 @@ from ...utils.file_utils import TesseractNotFound
 from ...utils.settings import names
 from ..base import DetectionResult
 
-__all__ = ["predict_text", "text_line_detect_result"]
+__all__ = ["predict_text", "tesseract_line_to_detectresult"]
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
 
@@ -154,7 +154,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
         return result
 
 
-def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
+def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
     """
     Generating text line DetectionResult based from Tesseracts word grouping. It generates line bounding boxes from
     word bounding boxes.
@@ -224,5 +224,5 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
             )
             all_results.append(word)
     if text_lines:
-        all_results = text_line_detect_result(all_results)
+        all_results = tesseract_line_to_detectresult(all_results)
     return all_results

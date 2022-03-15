@@ -40,7 +40,8 @@ class TextractOcrDetector(ObjectDetector):
     The detector only calls the base OCR engine and does not return additional Textract document analysis features.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, text_lines: bool = False) -> None:
+        self.text_lines = text_lines
         self.client = boto3.client("textract")
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -51,14 +52,7 @@ class TextractOcrDetector(ObjectDetector):
         :return: A list of DetectionResult
         """
 
-        detection_results = predict_text(np_img, self.client)
-        return TextractOcrDetector._map_category_names(detection_results)
-
-    @staticmethod
-    def _map_category_names(detection_results: List[DetectionResult]) -> List[DetectionResult]:
-        for result in detection_results:
-            result.class_name = names.C.WORD
-        return detection_results
+        return predict_text(np_img, self.client, self.text_lines)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
