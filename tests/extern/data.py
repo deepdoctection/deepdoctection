@@ -19,6 +19,9 @@
 Some data samples in a separate module
 """
 
+from deepdoctection.utils.settings import names
+from deepdoctection.extern.base import DetectionResult
+
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "
     b"(PyPDF2)\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 1 0 R\n/Resources <<\n/Font "
@@ -62,3 +65,24 @@ PDF_BYTES_2 = (
     b" n \n0000000251 00000 n \n0000000300 00000 n \n0000000407 00000 n \n0000000437 00000 n \ntrailer"
     b"\n<<\n/Size 8\n/Root 4 0 R\n/Info 2 0 R\n>>\nstartxref\n1164\n%%EOF\n"
 )
+
+WORD_RESULTS = [
+    DetectionResult(
+        box=[10.0, 10.0, 24.0, 23.0],
+        score=0.8,
+        text="foo",
+        block="1",
+        line="2",
+        class_id=1,
+        class_name=names.C.WORD,
+    ),
+    DetectionResult(
+        box=[30.0, 10.0, 38.0, 24.0],
+        score=0.2,
+        text="bak",
+        block="1",
+        line="2",
+        class_id=1,
+        class_name=names.C.WORD,
+    ),
+]
