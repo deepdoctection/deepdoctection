@@ -35,7 +35,7 @@ from ...utils.file_utils import TesseractNotFound
 from ...utils.settings import names
 from ..base import DetectionResult
 
-__all__ = ["predict_text"]
+__all__ = ["predict_text", "text_line_detect_result"]
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
 
@@ -162,6 +162,7 @@ def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[D
     :return: An extended list of detection result
     """
 
+    line_detect_result = []
     for _,block_group_iter in groupby(detect_result_list,key=lambda x: x.block):
         block_group=[]
         for _, line_group_iter in groupby(list(block_group_iter),key=lambda x: x.line):
@@ -171,11 +172,13 @@ def text_line_detect_result(detect_result_list: List[DetectionResult]) -> List[D
         lrx = max(detect_result.box[2] for detect_result in block_group)
         lry = max(detect_result.box[3] for detect_result in block_group)
         if block_group:
-            detect_result_list.append(DetectionResult(box=[ulx,uly,lrx,lry],
+            line_detect_result.append(DetectionResult(box=[ulx,uly,lrx,lry],
                                                       class_id=2,
                                                       class_name=names.C.LINE,
                                                       text=" ".join([detect_result.text for detect_result in block_group])
                                                       ))
+    if line_detect_result:
+        detect_result_list.extend(line_detect_result)
     return detect_result_list
 
 
