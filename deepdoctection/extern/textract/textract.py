@@ -35,7 +35,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
 
     if blocks:
         for block in blocks:
-            if block["BlockType"] in ["WORD","LINE"]:
+            if (block["BlockType"] in "WORD") or (block["BlockType"] in "LINE" and text_lines):
                 word = DetectionResult(
                     box=[
                         block["Geometry"]["Polygon"][0]["X"] * width,
