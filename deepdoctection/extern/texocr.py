@@ -23,7 +23,6 @@ from typing import List
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
-from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .textract.textract import predict_text
 
