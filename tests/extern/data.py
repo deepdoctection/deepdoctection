@@ -19,8 +19,8 @@
 Some data samples in a separate module
 """
 
-from deepdoctection.utils.settings import names
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.utils.settings import names
 
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "

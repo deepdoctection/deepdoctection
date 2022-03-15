@@ -98,8 +98,9 @@ class TextExtractionService(PredictorPipelineComponent):
                             names.C.BLOCK, detect_result.block, names.C.BLOCK, detect_ann_id
                         )
                     if detect_result.line:
-                        self.dp_manager.set_category_annotation(names.C.TLINE, detect_result.line, names.C.TLINE,
-                                                                detect_ann_id)
+                        self.dp_manager.set_category_annotation(
+                            names.C.TLINE, detect_result.line, names.C.TLINE, detect_ann_id
+                        )
 
     def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation]]:
         """
