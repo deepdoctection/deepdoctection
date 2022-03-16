@@ -73,12 +73,12 @@ class MatchingService(PipelineComponent):
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
             threshold=self.threshold,  # type: ignore
-            max_parent_only=True
+            max_parent_only=True,
         )
 
         with MappingContextManager(dp_name=dp.file_name):
-            matched_child_anns = np.take(child_anns,child_index)
-            matched_parent_anns = np.take(parent_anns,parent_index)
+            matched_child_anns = np.take(child_anns, child_index)     # type: ignore
+            matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
                 parent.dump_relationship(names.C.CHILD, matched_child_anns[idx].annotation_id)
 
