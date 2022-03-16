@@ -73,15 +73,14 @@ class MatchingService(PipelineComponent):
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
             threshold=self.threshold,  # type: ignore
+            max_parent_only=True
         )
 
         with MappingContextManager(dp_name=dp.file_name):
-            for idx, ann in enumerate(child_anns):
-                child_positions = child_index == idx
-                parents_of_child = [parent_anns[k] for k in parent_index[child_positions]]
-                # todo: to avoid duplicated and crashes thereafter, choose argmax for assigning words to items
-                if len(parents_of_child) >= 1:
-                    parents_of_child[0].dump_relationship(names.C.CHILD, ann.annotation_id)
+            matched_child_anns = np.take(child_anns,child_index)
+            matched_parent_anns = np.take(parent_anns,parent_index)
+            for idx, parent in enumerate(matched_parent_anns):
+                parent.dump_relationship(names.C.CHILD, matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
