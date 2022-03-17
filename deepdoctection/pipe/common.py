@@ -22,9 +22,10 @@ Module for common pipeline components
 from typing import List, Optional, Union
 
 import numpy as np
-from ..dataflow import MapData, DataFlow
-from ..datapoint.image import Image
+
+from ..dataflow import DataFlow, MapData  # type: ignore
 from ..datapoint.doc import Page
+from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.pagestruct import to_page
@@ -79,7 +80,7 @@ class MatchingService(PipelineComponent):
         )
 
         with MappingContextManager(dp_name=dp.file_name):
-            matched_child_anns = np.take(child_anns, child_index)     # type: ignore
+            matched_child_anns = np.take(child_anns, child_index)  # type: ignore
             matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
                 parent.dump_relationship(names.C.CHILD, matched_child_anns[idx].annotation_id)
@@ -89,9 +90,17 @@ class MatchingService(PipelineComponent):
 
 
 class PageParsingService:
+    """
+    A "pseudo" pipeline component that can be added to a pipeline to convert Images into Page formats. It allows a
+    custom parsing depending on customizing options of other pipeline components
+    """
 
-    def __init__(self, text_container: str, floating_text_block_names: Optional[Union[str,List[str]]]= None,
-                 layout_item_names: Optional[Union[str,List[str]]]= None):
+    def __init__(
+        self,
+        text_container: str,
+        floating_text_block_names: Optional[Union[str, List[str]]] = None,
+        layout_item_names: Optional[Union[str, List[str]]] = None,
+    ):
         """
 
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
@@ -115,8 +124,13 @@ class PageParsingService:
         self._text_block_names = floating_text_block_names
         self._layout_names = layout_item_names
 
-    def pass_datapoint(self,dp: Image) -> Page:
-        return to_page(dp, self._text_container,self._text_block_names,self._layout_names)
+    def pass_datapoint(self, dp: Image) -> Page:
+        """
+        converts Image to Page
+        :param dp: Image
+        :return: Page
+        """
+        return to_page(dp, self._text_container, self._text_block_names, self._layout_names)
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
@@ -126,4 +140,3 @@ class PageParsingService:
         :return: A output dataflow
         """
         return MapData(df, self.pass_datapoint)
-

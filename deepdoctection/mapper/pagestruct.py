@@ -19,7 +19,7 @@
 Module for mapping Images or exported dictionaries into page formats
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from numpy import float32
 
@@ -29,7 +29,6 @@ from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
-from .maputils import cur
 
 __all__ = ["to_page", "page_dict_to_page"]
 
@@ -157,10 +156,12 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
     )
 
 
-def to_page(dp: Image,
-            text_container: str,
-            floating_text_block_names: Optional[List[str]] = None,
-            layout_item_names: Optional[List[str]] = None) -> Page:
+def to_page(
+    dp: Image,
+    text_container: str,
+    floating_text_block_names: Optional[List[str]] = None,
+    layout_item_names: Optional[List[str]] = None,
+) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
     format.
@@ -178,8 +179,7 @@ def to_page(dp: Image,
     if layout_item_names is None:
         layout_item_names = []
     assert isinstance(floating_text_block_names, list)
-    assert isinstance(layout_item_names,list)
-
+    assert isinstance(layout_item_names, list)
 
     # page
     image: Optional[str] = None

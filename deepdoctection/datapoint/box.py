@@ -225,30 +225,34 @@ class BoundingBox:
 
         :return: Either a list or np.array.
         """
-        assert output in ["list","np","box"]
+        assert output in ["list", "np", "box"]
 
         if absolute_coords != self.absolute_coords:  # only transforming in this case
             if self.absolute_coords:
-                transformed_box = BoundingBox(absolute_coords= not self.absolute_coords,
-                                              ulx = self.ulx/image_width,
-                                              uly=self.uly/image_height,
-                                              lrx=self.lrx/image_width,
-                                              lry=self.lry/image_height)
+                transformed_box = BoundingBox(
+                    absolute_coords=not self.absolute_coords,
+                    ulx=self.ulx / image_width,
+                    uly=self.uly / image_height,
+                    lrx=self.lrx / image_width,
+                    lry=self.lry / image_height,
+                )
             else:
-                transformed_box = BoundingBox(absolute_coords= not self.absolute_coords,
-                                              ulx = self.ulx*image_width,
-                                              uly=self.uly*image_height,
-                                              lrx=self.lrx*image_width,
-                                              lry=self.lry*image_height)
+                transformed_box = BoundingBox(
+                    absolute_coords=not self.absolute_coords,
+                    ulx=self.ulx * image_width,
+                    uly=self.uly * image_height,
+                    lrx=self.lrx * image_width,
+                    lry=self.lry * image_height,
+                )
 
-            if output=="list":
+            if output == "list":
                 return transformed_box.to_list(mode)
-            elif output=="np":
+            if output == "np":
                 return transformed_box.to_np_array(mode)
             return transformed_box
-        if output=="list":
+        if output == "list":
             return self.to_list(mode)
-        elif output == "np":
+        if output == "np":
             return self.to_np_array(mode)
         return self
 
