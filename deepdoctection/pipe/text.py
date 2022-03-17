@@ -18,6 +18,7 @@
 """
 Module for text extraction pipeline component
 """
+from itertools import chain
 from typing import Dict, List, Optional, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
@@ -25,6 +26,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
 from ..utils.detection_types import ImageType
 from ..utils.settings import names
+from ..utils.logger import logger
 from .base import PipelineComponent, PredictorPipelineComponent
 
 __all__ = ["TextExtractionService", "TextOrderService"]
@@ -161,7 +163,9 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
     return reading_lines
 
 
-def _reading_columns(dp: Image, anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
+def _reading_columns(dp: Image, anns: List[ImageAnnotation], starting_point_tolerance: float = 0.01,
+                     height_tolerance: float = 3.,same_line_top_tolerance: float = 0.001,
+                     same_line_spacing_tolerance: float = 5.) -> List[Tuple[int, str]]:
     reading_blocks = []
     columns: List[Dict[str, float]] = []
     anns.sort(key=lambda x: (x.bounding_box.cy, x.bounding_box.cx))  # type: ignore
@@ -195,17 +199,19 @@ def _reading_columns(dp: Image, anns: List[ImageAnnotation]) -> List[Tuple[int, 
 
 class TextOrderService(PipelineComponent):
     """
-    Reading order of words within text blocks as well as reading order of blocks within an image. Note that text blocks
-    and simple blocks are not the same. Table Cells are text blocks that contain words which must be sorted. However,
-    they are no blocks because they are an element of a table whose content should not be considered as a reading part
-    of the floating text.
+    Reading order of words within floating text blocks as well as reading order of blocks within simple text blocks.
+    To understand the difference between floating text blocks and simple text blocks consider a page containing an
+    article and a table. Table Cells are text blocks that contain words which must be sorted.
+    However, they do not belong to floating text that encircle a table. They are rather an element that is supposed to
+    be read independently.
 
     A heuristic argument for its ordering is used where the underlying assumption is the reading order from left to
     right.
 
-        - For the reading order within a text block, words are sorted based on their bounding box center and then
-          lines are formed: Each word induces a new line, provided that its center is not in a line that has already
-          been created by a word that has already been processed. The entire block width is defined as the line width
+        - For the reading order within a text block, text containers (i.e. image annotations that contain character
+          sub annotations) are sorted based on their bounding box center and then lines are formed: Each word induces a
+          new line, provided that its center is not in a line that has already
+          been created by an already processed word. The entire block width is defined as the line width
           and the upper or lower line limit of the word bounding box as the upper or lower line limit. The reading order
           of the words is from left to right within a line. The reading order of the lines is from top to bottom.
 
@@ -219,30 +225,67 @@ class TextOrderService(PipelineComponent):
     The blocks are defined in :attr:`_block_names` and text blocks in :attr:`_text_block_names`.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, text_container: str, floating_text_block_names: Optional[Union[str,List[str]]]= None,
+                 text_block_names: Optional[Union[str,List[str]]]= None, text_containers_to_text_block: bool = False)\
+            -> None:
+
+        if isinstance(floating_text_block_names, str):
+            floating_text_block_names = [floating_text_block_names]
+        elif floating_text_block_names is None:
+            floating_text_block_names = []
+        if isinstance(text_block_names, str):
+            text_block_names = [text_block_names]
+        elif text_block_names is None:
+            text_block_names = []
+
         super().__init__(None)
-        self._text_block_names = [names.C.TITLE, names.C.TEXT, names.C.LIST]
-        self._block_names = [names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY]
+        self._text_container = text_container
+        self._text_block_names = floating_text_block_names
+        self._block_names = text_block_names
+        self._text_containers_to_text_block= text_containers_to_text_block
+        self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
         # select all text blocks that are considered relevant for page text. This does not include some layout items
         # that have to be considered independently (e.g. tables). Order the blocks by column wise reading order
         text_block_anns = dp.get_annotation(category_names=self._text_block_names)
+
+        # maybe add all text containers that are not mapped to a text block
+        if self._text_containers_to_text_block:
+            text_ann_ids = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns]))
+            text_container_anns = dp.get_annotation(category_names=self._text_container)
+            text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
+            text_block_anns.extend(text_container_anns)
+
         raw_reading_order_list = _reading_columns(dp, text_block_anns)
         for raw_reading_order in raw_reading_order_list:
             self.dp_manager.set_category_annotation(names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1])
         # next we select all blocks that might contain text. We sort all text within these blocks
         block_anns = dp.get_annotation(category_names=self._block_names)
         for text_block in block_anns:
-            word_ann_ids = text_block.get_relationship(names.C.CHILD)
-            word_anns = dp.get_annotation(
-                annotation_ids=word_ann_ids if word_ann_ids is not None else [], category_names=names.C.WORD
+            text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
+            text_container_anns = dp.get_annotation(
+                annotation_ids=text_container_ann_ids if text_container_ann_ids is not None else [],
+                category_names=self._text_container
             )
-            raw_reading_order_list = _reading_lines(dp.image_id, word_anns)
+            raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
                     names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1]
                 )
 
     def clone(self) -> PipelineComponent:
-        return self.__class__()
+        return self.__class__(self._text_container,self._text_block_names,self._block_names,
+                              self._text_containers_to_text_block)
+
+    def _init_sanity_checks(self):
+        assert self._text_container in [names.C.WORD, names.C.LINE], f"text_container must be either {names.C.WORD} or " \
+                                                               f"{names.C.LINE}"
+        assert set(self._text_block_names) <= set(self._block_names), f"floating_text_block_names must be a subset of " \
+                                                                      f"text_block_names"
+        if not self._text_block_names and not self._block_names and not self._text_containers_to_text_block:
+            logger.warn("floating_text_block_names and text_block_names are set to None and "
+                        "text_containers_to_text_block is set to False. This setting will return no reading order!")
+        if self._text_container == "WORD" and self._text_containers_to_text_block and not self._text_block_names:
+            logger.warn(f"Choosing {names.C.WORD} text_container while choosing no text_blocks will give no sensible "
+                        f"results. Choose {names.C.LINE} text_container if you do not have text_blocks available.")

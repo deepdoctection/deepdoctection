@@ -92,12 +92,15 @@ class TestBoundingBox:
 
         # Act
         box_relative_list = bounding_box_absolute.transform(
-            image_width=box.image_width, image_height=box.image_height, absolute_coords=False, as_list=True, mode="xyxy"
+            image_width=box.image_width, image_height=box.image_height, absolute_coords=False, output="list", mode="xyxy"
+        )
+        box_copy = bounding_box_absolute.transform(
+            image_width=box.image_width, image_height=box.image_height, absolute_coords=False, output="box", mode="xyxy"
         )
 
         # Assert
         assert box_relative_list == [box.ulx_relative, box.uly_relative, box.lrx_relative, box.lry_relative]
-        assert bounding_box_absolute.absolute_coords is False
+        assert box_copy.absolute_coords is False
 
 
 @mark.parametrize(
