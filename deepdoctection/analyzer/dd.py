@@ -27,7 +27,7 @@ from ..extern.model import ModelDownloadManager
 from ..extern.tessocr import TesseractOcrDetector
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
 from ..pipe.cell import SubImageLayoutService
-from ..pipe.common import MatchingService
+from ..pipe.common import MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.refine import TableSegmentationRefinementService
@@ -156,7 +156,7 @@ def get_dd_analyzer(
             " reading order."
         )
 
-    pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent]] = []
+    pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent, PageParsingService]] = []
 
     # will silent all TP loggings while building the tower
     if tensorpack_available():
@@ -248,10 +248,11 @@ def get_dd_analyzer(
         )
         pipe_component_list.append(match)
 
-        order = TextOrderService(text_container=names.C.WORD,
-                                 floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-                                 text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL,
-                                                   names.C.HEAD, names.C.BODY])
+        order = TextOrderService(
+            text_container=names.C.WORD,
+            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+        )
         pipe_component_list.append(order)
 
     pipe = DoctectionPipe(pipeline_component_list=pipe_component_list)

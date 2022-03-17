@@ -204,10 +204,11 @@ class TestTextOrderService:  # pylint: disable=R0903
         """
 
         # Arrange
-        text_order_service = TextOrderService(text_container=names.C.WORD,
-                                              floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-                                              text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL,
-                                                                names.C.HEAD, names.C.BODY])
+        text_order_service = TextOrderService(
+            text_container=names.C.WORD,
+            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+        )
         dp_image = dp_image_with_layout_and_word_annotations
 
         # Act

@@ -25,8 +25,8 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
 from ..utils.detection_types import ImageType
-from ..utils.settings import names
 from ..utils.logger import logger
+from ..utils.settings import names
 from .base import PipelineComponent, PredictorPipelineComponent
 
 __all__ = ["TextExtractionService", "TextOrderService"]
@@ -163,9 +163,14 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
     return reading_lines
 
 
-def _reading_columns(dp: Image, anns: List[ImageAnnotation], starting_point_tolerance: float = 0.01,
-                     height_tolerance: float = 3.,same_line_top_tolerance: float = 0.001,
-                     same_line_spacing_tolerance: float = 5.) -> List[Tuple[int, str]]:
+def _reading_columns(
+    dp: Image,
+    anns: List[ImageAnnotation],
+    starting_point_tolerance: float = 0.01,
+    height_tolerance: float = 3.0,
+    same_line_top_tolerance: float = 0.001,
+    same_line_spacing_tolerance: float = 5.0,
+) -> List[Tuple[int, str]]:
     reading_blocks = []
     columns: List[Dict[str, float]] = []
     anns.sort(key=lambda x: (x.bounding_box.cy, x.bounding_box.cx))  # type: ignore
@@ -176,33 +181,36 @@ def _reading_columns(dp: Image, anns: List[ImageAnnotation], starting_point_tole
             bounding_box = ann.bounding_box
 
         if bounding_box.absolute_coords:
-            rel_coords_box = bounding_box.transform(dp.width,dp.height,output="box")
+            rel_coords_box = bounding_box.transform(dp.width, dp.height, output="box")
         else:
             rel_coords_box = bounding_box
 
         column_found = False
         for idx, col in enumerate(columns):
-            col_cx = (col["left"] + col["right"]) / 2
             # if the starting point is within starting_point_tolerance (first_condition) and
             # the top location is within height_tolerance * bbox_height (second_condition), or
             # the new line appeared to be broken by Textract mistake and should be of the same line
             # by looking at the top (third_condition) and
             # the left of the new line appears right next to the right of the last line (fourth_condition)
             # then consider the new line as part of said column
-            first_condition = abs(rel_coords_box.ulx - col['left']) < starting_point_tolerance
-            second_condition = abs(rel_coords_box.uly  - col['top']) < height_tolerance * bounding_box.height
-            third_condition = abs(rel_coords_box.uly - col['top']) < same_line_top_tolerance # appeared to be in the same line
-            fourth_condition = abs(rel_coords_box.ulx - col['right']) < same_line_spacing_tolerance * starting_point_tolerance
+            first_condition = abs(rel_coords_box.ulx - col["left"]) < starting_point_tolerance
+            second_condition = abs(rel_coords_box.uly - col["top"]) < height_tolerance * bounding_box.height
+            third_condition = (
+                abs(rel_coords_box.uly - col["top"]) < same_line_top_tolerance
+            )  # appeared to be in the same line
+            fourth_condition = (
+                abs(rel_coords_box.ulx - col["right"]) < same_line_spacing_tolerance * starting_point_tolerance
+            )
             if (first_condition and second_condition) or (third_condition and fourth_condition):
                 reading_blocks.append((idx, ann.annotation_id))
                 # update the top and right with the new line added.
-                col['top'] = rel_coords_box.uly
-                col['right'] = rel_coords_box.lry
+                col["top"] = rel_coords_box.uly
+                col["right"] = rel_coords_box.lry
                 column_found = True
                 break
 
         if not column_found:
-            columns.append({"left": rel_coords_box.ulx, "right": rel_coords_box.lrx, "top":rel_coords_box.uly})
+            columns.append({"left": rel_coords_box.ulx, "right": rel_coords_box.lrx, "top": rel_coords_box.uly})
             # update the top and right with the new reading block added.
             reading_blocks.append((len(columns) - 1, ann.annotation_id))
 
@@ -244,9 +252,13 @@ class TextOrderService(PipelineComponent):
     The blocks are defined in :attr:`_block_names` and text blocks in :attr:`_text_block_names`.
     """
 
-    def __init__(self, text_container: str, floating_text_block_names: Optional[Union[str,List[str]]]= None,
-                 text_block_names: Optional[Union[str,List[str]]]= None, text_containers_to_text_block: bool = False)\
-            -> None:
+    def __init__(
+        self,
+        text_container: str,
+        floating_text_block_names: Optional[Union[str, List[str]]] = None,
+        text_block_names: Optional[Union[str, List[str]]] = None,
+        text_containers_to_text_block: bool = False,
+    ) -> None:
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
@@ -273,7 +285,7 @@ class TextOrderService(PipelineComponent):
         self._text_container = text_container
         self._text_block_names = floating_text_block_names
         self._block_names = text_block_names
-        self._text_containers_to_text_block= text_containers_to_text_block
+        self._text_containers_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
@@ -297,7 +309,7 @@ class TextOrderService(PipelineComponent):
             text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
             text_container_anns = dp.get_annotation(
                 annotation_ids=text_container_ann_ids if text_container_ann_ids is not None else [],
-                category_names=self._text_container
+                category_names=self._text_container,
             )
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
             for raw_reading_order in raw_reading_order_list:
@@ -306,17 +318,25 @@ class TextOrderService(PipelineComponent):
                 )
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(self._text_container,self._text_block_names,self._block_names,
-                              self._text_containers_to_text_block)
+        return self.__class__(
+            self._text_container, self._text_block_names, self._block_names, self._text_containers_to_text_block
+        )
 
-    def _init_sanity_checks(self):
-        assert self._text_container in [names.C.WORD, names.C.LINE], f"text_container must be either {names.C.WORD} or " \
-                                                               f"{names.C.LINE}"
-        assert set(self._text_block_names) <= set(self._block_names), f"floating_text_block_names must be a subset of " \
-                                                                      f"text_block_names"
+    def _init_sanity_checks(self) -> None:
+        assert self._text_container in [names.C.WORD, names.C.LINE], (
+            f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+        )
+        assert set(self._text_block_names) <= set(self._block_names), (
+            "floating_text_block_names must be a subset of text_block_names"
+        )
         if not self._text_block_names and not self._block_names and not self._text_containers_to_text_block:
-            logger.warn("floating_text_block_names and text_block_names are set to None and "
-                        "text_containers_to_text_block is set to False. This setting will return no reading order!")
+            logger.info(
+                "floating_text_block_names and text_block_names are set to None and "
+                "text_containers_to_text_block is set to False. This setting will return no reading order!"
+            )
         if self._text_container == "WORD" and self._text_containers_to_text_block and not self._text_block_names:
-            logger.warn(f"Choosing {names.C.WORD} text_container while choosing no text_blocks will give no sensible "
-                        f"results. Choose {names.C.LINE} text_container if you do not have text_blocks available.")
+            logger.info(
+                "Choosing %s text_container while choosing no text_blocks will give no sensible "
+                "results. Choose %s text_container if you do not have text_blocks available.",names.C.WORD,
+                names.C.LINE
+            )
