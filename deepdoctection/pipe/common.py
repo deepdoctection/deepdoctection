@@ -22,10 +22,12 @@ Module for common pipeline components
 from typing import List, Optional, Union
 
 import numpy as np
-
+from ..dataflow import MapData, DataFlow
 from ..datapoint.image import Image
+from ..datapoint.doc import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
+from ..mapper.pagestruct import to_page
 from ..utils.settings import names
 from .base import PipelineComponent
 
@@ -84,3 +86,44 @@ class MatchingService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
+
+
+class PageParsingService:
+
+    def __init__(self, text_container: str, floating_text_block_names: Optional[Union[str,List[str]]]= None,
+                 layout_item_names: Optional[Union[str,List[str]]]= None):
+        """
+
+        :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
+                               ordered within all text blocks.
+        :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
+                                          the highest hierarchy of text blocks that will ordered to generate a sensible
+                                          output of text
+        :param layout_item_names: name of image annotation that have a relation with text containers (or which might be
+                                 text containers themselves).
+        """
+        if isinstance(floating_text_block_names, str):
+            floating_text_block_names = [floating_text_block_names]
+        elif floating_text_block_names is None:
+            floating_text_block_names = []
+        if isinstance(layout_item_names, str):
+            layout_item_names = [layout_item_names]
+        elif layout_item_names is None:
+            layout_item_names = []
+
+        self._text_container = text_container
+        self._text_block_names = floating_text_block_names
+        self._layout_names = layout_item_names
+
+    def pass_datapoint(self,dp: Image) -> Page:
+        return to_page(dp, self._text_container,self._text_block_names,self._layout_names)
+
+    def predict_dataflow(self, df: DataFlow) -> DataFlow:
+        """
+        Mapping a datapoint via :meth:`pass_datapoint` within a dataflow pipeline
+
+        :param df: An input dataflow
+        :return: A output dataflow
+        """
+        return MapData(df, self.pass_datapoint)
+
