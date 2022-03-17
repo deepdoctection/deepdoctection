@@ -19,7 +19,7 @@
 Module for mapping Images or exported dictionaries into page formats
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from numpy import float32
 
@@ -29,6 +29,7 @@ from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
+from .maputils import cur
 
 __all__ = ["to_page", "page_dict_to_page"]
 
@@ -51,9 +52,9 @@ def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
     )
 
 
-def _to_cell(dp: Image, annotation: ImageAnnotation) -> Tuple[Cell, str]:
+def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tuple[Cell, str]:
     text_ids = annotation.get_relationship(names.C.CHILD)
-    text_anns = dp.get_annotation(annotation_ids=text_ids)
+    text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
     text_anns.sort(key=lambda x: int(x.get_sub_category(names.C.RO).category_id))
     text = " ".join([text.get_sub_category(names.C.CHARS).value for text in text_anns])  # type: ignore
 
@@ -77,7 +78,7 @@ def _to_cell(dp: Image, annotation: ImageAnnotation) -> Tuple[Cell, str]:
     )
 
 
-def _to_table(dp: Image, annotation: ImageAnnotation) -> Table:
+def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Table:
     cell_ids = annotation.get_relationship(names.C.CHILD)
     cell_anns = dp.get_annotation(annotation_ids=cell_ids, category_names=[names.C.CELL, names.C.HEAD, names.C.BODY])
     cells = []
@@ -97,7 +98,7 @@ def _to_table(dp: Image, annotation: ImageAnnotation) -> Table:
 
     # cell
     for cell_ann in cell_anns:
-        cell, text = _to_cell(dp, cell_ann)
+        cell, text = _to_cell(dp, cell_ann, text_container)
         cells.append(cell)
         try:
             html_index = html_list.index(cell_ann.annotation_id)
@@ -132,9 +133,9 @@ def _to_table(dp: Image, annotation: ImageAnnotation) -> Table:
     )
 
 
-def _to_layout_segment(dp: Image, annotation: ImageAnnotation) -> LayoutSegment:
+def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: str) -> LayoutSegment:
     text_ids = annotation.get_relationship(names.C.CHILD)
-    text_anns = dp.get_annotation(annotation_ids=text_ids)
+    text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
     text_anns.sort(key=lambda x: int(x.get_sub_category(names.C.RO).category_id))
     text = " ".join([text.get_sub_category(names.C.CHARS).value for text in text_anns])  # type: ignore
     if names.C.RO in annotation.sub_categories:
@@ -156,14 +157,32 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation) -> LayoutSegment:
     )
 
 
-def to_page(dp: Image) -> Page:
+@cur
+def to_page(dp: Image,
+            text_container: str,
+            floating_text_block_names: Optional[Union[str,List[str]]]= None,
+            text_block_names: Optional[Union[str,List[str]]]= None) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
     format.
-
+    :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
+                           ordered within all text blocks.
+    :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
+                                      the highest hierarchy of text blocks that will ordered to generate a sensible
+                                      output of text
+    :param text_block_names: name of image annotation that have a relation with text containers (or which might be
+                             ext containers themselves).
     :param dp: Image
     :return: Page
     """
+    if isinstance(floating_text_block_names, str):
+        floating_text_block_names = [floating_text_block_names]
+    elif floating_text_block_names is None:
+        floating_text_block_names = []
+    if isinstance(text_block_names, str):
+        text_block_names = [text_block_names]
+    elif text_block_names is None:
+        text_block_names = []
 
     # page
     image: Optional[str] = None
@@ -172,13 +191,13 @@ def to_page(dp: Image) -> Page:
     page = Page(dp.image_id, dp.file_name, dp.width, dp.height, image)
 
     # all types of items
-    for ann in dp.get_annotation(category_names=[names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB]):
-        if ann.category_name in [names.C.TEXT, names.C.TITLE, names.C.LIST]:
-            page.items.append(_to_layout_segment(dp, ann))
+    for ann in dp.get_annotation(category_names=text_block_names):
+        if ann.category_name in floating_text_block_names:
+            page.items.append(_to_layout_segment(dp, ann, text_container))
 
         # table item
         elif ann.category_name in [names.C.TAB]:
-            page.tables.append(_to_table(dp, ann))
+            page.tables.append(_to_table(dp, ann, text_container))
         else:
             pass
 
