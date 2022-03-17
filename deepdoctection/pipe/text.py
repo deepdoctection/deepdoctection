@@ -174,17 +174,36 @@ def _reading_columns(dp: Image, anns: List[ImageAnnotation], starting_point_tole
             bounding_box = ann.image.get_embedding(dp.image_id)
         else:
             bounding_box = ann.bounding_box
+
+        if bounding_box.absolute_coords:
+            rel_coords_box = bounding_box.transform(dp.width,dp.height,output="box")
+        else:
+            rel_coords_box = bounding_box
+
         column_found = False
         for idx, col in enumerate(columns):
             col_cx = (col["left"] + col["right"]) / 2
-
-            if (col["left"] < bounding_box.cx < col["right"]) or (bounding_box.ulx < col_cx < bounding_box.lrx):
+            # if the starting point is within starting_point_tolerance (first_condition) and
+            # the top location is within height_tolerance * bbox_height (second_condition), or
+            # the new line appeared to be broken by Textract mistake and should be of the same line
+            # by looking at the top (third_condition) and
+            # the left of the new line appears right next to the right of the last line (fourth_condition)
+            # then consider the new line as part of said column
+            first_condition = abs(rel_coords_box.ulx - col['left']) < starting_point_tolerance
+            second_condition = abs(rel_coords_box.uly  - col['top']) < height_tolerance * bounding_box.height
+            third_condition = abs(rel_coords_box.uly - col['top']) < same_line_top_tolerance # appeared to be in the same line
+            fourth_condition = abs(rel_coords_box.ulx - col['right']) < same_line_spacing_tolerance * starting_point_tolerance
+            if (first_condition and second_condition) or (third_condition and fourth_condition):
                 reading_blocks.append((idx, ann.annotation_id))
+                # update the top and right with the new line added.
+                col['top'] = rel_coords_box.uly
+                col['right'] = rel_coords_box.lry
                 column_found = True
                 break
 
         if not column_found:
-            columns.append({"left": bounding_box.ulx, "right": bounding_box.lrx})
+            columns.append({"left": rel_coords_box.ulx, "right": rel_coords_box.lrx, "top":rel_coords_box.uly})
+            # update the top and right with the new reading block added.
             reading_blocks.append((len(columns) - 1, ann.annotation_id))
 
     columns_dict = {k: columns[k] for k in range(len(columns))}
@@ -228,7 +247,19 @@ class TextOrderService(PipelineComponent):
     def __init__(self, text_container: str, floating_text_block_names: Optional[Union[str,List[str]]]= None,
                  text_block_names: Optional[Union[str,List[str]]]= None, text_containers_to_text_block: bool = False)\
             -> None:
-
+        """
+        :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
+                               ordered within all text blocks.
+        :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
+                                          the highest hierarchy of text blocks that will ordered to generate a sensible
+                                          output of text
+        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
+                                 text containers themselves).
+        :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
+                                              hierarchy. However, if a text container is not assigned to a text block
+                                              you add it to the text block ordering to ensure that the full text is
+                                              part of the subsequent sub process.
+        """
         if isinstance(floating_text_block_names, str):
             floating_text_block_names = [floating_text_block_names]
         elif floating_text_block_names is None:
