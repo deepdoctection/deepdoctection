@@ -209,45 +209,48 @@ class BoundingBox:
         image_width: float,
         image_height: float,
         absolute_coords: bool = False,
-        as_list: bool = True,
+        output: str = "list",
         mode: str = "xyxy",
-    ) -> Union[npt.NDArray[np.float32], List[float]]:
+    ) -> Union[npt.NDArray[np.float32], List[float], "BoundingBox"]:
         """
-        Transforms bounding box coordinates into absolute or relative coords. As values are saved in terms of the
-        originally given coordinates the :meth:`~transform` will re-calculate all internal values.
-        Changing coordinates requires width and height of the whole image.
+        Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
+        created. Changing coordinates requires width and height of the whole image.
 
         :param image_width: The horizontal image size
         :param image_height: The vertical image size
         :param absolute_coords: Whether to recalculate into absolute coordinates.
-        :param as_list: If true will return the bounding box as list, otherwise as numpy array
+        :param output: If true will return the bounding box as list, otherwise as numpy array
         :param mode: "xyxy", "xywh" or "poly" mode as described in :meth:`BoundingBox.as_list`
                      or :meth:`BoundingBox.as_np_array`.
 
         :return: Either a list or np.array.
         """
+        assert output in ["list","np","box"]
+
         if absolute_coords != self.absolute_coords:  # only transforming in this case
             if self.absolute_coords:
-                self.ulx /= image_width
-                self.uly /= image_height
-                self.lrx /= image_width
-                self.lry /= image_height
-                self.width /= image_width
-                self.height /= image_height
-                self.absolute_coords = False
-
+                transformed_box = BoundingBox(absolute_coords= not self.absolute_coords,
+                                              ulx = self.ulx/image_width,
+                                              uly=self.uly/image_height,
+                                              lrx=self.lrx/image_width,
+                                              lry=self.lry/image_height)
             else:
-                self.ulx *= image_width
-                self.uly *= image_height
-                self.lrx *= image_width
-                self.lry *= image_height
-                self.width *= image_width
-                self.height *= image_height
-                self.absolute_coords = True
+                transformed_box = BoundingBox(absolute_coords= not self.absolute_coords,
+                                              ulx = self.ulx*image_width,
+                                              uly=self.uly*image_height,
+                                              lrx=self.lrx*image_width,
+                                              lry=self.lry*image_height)
 
-        if as_list:
+            if output=="list":
+                return transformed_box.to_list(mode)
+            elif output=="np":
+                return transformed_box.to_np_array(mode)
+            return transformed_box
+        if output=="list":
             return self.to_list(mode)
-        return self.to_np_array(mode)
+        elif output == "np":
+            return self.to_np_array(mode)
+        return self
 
     def __str__(self) -> str:
         return f"Bounding Box ulx: {self.ulx} uly: {self.uly} lrx: {self.lrx} lry: {self.lry}"

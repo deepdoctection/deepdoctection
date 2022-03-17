@@ -248,7 +248,10 @@ def get_dd_analyzer(
         )
         pipe_component_list.append(match)
 
-        order = TextOrderService()
+        order = TextOrderService(text_container=names.C.WORD,
+                                 floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+                                 text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL,
+                                                   names.C.HEAD, names.C.BODY])
         pipe_component_list.append(order)
 
     pipe = DoctectionPipe(pipeline_component_list=pipe_component_list)
