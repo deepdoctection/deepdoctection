@@ -27,9 +27,10 @@ from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
 from ..mapper.maputils import cur
 from ..mapper.misc import to_image
-from ..mapper.pagestruct import to_page
 from ..utils.fs import maybe_path_or_pdf
-from .base import Pipeline
+from ..utils.settings import names
+from .base import Pipeline, PipelineComponent
+from .common import PageParsingService
 
 
 class DoctectionPipe(Pipeline):  # pylint: disable=W0221
@@ -41,6 +42,16 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
     See also the explanations in :class:`base.Pipeline`
     """
+
+    def __init__(self, pipeline_component_list: List[Union[PipelineComponent, PageParsingService]]):
+        if isinstance(pipeline_component_list[-1],PageParsingService):
+            self.page_parser = pipeline_component_list.pop()
+        else:
+            self.page_parser = PageParsingService(text_container=names.C.WORD,
+                                                  floating_text_block_names=[names.C.TEXT,names.C.TITLE,names.C.LIST],
+                                                  layout_item_names=[names.C.TITLE, names.C.TEXT, names.C.LIST,
+                                                                     names.C.TAB])
+        super().__init__(pipeline_component_list)
 
     def _entry(self, **kwargs: str) -> DataFlow:
         dataset_dataflow = kwargs.get("dataset_dataflow")
@@ -117,15 +128,14 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         df = MapData(df, _to_image(dpi=300))  # type: ignore  # pylint: disable=E1120
         return df
 
-    @staticmethod
-    def dataflow_to_page(df: DataFlow) -> DataFlow:
+    def dataflow_to_page(self, df: DataFlow) -> DataFlow:
         """
         Converts a dataflow of images to a dataflow of pages
 
         :param df: Dataflow
         :return: Dataflow
         """
-        return MapData(df, to_page)
+        return self.page_parser.predict_dataflow(df)
 
     def analyze(self, **kwargs: str) -> DataFlow:
         """

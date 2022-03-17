@@ -47,7 +47,8 @@ def test_to_page(dp_image_with_layout_and_word_annotations: Image) -> None:
     word_anns[3].dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id=2))
 
     # Act
-    page = to_page(dp_image)
+    page = to_page(dp_image, names.C.WORD,[names.C.TEXT,names.C.TITLE,names.C.LIST],
+                   [names.C.TEXT,names.C.TITLE,names.C.LIST,names.C.CELL])
 
     # Assert
     assert page.get_text() == "\nhello world\nbye world"

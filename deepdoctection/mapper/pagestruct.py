@@ -157,11 +157,10 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
     )
 
 
-@cur
 def to_page(dp: Image,
             text_container: str,
-            floating_text_block_names: Optional[Union[str,List[str]]]= None,
-            text_block_names: Optional[Union[str,List[str]]]= None) -> Page:
+            floating_text_block_names: Optional[List[str]] = None,
+            layout_item_names: Optional[List[str]] = None) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
     format.
@@ -170,19 +169,17 @@ def to_page(dp: Image,
     :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
                                       the highest hierarchy of text blocks that will ordered to generate a sensible
                                       output of text
-    :param text_block_names: name of image annotation that have a relation with text containers (or which might be
-                             ext containers themselves).
+    :param layout_item_names: name of image annotation that determine the high level layout of the page
     :param dp: Image
     :return: Page
     """
-    if isinstance(floating_text_block_names, str):
-        floating_text_block_names = [floating_text_block_names]
-    elif floating_text_block_names is None:
+    if floating_text_block_names is None:
         floating_text_block_names = []
-    if isinstance(text_block_names, str):
-        text_block_names = [text_block_names]
-    elif text_block_names is None:
-        text_block_names = []
+    if layout_item_names is None:
+        layout_item_names = []
+    assert isinstance(floating_text_block_names, list)
+    assert isinstance(layout_item_names,list)
+
 
     # page
     image: Optional[str] = None
@@ -191,7 +188,7 @@ def to_page(dp: Image,
     page = Page(dp.image_id, dp.file_name, dp.width, dp.height, image)
 
     # all types of items
-    for ann in dp.get_annotation(category_names=text_block_names):
+    for ann in dp.get_annotation(category_names=layout_item_names):
         if ann.category_name in floating_text_block_names:
             page.items.append(_to_layout_segment(dp, ann, text_container))
 
