@@ -80,7 +80,7 @@ Dataflow is not available via pip and must be installed separately.
 pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
 ```
 
-Depending on which Deep Learning is available, use the following installation option:
+Depending on which Deep Learning library is available, use the following installation option:
 
 For Tensorflow, run
 
