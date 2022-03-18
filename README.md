@@ -74,7 +74,7 @@ We recommend using a virtual environment. You can install the package via pip or
 
 ### Install with pip
 
-Since dataflow is not available via pip, it must be installed separately.
+Dataflow is not available via pip and must be installed separately.
 
 ```
 pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
