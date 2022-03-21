@@ -89,7 +89,7 @@ class ModelCatalog:
             "tp_model": True,
         },
         "layout/d2_model-800000-layout.pkl": {
-            "config": "dd/d2/CASCADE_RCNN_R_50_FPN_GN",
+            "config": "dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274568239],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             "hf_model_name": "d2_model-800000-layout.pkl",
@@ -97,7 +97,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "cell/d2_model-1800000-cell.pkl": {
-            "config": "dd/d2/CASCADE_RCNN_R_50_FPN_GN",
+            "config": "dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274519039],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             "hf_model_name": "d2_model-1800000-cell.pkl",
@@ -105,7 +105,7 @@ class ModelCatalog:
             "tp_model": False,
         },
         "item/d2_model-1620000-item.pkl": {
-            "config": "dd/d2/CASCADE_RCNN_R_50_FPN_GN",
+            "config": "dd/d2/item/CASCADE_RCNN_R_50_FPN_GN",
             "size": [274531339],
             "hf_repo_id": "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             "hf_model_name": "d2_model-1620000-item.pkl",
