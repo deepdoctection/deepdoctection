@@ -99,7 +99,7 @@ class PageParsingService:
         self,
         text_container: str,
         floating_text_block_names: Optional[Union[str, List[str]]] = None,
-        layout_block_names: Optional[Union[str, List[str]]] = None,
+        text_block_names: Optional[Union[str, List[str]]] = None,
         text_container_to_layout_blocks: bool = False
     ):
         """
@@ -109,21 +109,21 @@ class PageParsingService:
         :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
                                           the highest hierarchy of text blocks that will ordered to generate a sensible
                                           output of text
-        :param layout_block_names: name of image annotation that have a relation with text containers (or which might be
+        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
         """
         if isinstance(floating_text_block_names, str):
             floating_text_block_names = [floating_text_block_names]
         elif floating_text_block_names is None:
             floating_text_block_names = []
-        if isinstance(layout_block_names, str):
-            layout_block_names = [layout_block_names]
-        elif layout_block_names is None:
-            layout_block_names = []
+        if isinstance(text_block_names, str):
+            text_block_names = [text_block_names]
+        elif text_block_names is None:
+            text_block_names = []
 
         self._text_container = text_container
         self._text_block_names = floating_text_block_names
-        self._layout_block_names = layout_block_names
+        self._layout_block_names = text_block_names
         self._text_container_to_layout_blocks = text_container_to_layout_blocks
         self._init_sanity_checks()
 
@@ -150,5 +150,5 @@ class PageParsingService:
             f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
         )
         assert set(self._text_block_names) <= set(self._layout_block_names), (
-            "floating_text_block_names must be a subset of layout_block_names"
+            "floating_text_block_names must be a subset of text_block_names"
         )
