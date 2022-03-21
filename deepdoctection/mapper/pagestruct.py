@@ -164,7 +164,7 @@ def to_page(
     dp: Image,
     text_container: str,
     floating_text_block_names: Optional[List[str]] = None,
-    layout_block_names: Optional[List[str]] = None,
+    text_block_names: Optional[List[str]] = None,
     text_container_to_layout_blocks: bool = False
 ) -> Page:
     """
@@ -176,7 +176,7 @@ def to_page(
     :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
                                       the highest hierarchy of text blocks that will ordered to generate a sensible
                                       output of text
-    :param layout_block_names: name of image annotation that determine the high level layout of the page
+    :param text_block_names: name of image annotation that determine the high level layout of the page
     :param text_container_to_layout_blocks: Text containers are in general no text blocks and belong to a lower
                                             hierarchy. However, if a text container is not assigned to a text block
                                             you add it to the text block ordering to ensure that the full text is
@@ -185,10 +185,10 @@ def to_page(
     """
     if floating_text_block_names is None:
         floating_text_block_names = []
-    if layout_block_names is None:
-        layout_block_names = []
+    if text_block_names is None:
+        text_block_names = []
     assert isinstance(floating_text_block_names, list)
-    assert isinstance(layout_block_names, list)
+    assert isinstance(text_block_names, list)
 
     # page
     image: Optional[str] = None
@@ -197,7 +197,7 @@ def to_page(
     page = Page(dp.image_id, dp.file_name, dp.width, dp.height, image)
 
     # all types of layout items and text containers that are not mapped to a layout block
-    layout_block_anns = dp.get_annotation(category_names=layout_block_names)
+    layout_block_anns = dp.get_annotation(category_names=text_block_names)
     if text_container_to_layout_blocks:
         floating_text_block_names.append(text_container)
         mapped_text_container = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block
