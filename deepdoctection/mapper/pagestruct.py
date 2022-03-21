@@ -18,7 +18,7 @@
 """
 Module for mapping Images or exported dictionaries into page formats
 """
-
+from itertools import chain
 from typing import List, Optional, Tuple
 
 from numpy import float32
@@ -133,8 +133,12 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
 
 
 def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: str) -> LayoutSegment:
-    text_ids = annotation.get_relationship(names.C.CHILD)
-    text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
+
+    if annotation.category_name != text_container:
+        text_ids = annotation.get_relationship(names.C.CHILD)
+        text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
+    else:
+        text_anns = [annotation]
     text_anns.sort(key=lambda x: int(x.get_sub_category(names.C.RO).category_id))
     text = " ".join([text.get_sub_category(names.C.CHARS).value for text in text_anns])  # type: ignore
     if names.C.RO in annotation.sub_categories:
@@ -160,26 +164,31 @@ def to_page(
     dp: Image,
     text_container: str,
     floating_text_block_names: Optional[List[str]] = None,
-    layout_item_names: Optional[List[str]] = None,
+    layout_block_names: Optional[List[str]] = None,
+    text_container_to_layout_blocks: bool = False
 ) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
     format.
+    :param dp: Image
     :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                            ordered within all text blocks.
     :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
                                       the highest hierarchy of text blocks that will ordered to generate a sensible
                                       output of text
-    :param layout_item_names: name of image annotation that determine the high level layout of the page
-    :param dp: Image
+    :param layout_block_names: name of image annotation that determine the high level layout of the page
+    :param text_container_to_layout_blocks: Text containers are in general no text blocks and belong to a lower
+                                            hierarchy. However, if a text container is not assigned to a text block
+                                            you add it to the text block ordering to ensure that the full text is
+                                            part of the subsequent sub process.
     :return: Page
     """
     if floating_text_block_names is None:
         floating_text_block_names = []
-    if layout_item_names is None:
-        layout_item_names = []
+    if layout_block_names is None:
+        layout_block_names = []
     assert isinstance(floating_text_block_names, list)
-    assert isinstance(layout_item_names, list)
+    assert isinstance(layout_block_names, list)
 
     # page
     image: Optional[str] = None
@@ -187,8 +196,17 @@ def to_page(
         image = convert_np_array_to_b64(dp.image)
     page = Page(dp.image_id, dp.file_name, dp.width, dp.height, image)
 
-    # all types of items
-    for ann in dp.get_annotation(category_names=layout_item_names):
+    # all types of layout items and text containers that are not mapped to a layout block
+    layout_block_anns = dp.get_annotation(category_names=layout_block_names)
+    if text_container_to_layout_blocks:
+        floating_text_block_names.append(text_container)
+        mapped_text_container = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block
+                                             in layout_block_anns]))
+        text_container_anns = dp.get_annotation(category_names=text_container)
+        text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
+        layout_block_anns.extend(text_container_anns)
+
+    for ann in layout_block_anns:
         if ann.category_name in floating_text_block_names:
             page.items.append(_to_layout_segment(dp, ann, text_container))
 

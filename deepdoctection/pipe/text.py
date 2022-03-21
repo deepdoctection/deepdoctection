@@ -249,7 +249,7 @@ class TextOrderService(PipelineComponent):
     A category annotation per word is generated, which fixes the order per word in the block, as well as a category
     annotation per block, which saves the reading order of the block per page.
 
-    The blocks are defined in :attr:`_block_names` and text blocks in :attr:`_text_block_names`.
+    The blocks are defined in :attr:`_text_block_names` and text blocks in :attr:`_floating_text_block_names`.
     """
 
     def __init__(
@@ -283,15 +283,15 @@ class TextOrderService(PipelineComponent):
 
         super().__init__(None)
         self._text_container = text_container
-        self._text_block_names = floating_text_block_names
-        self._block_names = text_block_names
+        self._floating_text_block_names = floating_text_block_names
+        self._text_block_names = text_block_names
         self._text_containers_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
-        # select all text blocks that are considered relevant for page text. This does not include some layout items
-        # that have to be considered independently (e.g. tables). Order the blocks by column wise reading order
-        text_block_anns = dp.get_annotation(category_names=self._text_block_names)
+        # select all text blocks that are considered to be relevant for page text. This does not include some layout
+        # items that have to be considered independently (e.g. tables). Order the blocks by column wise reading order
+        text_block_anns = dp.get_annotation(category_names=self._floating_text_block_names)
 
         # maybe add all text containers that are not mapped to a text block
         if self._text_containers_to_text_block:
@@ -304,7 +304,7 @@ class TextOrderService(PipelineComponent):
         for raw_reading_order in raw_reading_order_list:
             self.dp_manager.set_category_annotation(names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1])
         # next we select all blocks that might contain text. We sort all text within these blocks
-        block_anns = dp.get_annotation(category_names=self._block_names)
+        block_anns = dp.get_annotation(category_names=self._text_block_names)
         for text_block in block_anns:
             text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
             text_container_anns = dp.get_annotation(
@@ -319,22 +319,22 @@ class TextOrderService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
-            self._text_container, self._text_block_names, self._block_names, self._text_containers_to_text_block
+            self._text_container, self._floating_text_block_names, self._text_block_names, self._text_containers_to_text_block
         )
 
     def _init_sanity_checks(self) -> None:
         assert self._text_container in [names.C.WORD, names.C.LINE], (
             f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
         )
-        assert set(self._text_block_names) <= set(self._block_names), (
+        assert set(self._floating_text_block_names) <= set(self._text_block_names), (
             "floating_text_block_names must be a subset of text_block_names"
         )
-        if not self._text_block_names and not self._block_names and not self._text_containers_to_text_block:
+        if not self._floating_text_block_names and not self._text_block_names and not self._text_containers_to_text_block:
             logger.info(
                 "floating_text_block_names and text_block_names are set to None and "
                 "text_containers_to_text_block is set to False. This setting will return no reading order!"
             )
-        if self._text_container == "WORD" and self._text_containers_to_text_block and not self._text_block_names:
+        if self._text_container == names.C.WORD and self._text_containers_to_text_block and not self._floating_text_block_names:
             logger.info(
                 "Choosing %s text_container while choosing no text_blocks will give no sensible "
                 "results. Choose %s text_container if you do not have text_blocks available.",names.C.WORD,

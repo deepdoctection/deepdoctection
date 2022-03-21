@@ -51,7 +51,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
             self.page_parser = PageParsingService(
                 text_container=names.C.WORD,
                 floating_text_block_names=[names.C.TEXT, names.C.TITLE, names.C.LIST],
-                layout_item_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.TAB],
+                layout_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.TAB],
             )
         assert all(isinstance(element,(PipelineComponent,PredictorPipelineComponent))
                    for element in pipeline_component_list)
