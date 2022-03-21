@@ -84,9 +84,9 @@ def d2_predict_image(
     instances = predictions["instances"]
     results = [
         DetectionResult(
-            instances[k].pred_boxes.tensor.tolist()[0],
-            instances[k].scores.tolist()[0],
-            instances[k].pred_classes.tolist()[0],
+            box=instances[k].pred_boxes.tensor.tolist()[0],
+            score=instances[k].scores.tolist()[0],
+            class_id=instances[k].pred_classes.tolist()[0],
         )
         for k in range(len(instances))
     ]
