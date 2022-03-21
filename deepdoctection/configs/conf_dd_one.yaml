@@ -2,9 +2,9 @@ CONFIG:
   TPLAYOUT: dd/tp/conf_frcnn_layout.yaml
   TPCELL: dd/tp/conf_frcnn_cell.yaml
   TPITEM: dd/tp/conf_frcnn_rows.yaml
-  D2LAYOUT: dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml
-  D2CELL: dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml
-  D2ITEM: dd/d2/rows/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2LAYOUT: dd/d2/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2CELL: dd/d2/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2ITEM: dd/d2/CASCADE_RCNN_R_50_FPN_GN.yaml
   TESS_OCR: dd/conf_tesseract.yaml
 WEIGHTS:
   TPLAYOUT: layout/model-800000_inf_only.data-00000-of-00001
