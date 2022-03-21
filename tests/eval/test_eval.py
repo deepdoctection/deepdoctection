@@ -22,14 +22,16 @@ from typing import List
 from unittest.mock import MagicMock
 
 from pytest import fixture
-
+from deepdoctection.utils import tensorpack_available
 from deepdoctection.dataflow import DataFromList  # type: ignore
 from deepdoctection.datapoint import Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.extern.tpdetect import TPFrcnnDetector
 from deepdoctection.pipe.layout import ImageLayoutService
+
+if tensorpack_available():
+    from deepdoctection.extern.tpdetect import TPFrcnnDetector
 
 
 class TestEvaluator:
