@@ -329,6 +329,26 @@ def get_aws_requirement() -> Requirement:
     return "aws", aws_available(), _AWS_ERR_MSG
 
 
+# DocTr related dependencies
+_DOCTR_AVAILABLE = importlib.util.find_spec("doctr") is not None
+_DOCTR_ERR_MSG = "DocTr must be installed. Please read the necessary requirements at https://github.com/mindee/doctr" \
+                 "and use >> pip install python-doctr"
+
+
+def doctr_available() -> bool:
+    """
+    Returns True if doctr is installed
+    """
+    return bool(_DOCTR_AVAILABLE)
+
+
+def get_doctr_requirement() -> Requirement:
+    """
+    Return Doctr requirement
+    """
+    return "doctr", doctr_available(), _DOCTR_ERR_MSG
+
+
 _S = AttrDict()
 _S.mp_context_set = False
 _S.freeze()
