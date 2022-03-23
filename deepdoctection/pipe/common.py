@@ -100,7 +100,7 @@ class PageParsingService:
         text_container: str,
         floating_text_block_names: Optional[Union[str, List[str]]] = None,
         text_block_names: Optional[Union[str, List[str]]] = None,
-        text_container_to_text_block: bool = False
+        text_containers_to_text_block: bool = False
     ):
         """
 
@@ -111,7 +111,7 @@ class PageParsingService:
                                           output of text
         :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
-        :param text_container_to_text_block: Text containers are in general no text blocks and belong to a lower
+        :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
                                              hierarchy. However, if a text container is not assigned to a text block
                                              you can add it to the text block ordering to ensure that the full text is
                                              part of the subsequent sub process.
@@ -128,7 +128,7 @@ class PageParsingService:
         self._text_container = text_container
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
-        self._text_container_to_text_block = text_container_to_text_block
+        self._text_container_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
