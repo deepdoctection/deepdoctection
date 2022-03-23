@@ -170,6 +170,7 @@ def to_page(
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
     format.
+
     :param dp: Image
     :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                            ordered within all text blocks.
