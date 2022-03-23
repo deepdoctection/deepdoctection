@@ -249,7 +249,7 @@ class TextOrderService(PipelineComponent):
     A category annotation per word is generated, which fixes the order per word in the block, as well as a category
     annotation per block, which saves the reading order of the block per page.
 
-    The blocks are defined in :attr:`_text_block_names` and text blocks in :attr:`_floating_text_block_names`.
+    The blocks are defined in :attr:`_floating_text_block_names` and text blocks in :attr:`_floating_text_block_names`.
     """
 
     def __init__(
@@ -269,7 +269,7 @@ class TextOrderService(PipelineComponent):
                                  text containers themselves).
         :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
                                               hierarchy. However, if a text container is not assigned to a text block
-                                              you add it to the text block ordering to ensure that the full text is
+                                              you can add it to the text block ordering to ensure that the full text is
                                               part of the subsequent sub process.
         """
         if isinstance(floating_text_block_names, str):
