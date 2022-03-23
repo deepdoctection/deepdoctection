@@ -165,7 +165,7 @@ def to_page(
     text_container: str,
     floating_text_block_names: Optional[List[str]] = None,
     text_block_names: Optional[List[str]] = None,
-    text_container_to_layout_blocks: bool = False
+    text_container_to_text_block: bool = False
 ) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
@@ -177,10 +177,10 @@ def to_page(
                                       the highest hierarchy of text blocks that will ordered to generate a sensible
                                       output of text
     :param text_block_names: name of image annotation that determine the high level layout of the page
-    :param text_container_to_layout_blocks: Text containers are in general no text blocks and belong to a lower
-                                            hierarchy. However, if a text container is not assigned to a text block
-                                            you add it to the text block ordering to ensure that the full text is
-                                            part of the subsequent sub process.
+    :param text_container_to_text_block: Text containers are in general no text blocks and belong to a lower
+                                         hierarchy. However, if a text container is not assigned to a text block
+                                         you can add it to the text block ordering to ensure that the full text is
+                                         part of the subsequent sub process.
     :return: Page
     """
     if floating_text_block_names is None:
@@ -197,16 +197,16 @@ def to_page(
     page = Page(dp.image_id, dp.file_name, dp.width, dp.height, image)
 
     # all types of layout items and text containers that are not mapped to a layout block
-    layout_block_anns = dp.get_annotation(category_names=text_block_names)
-    if text_container_to_layout_blocks:
+    text_block_anns = dp.get_annotation(category_names=text_block_names)
+    if text_container_to_text_block:
         floating_text_block_names.append(text_container)
         mapped_text_container = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block
-                                             in layout_block_anns]))
+                                             in text_block_anns]))
         text_container_anns = dp.get_annotation(category_names=text_container)
         text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
-        layout_block_anns.extend(text_container_anns)
+        text_block_anns.extend(text_container_anns)
 
-    for ann in layout_block_anns:
+    for ann in text_block_anns:
         if ann.category_name in floating_text_block_names:
             page.items.append(_to_layout_segment(dp, ann, text_container))
 
