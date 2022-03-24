@@ -39,7 +39,7 @@ def doctr_predict_image(np_img: ImageType, predictor: "DetectionPredictor") -> L
     return detection_results
 
 
-class DoctrDetector(ObjectDetector):
+class DoctrTextlineDetector(ObjectDetector):
 
     def __init__(self):
 
