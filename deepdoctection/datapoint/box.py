@@ -20,7 +20,7 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -267,7 +267,8 @@ class BoundingBox:
         return ["height", "width"]
 
 
-def intersection_box(box_1: BoundingBox, box_2: BoundingBox) -> BoundingBox:
+def intersection_box(box_1: BoundingBox, box_2: BoundingBox,
+                     width: Optional[int]= None, height: Optional[int]=None) -> BoundingBox:
     """
     Returns the intersection bounding box of two boxes. Will raise a ValueError if the intersection is empty.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
@@ -275,6 +276,10 @@ def intersection_box(box_1: BoundingBox, box_2: BoundingBox) -> BoundingBox:
 
     :param box_1: bounding box, must have same absolute_coords as box_2.
     :param box_2: bounding box
+    :param width: Total width of image. This optional parameter is needed if the value of absolut_coords of box_1 and
+                  box_2 are not equal.
+    :param height: Total height of image. This optional parameter is needed if the value of absolut_coords of box_1 and
+                  box_2 are not equal.
     :return: bounding box
     """
 
