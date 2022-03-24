@@ -29,6 +29,7 @@ from ..mapper.maputils import cur
 from ..mapper.misc import to_image
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.settings import names
+from ..utils.logger import logger
 from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
 
@@ -105,7 +106,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         def _to_image(dp: str) -> Optional[Image]:
             _, file_name = os.path.split(dp)
-            print(f"processing {file_name}")
+            logger.info("processing %s", file_name)
             dp = {"file_name": file_name, "location": dp}  # type: ignore
             return to_image(dp)
 
@@ -126,7 +127,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         @cur  # type: ignore
         def _to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
-            print(f"processing {dp['file_name']}")  # type: ignore
+            logger.info("processing %s", dp['file_name'])  # type: ignore
             return to_image(dp, dpi)
 
         df = MapData(df, _to_image(dpi=300))  # type: ignore  # pylint: disable=E1120
