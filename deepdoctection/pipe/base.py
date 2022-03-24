@@ -27,6 +27,7 @@ from ..dataflow import DataFlow, MapData  # type: ignore
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner
 from ..mapper import DefaultMapper
+from ..utils.timer import timed_operation
 from .anngen import DatapointManager
 
 
@@ -77,8 +78,9 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
         :param dp: datapoint
         :return: datapoint
         """
-        self.dp_manager.datapoint = dp
-        self.serve(dp)
+        with timed_operation(self.__class__.__name__):
+            self.dp_manager.datapoint = dp
+            self.serve(dp)
         return self.dp_manager.datapoint
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
