@@ -73,6 +73,8 @@ class DetectionResult:
 
     :attr:`mask`: binary mask
 
+    :attr:`absolute_coords` : absolute coordinates
+
     :attr:`class_name`: category name
 
     :attr:`text`: text string. Used for OCR predictors
@@ -86,6 +88,7 @@ class DetectionResult:
     class_id: int
     score: Optional[float] = None
     mask: Optional[List[float]] = None
+    absolute_coords: bool = True
     class_name: str = ""
     text: Optional[str] = None
     block: Optional[str] = None
