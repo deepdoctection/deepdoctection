@@ -82,6 +82,8 @@ class DetectionResult:
     :attr:`block`: block number. For reading order from some ocr predictors
 
     :attr:`line`: line number. For reading order from some ocr predictors
+
+    :attr:`uuid`: uuid. For assigning detection result (e.g. text to image annotations)
     """
 
     box: List[float]
@@ -93,6 +95,7 @@ class DetectionResult:
     text: Optional[str] = None
     block: Optional[str] = None
     line: Optional[str] = None
+    uuid: Optional[str] = None
 
 
 class ObjectDetector(PredictorBase):  # pylint: disable=R0903
@@ -115,6 +118,13 @@ class ObjectDetector(PredictorBase):  # pylint: disable=R0903
         Abstract method predict
         """
         raise NotImplementedError
+
+    @property
+    def accepts_batch(self):
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return False
 
 
 class PdfMiner(PredictorBase):
@@ -144,6 +154,30 @@ class PdfMiner(PredictorBase):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    @property
+    def accepts_batch(self):
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return False
+
+
+class TextRecognizer(PredictorBase):
+
+    @abstractmethod
+    def predict(self, images: List[ImageType]) -> List[DetectionResult]:
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError
+
+    @property
+    def accepts_batch(self):
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return True
 
 
 @dataclass
