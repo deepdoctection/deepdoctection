@@ -122,7 +122,7 @@ class DatapointManager:
                 uly=detect_result.box[1],
                 lrx=detect_result.box[2],
                 lry=detect_result.box[3],
-                absolute_coords=True,
+                absolute_coords=detect_result.absolute_coords,
             )
             if detect_result_max_width and detect_result_max_height:
                 box = rescale_coords(
