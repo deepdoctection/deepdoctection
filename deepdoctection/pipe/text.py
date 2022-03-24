@@ -23,7 +23,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector, PdfMiner
+from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.detection_types import ImageType
 from ..utils.logger import logger
 from ..utils.settings import names
@@ -72,8 +72,8 @@ class TextExtractionService(PredictorPipelineComponent):
             )
 
     def serve(self, dp: Image) -> None:
-        text_rois = self.get_text_rois(dp)
-        for text_roi in text_rois:
+        maybe_batched_text_rois = self.get_text_rois(dp)
+        for text_roi in maybe_batched_text_rois:
             ann_id = None
             if isinstance(text_roi, ImageAnnotation):
                 ann_id = text_roi.annotation_id
@@ -83,10 +83,14 @@ class TextExtractionService(PredictorPipelineComponent):
             detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
+
             for detect_result in detect_result_list:
-                detect_ann_id = self.dp_manager.set_image_annotation(
-                    detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
-                )
+                if isinstance(self.predictor, TextRecognizer):
+                    detect_ann_id = detect_result.uuid
+                else:
+                    detect_ann_id = self.dp_manager.set_image_annotation(
+                        detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
+                    )
                 if detect_ann_id is not None:
                     self.dp_manager.set_container_annotation(
                         names.C.CHARS,
@@ -104,7 +108,7 @@ class TextExtractionService(PredictorPipelineComponent):
                             names.C.TLINE, detect_result.line, names.C.TLINE, detect_ann_id
                         )
 
-    def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation]]:
+    def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
         """
         Return image rois based on selected categories. As this selection makes only sense for specific text extractors
         (e.g. those who do proper OCR and do not mine from text from native pdfs) it will do some sanity checks.
@@ -112,10 +116,13 @@ class TextExtractionService(PredictorPipelineComponent):
         """
 
         if self.extract_from_category:
+            if self.predictor.accepts_batch:
+                return [dp.get_annotation(category_names=self.extract_from_category)]
             return dp.get_annotation(category_names=self.extract_from_category)  # type: ignore
         return [dp]
 
-    def get_predictor_input(self, text_roi: Union[Image, ImageAnnotation]) -> Optional[Union[bytes, ImageType]]:
+    def get_predictor_input(self, text_roi: Union[Image, ImageAnnotation]) -> Optional[Union[bytes, ImageType,
+                                                                                             List[Tuple[str,ImageType]]]]:
         """
         Return raw input for a given text_roi. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
@@ -130,6 +137,10 @@ class TextExtractionService(PredictorPipelineComponent):
             return text_roi.image.image
         if isinstance(self.predictor, ObjectDetector):
             return text_roi.image
+        if isinstance(text_roi, list):
+            assert any(roi.image is not None for roi in text_roi)
+            assert any(roi.image.image is not None for roi in text_roi)
+            return [(roi.annotation_id, roi.image.image) for roi in text_roi]
         return text_roi.pdf_bytes
 
 
