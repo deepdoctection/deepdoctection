@@ -166,7 +166,7 @@ class PdfMiner(PredictorBase):
 class TextRecognizer(PredictorBase):
 
     @abstractmethod
-    def predict(self, images: List[ImageType]) -> List[DetectionResult]:
+    def predict(self, images: List[Tuple[str,ImageType]]) -> List[DetectionResult]:
         """
         Abstract method predict
         """

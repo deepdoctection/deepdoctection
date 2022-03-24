@@ -52,7 +52,7 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def __init__(
         self,
-        text_extract_detector: Union[ObjectDetector, PdfMiner],
+        text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[List[str], str]] = None,
         category_id_mapping: Optional[Dict[int, int]] = None,
     ):
