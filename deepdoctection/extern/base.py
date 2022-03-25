@@ -86,8 +86,8 @@ class DetectionResult:
     :attr:`uuid`: uuid. For assigning detection result (e.g. text to image annotations)
     """
 
-    box: List[float]
-    class_id: int
+    box: Optional[List[float]] = None
+    class_id: Optional[int] = None
     score: Optional[float] = None
     mask: Optional[List[float]] = None
     absolute_coords: bool = True

@@ -67,8 +67,8 @@ class TextExtractionService(PredictorPipelineComponent):
         super().__init__(text_extract_detector, category_id_mapping)
         self.extract_from_category = extract_from_roi
         if self.extract_from_category:
-            assert isinstance(self.predictor, ObjectDetector), (
-                "Predicting from a cropped image requires to pass an " "object detector."
+            assert isinstance(self.predictor, (ObjectDetector,TextRecognizer)), (
+                "Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer."
             )
 
     def serve(self, dp: Image) -> None:
@@ -98,6 +98,7 @@ class TextExtractionService(PredictorPipelineComponent):
                         names.C.CHARS,
                         detect_ann_id,
                         detect_result.text if detect_result.text is not None else "",
+                        detect_result.score
                     )
                     if detect_result.block:
                         self.dp_manager.set_category_annotation(

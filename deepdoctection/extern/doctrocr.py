@@ -43,8 +43,10 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor")
 
 def doctr_predict_text(inputs: List[Tuple[str,ImageType]], predictor: "RecognitionPredictor") -> List[DetectionResult]:
     uuids, images = list(zip(*inputs))
-    raw_output = predictor(images)
-    return raw_output
+    raw_output = predictor(list(images))
+    detection_results = [DetectionResult(score=output[1], text=output[0],uuid=uuid) for uuid,output in
+                         zip(uuids,raw_output)]
+    return detection_results
 
 
 class DoctrTextlineDetector(ObjectDetector):
