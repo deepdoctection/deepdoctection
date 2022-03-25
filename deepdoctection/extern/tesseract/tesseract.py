@@ -156,7 +156,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
 
 def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
     """
-    Generating text line DetectionResult based from Tesseracts word grouping. It generates line bounding boxes from
+    Generating text line DetectionResult based on Tesseract word grouping. It generates line bounding boxes from
     word bounding boxes.
     :param detect_result_list: A list of detection result
     :return: An extended list of detection result
