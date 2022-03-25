@@ -33,7 +33,7 @@ from .base import DetectionResult, ObjectDetector, PredictorBase
 from .d2.d2 import d2_predict_image
 
 if pytorch_available():
-    import torch.cuda  # type: ignore
+    import torch.cuda
 
 if detectron2_available():
     from detectron2.checkpoint import DetectionCheckpointer
@@ -145,6 +145,7 @@ class D2FrcnnDetector(ObjectDetector):
         """
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
+            assert isinstance(result.class_id,int)
             result.class_id = result.class_id + 1
         return detection_results
 

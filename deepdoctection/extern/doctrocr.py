@@ -20,16 +20,17 @@ Deepdoctection wrappers for DocTr OCR text line detection and text recognition m
 """
 
 from typing import List, Tuple
-from ..utils.settings import names
-from ..utils.detection_types import Requirement, ImageType
+
+from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import doctr_available, get_doctr_requirement, get_tf_addons_requirements, tf_addons_available
-from .base import ObjectDetector, DetectionResult, PredictorBase, TextRecognizer
+from ..utils.settings import names
+from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
 if doctr_available() and tf_addons_available():
+    from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
-    from doctr.models.detection.predictor import DetectionPredictor
+    from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
     from doctr.models.recognition.zoo import recognition_predictor
-    from doctr.models.recognition.predictor import RecognitionPredictor
 
 
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor") -> List[DetectionResult]:
@@ -40,15 +41,14 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor")
     :return: A list of text line detection results (without text).
     """
     raw_output = predictor([np_img])
-    detection_results = [DetectionResult(box=box[:4].tolist(),
-                                         class_id=1,
-                                         score=box[4],
-                                         absolute_coords=False,
-                                         class_name=names.C.LINE) for box in raw_output[0]]
+    detection_results = [
+        DetectionResult(box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=names.C.LINE)
+        for box in raw_output[0]
+    ]
     return detection_results
 
 
-def doctr_predict_text(inputs: List[Tuple[str,ImageType]], predictor: "RecognitionPredictor") -> List[DetectionResult]:
+def doctr_predict_text(inputs: List[Tuple[str, ImageType]], predictor: "RecognitionPredictor") -> List[DetectionResult]:
     """
     Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
     returns the recognized text as DetectionResult
@@ -60,8 +60,9 @@ def doctr_predict_text(inputs: List[Tuple[str,ImageType]], predictor: "Recogniti
 
     uuids, images = list(zip(*inputs))
     raw_output = predictor(list(images))
-    detection_results = [DetectionResult(score=output[1], text=output[0],uuid=uuid) for uuid,output in
-                         zip(uuids,raw_output)]
+    detection_results = [
+        DetectionResult(score=output[1], text=output[0], uuid=uuid) for uuid, output in zip(uuids, raw_output)
+    ]
     return detection_results
 
 
@@ -91,7 +92,8 @@ class DoctrTextlineDetector(ObjectDetector):
 
 
     """
-    def __init__(self):
+
+    def __init__(self) -> None:
         self.doctr_predictor = detection_predictor(pretrained=True)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -101,7 +103,7 @@ class DoctrTextlineDetector(ObjectDetector):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = doctr_predict_text_lines(np_img,self.doctr_predictor)
+        detection_results = doctr_predict_text_lines(np_img, self.doctr_predictor)
         return detection_results
 
     @classmethod
@@ -139,10 +141,10 @@ class DoctrTextRecognizer(TextRecognizer):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.doctr_predictor = recognition_predictor(pretrained=True)
 
-    def predict(self, images: List[Tuple[str,ImageType]]) -> List[DetectionResult]:
+    def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
         """
         Prediction on a batch of text lines
 
@@ -155,7 +157,7 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_doctr_requirement(),get_tf_addons_requirements()]
+        return [get_doctr_requirement(), get_tf_addons_requirements()]
 
     def clone(self) -> PredictorBase:
         return self.__class__()

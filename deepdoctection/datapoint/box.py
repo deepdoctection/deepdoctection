@@ -20,7 +20,7 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -267,8 +267,9 @@ class BoundingBox:
         return ["height", "width"]
 
 
-def intersection_box(box_1: BoundingBox, box_2: BoundingBox,
-                     width: Optional[float]= None, height: Optional[float]=None) -> BoundingBox:
+def intersection_box(
+    box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> BoundingBox:
     """
     Returns the intersection bounding box of two boxes. Will raise a ValueError if the intersection is empty.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
@@ -283,11 +284,12 @@ def intersection_box(box_1: BoundingBox, box_2: BoundingBox,
     :return: bounding box. Will have same absolute_coords as box_2, if absolute_coords of box_1 and box_2 are note same
     """
     if width is None and height is None:
-        assert box_1.absolute_coords == box_2.absolute_coords, "when absolute coords of boxes are not equal must " \
-                                                               "pass width and height"
+        assert box_1.absolute_coords == box_2.absolute_coords, (
+            "when absolute coords of boxes are not equal must " "pass width and height"
+        )
     if box_1.absolute_coords != box_2.absolute_coords:
         # will transform box_1
-        box_1 = box_1.transform(width, height, box_2.absolute_coords, output="box")
+        box_1 = box_1.transform(width, height, box_2.absolute_coords, output="box")  # type: ignore
     ulx = max(box_1.ulx, box_2.ulx)
     uly = max(box_1.uly, box_2.uly)
     lrx = min(box_1.lrx, box_2.lrx)
@@ -297,8 +299,9 @@ def intersection_box(box_1: BoundingBox, box_2: BoundingBox,
     return BoundingBox(box_2.absolute_coords, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
 
 
-def crop_box_from_image(np_image: ImageType, crop_box: BoundingBox,
-                        width: Optional[float]= None, height: Optional[float]=None) -> ImageType:
+def crop_box_from_image(
+    np_image: ImageType, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> ImageType:
     """
     Crop a box (the crop_box) from a np_image. Will floor the left  and ceil the right coordinate point.
 
@@ -311,14 +314,22 @@ def crop_box_from_image(np_image: ImageType, crop_box: BoundingBox,
     :return: A numpy array cropped according to the bounding box.
     """
     if width is None and height is None:
-        assert crop_box.absolute_coords, "when crop_box has absolute coords set to False, then width and height are " \
-                                         "positional args"
-    absolute_coord_box = crop_box if crop_box.absolute_coords else \
-        crop_box.transform(width,height, absolute_coords=True, output="box")
+        assert crop_box.absolute_coords, (
+            "when crop_box has absolute coords set to False, then width and height are " "positional args"
+        )
+    absolute_coord_box = (
+        crop_box if crop_box.absolute_coords else
+        crop_box.transform(width, height, absolute_coords=True, output="box")  # type: ignore
+    )
+    assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-        np.int32(np.floor(absolute_coord_box.uly)) : min(np.int32(np.ceil(absolute_coord_box.lry)), np_max_y),  # type: ignore
-        np.int32(np.floor(absolute_coord_box.ulx)) : min(np.int32(np.ceil(absolute_coord_box.lrx)), np_max_x),  # type: ignore
+        np.int32(np.floor(absolute_coord_box.uly)) : min(  # type: ignore
+            np.int32(np.ceil(absolute_coord_box.lry)), np_max_y
+        ),
+        np.int32(np.floor(absolute_coord_box.ulx)) : min(  # type: ignore
+            np.int32(np.ceil(absolute_coord_box.lrx)), np_max_x
+        ),
     ]
 
 

@@ -28,8 +28,8 @@ from ..datapoint.image import Image
 from ..mapper.maputils import cur
 from ..mapper.misc import to_image
 from ..utils.fs import maybe_path_or_pdf
-from ..utils.settings import names
 from ..utils.logger import logger
+from ..utils.settings import names
 from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
 
@@ -44,8 +44,9 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
     See also the explanations in :class:`base.Pipeline`
     """
 
-    def __init__(self, pipeline_component_list: List[Union[PipelineComponent,  PredictorPipelineComponent,
-                                                           PageParsingService]]):
+    def __init__(
+        self, pipeline_component_list: List[Union[PipelineComponent, PredictorPipelineComponent, PageParsingService]]
+    ):
         if isinstance(pipeline_component_list[-1], PageParsingService):
             self.page_parser = pipeline_component_list.pop()
         else:
@@ -54,8 +55,9 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
                 floating_text_block_names=[names.C.TEXT, names.C.TITLE, names.C.LIST],
                 layout_item_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.TAB],
             )
-        assert all(isinstance(element,(PipelineComponent,PredictorPipelineComponent))
-                   for element in pipeline_component_list)
+        assert all(
+            isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
+        )
         super().__init__(pipeline_component_list)  # type: ignore
 
     def _entry(self, **kwargs: str) -> DataFlow:
@@ -127,7 +129,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         @cur  # type: ignore
         def _to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
-            logger.info("processing %s", dp['file_name'])  # type: ignore
+            logger.info("processing %s", dp["file_name"])  # type: ignore
             return to_image(dp, dpi)
 
         df = MapData(df, _to_image(dpi=300))  # type: ignore  # pylint: disable=E1120
