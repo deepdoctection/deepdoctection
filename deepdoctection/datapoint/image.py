@@ -397,7 +397,7 @@ class Image:
         new_image = Image(file_name=self.file_name, location=self.location, external_id=annotation_id)
 
         assert self._bbox is not None and ann.bounding_box is not None
-        new_bounding_box = intersection_box(self._bbox, ann.bounding_box, self.width,self.height)
+        new_bounding_box = intersection_box(self._bbox, ann.bounding_box, self.width, self.height)
         if new_bounding_box.absolute_coords:
             width = new_bounding_box.width
             height = new_bounding_box.height

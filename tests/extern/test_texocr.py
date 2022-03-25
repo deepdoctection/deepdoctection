@@ -21,8 +21,6 @@ Testing module extern.texocr
 
 from unittest.mock import MagicMock, patch
 
-from pytest import mark
-
 from deepdoctection.extern.texocr import TextractOcrDetector
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 

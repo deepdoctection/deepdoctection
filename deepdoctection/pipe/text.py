@@ -67,9 +67,9 @@ class TextExtractionService(PredictorPipelineComponent):
         super().__init__(text_extract_detector, category_id_mapping)
         self.extract_from_category = extract_from_roi
         if self.extract_from_category:
-            assert isinstance(self.predictor, (ObjectDetector,TextRecognizer)), (
-                "Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer."
-            )
+            assert isinstance(
+                self.predictor, (ObjectDetector, TextRecognizer)
+            ), "Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer."
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -98,7 +98,7 @@ class TextExtractionService(PredictorPipelineComponent):
                         names.C.CHARS,
                         detect_ann_id,
                         detect_result.text if detect_result.text is not None else "",
-                        detect_result.score
+                        detect_result.score,
                     )
                     if detect_result.block:
                         self.dp_manager.set_category_annotation(
@@ -122,8 +122,9 @@ class TextExtractionService(PredictorPipelineComponent):
             return dp.get_annotation(category_names=self.extract_from_category)  # type: ignore
         return [dp]
 
-    def get_predictor_input(self, text_roi: Union[Image, ImageAnnotation]) -> Optional[Union[bytes, ImageType,
-                                                                                             List[Tuple[str,ImageType]]]]:
+    def get_predictor_input(
+        self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
+    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]]]]:
         """
         Return raw input for a given text_roi. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
@@ -137,11 +138,12 @@ class TextExtractionService(PredictorPipelineComponent):
             assert text_roi.image.image is not None
             return text_roi.image.image
         if isinstance(self.predictor, ObjectDetector):
+            assert isinstance(text_roi, Image)
             return text_roi.image
         if isinstance(text_roi, list):
             assert all(roi.image is not None for roi in text_roi)
-            assert all(roi.image.image is not None for roi in text_roi)
-            return [(roi.annotation_id, roi.image.image) for roi in text_roi]
+            assert all(roi.image.image is not None for roi in text_roi)  # type: ignore
+            return [(roi.annotation_id, roi.image.image) for roi in text_roi]  # type: ignore
         return text_roi.pdf_bytes
 
 
@@ -338,9 +340,9 @@ class TextOrderService(PipelineComponent):
         assert self._text_container in [names.C.WORD, names.C.LINE], (
             f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
         )
-        assert set(self._text_block_names) <= set(self._block_names), (
-            "floating_text_block_names must be a subset of text_block_names"
-        )
+        assert set(self._text_block_names) <= set(
+            self._block_names
+        ), "floating_text_block_names must be a subset of text_block_names"
         if not self._text_block_names and not self._block_names and not self._text_containers_to_text_block:
             logger.info(
                 "floating_text_block_names and text_block_names are set to None and "
@@ -349,6 +351,7 @@ class TextOrderService(PipelineComponent):
         if self._text_container == "WORD" and self._text_containers_to_text_block and not self._text_block_names:
             logger.info(
                 "Choosing %s text_container while choosing no text_blocks will give no sensible "
-                "results. Choose %s text_container if you do not have text_blocks available.",names.C.WORD,
-                names.C.LINE
+                "results. Choose %s text_container if you do not have text_blocks available.",
+                names.C.WORD,
+                names.C.LINE,
             )
