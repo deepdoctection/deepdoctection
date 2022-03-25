@@ -397,7 +397,7 @@ class Image:
         new_image = Image(file_name=self.file_name, location=self.location, external_id=annotation_id)
 
         assert self._bbox is not None and ann.bounding_box is not None
-        new_bounding_box = intersection_box(self._bbox, ann.bounding_box)
+        new_bounding_box = intersection_box(self._bbox, ann.bounding_box, self.width,self.height)
         if new_bounding_box.absolute_coords:
             width = new_bounding_box.width
             height = new_bounding_box.height
@@ -408,7 +408,7 @@ class Image:
         new_image.set_embedding(self.image_id, bounding_box=new_bounding_box)
 
         if crop_image and self.image is not None:
-            new_image.image = crop_box_from_image(self.image, ann.bounding_box)
+            new_image.image = crop_box_from_image(self.image, ann.bounding_box, self.width, self.height)
         elif crop_image and self.image is None:
             raise ValueError("crop_image = 'True' requires self.image to be not None")
 
