@@ -20,6 +20,7 @@ development. For a more application-related access, we refer to the notebooks th
   :caption: Tutorials
 
   architecture
+  layout_parsing_structure
   datasets
   pipelines
 
