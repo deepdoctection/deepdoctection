@@ -149,7 +149,9 @@ class DoctrTextRecognizer(TextRecognizer):
         :param images: list of tuples with the annotation_id of the sub image and a numpy array
         :return: A list of DetectionResult
         """
-        return doctr_predict_text(images, self.doctr_predictor)
+        if images:
+            return doctr_predict_text(images, self.doctr_predictor)
+        return []
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:

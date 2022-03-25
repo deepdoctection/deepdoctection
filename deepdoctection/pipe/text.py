@@ -139,8 +139,8 @@ class TextExtractionService(PredictorPipelineComponent):
         if isinstance(self.predictor, ObjectDetector):
             return text_roi.image
         if isinstance(text_roi, list):
-            assert any(roi.image is not None for roi in text_roi)
-            assert any(roi.image.image is not None for roi in text_roi)
+            assert all(roi.image is not None for roi in text_roi)
+            assert all(roi.image.image is not None for roi in text_roi)
             return [(roi.annotation_id, roi.image.image) for roi in text_roi]
         return text_roi.pdf_bytes
 
