@@ -42,9 +42,7 @@ def timed_operation(message: str, log_start: bool = False) -> Generator[Any, Non
 
     assert len(message)
     if log_start:
-        logger.info(
-            "start task: %s ...", message
-        )
+        logger.info("start task: %s ...", message)
     start = timer()
     yield
     logger.info("%s finished, %s sec.", message, round(timer() - start, 4))

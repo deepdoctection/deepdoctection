@@ -115,6 +115,8 @@ class DatapointManager:
         :return: the annotation_id of the generated image annotation
         """
         self.assert_datapoint_passed()
+        assert detect_result.class_id
+        assert isinstance(detect_result.box,list)
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
         with MappingContextManager(dp_name=str(detect_result)) as annotation_context:
             box = BoundingBox(
@@ -122,7 +124,7 @@ class DatapointManager:
                 uly=detect_result.box[1],
                 lrx=detect_result.box[2],
                 lry=detect_result.box[3],
-                absolute_coords=True,
+                absolute_coords=detect_result.absolute_coords,
             )
             if detect_result_max_width and detect_result_max_height:
                 box = rescale_coords(

@@ -39,6 +39,14 @@ deepdoctection.extern.d2detect
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.extern.doctrocr
+-----------------------------------
+
+.. automodule:: deepdoctection.extern.doctrocr
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.extern.hflayoutlm
 -----------------------------------
 

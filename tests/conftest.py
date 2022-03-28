@@ -424,3 +424,12 @@ def fixture_textract_response() -> JsonDict:
 def fixture_token_class_result() -> List[TokenClassResult]:
     """fixture token_class_result"""
     return get_token_class_result()
+
+
+@fixture(name="text_lines")
+def fixture_text_lines() -> List[Tuple[str, ImageType]]:
+    """fixture text_lines"""
+    return [
+        ("cf234ec9-52cf-4710-94ce-288f0e055091", np.zeros((3, 3, 3))),
+        ("cf234ec9-52cf-4710-94ce-288f0e055092", np.zeros((3, 3, 3))),
+    ]
