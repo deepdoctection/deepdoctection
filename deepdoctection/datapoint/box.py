@@ -279,8 +279,10 @@ def intersection_box(
     :param box_2: bounding box
     :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of box_1 and
                   box_2 are not equal.
+
     :param height:Total height of image. This optional parameter is needed if the value of absolute_coords of box_1 and
                   box_2 are not equal.
+
     :return: bounding box. Will have same absolute_coords as box_2, if absolute_coords of box_1 and box_2 are note same
     """
     if width is None and height is None:
@@ -309,8 +311,10 @@ def crop_box_from_image(
     :param crop_box: Bounding box to crop.
     :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
                   False
+
     :param height:Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
                   False
+
     :return: A numpy array cropped according to the bounding box.
     """
     if width is None and height is None:

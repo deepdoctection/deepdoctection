@@ -27,15 +27,13 @@ from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
 if doctr_available() and tf_addons_available():
-    from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
-    from doctr.models.detection.zoo import detection_predictor
-    from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
-    from doctr.models.recognition.zoo import recognition_predictor
+    from doctr.models import DetectionPredictor, detection_predictor, RecognitionPredictor, recognition_predictor   # pylint: disable=W0611
 
 
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor") -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
+
     :param np_img: Image in np.array.
     :param predictor: `doctr.models.detection.predictor.DetectionPredictor`
     :return: A list of text line detection results (without text).
@@ -52,8 +50,10 @@ def doctr_predict_text(inputs: List[Tuple[str, ImageType]], predictor: "Recognit
     """
     Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
     returns the recognized text as DetectionResult
+
     :param inputs: list of tuples containing the annotation_id of the input image and the numpy array of the cropped
                    text line
+
     :param predictor: `doctr.models.detection.predictor.RecognitionPredictor`
     :return: A list of DetectionResult containing recognized text.
     """
