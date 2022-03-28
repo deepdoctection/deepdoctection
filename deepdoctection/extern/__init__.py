@@ -30,6 +30,7 @@ from ..utils.file_utils import tensorpack_available
 from .base import *
 from .common import *
 from .d2detect import *
+from .doctrocr import *
 from .hflayoutlm import *
 from .model import *
 from .pdftext import *

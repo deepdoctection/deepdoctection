@@ -124,7 +124,7 @@ class TestTextExtractionServiceWithSubImage:
         setup necessary components
         """
 
-        self._text_extract_detector = MagicMock(spec=ObjectDetector)
+        self._text_extract_detector = MagicMock(spec=ObjectDetector, accepts_batch=False)
         self.text_extraction_service = TextExtractionService(self._text_extract_detector, extract_from_roi=names.C.TAB)
 
     def test_integration_pipeline_component(

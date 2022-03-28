@@ -28,7 +28,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification  # type: ignore # pylint: disable=W0611
+    from transformers import LayoutLMForTokenClassification   # pylint: disable=W0611
 
 
 def predict_token_classes(

@@ -20,7 +20,7 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -109,7 +109,7 @@ class BoundingBox:
 
         if not self.absolute_coords:
             assert (
-                self.ulx < 1 and self.uly < 1 and self.lrx < 1 and self.lry < 1
+                self.ulx <= 1 and self.uly <= 1 and self.lrx <= 1 and self.lry <= 1
             ), "coordinates must be between 0 and 1"
 
     @property
@@ -267,40 +267,69 @@ class BoundingBox:
         return ["height", "width"]
 
 
-def intersection_box(box_1: BoundingBox, box_2: BoundingBox) -> BoundingBox:
+def intersection_box(
+    box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> BoundingBox:
     """
     Returns the intersection bounding box of two boxes. Will raise a ValueError if the intersection is empty.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
     coordinates as the box induces from :func:`crop_box_from_image`
 
-    :param box_1: bounding box, must have same absolute_coords as box_2.
+    :param box_1: bounding box
     :param box_2: bounding box
-    :return: bounding box
+    :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of box_1 and
+                  box_2 are not equal.
+    :param height:Total height of image. This optional parameter is needed if the value of absolute_coords of box_1 and
+                  box_2 are not equal.
+    :return: bounding box. Will have same absolute_coords as box_2, if absolute_coords of box_1 and box_2 are note same
     """
-
-    assert box_1.absolute_coords == box_2.absolute_coords
+    if width is None and height is None:
+        assert box_1.absolute_coords == box_2.absolute_coords, (
+            "when absolute coords of boxes are not equal must " "pass width and height"
+        )
+    if box_1.absolute_coords != box_2.absolute_coords:
+        # will transform box_1
+        box_1 = box_1.transform(width, height, box_2.absolute_coords, output="box")  # type: ignore
     ulx = max(box_1.ulx, box_2.ulx)
     uly = max(box_1.uly, box_2.uly)
     lrx = min(box_1.lrx, box_2.lrx)
     lry = min(box_1.lry, box_2.lry)
-    if box_1.absolute_coords:
+    if box_2.absolute_coords:
         ulx, uly, lrx, lry = np.floor(ulx), np.floor(uly), np.ceil(lrx), np.ceil(lry)
-    return BoundingBox(box_1.absolute_coords, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
+    return BoundingBox(box_2.absolute_coords, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
 
 
-def crop_box_from_image(np_image: ImageType, crop_box: BoundingBox) -> ImageType:
+def crop_box_from_image(
+    np_image: ImageType, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> ImageType:
     """
     Crop a box (the crop_box) from a np_image. Will floor the left  and ceil the right coordinate point.
 
     :param np_image: Image to crop from.
     :param crop_box: Bounding box to crop.
+    :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
+                  False
+    :param height:Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
+                  False
     :return: A numpy array cropped according to the bounding box.
     """
-
+    if width is None and height is None:
+        assert crop_box.absolute_coords, (
+            "when crop_box has absolute coords set to False, then width and height are " "positional args"
+        )
+    absolute_coord_box = (
+        crop_box if crop_box.absolute_coords else
+        crop_box.transform(width, height, absolute_coords=True, output="box")  # type: ignore
+    )
+    assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-        np.int32(np.floor(crop_box.uly)) : min(np.int32(np.ceil(crop_box.lry)), np_max_y),  # type: ignore
-        np.int32(np.floor(crop_box.ulx)) : min(np.int32(np.ceil(crop_box.lrx)), np_max_x),  # type: ignore
+        np.int32(np.floor(absolute_coord_box.uly)) : min(  # type: ignore
+            np.int32(np.ceil(absolute_coord_box.lry)), np_max_y
+        ),
+        np.int32(np.floor(absolute_coord_box.ulx)) : min(  # type: ignore
+            np.int32(np.ceil(absolute_coord_box.lrx)), np_max_x
+        ),
     ]
 
 
@@ -371,8 +400,7 @@ def merge_boxes(*boxes: BoundingBox) -> BoundingBox:
     :param boxes: An arbitrary tuple/list of bounding boxes :class:`BoundingBox` all having absolute_coords="True".
     """
     absolute_coords = boxes[0].absolute_coords
-    for box in boxes:
-        assert box.absolute_coords == absolute_coords, "all boxes must have same absolute_coords"
+    assert all(box.absolute_coords == absolute_coords for box in boxes), "all boxes must have same absolute_coords"
 
     ulx = min(box.ulx for box in boxes)
     uly = min(box.uly for box in boxes)

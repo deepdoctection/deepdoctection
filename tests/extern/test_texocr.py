@@ -21,8 +21,6 @@ Testing module extern.texocr
 
 from unittest.mock import MagicMock, patch
 
-from pytest import mark
-
 from deepdoctection.extern.texocr import TextractOcrDetector
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 
@@ -33,8 +31,6 @@ class TestTextractOcrDetector:  # pylint: disable=R0903
     """
 
     @staticmethod
-    @mark.requires_tf
-    @mark.requires_pt
     @patch("deepdoctection.extern.texocr.get_aws_requirement", MagicMock(return_value=("boto3", True, "")))
     @patch("deepdoctection.extern.texocr.get_boto3_requirement", MagicMock(return_value=("aws", True, "")))
     @patch("deepdoctection.extern.texocr.boto3", MagicMock())

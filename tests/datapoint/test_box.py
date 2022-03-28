@@ -19,7 +19,7 @@
 Testing the module datapoint.box
 """
 
-from typing import List
+from typing import List, Optional
 
 from numpy import asarray
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -140,6 +140,39 @@ def test_intersection_box(box_1: BoundingBox, box_2: BoundingBox, expected_box: 
     assert output_box == expected_box
 
 
+@mark.parametrize(
+    "box_1,box_2,width,height,expected_box",
+    [
+        (
+            BoundingBox(absolute_coords=True, ulx=1, uly=5.0, lrx=3.0, lry=13.0),
+            BoundingBox(absolute_coords=False, ulx=0.2, uly=0.5, lrx=0.5, lry=0.7),
+            10,
+            20,
+            BoundingBox(absolute_coords=False, ulx=0.2, uly=0.5, lrx=0.3, lry=0.65),
+        ),
+        (
+            BoundingBox(absolute_coords=False, ulx=0, uly=0, lrx=1.0, lry=1.0),
+            BoundingBox(absolute_coords=True, ulx=10, uly=15, lrx=35.5, lry=30),
+            100,
+            200,
+            BoundingBox(absolute_coords=True, ulx=10, uly=15, lrx=36, lry=30),
+        ),
+    ],
+)
+def test_intersection_box_with_diff_abs_coords(
+    box_1: BoundingBox, box_2: BoundingBox, width: float, height: float, expected_box: BoundingBox
+) -> None:
+    """
+    Testing intersection box with different absolute coords format
+    """
+
+    # Act
+    output_box = intersection_box(box_1, box_2, width, height)
+
+    # Assert
+    assert output_box == expected_box
+
+
 def get_np_array_for_cropping() -> ImageType:
     """
     numpy array for cropping
@@ -148,32 +181,51 @@ def get_np_array_for_cropping() -> ImageType:
 
 
 @mark.parametrize(
-    "np_image,crop_box,expected_np_array",
+    "np_image,crop_box,width,height,expected_np_array",
     [
         (
             get_np_array_for_cropping(),
             BoundingBox(absolute_coords=True, ulx=1, uly=1, lrx=3, lry=3),
+            None,
+            None,
             asarray([[[12, 13, 14], [15, 16, 17]]]),
         ),
         (
             get_np_array_for_cropping(),
             BoundingBox(absolute_coords=True, ulx=0.5, uly=1.0, lrx=1.5, lry=2.3),
+            None,
+            None,
             asarray([[[9, 10, 11], [12, 13, 14]]]),
         ),
         (
             get_np_array_for_cropping(),
             BoundingBox(absolute_coords=True, ulx=0, uly=0, lrx=1, lry=1),
+            None,
+            None,
             asarray([[[0, 1, 2]]]),
+        ),
+        (
+            get_np_array_for_cropping(),
+            BoundingBox(absolute_coords=False, ulx=0, uly=0, lrx=0.5, lry=0.5),
+            2,
+            3,
+            asarray([[[0, 1, 2]], [[9, 10, 11]]]),
         ),
     ],
 )
-def test_crop_image(np_image: ImageType, crop_box: BoundingBox, expected_np_array: ImageType) -> None:
+def test_crop_image(
+    np_image: ImageType,
+    crop_box: BoundingBox,
+    width: Optional[float],
+    height: Optional[float],
+    expected_np_array: ImageType,
+) -> None:
     """
     Testing func: crop_image returns np_image coorectly
     """
 
     # Act
-    cropped_image = crop_box_from_image(np_image, crop_box)
+    cropped_image = crop_box_from_image(np_image, crop_box, width, height)
 
     # Assert
     assert_array_equal(cropped_image, expected_np_array)  # type: ignore

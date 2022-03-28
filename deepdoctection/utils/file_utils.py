@@ -77,6 +77,27 @@ def get_tensorflow_requirement() -> Requirement:
     return "tensorflow", tf_requirement_satisfied, _TF_ERR_MSG
 
 
+_TF_ADDONS_AVAILABLE = importlib.util.find_spec("tensorflow_addons") is not None
+_TF_ADDONS_ERR_MSG = (
+    "Tensorflow Addons must be installed: https://www.tensorflow.org/addons/overview or"
+    " >> pip install tensorflow-addons"
+)
+
+
+def tf_addons_available() -> bool:
+    """
+    Returns True if tensorflow addons is installed
+    """
+    return bool(_TF_ADDONS_AVAILABLE)
+
+
+def get_tf_addons_requirements() -> Requirement:
+    """
+    Returns Tesnroflow Addons requirement
+    """
+    return "tensorflow-addons", tf_addons_available(), _TF_ADDONS_ERR_MSG
+
+
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
 _TP_ERR_MSG = (
     "Tensorflow models all use the Tensorpack modeling API. Therefore, Tensorpack must be installed: "
@@ -327,6 +348,28 @@ def get_aws_requirement() -> Requirement:
     Return AWS CLI requirement
     """
     return "aws", aws_available(), _AWS_ERR_MSG
+
+
+# DocTr related dependencies
+_DOCTR_AVAILABLE = importlib.util.find_spec("doctr") is not None
+_DOCTR_ERR_MSG = (
+    "DocTr must be installed. Please read the necessary requirements at https://github.com/mindee/doctr"
+    "and use >> pip install python-doctr"
+)
+
+
+def doctr_available() -> bool:
+    """
+    Returns True if doctr is installed
+    """
+    return bool(_DOCTR_AVAILABLE)
+
+
+def get_doctr_requirement() -> Requirement:
+    """
+    Return Doctr requirement
+    """
+    return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 
 _S = AttrDict()

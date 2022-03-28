@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and DDoctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, Requirement
 
@@ -73,6 +73,8 @@ class DetectionResult:
 
     :attr:`mask`: binary mask
 
+    :attr:`absolute_coords` : absolute coordinates
+
     :attr:`class_name`: category name
 
     :attr:`text`: text string. Used for OCR predictors
@@ -80,16 +82,20 @@ class DetectionResult:
     :attr:`block`: block number. For reading order from some ocr predictors
 
     :attr:`line`: line number. For reading order from some ocr predictors
+
+    :attr:`uuid`: uuid. For assigning detection result (e.g. text to image annotations)
     """
 
-    box: List[float]
-    class_id: int
+    box: Optional[List[float]] = None
+    class_id: Optional[int] = None
     score: Optional[float] = None
     mask: Optional[List[float]] = None
+    absolute_coords: bool = True
     class_name: str = ""
     text: Optional[str] = None
     block: Optional[str] = None
     line: Optional[str] = None
+    uuid: Optional[str] = None
 
 
 class ObjectDetector(PredictorBase):  # pylint: disable=R0903
@@ -112,6 +118,13 @@ class ObjectDetector(PredictorBase):  # pylint: disable=R0903
         Abstract method predict
         """
         raise NotImplementedError
+
+    @property
+    def accepts_batch(self) -> bool:
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return False
 
 
 class PdfMiner(PredictorBase):
@@ -141,6 +154,35 @@ class PdfMiner(PredictorBase):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    @property
+    def accepts_batch(self) -> bool:
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return False
+
+
+class TextRecognizer(PredictorBase):
+    """
+    Abstract base class for text recognition. In contrast to ObjectDetector one assumes that :meth:`predict` accepts
+    batches of numpy arrays. More precisely, when using :meth:`predict` pass a list of tuples with uuids (e.g. image_id,
+    or annotation_id) or numpy arrays.
+    """
+
+    @abstractmethod
+    def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError
+
+    @property
+    def accepts_batch(self) -> bool:
+        """
+        whether to accept batches in :meth:`predict`
+        """
+        return True
 
 
 @dataclass
@@ -179,7 +221,7 @@ class LMTokenClassifier(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, **encodings: str) -> List[TokenClassResult]:
+    def predict(self, **encodings:  Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
         """
         Abstract method predict
         """

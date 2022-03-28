@@ -156,7 +156,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
 
 def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
     """
-    Generating text line DetectionResult based from Tesseracts word grouping. It generates line bounding boxes from
+    Generating text line DetectionResult based on Tesseract word grouping. It generates line bounding boxes from
     word bounding boxes.
     :param detect_result_list: A list of detection result
     :return: An extended list of detection result
@@ -167,10 +167,11 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
         block_group = []
         for _, line_group_iter in groupby(list(block_group_iter), key=lambda x: x.line):
             block_group.extend(list(line_group_iter))
-        ulx = min(detect_result.box[0] for detect_result in block_group)
-        uly = min(detect_result.box[1] for detect_result in block_group)
-        lrx = max(detect_result.box[2] for detect_result in block_group)
-        lry = max(detect_result.box[3] for detect_result in block_group)
+        assert all(isinstance(detect_result.box,list) for detect_result in block_group)
+        ulx = min(detect_result.box[0] for detect_result in block_group)  # type: ignore
+        uly = min(detect_result.box[1] for detect_result in block_group)  # type: ignore
+        lrx = max(detect_result.box[2] for detect_result in block_group)  # type: ignore
+        lry = max(detect_result.box[3] for detect_result in block_group)  # type: ignore
         if block_group:
             line_detect_result.append(
                 DetectionResult(
