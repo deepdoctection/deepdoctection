@@ -285,7 +285,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
         repo_id = profile["hf_repo_id"]
         directory, _ = os.path.split(absolute_path)
         for file_name in profile["hf_config_file"]:
-            ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory, force_download=True)
+            ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
     def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str, force_download: bool = False) -> int:

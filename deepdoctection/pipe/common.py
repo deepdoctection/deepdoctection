@@ -99,7 +99,8 @@ class PageParsingService:
         self,
         text_container: str,
         floating_text_block_names: Optional[Union[str, List[str]]] = None,
-        layout_item_names: Optional[Union[str, List[str]]] = None,
+        text_block_names: Optional[Union[str, List[str]]] = None,
+        text_containers_to_text_block: bool = False
     ):
         """
 
@@ -108,21 +109,27 @@ class PageParsingService:
         :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
                                           the highest hierarchy of text blocks that will ordered to generate a sensible
                                           output of text
-        :param layout_item_names: name of image annotation that have a relation with text containers (or which might be
+        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
+        :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
+                                             hierarchy. However, if a text container is not assigned to a text block
+                                             you can add it to the text block ordering to ensure that the full text is
+                                             part of the subsequent sub process.
         """
         if isinstance(floating_text_block_names, str):
             floating_text_block_names = [floating_text_block_names]
         elif floating_text_block_names is None:
             floating_text_block_names = []
-        if isinstance(layout_item_names, str):
-            layout_item_names = [layout_item_names]
-        elif layout_item_names is None:
-            layout_item_names = []
+        if isinstance(text_block_names, str):
+            text_block_names = [text_block_names]
+        elif text_block_names is None:
+            text_block_names = []
 
         self._text_container = text_container
-        self._text_block_names = floating_text_block_names
-        self._layout_names = layout_item_names
+        self._floating_text_block_names = floating_text_block_names
+        self._text_block_names = text_block_names
+        self._text_container_to_text_block = text_containers_to_text_block
+        self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
         """
@@ -130,7 +137,8 @@ class PageParsingService:
         :param dp: Image
         :return: Page
         """
-        return to_page(dp, self._text_container, self._text_block_names, self._layout_names)
+        return to_page(dp, self._text_container, self._floating_text_block_names, self._text_block_names,
+                       self._text_container_to_text_block)
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
@@ -140,3 +148,11 @@ class PageParsingService:
         :return: A output dataflow
         """
         return MapData(df, self.pass_datapoint)
+
+    def _init_sanity_checks(self) -> None:
+        assert self._text_container in [names.C.WORD, names.C.LINE], (
+            f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+        )
+        assert set(self._floating_text_block_names) <= set(self._text_block_names), (
+            "floating_text_block_names must be a subset of text_block_names"
+        )
