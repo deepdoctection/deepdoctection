@@ -18,7 +18,7 @@
 """
 Module for datapoint populating helpers
 """
-
+import numpy as np
 from typing import Dict, Optional, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
@@ -116,7 +116,7 @@ class DatapointManager:
         """
         self.assert_datapoint_passed()
         assert detect_result.class_id
-        assert isinstance(detect_result.box, list)
+        assert isinstance(detect_result.box, (list,np.ndarray))
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
         with MappingContextManager(dp_name=str(detect_result)) as annotation_context:
             box = BoundingBox(
