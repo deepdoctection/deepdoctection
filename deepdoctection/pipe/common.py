@@ -100,7 +100,7 @@ class PageParsingService:
         text_container: str,
         floating_text_block_names: Optional[Union[str, List[str]]] = None,
         text_block_names: Optional[Union[str, List[str]]] = None,
-        text_containers_to_text_block: bool = False
+        text_containers_to_text_block: bool = False,
     ):
         """
 
@@ -137,8 +137,13 @@ class PageParsingService:
         :param dp: Image
         :return: Page
         """
-        return to_page(dp, self._text_container, self._floating_text_block_names, self._text_block_names,
-                       self._text_container_to_text_block)
+        return to_page(
+            dp,
+            self._text_container,
+            self._floating_text_block_names,
+            self._text_block_names,
+            self._text_container_to_text_block,
+        )
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
@@ -153,6 +158,6 @@ class PageParsingService:
         assert self._text_container in [names.C.WORD, names.C.LINE], (
             f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
         )
-        assert set(self._floating_text_block_names) <= set(self._text_block_names), (
-            "floating_text_block_names must be a subset of text_block_names"
-        )
+        assert set(self._floating_text_block_names) <= set(
+            self._text_block_names
+        ), "floating_text_block_names must be a subset of text_block_names"

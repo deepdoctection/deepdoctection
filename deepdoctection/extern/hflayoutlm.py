@@ -31,14 +31,42 @@ from ..utils.file_utils import (
 )
 from ..utils.settings import names
 from .base import LMTokenClassifier, PredictorBase, TokenClassResult
-from .hf.layoutlm import predict_token_classes
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch  # pylint: disable=W0611
+    from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
     from transformers import LayoutLMForTokenClassification
+
+
+def predict_token_classes(
+    uuids: List[str],
+    input_ids: "Tensor",
+    attention_mask: "Tensor",
+    token_type_ids: "Tensor",
+    boxes: "Tensor",
+    tokens: List[str],
+    model: "LayoutLMForTokenClassification",
+) -> List[TokenClassResult]:
+    """
+    :param uuids: A list of uuids that correspond to a word that induces the resulting token
+    :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
+    :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
+    :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
+    :param boxes: Torch tensor of bounding boxes of type 'xyxy'
+    :param tokens: List of original tokens taken from LayoutLMTokenizer
+    :param model: layoutlm model for token classification
+    :return: A list of TokenClassResults
+    """
+    outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
+    input_ids_list = input_ids.squeeze().tolist()
+    return [
+        TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
+        for out in zip(uuids, input_ids_list, token_class_predictions, tokens)
+    ]
 
 
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
