@@ -27,7 +27,10 @@ from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
 if doctr_available() and tf_addons_available():
-    from doctr.models import DetectionPredictor, detection_predictor, RecognitionPredictor, recognition_predictor   # pylint: disable=W0611
+    from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
+    from doctr.models.detection.zoo import detection_predictor
+    from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
+    from doctr.models.recognition.zoo import recognition_predictor
 
 
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor") -> List[DetectionResult]:

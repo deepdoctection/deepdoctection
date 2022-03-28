@@ -51,7 +51,9 @@ MOCK_MODULES.extend(['detectron2',
 MOCK_MODULES.extend(['transformers'])
 
 # DocTr
-MOCK_MODULES.extend(['doctr','doctr.models'])
+MOCK_MODULES.extend(['doctr','doctr.models','doctr.models.detection','doctr.models.recognition',
+                     'doctr.models.detection.predictor','doctr.models.detection.zoo',
+                     'doctr.models.recognition.predictor','doctr.models.recognition.zoo'])
 
 
 for mod_name in MOCK_MODULES:
