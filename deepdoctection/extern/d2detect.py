@@ -30,15 +30,76 @@ from ..utils.file_utils import (
     pytorch_available,
 )
 from .base import DetectionResult, ObjectDetector, PredictorBase
-from .d2.d2 import d2_predict_image
+from .common import InferenceResize
 
 if pytorch_available():
+    import torch
     import torch.cuda
+    from torch import nn  # pylint: disable=W0611
 
 if detectron2_available():
     from detectron2.checkpoint import DetectionCheckpointer
     from detectron2.config import CfgNode, get_cfg  # pylint: disable=W0611
+    from detectron2.layers import batched_nms
     from detectron2.modeling import GeneralizedRCNN, build_model  # pylint: disable=W0611
+    from detectron2.structures import Instances  # pylint: disable=W0611
+
+
+def _d2_post_processing(
+    predictions: Dict[str, "Instances"], nms_thresh_class_agnostic: float
+) -> Dict[str, "Instances"]:
+    """
+    D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
+    Apply a class agnostic NMS.
+
+    :param predictions: Prediction outputs from the model.
+    :param nms_thresh_class_agnostic: Nms being performed over all class predictions
+    :return: filtered predictions outputs
+    """
+    instances = predictions["instances"]
+    class_masks = torch.ones(instances.pred_classes.shape, dtype=torch.uint8)
+    keep = batched_nms(instances.pred_boxes.tensor, instances.scores, class_masks, nms_thresh_class_agnostic)
+    fg_instances_keep = instances[keep]
+    return {"instances": fg_instances_keep}
+
+
+def d2_predict_image(
+    np_img: ImageType,
+    predictor: "nn.Module",
+    preproc_short_edge_size: int,
+    preproc_max_size: int,
+    nms_thresh_class_agnostic: float,
+) -> List[DetectionResult]:
+    """
+    Run detection on one image, using the D2 model callable. It will also handle the preprocessing internally which
+    is using a custom resizing within some bounds.
+
+    :param np_img: ndarray
+    :param predictor: torch nn module implemented in Detectron2
+    :param preproc_short_edge_size: the short edge to resize to
+    :param preproc_max_size: upper bound of one edge when resizing
+    :param nms_thresh_class_agnostic: class agnostic nms threshold
+    :return: list of DetectionResult
+    """
+    height, width = np_img.shape[:2]
+    resizer = InferenceResize(preproc_short_edge_size, preproc_max_size)
+    resized_img = resizer.get_transform(np_img).apply_image(np_img)
+    image = torch.as_tensor(resized_img.astype("float32").transpose(2, 0, 1))
+
+    with torch.no_grad():  # type: ignore
+        inputs = {"image": image, "height": height, "width": width}
+        predictions = predictor([inputs])[0]
+        predictions = _d2_post_processing(predictions, nms_thresh_class_agnostic)
+    instances = predictions["instances"]
+    results = [
+        DetectionResult(
+            box=instances[k].pred_boxes.tensor.tolist()[0],
+            score=instances[k].scores.tolist()[0],
+            class_id=instances[k].pred_classes.tolist()[0],
+        )
+        for k in range(len(instances))
+    ]
+    return results
 
 
 class D2FrcnnDetector(ObjectDetector):
@@ -145,7 +206,7 @@ class D2FrcnnDetector(ObjectDetector):
         """
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
-            assert isinstance(result.class_id,int)
+            assert isinstance(result.class_id, int)
             result.class_id = result.class_id + 1
         return detection_results
 

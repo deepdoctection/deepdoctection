@@ -318,8 +318,9 @@ def crop_box_from_image(
             "when crop_box has absolute coords set to False, then width and height are " "positional args"
         )
     absolute_coord_box = (
-        crop_box if crop_box.absolute_coords else
-        crop_box.transform(width, height, absolute_coords=True, output="box")  # type: ignore
+        crop_box
+        if crop_box.absolute_coords
+        else crop_box.transform(width, height, absolute_coords=True, output="box")  # type: ignore
     )
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]

@@ -333,22 +333,33 @@ class TextOrderService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
-            self._text_container, self._floating_text_block_names, self._text_block_names, self._text_containers_to_text_block
+            self._text_container,
+            self._floating_text_block_names,
+            self._text_block_names,
+            self._text_containers_to_text_block,
         )
 
     def _init_sanity_checks(self) -> None:
         assert self._text_container in [names.C.WORD, names.C.LINE], (
             f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
         )
-        assert set(self._floating_text_block_names) <= set(self._text_block_names), (
-            "floating_text_block_names must be a subset of text_block_names"
-        )
-        if not self._floating_text_block_names and not self._text_block_names and not self._text_containers_to_text_block:
+        assert set(self._floating_text_block_names) <= set(
+            self._text_block_names
+        ), "floating_text_block_names must be a subset of text_block_names"
+        if (
+            not self._floating_text_block_names
+            and not self._text_block_names
+            and not self._text_containers_to_text_block
+        ):
             logger.info(
                 "floating_text_block_names and text_block_names are set to None and "
                 "text_containers_to_text_block is set to False. This setting will return no reading order!"
             )
-        if self._text_container == names.C.WORD and self._text_containers_to_text_block and not self._floating_text_block_names:
+        if (
+            self._text_container == names.C.WORD
+            and self._text_containers_to_text_block
+            and not self._floating_text_block_names
+        ):
             logger.info(
                 "Choosing %s text_container while choosing no text_blocks will give no sensible "
                 "results. Choose %s text_container if you do not have text_blocks available.",

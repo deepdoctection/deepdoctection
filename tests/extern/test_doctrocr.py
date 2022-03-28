@@ -39,7 +39,7 @@ def get_mock_word_results(np_img: ImageType, predictor) -> List[DetectionResult]
 
 
 def get_mock_text_line_results(  # type: ignore
-    inputs: List[Tuple[str, ImageType]], predictor    # pylint: disable=W0613
+    inputs: List[Tuple[str, ImageType]], predictor  # pylint: disable=W0613
 ) -> List[DetectionResult]:
 
     """
