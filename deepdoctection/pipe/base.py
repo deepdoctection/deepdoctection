@@ -106,7 +106,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     """
 
     def __init__(
-        self, predictor: Union[ObjectDetector, PdfMiner,  TextRecognizer], category_id_mapping: Optional[Dict[int, int]]
+        self, predictor: Union[ObjectDetector, PdfMiner, TextRecognizer], category_id_mapping: Optional[Dict[int, int]]
     ) -> None:
         """
         :param predictor: An Object detector for predicting

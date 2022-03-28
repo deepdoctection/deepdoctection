@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
 
 if transformers_available():
-    from transformers import PreTrainedTokenizer   # pylint: disable = W0611
+    from transformers import PreTrainedTokenizer  # pylint: disable = W0611
 
 
 __all__ = ["image_to_layoutlm"]

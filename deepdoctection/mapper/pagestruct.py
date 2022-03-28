@@ -165,7 +165,7 @@ def to_page(
     text_container: str,
     floating_text_block_names: Optional[List[str]] = None,
     text_block_names: Optional[List[str]] = None,
-    text_container_to_text_block: bool = False
+    text_container_to_text_block: bool = False,
 ) -> Page:
     """
     Converts an Image to the lightweight data format Page, where all detected objects are parsed into an easy consumable
@@ -201,8 +201,9 @@ def to_page(
     text_block_anns = dp.get_annotation(category_names=text_block_names)
     if text_container_to_text_block:
         floating_text_block_names.append(text_container)
-        mapped_text_container = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block
-                                             in text_block_anns]))
+        mapped_text_container = list(
+            chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns])
+        )
         text_container_anns = dp.get_annotation(category_names=text_container)
         text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
         text_block_anns.extend(text_container_anns)

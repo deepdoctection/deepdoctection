@@ -6,14 +6,6 @@ deepdoctection.extern
 .. toctree::
    :maxdepth: 4
 
-   deepdoctection.extern.d2
-   deepdoctection.extern.hf
-   deepdoctection.extern.pt
-   deepdoctection.extern.tesseract
-   deepdoctection.extern.textract
-   deepdoctection.extern.tp
-
-
 
 deepdoctection.extern.base
 -----------------------------------

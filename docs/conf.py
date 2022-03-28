@@ -50,6 +50,11 @@ MOCK_MODULES.extend(['detectron2',
 # Transformers
 MOCK_MODULES.extend(['transformers'])
 
+# DocTr
+MOCK_MODULES.extend(['doctr','doctr.models','doctr.models.detection','doctr.models.recognition',
+                     'doctr.models.detection.predictor','doctr.models.detection.zoo',
+                     'doctr.models.recognition.predictor','doctr.models.recognition.zoo'])
+
 
 for mod_name in MOCK_MODULES:
     mod = sys.modules[mod_name] = mock.Mock(name=mod_name)
