@@ -11,7 +11,7 @@ API Documentation
   deepdoctection.datasets.instances
   deepdoctection.eval
   deepdoctection.extern
-  deepdoctection.extern.tesseract
+  deepdoctection.extern.pt
   deepdoctection.extern.tp
   deepdoctection.extern.tp.tpfrcnn
   deepdoctection.extern.tp.tpfrcnn.config
