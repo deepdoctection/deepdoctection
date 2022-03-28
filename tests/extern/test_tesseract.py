@@ -25,7 +25,7 @@ from typing import List
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.extern.tesseract.tesseract import tesseract_line_to_detectresult
+from deepdoctection.extern.tessocr import tesseract_line_to_detectresult
 
 from .data import WORD_RESULTS
 

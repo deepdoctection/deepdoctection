@@ -21,13 +21,56 @@ AWS Textract OCR engine for text extraction
 
 from typing import List
 
-from ..utils.detection_types import ImageType, Requirement
+from ..datapoint.convert import convert_np_array_to_b64_b
+from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
+from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase
-from .textract.textract import predict_text
 
 if boto3_available():
     import boto3  # type:ignore
+
+
+def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
+    all_results: List[DetectionResult] = []
+    blocks = response.get("Blocks")
+
+    if blocks:
+        for block in blocks:
+            if (block["BlockType"] in "WORD") or (block["BlockType"] in "LINE" and text_lines):
+                word = DetectionResult(
+                    box=[
+                        block["Geometry"]["Polygon"][0]["X"] * width,
+                        block["Geometry"]["Polygon"][0]["Y"] * height,
+                        block["Geometry"]["Polygon"][2]["X"] * width,
+                        block["Geometry"]["Polygon"][2]["Y"] * height,
+                    ],
+                    score=block["Confidence"] / 100,
+                    text=block["Text"],
+                    class_id=1 if block["BlockType"] == "WORD" else 2,
+                    class_name=names.C.WORD if block["BlockType"] == "WORD" else names.C.LINE,
+                )
+                all_results.append(word)
+
+    return all_results
+
+
+def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type:ignore
+    """
+    Calls AWS Textract client (:meth:`detect_document_text`) and returns plain OCR results.
+    AWS account required.
+
+    :param client: botocore textract client
+    :param np_img: Image in np.array.
+    :param text_lines: If True, it will return DetectionResults of Text lines as well.
+    :return: A list of textract extractions wrapped in DetectionResult
+    """
+
+    width, height = np_img.shape[1], np_img.shape[0]
+    b_img = convert_np_array_to_b64_b(np_img)
+    response = client.detect_document_text(Document={"Bytes": b_img})
+    all_results = _textract_to_detectresult(response, width, height, text_lines)
+    return all_results
 
 
 class TextractOcrDetector(ObjectDetector):
