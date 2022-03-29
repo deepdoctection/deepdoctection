@@ -168,7 +168,8 @@ def image_to_prodigy(dp: Image) -> JsonDict:
             bounding_box = ann.image.get_embedding(dp.image_id)
         else:
             bounding_box = ann.bounding_box
-
+        if not bounding_box.absolute_coords:
+            bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True, output="box")
         boxes = [
             [bounding_box.ulx, bounding_box.uly],
             [bounding_box.ulx, bounding_box.lry],
