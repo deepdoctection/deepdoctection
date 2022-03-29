@@ -55,6 +55,7 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
         self.dp_manager = DatapointManager(category_id_mapping)
+        self.timer_on = False
 
     @abstractmethod
     def serve(self, dp: Image) -> None:
@@ -73,12 +74,20 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
 
     def pass_datapoint(self, dp: Image) -> Image:
         """
-        Acceptance, handover to dp_manager, transformation and forwarding of dp.
+        Acceptance, handover to dp_manager, transformation and forwarding of dp. To measure the time, use
+
+        .. code-block:: python
+
+            self.timer_on = True
 
         :param dp: datapoint
         :return: datapoint
         """
-        with timed_operation(self.__class__.__name__):
+        if self.timer_on:
+            with timed_operation(self.__class__.__name__):
+                self.dp_manager.datapoint = dp
+                self.serve(dp)
+        else:
             self.dp_manager.datapoint = dp
             self.serve(dp)
         return self.dp_manager.datapoint
@@ -193,6 +202,7 @@ class Pipeline(ABC):  # pylint: disable=R0903
         Composition of the backbone
         """
         for component in self.pipe_component_list:
+            component.timer_on = True
             df = component.predict_dataflow(df)
         return df
 
