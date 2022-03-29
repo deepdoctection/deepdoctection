@@ -120,7 +120,7 @@ class CustomDataFromIterable(DataFromIterable):  # type: ignore
         super().__init__(iterable)
         self.max_datapoints = max_datapoints
         if self.max_datapoints is not None:
-            self.len = self.max_datapoints
+            self._len = self.max_datapoints
 
     def __iter__(self) -> Any:
         if self.max_datapoints is not None:
