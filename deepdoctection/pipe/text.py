@@ -195,7 +195,7 @@ def _reading_columns(
             bounding_box = ann.bounding_box
 
         if bounding_box.absolute_coords:
-            rel_coords_box = bounding_box.transform(dp.width, dp.height, output="box")
+            rel_coords_box = bounding_box.transform(dp.width, dp.height)
         else:
             rel_coords_box = bounding_box
 
