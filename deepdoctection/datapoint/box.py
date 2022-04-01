@@ -209,9 +209,7 @@ class BoundingBox:
         image_width: float,
         image_height: float,
         absolute_coords: bool = False,
-        output: str = "list",
-        mode: str = "xyxy",
-    ) -> Union[npt.NDArray[np.float32], List[float], "BoundingBox"]:
+    ) -> "BoundingBox":
         """
         Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
         created. Changing coordinates requires width and height of the whole image.
@@ -219,13 +217,9 @@ class BoundingBox:
         :param image_width: The horizontal image size
         :param image_height: The vertical image size
         :param absolute_coords: Whether to recalculate into absolute coordinates.
-        :param output: If true will return the bounding box as list, otherwise as numpy array
-        :param mode: "xyxy", "xywh" or "poly" mode as described in :meth:`BoundingBox.as_list`
-                     or :meth:`BoundingBox.as_np_array`.
 
         :return: Either a list or np.array.
         """
-        assert output in ["list", "np", "box"]
 
         if absolute_coords != self.absolute_coords:  # only transforming in this case
             if self.absolute_coords:
@@ -244,16 +238,7 @@ class BoundingBox:
                     lrx=self.lrx * image_width,
                     lry=self.lry * image_height,
                 )
-
-            if output == "list":
-                return transformed_box.to_list(mode)
-            if output == "np":
-                return transformed_box.to_np_array(mode)
             return transformed_box
-        if output == "list":
-            return self.to_list(mode)
-        if output == "np":
-            return self.to_np_array(mode)
         return self
 
     def __str__(self) -> str:
@@ -291,7 +276,7 @@ def intersection_box(
         )
     if box_1.absolute_coords != box_2.absolute_coords:
         # will transform box_1
-        box_1 = box_1.transform(width, height, box_2.absolute_coords, output="box")  # type: ignore
+        box_1 = box_1.transform(width, height, box_2.absolute_coords)  # type: ignore
     ulx = max(box_1.ulx, box_2.ulx)
     uly = max(box_1.uly, box_2.uly)
     lrx = min(box_1.lrx, box_2.lrx)
@@ -324,7 +309,7 @@ def crop_box_from_image(
     absolute_coord_box = (
         crop_box
         if crop_box.absolute_coords
-        else crop_box.transform(width, height, absolute_coords=True, output="box")  # type: ignore
+        else crop_box.transform(width, height, absolute_coords=True)  # type: ignore
     )
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
