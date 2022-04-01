@@ -144,7 +144,7 @@ def load_image_from_file(path: str, type_id: str = "np") -> Optional[Union[str, 
     """
     image: Optional[Union[str, ImageType]] = None
 
-    assert is_file_extension(path, [".png", ".jpeg", ".jpg"]), f"image type not allowed: {path}"
+    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]), f"image type not allowed: {path}"
     assert type_id in ("np", "b64"), "type not allowed"
 
     try:
