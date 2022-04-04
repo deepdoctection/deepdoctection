@@ -45,7 +45,8 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)
-    assert len(page.items) == 10
+    # 9 for d2 and 10 for tp model
+    assert len(page.items) in {9,10}
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
@@ -70,14 +71,21 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)
-    assert len(page.items) == 10
+    # 9 for d2 and 10 for tp model
+    assert len(page.items) in {9,10}
     assert len(page.tables) == 1
-    assert len(page.tables[0].cells) == 16
+    # 15 cells for d2 and 16 for tp model
+    assert len(page.tables[0].cells) in {15,16}
     assert len(page.tables[0].items) == 10
+    # first html for tp model, second for d2 model
     assert (
-        page.tables[0].html == "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
+        page.tables[0].html in { "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
         "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
-        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
+        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>",
+        "<table><tr><td></td><td rowspan=2></td></tr><tr><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td>"
+        "</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td>"
+        "<td></td></tr></table>"}
+
     )
     assert page.height == 2339
     assert page.width == 1654
@@ -102,19 +110,29 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)
-    assert len(page.items) == 10
+    # 9 for d2 and 10 for tp model
+    assert len(page.items) in {9,10}
     assert len(page.tables) == 1
-    assert len(page.tables[0].cells) == 16
+    # 15 cells for d2 and 16 for tp model
+    assert len(page.tables[0].cells) in {15,16}
     assert len(page.tables[0].items) == 10
+    # first html for tp model, second for d2 model
     assert (
-        page.tables[0].html == "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
+        page.tables[0].html in {"<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
         "<td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergiitung</td>"
         "<td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR 2.164.096</td>"
         "</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung"
         " fiir Senior Management °</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung"
         " fiir sonstige Risikotrager</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergiitung"
-        " fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>"
+        " fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>",
+        "<table><tr><td></td><td rowspan=2>EUR 15.315.952</td></tr><tr><td>Gesamtvergiitung ?</td></tr><tr><td>"
+        "Fixe Vergiitung</td><td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR 2.164.096</td>"
+        "</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung fiir Senior Management "
+        "°</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung fiir sonstige Risikotrager</td><td>EUR 324.229</td>"
+        "</tr><tr><td>Gesamtvergiitung fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>"
+                                }
     )
     assert page.height == 2339
     assert page.width == 1654
-    assert len(page.get_text()) == 4291
+    # first number for tp model, second for pt model
+    assert len(page.get_text()) in {4291, 4662}

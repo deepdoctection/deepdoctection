@@ -18,7 +18,7 @@ from .utils import *
 from .utils.file_utils import pytorch_available, tf_available
 from .utils.logger import logger
 
-__version__ = 0.11
+__version__ = 0.12
 
 if not tf_available() and not pytorch_available():
     logger.info(

@@ -32,6 +32,7 @@ if doctr_available() and tf_addons_available():
     from doctr.models.detection.zoo import detection_predictor
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
     from doctr.models.recognition.zoo import recognition_predictor
+
     # pylint: enable=import-error
 
 
