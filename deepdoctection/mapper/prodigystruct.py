@@ -150,7 +150,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
 
     assert isinstance(dp, Image), f"datapoints must be of type Image, is of type {type(dp)}"
     output: JsonDict = {}
-    img_str = dp.get_image(type_id="b64")
+    img_str = dp.get_image().to_b64()
     if img_str is None:
         img_str = ""
     output["image"] = _PRODIGY_IMAGE_PREFIX + img_str  # type: ignore

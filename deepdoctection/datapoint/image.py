@@ -201,17 +201,26 @@ class Image:
         """
         self._image = None
 
-    def get_image(self, type_id: str) -> Optional[Union[ImageType, str]]:
+    def get_image(self) -> "_Img":
         """
         Get the image either in base64 string representation or as np.array.
 
-        :param type_id: "b64" or "np"
         :return: desired image encoding representation
         """
-        assert type_id in ["b64", "np"], type_id
-        if type_id == "b64" and self.image is not None:
-            return convert_np_array_to_b64(self.image)
-        return self.image
+
+        class _Img:
+            def __init__(self,img: ImageType):
+                self.img = img
+
+            def to_np_array(self) -> Optional[ImageType]:
+                return self.img
+
+            def to_b64(self) -> Optional[str]:
+                if self.img is not None:
+                    return convert_np_array_to_b64(self.img)
+                return self.img
+
+        return _Img(self.image)
 
     @property
     def width(self) -> float:  # pylint: disable=R1710
@@ -461,7 +470,7 @@ class Image:
         image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
         export_dict = image_copy.as_dict()
         export_dict["annotations"] = []
-        export_dict["image"] = self.get_image(type_id="b64")
+        export_dict["image"] = self.get_image().to_b64()
         for ann in self._annotations:
             export_dict["annotations"].append(ann.get_export())
 

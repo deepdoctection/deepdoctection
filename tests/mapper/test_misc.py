@@ -62,7 +62,7 @@ def test_to_image(datapoint: Union[str, Dict[str, Union[str, bytes]]], expected_
     assert dp.image_id == expected_image.image_id
     assert dp.file_name == expected_image.file_name
     assert dp.location == expected_image.location
-    assert_array_equal(dp.get_image("np"), expected_image.image)  # type: ignore
+    assert_array_equal(dp.get_image().to_np_array(), expected_image.image)  # type: ignore
 
     if dp.file_name.endswith("pdf"):
         assert dp.pdf_bytes == datapoint["pdf_bytes"]  # type: ignore
