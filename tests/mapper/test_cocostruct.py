@@ -81,6 +81,6 @@ def test_image_to_coco(datapoint_image: Image, image_results: DatapointImage) ->
     first_ann = anns[0]
     expected_ann = expected_image.get_coco_anns()[0]
     assert isclose(first_ann["area"], expected_ann["area"], abs_tol=1e-10)
-    assert_allclose(np.asarray(first_ann["bbox"]), np.asarray(expected_ann["bbox"]), atol=1e-10)  # type: ignore
+    assert_allclose(np.asarray(first_ann["bbox"]), np.asarray(expected_ann["bbox"]), atol=1e-10)
     assert isclose(first_ann["category_id"], expected_ann["category_id"], abs_tol=1e-10)
     assert isclose(first_ann["score"], expected_ann["score"], abs_tol=1e-10)

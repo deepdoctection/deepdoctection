@@ -228,7 +228,7 @@ def test_crop_image(
     cropped_image = crop_box_from_image(np_image, crop_box, width, height)
 
     # Assert
-    assert_array_equal(cropped_image, expected_np_array)  # type: ignore
+    assert_array_equal(cropped_image, expected_np_array)
 
 
 @mark.parametrize(
@@ -365,4 +365,4 @@ def test_rescale_coords(
     # Assert
     np_box = rescaled_box.to_np_array(mode="xyxy")
     np_expected_box = expected_box.to_np_array(mode="xyxy")
-    assert_almost_equal(np_box, np_expected_box, decimal=3)  # type: ignore
+    assert_almost_equal(np_box, np_expected_box, decimal=3)

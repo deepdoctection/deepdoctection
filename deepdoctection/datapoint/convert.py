@@ -124,7 +124,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
     :return: Image as numpy array.
     """
-    from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415
+    from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415, E0401
 
     assert which("pdftoppm") is not None, "convert_pdf_bytes_to_np_array requires poppler to be installed"
 
@@ -188,4 +188,4 @@ def point4_to_box(points: NDArray[np.float32]) -> NDArray[np.float32]:
     points = points.reshape((-1, 4, 2))
     min_xy = points.min(axis=1)  # nx2
     max_xy = points.max(axis=1)  # nx2
-    return np.concatenate((min_xy, max_xy), axis=1)  # type: ignore
+    return np.concatenate((min_xy, max_xy), axis=1)
