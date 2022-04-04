@@ -94,7 +94,7 @@ class TestImage:
         test_image.image = image.get_image_as_np_array()
 
         # Assert
-        assert_array_equal(test_image.get_image(type_id="np"), image.get_image_as_np_array())  # type: ignore
+        assert_array_equal(test_image.get_image().to_np_array(), image.get_image_as_np_array())  # type: ignore
         assert test_image.height == image.get_bounding_box().height
         assert test_image.width == image.get_bounding_box().width
 
@@ -142,8 +142,8 @@ class TestImage:
         test_image.image = image.get_image_as_b64_string()  # type: ignore
 
         # Assert
-        assert_array_equal(test_image.get_image(type_id="np"), image.get_image_as_np_array())  # type: ignore
-        assert test_image.get_image(type_id="b64") == image.get_image_as_b64_string()
+        assert_array_equal(test_image.get_image().to_np_array(), image.get_image_as_np_array())  # type: ignore
+        assert test_image.get_image().to_b64() == image.get_image_as_b64_string()
         assert test_image.height == image.get_bounding_box().height
         assert test_image.width == image.get_bounding_box().width
 
