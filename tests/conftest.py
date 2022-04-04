@@ -430,6 +430,6 @@ def fixture_token_class_result() -> List[TokenClassResult]:
 def fixture_text_lines() -> List[Tuple[str, ImageType]]:
     """fixture text_lines"""
     return [
-        ("cf234ec9-52cf-4710-94ce-288f0e055091", np.zeros((3, 3, 3),dtype=np.float32)),
-        ("cf234ec9-52cf-4710-94ce-288f0e055092", np.zeros((3, 3, 3),dtype=np.float32)),
+        ("cf234ec9-52cf-4710-94ce-288f0e055091", np.zeros((3, 3, 3), dtype=np.float32)),
+        ("cf234ec9-52cf-4710-94ce-288f0e055092", np.zeros((3, 3, 3), dtype=np.float32)),
     ]

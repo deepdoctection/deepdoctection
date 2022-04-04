@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: setup.py
+# File: setup_pypi.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -25,6 +25,14 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 with open(os.path.join(ROOT, 'README.md'), 'rb') as f:
     long_description = f.read().decode('utf-8')
+
+
+def get_version():
+    init_path = os.path.join(ROOT, "deepdoctection", "__init__.py")
+    init_py = open(init_path, "r").readlines()
+    version_line = [l.strip() for l in init_py if l.startswith("__version__")][0]
+    version = version_line.split("=")[-1].strip().strip("'\"")
+    return version
 
 
 sys.path.insert(0, ROOT)
@@ -58,13 +66,13 @@ DEV_DEPS = ["types-PyYAML", "types-tabulate", "sphinx", "sphinx_rtd_theme", "rec
 if sys.platform == "linux":
     DEV_DEPS.append("python-prctl")
 
-TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
+TEST_DEPS = ["black==22.3.0", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
 EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
 setup(
     name="deepdoctection",
-    version="0.11",
+    version=get_version(),
     author="Dr. Janis Meyer",
     url="https://github.com/deepdoctection/deepdoctection",
     license="Apache License 2.0",
@@ -74,7 +82,12 @@ setup(
     install_requires=DIST_DEPS,
     extras_require=EXTRA_DEPS,
     packages=find_packages(),
-    package_data={"deepdoctection": ["py.typed"]},
+    package_data={
+        "deepdoctection.configs": ["*.yaml"],
+        "deepdoctection.datasets.instances.xsl": ["*.xsl"],
+        "deepdoctection": ["py.typed"],
+    },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",

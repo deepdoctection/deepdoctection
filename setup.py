@@ -70,7 +70,7 @@ DEV_DEPS = ["types-PyYAML", "types-tabulate", "sphinx", "sphinx_rtd_theme", "rec
 if sys.platform == "linux":
     DEV_DEPS.append("python-prctl")
 
-TEST_DEPS = ["black", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
+TEST_DEPS = ["black==22.3.0", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
 EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
 
@@ -84,7 +84,12 @@ setup(
     install_requires=DIST_DEPS,
     extras_require=EXTRA_DEPS,
     packages=find_packages(),
-    package_data={"deepdoctection": ["py.typed"]},
+    package_data={
+        "deepdoctection.configs": ["*.yaml"],
+        "deepdoctection.datasets.instances.xsl": ["*.xsl"],
+        "deepdoctection": ["py.typed"],
+    },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
