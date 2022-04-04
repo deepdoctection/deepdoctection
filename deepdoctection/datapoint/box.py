@@ -328,7 +328,7 @@ def crop_box_from_image(
     )
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
-    return np_image[
+    return np_image[  # type: ignore
         np.int32(np.floor(absolute_coord_box.uly)) : min(  # type: ignore
             np.int32(np.ceil(absolute_coord_box.lry)), np_max_y
         ),

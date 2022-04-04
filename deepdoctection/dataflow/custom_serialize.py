@@ -23,7 +23,7 @@ import os
 from typing import List, Optional, Union
 
 from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
-from jsonlines import Reader, Writer  # type: ignore
+from jsonlines import Reader, Writer
 from pycocotools.coco import COCO
 
 from ..utils.fs import is_file_extension

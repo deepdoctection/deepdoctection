@@ -111,7 +111,7 @@ def set_logger_dir(dir_name: str, action: Optional[str] = None) -> None:
     """
     assert dir_name is not None
     dir_name = os.path.normpath(dir_name)
-    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0602
+    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0602, W0603
     if _FILE_HANDLER:
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER

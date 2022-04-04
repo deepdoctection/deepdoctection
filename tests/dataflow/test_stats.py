@@ -44,7 +44,7 @@ class TestMeanFromDataFlow:  # pylint: disable=too-few-public-methods
         mean = MeanFromDataFlow(df, axis=0).start()
 
         # Assert
-        assert_array_equal(mean, np.array(mean_axis_zero))  # type: ignore
+        assert_array_equal(mean, np.array(mean_axis_zero))
 
     @staticmethod
     def test_mean_along_all_dimension(dataset_three_dim: List[List[float]], mean_all_axes: List[float]) -> None:
@@ -59,7 +59,7 @@ class TestMeanFromDataFlow:  # pylint: disable=too-few-public-methods
         mean = MeanFromDataFlow(df).start()
 
         # Assert
-        assert_array_equal(mean, np.array(mean_all_axes))  # type: ignore
+        assert_array_equal(mean, np.array(mean_all_axes))
 
 
 class TestStdFromDataFlow:  # pylint: disable=too-few-public-methods
@@ -80,7 +80,7 @@ class TestStdFromDataFlow:  # pylint: disable=too-few-public-methods
         std = StdFromDataFlow(df, axis=0).start()
 
         # Assert
-        assert_array_almost_equal(std, np.array(std_axis_zero), decimal=4)  # type: ignore
+        assert_array_almost_equal(std, np.array(std_axis_zero), decimal=4)
 
     @staticmethod
     def test_std_along_all_dimension(dataset_three_dim: List[List[float]], std_all_axes: List[float]) -> None:
@@ -95,4 +95,4 @@ class TestStdFromDataFlow:  # pylint: disable=too-few-public-methods
         std = StdFromDataFlow(df).start()
 
         # Assert
-        assert_array_almost_equal(std, np.array(std_all_axes), decimal=4)  # type: ignore
+        assert_array_almost_equal(std, np.array(std_all_axes), decimal=4)
