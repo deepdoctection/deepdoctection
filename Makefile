@@ -55,14 +55,21 @@ install-dd: check-venv
 
 install-dd-all: check-venv install-dd-tf install-dd-pt
 
+install-dd-dev-pt: check-venv
+	@echo "--> Installing requirements dependencies"
+	pip install -r requirements.txt -e .
+	@echo "--> Installing pytorch dependencies"
+	pip install -e ".[pt]"
+	@echo "--> Installing dev dependencies"
+	pip install -e ".[dev]"
+	@echo "--> Done installing dev dependencies"
+	@echo ""
 
-install-dd-dev: check-venv
+install-dd-dev-tf: check-venv
 	@echo "--> Installing requirements dependencies"
 	pip install -r requirements.txt -e .
 	@echo "--> Installing tensorflow dependencies"
 	pip install -e ".[tf]"
-	@echo "--> Installing pytorch dependencies"
-	pip install -e ".[pt]"
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
 	@echo "--> Done installing dev dependencies"
@@ -75,7 +82,9 @@ install-dd-test: check-venv
 	@echo "--> Done installing test dependencies"
 	@echo ""
 
-install-dd-all-dev: check-venv install-dd-dev install-dd-test
+install-dd-all-dev-pt: check-venv install-dd-dev-pt install-dd-test
+
+install-dd-all-dev-tf: check-venv install-dd-dev-tf install-dd-test
 
 install-dd-tf: install-dd
 	@echo "--> Installing tensorflow dependencies"
