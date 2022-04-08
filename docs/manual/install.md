@@ -9,11 +9,13 @@
 
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
-For fine-tuning layout models **deep**doctection uses Tensorpack as training
-framework and therefore only Tensorflow training scripts are provided.
+For fine-tuning layout models **deep**doctection uses Tensorpack as training framework and therefore only 
+Tensorflow training scripts are provided. Tensorpack has been developed for TF1, the model however runs on TF2
+as well by using tf.compat.v1. This is not ideal, however transferring all Tensorpack features into a TF2 framework
+will take a significant amount of work.
 
 The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
-some code components will have some issues on Windows.
+some code components will have some issues on Windows. We cannot provide support for Windows.
 
 **deep**doctection might depend on other open source packages that have to be installed separately. 
 
@@ -23,18 +25,35 @@ If you want to use Tesseract for extracting text using OCR:
 If you want to convert PDF into numpy arrays:
 - [Poppler](https://poppler.freedesktop.org/)
 
+If we discover projects that cover utilities for additional features to be used in a pipeline we implement wrappers
+that simplify usage. In order to not overload requirements and incorporating never used dependencies these projects have 
+to be added separately. In most of the cases they directly accessible by a simple pip install. To discover what is 
+currently available, please check the 
+[API documentation](https://deepdoctection.readthedocs.io/en/latest/modules/deepdoctection.extern.html)
 
-### AWS 
+### Install with pip
 
-### Vast.ai
-
-Vast.ai is a platform where businesses/private people offer cheap cloud rentals empowered with GPU. If 
-data protection of project is not the biggest concern this might be an option, as GPU rental costs can be reduced 
-3x to 5x. Offers range from small private machines for as little as $0.1 p/h up to $13.2 for 8xA100! You can easily 
-choose a docker image satisfying your needs and start within a few seconds. 
+Dataflow is not available via pip and must be installed separately.
 
 ```
-Image: nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04
+pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
+```
+
+Depending on which Deep Learning library is available, use the following installation option:
+
+For Tensorflow, run
+
+```
+pip install deepdoctection[tf]
+```
+
+For PyTorch,
+
+first install Detectron2 separately. Check the instruction [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
+Then run
+
+```
+pip install deepdoctection[pt]
 ```
 
 ## Install from source
@@ -83,17 +102,20 @@ Run
 install-dd-all
 ```
 
-to install the Tensorflow and Pytorch version in one environment. 
+to install the Tensorflow and Pytorch version in one environment. Note however, that it is not possible 
+to run pipeline that depend on both TF and Pytorch components.
 
 
 ## IPkernel and jupyter notebooks
 
-For running notebooks setup of a kernel pointing to the venv is required.
+For running notebooks with kernels pointing to a virtual environment first create a kernel with
 
 ```
 make install-kernel-dd
 ```
 
+This command must be run with active venv mode. You can then start a notebook as always and choose the 
+kernel in the kernel drop down menu.
 
 ## Testing the environment
 
@@ -117,14 +139,23 @@ require Pytorch. Run
 make test-des-tf
 ```
 
-otherwise. 
+otherwise. Note that some tests depend on packages that are not listed in the requirements. In order to run
+them successfully install these packages separately. 
 
-## Developing for the environment
+## Develop environment
 
-To make a full development installation with update of requirements, run
+To make a full development installation with an additional update of all requirements, run depending on the work
+stream
+
 
 ```
-make up-reqs-dev
+up-reqs-dev-pt
+```
+
+or 
+
+```
+up-reqs-dev-tf
 ```
 
 Before submitting a PR, format, lint, type-check the code and run the tests:
@@ -132,3 +163,7 @@ Before submitting a PR, format, lint, type-check the code and run the tests:
 ```
 make format-and-qa
 ```
+
+## Makefile
+
+Check Makefile for more functionalities.

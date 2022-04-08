@@ -36,12 +36,15 @@ libraries.
 2. **Fine-tune pre-trained DNN** on your own labeled dataset. Use generally acknowledged metrics for evaluating training
     improvements.
 
-3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline.
+3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline. For example, you can use
+    pdfplumber if you have native PDF documents. Or you can benchmark OCR results with AWS Textract (account needed and 
+    paid service). Maybe you are looking for an OCR alternative to Tesseract? There are other open source alternatives 
+    available, ready to use after pip install. 
 
-4. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
+5. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
    models**.
 
-5. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
+6. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
 You can acquire more details in the respective model cards.
 
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
@@ -66,6 +69,12 @@ Depending on the pipeline you want to use, you will be notified if further insta
 
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) 
 - [Poppler](https://poppler.freedesktop.org/)
+
+There are wrappers for projects or services available that have to be pip installed separately but can then be 
+used directly in a pipeline, e.g.
+
+- [pdfplumber](https://github.com/jsvine/pdfplumber)
+- [DocTr](https://github.com/mindee/doctr)
 
 
 ## Installation
