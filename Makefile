@@ -159,7 +159,9 @@ up-pipx: check-venv
 
 up-reqs: up-pip up-req-files install-dd
 
-up-reqs-dev: up-reqs install-dd-all-dev
+up-reqs-dev-pt: up-reqs install-dd-all-dev-pt
+
+up-reqs-dev-tf: up-reqs install-dd-all-dev-tf
 
 up-req-files: check-venv
 	@echo "--> Updating Python requirements"
