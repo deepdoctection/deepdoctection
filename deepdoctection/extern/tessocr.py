@@ -211,10 +211,11 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
         results["block_num"],
         results["line_num"],
     ):
-        if int(caption[4]) != -1:
+        score = float(caption[4])
+        if int(score)!= -1:
             word = DetectionResult(
                 box=[caption[0], caption[1], caption[0] + caption[2], caption[1] + caption[3]],
-                score=caption[4] / 100,
+                score=score / 100,
                 text=caption[5],
                 block=str(caption[6]),
                 line=str(caption[7]),
