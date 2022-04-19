@@ -248,6 +248,7 @@ class TestImage:
         """
         test meth: image_ann_to_image add attr: image to ImageAnnotation and generates Image instance correctly
         """
+
         # Arrange
         test_image = Image(location=image.loc, file_name=image.file_name)
         test_image.image = ones((24, 85, 3), dtype=float32)

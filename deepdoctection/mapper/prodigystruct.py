@@ -169,11 +169,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
         else:
             bounding_box = ann.bounding_box
         if not bounding_box.absolute_coords:
-<<<<<<< HEAD
-            bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True, output="box")
-=======
             bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
->>>>>>> remove output in box.transform [datapoint]
         boxes = [
             [bounding_box.ulx, bounding_box.uly],
             [bounding_box.ulx, bounding_box.lry],

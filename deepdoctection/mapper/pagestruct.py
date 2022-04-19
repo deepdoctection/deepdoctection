@@ -44,11 +44,7 @@ def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
         bounding_box = annotation.bounding_box
 
     if not bounding_box.absolute_coords:
-<<<<<<< HEAD
-        bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True, output="box")
-=======
         bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
->>>>>>> remove output in box.transform [datapoint]
 
     return TableSegment(
         annotation.annotation_id,
@@ -70,11 +66,7 @@ def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tup
         bounding_box = annotation.bounding_box
 
     if not bounding_box.absolute_coords:
-<<<<<<< HEAD
-        bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True, output="box")
-=======
         bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
->>>>>>> remove output in box.transform [datapoint]
 
     return (
         Cell(
@@ -135,11 +127,8 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
         bounding_box = annotation.bounding_box
 
     if not bounding_box.absolute_coords:
-<<<<<<< HEAD
-        bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True, output="box")
-=======
         bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
->>>>>>> remove output in box.transform [datapoint]
+
 
     return Table(
         annotation.annotation_id,
@@ -171,11 +160,7 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
     else:
         bounding_box = annotation.bounding_box
     if not bounding_box.absolute_coords:
-<<<<<<< HEAD
-        bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True, output="box")
-=======
         bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
->>>>>>> remove output in box.transform [datapoint]
     return LayoutSegment(
         annotation.annotation_id,
         bounding_box.to_list(mode="xyxy"),
