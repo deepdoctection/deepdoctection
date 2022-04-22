@@ -18,7 +18,7 @@
 """
 Methods for generating and checking uuids
 """
-
+import hashlib
 import uuid
 
 __all__ = ["is_uuid_like", "get_uuid_from_str", "get_uuid"]
@@ -61,3 +61,21 @@ def get_uuid(*inputs: str) -> str:
     """
     str_input = "".join(inputs)
     return get_uuid_from_str(str_input)
+
+
+def get_md5_hash(path: str, buffer_size: int = 65536) -> str:
+    """
+    Calculate a md5 hash for a given file
+
+    :param path: path to a file
+    :param buffer_size: Will calculate the hash in chunks
+    :return: md5 string
+    """
+
+    hash_md5 = hashlib.md5()
+
+    with open(path, "rb") as file:
+        for chunk in iter(lambda: file.read(buffer_size), b""):
+            hash_md5.update(chunk)
+
+    return hash_md5.hexdigest()
