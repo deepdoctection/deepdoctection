@@ -62,9 +62,10 @@ You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 For PyTorch, Detectron2 is used. All models have been trained on Tensorflow and converted into Detectron2 consumable 
 artefacts. 
 
-**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right.
+**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
 This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
-(e.g. approx. 2000/3000 pixels). When accurate models a needed, please use the Tensorflow version.
+(e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
+When accurate models a needed, please use the Tensorflow version.
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
