@@ -60,7 +60,11 @@ You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
 **deep**doctection uses Tensorpack as training framework as well as its vision models for layout analysis. 
 For PyTorch, Detectron2 is used. All models have been trained on Tensorflow and converted into Detectron2 consumable 
-artefacts. Prediction results in PyTorch are therefore slightly worse. 
+artefacts. 
+
+**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right.
+This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
+(e.g. approx. 2000/3000 pixels). When accurate models a needed, please use the Tensorflow version.
 
 If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
