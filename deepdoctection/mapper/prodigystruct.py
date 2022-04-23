@@ -182,5 +182,4 @@ def image_to_prodigy(dp: Image) -> JsonDict:
         spans.append(box)
     output["spans"] = spans
     output["meta"] = {"file_name": dp.file_name}
-    output["location"] = dp.location
     return output
