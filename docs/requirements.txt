@@ -111,7 +111,7 @@ pyparsing==3.0.7
     # via
     #   matplotlib
     #   packaging
-pypdf2==1.26.0
+pypdf2==1.27.5
     # via deepdoctection (setup.py)
 python-dateutil==2.8.2
     # via
