@@ -39,7 +39,7 @@ DIST_DEPS = [
     "types-termcolor",
     "opencv-python",
     "pycocotools",
-    "pypdf2",
+    "pypdf2>=1.27.5",
     "numpy>=1.21",
     "lxml",
     "huggingface_hub",
