@@ -244,3 +244,47 @@ class DatasetCategories:
         if hasattr(self, "_categories_filter_update"):
             return True
         return False
+
+
+def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
+    """
+    Given a set of DatasetCategories a DatasetCategories instance will be returned that summarize the category
+    properties of merged dataset. This means it will save the union of all possible categories as its init categories.
+    Regarding sub categories, only those will be accessible if and only if they are a sub category of a category for all
+    merged datasets. E.g. if dataset A has category "foo" with sub category "foo":"bak" and dataset B has category "foo"
+    as well but no sub category than the merged dataset will have no sub categories at all. Whereas in a similar setting
+    dataset B has sub category "foo":"bak", then "bak" will be an optional sub category for the merged dataset as well.
+
+
+    :param categories: A tuple/list of dataset categories
+    :return: An instance of DatasetCategories to be used as DatasetCategories for merged datasets
+    """
+    init_categories = list(set().union(*[cat.init_categories for cat in categories]))
+
+    # select categories with sub categories. Only categories that appear in this list can be candidates for having
+    # sub categories in the merged dataset
+    intersect_sub_cat_keys = set(categories[0].init_sub_categories.keys()).intersection(*[cat.init_sub_categories.keys()
+                                                                                          for cat in categories[1:]])
+    intersect_init_sub_cat = dict()
+    for key in intersect_sub_cat_keys:
+        # select all sub categories from all datasets for a given key
+        sub_cat_per_key = [cat.init_sub_categories[key] for cat in categories]
+        # select only sub categories that appear in all datasets
+        intersect_sub_cat_per_key = set(sub_cat_per_key[0].keys()).intersection(*[sub_cats.keys()
+                                                                                   for sub_cats in sub_cat_per_key[1:]])
+        # form a set of possible sub category values. To get a list of all values from all dataset, take the union
+        intersect_init_sub_cat_values = dict()
+        for sub_cat_key in intersect_sub_cat_per_key:
+            val = set()
+            for cat in categories:
+                val.update(cat.init_sub_categories[key][sub_cat_key])
+            intersect_init_sub_cat_values[sub_cat_key]=list(val)
+        intersect_init_sub_cat[key]=intersect_init_sub_cat_values
+
+    # Next, build the DatasetCategories instance.
+    categories_update = list(set().union(*[cat.get_categories(as_dict=False) for cat in categories]))
+    categories_filtered =  list(set().union(*[cat.get_categories(as_dict=False,filtered=True) for cat in categories]))
+    merged_categories = DatasetCategories(init_categories=init_categories,init_sub_categories=intersect_init_sub_cat)
+    merged_categories._categories_update = categories_update
+    setattr(merged_categories,"_categories_filter_update",categories_filtered)
+    return merged_categories
