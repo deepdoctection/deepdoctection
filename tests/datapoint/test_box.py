@@ -97,7 +97,8 @@ class TestBoundingBox:
             absolute_coords=False,
         ).to_list(mode="xyxy")
         box_copy = bounding_box_absolute.transform(
-            image_width=box.image_width, image_height=box.image_height, absolute_coords=False)
+            image_width=box.image_width, image_height=box.image_height, absolute_coords=False
+        )
 
         # Assert
         assert box_relative_list == [box.ulx_relative, box.uly_relative, box.lrx_relative, box.lry_relative]

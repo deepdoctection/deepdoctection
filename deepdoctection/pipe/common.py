@@ -40,18 +40,18 @@ class ImageCroppingService(PipelineComponent):
     generally not stored.
     """
 
-    def __init__(self,category_names: Union[str,List[str]]):
+    def __init__(self, category_names: Union[str, List[str]]):
         """
         :param category_names: A single name or a list of category names to crop
         """
         super().__init__(None)
-        if isinstance(category_names,str):
+        if isinstance(category_names, str):
             category_names = [category_names]
         self.category_names = category_names
 
     def serve(self, dp: Image) -> None:
         for ann in dp.get_annotation(category_names=self.category_names):
-            dp.image_ann_to_image(ann.annotation_id,crop_image=True)
+            dp.image_ann_to_image(ann.annotation_id, crop_image=True)
 
     def clone(self) -> "PipelineComponent":
         return self.__class__(self.category_names)

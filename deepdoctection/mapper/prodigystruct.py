@@ -153,7 +153,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
     img_str = dp.get_image().to_b64()
     if img_str is None:
         img_str = ""
-    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str  # type: ignore
+    output["image"] = _PRODIGY_IMAGE_PREFIX + img_str
     output["text"] = dp.file_name
     output["image_id"] = dp.image_id
 
@@ -169,7 +169,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
         else:
             bounding_box = ann.bounding_box
         if not bounding_box.absolute_coords:
-            bounding_box = bounding_box.transform(dp.width,dp.height, absolute_coords=True)
+            bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
         boxes = [
             [bounding_box.ulx, bounding_box.uly],
             [bounding_box.ulx, bounding_box.lry],
