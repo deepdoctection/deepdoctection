@@ -259,7 +259,13 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     :param categories: A tuple/list of dataset categories
     :return: An instance of DatasetCategories to be used as DatasetCategories for merged datasets
     """
-    init_categories = list(set().union(*[cat.init_categories for cat in categories]))
+
+    # working with lists is not possible as the order of categories is important here
+    init_categories = []
+    for cat in categories:
+        for label in cat.init_categories:
+            if label not in init_categories:
+                init_categories.append(label)
 
     # select categories with sub categories. Only categories that appear in this list can be candidates for having
     # sub categories in the merged dataset
