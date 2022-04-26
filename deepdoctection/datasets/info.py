@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Union
 
 from ..utils.logger import logger
 
-__all__ = ["DatasetInfo", "DatasetCategories"]
+__all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 def _get_dict(l: List[str], name_as_key: bool, starts_with: int = 1) -> Dict[str, str]:
@@ -262,10 +262,18 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
 
     # working with lists is not possible as the order of categories is important here
     init_categories = []
+    categories_update = []
+    categories_filtered = []
     for cat in categories:
         for label in cat.init_categories:
             if label not in init_categories:
                 init_categories.append(label)
+        for label in cat.get_categories(as_dict=False):
+            if label not in  categories_update:
+                categories_update.append(label)
+        for label in cat.get_categories(as_dict=False,filtered=True):
+            if label not in categories_filtered:
+                categories_filtered.append(label)
 
     # select categories with sub categories. Only categories that appear in this list can be candidates for having
     # sub categories in the merged dataset
@@ -288,8 +296,6 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
         intersect_init_sub_cat[key]=intersect_init_sub_cat_values
 
     # Next, build the DatasetCategories instance.
-    categories_update = list(set().union(*[cat.get_categories(as_dict=False) for cat in categories]))
-    categories_filtered =  list(set().union(*[cat.get_categories(as_dict=False,filtered=True) for cat in categories]))
     merged_categories = DatasetCategories(init_categories=init_categories,init_sub_categories=intersect_init_sub_cat)
     merged_categories._categories_update = categories_update
     setattr(merged_categories,"_categories_filter_update",categories_filtered)
