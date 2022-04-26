@@ -201,7 +201,7 @@ class Image:
         """
         self._image = None
 
-    def get_image(self) -> "_Img":
+    def get_image(self) -> "_Img":  # type: ignore
         """
         Get the image either in base64 string representation or as np.array.
 
@@ -209,13 +209,36 @@ class Image:
         """
 
         class _Img:
-            def __init__(self,img: ImageType):
+            """
+            Helper class. Do not use it in your code, rather call
+
+            .. code-block:: python
+
+                 image.get_image().to_np_array()
+
+            or
+
+            .. code-block:: python
+
+                 image.get_image().to_b64()
+            """
+            def __init__(self, img: Optional[ImageType]):
                 self.img = img
 
             def to_np_array(self) -> Optional[ImageType]:
+                """
+                Returns image as numpy array
+
+                :return: array
+                """
                 return self.img
 
             def to_b64(self) -> Optional[str]:
+                """
+                Returns image as b64 encoded string
+
+                :return: b64 encoded string
+                """
                 if self.img is not None:
                     return convert_np_array_to_b64(self.img)
                 return self.img

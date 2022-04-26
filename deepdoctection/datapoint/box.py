@@ -20,7 +20,7 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import numpy as np
 import numpy.typing as npt
