@@ -37,8 +37,6 @@ class ModelCatalog:
     Catalog of some pre-trained models. The associated config file is available as well.
     """
 
-    S_PREFIX = "https://www.googleapis.com/drive/v3/files"
-
     MODELS: Dict[str, Any] = {
         "layout/model-800000_inf_only.data-00000-of-00001": {
             "config": "dd/tp/conf_frcnn_layout",
@@ -112,6 +110,14 @@ class ModelCatalog:
             "hf_config_file": ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             "tp_model": False,
         },
+        "fasttext/lid.176.bin": {
+            "config": "",
+            "size": [131266198],
+            "hf_model_name": "lid.176.bin",
+            "urls": ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"],
+            "tp_model": False,
+        },
+
     }
 
     @staticmethod
@@ -186,7 +192,7 @@ class ModelCatalog:
         :return: A dict of model/weights profiles
         """
         profile = copy(ModelCatalog.MODELS[weights])
-        profile["urls"] = [ModelCatalog.S_PREFIX + "/" + str(url) for url in profile.get("urls", "")]
+        profile["urls"] = [str(url) for url in profile.get("urls", "")]
         return profile
 
 
@@ -231,8 +237,9 @@ class ModelDownloadManager:  # pylint: disable=R0903
             if profile["tp_model"]:
                 file_names = get_tp_weight_names(weights)
             else:
-                assert isinstance(profile["hf_model_name"], str)
-                file_names.append(profile["hf_model_name"])
+                hf_model_name = profile.get("hf_model_name","")
+                assert isinstance(hf_model_name, str)
+                file_names.append(hf_model_name)
             if from_hf_hub:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
                 absolute_path_configs = ModelCatalog.get_full_path_configs(weights)
