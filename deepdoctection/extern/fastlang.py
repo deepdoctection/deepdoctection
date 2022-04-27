@@ -29,14 +29,16 @@ class FasttextLangDetector(LanguageDetector):
     """
 
     def __init__(self, path_weights: str):
+        super().__init__()
         self.path_weights = path_weights
         self.model = load_model(self.path_weights)
 
     def predict(self, text_string: str) -> DetectionResult:
         output = self.model.predict(text_string)
-        return DetectionResult(text=output[0][0][0].split("_")[-1],
-                               score=output[1][0][0])
+        return DetectionResult(text=output[0][0].split("_")[-1],
+                               score=output[1][0])
 
+    @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_fasttext_requirement()]
 

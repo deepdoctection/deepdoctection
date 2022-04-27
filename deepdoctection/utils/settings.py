@@ -69,6 +69,8 @@ _N.NER.O = "O"
 _N.NER.B = "B"
 _N.NER.I = "I"
 
+_N.NLP.LANG = "LANGUAGE"
+
 _N.freeze()
 
 # Some path settings
