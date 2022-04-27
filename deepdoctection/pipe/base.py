@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from ..dataflow import DataFlow, MapData  # type: ignore
 from ..datapoint.image import Image
-from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer, LanguageDetector
 from ..mapper import DefaultMapper
 from ..utils.timer import timed_operation
 from .anngen import DatapointManager
@@ -115,7 +115,8 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     """
 
     def __init__(
-        self, predictor: Union[ObjectDetector, PdfMiner, TextRecognizer], category_id_mapping: Optional[Dict[int, int]]
+        self, predictor: Union[ObjectDetector, PdfMiner, TextRecognizer, LanguageDetector],
+            category_id_mapping: Optional[Dict[int, int]]
     ) -> None:
         """
         :param predictor: An Object detector for predicting

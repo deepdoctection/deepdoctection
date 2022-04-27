@@ -215,7 +215,8 @@ class DatapointManager:
         return cont_ann.annotation_id
 
     def set_summary_annotation(
-        self, summary_name: str, summary_number: int, annotation_id: Optional[str] = None
+        self, summary_name: str, summary_number: int, summary_value: Optional[str] = None,
+            summary_score: Optional[float] = None, annotation_id: Optional[str] = None,
     ) -> str:
         """
         Creates a sub category of a summary annotation. If a summary of the given annotation_id does not exist, it will
@@ -223,6 +224,8 @@ class DatapointManager:
         :param summary_name: will create the summary name as category name and store the generated annotation under the
         same key name
         :param summary_number: will store the value in category_id.
+        :param summary_value: will create a ContainerAnnotation and store the corresponding value
+        :param summary_score: will store the score
         :param annotation_id: id of the parent annotation. Note, that the parent annotation must have :attr:`image` to
         be not None.
         :return: annotation_id of the generated category annotation
@@ -235,6 +238,11 @@ class DatapointManager:
         assert image is not None
         if image.summary is None:
             image.summary = SummaryAnnotation()
-        cat_ann = CategoryAnnotation(category_name=summary_name, category_id=summary_number)
-        image.summary.dump_sub_category(summary_name, cat_ann, image.image_id)
-        return cat_ann.annotation_id
+            image.summary.annotation_id = self.datapoint._define_annotation_id(image.summary)
+        if summary_value:
+            ann = ContainerAnnotation(category_name=summary_name,category_id=summary_number,value=summary_value,
+                                      score=summary_score)
+        else:
+            ann = CategoryAnnotation(category_name=summary_name, category_id=summary_number, score=summary_score)
+        image.summary.dump_sub_category(summary_name, ann, image.image_id)
+        return ann.annotation_id
