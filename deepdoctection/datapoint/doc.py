@@ -124,6 +124,26 @@ class TableSegment:
     score: Optional[float] = field(default=-1.0)
 
 
+def _get_table_str(cells: List[Cell], number_rows: int, plain: bool = False) -> str:
+    output = ""
+    for row in range(1, number_rows + 1):  # pylint: disable=W0640
+        if not plain:
+            output += f"______________ row: {row} ______________\n"
+        cells_row = sorted(
+            list(filter(lambda x: x.row_number == row, cells)),  # pylint: disable=W0640
+            key=lambda x: x.col_number,
+        )
+
+        for cell in cells_row:
+            if not plain:
+                output += str(cell)
+            else:
+                output += " " + cell.text
+        if plain:
+            output += "\n"
+    return output
+
+
 @dataclass
 class Table:
     """
@@ -159,17 +179,13 @@ class Table:
         """
         A string output for a table.
         """
-        output = ""
-        for row in range(1, self.number_rows):  # pylint: disable=W0640
-            output += f"______________ row: {row} ______________\n"
-            cells_row = sorted(
-                list(filter(lambda x: x.row_number == row, self.cells)),  # pylint: disable=W0640
-                key=lambda x: x.col_number,
-            )
+        return _get_table_str(self.cells, self.number_rows)
 
-            for cell in cells_row:
-                output += str(cell)
-        return output
+    def get_text(self) -> str:
+        """
+        A tab separated output of the table.
+        """
+        return _get_table_str(self.cells, self.number_rows, True)
 
 
 @dataclass

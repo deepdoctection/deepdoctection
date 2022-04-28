@@ -222,6 +222,7 @@ class Image:
 
                  image.get_image().to_b64()
             """
+
             def __init__(self, img: Optional[ImageType]):
                 self.img = img
 
