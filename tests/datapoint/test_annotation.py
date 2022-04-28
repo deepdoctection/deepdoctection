@@ -81,6 +81,26 @@ class TestCategoryAnnotation:
             )
 
     @staticmethod
+    def test_dump_sub_cat_with_external_id() -> None:
+        """
+        Sub categories are dumped to category instance and external category ids will be annotation ids
+        """
+
+        # Arrange
+        cat = CategoryAnnotation(category_name="FOO", category_id="1")
+        sub_cat_1 = CategoryAnnotation(
+            category_name="FOOBAK", category_id="2", external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+        )
+        # Act
+        cat.dump_sub_category("bak", sub_cat_1)
+
+        export_sub_cat_1 = cat.get_sub_category("bak")
+
+        # Assert
+        if export_sub_cat_1 is not None:
+            assert export_sub_cat_1.annotation_id == "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+
+    @staticmethod
     def test_remove_sub_cat() -> None:
         """
         Existing sub categories are correctly removed

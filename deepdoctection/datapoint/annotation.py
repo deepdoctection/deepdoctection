@@ -249,12 +249,14 @@ class CategoryAnnotation(Annotation):
             f"{sub_category_name} as sub category already defined for " f"{self.annotation_id}"
         )
         if self._annotation_id is not None:
-            annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
+            if annotation._annotation_id is None:  # pylint: disable=W0212
+                annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
         else:
             tmp_annotation_id = self.set_annotation_id(self)
-            annotation.annotation_id = annotation.set_annotation_id(
-                annotation, tmp_annotation_id, *container_id_context
-            )
+            if annotation._annotation_id is None:  # pylint: disable=W0212
+                annotation.annotation_id = annotation.set_annotation_id(
+                    annotation, tmp_annotation_id, *container_id_context
+                )
         self._sub_categories[sub_category_name] = annotation
 
     def get_sub_category(self, sub_category_name: str) -> "CategoryAnnotation":
