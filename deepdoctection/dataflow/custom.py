@@ -39,7 +39,6 @@ def _get_cache(self: CacheData) -> List[Any]:
     with get_tqdm() as status_bar:
         for _ in self:
             status_bar.update()
-            pass
         return self.buffer
 
 

@@ -279,7 +279,7 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     # sub categories in the merged dataset
     intersect_sub_cat_keys = set(categories[0].init_sub_categories.keys()).intersection(*[cat.init_sub_categories.keys()
                                                                                           for cat in categories[1:]])
-    intersect_init_sub_cat = dict()
+    intersect_init_sub_cat = {}
     for key in intersect_sub_cat_keys:
         # select all sub categories from all datasets for a given key
         sub_cat_per_key = [cat.init_sub_categories[key] for cat in categories]
@@ -287,7 +287,7 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
         intersect_sub_cat_per_key = set(sub_cat_per_key[0].keys()).intersection(*[sub_cats.keys()
                                                                                    for sub_cats in sub_cat_per_key[1:]])
         # form a set of possible sub category values. To get a list of all values from all dataset, take the union
-        intersect_init_sub_cat_values = dict()
+        intersect_init_sub_cat_values = {}
         for sub_cat_key in intersect_sub_cat_per_key:
             val = set()
             for cat in categories:

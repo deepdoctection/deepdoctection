@@ -112,7 +112,7 @@ class Evaluator:  # pylint: disable=R0903
         df_pr = self.dataset.dataflow.build(**kwargs)
 
         remove = remove_cats(category_names, sub_categories)  # type: ignore
-        df_pr = MapData(df_pr, lambda dp: deepcopy(dp))
+        df_pr = MapData(df_pr, deepcopy)
         df_pr = MapData(df_pr, remove)
         self.pipe_component.put_task(df_pr)
 
