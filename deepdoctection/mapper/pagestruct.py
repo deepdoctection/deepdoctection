@@ -101,8 +101,9 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
                 number_rows = int(annotation.image.summary.get_sub_category(names.C.NR).category_id)
                 number_cols = int(annotation.image.summary.get_sub_category(names.C.NC).category_id)
         else:
-            number_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cell_anns])
-            number_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cell_anns])
+            if cell_anns:
+                number_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cell_anns])
+                number_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cell_anns])
 
     # cell
     for cell_ann in cell_anns:
