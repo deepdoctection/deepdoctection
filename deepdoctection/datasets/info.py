@@ -21,10 +21,9 @@ Module for storing dataset info (e.g. general meta data or categories)
 
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Generator
 
 from ..utils.utils import call_only_once
-
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
@@ -255,7 +254,7 @@ class DatasetCategories:
             return True
         return False
 
-    def _init_sanity_check(self):
+    def _init_sanity_check(self) -> None:
         # all values of possible sub categories must be listed
         assert all(isinstance(val, dict) for val in self.init_sub_categories.values())
 
@@ -283,34 +282,37 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
             if label not in init_categories:
                 init_categories.append(label)
         for label in cat.get_categories(as_dict=False):
-            if label not in  categories_update:
+            if label not in categories_update:
                 categories_update.append(label)
-        for label in cat.get_categories(as_dict=False,filtered=True):
+        for label in cat.get_categories(as_dict=False, filtered=True):
             if label not in categories_filtered:
                 categories_filtered.append(label)
 
     # select categories with sub categories. Only categories that appear in this list can be candidates for having
     # sub categories in the merged dataset
-    intersect_sub_cat_keys = set(categories[0].init_sub_categories.keys()).intersection(*[cat.init_sub_categories.keys()
-                                                                                          for cat in categories[1:]])
+    intersect_sub_cat_keys = set(categories[0].init_sub_categories.keys()).intersection(
+        *[cat.init_sub_categories.keys() for cat in categories[1:]]
+    )
     intersect_init_sub_cat = {}
     for key in intersect_sub_cat_keys:
         # select all sub categories from all datasets for a given key
         sub_cat_per_key = [cat.init_sub_categories[key] for cat in categories]
         # select only sub categories that appear in all datasets
-        intersect_sub_cat_per_key = set(sub_cat_per_key[0].keys()).intersection(*[sub_cats.keys()
-                                                                                   for sub_cats in sub_cat_per_key[1:]])
+        intersect_sub_cat_per_key = set(sub_cat_per_key[0].keys()).intersection(
+            *[sub_cats.keys() for sub_cats in sub_cat_per_key[1:]]
+        )
         # form a set of possible sub category values. To get a list of all values from all dataset, take the union
         intersect_init_sub_cat_values = {}
         for sub_cat_key in intersect_sub_cat_per_key:
             val = set()
             for cat in categories:
                 val.update(cat.init_sub_categories[key][sub_cat_key])
-            intersect_init_sub_cat_values[sub_cat_key]=list(val)
-        intersect_init_sub_cat[key]=intersect_init_sub_cat_values
+            intersect_init_sub_cat_values[sub_cat_key] = list(val)
+        intersect_init_sub_cat[key] = intersect_init_sub_cat_values
 
     # Next, build the DatasetCategories instance.
-    merged_categories = DatasetCategories(init_categories=init_categories,init_sub_categories=intersect_init_sub_cat)
-    merged_categories._categories_update = categories_update
-    setattr(merged_categories,"_categories_filter_update",categories_filtered)
+    merged_categories = DatasetCategories(init_categories=init_categories, init_sub_categories=intersect_init_sub_cat)
+    merged_categories._categories_update = categories_update  # pylint: disable = W0212
+    merged_categories._allow_update = False  # pylint: disable = W0212
+    setattr(merged_categories, "_categories_filter_update", categories_filtered)
     return merged_categories

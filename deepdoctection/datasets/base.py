@@ -21,15 +21,14 @@ Module for the base class of datasets.
 
 import os
 import pprint
-
 from abc import ABC, abstractmethod
-from typing import Optional, Union, List, Dict
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from ..utils.logger import logger
+from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow  # type: ignore
 from ..datapoint import Image
-from ..dataflow import ConcatData, CacheData, DataFlow, CustomDataFromList
+from ..utils.logger import logger
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
@@ -180,23 +179,24 @@ class MergeDataset(DatasetBase):
         super().__init__()
 
     def _categories(self) -> DatasetCategories:
-        return get_merged_categories(*(dataset.dataflow.categories for dataset in self.datasets))
+        return get_merged_categories(*(dataset.dataflow.categories for dataset in self.datasets
+                                       if dataset.dataflow.categories is not None))
 
-    def _info(self)-> DatasetInfo:
+    def _info(self) -> DatasetInfo:
         return DatasetInfo(name="merge")
 
     def _builder(self) -> DataFlowBaseBuilder:
-
         class MergeDataFlow(DataFlowBaseBuilder):
             """
             Dataflow builder for merged datasets
             """
-            def __init__(self,*dataflow_builders: DataFlowBaseBuilder):
+
+            def __init__(self, *dataflow_builders: DataFlowBaseBuilder):
                 super().__init__("")
                 self.dataflow_builders = dataflow_builders
                 self.dataflows = None
 
-            def build(self,**kwargs: Union[str, int]):
+            def build(self, **kwargs: Union[str, int]) -> DataFlow:
                 """
                 Building the dataflow of merged datasets. No argument will affect the stream if the dataflows have
                 been explicitly passed. Otherwise, all kwargs will be passed to all dataflows. Note that each dataflow
@@ -222,7 +222,7 @@ class MergeDataset(DatasetBase):
             builder.dataflows = self.dataflows
         return builder
 
-    def explicit_dataflows(self,*dataflows) -> None:
+    def explicit_dataflows(self, *dataflows: DataFlow) -> None:
         """
         Pass explicit dataflows for each dataset. Using several dataflow configurations for one dataset is possible as
         well. However, the number of dataflow must exceed the number of merged datasets.
@@ -234,7 +234,7 @@ class MergeDataset(DatasetBase):
         self._dataflow_builder = self._builder()
         self._dataflow_builder.categories = self._categories()
 
-    def buffer_datasets(self,**kwargs) -> None:
+    def buffer_datasets(self, **kwargs: Union[str, int]) -> None:
         """
         Buffer datasets with given configs. If dataflows are passed explicitly it will cache their streamed output.
 
@@ -242,9 +242,9 @@ class MergeDataset(DatasetBase):
         :return: Dataflow
         """
         df = self.dataflow.build(**kwargs)
-        self.datapoint_list = CacheData(df,shuffle=True).get_cache()
+        self.datapoint_list = CacheData(df, shuffle=True).get_cache()
 
-    def split_datasets(self, ratio: float=0.1, add_test: bool=True) -> None:
+    def split_datasets(self, ratio: float = 0.1, add_test: bool = True) -> None:
         """
         Split cached datasets into train/val(/test).
 
@@ -254,34 +254,47 @@ class MergeDataset(DatasetBase):
         """
         assert self.datapoint_list is not None, "datasets need to be buffered before splitting"
         number_datapoints = len(self.datapoint_list)
-        indices = np.random.binomial(1, ratio,number_datapoints)
-        train_dataset = [self.datapoint_list[i] for i in  range(number_datapoints) if indices[i]==0]
-        val_dataset = [self.datapoint_list[i] for i in  range(number_datapoints) if indices[i]==1]
+        indices = np.random.binomial(1, ratio, number_datapoints)
+        train_dataset = [self.datapoint_list[i] for i in range(number_datapoints) if indices[i] == 0]
+        val_dataset = [self.datapoint_list[i] for i in range(number_datapoints) if indices[i] == 1]
         test_dataset = None
 
         if add_test:
-            test_dataset = [dp for id,dp in  enumerate(val_dataset) if id%2]
+            test_dataset = [dp for id, dp in enumerate(val_dataset) if id % 2]
             val_dataset = [dp for id, dp in enumerate(val_dataset) if not id % 2]
 
         logger.info("___________________ Number of datapoints per split ___________________")
-        logger.info(pprint.pformat({"train": len(train_dataset), "val": len(val_dataset),
-                        "test": len(test_dataset) if test_dataset is not None else 0},width=100, compact=True))
+        logger.info(
+            pprint.pformat(
+                {
+                    "train": len(train_dataset),
+                    "val": len(val_dataset),
+                    "test": len(test_dataset) if test_dataset is not None else 0,
+                },
+                width=100,
+                compact=True,
+            )
+        )
 
         class SplitDataFlow(DataFlowBaseBuilder):
             """
             Dataflow builder for splitting datasets
             """
-            def __init__(self, train: List[Image], val: List[Image],
-                         test: Optional[List[Image]]):
+
+            def __init__(self, train: List[Image], val: List[Image], test: Optional[List[Image]]):
                 """
                 :param train: Cached train split
                 :param val: Cached val split
                 :param test: Cached test split
                 """
-                super().__init__()
-                self.splits: Dict[str,List[Image]] = {"train":train, "val":val,"test":test}
+                super().__init__(location="")
+                self.split_cache: Dict[str, List[Image]]
+                if test is None:
+                    self.split_cache= {"train": train, "val": val}
+                else:
+                    self.split_cache= {"train": train, "val": val, "test": test}
 
-            def build(self,**kwargs):
+            def build(self, **kwargs: Union[str, int])-> DataFlow:
                 """
                 Dataflow builder for merged split datasets.
 
@@ -289,9 +302,10 @@ class MergeDataset(DatasetBase):
                 :return: Dataflow
                 """
 
-                split = kwargs.get("split","train")
-                max_datapoints = kwargs.get("max_datapoints")
-                return CustomDataFromList(self.splits[split],max_datapoints)
+                split = kwargs.get("split", "train")
+                max_datapoints = int(kwargs.get("max_datapoints")) # type: ignore
 
-        self._dataflow_builder = SplitDataFlow(train_dataset,val_dataset,test_dataset)
+                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints) # type: ignore
+
+        self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
