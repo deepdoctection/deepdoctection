@@ -68,6 +68,9 @@ class TestDatasetCategories:
 
     @staticmethod
     def test_set_cat_to_subcat_and_check_categories_case_2() -> None:
+        """
+        Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
+        """
 
         # Arrange
         cats = TestDatasetCategories.setup()
@@ -157,7 +160,7 @@ class TestMergeDatasetCategories:
         )
 
     @staticmethod
-    def test_merge_categories_returns_union_categories_and_sub_categories():
+    def test_merge_categories_returns_union_categories_and_sub_categories()-> None:
         """
         Merge categories returns union of categories of datasets
         """
@@ -173,7 +176,7 @@ class TestMergeDatasetCategories:
         assert merge.get_sub_categories() == {"FOO": ["FOO_1"]}
 
     @staticmethod
-    def test_merge_categories_updates_categories_correctly():
+    def test_merge_categories_updates_categories_correctly() -> None:
         """
         Merge categories updates categories when categories of datasets are being updated
         """
@@ -191,7 +194,7 @@ class TestMergeDatasetCategories:
         assert merge.get_categories(as_dict=False) == ["1", "2", "BAK", "3", "BAZ"]
 
     @staticmethod
-    def test_merge_categories_updates_and_filters_categories_correctly():
+    def test_merge_categories_updates_and_filters_categories_correctly() -> None:
         """
         Merge categories returns updates and filtered categories correctly
         """
@@ -211,7 +214,7 @@ class TestMergeDatasetCategories:
         assert merge.get_categories(as_dict=False, init=False, filtered=True) == ["2", "1", "3", "BAZ"]
 
     @staticmethod
-    def test_merge_categories_cannot_update_or_filter():
+    def test_merge_categories_cannot_update_or_filter()-> None:
         """
         Calling :meth::`filter_categories` or :meth::`set_cat_to_sub_cat` is not allowed
         """
