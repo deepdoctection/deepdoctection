@@ -209,7 +209,7 @@ class Image:
         """
 
         class _Img:
-            def __init__(self,img: ImageType):
+            def __init__(self, img: ImageType):
                 self.img = img
 
             def to_np_array(self) -> Optional[ImageType]:

@@ -18,7 +18,13 @@
 """
 Testing the module datasets.info
 """
+
+from typing import Tuple
+
+import pytest
+
 from deepdoctection.datasets import DatasetCategories
+from deepdoctection.datasets.info import get_merged_categories
 
 
 class TestDatasetCategories:
@@ -40,7 +46,7 @@ class TestDatasetCategories:
         return DatasetCategories(init_categories=categories, init_sub_categories=sub_categories)
 
     @staticmethod
-    def test_set_cat_to_subcat_and_check_categories() -> None:
+    def test_set_cat_to_subcat_and_check_categories_case_1() -> None:
         """
         Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
         """
@@ -59,6 +65,12 @@ class TestDatasetCategories:
         assert cats.get_categories(as_dict=False, init=True) == ["FOO", "BAK", "BAZ"]
         assert cats.get_categories(as_dict=False) == ["FOO", "BAK_21", "BAK_22", "BAZ"]
         assert cats.is_cat_to_sub_cat()
+
+    @staticmethod
+    def test_set_cat_to_subcat_and_check_categories_case_2() -> None:
+
+        # Arrange
+        cats = TestDatasetCategories.setup()
 
         # Act
         cats.set_cat_to_sub_cat({"BAK": "sub", "FOO": "cat"})
@@ -121,3 +133,94 @@ class TestDatasetCategories:
             "FOO_2": [],
             "FOO_3": [],
         }
+
+
+class TestMergeDatasetCategories:
+    """
+    Testing get_merged_categories
+    """
+
+    @staticmethod
+    def setup() -> Tuple[DatasetCategories, DatasetCategories]:
+        """
+        Arrange testing setup
+        """
+        init_categories_1 = ["FOO", "BAK"]
+        init_categories_2 = ["FOO", "BAZ"]
+
+        sub_categories_1 = {"FOO": {"FOO_1": ["1", "2"], "FOO_2": ["3", "4"]}}
+        sub_categories_2 = {"FOO": {"FOO_1": ["1", "3"]}, "BAK": {"BAK_1": ["4", "5"]}}
+
+        return (
+            DatasetCategories(init_categories=init_categories_1, init_sub_categories=sub_categories_1),
+            DatasetCategories(init_categories=init_categories_2, init_sub_categories=sub_categories_2),
+        )
+
+    @staticmethod
+    def test_merge_categories_returns_union_categories_and_sub_categories():
+        """
+        Merge categories returns union of categories of datasets
+        """
+
+        # Arrange
+        cat_1, cat_2 = TestMergeDatasetCategories.setup()
+
+        # Act
+        merge = get_merged_categories(cat_1, cat_2)
+
+        # Assert
+        assert merge.get_categories(init=True, as_dict=False) == ["FOO", "BAK", "BAZ"]
+        assert merge.get_sub_categories() == {"FOO": ["FOO_1"]}
+
+    @staticmethod
+    def test_merge_categories_updates_categories_correctly():
+        """
+        Merge categories updates categories when categories of datasets are being updated
+        """
+
+        # Arrange
+        cat_1, cat_2 = TestMergeDatasetCategories.setup()
+        cat_1.set_cat_to_sub_cat({"FOO": "FOO_1"})
+        cat_2.set_cat_to_sub_cat({"FOO": "FOO_1"})
+
+        # Act
+        merge = get_merged_categories(cat_1, cat_2)
+
+        # Assert
+        assert merge.get_categories(as_dict=False, init=True) == ["FOO", "BAK", "BAZ"]
+        assert merge.get_categories(as_dict=False) == ["1", "2", "BAK", "3", "BAZ"]
+
+    @staticmethod
+    def test_merge_categories_updates_and_filters_categories_correctly():
+        """
+        Merge categories returns updates and filtered categories correctly
+        """
+
+        # Arrange
+        cat_1, cat_2 = TestMergeDatasetCategories.setup()
+        cat_1.set_cat_to_sub_cat({"FOO": "FOO_1"})
+        cat_1.filter_categories(categories=["2"])
+
+        cat_2.set_cat_to_sub_cat({"FOO": "FOO_1"})
+
+        # Act
+        merge = get_merged_categories(cat_1, cat_2)
+
+        # Assert
+        assert merge.get_categories(as_dict=False, init=False) == ["1", "2", "BAK", "3", "BAZ"]
+        assert merge.get_categories(as_dict=False, init=False, filtered=True) == ["2", "1", "3", "BAZ"]
+
+    @staticmethod
+    def test_merge_categories_cannot_update_or_filter():
+        """
+        Calling :meth::`filter_categories` or :meth::`set_cat_to_sub_cat` is not allowed
+        """
+
+        # Arrange
+        cat_1, cat_2 = TestMergeDatasetCategories.setup()
+        merge = get_merged_categories(cat_1, cat_2)
+
+        # Act & Assert
+        with pytest.raises(AssertionError):
+            merge.filter_categories(categories="BAZ")
+            merge.set_cat_to_sub_cat({"FOO": "FOO_1"})

@@ -19,8 +19,10 @@
 Utility functions, only related to builtin objects
 """
 
+import functools
+import inspect
 from collections.abc import MutableMapping
-from typing import Any, Dict, List, Set, Union
+from typing import Any, Callable, Dict, List, Set, Union
 
 
 def delete_keys_from_dict(
@@ -87,3 +89,37 @@ def to_bool(inputs: Union[str, bool, int]) -> bool:
     if inputs == "False":
         return False
     return True
+
+
+# Copyright (c) Tensorpack Contributors
+# Licensed under the Apache License, Version 2.0 (the "License")
+
+
+def call_only_once(func: Callable[..., Any]):
+    """
+    Decorate a method or property of a class, so that this method can only
+    be called once for every instance.
+    Calling it more than once will result in exception.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        assert func.__name__ in dir(self), "call_only_once can only be used on method or property!"
+
+        if not hasattr(self, "_CALL_ONLY_ONCE_CACHE"):
+            cache = self._CALL_ONLY_ONCE_CACHE = set()
+        else:
+            cache = self._CALL_ONLY_ONCE_CACHE
+
+        cls = type(self)
+        # cannot use ismethod(), because decorated method becomes a function
+        is_method = inspect.isfunction(getattr(cls, func.__name__))
+        assert func not in cache, "{} {}.{} can only be called once per object!".format(
+            "Method" if is_method else "Property", cls.__name__, func.__name__
+        )
+        cache.add(func)
+
+        return func(*args, **kwargs)
+
+    return wrapper
