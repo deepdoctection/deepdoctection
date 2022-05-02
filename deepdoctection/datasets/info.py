@@ -23,7 +23,8 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Dict, List, Optional, Union
 
-from ..utils.logger import logger
+from ..utils.utils import call_only_once
+
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
