@@ -410,6 +410,7 @@ class Image:
         """
 
         self._annotations.remove(annotation)
+        self._annotation_ids.remove(annotation.annotation_id)
 
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
         """
