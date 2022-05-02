@@ -278,6 +278,7 @@ class MergeDataset(DatasetBase):
                 :param val: Cached val split
                 :param test: Cached test split
                 """
+                super().__init__()
                 self.splits: Dict[str,List[Image]] = {"train":train, "val":val,"test":test}
 
             def build(self,**kwargs):
