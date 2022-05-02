@@ -24,6 +24,7 @@ import numpy as np
 from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
 
 from ..utils.logger import logger
+from ..utils.tqdm import get_tqdm
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
 
@@ -35,9 +36,10 @@ def _get_cache(self: CacheData) -> List[Any]:
     :return: list of datapoints
     """
     self.reset_state()
-    for _ in self:
-        pass
-    return self.buffer
+    with get_tqdm() as status_bar:
+        for _ in self:
+            status_bar.update()
+        return self.buffer
 
 
 CacheData.get_cache = _get_cache

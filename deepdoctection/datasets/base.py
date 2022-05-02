@@ -20,11 +20,18 @@ Module for the base class of datasets.
 """
 
 import os
-from abc import ABC, abstractmethod
-from typing import Optional
+import pprint
 
+from abc import ABC, abstractmethod
+from typing import Optional, Union, List, Dict
+
+import numpy as np
+
+from ..utils.logger import logger
+from ..datapoint import Image
+from ..dataflow import ConcatData, CacheData, DataFlow, CustomDataFromList
 from .dataflow_builder import DataFlowBaseBuilder
-from .info import DatasetCategories, DatasetInfo
+from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
 
 class DatasetBase(ABC):
@@ -115,3 +122,176 @@ class _BuiltInDataset(DatasetBase, ABC):
         Overwritten from base class
         """
         return True
+
+
+class MergeDataset(DatasetBase):
+    """
+    A class for merging dataset ready to feed a training or an evaluation script. The dataflow builder will generate
+    samples from all datasets and will exhaust if every dataflow of the merged datasets are exhausted as well. To
+    guarantee flexibility it is possible to pass customized dataflows explicitly to maybe reduce the dataflow size from
+    one dataset or to use different splits from different datasets.
+
+    When yielding datapoint from :meth::build(), note that one dataset will pass all its samples successively which
+    might reduce randomness for training, especially when using datasets from the same domain. Buffering all datasets
+    (without loading heavy components like images) is therefore possible and the merged dataset can be shuffled.
+
+    When the datasets are buffered are split functionality can divide the buffered samples into an train, val and test
+    set.
+
+    While the selection of categories is given by the union of all categories of all datasets, sub categories need to
+    be handled with care: Only sub categories for one specific category are available provided that every dataset has
+    this sub category available for this specific category. The range of sub category values again is defined as the
+    range of all values from all datasets.
+
+    **Example:**
+
+        .. code-block:: python
+
+            dataset_1 = DatasetRegistry.get_dataset("dataset_1")
+            dataset_2 = DatasetRegistry.get_dataset("dataset_2")
+
+            union_dataset = MergeDataset(dataset_1,dataset_2)
+            union_dataset.buffer_datasets(split="train")     # will cache the train split of dataset_1 and dataset_2
+            merge.split_datasets(ratio=0.1, add_test=False)  # will create a new split of the union.
+
+
+    **Example:**
+
+        .. code-block:: python
+
+            dataset_1 = DatasetRegistry.get_dataset("dataset_1")
+            dataset_2 = DatasetRegistry.get_dataset("dataset_2")
+
+            df_1 = dataset_1.dataflow.build(max_datapoints=20)  # handle separate dataflow configs ...
+            df_2 = dataset_1.dataflow.build(max_datapoints=30)
+
+            union_dataset = MergeDataset(dataset_1,dataset_2)
+            union_dataset.explicit_dataflows(df_1,df_2)   # ... and pass them explicitly. Filtering is another
+                                                          # possibility
+    """
+
+    def __init__(self, *datasets: DatasetBase):
+        """
+        :param datasets: An arbitrary number of datasets
+        """
+        self.datasets = datasets
+        self.dataflows: Optional[DataFlow] = None
+        self.datapoint_list: Optional[List[Image]] = None
+        super().__init__()
+
+    def _categories(self) -> DatasetCategories:
+        return get_merged_categories(*(dataset.dataflow.categories for dataset in self.datasets))
+
+    def _info(self)-> DatasetInfo:
+        return DatasetInfo(name="merge")
+
+    def _builder(self) -> DataFlowBaseBuilder:
+
+        class MergeDataFlow(DataFlowBaseBuilder):
+            """
+            Dataflow builder for merged datasets
+            """
+            def __init__(self,*dataflow_builders: DataFlowBaseBuilder):
+                super().__init__("")
+                self.dataflow_builders = dataflow_builders
+                self.dataflows = None
+
+            def build(self,**kwargs: Union[str, int]):
+                """
+                Building the dataflow of merged datasets. No argument will affect the stream if the dataflows have
+                been explicitly passed. Otherwise, all kwargs will be passed to all dataflows. Note that each dataflow
+                will iterate until it is exhausted. To guarantee randomness across different datasets cache all
+                datapoints and shuffle them afterwards (e.g. use :meth::buffer_dataset() ).
+
+                :param kwargs: arguments for :meth::build()
+                :return: Dataflow
+                """
+                df_list = []
+                if self.dataflows is not None:
+                    logger.info("Will used dataflow from previously explicitly passed configuration")
+                    return ConcatData(list(self.dataflows))
+
+                logger.info("Will use the same build setting for all dataflows")
+                for dataflow_builder in self.dataflow_builders:
+                    df_list.append(dataflow_builder.build(**kwargs))
+                df = ConcatData(df_list)
+                return df
+
+        builder = MergeDataFlow(*(dataset.dataflow for dataset in self.datasets))
+        if self.dataflows is not None:
+            builder.dataflows = self.dataflows
+        return builder
+
+    def explicit_dataflows(self,*dataflows) -> None:
+        """
+        Pass explicit dataflows for each dataset. Using several dataflow configurations for one dataset is possible as
+        well. However, the number of dataflow must exceed the number of merged datasets.
+
+        :param dataflows: An arbitrary number of dataflows
+        """
+        self.dataflows = dataflows
+        assert len(self.datasets) <= len(self.dataflows)
+        self._dataflow_builder = self._builder()
+        self._dataflow_builder.categories = self._categories()
+
+    def buffer_datasets(self,**kwargs) -> None:
+        """
+        Buffer datasets with given configs. If dataflows are passed explicitly it will cache their streamed output.
+
+        :param kwargs: arguments for :meth::build()
+        :return: Dataflow
+        """
+        df = self.dataflow.build(**kwargs)
+        self.datapoint_list = CacheData(df,shuffle=True).get_cache()
+
+    def split_datasets(self, ratio: float=0.1, add_test: bool=True) -> None:
+        """
+        Split cached datasets into train/val(/test).
+
+        :param ratio: 1-ratio will be assigned to the train split. The remaining bit will be assigned to val and test
+                      split.
+        :param add_test: Add a test split
+        """
+        assert self.datapoint_list is not None, "datasets need to be buffered before splitting"
+        number_datapoints = len(self.datapoint_list)
+        indices = np.random.binomial(1, ratio,number_datapoints)
+        train_dataset = [self.datapoint_list[i] for i in  range(number_datapoints) if indices[i]==0]
+        val_dataset = [self.datapoint_list[i] for i in  range(number_datapoints) if indices[i]==1]
+        test_dataset = None
+
+        if add_test:
+            test_dataset = [dp for id,dp in  enumerate(val_dataset) if id%2]
+            val_dataset = [dp for id, dp in enumerate(val_dataset) if not id % 2]
+
+        logger.info("___________________ Number of datapoints per split ___________________")
+        logger.info(pprint.pformat({"train": len(train_dataset), "val": len(val_dataset),
+                        "test": len(test_dataset) if test_dataset is not None else 0},width=100, compact=True))
+
+        class SplitDataFlow(DataFlowBaseBuilder):
+            """
+            Dataflow builder for splitting datasets
+            """
+            def __init__(self, train: List[Image], val: List[Image],
+                         test: Optional[List[Image]]):
+                """
+                :param train: Cached train split
+                :param val: Cached val split
+                :param test: Cached test split
+                """
+                super().__init__()
+                self.splits: Dict[str,List[Image]] = {"train":train, "val":val,"test":test}
+
+            def build(self,**kwargs):
+                """
+                Dataflow builder for merged split datasets.
+
+                :param kwargs: Only split and max_datapoints arguments will be considered.
+                :return: Dataflow
+                """
+
+                split = kwargs.get("split","train")
+                max_datapoints = kwargs.get("max_datapoints")
+                return CustomDataFromList(self.splits[split],max_datapoints)
+
+        self._dataflow_builder = SplitDataFlow(train_dataset,val_dataset,test_dataset)
+        self._dataflow_builder.categories = self._categories()

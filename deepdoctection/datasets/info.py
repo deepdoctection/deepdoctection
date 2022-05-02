@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Union
 
 from ..utils.logger import logger
 
-__all__ = ["DatasetInfo", "DatasetCategories"]
+__all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 def _get_dict(l: List[str], name_as_key: bool, starts_with: int = 1) -> Dict[str, str]:
@@ -110,6 +110,8 @@ class DatasetCategories:
     def __post_init__(self) -> None:
         self._categories_update = self.init_categories
         self._cat_to_sub_cat: Optional[Dict[str, str]] = None
+        self._allow_update = True
+        self._init_sanity_check()
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
@@ -183,12 +185,16 @@ class DatasetCategories:
 
         return sub_cat
 
+    @call_only_once
     def set_cat_to_sub_cat(self, cat_to_sub_cat: Dict[str, str]) -> None:
         """
         Change category representation if sub-categories are available. Pass a dictionary of the main category
         and the requested sub-category. This will change the dictionary of categories and the category names
         and category ids of the image annotation in the dataflow. Using more than one sub category per category will
         not make sense.
+
+        This method can only be called once per object. Re-setting or further replacing of categories would make the
+        code messy and is therefore not allowed.
 
         **Example:**
 
@@ -201,8 +207,7 @@ class DatasetCategories:
         :param cat_to_sub_cat: A dict of pairs of category/sub-category. Note that the combination must be available
                                according to the initial settings.
         """
-
-        logger.info("Will reset all previous updates")
+        assert self._allow_update, "Replacing categories with sub categories is not allowed"
         self._categories_update = self.init_categories
         categories = self.get_categories(name_as_key=True)
         cats_or_sub_cats = [
@@ -212,12 +217,16 @@ class DatasetCategories:
         self._cat_to_sub_cat = cat_to_sub_cat
         self._categories_update = list(chain(*cats_or_sub_cats))
 
+    @call_only_once
     def filter_categories(self, categories: Union[str, List[str]]) -> None:
         """
         Filter categories of a dataset. This will keep all the categories chosen and remove all others.
+        This method can only be called once per object.
 
         :param categories: A single category name or a list of category names.
         """
+
+        assert self._allow_update, "Filtering categories is not allowed"
         if isinstance(categories, str):
             categories = [categories]
         self._categories_filter_update = [cat for cat in self._categories_update if cat in categories]
@@ -244,3 +253,63 @@ class DatasetCategories:
         if hasattr(self, "_categories_filter_update"):
             return True
         return False
+
+    def _init_sanity_check(self):
+        # all values of possible sub categories must be listed
+        assert all(isinstance(val, dict) for val in self.init_sub_categories.values())
+
+
+def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
+    """
+    Given a set of DatasetCategories a DatasetCategories instance will be returned that summarize the category
+    properties of merged dataset. This means it will save the union of all possible categories as its init categories.
+    Regarding sub categories, only those will be accessible if and only if they are a sub category of a category for all
+    merged datasets. E.g. if dataset A has category "foo" with sub category "foo":"bak" and dataset B has category "foo"
+    as well but no sub category than the merged dataset will have no sub categories at all. Whereas in a similar setting
+    dataset B has sub category "foo":"bak", then "bak" will be an optional sub category for the merged dataset as well.
+
+
+    :param categories: A tuple/list of dataset categories
+    :return: An instance of DatasetCategories to be used as DatasetCategories for merged datasets
+    """
+
+    # working with lists is not possible as the order of categories is important here
+    init_categories = []
+    categories_update = []
+    categories_filtered = []
+    for cat in categories:
+        for label in cat.init_categories:
+            if label not in init_categories:
+                init_categories.append(label)
+        for label in cat.get_categories(as_dict=False):
+            if label not in  categories_update:
+                categories_update.append(label)
+        for label in cat.get_categories(as_dict=False,filtered=True):
+            if label not in categories_filtered:
+                categories_filtered.append(label)
+
+    # select categories with sub categories. Only categories that appear in this list can be candidates for having
+    # sub categories in the merged dataset
+    intersect_sub_cat_keys = set(categories[0].init_sub_categories.keys()).intersection(*[cat.init_sub_categories.keys()
+                                                                                          for cat in categories[1:]])
+    intersect_init_sub_cat = {}
+    for key in intersect_sub_cat_keys:
+        # select all sub categories from all datasets for a given key
+        sub_cat_per_key = [cat.init_sub_categories[key] for cat in categories]
+        # select only sub categories that appear in all datasets
+        intersect_sub_cat_per_key = set(sub_cat_per_key[0].keys()).intersection(*[sub_cats.keys()
+                                                                                   for sub_cats in sub_cat_per_key[1:]])
+        # form a set of possible sub category values. To get a list of all values from all dataset, take the union
+        intersect_init_sub_cat_values = {}
+        for sub_cat_key in intersect_sub_cat_per_key:
+            val = set()
+            for cat in categories:
+                val.update(cat.init_sub_categories[key][sub_cat_key])
+            intersect_init_sub_cat_values[sub_cat_key]=list(val)
+        intersect_init_sub_cat[key]=intersect_init_sub_cat_values
+
+    # Next, build the DatasetCategories instance.
+    merged_categories = DatasetCategories(init_categories=init_categories,init_sub_categories=intersect_init_sub_cat)
+    merged_categories._categories_update = categories_update
+    setattr(merged_categories,"_categories_filter_update",categories_filtered)
+    return merged_categories

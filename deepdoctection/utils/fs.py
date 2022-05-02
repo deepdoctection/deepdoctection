@@ -154,7 +154,7 @@ def load_image_from_file(path: str, type_id: str = "np") -> Optional[Union[str, 
         else:
             image = imread(path, IMREAD_COLOR)
     except (FileNotFoundError, ValueError):
-        pass
+        logger.info("file not found or value error: %s", path)
 
     return image
 
