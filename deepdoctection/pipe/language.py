@@ -30,7 +30,19 @@ from .base import PredictorPipelineComponent
 
 class LanguageDetectionService(PredictorPipelineComponent):
     """
-    Pipeline component for determining the language given by the text.
+    Pipeline Component for identifying the language in an image.
+
+    There are two ways to use this component:
+
+    - By analyzing the already extracted and ordered text. For this purpose, a page object is parsed internally and
+      the full text is passed to the language_detector. This approach provides the greatest precision.
+
+    - By previous text extraction with an object detector and subsequent transfer of concatenated word elements to the
+      language_detector. Only one OCR detector can be used here. This method can be used, for example, to select an OCR
+      detector that specializes in a language using. Although the word recognition is less accurate
+      when choosing any detector, the results are confident enough to rely on the results, especially when extracting
+      longer text passages. So, a TextExtractionService, for example, can be selected as the subsequent pipeline
+      component. The words determined by the OCR detector are not transferred to the image object.
     """
 
     def __init__(self, language_detector: LanguageDetector,
@@ -39,6 +51,16 @@ class LanguageDetectionService(PredictorPipelineComponent):
                  floating_text_block_names: Optional[Union[str, List[str]]] = None,
                  text_block_names: Optional[Union[str, List[str]]] = None,
     ):
+        """
+        :param language_detector: Detector to determine text
+        :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
+        :param text_container: text container, needed for generating the reading order. Not necessary when passing a text
+                               detector.
+        :param floating_text_block_names: floating text blocks, needed for generating the reading order. Not necessary
+                                          when passing a text detector.
+        :param text_block_names: text blocks, needed for generating the reading order. Not necessary
+                                 when passing a text detector.
+        """
 
         super().__init__(language_detector,None)
         self.text_detector = text_detector
