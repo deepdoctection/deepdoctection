@@ -277,9 +277,9 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
             dp = _convert_boxes(dp, np_image.shape[0])
 
         if load_image and np_image is not None:
-            image.image = np_image  # type: ignore
+            image.image = np_image
         elif np_image is not None:
-            image.set_width_height(np_image.shape[1], np_image.shape[0])  # type: ignore
+            image.set_width_height(np_image.shape[1], np_image.shape[0])
 
         table_ann: Optional[ImageAnnotation] = None
         if categories_name_as_key.get(names.C.TAB):
