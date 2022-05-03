@@ -63,7 +63,7 @@ def xfund_to_image(
 
         image = Image(file_name=file_name, location=full_path, external_id=external_id)
 
-        image.image = load_image_from_file(full_path)  # type: ignore
+        image.image = load_image_from_file(full_path)
 
         if not load_image:
             image.clear_image()

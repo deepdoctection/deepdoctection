@@ -64,7 +64,7 @@ def pascal_voc_dict_to_image(
         )
 
         if load_image:
-            image.image = load_image_from_file(image.location)  # type: ignore
+            image.image = load_image_from_file(image.location)
         image.set_width_height(float(dp.get("width", 0)), float(dp.get("height", 0)))
 
         for ann in anns:

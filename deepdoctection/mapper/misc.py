@@ -65,7 +65,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)
             else:
-                dp_image.image = load_image_from_file(location)  # type: ignore
+                dp_image.image = load_image_from_file(location)
 
     if mapping_context.context_error:
         return None

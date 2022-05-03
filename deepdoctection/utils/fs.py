@@ -23,7 +23,7 @@ import errno
 import os
 from base64 import b64encode
 from io import BytesIO
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Union, Literal, overload, Protocol
 from urllib.request import urlretrieve
 
 from cv2 import IMREAD_COLOR, imread
@@ -133,7 +133,28 @@ def is_file_extension(file_name: str, extension: Union[str, List[str]]) -> bool:
     return os.path.splitext(file_name)[-1].lower() in extension
 
 
-def load_image_from_file(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+class LoadImageFunc(Protocol):
+    """
+    Protocol for typing load_image_from_file
+    """
+    @overload
+    def __call__(self, path: str, type_id: Literal["np"]) -> Optional[ImageType]: ...
+    @overload
+    def __call__(self, path: str, type_id: Literal["b64"]) -> Optional[str]: ...
+    def __call__(self, path: str, type_id: Literal["np","b64"]) -> Optional[Union[str,ImageType]]: ...
+
+
+@overload
+def load_image_from_file(path: str, type_id: Literal["np"]= "np") -> Optional[ImageType]:
+    ...
+
+
+@overload
+def load_image_from_file(path: str, type_id: Literal["b64"]) -> Optional[str]:
+    ...
+
+
+def load_image_from_file(path: str, type_id: Literal["np","b64"]= "np") -> Optional[Union[str,ImageType]]:
     """
     Loads an image from path and passes back an encoded base64 string, a numpy array or None if file is not found
     or a conversion error occurs.
@@ -180,7 +201,7 @@ def load_bytes_from_pdf_file(path: str) -> bytes:
 
 def get_load_image_func(
     path: str,
-) -> Union[Callable[[str, str], Optional[Union[str, ImageType]]], Callable[[str], bytes]]:
+) -> Union[LoadImageFunc, Callable[[str], bytes]]:
     """
     Return the loading function according to its file extension.
 

@@ -60,7 +60,7 @@ def coco_to_image(
         image = Image(file_name=os.path.split(dp["file_name"])[1], location=dp["file_name"], external_id=dp.get("id"))
 
         if load_image:
-            image.image = load_image_from_file(dp["file_name"])  # type: ignore
+            image.image = load_image_from_file(dp["file_name"])
         image.set_width_height(float(dp.get("width", 0)), float(dp.get("height", 0)))
 
         for ann in anns:
