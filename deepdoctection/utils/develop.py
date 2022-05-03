@@ -78,6 +78,7 @@ def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = 
     **Example:**
 
         .. code-block:: python
+
             @deprecated("Explanation of what to do instead.", "2017-11-4")
             def foo(...):
                 pass
