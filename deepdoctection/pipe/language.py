@@ -53,7 +53,7 @@ class LanguageDetectionService(PredictorPipelineComponent):
             text = page.get_text()
         else:
             detect_result_list = self.text_detector.predict(dp.image)
-            # this is a concation of all detection result. No reading order
+            # this is a concatenation of all detection result. No reading order
             text = " ".join([result.text for result in detect_result_list])
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(names.NLP.LANG, 1, predict_result.text, predict_result.score)
