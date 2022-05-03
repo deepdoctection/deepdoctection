@@ -160,7 +160,7 @@ class TestMergeDatasetCategories:
         )
 
     @staticmethod
-    def test_merge_categories_returns_union_categories_and_sub_categories()-> None:
+    def test_merge_categories_returns_union_categories_and_sub_categories() -> None:
         """
         Merge categories returns union of categories of datasets
         """
@@ -214,7 +214,7 @@ class TestMergeDatasetCategories:
         assert merge.get_categories(as_dict=False, init=False, filtered=True) == ["2", "1", "3", "BAZ"]
 
     @staticmethod
-    def test_merge_categories_cannot_update_or_filter()-> None:
+    def test_merge_categories_cannot_update_or_filter() -> None:
         """
         Calling :meth::`filter_categories` or :meth::`set_cat_to_sub_cat` is not allowed
         """

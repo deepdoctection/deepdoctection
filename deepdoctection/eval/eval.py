@@ -122,9 +122,12 @@ class Evaluator:  # pylint: disable=R0903
         df_pr = DataFromList(df_pr_list)
 
         logger.info("Starting evaluation...")
-        output = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories, output_as_dict)
+        result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
 
-        return output
+        if output_as_dict:
+            return self.metric.result_list_to_dict(result)
+
+        return result
 
     def _sanity_checks(self) -> None:
         assert self.dataset.dataflow.categories is not None

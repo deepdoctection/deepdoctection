@@ -19,7 +19,7 @@
 Testing the module eval.registry
 """
 
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Tuple
 from unittest.mock import MagicMock
 
 from deepdoctection.dataflow import DataFlow
@@ -52,8 +52,7 @@ def test_metric_registry_registered_new_metric() -> None:
             dataflow_gt: DataFlow,
             dataflow_predictions: DataFlow,
             categories: DatasetCategories,
-            as_dict: bool = False,
-        ) -> Union[List[JsonDict], JsonDict]:
+        ) -> List[JsonDict]:
             """
             get distance
             """

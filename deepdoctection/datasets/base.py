@@ -179,8 +179,9 @@ class MergeDataset(DatasetBase):
         super().__init__()
 
     def _categories(self) -> DatasetCategories:
-        return get_merged_categories(*(dataset.dataflow.categories for dataset in self.datasets
-                                       if dataset.dataflow.categories is not None))
+        return get_merged_categories(
+            *(dataset.dataflow.categories for dataset in self.datasets if dataset.dataflow.categories is not None)
+        )
 
     def _info(self) -> DatasetInfo:
         return DatasetInfo(name="merge")
@@ -290,11 +291,11 @@ class MergeDataset(DatasetBase):
                 super().__init__(location="")
                 self.split_cache: Dict[str, List[Image]]
                 if test is None:
-                    self.split_cache= {"train": train, "val": val}
+                    self.split_cache = {"train": train, "val": val}
                 else:
-                    self.split_cache= {"train": train, "val": val, "test": test}
+                    self.split_cache = {"train": train, "val": val, "test": test}
 
-            def build(self, **kwargs: Union[str, int])-> DataFlow:
+            def build(self, **kwargs: Union[str, int]) -> DataFlow:
                 """
                 Dataflow builder for merged split datasets.
 
@@ -303,9 +304,9 @@ class MergeDataset(DatasetBase):
                 """
 
                 split = kwargs.get("split", "train")
-                max_datapoints = int(kwargs.get("max_datapoints")) # type: ignore
+                max_datapoints = int(kwargs.get("max_datapoints"))  # type: ignore
 
-                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints) # type: ignore
+                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints)  # type: ignore
 
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
