@@ -101,8 +101,8 @@ class AccuracyMetric(MetricBase):
 
     @classmethod
     def get_distance(
-        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories, as_dict: bool = False
-    ) -> Union[List[JsonDict], JsonDict]:
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> List[JsonDict]:
 
         labels_gt, labels_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
@@ -110,8 +110,6 @@ class AccuracyMetric(MetricBase):
         for key in labels_gt:  # pylint: disable=C0206
             res = cls.metric(labels_gt[key], labels_predictions[key])  # type: ignore
             results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
-        if as_dict:
-            return cls.result_list_to_dict(results)
         return results
 
     @classmethod

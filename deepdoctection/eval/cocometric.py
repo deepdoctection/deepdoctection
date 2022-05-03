@@ -148,8 +148,8 @@ class CocoMetric(MetricBase):
 
     @classmethod
     def get_distance(
-        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories, as_dict: bool = False
-    ) -> Union[List[JsonDict], JsonDict]:
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> List[JsonDict]:
         coco_gt, coco_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         metric = cls.metric(coco_gt, coco_predictions, iouType="bbox")
@@ -176,8 +176,6 @@ class CocoMetric(MetricBase):
             params["val"] = value
             results.append(params)
 
-        if as_dict:
-            return cls.result_list_to_dict(results)
         return results
 
     @classmethod

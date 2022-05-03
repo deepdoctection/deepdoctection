@@ -20,7 +20,7 @@ Module for the base class for evaluations and metrics
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -49,15 +49,14 @@ class MetricBase(ABC):
     @classmethod
     @abstractmethod
     def get_distance(
-        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories, as_dict: bool = False
-    ) -> Union[List[JsonDict], JsonDict]:
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> List[JsonDict]:
         """
         Takes of the ground truth processing strand as well as the prediction strand and generates the metric results.
 
         :param dataflow_gt: Dataflow with ground truth annotations.
         :param dataflow_predictions: Dataflow with predictions.
         :param categories:  DatasetCategories with respect to the underlying dataset.
-        :param as_dict: Will return the metric result as a dict (Default: False). See :meth:`result_list_to_dict`.
         """
         raise NotImplementedError
 

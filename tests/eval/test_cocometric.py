@@ -55,7 +55,7 @@ class TestCocoMetric:
         # Assert
         output_list = []
         for res in output:
-            output_list.append(res["val"])  # type: ignore
+            output_list.append(res["val"])
         output = np.asarray(output_list)  # type: ignore
 
         expected_output = np.asarray([1, 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1])
@@ -81,7 +81,7 @@ class TestCocoMetric:
         # Assert
         output_list = []
         for res in output:
-            output_list.append(res["val"])  # type: ignore
+            output_list.append(res["val"])
         output = np.asarray(output_list)  # type: ignore
 
         expected_output = np.asarray([-1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1])
@@ -106,7 +106,7 @@ class TestCocoMetric:
         # Assert
         output_list = []
         for res in output:
-            output_list.append(res["val"])  # type: ignore
+            output_list.append(res["val"])
             output = np.asarray(output_list)  # type: ignore
 
         expected_output = np.asarray([-1, -1])
