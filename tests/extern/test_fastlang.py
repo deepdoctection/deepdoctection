@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+# File: test_fastlang.py
+
+# Copyright 2021 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Testing module extern.fastlang
+"""
+from typing import Tuple
+
+import numpy as np
+from numpy import float32
+import numpy.typing as npt
+
+from unittest.mock import MagicMock, patch
+from deepdoctection.extern.fastlang import FasttextLangDetector
+from deepdoctection.extern.base import DetectionResult
+
+
+def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str],npt.NDArray[float32]]:
+    return (('__label__it',), np.array([0.99414486]))
+
+
+class TestFasttextLangDetector:
+    """
+    Test FasttextLangDetector
+    """
+
+    @staticmethod
+    @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
+    def test_fasttext_lang_detector_predicts_language():
+        """
+        Detector calls model.predict(text_string) and processes returned results correctly
+        """
+
+        # Arrange
+        path_weights = "/path/to/dir"
+        fasttest_predictor = FasttextLangDetector(path_weights)
+        fasttest_predictor.model.predict = MagicMock(side_effect = get_mock_lang_detect_result)
+
+        # Act
+        result = fasttest_predictor.predict("Un leggero dialetto italiano")
+
+        # Assert
+        assert result.text == "ita"
+        assert result.score == 0.99414486
