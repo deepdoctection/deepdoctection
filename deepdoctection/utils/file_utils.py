@@ -372,6 +372,25 @@ def get_doctr_requirement() -> Requirement:
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 
+# Fasttext related dependencies
+_FASTTEXT_AVAILABLE = importlib.util.find_spec("fasttext") is not None
+_FASTTEXT_ERR_MSG = "Fasttext must be installed. >> pip install fasttext"
+
+
+def fasttext_available() -> bool:
+    """
+    Returns True if fasttext is installed
+    """
+    return bool(_FASTTEXT_AVAILABLE)
+
+
+def get_fasttext_requirement() -> Requirement:
+    """
+    Return Fasttext requirement
+    """
+    return "fasttext", fasttext_available(), _FASTTEXT_ERR_MSG
+
+
 _S = AttrDict()
 _S.mp_context_set = False
 _S.freeze()

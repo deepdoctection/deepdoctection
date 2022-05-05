@@ -39,6 +39,14 @@ deepdoctection.extern.doctrocr
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.extern.fastlang
+-----------------------------------
+
+.. automodule:: deepdoctection.extern.fastlang
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deep\_doctection.extern.hflayoutlm
 -----------------------------------
 

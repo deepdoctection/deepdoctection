@@ -49,6 +49,14 @@ deepdoctection.pipe.doctectionpipe
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.pipe.language
+---------------------------------------------
+
+.. automodule:: deepdoctection.pipe.language
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.pipe.layout
 -----------------------------------
 

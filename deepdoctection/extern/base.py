@@ -226,3 +226,17 @@ class LMTokenClassifier(PredictorBase):
         Abstract method predict
         """
         raise NotImplementedError
+
+
+class LanguageDetector(PredictorBase):
+    """
+    Abstract base class for language detectors. The :meth:`predict` accepts a string of arbitrary length and returns an
+    ISO-639 code for the detected language.
+    """
+
+    @abstractmethod
+    def predict(self, text_string: str) -> DetectionResult:
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError
