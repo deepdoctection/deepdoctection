@@ -17,6 +17,14 @@ deepdoctection.utils.detection\_types
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.utils.file_utils
+--------------------------------
+
+.. automodule:: deepdoctection.utils.file_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.utils.fs
 --------------------------------
 
@@ -93,6 +101,14 @@ deepdoctection.utils.utils
 -----------------------------------
 
 .. automodule:: deepdoctection.utils.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+deepdoctection.utils.viz
+-----------------------------------
+
+.. automodule:: deepdoctection.utils.viz
    :members:
    :undoc-members:
    :show-inheritance:
