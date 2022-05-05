@@ -26,6 +26,7 @@ from .cell import *
 from .common import *
 from .concurrency import *
 from .doctectionpipe import *
+from .language import *
 from .layout import *
 from .refine import *
 from .registry import *
