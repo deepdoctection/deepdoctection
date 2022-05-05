@@ -315,7 +315,7 @@ class Image:
             f"{annotation.annotation_id} but is of type {str(type(annotation))}"
         )
         if annotation._annotation_id is None:  # pylint: disable=W0212
-            annotation.annotation_id = self._define_annotation_id(annotation)
+            annotation.annotation_id = self.define_annotation_id(annotation)
         assert annotation.annotation_id not in self._annotation_ids, (
             f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}"
         )
@@ -396,7 +396,15 @@ class Image:
 
         return ["external_id", "_image_id", "_image", "_bbox", "_embeddings", "_annotations"]
 
-    def _define_annotation_id(self, annotation: Annotation) -> str:
+    def define_annotation_id(self, annotation: Annotation) -> str:
+        """
+        Generate a uuid for a given annotation. To guarantee uniqueness the generation depends on the datapoint
+        image_id as well as on the annotation.
+
+        :param annotation:  An annotation to generate the uuid for
+        :return: uuid string
+        """
+
         attributes = annotation.get_defining_attributes()
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
         assert self.image_id is not None

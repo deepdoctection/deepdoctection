@@ -117,7 +117,6 @@ class ModelCatalog:
             "urls": ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"],
             "tp_model": False,
         },
-
     }
 
     @staticmethod
@@ -237,7 +236,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
             if profile["tp_model"]:
                 file_names = get_tp_weight_names(weights)
             else:
-                hf_model_name = profile.get("hf_model_name","")
+                hf_model_name = profile.get("hf_model_name", "")
                 assert isinstance(hf_model_name, str)
                 file_names.append(hf_model_name)
             if from_hf_hub:

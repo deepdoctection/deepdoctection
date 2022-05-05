@@ -19,28 +19,28 @@
 Testing module extern.fastlang
 """
 from typing import Tuple
+from unittest.mock import MagicMock, patch
 
 import numpy as np
-from numpy import float32
 import numpy.typing as npt
+from numpy import float32
 
-from unittest.mock import MagicMock, patch
 from deepdoctection.extern.fastlang import FasttextLangDetector
-from deepdoctection.extern.base import DetectionResult
 
 
-def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str],npt.NDArray[float32]]:
-    return (('__label__it',), np.array([0.99414486]))
+def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str], npt.NDArray[float32]]:  # pylint: disable = W0613
+    """return raw result from fasttext language detection model"""
+    return (("__label__it",), np.array([0.99414486]))
 
 
-class TestFasttextLangDetector:
+class TestFasttextLangDetector:  # pylint: disable = R0903
     """
     Test FasttextLangDetector
     """
 
     @staticmethod
     @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
-    def test_fasttext_lang_detector_predicts_language():
+    def test_fasttext_lang_detector_predicts_language() -> None:
         """
         Detector calls model.predict(text_string) and processes returned results correctly
         """
@@ -48,7 +48,7 @@ class TestFasttextLangDetector:
         # Arrange
         path_weights = "/path/to/dir"
         fasttest_predictor = FasttextLangDetector(path_weights)
-        fasttest_predictor.model.predict = MagicMock(side_effect = get_mock_lang_detect_result)
+        fasttest_predictor.model.predict = MagicMock(side_effect=get_mock_lang_detect_result)
 
         # Act
         result = fasttest_predictor.predict("Un leggero dialetto italiano")

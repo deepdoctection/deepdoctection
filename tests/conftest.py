@@ -434,7 +434,8 @@ def fixture_text_lines() -> List[Tuple[str, ImageType]]:
         ("cf234ec9-52cf-4710-94ce-288f0e055092", np.zeros((3, 3, 3), dtype=np.float32)),
     ]
 
+
 @fixture(name="language_detect_result")
 def fixture_language_detect_result() -> DetectionResult:
     """fixture language_detect_result"""
-    return DetectionResult(text="eng",score=0.9876)
+    return DetectionResult(text="eng", score=0.9876)

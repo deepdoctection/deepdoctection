@@ -215,8 +215,12 @@ class DatapointManager:
         return cont_ann.annotation_id
 
     def set_summary_annotation(
-        self, summary_name: str, summary_number: int, summary_value: Optional[str] = None,
-            summary_score: Optional[float] = None, annotation_id: Optional[str] = None,
+        self,
+        summary_name: str,
+        summary_number: int,
+        summary_value: Optional[str] = None,
+        summary_score: Optional[float] = None,
+        annotation_id: Optional[str] = None,
     ) -> str:
         """
         Creates a sub category of a summary annotation. If a summary of the given annotation_id does not exist, it will
@@ -238,10 +242,13 @@ class DatapointManager:
         assert image is not None
         if image.summary is None:
             image.summary = SummaryAnnotation()
-            image.summary.annotation_id = self.datapoint._define_annotation_id(image.summary)
+            image.summary.annotation_id = self.datapoint.define_annotation_id(image.summary)
+
+        ann: Union[CategoryAnnotation, ContainerAnnotation]
         if summary_value:
-            ann = ContainerAnnotation(category_name=summary_name,category_id=summary_number,value=summary_value,
-                                      score=summary_score)
+            ann = ContainerAnnotation(
+                category_name=summary_name, category_id=summary_number, value=summary_value, score=summary_score
+            )
         else:
             ann = CategoryAnnotation(category_name=summary_name, category_id=summary_number, score=summary_score)
         image.summary.dump_sub_category(summary_name, ann, image.image_id)
