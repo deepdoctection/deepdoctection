@@ -21,11 +21,11 @@ Testing module pipe.language
 
 from unittest.mock import MagicMock
 
-from deepdoctection.utils import names
-from deepdoctection.datapoint import Image
+from deepdoctection.datapoint import ContainerAnnotation, Image
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.pipe.text import TextOrderService
 from deepdoctection.pipe.language import LanguageDetectionService
+from deepdoctection.pipe.text import TextOrderService
+from deepdoctection.utils import names
 
 
 class TestLanguageDetectionService:
@@ -39,23 +39,24 @@ class TestLanguageDetectionService:
         """
 
         self._language_detector = MagicMock()
-        self._text_order_service = TextOrderService(text_container=names.C.WORD,
-                                                    floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-                                                    text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY])
-        self.language_detection_service = LanguageDetectionService(self._language_detector,text_container=names.C.WORD,
-                                                                   floating_text_block_names=[names.C.TITLE,
-                                                                                              names.C.TEXT,
-                                                                                              names.C.LIST],
-                                                                   text_block_names=[names.C.TITLE,
-                                                                                     names.C.TEXT,
-                                                                                     names.C.LIST,
-                                                                                     names.C.CELL,
-                                                                                     names.C.HEAD,
-                                                                                     names.C.BODY])
+        self._text_order_service = TextOrderService(
+            text_container=names.C.WORD,
+            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+        )
+        self.language_detection_service = LanguageDetectionService(
+            self._language_detector,
+            text_container=names.C.WORD,
+            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+        )
 
-    def test_pass_datapoint(self, dp_image_with_layout_and_word_annotations: Image,
-                            language_detect_result: DetectionResult) -> None:
-
+    def test_pass_datapoint(
+        self, dp_image_with_layout_and_word_annotations: Image, language_detect_result: DetectionResult
+    ) -> None:
+        """
+        test pass datapoint
+        """
         # Arrange
         dp_image = dp_image_with_layout_and_word_annotations
         self._language_detector.predict = MagicMock(return_value=language_detect_result)
@@ -65,5 +66,8 @@ class TestLanguageDetectionService:
         dp = self.language_detection_service.pass_datapoint(dp_with_text_ordered)
 
         # Assert
+        assert dp.summary is not None
         assert dp.summary.get_sub_category(names.NLP.LANG).category_name == "LANGUAGE"
-        assert dp.summary.get_sub_category(names.NLP.LANG).value == "eng"
+        container_ann = dp.summary.get_sub_category(names.NLP.LANG)
+        assert isinstance(container_ann, ContainerAnnotation)
+        assert container_ann.value == "eng"

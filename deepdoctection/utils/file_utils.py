@@ -373,7 +373,7 @@ def get_doctr_requirement() -> Requirement:
 
 
 # Fasttext related dependencies
-_FASTTEXT_AVAILABLE =  importlib.util.find_spec("fasttext") is not None
+_FASTTEXT_AVAILABLE = importlib.util.find_spec("fasttext") is not None
 _FASTTEXT_ERR_MSG = "Fasttext must be installed. >> pip install fasttext"
 
 

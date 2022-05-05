@@ -18,17 +18,17 @@
 """
 Module for language detection pipeline component
 """
-from typing import Dict, Optional, Union, List
+from typing import List, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import LanguageDetector, ObjectDetector
-from ..utils.settings import names
-from ..utils.logger import logger
 from ..mapper.pagestruct import to_page
-from .base import PredictorPipelineComponent
+from ..utils.logger import logger
+from ..utils.settings import names
+from .base import PipelineComponent
 
 
-class LanguageDetectionService(PredictorPipelineComponent):
+class LanguageDetectionService(PipelineComponent):
     """
     Pipeline Component for identifying the language in an image.
 
@@ -45,24 +45,27 @@ class LanguageDetectionService(PredictorPipelineComponent):
       component. The words determined by the OCR detector are not transferred to the image object.
     """
 
-    def __init__(self, language_detector: LanguageDetector,
-                 text_detector: Optional[ObjectDetector]= None,
-                 text_container: Optional[str]= None,
-                 floating_text_block_names: Optional[Union[str, List[str]]] = None,
-                 text_block_names: Optional[Union[str, List[str]]] = None,
+    def __init__(
+        self,
+        language_detector: LanguageDetector,
+        text_detector: Optional[ObjectDetector] = None,
+        text_container: Optional[str] = None,
+        floating_text_block_names: Optional[List[str]] = None,
+        text_block_names: Optional[List[str]] = None,
     ):
         """
         :param language_detector: Detector to determine text
         :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
-        :param text_container: text container, needed for generating the reading order. Not necessary when passing a text
-                               detector.
+        :param text_container: text container, needed for generating the reading order. Not necessary when passing a
+                               text detector.
         :param floating_text_block_names: floating text blocks, needed for generating the reading order. Not necessary
                                           when passing a text detector.
         :param text_block_names: text blocks, needed for generating the reading order. Not necessary
                                  when passing a text detector.
         """
 
-        super().__init__(language_detector,None)
+        super().__init__(None)  # cannot use PredictorPipelineComponent class because of return type of predict meth
+        self.predictor = language_detector
         self.text_detector = text_detector
         self._text_container = text_container
         self._floating_text_block_names = floating_text_block_names
@@ -70,35 +73,41 @@ class LanguageDetectionService(PredictorPipelineComponent):
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
-        if not self.text_detector:
-            page = to_page(dp,self._text_container,self._floating_text_block_names,self._text_block_names)
+        if self.text_detector is None:
+            page = to_page(
+                dp, self._text_container, self._floating_text_block_names, self._text_block_names  # type: ignore
+            )
             text = page.get_text()
         else:
+            assert dp.image is not None
             detect_result_list = self.text_detector.predict(dp.image)
             # this is a concatenation of all detection result. No reading order
-            text = " ".join([result.text for result in detect_result_list])
+            text = " ".join([result.text for result in detect_result_list if result.text is not None])
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(names.NLP.LANG, 1, predict_result.text, predict_result.score)
 
     def _init_sanity_checks(self) -> None:
-        assert self.text_detector or self._text_container, "if no text_detector is provided a text container must be " \
-                                                          "specified"
+        assert self.text_detector or self._text_container, (
+            "if no text_detector is provided a text container must be " "specified"
+        )
         if not self.text_detector:
             assert self._text_container in [names.C.WORD, names.C.LINE], (
                 f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
             )
-            assert set(self._floating_text_block_names) <= set(
-                self._text_block_names
+            assert set(self._floating_text_block_names) <= set(  # type: ignore
+                self._text_block_names  # type: ignore
             ), "floating_text_block_names must be a subset of text_block_names"
-            if (
-                    not self._floating_text_block_names
-                    and not self._text_block_names
-            ):
+            if not self._floating_text_block_names and not self._text_block_names:
                 logger.info(
                     "floating_text_block_names and text_block_names are set to None and. "
                     "This setting will return no reading order!"
                 )
 
-
-
-
+    def clone(self) -> PipelineComponent:
+        return self.__class__(
+            self.predictor,
+            self.text_detector,
+            self._text_container,
+            self._floating_text_block_names,
+            self._text_block_names,
+        )
