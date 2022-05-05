@@ -88,6 +88,11 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         if dataset_dataflow is not None:
             df = dataset_dataflow
 
+        def _proto_process(dp: Image) -> Image:
+            logger.info("processing %s", dp.file_name)
+            return dp
+        df = MapData(df,_proto_process)
+
         return df
 
     @staticmethod
@@ -108,7 +113,6 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         def _to_image(dp: str) -> Optional[Image]:
             _, file_name = os.path.split(dp)
-            logger.info("processing %s", file_name)
             dp = {"file_name": file_name, "location": dp}  # type: ignore
             return to_image(dp)
 
@@ -129,7 +133,6 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         @cur  # type: ignore
         def _to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
-            logger.info("processing %s", dp["file_name"])  # type: ignore
             return to_image(dp, dpi)
 
         df = MapData(df, _to_image(dpi=300))  # type: ignore  # pylint: disable=E1120

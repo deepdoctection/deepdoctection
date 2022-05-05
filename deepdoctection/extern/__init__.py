@@ -31,6 +31,7 @@ from .base import *
 from .common import *
 from .d2detect import *
 from .doctrocr import *
+from .fastlang import *
 from .hflayoutlm import *
 from .model import *
 from .pdftext import *
