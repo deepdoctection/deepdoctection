@@ -36,21 +36,23 @@ __all__ = ["ModelCatalog", "ModelDownloadManager"]
 
 @dataclass
 class ModelProfile:
-    model: str
+    name: str
     description: str
-    config: str
+
     size: List[int]
-    tp_model: False
+    tp_model: bool =  field(default=False)
+    config: Optional[str] = field(default=None)
     hf_repo_id: Optional[str] = field(default=None)
     hf_model_name: Optional[str] = field(default=None)
     hf_config_file: Optional[List[str]] = field(default=None)
     urls:  Optional[List[str]] = field(default=None)
 
 
-class ModelCatalog(Registry):
+class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well.
     """
+    CATALOG: Dict[str,ModelProfile] = {}
 
     MODELS: Dict[str, Any] = {
         "layout/model-800000_inf_only.data-00000-of-00001": {
@@ -209,6 +211,110 @@ class ModelCatalog(Registry):
         profile["urls"] = [str(url) for url in profile.get("urls", "")]
         return profile
 
+    @staticmethod
+    def register(name: str,profile: ModelProfile) -> None:
+        if name in ModelCatalog.CATALOG:
+            raise KeyError("Model already registered")
+        ModelCatalog.CATALOG[name]= profile
+
+
+layout_model_inf =ModelProfile(name="layout/model-800000_inf_only.data-00000-of-00001",
+             description="Tensorpack layout model for inference purposes trained on Publaynet",
+             config="dd/tp/conf_frcnn_layout",
+             size= [274552244, 7907],
+             tp_model= False,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+             hf_model_name="model-800000_inf_only",
+             hf_config_file= ["conf_frcnn_layout.yaml"])
+ModelCatalog.register(layout_model_inf.name,layout_model_inf)
+
+cell_model_inf =ModelProfile(name="cell/model-1800000_inf_only.data-00000-of-00001",
+             description="Tensorpack cell detection model for inference purposes trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_cell",
+             size= [274503056, 8056],
+             tp_model= True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+             hf_model_name= "model-1800000_inf_only",
+             hf_config_file= ["conf_frcnn_cell.yaml"])
+ModelCatalog.register(cell_model_inf.name,cell_model_inf)
+
+item_model_inf =ModelProfile(name="item/model-1620000_inf_only.data-00000-of-00001",
+             description="Tensorpack row/column detection model for inference purposes trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_rows",
+             size= [274515344, 7904],
+             tp_model= True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+             hf_model_name= "model-1620000_inf_only",
+             hf_config_file= ["conf_frcnn_rows.yaml"])
+ModelCatalog.register(item_model_inf.name,item_model_inf)
+
+item_model =ModelProfile(name="item/model-1620000.data-00000-of-00001",
+             description="Tensorpack row/column detection model trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_rows",
+             size= [823546048, 25787],
+             tp_model= True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
+             hf_model_name= "model-1620000",
+             hf_config_file=  ["conf_frcnn_rows.yaml"])
+ModelCatalog.register(item_model.name,item_model)
+
+layout_model =ModelProfile(name="layout/model-800000.data-00000-of-00001",
+             description="Tensorpack layout detection model trained on Publaynet",
+             config="dd/tp/conf_frcnn_layout",
+             size= [823656748, 25796],
+             tp_model= True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
+             hf_model_name= "model-800000",
+             hf_config_file=  ["conf_frcnn_layout.yaml"])
+ModelCatalog.register(layout_model.name,layout_model)
+
+cell_model =ModelProfile(name="cell/model-1800000.data-00000-of-00001",
+             description="Tensorpack cell detection model trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_cell",
+             size= [823509160, 25905],
+             tp_model= True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
+             hf_model_name= "model-1800000",
+             hf_config_file=  ["conf_frcnn_cell.yaml"])
+ModelCatalog.register(cell_model.name,cell_model)
+
+d2_layout_model =ModelProfile(name="layout/d2_model-800000-layout.pkl",
+             description="Detectron2 layout detection model trained on Publaynet",
+             config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN",
+             size= [274568239],
+             tp_model= False,
+             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+             hf_model_name= "d2_model-800000-layout.pkl",
+             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
+ModelCatalog.register(d2_layout_model.name,d2_layout_model)
+
+
+d2_cell_model =ModelProfile(name="cell/d2_model-1800000-cell.pkl",
+             description="Detectron2 cell detection inference only model trained on Pubtabnet",
+             config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN",
+             size= [274519039],
+             tp_model= False,
+             hf_repo_id= "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+             hf_model_name= "d2_model-1800000-cell.pkl",
+             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
+ModelCatalog.register(d2_cell_model.name,d2_cell_model)
+
+
+d2_item_model =ModelProfile(name="item/d2_model-1620000-item.pkl",
+             description="Detectron2 item detection inference only model trained on Pubtabnet",
+             config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN",
+             size= [274531339],
+             tp_model= False,
+             hf_repo_id=  "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+             hf_model_name= "d2_model-1620000-item.pkl",
+             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
+ModelCatalog.register(d2_item_model.name,d2_item_model)
+
+fasttext_model =ModelProfile(name="fasttext/lid.176.bin",
+             description="Fasttext language detection model",
+             size= [131266198],
+             urls = ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"])
+ModelCatalog.register(fasttext_model.name,fasttext_model)
 
 
 def get_tp_weight_names(weights: str) -> List[str]:
