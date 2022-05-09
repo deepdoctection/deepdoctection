@@ -101,6 +101,7 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
         """
         return MapData(df, self.pass_datapoint)
 
+    @abstractmethod
     def clone(self) -> "PipelineComponent":
         """
         Clone an instance
