@@ -26,7 +26,7 @@ import catalogue
 from deepdoctection.datasets import instances
 from deepdoctection.datasets.base import DatasetBase
 
-__all__ = ["DatasetRegistry", "dataset_catalogue"]
+__all__ = ["DatasetRegistry", "dataset_registry"]
 
 
 _DATASETS: Dict[str, Type[DatasetBase]] = dict(
@@ -79,7 +79,7 @@ class DatasetRegistry:
         return list(_DATASETS.keys())
 
 
-dataset_catalogue = catalogue.create("deepdoctection","datasets",entry_points=True)
+dataset_registry = catalogue.create("deepdoctection", "datasets", entry_points=True)
 
 
 def get_dataset(name: str) -> DatasetBase:
@@ -89,7 +89,7 @@ def get_dataset(name: str) -> DatasetBase:
     :param name: A dataset name
     :return: An instance of a dataset
     """
-    return dataset_catalogue.get(name)()
+    return dataset_registry.get(name)()
 
 
 

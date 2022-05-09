@@ -36,7 +36,7 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
-from ..registry import dataset_catalogue
+from ..registry import dataset_registry
 
 _NAME = "testlayout"
 _DESCRIPTION = (
@@ -67,7 +67,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
 _INIT_CATEGORIES = [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB, names.C.FIG]
 
 
-@dataset_catalogue.register("testlayout")
+@dataset_registry.register("testlayout")
 class LayoutTest(_BuiltInDataset):
     """
     LayoutTest

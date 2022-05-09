@@ -41,7 +41,7 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
-from ..registry import dataset_catalogue
+from ..registry import dataset_registry
 
 _NAME = "publaynet"
 _DESCRIPTION = (
@@ -69,7 +69,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "train.json", "v
 _INIT_CATEGORIES = [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB, names.C.FIG]
 
 
-@dataset_catalogue.register("publaynet")
+@dataset_registry.register("publaynet")
 class Publaynet(_BuiltInDataset):
     """
     Publaynet
