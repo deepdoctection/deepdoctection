@@ -52,6 +52,7 @@ from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_catalogue
 
 _NAME = "iiitar13k"
 
@@ -80,6 +81,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
 _INIT_CATEGORIES = [names.C.TAB, names.C.LOGO, names.C.FIG, names.C.SIGN]
 
 
+@dataset_catalogue.register("iiitar13k")
 class IIITar13K(_BuiltInDataset):
     """
     IIITar13K
