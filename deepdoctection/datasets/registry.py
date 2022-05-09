@@ -21,11 +21,12 @@ Module for DatasetRegistry
 
 import inspect
 from typing import Dict, List, Type
+import catalogue
 
 from deepdoctection.datasets import instances
 from deepdoctection.datasets.base import DatasetBase
 
-__all__ = ["DatasetRegistry"]
+__all__ = ["DatasetRegistry", "dataset_catalogue"]
 
 
 _DATASETS: Dict[str, Type[DatasetBase]] = dict(
@@ -76,3 +77,22 @@ class DatasetRegistry:
         :return: A list of dataset names.
         """
         return list(_DATASETS.keys())
+
+
+dataset_catalogue = catalogue.create("deepdoctection","datasets",entry_points=True)
+
+
+def get_dataset(name: str) -> DatasetBase:
+    """
+    Returns an instance of a dataset with a given name.
+
+    :param name: A dataset name
+    :return: An instance of a dataset
+    """
+    return dataset_catalogue.get(name)()
+
+
+
+
+
+

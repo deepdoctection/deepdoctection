@@ -46,6 +46,7 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_catalogue
 
 _NAME = "funsd"
 _DESCRIPTION = (
@@ -75,6 +76,7 @@ _SUB_CATEGORIES = {
 }
 
 
+@dataset_catalogue.register("funsd")
 class Funsd(_BuiltInDataset):
     """
     Funsd
