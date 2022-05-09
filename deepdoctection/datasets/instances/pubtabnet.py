@@ -42,7 +42,7 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
-from ..registry import dataset_catalogue
+from ..registry import dataset_registry
 
 _NAME = "pubtabnet"
 _DESCRIPTION = (
@@ -90,7 +90,7 @@ _SUB_CATEGORIES = {
 }
 
 
-@dataset_catalogue.register("pubtabnet")
+@dataset_registry.register("pubtabnet")
 class Pubtabnet(_BuiltInDataset):
     """
     Pubtabnet

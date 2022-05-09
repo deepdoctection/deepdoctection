@@ -50,7 +50,7 @@ from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
-from ..registry import dataset_catalogue
+from ..registry import dataset_registry
 
 _NAME = "fintabnet"
 _DESCRIPTION = (
@@ -104,7 +104,7 @@ _SUB_CATEGORIES = {
 }
 
 
-@dataset_catalogue.register("fintabnet")
+@dataset_registry.register("fintabnet")
 class Fintabnet(_BuiltInDataset):
     """
     Fintabnet

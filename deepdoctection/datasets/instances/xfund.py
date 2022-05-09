@@ -41,7 +41,7 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
-from ..registry import dataset_catalogue
+from ..registry import dataset_registry
 
 _NAME = "xfund"
 _DESCRIPTION = (
@@ -75,7 +75,7 @@ _SUB_CATEGORIES = {names.C.WORD: {names.C.SE: [names.C.O, names.C.Q, names.C.A, 
 _LANGUAGES = ["de", "es", "fr", "it", "ja", "pt", "zh"]
 
 
-@dataset_catalogue.register("xfund")
+@dataset_registry.register("xfund")
 class Xfund(_BuiltInDataset):
     """
     Xfund

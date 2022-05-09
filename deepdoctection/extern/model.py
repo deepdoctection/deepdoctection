@@ -20,9 +20,11 @@ Module for ModelCatalog and ModelDownloadManager
 """
 
 import os
-from copy import copy
-from typing import Any, Dict, List, Union
 
+from dataclasses import dataclass, field
+from copy import copy
+from typing import Any, Dict, List, Union, Optional
+from catalogue import Registry
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 
 from ..utils.fs import download
@@ -32,7 +34,20 @@ from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 __all__ = ["ModelCatalog", "ModelDownloadManager"]
 
 
-class ModelCatalog:
+@dataclass
+class ModelProfile:
+    model: str
+    description: str
+    config: str
+    size: List[int]
+    tp_model: False
+    hf_repo_id: Optional[str] = field(default=None)
+    hf_model_name: Optional[str] = field(default=None)
+    hf_config_file: Optional[List[str]] = field(default=None)
+    urls:  Optional[List[str]] = field(default=None)
+
+
+class ModelCatalog(Registry):
     """
     Catalog of some pre-trained models. The associated config file is available as well.
     """
@@ -193,6 +208,7 @@ class ModelCatalog:
         profile = copy(ModelCatalog.MODELS[weights])
         profile["urls"] = [str(url) for url in profile.get("urls", "")]
         return profile
+
 
 
 def get_tp_weight_names(weights: str) -> List[str]:
