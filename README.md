@@ -53,7 +53,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 ## Requirements
 
 - Linux **or** macOS
-- Python >=  3.8
+- Python =  3.8
 - PyTorch >= 1.8 and torchvision **or** Tensorflow >=2.4.1 and CUDA
 
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
