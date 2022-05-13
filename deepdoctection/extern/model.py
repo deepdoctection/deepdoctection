@@ -24,7 +24,6 @@ import os
 from dataclasses import dataclass, field
 from copy import copy
 from typing import Any, Dict, List, Union, Optional
-from catalogue import Registry
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 
 from ..utils.fs import download
@@ -52,7 +51,87 @@ class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well.
     """
-    CATALOG: Dict[str,ModelProfile] = {}
+    CATALOG: Dict[str,ModelProfile] = {"layout/model-800000_inf_only.data-00000-of-00001":
+             ModelProfile(name="layout/model-800000_inf_only.data-00000-of-00001",
+             description="Tensorpack layout model for inference purposes trained on Publaynet",
+             config="dd/tp/conf_frcnn_layout.yaml",
+             size= [274552244, 7907],
+             tp_model= False,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+             hf_model_name="model-800000_inf_only",
+             hf_config_file= ["conf_frcnn_layout.yaml"]),
+             "cell/model-1800000_inf_only.data-00000-of-00001":
+             ModelProfile(name="cell/model-1800000_inf_only.data-00000-of-00001",
+             description="Tensorpack cell detection model for inference purposes trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_cell.yaml",
+             size=[274503056, 8056],
+             tp_model=True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+             hf_model_name="model-1800000_inf_only",
+             hf_config_file=["conf_frcnn_cell.yaml"]),
+             "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(name="item/model-1620000_inf_only.data-00000-of-00001",
+             description="Tensorpack row/column detection model for inference purposes trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_rows.yaml",
+             size=[274515344, 7904],
+             tp_model=True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+             hf_model_name="model-1620000_inf_only",
+             hf_config_file=["conf_frcnn_rows.yaml"]),
+             "item/model-1620000.data-00000-of-00001": ModelProfile(name="item/model-1620000.data-00000-of-00001",
+             description="Tensorpack row/column detection model trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_rows.yaml",
+             size=[823546048, 25787],
+             tp_model=True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
+             hf_model_name="model-1620000",
+             hf_config_file=["conf_frcnn_rows.yaml"]),
+             "layout/model-800000.data-00000-of-00001": ModelProfile(name="layout/model-800000.data-00000-of-00001",
+             description="Tensorpack layout detection model trained on Publaynet",
+             config="dd/tp/conf_frcnn_layout.yaml",
+             size=[823656748, 25796],
+             tp_model=True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
+             hf_model_name="model-800000",
+             hf_config_file=["conf_frcnn_layout.yaml"]),
+             "cell/model-1800000.data-00000-of-00001": ModelProfile(name="cell/model-1800000.data-00000-of-00001",
+             description="Tensorpack cell detection model trained on Pubtabnet",
+             config="dd/tp/conf_frcnn_cell.yaml",
+             size=[823509160, 25905],
+             tp_model=True,
+             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
+             hf_model_name="model-1800000",
+             hf_config_file=["conf_frcnn_cell.yaml"]),
+             "layout/d2_model-800000-layout.pkl": ModelProfile(name="layout/d2_model-800000-layout.pkl",
+             description="Detectron2 layout detection model trained on Publaynet",
+             config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+             size=[274568239],
+             tp_model=False,
+             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+             hf_model_name="d2_model-800000-layout.pkl",
+             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"]),
+             "cell/d2_model-1800000-cell.pkl": ModelProfile(name="cell/d2_model-1800000-cell.pkl",
+             description="Detectron2 cell detection inference only model trained on Pubtabnet",
+             config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
+             size=[274519039],
+             tp_model=False,
+             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+             hf_model_name="d2_model-1800000-cell.pkl",
+             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"]),
+             "item/d2_model-1620000-item.pkl": ModelProfile(name="item/d2_model-1620000-item.pkl",
+             description="Detectron2 item detection inference only model trained on Pubtabnet",
+             config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
+             size=[274531339],
+             tp_model=False,
+             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+             hf_model_name="d2_model-1620000-item.pkl",
+             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"]),
+             "fasttext/lid.176.bin": ModelProfile(name="fasttext/lid.176.bin",
+             description="Fasttext language detection model",
+             size= [131266198],
+             urls = ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"])}
+
+
+
 
     MODELS: Dict[str, Any] = {
         "layout/model-800000_inf_only.data-00000-of-00001": {
@@ -137,32 +216,33 @@ class ModelCatalog:
     }
 
     @staticmethod
-    def get_full_path_weights(weights: str) -> str:
+    def get_full_path_weights(name: str) -> str:
         """
         Returns the absolute path of weights.
 
         Note, that weights are sometimes not defined by only one file. The returned string will only represent one
         file.
 
-        :param weights: weights
+        :param name: model name
         :return: absolute weight path
         """
-        return os.path.join(get_weights_dir_path(), weights)
+        return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
-    def get_full_path_configs(weights: str) -> str:
+    def get_full_path_configs(name: str) -> str:
         """
-        Return the absolute path of configs for some given weights.
+        Return the absolute path of configs for some given weights, if available
 
         Note, that configs are sometimes not defined by only one file. The returned string will only represent one
         file.
 
-        :param weights: weights
+        :param name: model name
         :return: absolute path to the config
         """
-        profile = ModelCatalog.get_profile(weights)
-
-        return os.path.join(get_configs_dir_path(), profile["config"]) + ".yaml"
+        profile = ModelCatalog.get_profile(name)
+        if profile.config is not None:
+            return os.path.join(get_configs_dir_path(), profile.config)
+        raise ValueError("config file for model not provided")
 
     @staticmethod
     def get_weights_names() -> List[str]:
@@ -200,15 +280,14 @@ class ModelCatalog:
         return False
 
     @staticmethod
-    def get_profile(weights: str) -> Dict[str, Any]:
+    def get_profile(name: str) -> ModelProfile:
         """
         Returns the profile of given weights, i.e. the config file, size and urls.
 
-        :param weights: local weights
+        :param name: model name
         :return: A dict of model/weights profiles
         """
-        profile = copy(ModelCatalog.MODELS[weights])
-        profile["urls"] = [str(url) for url in profile.get("urls", "")]
+        profile = copy(ModelCatalog.CATALOG[name])
         return profile
 
     @staticmethod
@@ -218,113 +297,14 @@ class ModelCatalog:
         ModelCatalog.CATALOG[name]= profile
 
 
-layout_model_inf =ModelProfile(name="layout/model-800000_inf_only.data-00000-of-00001",
-             description="Tensorpack layout model for inference purposes trained on Publaynet",
-             config="dd/tp/conf_frcnn_layout",
-             size= [274552244, 7907],
-             tp_model= False,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
-             hf_model_name="model-800000_inf_only",
-             hf_config_file= ["conf_frcnn_layout.yaml"])
-ModelCatalog.register(layout_model_inf.name,layout_model_inf)
-
-cell_model_inf =ModelProfile(name="cell/model-1800000_inf_only.data-00000-of-00001",
-             description="Tensorpack cell detection model for inference purposes trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_cell",
-             size= [274503056, 8056],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
-             hf_model_name= "model-1800000_inf_only",
-             hf_config_file= ["conf_frcnn_cell.yaml"])
-ModelCatalog.register(cell_model_inf.name,cell_model_inf)
-
-item_model_inf =ModelProfile(name="item/model-1620000_inf_only.data-00000-of-00001",
-             description="Tensorpack row/column detection model for inference purposes trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_rows",
-             size= [274515344, 7904],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-             hf_model_name= "model-1620000_inf_only",
-             hf_config_file= ["conf_frcnn_rows.yaml"])
-ModelCatalog.register(item_model_inf.name,item_model_inf)
-
-item_model =ModelProfile(name="item/model-1620000.data-00000-of-00001",
-             description="Tensorpack row/column detection model trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_rows",
-             size= [823546048, 25787],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
-             hf_model_name= "model-1620000",
-             hf_config_file=  ["conf_frcnn_rows.yaml"])
-ModelCatalog.register(item_model.name,item_model)
-
-layout_model =ModelProfile(name="layout/model-800000.data-00000-of-00001",
-             description="Tensorpack layout detection model trained on Publaynet",
-             config="dd/tp/conf_frcnn_layout",
-             size= [823656748, 25796],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
-             hf_model_name= "model-800000",
-             hf_config_file=  ["conf_frcnn_layout.yaml"])
-ModelCatalog.register(layout_model.name,layout_model)
-
-cell_model =ModelProfile(name="cell/model-1800000.data-00000-of-00001",
-             description="Tensorpack cell detection model trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_cell",
-             size= [823509160, 25905],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
-             hf_model_name= "model-1800000",
-             hf_config_file=  ["conf_frcnn_cell.yaml"])
-ModelCatalog.register(cell_model.name,cell_model)
-
-d2_layout_model =ModelProfile(name="layout/d2_model-800000-layout.pkl",
-             description="Detectron2 layout detection model trained on Publaynet",
-             config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN",
-             size= [274568239],
-             tp_model= False,
-             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
-             hf_model_name= "d2_model-800000-layout.pkl",
-             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
-ModelCatalog.register(d2_layout_model.name,d2_layout_model)
-
-
-d2_cell_model =ModelProfile(name="cell/d2_model-1800000-cell.pkl",
-             description="Detectron2 cell detection inference only model trained on Pubtabnet",
-             config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN",
-             size= [274519039],
-             tp_model= False,
-             hf_repo_id= "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
-             hf_model_name= "d2_model-1800000-cell.pkl",
-             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
-ModelCatalog.register(d2_cell_model.name,d2_cell_model)
-
-
-d2_item_model =ModelProfile(name="item/d2_model-1620000-item.pkl",
-             description="Detectron2 item detection inference only model trained on Pubtabnet",
-             config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN",
-             size= [274531339],
-             tp_model= False,
-             hf_repo_id=  "deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-             hf_model_name= "d2_model-1620000-item.pkl",
-             hf_config_file=  ["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"])
-ModelCatalog.register(d2_item_model.name,d2_item_model)
-
-fasttext_model =ModelProfile(name="fasttext/lid.176.bin",
-             description="Fasttext language detection model",
-             size= [131266198],
-             urls = ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"])
-ModelCatalog.register(fasttext_model.name,fasttext_model)
-
-
-def get_tp_weight_names(weights: str) -> List[str]:
+def get_tp_weight_names(name: str) -> List[str]:
     """
     Given a path to some model weights it will return all file names according to TP naming convention
 
-    :param weights: weights
+    :param name: TP model name
     :return: A list of TP file names
     """
-    _, file_name = os.path.split(weights)
+    _, file_name = os.path.split(name)
     prefix, _ = file_name.split(".")
     weight_names = []
     for suffix in ["data-00000-of-00001", "index"]:
