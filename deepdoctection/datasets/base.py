@@ -75,8 +75,9 @@ class DatasetBase(ABC):
 
         raise NotImplementedError
 
+    @classmethod
     @abstractmethod
-    def _info(self) -> DatasetInfo:
+    def _info(cls) -> DatasetInfo:
         """
         Construct the DatasetInfo object.
         """

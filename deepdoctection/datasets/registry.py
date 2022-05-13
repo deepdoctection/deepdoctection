@@ -92,6 +92,10 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
+def get_datasets_infos():
+
+    data = dataset_registry.get_all()
+
 
 
 

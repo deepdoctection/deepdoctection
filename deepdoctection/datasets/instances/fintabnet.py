@@ -112,7 +112,8 @@ class Fintabnet(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

@@ -245,22 +245,6 @@ class ModelCatalog:
         raise ValueError("config file for model not provided")
 
     @staticmethod
-    def get_weights_names() -> List[str]:
-        """
-        Get a list of available weights
-
-        :return: A list of names
-        """
-        return list(ModelCatalog.MODELS.keys())
-
-    @staticmethod
-    def print_weights_names() -> None:
-        """
-        Print a list of registered weights names
-        """
-        print(list(ModelCatalog.MODELS.keys()))
-
-    @staticmethod
     def get_weights_list() -> List[str]:
         """
         Returns a list of absolute paths of registered weights.
@@ -272,17 +256,18 @@ class ModelCatalog:
         """
         Checks if some weights belong to a registered model
 
-        :param weights: relative path
+        :param weights: relative or absolute path
         :return: True if the weights are registered in :class:`ModelCatalog`
         """
-        if ModelCatalog.get_full_path_weights(weights) in ModelCatalog.get_weights_list():
+        if (ModelCatalog.get_full_path_weights(weights) in ModelCatalog.get_weights_list()) or \
+                (weights in ModelCatalog.get_weights_list()):
             return True
         return False
 
     @staticmethod
     def get_profile(name: str) -> ModelProfile:
         """
-        Returns the profile of given weights, i.e. the config file, size and urls.
+        Returns the profile of given model name, i.e. the config file, size and urls.
 
         :param name: model name
         :return: A dict of model/weights profiles
@@ -321,29 +306,28 @@ class ModelDownloadManager:  # pylint: disable=R0903
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(weights: str, from_hf_hub: bool = True) -> str:
+    def maybe_download_weights_and_configs(name: str) -> str:
         """
-        Check if some weights belong to some registered weights. If yes, it will check if their weights
+        Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
 
-        :param weights: A path to some model weights
-        :param from_hf_hub: If True, will use model download from the Huggingface hub
+        :param name: A path to some model weights
         :return: Absolute path to model weights if model is registered
         """
 
-        absolute_path_weights = ModelCatalog.get_full_path_weights(weights)
+        absolute_path_weights = ModelCatalog.get_full_path_weights(name)
         file_names: List[str] = []
-        if ModelCatalog.is_registered(weights):
-            profile = ModelCatalog.get_profile(weights)
-            if profile["tp_model"]:
-                file_names = get_tp_weight_names(weights)
+        if ModelCatalog.is_registered(name):
+            profile = ModelCatalog.get_profile(name)
+            if profile.tp_model:
+                file_names = get_tp_weight_names(name)
             else:
-                hf_model_name = profile.get("hf_model_name", "")
+                hf_model_name = profile.hf_model_name
                 assert isinstance(hf_model_name, str)
                 file_names.append(hf_model_name)
-            if from_hf_hub:
+            if profile.hf_repo_id:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
-                absolute_path_configs = ModelCatalog.get_full_path_configs(weights)
+                absolute_path_configs = ModelCatalog.get_full_path_configs(name)
                 ModelDownloadManager.load_configs_from_hf_hub(profile, absolute_path_configs)
             else:
                 ModelDownloadManager._load_from_gd(profile, absolute_path_weights, file_names)
@@ -354,7 +338,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
         return absolute_path_weights
 
     @staticmethod
-    def load_model_from_hf_hub(profile: Dict[str, Any], absolute_path: str, file_names: List[str]) -> None:
+    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
         """
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
@@ -364,24 +348,24 @@ class ModelDownloadManager:  # pylint: disable=R0903
         :param file_names: Optionally, replace the file name of the ModelCatalog. This is necessary e.g. for Tensorpack
                            models
         """
-        repo_id = profile["hf_repo_id"]
+        repo_id = profile.hf_repo_id
         directory, _ = os.path.split(absolute_path)
         if not file_names:
-            file_names = profile["hf_model_name"]
-        for expect_size, file_name in zip(profile["size"], file_names):
+            file_names = profile.hf_model_name
+        for expect_size, file_name in zip(profile.size, file_names):
             size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
                 logger.error("File downloaded from %s does not match the expected size!", repo_id)
                 logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
 
     @staticmethod
-    def _load_from_gd(profile: Dict[str, List[Union[int, str]]], absolute_path: str, file_names: List[str]) -> None:
-        for size, url, file_name in zip(profile["size"], profile["urls"], file_names):
+    def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+        for size, url, file_name in zip(profile.size, profile.urls, file_names):
             directory, _ = os.path.split(absolute_path)
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def load_configs_from_hf_hub(profile: Dict[str, Any], absolute_path: str) -> None:
+    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: str) -> None:
         """
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
@@ -390,9 +374,9 @@ class ModelDownloadManager:  # pylint: disable=R0903
         :param absolute_path:  Absolute path (incl. file name) of target file
         """
 
-        repo_id = profile["hf_repo_id"]
+        repo_id = profile.hf_repo_id
         directory, _ = os.path.split(absolute_path)
-        for file_name in profile["hf_config_file"]:
+        for file_name in profile.hf_config_file:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
