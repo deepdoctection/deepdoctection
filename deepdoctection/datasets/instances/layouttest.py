@@ -40,14 +40,14 @@ from ..registry import dataset_registry
 
 _NAME = "testlayout"
 _DESCRIPTION = (
-    "A small test set consisting of a subset of six images with layout annotations. "
+    "A small test set consisting of a subset of six images with layout annotations. \n"
     "The set is meant for debugging purposes and nothing else"
 )
 
 _LICENSE = (
-    "The annotations in this dataset belong to Dr. Janis Meyer and are licensed"
-    " under a Community Data License Agreement"
-    " – Permissive – Version 1.0 License. Dr. Janis Meyer does not own the copyright of the images."
+    "The annotations in this dataset belong to Dr. Janis Meyer and are licensed \n"
+    " under a Community Data License Agreement \n"
+    " – Permissive – Version 1.0 License. Dr. Janis Meyer does not own the copyright of the images. \n"
     " Use of the images must abide by the PMC Open Access Subset Terms of Use."
 )
 _URL = [
@@ -75,7 +75,8 @@ class LayoutTest(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

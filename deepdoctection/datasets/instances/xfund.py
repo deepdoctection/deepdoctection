@@ -45,12 +45,12 @@ from ..registry import dataset_registry
 
 _NAME = "xfund"
 _DESCRIPTION = (
-    "XFUND is a multilingual form understanding benchmark dataset that includes human-labeled forms with "
+    "XFUND is a multilingual form understanding benchmark dataset that includes human-labeled forms with \n"
     "key-value pairs in 7 languages (Chinese, Japanese, Spanish, French, Italian, German, Portuguese)."
 )
 _LICENSE = (
-    "The content of this project itself is licensed under the Attribution-NonCommercial-ShareAlike 4.0 "
-    "International (CC BY-NC-SA 4.0) Portions of the source code are based on the transformers project. "
+    "The content of this project itself is licensed under the Attribution-NonCommercial-ShareAlike 4.0 \n"
+    "International (CC BY-NC-SA 4.0) Portions of the source code are based on the transformers project. \n"
     "Microsoft Open Source Code of Conduct"
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
@@ -83,7 +83,8 @@ class Xfund(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
