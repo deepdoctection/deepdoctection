@@ -22,7 +22,7 @@ Module for DatasetRegistry
 import catalogue
 from tabulate import tabulate
 from termcolor import colored
-from pprint import pprint
+
 from .base import DatasetBase
 
 __all__ = ["dataset_registry","get_dataset","print_dataset_infos"]

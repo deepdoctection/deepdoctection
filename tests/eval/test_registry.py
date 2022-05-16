@@ -24,7 +24,7 @@ from unittest.mock import MagicMock
 
 from deepdoctection.dataflow import DataFlow
 from deepdoctection.datasets.info import DatasetCategories
-from deepdoctection.eval import MetricRegistry
+from deepdoctection.eval import metric_registry
 from deepdoctection.eval.base import MetricBase
 from deepdoctection.utils.detection_types import JsonDict
 
@@ -33,7 +33,7 @@ def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     test metric registry has all metrics registered
     """
-    assert len(MetricRegistry.get_metric_names()) == 3
+    assert len(metric_registry.get_all()) == 3
 
 
 def test_metric_registry_registered_new_metric() -> None:
@@ -41,6 +41,7 @@ def test_metric_registry_registered_new_metric() -> None:
     test, that the new generated metric "TestMetric" can be registered and retrieved from registry
     """
 
+    @metric_registry.register("testmetric")
     class TestMetric(MetricBase):
         """
         TestMetric
@@ -68,8 +69,7 @@ def test_metric_registry_registered_new_metric() -> None:
             return MagicMock()
 
     # Act
-    MetricRegistry.register_metric("testmetric", TestMetric)
-    test = MetricRegistry.get_metric("testmetric")
+    test = metric_registry.get("testmetric")
 
     # Assert
     assert test == TestMetric

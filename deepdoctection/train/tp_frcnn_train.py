@@ -44,7 +44,7 @@ from tensorpack.utils import logger
 
 from ..datasets.base import DatasetBase
 from ..eval.base import MetricBase
-from ..eval.registry import MetricRegistry
+from ..eval.registry import metric_registry
 from ..eval.tp_eval_callback import EvalCallback
 from ..extern.tp.tfutils import disable_tfv2
 from ..extern.tp.tpfrcnn.common import CustomResize
@@ -278,7 +278,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         and pipeline_component_name is not None
     ):
         if metric_name is not None:
-            metric = MetricRegistry.get_metric(metric_name)
+            metric = metric_registry.get(metric_name)
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
