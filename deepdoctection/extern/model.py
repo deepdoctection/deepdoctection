@@ -21,9 +21,11 @@ Module for ModelCatalog and ModelDownloadManager
 
 import os
 
-from dataclasses import dataclass, field
+from tabulate import tabulate
+from termcolor import colored
+from dataclasses import dataclass, field, asdict
 from copy import copy
-from typing import Any, Dict, List, Union, Optional
+from typing import Dict, List, Optional, Any
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 
 from ..utils.fs import download
@@ -31,7 +33,7 @@ from ..utils.logger import logger
 from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 from ..utils.settings import names
 
-__all__ = ["ModelCatalog", "ModelDownloadManager"]
+__all__ = ["ModelCatalog", "ModelDownloadManager","print_model_infos"]
 
 
 @dataclass
@@ -47,6 +49,12 @@ class ModelProfile:
     hf_config_file: Optional[List[str]] = field(default=None)
     urls:  Optional[List[str]] = field(default=None)
     categories: Optional[Dict[str,str]] = field(default_factory=dict)
+
+    def as_dict(self) -> Dict[str,Any]:
+        """
+        returns a dict of the dataclass
+        """
+        return asdict(self)
 
 
 class ModelCatalog:
@@ -408,6 +416,24 @@ def get_tp_weight_names(name: str) -> List[str]:
         weight_names.append(prefix + "." + suffix)
 
     return weight_names
+
+
+def print_model_infos() -> None:
+    """
+    Prints a table with all registered model profiles and some of their attributes (name, description, config and
+    categories)
+    """
+
+    profiles = ModelCatalog.CATALOG.values()
+    num_columns = min(6, len(profiles))
+    infos = []
+    for profile in profiles:
+        infos.append((profile.name, profile.description, profile.config,profile.categories))
+    table = tabulate(
+        infos, headers=["name", "description", "config", "categories"] * (num_columns // 2), tablefmt="fancy_grid",
+        stralign="left", numalign="left"
+    )
+    print(colored(table, "cyan"))
 
 
 class ModelDownloadManager:  # pylint: disable=R0903

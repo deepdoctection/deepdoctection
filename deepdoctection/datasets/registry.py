@@ -41,7 +41,11 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
-def print_datasets_infos():
+def print_dataset_infos() -> None:
+    """
+    Prints a table with all registered datasets and some basic information (name, license and description)
+    """
+
     data = dataset_registry.get_all()
     num_columns = min(6, len(data))
     infos = []
