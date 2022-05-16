@@ -22,6 +22,8 @@ Module for DatasetRegistry
 import inspect
 from typing import Dict, List, Type
 import catalogue
+from tabulate import tabulate
+from termcolor import colored
 
 from deepdoctection.datasets import instances
 from deepdoctection.datasets.base import DatasetBase
@@ -92,9 +94,17 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
-def get_datasets_infos():
-
+def print_datasets_infos():
     data = dataset_registry.get_all()
+    num_columns = min(6, len(data))
+    infos = []
+    for dataset in data.items():
+        infos.append((dataset[0], dataset[1]._info().license, dataset[1]._info().description))
+    table = tabulate(
+        infos, headers=["dataset", "license", "description"] * (num_columns // 2), tablefmt="fancy_grid",
+        stralign="left", numalign="left"
+    )
+    print(colored(table, "cyan"))
 
 
 
