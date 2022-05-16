@@ -19,7 +19,7 @@
 Module for DatasetRegistry
 """
 
-import catalogue
+import catalogue  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
 
@@ -41,7 +41,7 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
-def print_dataset_infos(add_license=True, add_info: bool = True) -> None:
+def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None:
     """
     Prints a table with all registered datasets and some basic information (name, license and optionally description)
 

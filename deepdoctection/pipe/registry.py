@@ -19,7 +19,7 @@
 Module for PipeRegistry
 """
 
-import catalogue
+import catalogue  # type: ignore
 
 __all__ = ["pipeline_component_registry"]
 

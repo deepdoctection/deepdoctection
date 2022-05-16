@@ -19,6 +19,6 @@
 Module for MetricRegistry
 """
 
-import catalogue
+import catalogue  # type: ignore
 
 metric_registry = catalogue.create("deepdoctection", "metrics", entry_points=True)

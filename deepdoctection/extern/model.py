@@ -52,7 +52,7 @@ class ModelProfile:
     hf_model_name: Optional[str] = field(default=None)
     hf_config_file: Optional[List[str]] = field(default=None)
     urls: Optional[List[str]] = field(default=None)
-    categories: Optional[Dict[str, str]] = field(default_factory=dict)
+    categories: Optional[Dict[str, str]] = field(default=None)
 
     def as_dict(self) -> Dict[str, Any]:
         """
@@ -524,9 +524,9 @@ class ModelDownloadManager:  # pylint: disable=R0903
                            models
         """
         repo_id = profile.hf_repo_id
+        assert repo_id
         directory, _ = os.path.split(absolute_path)
-        if not file_names:
-            file_names = profile.hf_model_name
+
         for expect_size, file_name in zip(profile.size, file_names):
             size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
@@ -535,6 +535,7 @@ class ModelDownloadManager:  # pylint: disable=R0903
 
     @staticmethod
     def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+        assert profile.urls is not None
         for size, url, file_name in zip(profile.size, profile.urls, file_names):
             directory, _ = os.path.split(absolute_path)
             download(str(url), directory, file_name, int(size))
@@ -550,7 +551,10 @@ class ModelDownloadManager:  # pylint: disable=R0903
         """
 
         repo_id = profile.hf_repo_id
+        assert repo_id
         directory, _ = os.path.split(absolute_path)
+        assert isinstance(profile.hf_config_file, list)
+
         for file_name in profile.hf_config_file:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
