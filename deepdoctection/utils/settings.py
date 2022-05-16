@@ -69,7 +69,7 @@ _N.NER.O = "O"
 _N.NER.B = "B"
 _N.NER.I = "I"
 
-_N.NLP.LANG = "LANGUAGE"
+_N.NLP.LANG.LANG = "LANGUAGE"
 _N.NLP.LANG.ENG = "eng"
 _N.NLP.LANG.RUS = "rus"
 _N.NLP.LANG.DEU = "deu"

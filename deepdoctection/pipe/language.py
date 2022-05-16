@@ -84,7 +84,7 @@ class LanguageDetectionService(PipelineComponent):
             # this is a concatenation of all detection result. No reading order
             text = " ".join([result.text for result in detect_result_list if result.text is not None])
         predict_result = self.predictor.predict(text)
-        self.dp_manager.set_summary_annotation(names.NLP.LANG, 1, predict_result.text, predict_result.score)
+        self.dp_manager.set_summary_annotation(names.NLP.LANG.LANG, 1, predict_result.text, predict_result.score)
 
     def _init_sanity_checks(self) -> None:
         assert self.text_detector or self._text_container, (
