@@ -23,7 +23,7 @@ import os
 from shutil import copyfile
 from typing import List, Optional, Tuple, Union
 
-from ..extern.model import ModelDownloadManager
+from ..extern.model import ModelDownloadManager, ModelCatalog
 from ..extern.tessocr import TesseractOcrDetector
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
 from ..pipe.cell import SubImageLayoutService
@@ -162,18 +162,17 @@ def get_dd_analyzer(
     if tensorpack_available():
         disable_tp_layer_logging()
 
-    # setup layout service
-    categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
-
     d_layout: Union[D2FrcnnDetector, TPFrcnnDetector]
     if lib == "TF":
-        layout_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPLAYOUT)
+        layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPLAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPLAYOUT)
+        categories_layout = ModelCatalog.get_profile(cfg.WEIGHTS.TPLAYOUT).categories
         assert layout_weights_path is not None
         d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
     else:
-        layout_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2LAYOUT)
+        layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2LAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
+        categories_layout = ModelCatalog.get_profile(cfg.WEIGHTS.D2LAYOUT).categories
         assert layout_weights_path is not None
         d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=device)
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
@@ -181,27 +180,29 @@ def get_dd_analyzer(
 
     # setup tables service
     if tables:
-        categories_cell = {"1": names.C.CELL}
-        categories_item = {"1": names.C.ROW, "2": names.C.COL}
         d_cell: Optional[Union[D2FrcnnDetector, TPFrcnnDetector]]
         d_item: Union[D2FrcnnDetector, TPFrcnnDetector]
         if lib == "TF":
-            cell_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPCELL)
+            cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPCELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPCELL)
+            categories_cell = ModelCatalog.get_profile(cfg.WEIGHTS.TPCELL).categories
             d_cell = TPFrcnnDetector(
                 cell_config_path,
                 cell_weights_path,
                 categories_cell,
             )
-            item_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TPITEM)
+            item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPITEM)
+            categories_item = ModelCatalog.get_profile(cfg.WEIGHTS.TPITEM).categories
             d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         else:
-            cell_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2CELL)
+            cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
+            categories_cell = ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL).categories
             d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=device)
-            item_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.D2ITEM)
+            item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
+            categories_item = ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM).categories
             d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=device)
 
         cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)

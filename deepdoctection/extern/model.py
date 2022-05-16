@@ -324,12 +324,17 @@ class ModelCatalog:
         """
         Returns the absolute path of weights.
 
-        Note, that weights are sometimes not defined by only one file. The returned string will only represent one
-        file.
+        Note, that weights are sometimes not defined by only one artefact. The returned string will only represent one
+        weights artefact.
 
         :param name: model name
         :return: absolute weight path
         """
+        profile = ModelCatalog.get_profile(name)
+        if profile.config is not None:
+            return os.path.join(get_configs_dir_path(), profile.name)
+        logger.info("Model is not registered. Please make sure the weights are available in the weights cache "
+                    "directory")
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
@@ -346,25 +351,26 @@ class ModelCatalog:
         profile = ModelCatalog.get_profile(name)
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
-        raise ValueError("config file for model not provided")
+        logger.info("Model is not registered. Please make sure the config is available in the config cache directory")
+        return os.path.join(get_configs_dir_path(),name)
 
     @staticmethod
-    def get_weights_list() -> List[str]:
+    def get_model_list() -> List[str]:
         """
-        Returns a list of absolute paths of registered weights.
+        Returns a list of absolute paths of registered models.
         """
-        return [os.path.join(get_weights_dir_path(), key) for key in ModelCatalog.MODELS]
+        return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
-    def is_registered(weights: str) -> bool:
+    def is_registered(path_weights: str) -> bool:
         """
         Checks if some weights belong to a registered model
 
-        :param weights: relative or absolute path
+        :param path_weights: relative or absolute path
         :return: True if the weights are registered in :class:`ModelCatalog`
         """
-        if (ModelCatalog.get_full_path_weights(weights) in ModelCatalog.get_weights_list()) or \
-                (weights in ModelCatalog.get_weights_list()):
+        if (ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_model_list()) or \
+                (path_weights in ModelCatalog.get_model_list()):
             return True
         return False
 
