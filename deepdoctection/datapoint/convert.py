@@ -42,7 +42,7 @@ __all__ = [
     "convert_pdf_bytes_to_np_array_v2",
     "box_to_point4",
     "point4_to_box",
-    "as_dict"
+    "as_dict",
 ]
 
 

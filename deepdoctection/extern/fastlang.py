@@ -19,7 +19,7 @@
 Deepdoctection wrappers for fasttext language detection models
 """
 
-from typing import List, Dict
+from typing import Dict, List
 
 from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
 from .base import DetectionResult, LanguageDetector, PredictorBase
@@ -73,4 +73,4 @@ class FasttextLangDetector(LanguageDetector):
         return [get_fasttext_requirement()]
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.path_weights,self.categories)
+        return self.__class__(self.path_weights, self.categories)

@@ -20,37 +20,41 @@ Module for ModelCatalog and ModelDownloadManager
 """
 
 import os
+from copy import copy
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, List, Optional
 
+from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
-from dataclasses import dataclass, field, asdict
-from copy import copy
-from typing import Dict, List, Optional, Any
-from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 
 from ..utils.fs import download
 from ..utils.logger import logger
-from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 from ..utils.settings import names
+from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
-__all__ = ["ModelCatalog", "ModelDownloadManager","print_model_infos"]
+__all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos"]
 
 
 @dataclass
 class ModelProfile:
+    """
+    Class for model profile. Add for each model one ModelProfile to the ModelCatalog
+    """
+
     name: str
     description: str
 
     size: List[int]
-    tp_model: bool =  field(default=False)
+    tp_model: bool = field(default=False)
     config: Optional[str] = field(default=None)
     hf_repo_id: Optional[str] = field(default=None)
     hf_model_name: Optional[str] = field(default=None)
     hf_config_file: Optional[List[str]] = field(default=None)
-    urls:  Optional[List[str]] = field(default=None)
-    categories: Optional[Dict[str,str]] = field(default_factory=dict)
+    urls: Optional[List[str]] = field(default=None)
+    categories: Optional[Dict[str, str]] = field(default_factory=dict)
 
-    def as_dict(self) -> Dict[str,Any]:
+    def as_dict(self) -> Dict[str, Any]:
         """
         returns a dict of the dataclass
         """
@@ -61,271 +65,292 @@ class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well.
     """
-    CATALOG: Dict[str,ModelProfile] = {"layout/model-800000_inf_only.data-00000-of-00001":
-             ModelProfile(name="layout/model-800000_inf_only.data-00000-of-00001",
-             description="Tensorpack layout model for inference purposes trained on Publaynet",
-             config="dd/tp/conf_frcnn_layout.yaml",
-             size= [274552244, 7907],
-             tp_model= True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
-             hf_model_name="model-800000_inf_only",
-             hf_config_file= ["conf_frcnn_layout.yaml"],
-             categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}),
-             "cell/model-1800000_inf_only.data-00000-of-00001":
-             ModelProfile(name="cell/model-1800000_inf_only.data-00000-of-00001",
-             description="Tensorpack cell detection model for inference purposes trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_cell.yaml",
-             size=[274503056, 8056],
-             tp_model=True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
-             hf_model_name="model-1800000_inf_only",
-             hf_config_file=["conf_frcnn_cell.yaml"],
-             categories={"1": names.C.CELL}),
-             "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(name="item/model-1620000_inf_only.data-00000-of-00001",
-             description="Tensorpack row/column detection model for inference purposes trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_rows.yaml",
-             size=[274515344, 7904],
-             tp_model=True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-             hf_model_name="model-1620000_inf_only",
-             hf_config_file=["conf_frcnn_rows.yaml"],
-             categories = {"1": names.C.ROW, "2": names.C.COL}),
-             "item/model-1620000.data-00000-of-00001": ModelProfile(name="item/model-1620000.data-00000-of-00001",
-             description="Tensorpack row/column detection model trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_rows.yaml",
-             size=[823546048, 25787],
-             tp_model=True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
-             hf_model_name="model-1620000",
-             hf_config_file=["conf_frcnn_rows.yaml"],
-             categories = {"1": names.C.ROW, "2": names.C.COL}),
-             "layout/model-800000.data-00000-of-00001": ModelProfile(name="layout/model-800000.data-00000-of-00001",
-             description="Tensorpack layout detection model trained on Publaynet",
-             config="dd/tp/conf_frcnn_layout.yaml",
-             size=[823656748, 25796],
-             tp_model=True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
-             hf_model_name="model-800000",
-             hf_config_file=["conf_frcnn_layout.yaml"],
-             categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}),
-             "cell/model-1800000.data-00000-of-00001": ModelProfile(name="cell/model-1800000.data-00000-of-00001",
-             description="Tensorpack cell detection model trained on Pubtabnet",
-             config="dd/tp/conf_frcnn_cell.yaml",
-             size=[823509160, 25905],
-             tp_model=True,
-             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
-             hf_model_name="model-1800000",
-             hf_config_file=["conf_frcnn_cell.yaml"],
-             categories= {"1": names.C.CELL}),
-             "layout/d2_model-800000-layout.pkl": ModelProfile(name="layout/d2_model-800000-layout.pkl",
-             description="Detectron2 layout detection model trained on Publaynet",
-             config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
-             size=[274568239],
-             tp_model=False,
-             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
-             hf_model_name="d2_model-800000-layout.pkl",
-             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-             categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}),
-             "cell/d2_model-1800000-cell.pkl": ModelProfile(name="cell/d2_model-1800000-cell.pkl",
-             description="Detectron2 cell detection inference only model trained on Pubtabnet",
-             config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
-             size=[274519039],
-             tp_model=False,
-             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
-             hf_model_name="d2_model-1800000-cell.pkl",
-             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-             categories={"1": names.C.CELL}),
-             "item/d2_model-1620000-item.pkl": ModelProfile(name="item/d2_model-1620000-item.pkl",
-             description="Detectron2 item detection inference only model trained on Pubtabnet",
-             config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
-             size=[274531339],
-             tp_model=False,
-             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-             hf_model_name="d2_model-1620000-item.pkl",
-             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-             categories = {"1": names.C.ROW, "2": names.C.COL}),
-             "fasttext/lid.176.bin": ModelProfile(name="fasttext/lid.176.bin",
-             description="Fasttext language detection model",
-             size= [131266198],
-             urls = ["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"],
-             categories={
-    "__label__en": names.NLP.LANG.ENG,
-    "__label__ru": names.NLP.LANG.RUS,
-    "__label__de": names.NLP.LANG.DEU,
-    "__label__fr": names.NLP.LANG.FRE,
-    "__label__it": names.NLP.LANG.ITA,
-    "__label__ja": names.NLP.LANG.JPN,
-    "__label__es": names.NLP.LANG.SPA,
-    "__label__ceb": names.NLP.LANG.CEB,
-    "__label__tr": names.NLP.LANG.TUR,
-    "__label__pt": names.NLP.LANG.POR,
-    "__label__uk": names.NLP.LANG.UKR,
-    "__label__eo": names.NLP.LANG.EPO,
-    "__label__pl": names.NLP.LANG.POL,
-    "__label__sv": names.NLP.LANG.SWE,
-    "__label__nl": names.NLP.LANG.DUT,
-    "__label__he": names.NLP.LANG.HEB,
-    "__label__zh": names.NLP.LANG.CHI,
-    "__label__hu": names.NLP.LANG.HUN,
-    "__label__ar": names.NLP.LANG.ARA,
-    "__label__ca": names.NLP.LANG.CAT,
-    "__label__fi": names.NLP.LANG.FIN,
-    "__label__cs": names.NLP.LANG.CZE,
-    "__label__fa": names.NLP.LANG.PER,
-    "__label__sr": names.NLP.LANG.SRP,
-    "__label__el": names.NLP.LANG.GRE,
-    "__label__vi": names.NLP.LANG.VIE,
-    "__label__bg": names.NLP.LANG.BUL,
-    "__label__ko": names.NLP.LANG.KOR,
-    "__label__no": names.NLP.LANG.NOR,
-    "__label__mk": names.NLP.LANG.MAC,
-    "__label__ro": names.NLP.LANG.RUM,
-    "__label__id": names.NLP.LANG.IND,
-    "__label__th": names.NLP.LANG.THA,
-    "__label__hy": names.NLP.LANG.ARM,
-    "__label__da": names.NLP.LANG.DAN,
-    "__label__ta": names.NLP.LANG.TAM,
-    "__label__hi": names.NLP.LANG.HIN,
-    "__label__hr": names.NLP.LANG.HRV,
-    "__label__sh": "",
-    "__label__be": names.NLP.LANG.BEL,
-    "__label__ka": names.NLP.LANG.GEO,
-    "__label__te": names.NLP.LANG.TEL,
-    "__label__kk": names.NLP.LANG.KAZ,
-    "__label__war": names.NLP.LANG.WAR,
-    "__label__lt": names.NLP.LANG.LIT,
-    "__label__gl": names.NLP.LANG.GLG,
-    "__label__sk": names.NLP.LANG.SLO,
-    "__label__bn": names.NLP.LANG.BEN,
-    "__label__eu": names.NLP.LANG.BAQ,
-    "__label__sl": names.NLP.LANG.SLV,
-    "__label__kn": "",
-    "__label__ml": names.NLP.LANG.MAL,
-    "__label__mr": names.NLP.LANG.MAR ,
-    "__label__et": names.NLP.LANG.EST,
-    "__label__az": names.NLP.LANG.AZE,
-    "__label__ms": "",
-    "__label__sq": names.NLP.LANG.ALB,
-    "__label__la": names.NLP.LANG.LAT,
-    "__label__bs": names.NLP.LANG.BOS,
-    "__label__nn": names.NLP.LANG.NNO,
-    "__label__ur": names.NLP.LANG.URD,
-    "__label__lv": "",
-    "__label__my": "",
-    "__label__tt": "",
-    "__label__af": "",
-    "__label__oc": "",
-    "__label__nds": "",
-    "__label__ky": "",
-    "__label__ast": "",
-    "__label__tl": "",
-    "__label__is": "",
-    "__label__ia": "",
-    "__label__si": "",
-    "__label__gu": "",
-    "__label__km": "",
-    "__label__br": "",
-    "__label__ba": "",
-    "__label__uz": "",
-    "__label__bo": "",
-    "__label__pa": "",
-    "__label__vo": "",
-    "__label__als": "",
-    "__label__ne": "",
-    "__label__cy": "",
-    "__label__jbo": "",
-    "__label__fy": "",
-    "__label__mn": "",
-    "__label__lb": "",
-    "__label__ce": "",
-    "__label__ug": "",
-    "__label__tg": "",
-    "__label__sco": "",
-    "__label__sa": "",
-    "__label__cv": "",
-    "__label__jv": "",
-    "__label__min": "",
-    "__label__io": "",
-    "__label__or": "",
-    "__label__as": "",
-    "__label__new": "",
-    "__label__ga": "",
-    "__label__mg": "",
-    "__label__an": "",
-    "__label__ckb": "",
-    "__label__sw": "",
-    "__label__bar": "",
-    "__label__lmo": "",
-    "__label__yi": ":" "",
-    "__label__arz": "",
-    "__label__mhr": "",
-    "__label__azb": "",
-    "__label__sah": "",
-    "__label__pnb": "",
-    "__label__su": "",
-    "__label__bpy": "",
-    "__label__pms": "",
-    "__label__ilo": "",
-    "__label__wuu": "",
-    "__label__ku": "",
-    "__label__ps": "",
-    "__label__ie": "",
-    "__label__xmf": "",
-    "__label__yue": "",
-    "__label__gom": "",
-    "__label__li": "",
-    "__label__mwl": "",
-    "__label__kw": "",
-    "__label__sd": "",
-    "__label__hsb": "",
-    "__label__scn": "",
-    "__label__gd": "",
-    "__label__pam": "",
-    "__label__bh": "",
-    "__label__mai": "",
-    "__label__vec": "",
-    "__label__mt": "",
-    "__label__dv": "",
-    "__label__wa": "",
-    "__label__mzn": "",
-    "__label__am": "",
-    "__label__qu": "",
-    "__label__eml": "",
-    "__label__cbk": "",
-    "__label__tk": "",
-    "__label__rm": "",
-    "__label__os": "",
-    "__label__vls": "",
-    "__label__yo": "",
-    "__label__lo": "",
-    "__label__lez": "",
-    "__label__so": "",
-    "__label__myv": "",
-    "__label__diq": "",
-    "__label__mrj": "",
-    "__label__dsb": "",
-    "__label__frr": "",
-    "__label__ht": "",
-    "__label__gn": "",
-    "__label__bxr": "",
-    "__label__kv": "",
-    "__label__sc": "",
-    "__label__nah": "",
-    "__label__krc": "",
-    "__label__bcl": "",
-    "__label__nap": "",
-    "__label__gv": "",
-    "__label__av": "",
-    "__label__rue": "",
-    "__label__xal": "",
-    "__label__pfl": "",
-    "__label__dty": "",
-    "__label__hif": "",
-    "__label__co": "",
-    "__label__lrc": "",
-    "__label__vep": "",
-    "__label__tyv": "",
-})}
+
+    CATALOG: Dict[str, ModelProfile] = {
+        "layout/model-800000_inf_only.data-00000-of-00001": ModelProfile(
+            name="layout/model-800000_inf_only.data-00000-of-00001",
+            description="Tensorpack layout model for inference purposes trained on Publaynet",
+            config="dd/tp/conf_frcnn_layout.yaml",
+            size=[274552244, 7907],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+            hf_model_name="model-800000_inf_only",
+            hf_config_file=["conf_frcnn_layout.yaml"],
+            categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG},
+        ),
+        "cell/model-1800000_inf_only.data-00000-of-00001": ModelProfile(
+            name="cell/model-1800000_inf_only.data-00000-of-00001",
+            description="Tensorpack cell detection model for inference purposes trained on Pubtabnet",
+            config="dd/tp/conf_frcnn_cell.yaml",
+            size=[274503056, 8056],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+            hf_model_name="model-1800000_inf_only",
+            hf_config_file=["conf_frcnn_cell.yaml"],
+            categories={"1": names.C.CELL},
+        ),
+        "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(
+            name="item/model-1620000_inf_only.data-00000-of-00001",
+            description="Tensorpack row/column detection model for inference purposes trained on Pubtabnet",
+            config="dd/tp/conf_frcnn_rows.yaml",
+            size=[274515344, 7904],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+            hf_model_name="model-1620000_inf_only",
+            hf_config_file=["conf_frcnn_rows.yaml"],
+            categories={"1": names.C.ROW, "2": names.C.COL},
+        ),
+        "item/model-1620000.data-00000-of-00001": ModelProfile(
+            name="item/model-1620000.data-00000-of-00001",
+            description="Tensorpack row/column detection model trained on Pubtabnet",
+            config="dd/tp/conf_frcnn_rows.yaml",
+            size=[823546048, 25787],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
+            hf_model_name="model-1620000",
+            hf_config_file=["conf_frcnn_rows.yaml"],
+            categories={"1": names.C.ROW, "2": names.C.COL},
+        ),
+        "layout/model-800000.data-00000-of-00001": ModelProfile(
+            name="layout/model-800000.data-00000-of-00001",
+            description="Tensorpack layout detection model trained on Publaynet",
+            config="dd/tp/conf_frcnn_layout.yaml",
+            size=[823656748, 25796],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
+            hf_model_name="model-800000",
+            hf_config_file=["conf_frcnn_layout.yaml"],
+            categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG},
+        ),
+        "cell/model-1800000.data-00000-of-00001": ModelProfile(
+            name="cell/model-1800000.data-00000-of-00001",
+            description="Tensorpack cell detection model trained on Pubtabnet",
+            config="dd/tp/conf_frcnn_cell.yaml",
+            size=[823509160, 25905],
+            tp_model=True,
+            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
+            hf_model_name="model-1800000",
+            hf_config_file=["conf_frcnn_cell.yaml"],
+            categories={"1": names.C.CELL},
+        ),
+        "layout/d2_model-800000-layout.pkl": ModelProfile(
+            name="layout/d2_model-800000-layout.pkl",
+            description="Detectron2 layout detection model trained on Publaynet",
+            config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            size=[274568239],
+            tp_model=False,
+            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+            hf_model_name="d2_model-800000-layout.pkl",
+            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG},
+        ),
+        "cell/d2_model-1800000-cell.pkl": ModelProfile(
+            name="cell/d2_model-1800000-cell.pkl",
+            description="Detectron2 cell detection inference only model trained on Pubtabnet",
+            config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            size=[274519039],
+            tp_model=False,
+            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
+            hf_model_name="d2_model-1800000-cell.pkl",
+            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            categories={"1": names.C.CELL},
+        ),
+        "item/d2_model-1620000-item.pkl": ModelProfile(
+            name="item/d2_model-1620000-item.pkl",
+            description="Detectron2 item detection inference only model trained on Pubtabnet",
+            config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            size=[274531339],
+            tp_model=False,
+            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
+            hf_model_name="d2_model-1620000-item.pkl",
+            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            categories={"1": names.C.ROW, "2": names.C.COL},
+        ),
+        "fasttext/lid.176.bin": ModelProfile(
+            name="fasttext/lid.176.bin",
+            description="Fasttext language detection model",
+            size=[131266198],
+            urls=["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"],
+            categories={
+                "__label__en": names.NLP.LANG.ENG,
+                "__label__ru": names.NLP.LANG.RUS,
+                "__label__de": names.NLP.LANG.DEU,
+                "__label__fr": names.NLP.LANG.FRE,
+                "__label__it": names.NLP.LANG.ITA,
+                "__label__ja": names.NLP.LANG.JPN,
+                "__label__es": names.NLP.LANG.SPA,
+                "__label__ceb": names.NLP.LANG.CEB,
+                "__label__tr": names.NLP.LANG.TUR,
+                "__label__pt": names.NLP.LANG.POR,
+                "__label__uk": names.NLP.LANG.UKR,
+                "__label__eo": names.NLP.LANG.EPO,
+                "__label__pl": names.NLP.LANG.POL,
+                "__label__sv": names.NLP.LANG.SWE,
+                "__label__nl": names.NLP.LANG.DUT,
+                "__label__he": names.NLP.LANG.HEB,
+                "__label__zh": names.NLP.LANG.CHI,
+                "__label__hu": names.NLP.LANG.HUN,
+                "__label__ar": names.NLP.LANG.ARA,
+                "__label__ca": names.NLP.LANG.CAT,
+                "__label__fi": names.NLP.LANG.FIN,
+                "__label__cs": names.NLP.LANG.CZE,
+                "__label__fa": names.NLP.LANG.PER,
+                "__label__sr": names.NLP.LANG.SRP,
+                "__label__el": names.NLP.LANG.GRE,
+                "__label__vi": names.NLP.LANG.VIE,
+                "__label__bg": names.NLP.LANG.BUL,
+                "__label__ko": names.NLP.LANG.KOR,
+                "__label__no": names.NLP.LANG.NOR,
+                "__label__mk": names.NLP.LANG.MAC,
+                "__label__ro": names.NLP.LANG.RUM,
+                "__label__id": names.NLP.LANG.IND,
+                "__label__th": names.NLP.LANG.THA,
+                "__label__hy": names.NLP.LANG.ARM,
+                "__label__da": names.NLP.LANG.DAN,
+                "__label__ta": names.NLP.LANG.TAM,
+                "__label__hi": names.NLP.LANG.HIN,
+                "__label__hr": names.NLP.LANG.HRV,
+                "__label__sh": "",
+                "__label__be": names.NLP.LANG.BEL,
+                "__label__ka": names.NLP.LANG.GEO,
+                "__label__te": names.NLP.LANG.TEL,
+                "__label__kk": names.NLP.LANG.KAZ,
+                "__label__war": names.NLP.LANG.WAR,
+                "__label__lt": names.NLP.LANG.LIT,
+                "__label__gl": names.NLP.LANG.GLG,
+                "__label__sk": names.NLP.LANG.SLO,
+                "__label__bn": names.NLP.LANG.BEN,
+                "__label__eu": names.NLP.LANG.BAQ,
+                "__label__sl": names.NLP.LANG.SLV,
+                "__label__kn": "",
+                "__label__ml": names.NLP.LANG.MAL,
+                "__label__mr": names.NLP.LANG.MAR,
+                "__label__et": names.NLP.LANG.EST,
+                "__label__az": names.NLP.LANG.AZE,
+                "__label__ms": "",
+                "__label__sq": names.NLP.LANG.ALB,
+                "__label__la": names.NLP.LANG.LAT,
+                "__label__bs": names.NLP.LANG.BOS,
+                "__label__nn": names.NLP.LANG.NNO,
+                "__label__ur": names.NLP.LANG.URD,
+                "__label__lv": "",
+                "__label__my": "",
+                "__label__tt": "",
+                "__label__af": "",
+                "__label__oc": "",
+                "__label__nds": "",
+                "__label__ky": "",
+                "__label__ast": "",
+                "__label__tl": "",
+                "__label__is": "",
+                "__label__ia": "",
+                "__label__si": "",
+                "__label__gu": "",
+                "__label__km": "",
+                "__label__br": "",
+                "__label__ba": "",
+                "__label__uz": "",
+                "__label__bo": "",
+                "__label__pa": "",
+                "__label__vo": "",
+                "__label__als": "",
+                "__label__ne": "",
+                "__label__cy": "",
+                "__label__jbo": "",
+                "__label__fy": "",
+                "__label__mn": "",
+                "__label__lb": "",
+                "__label__ce": "",
+                "__label__ug": "",
+                "__label__tg": "",
+                "__label__sco": "",
+                "__label__sa": "",
+                "__label__cv": "",
+                "__label__jv": "",
+                "__label__min": "",
+                "__label__io": "",
+                "__label__or": "",
+                "__label__as": "",
+                "__label__new": "",
+                "__label__ga": "",
+                "__label__mg": "",
+                "__label__an": "",
+                "__label__ckb": "",
+                "__label__sw": "",
+                "__label__bar": "",
+                "__label__lmo": "",
+                "__label__yi": ":" "",
+                "__label__arz": "",
+                "__label__mhr": "",
+                "__label__azb": "",
+                "__label__sah": "",
+                "__label__pnb": "",
+                "__label__su": "",
+                "__label__bpy": "",
+                "__label__pms": "",
+                "__label__ilo": "",
+                "__label__wuu": "",
+                "__label__ku": "",
+                "__label__ps": "",
+                "__label__ie": "",
+                "__label__xmf": "",
+                "__label__yue": "",
+                "__label__gom": "",
+                "__label__li": "",
+                "__label__mwl": "",
+                "__label__kw": "",
+                "__label__sd": "",
+                "__label__hsb": "",
+                "__label__scn": "",
+                "__label__gd": "",
+                "__label__pam": "",
+                "__label__bh": "",
+                "__label__mai": "",
+                "__label__vec": "",
+                "__label__mt": "",
+                "__label__dv": "",
+                "__label__wa": "",
+                "__label__mzn": "",
+                "__label__am": "",
+                "__label__qu": "",
+                "__label__eml": "",
+                "__label__cbk": "",
+                "__label__tk": "",
+                "__label__rm": "",
+                "__label__os": "",
+                "__label__vls": "",
+                "__label__yo": "",
+                "__label__lo": "",
+                "__label__lez": "",
+                "__label__so": "",
+                "__label__myv": "",
+                "__label__diq": "",
+                "__label__mrj": "",
+                "__label__dsb": "",
+                "__label__frr": "",
+                "__label__ht": "",
+                "__label__gn": "",
+                "__label__bxr": "",
+                "__label__kv": "",
+                "__label__sc": "",
+                "__label__nah": "",
+                "__label__krc": "",
+                "__label__bcl": "",
+                "__label__nap": "",
+                "__label__gv": "",
+                "__label__av": "",
+                "__label__rue": "",
+                "__label__xal": "",
+                "__label__pfl": "",
+                "__label__dty": "",
+                "__label__hif": "",
+                "__label__co": "",
+                "__label__lrc": "",
+                "__label__vep": "",
+                "__label__tyv": "",
+            },
+        ),
+    }
 
     @staticmethod
     def get_full_path_weights(name: str) -> str:
@@ -341,8 +366,9 @@ class ModelCatalog:
         profile = ModelCatalog.get_profile(name)
         if profile.config is not None:
             return os.path.join(get_weights_dir_path(), profile.name)
-        logger.info("Model is not registered. Please make sure the weights are available in the weights cache "
-                    "directory")
+        logger.info(
+            "Model is not registered. Please make sure the weights are available in the weights cache " "directory"
+        )
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
@@ -360,7 +386,7 @@ class ModelCatalog:
         profile = ModelCatalog.get_profile(name)
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
-        return os.path.join(get_configs_dir_path(),name)
+        return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
     def get_model_list() -> List[str]:
@@ -377,8 +403,9 @@ class ModelCatalog:
         :param path_weights: relative or absolute path
         :return: True if the weights are registered in :class:`ModelCatalog`
         """
-        if (ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_model_list()) or \
-                (path_weights in ModelCatalog.get_model_list()):
+        if (ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_model_list()) or (
+            path_weights in ModelCatalog.get_model_list()
+        ):
             return True
         return False
 
@@ -393,13 +420,20 @@ class ModelCatalog:
         profile = ModelCatalog.CATALOG.get(name)
         if profile is not None:
             return copy(profile)
-        return ModelProfile(name="",description="",size=[0],tp_model=False)
+        return ModelProfile(name="", description="", size=[0], tp_model=False)
 
     @staticmethod
-    def register(name: str,profile: ModelProfile) -> None:
+    def register(name: str, profile: ModelProfile) -> None:
+        """
+        Register a model with its profile
+
+        :param name: Name of the model. We use the file name of the model along with its path (starting from the
+                     weights .cache dir. e.g. 'my_model/model_123.pkl'.
+        :param profile: profile of the model
+        """
         if name in ModelCatalog.CATALOG:
             raise KeyError("Model already registered")
-        ModelCatalog.CATALOG[name]= profile
+        ModelCatalog.CATALOG[name] = profile
 
 
 def get_tp_weight_names(name: str) -> List[str]:
@@ -428,10 +462,13 @@ def print_model_infos() -> None:
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        infos.append((profile.name, profile.description, profile.config,profile.categories))
+        infos.append((profile.name, profile.description, profile.config, profile.categories))
     table = tabulate(
-        infos, headers=["name", "description", "config", "categories"] * (num_columns // 2), tablefmt="fancy_grid",
-        stralign="left", numalign="left"
+        infos,
+        headers=["name", "description", "config", "categories"] * (num_columns // 2),
+        tablefmt="fancy_grid",
+        stralign="left",
+        numalign="left",
     )
     print(colored(table, "cyan"))
 

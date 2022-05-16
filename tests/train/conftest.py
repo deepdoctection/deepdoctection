@@ -77,7 +77,8 @@ class TestDataset(DatasetBase):
     Class for a dataset fixture
     """
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         """
         _info
         """

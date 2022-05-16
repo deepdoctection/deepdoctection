@@ -21,7 +21,6 @@ Module for PipeRegistry
 
 import catalogue
 
-
 __all__ = ["pipeline_component_registry"]
 
 
