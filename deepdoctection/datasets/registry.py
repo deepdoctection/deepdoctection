@@ -22,10 +22,10 @@ Module for DatasetRegistry
 import catalogue
 from tabulate import tabulate
 from termcolor import colored
-
+from pprint import pprint
 from .base import DatasetBase
 
-__all__ = ["dataset_registry"]
+__all__ = ["dataset_registry","get_dataset","print_dataset_infos"]
 
 
 dataset_registry = catalogue.create("deepdoctection", "datasets", entry_points=True)
@@ -41,18 +41,31 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
-def print_dataset_infos() -> None:
+def print_dataset_infos(add_license= True, add_info: bool = True) -> None:
     """
-    Prints a table with all registered datasets and some basic information (name, license and description)
+    Prints a table with all registered datasets and some basic information (name, license and optionally description)
+
+    :param add_license: Whether to add the license type of the dataset
+    :param add_info: Whether to add a description of the dataset
     """
 
     data = dataset_registry.get_all()
     num_columns = min(6, len(data))
     infos = []
     for dataset in data.items():
-        infos.append((dataset[0], dataset[1]._info().license, dataset[1]._info().description))
+        info = [dataset[0]]
+        if add_license:
+            info.append(dataset[1]._info().license)
+        if add_info:
+            info.append(dataset[1]._info().description)
+        infos.append(info)
+    header = ["dataset"]
+    if add_license:
+        header.append("license")
+    if add_info:
+        header.append("description")
     table = tabulate(
-        infos, headers=["dataset", "license", "description"] * (num_columns // 2), tablefmt="fancy_grid",
+        infos, headers=header * (num_columns // 2), tablefmt="fancy_grid",
         stralign="left", numalign="left"
     )
     print(colored(table, "cyan"))
