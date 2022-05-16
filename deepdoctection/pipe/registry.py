@@ -19,65 +19,10 @@
 Module for PipeRegistry
 """
 
-import inspect
-import sys
-from typing import Dict, List, Type
-
-from .base import PipelineComponent
-from .cell import *
-from .common import *
-from .layout import *
-from .refine import *
-from .segment import *
-from .text import *
-
-__all__ = ["PipelineComponentRegistry"]
+import catalogue
 
 
-_PIPELINE_COMPONENT: Dict[str, Type[PipelineComponent]] = dict(
-    m
-    for m in [m for m in inspect.getmembers(sys.modules[__name__], inspect.isclass) if m[0] not in ["ImageType"]]
-    if issubclass(m[1], PipelineComponent) and m[0] != "PipelineComponent"
-)
+__all__ = ["pipeline_component_registry"]
 
 
-class PipelineComponentRegistry:
-    """
-    The PipelineComponentRegistry is the object for receiving pipeline component and registering new ones.
-    """
-
-    @staticmethod
-    def print_pipeline_component_names() -> None:
-        """
-        Print a list of registered pipeline component names
-        """
-        print(list(_PIPELINE_COMPONENT.keys()))
-
-    @staticmethod
-    def get_pipeline_component(name: str) -> Type[PipelineComponent]:
-        """
-        Returns an instance of a pipeline component with a given name
-
-        :param name: A pipeline component name
-        :return: An instance of a pipeline component
-        """
-        return _PIPELINE_COMPONENT[name]
-
-    @staticmethod
-    def register_pipeline_component(name: str, pipeline_component: Type[PipelineComponent]) -> None:
-        """
-        Register a new pipeline component.
-
-        :param name: A pipeline component name
-        :param pipeline_component: A new pipeline component to add to the registry.
-        """
-        _PIPELINE_COMPONENT[name] = pipeline_component
-
-    @staticmethod
-    def get_pipeline_component_names() -> List[str]:
-        """
-        Get a list of available pipeline component names
-
-        :return: A list of names
-        """
-        return list(_PIPELINE_COMPONENT.keys())
+pipeline_component_registry = catalogue.create("deepdoctection", "pipeline_components", entry_points=True)

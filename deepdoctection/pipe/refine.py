@@ -33,6 +33,7 @@ from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.settings import names
 from .base import PipelineComponent
+from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationRefinementService"]
 
@@ -329,6 +330,7 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     return _html_table(table_list, cells_ann_list, number_of_rows, number_of_cols)
 
 
+@pipeline_component_registry.register("TableSegmentationRefinementService")
 class TableSegmentationRefinementService(PipelineComponent):
     """
     Refinement of the cell segmentation. The aim of this component is to create a table structure so that an HTML

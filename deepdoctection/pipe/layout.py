@@ -23,8 +23,10 @@ from typing import Dict, Optional
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector
 from .base import PredictorPipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("ImageLayoutService")
 class ImageLayoutService(PredictorPipelineComponent):
     """
     Pipeline component for determining the layout. Which layout blocks are determined depends on the Detector and thus

@@ -55,7 +55,7 @@ from ..extern.tpdetect import TPFrcnnDetector
 from ..mapper.maputils import LabelSummarizer
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
-from ..pipe.registry import PipelineComponentRegistry
+from ..pipe.registry import pipeline_component_registry
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import set_mp_spawn
 from ..utils.fs import get_load_image_func
@@ -286,7 +286,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
-        pipeline_component_cls = PipelineComponentRegistry.get_pipeline_component(pipeline_component_name)
+        pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)  # type: ignore
         assert isinstance(pipeline_component, PredictorPipelineComponent)
         category_names = list(categories.values())  # type: ignore
