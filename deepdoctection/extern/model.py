@@ -332,7 +332,7 @@ class ModelCatalog:
         """
         profile = ModelCatalog.get_profile(name)
         if profile.config is not None:
-            return os.path.join(get_configs_dir_path(), profile.name)
+            return os.path.join(get_weights_dir_path(), profile.name)
         logger.info("Model is not registered. Please make sure the weights are available in the weights cache "
                     "directory")
         return os.path.join(get_weights_dir_path(), name)
@@ -340,7 +340,8 @@ class ModelCatalog:
     @staticmethod
     def get_full_path_configs(name: str) -> str:
         """
-        Return the absolute path of configs for some given weights, if available
+        Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
+        (without the base path to the cache config directory).
 
         Note, that configs are sometimes not defined by only one file. The returned string will only represent one
         file.
@@ -351,7 +352,6 @@ class ModelCatalog:
         profile = ModelCatalog.get_profile(name)
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
-        logger.info("Model is not registered. Please make sure the config is available in the config cache directory")
         return os.path.join(get_configs_dir_path(),name)
 
     @staticmethod
@@ -382,8 +382,10 @@ class ModelCatalog:
         :param name: model name
         :return: A dict of model/weights profiles
         """
-        profile = copy(ModelCatalog.CATALOG[name])
-        return profile
+        profile = ModelCatalog.CATALOG.get(name)
+        if profile is not None:
+            return copy(profile)
+        return ModelProfile(name="",description="",size=[0],tp_model=False)
 
     @staticmethod
     def register(name: str,profile: ModelProfile) -> None:
