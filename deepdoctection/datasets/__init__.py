@@ -29,3 +29,4 @@ from .dataflow_builder import DataFlowBaseBuilder
 from .info import *
 from .instances import *
 from .save import *
+from .registry import *
