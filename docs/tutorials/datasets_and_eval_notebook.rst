@@ -42,14 +42,14 @@ By default, all available information is always provided for a data
 point via the dataflow. If you want to suppress certain information, you
 can configure this accordingly in the data set.
 
-We will now make use of a builtin datasets. We use a DatasetRegistry to
-be able to access the built-in dataset directly. Note, that there is no
+We will now make use of a builtin datasets. We use a factory function to
+have immediate access to the built-in dataset. Note, that there is no
 automatism to download, extract and save the datasets. We will show you
 how to get the required details.
 
 .. code:: ipython3
 
-    from deepdoctection.datasets import DatasetRegistry
+    from deepdoctection.datasets import print_dataset_infos, get_dataset
     from deepdoctection.datasets.instances import pubtabnet as pt
     from deepdoctection.extern import ModelCatalog
     from deepdoctection.eval import MetricRegistry, Evaluator
@@ -60,20 +60,38 @@ how to get the required details.
 
 .. code:: ipython3
 
-    DatasetRegistry.print_dataset_names()
+    print_dataset_infos(add_license=False, add_info=False)
 
 
 .. parsed-literal::
 
-    ['fintabnet', 'funsd', 'iiitar13k', 'testlayout', 'publaynet', 'pubtables1m', 'pubtabnet', 'xfund']
+    [36m╒═════════════╕
+    │ dataset     │
+    ╞═════════════╡
+    │ fintabnet   │
+    ├─────────────┤
+    │ funsd       │
+    ├─────────────┤
+    │ iiitar13k   │
+    ├─────────────┤
+    │ testlayout  │
+    ├─────────────┤
+    │ publaynet   │
+    ├─────────────┤
+    │ pubtables1m │
+    ├─────────────┤
+    │ pubtabnet   │
+    ├─────────────┤
+    │ xfund       │
+    ╘═════════════╛[0m
 
 
-With ``DatasetRegistry.get_dataset("pubtabnet")`` we can generate an
-instance of this dataset.
+With ``get_dataset("pubtabnet")`` we can generate an instance of this
+dataset.
 
 .. code:: ipython3
 
-    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet = get_dataset("pubtabnet")
     pubtabnet.dataset_info.description
 
 
@@ -81,7 +99,7 @@ instance of this dataset.
 
 .. parsed-literal::
 
-    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of tabular data annotated with the corresponding HTML representation of the tables. The table images are extracted from the scientific publications included in the PubMed Central Open Access Subset (commercial use collection). Table regions are identified by matching the PDF format and the XML format of the articles in the PubMed Central Open Access Subset. More details are available in our paper 'Image-based table recognition: data, model, and evaluation'. Pubtabnet can be used for training cell detection models as well as for semantic table understanding algorithms. For detection it has cell bounding box annotations as well as precisely described table semantics like row - and column numbers and row and col spans. Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also return captions of bounding boxes of rows and columns. Moreover, various filter conditions on the table structure are available: maximum cell numbers, maximal row and column numbers and their minimum equivalents can be used as filter condition"
+    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of \ntabular data annotated with the corresponding HTML representation of the tables. The table images \n are extracted from the scientific publications included in the PubMed Central Open Access Subset \n (commercial use collection). Table regions are identified by matching the PDF format and \n the XML format of the articles in the PubMed Central Open Access Subset. More details are \n available in our paper 'Image-based table recognition: data, model, and evaluation'. \nPubtabnet can be used for training cell detection models as well as for semantic table \nunderstanding algorithms. For detection it has cell bounding box annotations as \nwell as precisely described table semantics like row - and column numbers and row and col spans. \nMoreover, every cell can be classified as header or non-header cell. The dataflow builder can also \nreturn captions of bounding boxes of rows and columns. Moreover, various filter conditions on \nthe table structure are available: maximum cell numbers, maximal row and column numbers and their \nminimum equivalents can be used as filter condition"
 
 
 
@@ -148,12 +166,10 @@ COLUMN_NUMBER.
 
 .. code:: ipython3
 
-    df = pubtabnet.dataflow.build(split="train")
-    df.reset_state()
-    df_iter = iter(df)
-    datapoint = next(df_iter)
-    datapoint_dict = datapoint.as_dict()
-    datapoint_dict["file_name"],datapoint_dict["location"],datapoint_dict["image_id"], datapoint_dict["annotations"][0]
+    df = pubtabnet.dataflow.build(split=“train”) df.reset_state() df_iter =
+    iter(df) datapoint = next(df_iter) datapoint_dict = datapoint.as_dict()
+    datapoint_dict[“file_name”],datapoint_dict[“location”],datapoint_dict[“image_id”],
+    datapoint_dict[“annotations”][0]
 
 Depending on the dataset, different configurations can be provided via
 the build method. For example, the image itself is not loaded by
@@ -179,7 +195,7 @@ numpy array in RGB order, we have to swap dimensions.
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7fa0e6252d90>
+    <matplotlib.image.AxesImage at 0x7f84737ffbb0>
 
 
 
@@ -197,13 +213,11 @@ Through the method ``set_cat_to_sub_cat`` the category can be changed.
 
 .. code:: ipython3
 
-    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEAD"})
-    df = pubtabnet.dataflow.build(split="train")
-    df.reset_state()
-    df_iter = iter(df)
-    datapoint = next(df_iter)
-    datapoint_dict = datapoint.as_dict()
-    datapoint_dict["file_name"],datapoint_dict["location"],datapoint_dict["image_id"], datapoint_dict["annotations"][0]
+    pubtabnet.dataflow.categories.set_cat_to_sub_cat({“CELL”:“HEAD”}) df =
+    pubtabnet.dataflow.build(split=“train”) df.reset_state() df_iter =
+    iter(df) datapoint = next(df_iter) datapoint_dict = datapoint.as_dict()
+    datapoint_dict[“file_name”],datapoint_dict[“location”],datapoint_dict[“image_id”],
+    datapoint_dict[“annotations”][0]
 
 This data set was used to train the cell detector of the analyzer. We
 will discuss the table detection architecture in more detail later.
@@ -255,7 +269,7 @@ in the datapoint, we filter them out.
 
 .. code:: ipython3
 
-    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet = get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.filter_categories(categories="CELL")
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     
@@ -271,54 +285,6 @@ argument along with other possible build configurations.
 
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     output= evaluator.run(category_names=["CELL"],max_datapoints=100)
-
-
-.. parsed-literal::
-
-    [32m[0310 17:14.26 @eval.py:67][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-    [32m[0310 17:14:26 @varmanip.py:214][0m Checkpoint path /home/janis/.cache/deepdoctection/weights/cell/model-1800000.data-00000-of-00001 is auto-corrected to /home/janis/.cache/deepdoctection/weights/cell/model-1800000.
-    [32m[0310 17:14:28 @sessinit.py:86][0m [5m[31mWRN[0m The following variables are in the checkpoint, but not found in the graph: global_step, learning_rate
-    [32m[0310 17:14:29 @sessinit.py:114][0m Restoring checkpoint from /home/janis/.cache/deepdoctection/weights/cell/model-1800000 ...
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/cell/model-1800000
-    [32m[0310 17:14.29 @logger.py:193][0m [32mINF[0m Loading annotations for 'val' split from Pubtabnet will take some time...
-    [32m[0310 17:15.10 @logger.py:193][0m [32mINF[0m dp: 549232 is malformed, err: IndexError,
-                msg: list assignment index out of range in: <frame at 0x6a75050, file '/home/janis/Public/deepdoctection/deepdoctection/mapper/pubstruct.py', line 259, code pub_to_image_uncur> will be filtered
-    [32m[0310 17:15.11 @eval.py:116][0m [32mINF[0m Predicting objects...
-
-
-.. parsed-literal::
-
-    100%|██████████| 99/99 [00:11<00:00,  8.65it/s]
-
-.. parsed-literal::
-
-    [32m[0310 17:15.23 @eval.py:121][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    creating index...
-    index created!
-    creating index...
-    index created!
-    Running per image evaluation...
-    Evaluate annotation type *bbox*
-    DONE (t=8.23s).
-    Accumulating evaluation results...
-    DONE (t=0.10s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.950
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.938
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.802
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.845
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.828
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.532
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.850
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.859
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.838
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.876
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.851
-
 
 As mentioned we are now going to evaluate the cell predictor on tables
 from business documents. One difference from the previous evaluation is
@@ -342,56 +308,11 @@ previous evaluation.
 
 .. code:: ipython3
 
-    fintabnet = DatasetRegistry.get_dataset("fintabnet")
+    fintabnet = get_dataset("fintabnet")
     fintabnet.dataflow.categories.filter_categories(categories="CELL")
     
     evaluator = Evaluator(fintabnet,layout_service, coco_metric)
     output= evaluator.run(category_names=["CELL"],max_datapoints=100,build_mode="table",load_image=True, use_multi_proc=False)
-
-
-.. parsed-literal::
-
-    [32m[0310 17:16.19 @eval.py:67][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-    [32m[0310 17:16:19 @varmanip.py:214][0m Checkpoint path /home/janis/.cache/deepdoctection/weights/cell/model-1800000.data-00000-of-00001 is auto-corrected to /home/janis/.cache/deepdoctection/weights/cell/model-1800000.
-    [32m[0310 17:16:21 @sessinit.py:86][0m [5m[31mWRN[0m The following variables are in the checkpoint, but not found in the graph: global_step, learning_rate
-    [32m[0310 17:16:22 @sessinit.py:114][0m Restoring checkpoint from /home/janis/.cache/deepdoctection/weights/cell/model-1800000 ...
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/cell/model-1800000
-    [32m[0310 17:16.43 @eval.py:116][0m [32mINF[0m Predicting objects...
-
-
-.. parsed-literal::
-
-    100%|██████████| 100/100 [00:07<00:00, 14.00it/s]
-
-.. parsed-literal::
-
-    [32m[0310 17:16.50 @eval.py:121][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    creating index...
-    index created!
-    creating index...
-    index created!
-    Running per image evaluation...
-    Evaluate annotation type *bbox*
-    DONE (t=1.69s).
-    Accumulating evaluation results...
-    DONE (t=0.06s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.902
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.701
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.555
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.559
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.690
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.587
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.648
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.648
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.631
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.625
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.763
-
 
 What stands out ?
 
@@ -403,8 +324,8 @@ fundamentally unable to detect the cells (otherwise the 0.5 IoU would be
 significantly worse), but that it is more difficult for the predictor to
 determine the exact size of the cell.
 
-How to continue
-===============
+How to continue (3)
+===================
 
 In the last **Fine_Tune** notebook tutorial, we will discuss training a
 Tensorpack Predictor on a dataset.

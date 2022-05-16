@@ -42,18 +42,22 @@ allows a certain flexibility with the composition of pipelines.
 
 Important! Textract is an AWS paid service and you will need an AWS
 account to call the client. Alternatively, you can also instantiate a
-open sourced OCR service like Tesseract.
+open sourced OCR service like Tesseract. Just disable
+``TextractOcrDetector()`` and uncomment the following two lines!
 
 .. code:: ipython3
 
     import os
-    from deepdoctection.extern import TextractOcrDetector
+    from deepdoctection.extern import TextractOcrDetector, TesseractOcrDetector
     from deepdoctection.pipe import TextExtractionService, DoctectionPipe
-    from deepdoctection.utils.systools import get_package_path
+    from deepdoctection.utils.systools import get_package_path, get_configs_dir_path
 
 .. code:: ipython3
 
     ocr_detector = TextractOcrDetector()
+    
+    #tess_ocr_config_path = os.path.join(get_configs_dir_path(),"dd/conf_tesseract.yaml")
+    #ocr_detector = TesseractOcrDetector(tess_ocr_config_path, config_overwrite=["LANGUAGES=deu"])
     
     textract_service = TextExtractionService(ocr_detector,None)
     pipeline_component_list = [textract_service]
@@ -75,8 +79,6 @@ and outputting the extracts.
 .. figure:: ./pics/sample_3.png
    :alt: title
 
-   title
-
 We build the pipeline by calling the analyze method and want the results
 returned as an image. An image is the core object where everything
 grapped from detectors and pipeline components is stored.
@@ -88,13 +90,6 @@ type requires additional layout detections which we will adress later.
 
     df = pipeline.analyze(path=path, output="image")
     doc = next(iter(df))
-
-
-.. parsed-literal::
-
-    [32m[0310 11:46:45 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-    processing sample_3.png
-
 
 It does not make much sense to dig deeper into the image structure. It
 is important to know, that it captures all fine graded information from
@@ -111,7 +106,7 @@ stored with some uuid, bounding box and value (the recorded text).
 .. parsed-literal::
 
     (551,
-     ImageAnnotation(active=True, annotation_id='172d1585-9e41-3e79-b7ac-65c81e55340f', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='3bb03560-00ea-3a21-bab9-c3aa0ec938d3', category_name='CHARS', category_id='None', score=None, sub_categories={}, relationships={}, value='Anleihemärkte'), 'BLOCK': CategoryAnnotation(active=True, annotation_id='b7f36a28-09b4-3954-a002-9064471c365e', category_name='BLOCK', category_id='None', score=None, sub_categories={}, relationships={}), 'LINE': CategoryAnnotation(active=True, annotation_id='f152b47f-61f9-31b3-9904-bfc52a47c003', category_name='LINE', category_id='None', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
+     ImageAnnotation(active=True, annotation_id='a913d880-af59-302c-a09c-d6cbba4a4ce6', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='767ad536-9d33-35c5-b9de-b4a7169beebd', category_name='CHARS', category_id='None', score=0.9716712951660156, sub_categories={}, relationships={}, value='Anleihemärkte')}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
 
 
 
@@ -126,7 +121,7 @@ built-in layout detector and the associated ImageLayoutService as a
 pipeline component are suitable for this.
 
 At this point it starts to depend on whether the DL framework Tensorflow
-or PyTorch is to be used. We assume that Tensorflow is installed, hence
+or PyTorch will be used. We assume that Tensorflow is installed, hence
 we need to import the Tensorflow related Detector TPFrcnnDetector. Use
 D2FrcnnDetector for PyTorch.
 
@@ -139,8 +134,8 @@ the ModelDownloadManager.
    from deepdoctection.extern.model import ModelDownloadManager
    ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")
 
-Download ``layout/d2_model-800000-layout.pkl`` instead, in case you use
-PyTorch.
+Download ``"layout/d2_model-800000-layout.pkl"`` instead, in case you
+use PyTorch.
 
 .. code:: ipython3
 
@@ -151,7 +146,8 @@ PyTorch.
 When the model is downloaded from the hub, both the weights and the
 config file are loaded into the cache. The paths to both files are
 required in order to instantiate the detector. You can use the
-ModelCatalog to build the path.
+ModelCatalog to build the path. Moreover, the ModelCatalog provides a
+brief model card of all registered models.
 
 It is also necessary to pass a dict with the category-id/category names
 pairs. This mapping is standard and results from the dataset Publaynet
@@ -160,10 +156,35 @@ on which this model was trained.
 .. code:: ipython3
 
     profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
-    
+    profile.as_dict()
+
+
+
+
+.. parsed-literal::
+
+    {'name': 'layout/model-800000_inf_only.data-00000-of-00001',
+     'description': 'Tensorpack layout model for inference purposes trained on Publaynet',
+     'size': [274552244, 7907],
+     'tp_model': True,
+     'config': 'dd/tp/conf_frcnn_layout.yaml',
+     'hf_repo_id': 'deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only',
+     'hf_model_name': 'model-800000_inf_only',
+     'hf_config_file': ['conf_frcnn_layout.yaml'],
+     'urls': None,
+     'categories': {'1': 'TEXT',
+      '2': 'TITLE',
+      '3': 'LIST',
+      '4': 'TABLE',
+      '5': 'FIGURE'}}
+
+
+
+.. code:: ipython3
+
     config_yaml_path = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
     weights_path = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001") 
-    categories_layout = {"1": "TEXT", "2": "TITLE", "3": "LIST", "4": "TABLE", "5": "FIGURE"}
+    categories_layout = profile.categories
     layout_detector = TPFrcnnDetector(config_yaml_path,weights_path,categories_layout)
 
 The ImageLayoutService does need a detector and an additional attribute
@@ -195,16 +216,16 @@ Let’s rebuild a new pipeline and start the process again.
 
 .. parsed-literal::
 
-    [32m[0310 11:47:09 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-    processing sample_3.png
+    [32m[0516 15:42:42 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
 
-
-
+    [32m[0516 15:42.42 @doctectionpipe.py:92][0m [32mINF[0m processing sample_3.png
+    [32m[0516 15:42.46 @timer.py:48][0m [32mINF[0m TextExtractionService finished, 3.548 sec.
+    [32m[0516 15:42.48 @timer.py:48][0m [32mINF[0m ImageLayoutService finished, 2.4879 sec.
 
 .. parsed-literal::
 
     (558,
-     ImageAnnotation(active=True, annotation_id='172d1585-9e41-3e79-b7ac-65c81e55340f', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='3bb03560-00ea-3a21-bab9-c3aa0ec938d3', category_name='CHARS', category_id='None', score=None, sub_categories={}, relationships={}, value='Anleihemärkte'), 'BLOCK': CategoryAnnotation(active=True, annotation_id='b7f36a28-09b4-3954-a002-9064471c365e', category_name='BLOCK', category_id='None', score=None, sub_categories={}, relationships={}), 'LINE': CategoryAnnotation(active=True, annotation_id='f152b47f-61f9-31b3-9904-bfc52a47c003', category_name='LINE', category_id='None', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
+     ImageAnnotation(active=True, annotation_id='a913d880-af59-302c-a09c-d6cbba4a4ce6', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='767ad536-9d33-35c5-b9de-b4a7169beebd', category_name='CHARS', category_id='None', score=0.9716712951660156, sub_categories={}, relationships={}, value='Anleihemärkte')}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
 
 
 
@@ -240,7 +261,8 @@ Reading order service has a straight forward setup.
 
 .. code:: ipython3
 
-    reading_order_service = TextOrderService()
+    reading_order_service = TextOrderService(text_container="WORD",floating_text_block_names=["TEXT","TITLE","LIST"],
+                                             text_block_names=["TEXT","TITLE","LIST","TABLE","FIGURE"])
 
 .. code:: ipython3
 
@@ -263,8 +285,13 @@ the output accordingly
 
 .. parsed-literal::
 
-    [32m[0310 11:47:24 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-    processing sample_3.png
+    [32m[0516 15:43:09 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
+
+    [32m[0516 15:43.09 @doctectionpipe.py:92][0m [32mINF[0m processing sample_3.png
+    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m TextExtractionService finished, 3.08 sec.
+    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m ImageLayoutService finished, 0.1061 sec.
+    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m MatchingService finished, 0.0093 sec.
+    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m TextOrderService finished, 0.0294 sec.
 
 
 We can eventually print the OCRed text in reading order with the
@@ -279,15 +306,15 @@ get_text method.
 
     
     Anleihemärkte im Geschäftsjahr bis zum 31.12.2018
-    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur den USA und Europa, auch den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder - ohne ein Übereinkommen - ungeordnet vollzogen wird. Im Gegensatz den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren. So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
-    Zinswende nach bei Anleiherenditen? Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt - unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% - 2,50% p. a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p. a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
+    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur den USA und Europa, auch den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder - ohne ein Übereinkommen - ungeordnet vollzogen wird. Im Gegensatz zu den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren. So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
     Entwicklung der Leitzinsen in den USA und im Euroraum % p.a.
+    Zinswende nach bei Anleiherenditen? Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt - unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% - 2,50% p. a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p. a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
     Fiskalpolitik des US-Präsidenten Donald Trump in Form von Steuererleichterungen und einer Erhöhung der Staatsausgaben noch befeuert wurde. Vor die- sem Hintergrund verzeichneten die US-Bondmärkte einen spür- baren Renditeanstieg, der mit merklichen Kursermäßigungen einherging. Per saldo stiegen die Renditen zehnjähriger US- Staatsanleihen auf Jahressicht von 2,4% p.a. auf 3,1% p. a.
     Diese Entwicklung in den USA hatte auf den Euroraum jedoch nur phasenweise und partiell, insgesamt aber kaum einen zinstreibenden Effekt auf Staats- anleihen aus den europäischen Kernmärkten wie beispielsweise Deutschland und Frankreich. gaben zehnjährige deutsche Bundesanleihen im Jahresver- lauf 2018 unter Schwankungen per saldo sogar von 0,42% p.a. auf 0,25% p. a. nach. Vielmehr standen die Anleihemärkte der Euroländer - insbeson- dere ab dem zweiten Quartal 2018 - unter dem Einfluss der politischen und wirtschaftlichen Entwicklung in der Eurozone, vor allem in den Ländern mit hoher Verschuldung und nied- rigem Wirtschaftswachstum. den Monaten Mai und Juni
 
 
-How to continue
-===============
+How to continue (2)
+===================
 
 In the next step we recommend the tutorial **Datasets_and_Eval**. Here,
 the data model of the package is explained in more detail. It also
