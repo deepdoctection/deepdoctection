@@ -21,7 +21,7 @@ Testing the module eval.eval
 from typing import List
 from unittest.mock import MagicMock
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from deepdoctection.dataflow import DataFromList  # type: ignore
 from deepdoctection.datapoint import Image
@@ -62,6 +62,7 @@ class TestEvaluator:
 
         self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric)
 
+    @mark.requires_tf
     def test_evaluator_runs_and_returns_distance(self, setup_method) -> None:  #  type: ignore  # pylint: disable=W0613
         """
         Testing evaluator runs and returns metric distance
