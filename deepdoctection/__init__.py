@@ -31,3 +31,16 @@ if not tf_available() and not pytorch_available():
 if tf_available():
     if version.parse(get_tf_version()) > version.parse("2.4.1"):
         os.environ['TF_CPP_MIN_LOG_LEVEL']="2"
+    try:
+        import tensorflow.python.util.deprecation as deprecation
+        deprecation._PRINT_DEPRECATION_WARNINGS = False
+    except Exception:
+        try:
+            from tensorflow.python.util import deprecation
+            deprecation._PRINT_DEPRECATION_WARNINGS = False
+        except Exception:
+            pass
+
+
+
+
