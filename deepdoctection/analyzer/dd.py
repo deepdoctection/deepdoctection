@@ -167,12 +167,14 @@ def get_dd_analyzer(
         layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPLAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPLAYOUT)
         categories_layout = ModelCatalog.get_profile(cfg.WEIGHTS.TPLAYOUT).categories
+        assert categories_layout is not None
         assert layout_weights_path is not None
         d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
     else:
         layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2LAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
         categories_layout = ModelCatalog.get_profile(cfg.WEIGHTS.D2LAYOUT).categories
+        assert categories_layout is not None
         assert layout_weights_path is not None
         d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=device)
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
@@ -186,6 +188,7 @@ def get_dd_analyzer(
             cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPCELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPCELL)
             categories_cell = ModelCatalog.get_profile(cfg.WEIGHTS.TPCELL).categories
+            assert categories_cell is not None
             d_cell = TPFrcnnDetector(
                 cell_config_path,
                 cell_weights_path,
@@ -194,15 +197,18 @@ def get_dd_analyzer(
             item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPITEM)
             categories_item = ModelCatalog.get_profile(cfg.WEIGHTS.TPITEM).categories
+            assert categories_item is not None
             d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         else:
             cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
             categories_cell = ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL).categories
+            assert categories_cell is not None
             d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=device)
             item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
             categories_item = ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM).categories
+            assert categories_item is not None
             d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=device)
 
         cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)

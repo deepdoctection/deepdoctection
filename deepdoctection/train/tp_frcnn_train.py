@@ -287,7 +287,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        pipeline_component = pipeline_component_cls(detector)  # type: ignore
+        pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
         category_names = list(categories.values())  # type: ignore
         callbacks.extend(

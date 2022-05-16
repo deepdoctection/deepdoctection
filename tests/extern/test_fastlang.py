@@ -49,6 +49,8 @@ class TestFasttextLangDetector:  # pylint: disable = R0903
         # Arrange
         path_weights = "/path/to/dir"
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
+
+        assert profile.categories
         fasttest_predictor = FasttextLangDetector(path_weights, profile.categories)
         fasttest_predictor.model.predict = MagicMock(side_effect=get_mock_lang_detect_result)
 

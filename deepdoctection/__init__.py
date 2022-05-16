@@ -32,12 +32,12 @@ if tf_available():
     if version.parse(get_tf_version()) > version.parse("2.4.1"):
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
     try:
-        import tensorflow.python.util.deprecation as deprecation  # pylint: disable=E0611,R0402
+        import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0611,R0402
 
         deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
     except Exception:  # pylint: disable=W0703
         try:
-            from tensorflow.python.util import deprecation  # pylint: disable=E0611
+            from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0611
 
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703
