@@ -58,7 +58,7 @@ class ModelCatalog:
              description="Tensorpack layout model for inference purposes trained on Publaynet",
              config="dd/tp/conf_frcnn_layout.yaml",
              size= [274552244, 7907],
-             tp_model= False,
+             tp_model= True,
              hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
              hf_model_name="model-800000_inf_only",
              hf_config_file= ["conf_frcnn_layout.yaml"],

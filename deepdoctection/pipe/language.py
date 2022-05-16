@@ -26,8 +26,10 @@ from ..mapper.pagestruct import to_page
 from ..utils.logger import logger
 from ..utils.settings import names
 from .base import PipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("LanguageDetectionService")
 class LanguageDetectionService(PipelineComponent):
     """
     Pipeline Component for identifying the language in an image.

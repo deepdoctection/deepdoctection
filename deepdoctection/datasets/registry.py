@@ -19,14 +19,11 @@
 Module for DatasetRegistry
 """
 
-import inspect
-from typing import Dict, List, Type
 import catalogue
 from tabulate import tabulate
 from termcolor import colored
 
-from deepdoctection.datasets import instances
-from deepdoctection.datasets.base import DatasetBase
+from .base import DatasetBase
 
 __all__ = ["dataset_registry"]
 

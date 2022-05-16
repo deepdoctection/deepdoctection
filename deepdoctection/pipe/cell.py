@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Union
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector
 from .base import PredictorPipelineComponent
+from .registry import pipeline_component_registry
 
 
 class DetectResultGenerator:  # pylint: disable=R0903
@@ -95,6 +96,7 @@ class DetectResultGenerator:  # pylint: disable=R0903
         return False
 
 
+@pipeline_component_registry.register("SubImageLayoutService")
 class SubImageLayoutService(PredictorPipelineComponent):
     """
     Component in which the selected ImageAnnotation can be selected with cropped images and presented to a detector.

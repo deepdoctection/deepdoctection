@@ -23,8 +23,10 @@ from typing import List
 from ..datapoint.image import Image
 from ..utils.settings import names
 from .base import LanguageModelPipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("LMTokenClassifierService")
 class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
     Pipeline component for token classification
