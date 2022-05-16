@@ -1,8 +1,6 @@
 .. figure:: ./pics/dd_logo.png
    :alt: title
 
-   title
-
 Getting started
 ===============
 
@@ -45,8 +43,6 @@ selection on the notebook.
 .. figure:: ./pics/dd_kernel.png
    :alt: title
 
-   title
-
 You can check if the installation was successful by activating the next
 cell.
 
@@ -61,20 +57,18 @@ cell.
 Sample
 ------
 
-Let’s first look at a sample page we want to process.
+Let’s first look at a sample page we want to process. (You will probably
+need to change ``image_path``.)
 
 .. code:: ipython3
 
-    image_path = os.path.join(get_package_path(),"notebooks/pics/samples/sample_2/sample_2.png")
-    image = cv2.imread(image_path)
-    plt.figure(figsize = (25,17))
-    plt.axis('off')
-    plt.imshow(image)
+    image_path = os.path.join(get_package_path(),“notebooks/pics/samples/sample_2/sample_2.png”)
+    image = cv2.imread(image_path) plt.figure(figsize = (25,17))
+    plt.axis(‘off’) plt.imshow(image)
 
 .. figure:: ./pics/sample_2.png
    :alt: title
 
-   title
 
 Analyzer
 --------
@@ -105,7 +99,6 @@ blocks as described in the diagram
 .. figure:: ./pics/dd_pipeline.png
    :alt: title
 
-   title
 
 The default setting performs layout recognition, table segmentation and
 OCR extraction. You can sitch table segmentation and OCR off in order to
@@ -134,12 +127,6 @@ pages.
     path = os.path.join(get_package_path(),"notebooks/pics/samples/sample_2")
     df = analyzer.analyze(path=path)
 
-
-.. parsed-literal::
-
-    [32m[0309 11:59:03 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-
-
 You can see when running the cell that not much has happened. Indeed,
 the analyze method returns a generator. The generator allows processing
 to be started via a for-loop.
@@ -155,7 +142,15 @@ next function is called.
 
 .. parsed-literal::
 
-    processing sample_2.png
+    [32m[0516 15:44.32 @doctectionpipe.py:92][0m [32mINF[0m processing sample_2.png
+    [32m[0516 15:44.35 @timer.py:48][0m [32mINF[0m ImageLayoutService finished, 2.4933 sec.
+    [32m[0516 15:44.36 @timer.py:48][0m [32mINF[0m SubImageLayoutService finished, 1.0065 sec.
+    [32m[0516 15:44.37 @timer.py:48][0m [32mINF[0m SubImageLayoutService finished, 0.9579 sec.
+    [32m[0516 15:44.37 @timer.py:48][0m [32mINF[0m TableSegmentationService finished, 0.0054 sec.
+    [32m[0516 15:44.37 @timer.py:48][0m [32mINF[0m TableSegmentationRefinementService finished, 0.0013 sec.
+    [32m[0516 15:44.40 @timer.py:48][0m [32mINF[0m TextExtractionService finished, 3.387 sec.
+    [32m[0516 15:44.40 @timer.py:48][0m [32mINF[0m MatchingService finished, 0.0042 sec.
+    [32m[0516 15:44.40 @timer.py:48][0m [32mINF[0m TextOrderService finished, 0.0456 sec.
 
 
 Page object
@@ -200,7 +195,6 @@ positions can be seen in the cell names.
 .. figure:: https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/output_16_1.png
    :alt: title
 
-   title
 
 The next methods are devoted to the text output.
 
@@ -271,6 +265,9 @@ objects. Obviously, only one table has been detected.
     ______________ row: 7 ______________
     row: 7, col: 1, rs: 1, cs: 1, text: Gesamtvergütung für sonstige Risikoträger 
     row: 7, col: 2, rs: 1, cs: 1, text: EUR 324.229 
+    ______________ row: 8 ______________
+    row: 8, col: 1, rs: 1, cs: 1, text: Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen 
+    row: 8, col: 2, rs: 1, cs: 1, text: EUR 554.046 
     
 
 

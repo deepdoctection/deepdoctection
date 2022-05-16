@@ -30,7 +30,6 @@ the data available and, of course, on the taste of the developer.
 .. figure:: ./pics/dd_table.png
    :alt: title
 
-   title
 
 Table extraction is carried out in different stages:
 
@@ -71,8 +70,8 @@ Faster-RCNN model from Tensorpack. We use the same model as above.
 .. code:: ipython3
 
     import os
-    from deepdoctection.datasets import DatasetRegistry
-    from deepdoctection.eval import MetricRegistry
+    from deepdoctection.datasets import get_dataset
+    from deepdoctection.eval import metric_registry
     from deepdoctection.extern import ModelCatalog
     from deepdoctection.train import train_faster_rcnn
 
@@ -86,7 +85,7 @@ script, we explicitly pass the split.
     path_weights= ModelCatalog.get_full_path_weights("cell/model-1800000.data-00000-of-00001")
     path_config_yaml=ModelCatalog.get_full_path_configs("cell/model-1800000.data-00000-of-00001")
     
-    fintabnet = DatasetRegistry.get_dataset("fintabnet")
+    fintabnet = get_dataset("fintabnet")
     fintabnet.dataflow.categories.filter_categories(categories="CELL")
     
     dataset_train = fintabnet
@@ -95,7 +94,7 @@ script, we explicitly pass the split.
     dataset_val = fintabnet
     build_val_config = ["max_datapoints=100","build_mode='table'","load_image=True", "use_multi_proc_strict=True","split=val"]
     
-    coco_metric = MetricRegistry.get_metric("coco")
+    coco_metric = metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
 
 With the following configuration we override the default training
@@ -122,10 +121,11 @@ deleted and created again!
                       dataset_train= dataset_train,
                       path_weights=path_weights,
                       config_overwrite=config_overwrite,
-                      log_dir="/home/janis/Documents/sample_train",
+                      log_dir="/path/tp/dir",
                       build_train_config=build_train_config,
                       dataset_val=dataset_val,
                       build_val_config=build_val_config,
                       metric=coco_metric,
                       pipeline_component_name="ImageLayoutService"
                      )
+

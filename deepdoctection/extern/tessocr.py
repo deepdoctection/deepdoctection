@@ -111,6 +111,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
     - reading the .tsv file and returning the results as dict.
 
     Requires Tesseract 3.05+
+
     :param image: Image in np.array.
     :param lang: String of language
     :param config: string of configs
