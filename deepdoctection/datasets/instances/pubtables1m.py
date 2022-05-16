@@ -58,10 +58,10 @@ _NAME = "pubtables1m"
 _DESCRIPTION = (
     "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in \n"
     "Documents] ...we release PubTables1M, a dataset of nearly one million tables from PubMed Central Open Access \n"
-    " scientific articles, with complete bounding box annotations for both table detection and structure recognition. \n"
-    " In addition to being the largest dataset of its kind, PubTables1M addresses issues such as inherent ambiguity \n"
-    " and lack of consistency in the source annotations, attempting to provide definitive ground truth labels through \n"
-    " a thorough canonicalization and quality control process. "
+    " scientific articles, with complete bounding box annotations for both table detection and structure \n"
+    "recognition. In addition to being the largest dataset of its kind, PubTables1M addresses issues such as \n"
+    " inherent ambiguity and lack of consistency in the source annotations, attempting to provide definitive ground \n"
+    " truth labels through a thorough canonicalization and quality control process. "
 )
 
 _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"

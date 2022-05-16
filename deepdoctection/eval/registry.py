@@ -22,4 +22,3 @@ Module for MetricRegistry
 import catalogue
 
 metric_registry = catalogue.create("deepdoctection", "metrics", entry_points=True)
-

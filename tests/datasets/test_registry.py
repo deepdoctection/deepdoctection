@@ -45,7 +45,8 @@ def test_dataset_registry_registered_new_dataset() -> None:
         TestDataset
         """
 
-        def _info(self) -> DatasetInfo:
+        @classmethod
+        def _info(cls) -> DatasetInfo:
             """
             Processing an image through the whole pipeline component.
             """

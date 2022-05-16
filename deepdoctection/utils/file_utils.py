@@ -42,6 +42,10 @@ def tf_available() -> bool:
 
 
 def get_tf_version():
+    """
+    Determine the TF version which is installed
+    """
+
     if tf_available():
         candidates: Tuple[str, ...] = (
             "tensorflow",

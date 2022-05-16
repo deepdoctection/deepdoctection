@@ -23,7 +23,7 @@ import os
 from shutil import copyfile
 from typing import List, Optional, Tuple, Union
 
-from ..extern.model import ModelDownloadManager, ModelCatalog
+from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.tessocr import TesseractOcrDetector
 from ..pipe.base import PipelineComponent, PredictorPipelineComponent
 from ..pipe.cell import SubImageLayoutService

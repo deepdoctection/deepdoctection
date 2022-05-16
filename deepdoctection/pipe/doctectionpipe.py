@@ -91,7 +91,8 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         def _proto_process(dp: Image) -> Image:
             logger.info("processing %s", dp.file_name)
             return dp
-        df = MapData(df,_proto_process)
+
+        df = MapData(df, _proto_process)
 
         return df
 

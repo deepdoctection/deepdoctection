@@ -16,7 +16,7 @@ from .mapper import *  # pylint: disable = W0622
 from .pipe import *
 from .train import *
 from .utils import *
-from .utils.file_utils import pytorch_available, tf_available, get_tf_version
+from .utils.file_utils import get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
 
 __version__ = 0.12
@@ -30,17 +30,15 @@ if not tf_available() and not pytorch_available():
 # disable TF warnings for versions > 2.4.1
 if tf_available():
     if version.parse(get_tf_version()) > version.parse("2.4.1"):
-        os.environ['TF_CPP_MIN_LOG_LEVEL']="2"
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
     try:
-        import tensorflow.python.util.deprecation as deprecation
-        deprecation._PRINT_DEPRECATION_WARNINGS = False
-    except Exception:
+        import tensorflow.python.util.deprecation as deprecation  # pylint: disable=E0611,R0402
+
+        deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
+    except Exception:  # pylint: disable=W0703
         try:
-            from tensorflow.python.util import deprecation
-            deprecation._PRINT_DEPRECATION_WARNINGS = False
-        except Exception:
+            from tensorflow.python.util import deprecation  # pylint: disable=E0611
+
+            deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
+        except Exception:  # pylint: disable=W0703
             pass
-
-
-
-

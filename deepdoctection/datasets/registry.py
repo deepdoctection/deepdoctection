@@ -25,7 +25,7 @@ from termcolor import colored
 
 from .base import DatasetBase
 
-__all__ = ["dataset_registry","get_dataset","print_dataset_infos"]
+__all__ = ["dataset_registry", "get_dataset", "print_dataset_infos"]
 
 
 dataset_registry = catalogue.create("deepdoctection", "datasets", entry_points=True)
@@ -41,7 +41,7 @@ def get_dataset(name: str) -> DatasetBase:
     return dataset_registry.get(name)()
 
 
-def print_dataset_infos(add_license= True, add_info: bool = True) -> None:
+def print_dataset_infos(add_license=True, add_info: bool = True) -> None:
     """
     Prints a table with all registered datasets and some basic information (name, license and optionally description)
 
@@ -55,9 +55,9 @@ def print_dataset_infos(add_license= True, add_info: bool = True) -> None:
     for dataset in data.items():
         info = [dataset[0]]
         if add_license:
-            info.append(dataset[1]._info().license)
+            info.append(dataset[1]._info().license)  # pylint: disable=W0212
         if add_info:
-            info.append(dataset[1]._info().description)
+            info.append(dataset[1]._info().description)  # pylint: disable=W0212
         infos.append(info)
     header = ["dataset"]
     if add_license:
@@ -65,12 +65,6 @@ def print_dataset_infos(add_license= True, add_info: bool = True) -> None:
     if add_info:
         header.append("description")
     table = tabulate(
-        infos, headers=header * (num_columns // 2), tablefmt="fancy_grid",
-        stralign="left", numalign="left"
+        infos, headers=header * (num_columns // 2), tablefmt="fancy_grid", stralign="left", numalign="left"
     )
     print(colored(table, "cyan"))
-
-
-
-
-

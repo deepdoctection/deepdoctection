@@ -452,5 +452,11 @@ class TableSegmentationService(PipelineComponent):
                 )
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(self.segment_rule, self.threshold_rows, self.threshold_cols, self.tile_table,
-                              self.remove_iou_threshold_rows, self.remove_iou_threshold_cols)
+        return self.__class__(
+            self.segment_rule,
+            self.threshold_rows,
+            self.threshold_cols,
+            self.tile_table,
+            self.remove_iou_threshold_rows,
+            self.remove_iou_threshold_cols,
+        )
