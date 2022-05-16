@@ -448,3 +448,7 @@ class TableSegmentationService(PipelineComponent):
                 self.dp_manager.set_category_annotation(
                     names.C.CS, segment_result.cs, names.C.CS, segment_result.annotation_id
                 )
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__(self.segment_rule, self.threshold_rows, self.threshold_cols, self.tile_table,
+                              self.remove_iou_threshold_rows, self.remove_iou_threshold_cols)
