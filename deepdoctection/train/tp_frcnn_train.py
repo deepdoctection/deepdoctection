@@ -44,7 +44,7 @@ from tensorpack.utils import logger
 
 from ..datasets.base import DatasetBase
 from ..eval.base import MetricBase
-from ..eval.registry import MetricRegistry
+from ..eval.registry import metric_registry
 from ..eval.tp_eval_callback import EvalCallback
 from ..extern.tp.tfutils import disable_tfv2
 from ..extern.tp.tpfrcnn.common import CustomResize
@@ -55,7 +55,7 @@ from ..extern.tpdetect import TPFrcnnDetector
 from ..mapper.maputils import LabelSummarizer
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
-from ..pipe.registry import PipelineComponentRegistry
+from ..pipe.registry import pipeline_component_registry
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import set_mp_spawn
 from ..utils.fs import get_load_image_func
@@ -278,7 +278,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         and pipeline_component_name is not None
     ):
         if metric_name is not None:
-            metric = MetricRegistry.get_metric(metric_name)
+            metric = metric_registry.get(metric_name)
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
@@ -286,8 +286,8 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
-        pipeline_component_cls = PipelineComponentRegistry.get_pipeline_component(pipeline_component_name)
-        pipeline_component = pipeline_component_cls(detector)  # type: ignore
+        pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
+        pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
         category_names = list(categories.values())  # type: ignore
         callbacks.extend(

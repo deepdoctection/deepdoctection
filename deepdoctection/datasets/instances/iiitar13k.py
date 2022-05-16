@@ -52,16 +52,17 @@ from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_registry
 
 _NAME = "iiitar13k"
 
 _DESCRIPTION = (
-    "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in "
-    "Documents] ...This dataset, IIIT-AR-13K, is created by manually annotating the bounding boxes of "
-    "graphical or page objects in publicly available annual reports. This dataset contains a total of 13K "
-    "annotated page images with objects in five different popular categories — table, figure, natural "
-    "image, logo, and signature. This is the largest manually annotated dataset for graphical object "
-    "detection. Annual reports created in multiple languages for several years from various companies "
+    "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in \n"
+    "Documents] ...This dataset, IIIT-AR-13K, is created by manually annotating the bounding boxes of \n"
+    "graphical or page objects in publicly available annual reports. This dataset contains a total of 13K \n"
+    "annotated page images with objects in five different popular categories — table, figure, natural \n"
+    "image, logo, and signature. This is the largest manually annotated dataset for graphical object \n"
+    "detection. Annual reports created in multiple languages for several years from various companies \n"
     "bring high diversity into this dataset."
 )
 
@@ -80,6 +81,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
 _INIT_CATEGORIES = [names.C.TAB, names.C.LOGO, names.C.FIG, names.C.SIGN]
 
 
+@dataset_registry.register("iiitar13k")
 class IIITar13K(_BuiltInDataset):
     """
     IIITar13K
@@ -87,7 +89,8 @@ class IIITar13K(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

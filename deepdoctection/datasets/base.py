@@ -75,8 +75,9 @@ class DatasetBase(ABC):
 
         raise NotImplementedError
 
+    @classmethod
     @abstractmethod
-    def _info(self) -> DatasetInfo:
+    def _info(cls) -> DatasetInfo:
         """
         Construct the DatasetInfo object.
         """
@@ -183,7 +184,8 @@ class MergeDataset(DatasetBase):
             *(dataset.dataflow.categories for dataset in self.datasets if dataset.dataflow.categories is not None)
         )
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name="merge")
 
     def _builder(self) -> DataFlowBaseBuilder:

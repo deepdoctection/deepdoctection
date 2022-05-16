@@ -41,19 +41,20 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_registry
 
 _NAME = "publaynet"
 _DESCRIPTION = (
     "PubLayNet is a dataset for document layout analysis. It contains images of research papers and "
-    "articles"
+    "articles \n"
     " and annotations for various elements in a page such as “text”, “list”, “figure” etc in these "
-    "research"
-    " paper images. The dataset was obtained by automatically matching the XML representations and the"
-    " content of over 1 million PDF articles that are publicly available on PubMed Central."
+    "research \n"
+    " paper images. The dataset was obtained by automatically matching the XML representations and the \n"
+    " content of over 1 million PDF articles that are publicly available on PubMed Central. \n"
 )
 _LICENSE = (
-    "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement"
-    " – Permissive – Version 1.0 License. IBM does not own the copyright of the images. Use of the images"
+    "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement \n"
+    " – Permissive – Version 1.0 License. IBM does not own the copyright of the images. Use of the images \n"
     " must abide by the PMC Open Access Subset Terms of Use."
 )
 _URL = (
@@ -68,6 +69,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "train.json", "v
 _INIT_CATEGORIES = [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB, names.C.FIG]
 
 
+@dataset_registry.register("publaynet")
 class Publaynet(_BuiltInDataset):
     """
     Publaynet
@@ -75,7 +77,8 @@ class Publaynet(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

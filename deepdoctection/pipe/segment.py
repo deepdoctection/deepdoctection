@@ -34,6 +34,7 @@ from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.settings import names
 from .base import PipelineComponent
+from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationService", "SegmentationResult"]
 
@@ -335,6 +336,7 @@ def segment_table(  # pylint: disable=R0913, R0914
     return raw_table_segments
 
 
+@pipeline_component_registry.register("TableSegmentationService")
 class TableSegmentationService(PipelineComponent):
     """
     Table segmentation after successful cell detection. In addition, row and column detection must have been carried
@@ -448,3 +450,13 @@ class TableSegmentationService(PipelineComponent):
                 self.dp_manager.set_category_annotation(
                     names.C.CS, segment_result.cs, names.C.CS, segment_result.annotation_id
                 )
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__(
+            self.segment_rule,
+            self.threshold_rows,
+            self.threshold_cols,
+            self.tile_table,
+            self.remove_iou_threshold_rows,
+            self.remove_iou_threshold_cols,
+        )

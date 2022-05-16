@@ -31,8 +31,10 @@ from ..mapper.match import match_anns_by_intersection
 from ..mapper.pagestruct import to_page
 from ..utils.settings import names
 from .base import PipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("ImageCroppingService")
 class ImageCroppingService(PipelineComponent):
     """
     Crop sub images given by bounding boxes of some annotations. This service is not necessary for
@@ -57,6 +59,7 @@ class ImageCroppingService(PipelineComponent):
         return self.__class__(self.category_names)
 
 
+@pipeline_component_registry.register("MatchingService")
 class MatchingService(PipelineComponent):
     """
     Objects of two object classes can be assigned to one another by determining their pairwise average. If this is above
@@ -113,6 +116,7 @@ class MatchingService(PipelineComponent):
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
 
+@pipeline_component_registry.register("PageParsingService")
 class PageParsingService:
     """
     A "pseudo" pipeline component that can be added to a pipeline to convert Images into Page formats. It allows a

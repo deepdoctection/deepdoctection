@@ -50,30 +50,31 @@ from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
+from ..registry import dataset_registry
 
 _NAME = "fintabnet"
 _DESCRIPTION = (
-    "FinTabNet dataset contains complex tables from the annual reports of S&P 500 companies with detailed"
-    " table structure annotations to help train and test structure recognition. "
-    "To generate the cell structure labels, one uses token matching between the PDF and HTML version"
-    " of each article from public records and filings. Financial tables often have diverse styles when "
-    "compared to ones in scientific and government documents, with fewer graphical lines and larger"
-    " gaps within each table and more colour variations. Fintabnet can be used for training cell "
-    "detection models as well as for semantic table understanding algorithms. "
-    "For detection it has cell bounding box annotations as well as precisely described table semantics "
-    "like row - and column numbers and row and col spans. The dataflow builder can also "
-    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on "
-    "the table structure are available: maximum cell numbers, maximal row and column numbers and their "
-    "minimum equivalents can be used as filter condition. Header information of cells are not available. "
-    "As work around you can artificially add header sub-category to every first row cell. "
-    "All later row cells will receive a no header  sub-category. Note, that this assumption "
+    "FinTabNet dataset contains complex tables from the annual reports of S&P 500 companies with detailed \n"
+    " table structure annotations to help train and test structure recognition. \n"
+    "To generate the cell structure labels, one uses token matching between the PDF and HTML version \n"
+    " of each article from public records and filings. Financial tables often have diverse styles when \n"
+    "compared to ones in scientific and government documents, with fewer graphical lines and larger \n"
+    " gaps within each table and more colour variations. Fintabnet can be used for training cell \n"
+    "detection models as well as for semantic table understanding algorithms. \n"
+    "For detection it has cell bounding box annotations as well as precisely described table semantics \n"
+    "like row - and column numbers and row and col spans. The dataflow builder can also \n"
+    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on \n"
+    "the table structure are available: maximum cell numbers, maximal row and column numbers and their \n"
+    "minimum equivalents can be used as filter condition. Header information of cells are not available. \n"
+    "As work around you can artificially add header sub-category to every first row cell. \n"
+    "All later row cells will receive a no header  sub-category. Note, that this assumption \n"
     "will generate noise."
 )
 _LICENSE = (
-    "Community Data License Agreement – Permissive – Version 1.0  ---- "
-    "This is the Community Data License Agreement – Permissive, Version 1.0 (“Agreement”).  "
-    "Data is provided to You under this Agreement by each of the Data Providers.  Your exercise of any of"
-    " the rights and permissions granted below constitutes Your acceptance and agreement to be bound by"
+    "Community Data License Agreement – Permissive – Version 1.0  ---- \n"
+    "This is the Community Data License Agreement – Permissive, Version 1.0 (“Agreement”).  \n"
+    "Data is provided to You under this Agreement by each of the Data Providers.  Your exercise of any of \n"
+    " the rights and permissions granted below constitutes Your acceptance and agreement to be bound by \n"
     " the terms and conditions of this Agreement."
 )
 _URL = (
@@ -103,6 +104,7 @@ _SUB_CATEGORIES = {
 }
 
 
+@dataset_registry.register("fintabnet")
 class Fintabnet(_BuiltInDataset):
     """
     Fintabnet
@@ -110,7 +112,8 @@ class Fintabnet(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:
