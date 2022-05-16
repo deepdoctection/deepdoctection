@@ -409,3 +409,6 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_container_annotation(
                 names.C.HTAB, -1, names.C.HTAB, table.annotation_id, html  # type: ignore
             )
+
+    def clone(self) -> PipelineComponent:
+        return self.__class__()
