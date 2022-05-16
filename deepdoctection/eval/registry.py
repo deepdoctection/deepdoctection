@@ -19,54 +19,7 @@
 Module for MetricRegistry
 """
 
-from typing import Dict, List, Type
+import catalogue
 
-from ..eval.base import MetricBase
-from .accmetric import AccuracyMetric, ConfusionMetric
-from .cocometric import CocoMetric
+metric_registry = catalogue.create("deepdoctection", "metrics", entry_points=True)
 
-_METRICS: Dict[str, Type[MetricBase]] = dict(
-    [("accuracy", AccuracyMetric), ("confusion", ConfusionMetric), ("coco", CocoMetric)]
-)
-
-
-class MetricRegistry:
-    """
-    The MetricRegistry is the class for receiving metrics and registering new ones.
-    """
-
-    @staticmethod
-    def print_metric_names() -> None:
-        """
-        Print a list of registered metric names
-        """
-        print(list(_METRICS.keys()))
-
-    @staticmethod
-    def get_metric(name: str) -> Type[MetricBase]:
-        """
-        Returns metric class with a given name
-
-        :param name: metric name
-        :return: An metric class
-        """
-        return _METRICS[name]
-
-    @staticmethod
-    def register_metric(name: str, metric: Type[MetricBase]) -> None:
-        """
-        Register a new metric.
-
-        :param name: A metric name
-        :param metric: A new metric class to add to the registry.
-        """
-        _METRICS[name] = metric
-
-    @staticmethod
-    def get_metric_names() -> List[str]:
-        """
-        Get a list of available metric names
-
-        :return: A list of names
-        """
-        return list(_METRICS.keys())

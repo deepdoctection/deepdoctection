@@ -31,6 +31,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from .base import MetricBase
+from .registry import metric_registry
 
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
@@ -63,6 +64,7 @@ def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks:
     return accuracy_score(np_label_gt, np_label_predictions)
 
 
+@metric_registry.register("accuracy")
 class AccuracyMetric(MetricBase):
     """
     Metric induced by :func:`accuracy`
@@ -183,6 +185,7 @@ def confusion(
     return confusion_matrix(np_label_gt, np_label_predictions)
 
 
+@metric_registry.register("confusion")
 class ConfusionMetric(AccuracyMetric):
     """
     Metric induced by :func:`confusion`
