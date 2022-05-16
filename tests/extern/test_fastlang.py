@@ -26,6 +26,7 @@ import numpy.typing as npt
 from numpy import float32
 
 from deepdoctection.extern.fastlang import FasttextLangDetector
+from deepdoctection.extern.model import ModelCatalog
 
 
 def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str], npt.NDArray[float32]]:  # pylint: disable = W0613
@@ -47,7 +48,10 @@ class TestFasttextLangDetector:  # pylint: disable = R0903
 
         # Arrange
         path_weights = "/path/to/dir"
-        fasttest_predictor = FasttextLangDetector(path_weights)
+        profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
+
+        assert profile.categories
+        fasttest_predictor = FasttextLangDetector(path_weights, profile.categories)
         fasttest_predictor.model.predict = MagicMock(side_effect=get_mock_lang_detect_result)
 
         # Act

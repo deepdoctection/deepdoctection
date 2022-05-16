@@ -42,26 +42,27 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_registry
 
 _NAME = "pubtabnet"
 _DESCRIPTION = (
-    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of "
-    "tabular data annotated with the corresponding HTML representation of the tables. The table images"
-    " are extracted from the scientific publications included in the PubMed Central Open Access Subset"
-    " (commercial use collection). Table regions are identified by matching the PDF format and"
-    " the XML format of the articles in the PubMed Central Open Access Subset. More details are"
-    " available in our paper 'Image-based table recognition: data, model, and evaluation'. "
-    "Pubtabnet can be used for training cell detection models as well as for semantic table "
-    "understanding algorithms. For detection it has cell bounding box annotations as "
-    "well as precisely described table semantics like row - and column numbers and row and col spans. "
-    "Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also "
-    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on "
-    "the table structure are available: maximum cell numbers, maximal row and column numbers and their "
+    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of \n"
+    "tabular data annotated with the corresponding HTML representation of the tables. The table images \n"
+    " are extracted from the scientific publications included in the PubMed Central Open Access Subset \n"
+    " (commercial use collection). Table regions are identified by matching the PDF format and \n"
+    " the XML format of the articles in the PubMed Central Open Access Subset. More details are \n"
+    " available in our paper 'Image-based table recognition: data, model, and evaluation'. \n"
+    "Pubtabnet can be used for training cell detection models as well as for semantic table \n"
+    "understanding algorithms. For detection it has cell bounding box annotations as \n"
+    "well as precisely described table semantics like row - and column numbers and row and col spans. \n"
+    "Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also \n"
+    "return captions of bounding boxes of rows and columns. Moreover, various filter conditions on \n"
+    "the table structure are available: maximum cell numbers, maximal row and column numbers and their \n"
     "minimum equivalents can be used as filter condition"
 )
 _LICENSE = (
-    "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement"
-    " – Permissive – Version 1.0 License. IBM does not own the copyright of the images."
+    "The annotations in this dataset belong to IBM and are licensed under a Community Data License Agreement \n"
+    " – Permissive – Version 1.0 License. IBM does not own the copyright of the images. \n"
     " Use of the images must abide by the PMC Open Access Subset Terms of Use."
 )
 _URL = (
@@ -89,6 +90,7 @@ _SUB_CATEGORIES = {
 }
 
 
+@dataset_registry.register("pubtabnet")
 class Pubtabnet(_BuiltInDataset):
     """
     Pubtabnet
@@ -96,7 +98,8 @@ class Pubtabnet(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

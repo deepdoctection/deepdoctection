@@ -46,17 +46,18 @@ from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
+from ..registry import dataset_registry
 
 _NAME = "funsd"
 _DESCRIPTION = (
-    "FUNSD: Form Understanding in Noisy Scanned Documents. A dataset for Text Detection, Optical Character"
+    "FUNSD: Form Understanding in Noisy Scanned Documents. A dataset for Text Detection, Optical Character \n"
     " Recognition, Spatial Layout Analysis and Form Understanding."
 )
 _LICENSE = (
-    "Use of the FUNSD Dataset is solely for non-commercial, research and educational purposes. The FUNSD  "
-    "Dataset include annotations and images of real scanned forms. Licensee’s use of the images is governed "
-    "by a copyright. Licensee is solely responsible for determining what additional licenses, clearances, "
-    "consents and releases, if any, must be obtained for its use of the images. Original images are part of "
+    "Use of the FUNSD Dataset is solely for non-commercial, research and educational purposes. The FUNSD  \n"
+    "Dataset include annotations and images of real scanned forms. Licensee’s use of the images is governed \n"
+    "by a copyright. Licensee is solely responsible for determining what additional licenses, clearances, \n"
+    "consents and releases, if any, must be obtained for its use of the images. Original images are part of \n"
     "the dataset RVL-CDIP."
 )
 
@@ -75,6 +76,7 @@ _SUB_CATEGORIES = {
 }
 
 
+@dataset_registry.register("funsd")
 class Funsd(_BuiltInDataset):
     """
     Funsd
@@ -82,7 +84,8 @@ class Funsd(_BuiltInDataset):
 
     _name = _NAME
 
-    def _info(self) -> DatasetInfo:
+    @classmethod
+    def _info(cls) -> DatasetInfo:
         return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
 
     def _categories(self) -> DatasetCategories:

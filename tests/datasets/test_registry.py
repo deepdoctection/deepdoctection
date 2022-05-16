@@ -24,14 +24,14 @@ from unittest.mock import MagicMock
 from deepdoctection.datasets.base import DatasetBase
 from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder
 from deepdoctection.datasets.info import DatasetCategories, DatasetInfo
-from deepdoctection.datasets.registry import DatasetRegistry
+from deepdoctection.datasets.registry import dataset_registry, get_dataset
 
 
 def test_dataset_registry_has_all_build_in_datasets_registered() -> None:
     """
     test dataset registry has all pipeline components registered
     """
-    assert len(DatasetRegistry.get_dataset_names()) == 8
+    assert len(dataset_registry.get_all()) == 8
 
 
 def test_dataset_registry_registered_new_dataset() -> None:
@@ -39,12 +39,14 @@ def test_dataset_registry_registered_new_dataset() -> None:
     test, that the new generated dataset component "TestDataset" can be registered and retrieved from registry
     """
 
+    @dataset_registry.register("testdata")
     class TestDataset(DatasetBase):
         """
         TestDataset
         """
 
-        def _info(self) -> DatasetInfo:
+        @classmethod
+        def _info(cls) -> DatasetInfo:
             """
             Processing an image through the whole pipeline component.
             """
@@ -63,8 +65,7 @@ def test_dataset_registry_registered_new_dataset() -> None:
             return MagicMock()
 
     # Act
-    DatasetRegistry.register_dataset("testdata", TestDataset)
-    test = DatasetRegistry.get_dataset("testdata")
+    test = get_dataset("testdata")
 
     # Assert
     assert isinstance(test, TestDataset)

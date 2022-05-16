@@ -31,6 +31,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cocostruct import image_to_coco
 from ..utils.detection_types import JsonDict
 from .base import MetricBase
+from .registry import metric_registry
 
 __all__ = ["CocoMetric"]
 
@@ -105,6 +106,7 @@ def _summarize(  # type: ignore
 COCOeval.summarize_f1 = _summarize
 
 
+@metric_registry.register("coco")
 class CocoMetric(MetricBase):
     """
     Metric induced by :class:`pycocotools.cocoeval.COCOeval`.

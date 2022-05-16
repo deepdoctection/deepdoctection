@@ -28,10 +28,12 @@ from ..utils.detection_types import ImageType
 from ..utils.logger import logger
 from ..utils.settings import names
 from .base import PipelineComponent, PredictorPipelineComponent
+from .registry import pipeline_component_registry
 
 __all__ = ["TextExtractionService", "TextOrderService"]
 
 
+@pipeline_component_registry.register("TextExtractionService")
 class TextExtractionService(PredictorPipelineComponent):
     """
     Pipeline component for extracting text. Any detector can be selected, provided that it can evaluate a
@@ -238,6 +240,7 @@ def _reading_columns(
     return reading_blocks
 
 
+@pipeline_component_registry.register("TextOrderService")
 class TextOrderService(PipelineComponent):
     """
     Reading order of words within floating text blocks as well as reading order of blocks within simple text blocks.

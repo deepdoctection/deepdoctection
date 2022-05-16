@@ -41,12 +41,11 @@ def tf_available() -> bool:
     return bool(_TF_AVAILABLE)
 
 
-def get_tensorflow_requirement() -> Requirement:
+def get_tf_version() -> str:
     """
-    Returns Tensorflow requirement
+    Determine the TF version which is installed
     """
-
-    tf_requirement_satisfied = False
+    tf_version = "0.0"
     if tf_available():
         candidates: Tuple[str, ...] = (
             "tensorflow",
@@ -60,19 +59,29 @@ def get_tensorflow_requirement() -> Requirement:
             "tensorflow-rocm",
             "tensorflow-macos",
         )
-        tf_version = "0.0"
+
         for pkg in candidates:
             try:
                 tf_version = importlib_metadata.version(pkg)  # type: ignore
                 break
             except importlib_metadata.PackageNotFoundError:
                 pass
-        _tf_version_available = tf_version != "0.0"
-        if _tf_version_available:
-            if version.parse(tf_version) < version.parse("2.4.1"):
-                pass
-            else:
-                tf_requirement_satisfied = True
+    return tf_version
+
+
+def get_tensorflow_requirement() -> Requirement:
+    """
+    Returns Tensorflow requirement
+    """
+
+    tf_requirement_satisfied = False
+    tf_version = get_tf_version()
+    _tf_version_available = tf_version != "0.0"
+    if _tf_version_available:
+        if version.parse(tf_version) < version.parse("2.4.1"):
+            pass
+        else:
+            tf_requirement_satisfied = True
 
     return "tensorflow", tf_requirement_satisfied, _TF_ERR_MSG
 
