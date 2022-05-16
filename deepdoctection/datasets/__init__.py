@@ -28,5 +28,4 @@ from .base import *
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import *
 from .instances import *
-from .registry import DatasetRegistry
 from .save import *
