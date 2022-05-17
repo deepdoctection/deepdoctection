@@ -147,8 +147,8 @@ class MergeDataset(DatasetBase):
 
         .. code-block:: python
 
-            dataset_1 = DatasetRegistry.get_dataset("dataset_1")
-            dataset_2 = DatasetRegistry.get_dataset("dataset_2")
+            dataset_1 = get_dataset("dataset_1")
+            dataset_2 = get_dataset("dataset_2")
 
             union_dataset = MergeDataset(dataset_1,dataset_2)
             union_dataset.buffer_datasets(split="train")     # will cache the train split of dataset_1 and dataset_2
@@ -159,8 +159,8 @@ class MergeDataset(DatasetBase):
 
         .. code-block:: python
 
-            dataset_1 = DatasetRegistry.get_dataset("dataset_1")
-            dataset_2 = DatasetRegistry.get_dataset("dataset_2")
+            dataset_1 = get_dataset("dataset_1")
+            dataset_2 = get_dataset("dataset_2")
 
             df_1 = dataset_1.dataflow.build(max_datapoints=20)  # handle separate dataflow configs ...
             df_2 = dataset_1.dataflow.build(max_datapoints=30)
