@@ -18,13 +18,13 @@
 """
 Module with pdf processing tools
 """
-
 import os
 import platform
 import subprocess
+import sys
 from errno import ENOENT
 from io import BytesIO
-from shutil import copyfile, which
+from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
 from cv2 import IMREAD_COLOR, imread
@@ -32,12 +32,13 @@ from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType
-from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available
+from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
+from .logger import logger
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
 
-def decrypt_pdf_document(path: str) -> None:
+def decrypt_pdf_document(path: str) -> bool:
     """
     Decrypting a pdf. As copying a pdf document removes the password that protects pdf, this method
     generates a copy and decrypts the copy using qpdf. The result is saved as the original
@@ -49,16 +50,22 @@ def decrypt_pdf_document(path: str) -> None:
     provide any solution.
 
     :param path: A path to the pdf file
+    :return: True if document has been successfully decrypted
     """
 
-    assert which("qpdf") is not None, "decrypt_pdf_document requires 'qpdf' to be installed."
-    path_base, file_name = os.path.split(path)
-    file_name_tmp = os.path.splitext(file_name)[0] + "tmp.pdf"
-    path_tmp = os.path.join(path_base, file_name_tmp)
-    copyfile(path, path_tmp)
-    cmd_str = f"qpdf --password='' --decrypt {path_tmp} {os.path.join(path_base, path)}"
-    os.system(cmd_str)
-    os.remove(path_tmp)
+    if qpdf_available():
+        path_base, file_name = os.path.split(path)
+        file_name_tmp = os.path.splitext(file_name)[0] + "tmp.pdf"
+        path_tmp = os.path.join(path_base, file_name_tmp)
+        copyfile(path, path_tmp)
+        cmd_str = f"qpdf --password='' --decrypt {path_tmp} {os.path.join(path_base, path)}"
+        response = os.system(cmd_str)
+        os.remove(path_tmp)
+        if not response:
+            return True
+    else:
+        logger.info("qpdf is not installed. If the document must be decrypted please ensure that it is installed")
+    return False
 
 
 def get_pdf_file_reader(path: str) -> PdfFileReader:
@@ -78,7 +85,10 @@ def get_pdf_file_reader(path: str) -> PdfFileReader:
         input_pdf_as_bytes = PdfFileReader(file)
 
         if input_pdf_as_bytes.isEncrypted:
-            decrypt_pdf_document(path)
+            is_decrypted = decrypt_pdf_document(path)
+            if not is_decrypted:
+                logger.error("pdf document cannot be decrypted and therefore cannot be processed further.")
+                sys.exit()
 
     file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732
     return file_reader
