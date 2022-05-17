@@ -322,6 +322,19 @@ def get_pdfplumber_requirement() -> Requirement:
     return "pdfplumber", pdfplumber_available(), _PDFPLUMBER_ERR_MSG
 
 
+# qpdf related dependencies
+
+
+_QPDF_AVAILABLE = which("qpdf") is not None
+
+
+def qpdf_available() -> bool:
+    """
+    Returns True if qpdf is installed
+    """
+    return bool(_QPDF_AVAILABLE)
+
+
 # Textract related dependencies
 _BOTO3_AVAILABLE = importlib.util.find_spec("boto3") is not None
 _BOTO3_ERR_MSG = "Boto3 must be installed: >> pip install boto3"
