@@ -38,21 +38,22 @@ def get_version():
 sys.path.insert(0, ROOT)
 
 DIST_DEPS = [
+    "catalogue",
     "importlib-metadata",
+    "huggingface_hub",
     "jsonlines",
-    "types-termcolor",
+    "lxml",
+    "mock",
+    "networkx",
+    "numpy>=1.21",
     "opencv-python",
+    "packaging>=20.0",
     "pycocotools",
     "pypdf2>=1.27.5",
-    "numpy>=1.21",
-    "lxml",
-    "huggingface_hub",
-    "packaging>=20.0",
     "pyyaml",
     "scikit-learn",
-    "scipy",
-    "networkx",
-    "mock",
+    "scikit-learn",
+    "types-termcolor",
 ]
 
 TF_DEPS = ["tensorpack"]
