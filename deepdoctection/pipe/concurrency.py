@@ -49,6 +49,20 @@ class MultiThreadPipelineComponent:
     also be transferred as a function. These tasks are also assigned to the threads.
 
     Note that the order in the dataflow and when returning lists is generally is no longer retained.
+
+    .. code-block:: python
+
+        some_component = SubImageLayoutService(some_predictor, some_category)
+        some_component:clone = some_component.clone()
+
+
+        multi_thread_comp = MultiThreadPipelineComponent(pipeline_components=[some_component,some_component_clone],
+                                                         pre_proc_func=maybe_load_image,
+                                                         post_proc_func=maybe_remove_image)
+
+        multi_thread_comp.put_task(some_dataflow)
+        output_list = multi_thread_comp.start()
+
     """
 
     def __init__(

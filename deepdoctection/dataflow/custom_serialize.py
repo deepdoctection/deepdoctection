@@ -49,6 +49,14 @@ def _reset_df_and_get_length(df: DataFlow) -> int:
 class SerializerJsonlines:
     """
     Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of JSON objects to a .jsonl file.
+
+    **Example:**
+
+        .. code-block:: python
+
+            df = SerializerJsonlines.load("path/to/file.jsonl")
+
+        will yield each json object of the file.
     """
 
     @staticmethod
@@ -170,11 +178,16 @@ class SerializerCoco:
 
         **Example:**
 
-            {'images':[img1,img2,...], 'annotations':[ann1,ann2,...],...}
+            .. code-block:: python
 
-            it will generate a dataflow  with datapoints
+                {'images':[img1,img2,...], 'annotations':[ann1,ann2,...],...}
 
-            {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
+            it will generate a dataflow with datapoints
+
+
+            .. code-block:: python
+
+                {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
 
             for each single image id.
 
@@ -210,6 +223,18 @@ class SerializerCoco:
 class SerializerPdfDoc:
     """
     Serialize a pdf document with an arbitrary number of pages.
+
+    **Example:**
+
+        .. code-block:: python
+
+            df = SerializerPdfDoc.load("path/to/document.pdf")
+
+        will yield datapoints:
+
+        .. code-block:: python
+
+            {"path": "path/to/document.pdf", "file_name" document_page_1.pdf, "pdf_bytes": b"some-bytes"}
     """
 
     @staticmethod

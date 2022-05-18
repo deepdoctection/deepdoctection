@@ -240,6 +240,28 @@ class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
 
     All configuration options that are available via pytesseract can be given via the configuration. The best overview
     can be found at https://pypi.org/project/pytesseract/.
+
+    .. code-block:: python
+
+        tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
+        ocr_detector = TesseractOcrDetector(tesseract_config_path)
+
+        detection_result = ocr_detector.predict(bgr_image_as_np_array)
+
+    To use it within a pipeline
+
+    .. code-block:: python
+
+        tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
+        ocr_detector = TesseractOcrDetector(tesseract_config_path)
+
+        text_extract = TextExtractionService(ocr_detector)
+        pipe = DoctectionPipe([text_extract])
+
+        df = pipe.analyze(path="path/to/dir")
+
+        for dp in df:
+            ...
     """
 
     def __init__(

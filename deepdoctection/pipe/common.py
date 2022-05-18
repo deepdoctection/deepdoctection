@@ -38,7 +38,7 @@ from .registry import pipeline_component_registry
 class ImageCroppingService(PipelineComponent):
     """
     Crop sub images given by bounding boxes of some annotations. This service is not necessary for
-    :class::ImageLayoutService and is more intended for saved files where sub images are
+    :class::`ImageLayoutService` and is more intended for saved files where sub images are
     generally not stored.
     """
 
@@ -68,6 +68,17 @@ class MatchingService(PipelineComponent):
     relation is created in the parent class if the conditions are met.
 
     Either iou (intersection-over-union) or ioa (intersection-over-area) can be selected as the matching rule.
+
+        .. code-block:: python
+
+            # the following will assign word annotations to text and title annotation, provided that their ioa-threshold
+            # is above 0.7. words below that threshold will not be assigned.
+
+            match = MatchingService(parent_categories=["TEXT","TITLE"],child_categories="WORD",matching_rule="ioa",
+                                    threshold=0.7)
+
+            # Assigning means that text and title annotation will receive a relationship called "CHILD" which is a list
+              of annotation ids of mapped words.
     """
 
     def __init__(

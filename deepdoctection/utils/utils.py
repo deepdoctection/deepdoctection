@@ -68,7 +68,7 @@ def split_string(input_string: str) -> List[str]:
 
 def string_to_dict(input_string: str) -> Dict[str, str]:
     """
-    Takes a string of a form 'key1=val1,key2=val2' and returns the corresponding dict
+    Takes a string of a form `key1=val1,key2=val2` and returns the corresponding dict
     """
     items_list = input_string.split(",")
     output_dict = {}
@@ -81,6 +81,7 @@ def string_to_dict(input_string: str) -> Dict[str, str]:
 def to_bool(inputs: Union[str, bool, int]) -> bool:
     """
     Convert a string "True" or "False" to its boolean value
+
     :param inputs: Input string
     :return: boolean value
     """

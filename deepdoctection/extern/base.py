@@ -17,7 +17,7 @@
 
 
 """
-Abstract classes for unifying external base- and DDoctection predictors
+Abstract classes for unifying external base- and Doctection predictors
 """
 
 from abc import ABC, abstractmethod

@@ -361,6 +361,27 @@ class TableSegmentationRefinementService(PipelineComponent):
     The table consists of one row and two columns. The upper cells belong together with the lower cell.
     However, this means that all cells must be merged with one another so that the table only consists of one cell
     after the refinement process.
+
+    **Example**
+
+        .. code-block:: python
+
+            layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
+            cell = SubImageLayoutService(cell_detector, "TABLE")
+            row_col = SubImageLayoutService(row_col_detector, "TABLE")
+            table_segmentation = TableSegmentationService("ioa",0.9,0.8,True,0.0001,0.0001)
+            table_segmentation_refinement = TableSegmentationRefinementService()
+
+            table_recognition_pipe = DoctectionPipe([layout,
+                                                     cell,
+                                                     row_col,
+                                                     table_segmentation,
+                                                     table_segmentation_refinement])
+            df = pipe.analyze(path="path/to/document.pdf")
+
+            for dp in df:
+                ...
+
     """
 
     def __init__(self) -> None:

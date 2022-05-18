@@ -58,7 +58,11 @@ def sub_path(anchor_dir: str, *paths: str) -> str:
     """
     Generate a path from the anchor directory and various paths args.
 
-    sub_path(/path/to,"dir1","dir2") will return /path/to/dir1/dir2
+    ..code-block::python
+
+        sub_path(/path/to,"dir1","dir2")
+
+    will return `/path/to/dir1/dir2`
 
     :param anchor_dir: anchor directory
     :param paths: args of directories that should be added to path

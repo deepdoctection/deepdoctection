@@ -25,3 +25,5 @@ __all__ = ["pipeline_component_registry"]
 
 
 pipeline_component_registry = catalogue.create("deepdoctection", "pipeline_components", entry_points=True)
+
+# todo: add func get_pipe_component

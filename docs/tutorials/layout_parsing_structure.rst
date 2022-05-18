@@ -12,8 +12,6 @@ substantially on which form of the processing in the pipeline.
 .. figure:: ./pics/dd_text_order.png
    :alt: title
 
-   title
-
 We assume that we get a layout structure like in the Publaynet dataset
 from the model. As OCR component we further assume that we get back text
 in line-items. Line items can consist of several words and represent the
@@ -73,8 +71,8 @@ service also returns the WORD results, but these are not used further.
             )
     pipe_comp.append(match)
 
-Textorder service
------------------
+Text order service
+------------------
 
 Determining the reading order of a text is done in two stages:
 

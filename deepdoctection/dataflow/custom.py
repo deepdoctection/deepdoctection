@@ -50,6 +50,23 @@ class CustomDataFromList(DataFromList):  # type: ignore
     Wraps a list of datapoints to a dataflow. Compared to :class:`Tensorpack.DataFlow.DataFromList` implementation you
     can specify a number of datapoints after that the iteration stops. You can also pass a rebalance function that
     filters on that list.
+
+    **Example:**
+
+        .. code-block:: python
+
+                def filter_first(lst):
+                    return lst.pop(0)
+
+                df = CustomDataFromList(lst=[["a","b"],["c","d"]],rebalance_func=filter_first)
+                df.reset_state()
+
+        will yield:
+
+        .. code-block:: python
+
+            ["c","d"]
+
     """
 
     def __init__(

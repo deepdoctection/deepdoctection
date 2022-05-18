@@ -45,6 +45,14 @@ class LanguageDetectionService(PipelineComponent):
       when choosing any detector, the results are confident enough to rely on the results, especially when extracting
       longer text passages. So, a TextExtractionService, for example, can be selected as the subsequent pipeline
       component. The words determined by the OCR detector are not transferred to the image object.
+
+      .. code-block:: python
+
+          lang_detector = FasttextLangDetector(path_weights,profile.categories)
+          component = LanguageDetectionService(lang_detector, text_container="WORD",
+                                               floating_text_block_names=["TEXT","TITLE"],
+                                               text_block_names=["TEXT","TITLE",TABLE"])
+
     """
 
     def __init__(

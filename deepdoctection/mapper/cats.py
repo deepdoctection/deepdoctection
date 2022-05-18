@@ -112,17 +112,17 @@ def image_to_cat_id(
 
     **Example:**
 
-              dp contains annotations
+        dp contains annotations
 
-              {'1', '2', '1', '1', '2', '3'}
+        `{'1', '2', '1', '1', '2', '3'}`
 
-              where
+        where
 
-              {'foo': '1', 'bak': '2', 'baz': '3'}.
+        `{'foo': '1', 'bak': '2', 'baz': '3'}`.
 
-              The returned value will be
+        The returned value will be
 
-              {'foo':['1', '1', '1'], 'bak':[ '2', '2'], 'baz':[ '3']}.
+        `{'foo':['1', '1', '1'], 'bak':[ '2', '2'], 'baz':[ '3']}`.
 
     :param dp: Image datapoint
     :param category_names: A list of category names

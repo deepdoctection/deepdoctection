@@ -76,10 +76,29 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
 class TextractOcrDetector(ObjectDetector):
     """
     Text object detector based on AWS Textract OCR engine. Note that an AWS account as well as some additional
-    installations are required. Note further, that the service is not free of charge. Additional information can
-    be found at: https://docs.aws.amazon.com/textract/?id=docs_gateway .
+    installations are required, i.e AWS CLI and boto3. Note further, that the service is not free of charge. Additional
+    information can be found at: https://docs.aws.amazon.com/textract/?id=docs_gateway .
 
     The detector only calls the base OCR engine and does not return additional Textract document analysis features.
+
+    .. code-block:: python
+
+        textract_predictor = TextractOcrDetector()
+        detection_result = textract_predictor.predict(bgr_image_as_np_array)
+
+    or
+
+    .. code-block:: python
+
+        textract_predictor = TextractOcrDetector()
+        text_extract = TextExtractionService(textract_predictor)
+
+        pipe = DoctectionPipe([text_extract])
+        df = pipe.analyze(path="path/to/document.pdf")
+
+        for dp in df:
+            ...
+
     """
 
     def __init__(self, text_lines: bool = False) -> None:

@@ -109,14 +109,18 @@ def cur(func: MapFunc) -> DefaultMapper:
 
     **Example:**
 
-               @cur
-               def json_to_image(dp, config_arg_1, config_arg_2,...) -> Image:
-               ...
+        .. code-block:: python
 
-               can be applied like:
+            @cur
+            def json_to_image(dp, config_arg_1, config_arg_2,...) -> Image:
+            ...
 
-               df = ...
-               df = MapData(df,json_to_image(config_arg_1=val_1,config_arg_2=val_2))
+        can be applied like:
+
+        .. code-block:: python
+
+            df = ...
+            df = MapData(df,json_to_image(config_arg_1=val_1,config_arg_2=val_2))
 
     :param func: A callable [[:class:`Image`],[Any]] -> [:class:`Image`]
     :return: A DefaultMapper
@@ -145,6 +149,16 @@ def maybe_get_fake_score(add_fake_score: bool) -> Optional[float]:
 class LabelSummarizer:
     """
     A class for generating label statistics. Useful, when mapping and generating a SummaryAnnotation.
+
+    .. code-block:: python
+
+        summarizer = LabelSummarizer({"1": "label_1","2":"label_2"})
+
+        for dp in some_dataflow:
+            summarizer.dump(dp["label_id"])
+
+        summarizer.print_summary_histogram()
+
     """
 
     def __init__(self, categories: Dict[str, str]) -> None:

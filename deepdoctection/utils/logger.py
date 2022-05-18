@@ -12,12 +12,14 @@ The logger module itself has the common logging functions of Python's
 
 **Example:**
 
-..code-block::python
-    from deepdoctection.utils.logger import logger
-    logger.set_logger_dir("path/to/dir")
-    logger.info("Something has happened")
-    logger.warning("Attention!")
-    logger.error("Error happened!")
+    ..code-block::python
+
+        from deepdoctection.utils.logger import logger
+
+        logger.set_logger_dir("path/to/dir")
+        logger.info("Something has happened")
+        logger.warning("Attention!")
+        logger.error("Error happened!")
 """
 
 import errno

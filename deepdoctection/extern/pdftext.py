@@ -44,6 +44,29 @@ class PdfPlumberTextDetector(PdfMiner):
     """
     Text miner based on the pdfminer.six engine. To convert pdfminers result, especially group character to get word
     level results we use pdfplumber.
+
+    .. code-block:: python
+
+        pdf_plumber = PdfPlumberTextDetector()
+
+        df = SerializerPdfDoc.load("path/to/document.pdf")
+
+        for dp in df:
+            detection_results = pdf_plumber.predict(dp["pdf_bytes"])
+
+    To use it in a more integrated way:
+
+    .. code-block:: python
+
+        pdf_plumber = PdfPlumberTextDetector()
+        text_extract = TextExtractionService(pdf_plumber)
+
+        pipe = DoctectionPipe([text_extract])
+
+        df = pipe.analyze(path="path/to/document.pdf")
+        for dp in df:
+            ...
+
     """
 
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:

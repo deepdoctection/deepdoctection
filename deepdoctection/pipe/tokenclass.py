@@ -30,6 +30,32 @@ from .registry import pipeline_component_registry
 class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
     Pipeline component for token classification
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
+            layoutlm = HFLayoutLmTokenClassifier(categories_explicit= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
+                                                               'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
+                                                               'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD', 'S-QUESTION'])
+
+            # token classification service
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm,image_to_layoutlm)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
     """
 
     def serve(self, dp: Image) -> None:

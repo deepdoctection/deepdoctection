@@ -60,7 +60,7 @@ def match_anns_by_intersection(
     |**p_3**|  1.   |  0.4  |
     +-------+-------+-------+
 
-    With ioa_threshold = 0.5 it will return [[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3].
+    With ioa_threshold = 0.5 it will return `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
 
     For each child the sum of all ioas with all parents sum up to 1. Hence, the ioa with one parent will in general
     decrease if one child intersects with more parents. Take two childs one matching two parents with an ioa of 0.5 each
