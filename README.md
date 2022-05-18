@@ -75,7 +75,7 @@ please use the Tensorflow framework.
 
 ### Other
 
-**deepdoctection** uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
+**deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images and for calling [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine. 
 If you get started and want to run the notebooks for the first time it is sensible to have them installed, as well.
 
@@ -133,13 +133,13 @@ make venv
 source venv/bin/activate
 ```
 
-For Tensorflow, run
+For **Tensorflow**, run
  
 ```
 make install-dd-tf
 ```
 
-If you want to use the PyTorch framework, run:
+If you want to use the **PyTorch** framework, run:
 
 ```
 make install-dd-pt
@@ -148,7 +148,7 @@ make install-dd-pt
 For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
 
 
-If you do not work on Linux, one easy way to fulfill the requirements is to use the Docker image. A 
+If you do not work on Linux or macOS, one easy way to fulfill the requirements is to use the Docker image. A 
 [Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
 
 
