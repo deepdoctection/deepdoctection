@@ -11,8 +11,9 @@
 
 Extracting information from documents is difficult. Documents often have a complex visual structure and the information 
 they contain is not tagged. **deep**doctection is a tool box that is intended to facilitate entry into this topic. 
+
 Parse your document by detecting layout structures like tables with full table semantics (cells, rows, columns), 
-get text in reading order with OCR, detect language and many more.
+get text in reading order with OCR, detect language and do many other things.
 
 The focus should be on application. **deep**doctection is made for data scientists who are tasked with supporting
 departments in process optimization or for analysts who have to investigate into large sets of documents.
