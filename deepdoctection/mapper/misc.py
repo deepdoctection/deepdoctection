@@ -149,11 +149,11 @@ def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
 
         .. code-block:: python
 
-           with open(path_xslt) as xsl_file:
-               xslt_file = xsl_file.read().encode('utf-8')
-           xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
-           xslt_obj = etree.XSLT(xml_obj)
-           df = MapData(df, xml_to_dict(xslt_obj))
+            with open(path_xslt) as xsl_file:
+                xslt_file = xsl_file.read().encode('utf-8')
+            xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
+            xslt_obj = etree.XSLT(xml_obj)
+            df = MapData(df, xml_to_dict(xslt_obj))
 
     :param dp: string representing the xml
     :param xslt_obj: xslt object to parse the string

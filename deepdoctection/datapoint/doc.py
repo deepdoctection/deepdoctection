@@ -230,6 +230,15 @@ class Page:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
 
+        **Example:**
+
+            .. code-block:: python
+
+                from matplotlib import pyplot as plt
+
+                img = page.viz()
+                plt.imshow(img)
+
         :param show_tables: Will display all tables boxes as well as cells, rows and columns
         :param show_items: Will display all other layout components.
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that

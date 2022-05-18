@@ -47,7 +47,7 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
     The sequential execution of pipeline components is carried out with dataflows. In the case of components with
     predictors, this allows the predictor graph to be set up first and then to be streamed to the processed data points.
 
-    Caution: Currently, predictors can only process single images. A higher number of batches is not intended!
+    Caution: Currently, predictors can only process single images. Processing higher number of batches is not planned.
     """
 
     def __init__(self, category_id_mapping: Optional[Dict[int, int]]):

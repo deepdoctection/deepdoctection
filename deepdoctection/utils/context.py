@@ -38,9 +38,16 @@ __all__ = ["timeout_manager", "save_tmp_file"]
 @contextmanager
 def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
     """
-    Manager for time handling while Tesseract being called
+    Manager for time handling while some process being called
+
+    .. code-block:: python
+
+       with timeout_manager(some_process,60) as timeout:
+           ...
+
     :param proc: process
     :param seconds: seconds to wait
+
     """
     try:
         if not seconds:
@@ -68,6 +75,13 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
 def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[Tuple[str, str]]:
     """
     Save image temporarily and handle the clean-up once not necessary anymore
+
+    .. code-block:: python
+
+        with save_tmp_file(some_np_image,"tmp") as (tmp_name, input_file_name):
+            ....
+
+
     :param image: image as string or numpy array
     :param prefix: prefix of the temp file name
     """

@@ -36,6 +36,13 @@ class ImageLayoutService(PredictorPipelineComponent):
 
     The component is usually at the beginning of the pipeline. Cropping of the layout blocks can be selected to simplify
     further processing.
+
+    **Example**
+
+        .. code-block:: python
+
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
+            item_component = ImageLayoutService(d_items)
     """
 
     def __init__(

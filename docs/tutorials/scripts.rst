@@ -8,14 +8,14 @@ checkpoint.
 .. code:: ipython3
 
     import os
-    from deepdoctection.datasets import DatasetRegistry
-    from deepdoctection.eval import MetricRegistry
+    from deepdoctection.datasets import get_dataset
+    from deepdoctection.eval import metric_registry
     from deepdoctection.utils import get_configs_dir_path
     from deepdoctection.train import train_faster_rcnn
 
 .. code:: ipython3
 
-    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet = get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.filter_categories(categories="CELL")
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
@@ -29,7 +29,7 @@ checkpoint.
     dataset_val = pubtabnet
     build_val_config = ["max_datapoints=4000"]
     
-    coco_metric = MetricRegistry.get_metric("coco")
+    coco_metric = metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
     
     train_faster_rcnn(path_config_yaml=path_config_yaml,
@@ -50,7 +50,7 @@ last checkpoint.
 
 .. code:: ipython3
 
-    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
+    pubtabnet = get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"row_col"})
     pubtabnet.dataflow.categories.filter_categories(["ROW","COLUMN"])
     
@@ -97,8 +97,8 @@ checkpoint of current model.
 
 .. code:: ipython3
 
-    pubtabnet = DatasetRegistry.get_dataset("pubtabnet")
-    coco_metric = MetricRegistry.get_metric("coco")
+    pubtabnet = get_dataset("pubtabnet")
+    coco_metric = metric_registry.get_metric("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
     
     #pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEAD"})
@@ -110,7 +110,7 @@ checkpoint of current model.
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
     
-    mypath = "/home/janis/Documents/train/cell_21/"
+    mypath = "/path/to/dir/cell_21/"
     onlyfiles = [f for f in os.listdir(mypath) if (os.path.isfile(os.path.join(mypath, f)) and is_file_extension(f,".data-00000-of-00001"))]
     
     for file in onlyfiles:

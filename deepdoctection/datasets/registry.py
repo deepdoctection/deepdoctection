@@ -33,7 +33,18 @@ dataset_registry = catalogue.create("deepdoctection", "datasets", entry_points=T
 
 def get_dataset(name: str) -> DatasetBase:
     """
-    Returns an instance of a dataset with a given name.
+    Returns an instance of a dataset with a given name. This instance can be used to customize the dataflow output
+
+    **Example:**
+
+        .. code-block:: python
+
+            dataset = get_dataset("some_name")
+            dataset.dataflow.categories.filter_categories(["cat1","cat2"])
+            df = dataset.dataflow.build(split="train")
+
+            for dp in df:
+                # do something
 
     :param name: A dataset name
     :return: An instance of a dataset

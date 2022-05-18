@@ -32,7 +32,8 @@ Custom Dataset
 
     class CustomDataset(DatasetBase):
 
-        def _info(self):
+        @classmethod
+        def _info(cls):
             return DatasetInfo(name=_NAME, description=_DESCRIPTION, splits=_SPLITS)
 
         def _categories(self):
@@ -105,7 +106,7 @@ build configurations of the dataflows.
 
 .. code:: python
 
-   dataset = DatasetRegistry.get_dataset("dataset_name")
+   dataset = get_dataset("dataset_name")
    df = dataset.dataflow.build(**kwargs_config)
 
    for sample in df:

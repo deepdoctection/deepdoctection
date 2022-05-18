@@ -39,9 +39,11 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
     Prototype for a document layout pipeline. Contains implementation for loading document types (images in directory,
     single PDF document, dataflow from datasets), conversions in dataflows and building a pipeline.
 
-    See deepdoctection.analyzer.dd for a concrete implementation.
+    See `deepdoctection.analyzer.dd` for a concrete implementation.
 
     See also the explanations in :class:`base.Pipeline`
+
+
     """
 
     def __init__(

@@ -50,6 +50,17 @@ class TextExtractionService(PredictorPipelineComponent):
     relation to text and ROI or in relation to text and the entire image. When selecting ROIs, only the selected
     categories are taken into account during processing. ROIs that are not selected are not presented to the
     detector.
+
+    .. code-block:: python
+
+        textract_predictor = TextractOcrDetector()
+        text_extract = TextExtractionService(textract_predictor)
+
+        pipe = DoctectionPipe([text_extract])
+        df = pipe.analyze(path="path/to/document.pdf")
+
+        for dp in df:
+            ...
     """
 
     def __init__(
@@ -267,6 +278,13 @@ class TextOrderService(PipelineComponent):
     annotation per block, which saves the reading order of the block per page.
 
     The blocks are defined in :attr:`_floating_text_block_names` and text blocks in :attr:`_floating_text_block_names`.
+
+    .. code-block:: python
+
+        order = TextOrderService(text_container=names.C.WORD,
+                                 floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
+                                 text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL,
+                                                   names.C.HEAD, names.C.BODY])
     """
 
     def __init__(

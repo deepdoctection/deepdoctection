@@ -205,22 +205,22 @@ class Image:
         """
         Get the image either in base64 string representation or as np.array.
 
+        .. code-block:: python
+
+            image.get_image().to_np_array()
+
+        or
+
+        .. code-block:: python
+
+            image.get_image().to_b64()
+
         :return: desired image encoding representation
         """
 
         class _Img:
             """
-            Helper class. Do not use it in your code, rather call
-
-            .. code-block:: python
-
-                 image.get_image().to_np_array()
-
-            or
-
-            .. code-block:: python
-
-                 image.get_image().to_b64()
+            Helper class. Do not use it in your code.
             """
 
             def __init__(self, img: Optional[ImageType]):
@@ -412,6 +412,8 @@ class Image:
 
     def remove(self, annotation: ImageAnnotation) -> None:
         """
+        Instead of removing consider deactivating annotations.
+
         Calls :meth:`List.remove`. Make sure, the element is in the list for otherwise a ValueError will be raised.
 
         :param annotation: The annotation to remove

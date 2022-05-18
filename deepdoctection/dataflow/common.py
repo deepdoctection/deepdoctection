@@ -29,11 +29,16 @@ class FlattenData(ProxyDataFlow):  # type: ignore
 
     **Example:**
 
-       dp_1 = ['a','b']
+        .. code-block:: python
 
-       dp_2 = ['c','d']
+            dp_1 = ['a','b']
+            dp_2 = ['c','d']
 
-       will stream 'a', 'b', 'c', 'd'.
+        will yield
+
+        .. code-block:: python
+
+            ['a'], ['b'], ['c'], ['d'].
     """
 
     def __iter__(self) -> Any:

@@ -105,6 +105,13 @@ class SubImageLayoutService(PredictorPipelineComponent):
     and in the cache of the sub image.
 
     If no objects are discovered, artificial objects can be added by means of a refinement process.
+
+    **Example**
+
+        .. code-block:: python
+
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
+            item_component = SubImageLayoutService(d_items, names.C.TAB, {1: 6}, True)
     """
 
     def __init__(

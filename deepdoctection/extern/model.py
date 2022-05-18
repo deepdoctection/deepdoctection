@@ -64,6 +64,34 @@ class ModelProfile:
 class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well.
+
+    To get an overview of all registered models
+
+    .. code-block:: python
+
+        print(ModelCatalog.get_model_list())
+
+    To get a model card for some specific model:
+
+    .. code-block:: python
+
+        profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
+        print(profile.description)
+
+    Some models will have their weights and configs stored in the cache. To instantiate predictors one will sometimes
+    need their path. Use
+
+    .. code-block:: python
+
+        path_weights = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
+        path_configs = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
+
+    To register a new model
+
+    .. code-block:: python
+
+        ModelCatalog.get_full_path_configs("my_new_model")
+
     """
 
     CATALOG: Dict[str, ModelProfile] = {
@@ -475,9 +503,13 @@ def print_model_infos() -> None:
 
 class ModelDownloadManager:  # pylint: disable=R0903
     """
-    A registry for built-in models. Registered models have weights that can be downloaded and cached. Do not use
-    this class for registering your own models as there are much more sophisticated tools for experimenting and
-    versioning.
+    Class for organizing downloads of config files and weights from various sources. Internally, it will use model
+    profiles to know where things are stored.
+
+    .. code-block:: python
+
+        # if you are not sure about the model name use the ModelCatalog
+        ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")
     """
 
     @staticmethod
