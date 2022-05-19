@@ -180,7 +180,9 @@ def get_transformers_requirement() -> Requirement:
 
 # Detectron2 related requirements
 _DETECTRON2_AVAILABLE = importlib.util.find_spec("detectron2") is not None
-_DETECTRON2_ERR_MSG = "Detectron2 must be installed: >>install-dd-pt"
+_DETECTRON2_ERR_MSG = "Detectron2 must be installed: >>install-dd-pt if you installed deepdoctection from source or " \
+                      "follow the official installation instructions " \
+                      "https://detectron2.readthedocs.io/en/latest/tutorials/install.html"
 
 
 def detectron2_available() -> bool:
