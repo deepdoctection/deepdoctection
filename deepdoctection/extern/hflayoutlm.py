@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification
+    from transformers import LayoutLMForTokenClassification, PretrainedConfig  # type: ignore
 
 
 def predict_token_classes(
@@ -87,9 +87,11 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
-            layoutlm = HFLayoutLmTokenClassifier(categories_explicit= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
-                                                               'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
-                                                               'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD', 'S-QUESTION'])
+            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories_explicit= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
+                                                                        'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
+                                                                        'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD',
+                                                                        'S-QUESTION'])
 
             # token classification service
             layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm,image_to_layoutlm)
@@ -105,6 +107,8 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def __init__(
         self,
+        path_config_json: str,
+        path_weights: str,
         categories_semantics: Optional[List[str]] = None,
         categories_bio: Optional[List[str]] = None,
         categories_explicit: Optional[List[str]] = None,
@@ -119,21 +123,25 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
                                     semantics and tags explicitly.
         """
 
-        self.categories_semantics = categories_semantics if categories_semantics is not None else []
-        self.categories_bio = categories_bio if categories_bio is not None else []
-        self.categories_explicit = categories_explicit if categories_explicit is not None else []
+        if categories_explicit is None:
+            assert categories_semantics is not None
+            assert categories_bio is not None
 
-        if not self.categories_explicit:
-            assert self.categories_semantics
-            assert self.categories_bio
+        self.path_config_json = path_config_json
+        self.path_weights = path_weights
+        self.categories_semantics = copy(categories_semantics) if categories_semantics is not None else None
+        self.categories_bio = copy(categories_bio) if categories_bio is not None else None
+        self.categories_explicit = copy(categories_explicit)  if categories_explicit is not None else None
 
         self._categories: Dict[int, str] = (
             dict(enumerate(self.categories_explicit))
-            if self.categories_explicit
-            else self._categories_orig_to_categories(self.categories_semantics, self.categories_bio)
+            if categories_explicit is not None
+            else self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
         )
         self.device = set_torch_auto_device()
-        self.model = LayoutLMForTokenClassification.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        self.model = LayoutLMForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights,
+                                                                    config=config)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -157,13 +165,6 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "token_type_ids" in encodings
         assert "boxes" in encodings
         assert "tokens" in encodings
-
-        assert isinstance(encodings["ids"], list)
-        assert isinstance(encodings["input_ids"], Tensor)
-        assert isinstance(encodings["attention_mask"], Tensor)
-        assert isinstance(encodings["token_type_ids"], Tensor)
-        assert isinstance(encodings["boxes"], Tensor)
-        assert isinstance(encodings["tokens"], list)
 
         results = predict_token_classes(
             encodings["ids"],
@@ -200,4 +201,5 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._categories
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.categories_semantics, self.categories_bio, self.categories_explicit)
+        return self.__class__(self.path_config_json, self.path_weights,
+                              self.categories_semantics, self.categories_bio, self.categories_explicit)
