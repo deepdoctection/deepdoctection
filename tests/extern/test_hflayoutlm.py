@@ -47,6 +47,7 @@ class TestHFLayoutLmTokenClassifier:
     @staticmethod
     @mark.requires_pt
     @patch("deepdoctection.extern.pt.ptutils.pytorch_available", MagicMock(return_value=False))
+    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained",MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
         """
@@ -55,10 +56,11 @@ class TestHFLayoutLmTokenClassifier:
 
         # Arrange, Act & Assert
         with raises(ImportError):
-            HFLayoutLmTokenClassifier(["foo"], ["B", "I", "O"])
+            HFLayoutLmTokenClassifier("path/to/json","path/to/model",["foo"], ["B", "I", "O"])
 
     @staticmethod
     @mark.requires_pt
+    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
         """
@@ -68,14 +70,14 @@ class TestHFLayoutLmTokenClassifier:
 
         # Arrange, Act & Assert
         with raises(AssertionError):
-            HFLayoutLmTokenClassifier(["foo"], None)
+            HFLayoutLmTokenClassifier("path/to/json","path/to/model",["foo"], None)
 
         # Arrange
         categories_semantics = ["FOO"]
         categories_bio = ["B", "I", "O"]
 
         # Act
-        model = HFLayoutLmTokenClassifier(categories_semantics, categories_bio)
+        model = HFLayoutLmTokenClassifier("path/to/json","path/to/model",categories_semantics, categories_bio)
 
         # Assert
         assert model.categories == {0: "B-FOO", 1: "I-FOO", 2: "O"}
@@ -85,7 +87,7 @@ class TestHFLayoutLmTokenClassifier:
         categories_explicit = {0: "FOO", 1: "BAK", 2: "O"}
 
         # Act
-        model = HFLayoutLmTokenClassifier(categories_explicit=categories_explicit_list)
+        model = HFLayoutLmTokenClassifier("path/to/json","path/to/model",categories_explicit=categories_explicit_list)
 
         # Assert
         assert model.categories == categories_explicit
@@ -93,6 +95,7 @@ class TestHFLayoutLmTokenClassifier:
     @staticmethod
     @mark.requires_pt
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
+    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
         layoutlm_input: JsonDict,
@@ -107,7 +110,7 @@ class TestHFLayoutLmTokenClassifier:
         # Arrange
         categories_semantics = ["FOO"]
         categories_bio = ["B", "I", "O"]
-        layoutlm = HFLayoutLmTokenClassifier(categories_semantics, categories_bio)
+        layoutlm = HFLayoutLmTokenClassifier("path/to/json","path/to/model",categories_semantics, categories_bio)
 
         # Act
         results = layoutlm.predict(**layoutlm_input)
