@@ -322,9 +322,18 @@ def get_pdfplumber_requirement() -> Requirement:
     return "pdfplumber", pdfplumber_available(), _PDFPLUMBER_ERR_MSG
 
 
+# pycocotools dependencies
+_COCOTOOLS_AVAILABLE = importlib.util.find_spec("pycocotools") is not None
+
+
+def cocotools_available() -> bool:
+    """
+    Returns True if pycocotools is installed
+    """
+    return bool(_COCOTOOLS_AVAILABLE)
+
+
 # qpdf related dependencies
-
-
 _QPDF_AVAILABLE = which("qpdf") is not None
 
 
