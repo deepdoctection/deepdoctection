@@ -28,7 +28,7 @@ import numpy as np
 from numpy import float32
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import BoundingBox, np_iou
+from ..datapoint.box import BoundingBox, iou
 from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
@@ -86,7 +86,7 @@ def choose_items_by_iou(
         reference_item_proposals_boxes = item_proposals_boxes
         triangle_ind = np.triu_indices(len(item_proposals))
 
-    iou_matrix = np_iou(item_proposals_boxes, reference_item_proposals_boxes)
+    iou_matrix = iou(item_proposals_boxes, reference_item_proposals_boxes)
 
     if triangle_ind is not None:
         iou_matrix[triangle_ind] = 0
