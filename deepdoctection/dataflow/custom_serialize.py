@@ -20,11 +20,14 @@ Adding some methods that convert incoming data to dataflows.
 """
 
 import os
+import json
+import itertools
+
 from typing import List, Optional, Union
 
 from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
 from jsonlines import Reader, Writer
-from pycocotools.coco import COCO
+from collections import defaultdict
 
 from ..utils.fs import is_file_extension
 from ..utils.logger import logger
@@ -163,6 +166,220 @@ class SerializerFiles:
         raise NotImplementedError
 
 
+def _is_array_like(obj):
+    return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
+
+
+class CocoParser:
+    """
+    A simplified version of the Microsoft COCO helper class for reading  annotations. It currently supports only
+    bounding box annotations
+
+    :param annotation_file (str): location of annotation file
+    :param image_folder (str): location to the folder that hosts images.
+    :return:
+    """
+
+    def __init__(self, annotation_file: Optional[str]=None):
+
+        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
+        self.img_to_anns, self.cat_to_imgs = defaultdict(list), defaultdict(list)
+
+        if annotation_file is not None:
+            with timed_operation(message="loading annotations to memory"):
+                with open(annotation_file, 'r') as f:
+                    dataset = json.load(f)
+                assert type(dataset) == dict, 'annotation file format {} not supported'.format(type(dataset))
+            self.dataset = dataset
+            self._create_index()
+
+    def _create_index(self):
+        with timed_operation(message="creating index"):
+            anns, cats, imgs = {}, {}, {}
+            img_to_anns,cat_to_imgs = defaultdict(list),defaultdict(list)
+            if 'annotations' in self.dataset:
+                for ann in self.dataset['annotations']:
+                    img_to_anns[ann['image_id']].append(ann)
+                    anns[ann['id']] = ann
+
+            if 'images' in self.dataset:
+                for img in self.dataset['images']:
+                    imgs[img['id']] = img
+
+            if 'categories' in self.dataset:
+                for cat in self.dataset['categories']:
+                    cats[cat['id']] = cat
+
+            if 'annotations' in self.dataset and 'categories' in self.dataset:
+                for ann in self.dataset['annotations']:
+                    cat_to_imgs[ann['category_id']].append(ann['image_id'])
+
+            self.anns = anns
+            self.img_to_anns = img_to_anns
+            self.cat_to_imgs = cat_to_imgs
+            self.imgs = imgs
+            self.cats = cats
+
+    def info(self) -> None:
+        """
+        Print information about the annotation file.
+        """
+        for key, value in self.dataset['info'].items():
+            print('{}: {}'.format(key, value))
+
+    def get_ann_ids(self, img_ids: Optional[Union[int, List[int]]]=None, cat_ids: Optional[Union[int, List[int]]]=None,
+                          area_range: Optional[Union[float, List[float]]]=None, is_crowd: Optional[bool] = None):
+        """
+        Get ann ids that satisfy given filter conditions. default skips that filter
+
+        :param img_ids: get anns for given imgs
+        :param cat_ids: get anns for given cats
+        :param area_range: get anns for given area range (e.g. [0 inf])
+        :param is_crowd: get anns for given crowd label (False or True)
+
+        :return: ids: integer array of ann ids
+        """
+
+        if img_ids is None:
+            img_ids = []
+        if cat_ids is None:
+            cat_ids = []
+        if area_range is None:
+            area_range = []
+
+        img_ids = img_ids if _is_array_like(img_ids) else [img_ids]
+        cat_ids = cat_ids if _is_array_like(cat_ids) else [cat_ids]
+
+        if len(img_ids) == len(cat_ids) == len(area_range) == 0:
+            anns = self.dataset['annotations']
+        else:
+            if not len(img_ids) == 0:
+                lists = [self.img_to_anns[imgId] for imgId in img_ids if imgId in self.img_to_anns]
+                anns = list(itertools.chain.from_iterable(lists))
+            else:
+                anns = self.dataset['annotations']
+            anns = anns if len(cat_ids) == 0 else [ann for ann in anns if ann['category_id'] in cat_ids]
+            anns = anns if len(area_range) == 0 else [ann for ann in anns if
+                                                      area_range[0] < ann['area'] < area_range[1]]
+        if is_crowd is not None:
+            ids = [ann['id'] for ann in anns if ann['iscrowd'] == is_crowd]
+        else:
+            ids = [ann['id'] for ann in anns]
+        return ids
+
+    def get_cat_ids(self, category_names: Optional[Union[str, List[str]]]=None,
+                          supercategory_names: Optional[Union[str, List[str]]]=None,
+                          category_ids: Optional[Union[int, List[int]]]=None):
+        """
+        Filtering parameters. default skips that filter.
+
+        :param category_names: get cats for given cat names
+        :param supercategory_names: get cats for given supercategory names
+        :param category_ids: get cats for given cat ids
+
+        :return: ids: integer array of cat ids
+        """
+
+        if category_names is None:
+            category_names = []
+        if supercategory_names is None:
+            supercategory_names = []
+        if category_ids is None:
+            category_ids = []
+
+        category_names = category_names if _is_array_like(category_names) else [category_names]
+        supercategory_names = supercategory_names if _is_array_like(supercategory_names) else [supercategory_names]
+        category_ids = category_ids if _is_array_like(category_ids) else [category_ids]
+
+        if len(category_names) == len(supercategory_names) == len(category_ids) == 0:
+            cats = self.dataset['categories']
+        else:
+            cats = self.dataset['categories']
+            cats = cats if len(category_names) == 0 else [cat for cat in cats if cat['name'] in category_names]
+            cats = cats if len(supercategory_names) == 0 else [cat for cat in cats if cat['supercategory'] in supercategory_names]
+            cats = cats if len(category_ids) == 0 else [cat for cat in cats if cat['id'] in category_ids]
+        ids = [cat['id'] for cat in cats]
+        return ids
+
+    def get_image_ids(self, img_ids: Optional[Union[int, List[int]]]=None,
+                            cat_ids: Optional[Union[int, List[int]]]=None):
+        """
+        Get img ids that satisfy given filter conditions.
+
+        :param imgIds: get imgs for given ids
+        :param catIds: get imgs with all given cats
+
+        :return: ids: integer array of img ids
+        """
+
+        if img_ids is None:
+            img_ids = []
+        if cat_ids is None:
+            cat_ids = []
+
+        img_ids = img_ids if _is_array_like(img_ids) else [img_ids]
+        cat_ids = cat_ids if _is_array_like(cat_ids) else [cat_ids]
+
+        if len(img_ids) == len(cat_ids) == 0:
+            ids = self.imgs.keys()
+        else:
+            ids = set(img_ids)
+            for i, catId in enumerate(cat_ids):
+                if i == 0 and len(ids) == 0:
+                    ids = set(self.cat_to_imgs[catId])
+                else:
+                    ids &= set(self.cat_to_imgs[catId])
+        return list(ids)
+
+    def load_anns(self, ids: Optional[Union[int, List[int]]]=None):
+        """
+        Load anns with the specified ids.
+
+        :param ids: integer ids specifying anns
+
+        :return: anns: loaded ann objects
+        """
+        if ids is None:
+            ids = []
+
+        if _is_array_like(ids):
+            return [self.anns[id] for id in ids]
+        elif type(ids) == int:
+            return [self.anns[ids]]
+
+    def load_cats(self, ids: Optional[Union[int, List[int]]]=None):
+        """
+        Load cats with the specified ids.
+
+        :param ids: integer ids specifying cats
+
+        :return: cats: loaded cat objects
+        """
+        if ids is None:
+            ids = []
+
+        if _is_array_like(ids):
+            return [self.cats[id] for id in ids]
+        elif type(ids) == int:
+            return [self.cats[ids]]
+
+    def load_imgs(self, ids: Optional[Union[int, List[int]]]=None):
+        """
+        Load anns with the specified ids.
+
+        :param ids: integer ids specifying img
+
+        :return: imgs: loaded img objects
+        """
+        if ids is None:
+            ids = []
+
+        if _is_array_like(ids):
+            return [self.imgs[id] for id in ids]
+        elif type(ids) == int:
+            return [self.imgs[ids]]
+
+
 class SerializerCoco:
     """
     Class for serializing annotation files in Coco format. Coco comes in JSON format which is a priori not
@@ -200,13 +417,13 @@ class SerializerCoco:
         assert is_file_extension(file, ".json"), file
 
         with timed_operation("Start loading .json file and serializing"):
-            coco = COCO(path)
-            img_ids = coco.getImgIds()
-            imgs = coco.loadImgs(img_ids)
+            coco = CocoParser(path)
+            img_ids = coco.get_image_ids()
+            imgs = coco.load_imgs(img_ids)
 
             with get_tqdm(total=len(imgs)) as status_bar:
                 for img in imgs:
-                    img["annotations"] = coco.imgToAnns[img["id"]]
+                    img["annotations"] = coco.img_to_anns[img["id"]]
                     status_bar.update()
 
         df = CustomDataFromList(imgs, max_datapoints=max_datapoints)

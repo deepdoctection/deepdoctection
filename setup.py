@@ -48,7 +48,6 @@ DIST_DEPS = [
     "pypdf2>=1.27.5",
     "pyyaml",
     "scikit-learn",
-    "scikit-learn",
     "types-termcolor",
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
 ]

@@ -23,15 +23,19 @@ from copy import copy
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
+
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cocostruct import image_to_coco
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import cocotools_available, get_cocotools_requirement, Requirement
 from .base import MetricBase
 from .registry import metric_registry
+
+if cocotools_available():
+    from pycocotools.coco import COCO
+    from pycocotools.cocoeval import COCOeval
 
 __all__ = ["CocoMetric"]
 
@@ -226,3 +230,7 @@ class CocoMetric(MetricBase):
 
         cls._f1_score = f1_score
         cls._f1_iou = f1_iou
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_cocotools_requirement()]

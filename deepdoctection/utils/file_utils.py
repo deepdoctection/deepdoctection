@@ -324,6 +324,7 @@ def get_pdfplumber_requirement() -> Requirement:
 
 # pycocotools dependencies
 _COCOTOOLS_AVAILABLE = importlib.util.find_spec("pycocotools") is not None
+_COCOTOOLS_ERR_MSG = "pycocotools must be installed. >> pip install pycocotools==2.0.4"
 
 
 def cocotools_available() -> bool:
@@ -331,6 +332,32 @@ def cocotools_available() -> bool:
     Returns True if pycocotools is installed
     """
     return bool(_COCOTOOLS_AVAILABLE)
+
+
+def get_cocotools_requirement() -> Requirement:
+    """
+    Returns cocotools requirement.
+    """
+    return "pycocotools", cocotools_available(), _COCOTOOLS_ERR_MSG
+
+
+# scikit-learn dependencies
+_SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
+_SKLEARN_ERR_MSG = "scikit-learn must be installed. >> pip install scikit-learn==1.0.2"
+
+
+def sklearn_available() -> bool:
+    """
+    Returns True if sklearn is installed
+    """
+    return bool(_SKLEARN_AVAILABLE)
+
+
+def get_sklearn_requirement() -> Requirement:
+    """
+    Returns sklearn requirement.
+    """
+    return "sklearn", sklearn_available(), _SKLEARN_ERR_MSG
 
 
 # qpdf related dependencies

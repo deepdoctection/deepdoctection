@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
+
 from tabulate import tabulate
 from termcolor import colored
 
@@ -30,8 +30,14 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import sklearn_available, get_sklearn_requirement, Requirement
 from .base import MetricBase
 from .registry import metric_registry
+
+if sklearn_available():
+    from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
+
+
 
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
@@ -74,6 +80,7 @@ class AccuracyMetric(MetricBase):
     mapper = image_to_cat_id
     _cats = None
     _sub_cats = None
+
 
     @classmethod
     def dump(
@@ -158,6 +165,10 @@ class AccuracyMetric(MetricBase):
         if cls._sub_cats:
             for key, val in cls._sub_cats.items():
                 assert set(val) <= set(sub_cats[key])
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_sklearn_requirement()]
 
 
 def confusion(
