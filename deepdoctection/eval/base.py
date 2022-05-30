@@ -26,6 +26,7 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.maputils import DefaultMapper
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import Requirement
 
 
 class MetricBase(ABC):
@@ -45,6 +46,26 @@ class MetricBase(ABC):
 
     metric: Optional[Callable[[Any], Tuple[Any, Any]]] = None
     mapper: Optional[DefaultMapper] = None
+
+    def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
+        requirements = cls.get_requirements()
+        name = cls.__name__ if hasattr(cls, "__name__") else cls.__class__.__name__
+        if not all(requirement[1] for requirement in requirements):
+            raise ImportError(
+                "\n".join(
+                    [f"{name} has the following dependencies:"]
+                    + [requirement[2] for requirement in requirements if not requirement[1]]
+                )
+            )
+        return super().__new__(cls)
+
+    @classmethod
+    @abstractmethod
+    def get_requirements(cls) -> List[Requirement]:
+        """
+        Get a list of requirements for running the detector
+        """
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
