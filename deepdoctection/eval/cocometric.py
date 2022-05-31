@@ -107,7 +107,8 @@ def _summarize(  # type: ignore
     return mean_s
 
 
-COCOeval.summarize_f1 = _summarize
+if cocotools_available():
+    COCOeval.summarize_f1 = _summarize
 
 
 @metric_registry.register("coco")
@@ -116,7 +117,7 @@ class CocoMetric(MetricBase):
     Metric induced by :class:`pycocotools.cocoeval.COCOeval`.
     """
 
-    metric = COCOeval
+    metric = COCOeval if cocotools_available() else None
     mapper = image_to_coco  # type: ignore
     _f1_score = None
     _f1_iou = None
@@ -125,7 +126,7 @@ class CocoMetric(MetricBase):
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> Tuple[COCO, COCO]:
+    ) -> Tuple["COCO", "COCO"]:
         cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True).items()]  # type: ignore
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
