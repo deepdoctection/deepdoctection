@@ -7,6 +7,8 @@
 - Python >=  3.8
 - PyTorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
 
+Windows is not supported. 
+
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
 For fine-tuning layout models **deep**doctection uses Tensorpack as training framework and therefore only 
@@ -56,6 +58,33 @@ Then run
 pip install deepdoctection[pt]
 ```
 
+
+This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
+
+**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
+This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
+(e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
+When accurate models a needed, please use the Tensorflow version.
+
+Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
+pdfplumber, fastText, ...). If you want to use them, please pip install these separately.
+
+<!--- uncomment for next release
+To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
+Instead of the above, run for **Tensorflow**
+
+```
+pip install deepdoctection[tf-all]
+```
+
+or for **PyTorch**
+
+```
+pip install deepdoctection[pt-all]
+```
+
+respectively. -->
+
 ## Install from source
 
 Download the repository or clone via
@@ -74,7 +103,7 @@ source venv/bin/activate
 ```
 
 The installation process will not install the deep frameworks (e.g. Tensorflow or Pytorch) and
-therefore to be done by the user itself. We recommend installing the latest version of Tensorflow (2.7) as 
+therefore to be done by the user itself. We recommend installing Tensorflow >=2.7 as 
 this version is compatible with the required numpy version. Lower versions will not break the code, 
 but you will see a compatibility error during the installation process.
 
@@ -91,7 +120,27 @@ If you want to use the PyTorch framework, run:
 make install-dd-pt
 ```
 
-This installation will give you the basic usage of this package and will allow you to run the tutorial notebooks.
+This installation will give you the basic usage of this package and will allow you to run the first two tutorial 
+notebooks.
+
+
+<!--- remove for next release --->
+To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
+Instead of the above, run for **Tensorflow**
+
+<!--- uncomment for next release
+#Here again, there are some installation options to run evaluation, use datasets or train. To install
+#the full suite for **Tensorflow**, run --->
+
+```
+make install-dd-tf-all
+```
+
+For **PyTorch**:
+
+```
+make install-dd-pt-all
+```
 
 There are options to install features which require additional dependencies. E.g, if you want to call AWS Textract OCR
 within a pipeline you will need the boto3. Please install those packages by yourself.  
@@ -103,7 +152,7 @@ install-dd-all
 ```
 
 to install the Tensorflow and Pytorch version in one environment. Note however, that it is not possible 
-to run pipeline that depend on both TF and Pytorch components.
+to run pipelines that depend on both TF and Pytorch components.
 
 
 ## IPkernel and jupyter notebooks

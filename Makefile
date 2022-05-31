@@ -92,11 +92,25 @@ install-dd-tf: install-dd
 	@echo "--> Done installing tensorflow dependencies"
 	@echo ""
 
+install-dd-tf-all: install-dd
+	@echo "--> Installing tensorflow dependencies"
+	pip install ".[tf-all]"
+	@echo "--> Done installing tensorflow dependencies"
+	@echo ""
+
+install-dd-pt-all: install-dd
+	@echo "--> Installing tensorflow dependencies"
+	pip install ".[pt-all]"
+	@echo "--> Done installing tensorflow dependencies"
+	@echo ""
+
 install-dd-pt: install-dd
 	@echo "--> Installing PT dependencies"
 	pip install ".[pt]"
 	@echo "--> Done installing PT dependencies"
 	@echo ""
+
+
 
 install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
