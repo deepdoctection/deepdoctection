@@ -23,13 +23,15 @@ import ast
 import os
 from typing import Dict, List, Optional, Union
 
-from lxml import etree  # type: ignore
-
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
+from ..utils.file_utils import lxml_available
 from .maputils import MappingContextManager, cur
+
+if lxml_available():
+    from lxml import etree  # type: ignore
 
 
 def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
@@ -141,7 +143,7 @@ def maybe_ann_to_sub_image(
 
 
 @cur  # type: ignore
-def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
+def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.
 

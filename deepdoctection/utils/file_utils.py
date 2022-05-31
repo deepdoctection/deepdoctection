@@ -147,6 +147,17 @@ def get_pytorch_requirement() -> Requirement:
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
 
 
+# lxml
+_LXML_AVAILABLE = importlib.util.find_spec("lxml") is not None
+
+
+def lxml_available() -> bool:
+    """
+    Returns True if lxml is installed
+    """
+    return bool(_LXML_AVAILABLE)
+
+
 # Transformers
 _TRANSFORMERS_AVAILABLE = importlib.util.find_spec("transformers") is not None
 _TRANSFORMERS_ERR_MSG = "Transformers must be installed: >>install-dd-pt"
