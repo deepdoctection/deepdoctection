@@ -4,7 +4,7 @@ UNAME_S := $(shell uname -s)
 PRODIGY_PATH=
 
 
-PYTHON=python3.8
+PYTHON=python3
 
 
 analyze:
@@ -59,7 +59,7 @@ install-dd-dev-pt: check-venv
 	@echo "--> Installing requirements dependencies"
 	pip install -r requirements.txt -e .
 	@echo "--> Installing pytorch dependencies"
-	pip install -e ".[pt]"
+	pip install -e ".[pt-all]"
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
 	@echo "--> Done installing dev dependencies"
@@ -69,7 +69,7 @@ install-dd-dev-tf: check-venv
 	@echo "--> Installing requirements dependencies"
 	pip install -r requirements.txt -e .
 	@echo "--> Installing tensorflow dependencies"
-	pip install -e ".[tf]"
+	pip install -e ".[tf-all]"
 	@echo "--> Installing dev dependencies"
 	pip install -e ".[dev]"
 	@echo "--> Done installing dev dependencies"

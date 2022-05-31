@@ -38,7 +38,6 @@ if sklearn_available():
     from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
 
 
-
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 

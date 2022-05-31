@@ -38,22 +38,22 @@ DIST_DEPS = [
     "importlib-metadata",
     "huggingface_hub",
     "jsonlines",
-    "lxml",
     "mock",
     "networkx",
     "numpy>=1.21",
     "opencv-python",
     "packaging>=20.0",
-    "pycocotools",
     "pypdf2>=1.27.5",
     "pyyaml",
-    "scikit-learn",
     "types-termcolor",
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
 ]
 
+# additional dependencies for using evaluations and all datasets
+DIST_EVAL = ["lxml","pycocotools>=2.0.2","scikit-learn"]
+
 # when building requirements.txt for rtd uncomment the following lines
-# DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber"])
+# DIST_DEPS.extend(["tensorpack", "boto3", "transformers", "pdfplumber","lxml","pycocotools>=2.0.2","scikit-learn"])
 # TF_DEPS = []
 
 # when building requirements.txt for rtd comment the following lines
@@ -72,7 +72,8 @@ if sys.platform == "linux":
 
 TEST_DEPS = ["black==22.3.0", "isort", "pylint", "mypy", "pytest", "pytest-cov"]
 
-EXTRA_DEPS = {"tf": TF_DEPS, "dev": DEV_DEPS, "test": TEST_DEPS, "pt": PT_DEPS}
+EXTRA_DEPS = {"tf": TF_DEPS, "pt": PT_DEPS, "tf-all": TF_DEPS + DIST_EVAL, "pt-all": PT_DEPS + DIST_EVAL,
+              "dev": DEV_DEPS, "test": TEST_DEPS}
 
 setup(
     name="deepdoctection",
