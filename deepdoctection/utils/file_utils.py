@@ -102,7 +102,7 @@ def tf_addons_available() -> bool:
 
 def get_tf_addons_requirements() -> Requirement:
     """
-    Returns Tesnroflow Addons requirement
+    Returns Tensorflow Addons requirement
     """
     return "tensorflow-addons", tf_addons_available(), _TF_ADDONS_ERR_MSG
 
