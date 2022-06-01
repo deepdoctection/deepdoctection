@@ -53,7 +53,6 @@ install-dd: check-venv
 	@echo "--> Done installing dependencies"
 	@echo ""
 
-install-dd-all: check-venv install-dd-tf install-dd-pt
 
 install-dd-dev-pt: check-venv
 	@echo "--> Installing requirements dependencies"
@@ -65,15 +64,7 @@ install-dd-dev-pt: check-venv
 	@echo "--> Done installing dev dependencies"
 	@echo ""
 
-install-dd-dev-tf: check-venv
-	@echo "--> Installing requirements dependencies"
-	pip install -r requirements.txt -e .
-	@echo "--> Installing tensorflow dependencies"
-	pip install -e ".[tf-all]"
-	@echo "--> Installing dev dependencies"
-	pip install -e ".[dev]"
-	@echo "--> Done installing dev dependencies"
-	@echo ""
+
 
 install-dd-test: check-venv
 	@echo "--> Installing test dependencies"
@@ -84,31 +75,7 @@ install-dd-test: check-venv
 
 install-dd-all-dev-pt: check-venv install-dd-dev-pt install-dd-test
 
-install-dd-all-dev-tf: check-venv install-dd-dev-tf install-dd-test
 
-install-dd-tf: install-dd
-	@echo "--> Installing tensorflow dependencies"
-	pip install ".[tf]"
-	@echo "--> Done installing tensorflow dependencies"
-	@echo ""
-
-install-dd-tf-all: install-dd
-	@echo "--> Installing tensorflow dependencies"
-	pip install ".[tf-all]"
-	@echo "--> Done installing tensorflow dependencies"
-	@echo ""
-
-install-dd-pt-all: install-dd
-	@echo "--> Installing tensorflow dependencies"
-	pip install ".[pt-all]"
-	@echo "--> Done installing tensorflow dependencies"
-	@echo ""
-
-install-dd-pt: install-dd
-	@echo "--> Installing PT dependencies"
-	pip install ".[pt]"
-	@echo "--> Done installing PT dependencies"
-	@echo ""
 
 
 
@@ -177,10 +144,17 @@ up-reqs-dev-pt: up-reqs install-dd-all-dev-pt
 
 up-reqs-dev-tf: up-reqs install-dd-all-dev-tf
 
-up-req-files: check-venv
+up-req: check-venv
 	@echo "--> Updating Python requirements"
-	pip-compile --output-file requirements.txt setup.py
+	pip-compile  setup.py  --output-file requirements.txt
 	@echo "--> Done updating Python requirements"
+
+up-req-docs: check-venv
+	@echo "--> Updating Python requirements"
+	pip-compile  setup.py  --output-file requirements.txt  --extra docs
+	@echo "--> Done updating Python requirements"
+
+
 
 venv:
 	$(PYTHON) -m venv venv --system-site-packages
