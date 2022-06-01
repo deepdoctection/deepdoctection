@@ -1,7 +1,6 @@
 .PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test
 
 UNAME_S := $(shell uname -s)
-PRODIGY_PATH=
 
 
 PYTHON=python3
@@ -9,12 +8,6 @@ PYTHON=python3
 
 analyze:
 	mypy -p deepdoctection -p tests -p tests_d2
-
-test-build:
-	pip install --upgrade build
-	$(PYTHON) -m build
-	pip install --upgrade twine
-	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 check-format:
 	black --line-length 120 --check deepdoctection tests setup.py
@@ -47,39 +40,27 @@ format:
 	black --line-length 120 deepdoctection tests setup.py
 	isort  deepdoctection tests setup.py
 
-install-dd: check-venv
-	@echo "--> Installing dependencies"
-	pip install -r requirements.txt .
-	@echo "--> Done installing dependencies"
-	@echo ""
-
-
 install-dd-dev-pt: check-venv
-	@echo "--> Installing requirements dependencies"
-	pip install -r requirements.txt -e .
-	@echo "--> Installing pytorch dependencies"
-	pip install -e ".[pt-all]"
-	@echo "--> Installing dev dependencies"
-	pip install -e ".[dev]"
-	@echo "--> Done installing dev dependencies"
+	@echo "--> Installing source-all-pt"
+	pip install -e ".[source-all-pt]"
+	@echo "--> Installing dev, test dependencies"
+	pip install -e ".[dev, test]"  --deps-only
+	@echo "--> Done installing dev, test dependencies"
 	@echo ""
 
-
+install-dd-dev-tf: check-venv
+	@echo "--> Installing source-all-tf"
+	pip install -e ".[source-all-tf]"
+	@echo "--> Installing dev, test dependencies"
+	pip install -e ".[dev, test]"  --deps-only
+	@echo "--> Done installing dev, test dependencies"
+	@echo ""
 
 install-dd-test: check-venv
 	@echo "--> Installing test dependencies"
 	pip install -e ".[test]"
-	pip install -U pytest
 	@echo "--> Done installing test dependencies"
 	@echo ""
-
-install-dd-all-dev-pt: check-venv install-dd-dev-pt install-dd-test
-
-
-
-
-
-install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
 install-jupyterlab-setup: check-venv
 	@echo "--> Installing Jupyter Lab"
@@ -93,9 +74,6 @@ install-kernel-dd: check-venv
 	@echo "--> Done installing kernel deep-doctection"
 
 install-prodigy-setup: check-venv install-jupyterlab-setup
-	@echo "--> Installing Prodigy"
-	pip install $(PRODIGY_PATH)
-	@echo "--> Done installing Prodigy"
 	@echo "--> Installing Jupyter Lab Prodigy plugin"
 	pip install jupyterlab-prodigy
 	jupyter labextension list
@@ -110,11 +88,17 @@ package: check-venv
 	pip install --upgrade build
 	$(PYTHON) -m build
 
-qa: check-format lint analyze test
+qa: lint analyze test
 
 test:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
+
+test-build:
+	pip install --upgrade build
+	$(PYTHON) -m build
+	pip install --upgrade twine
+	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 test-des-tf:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf" tests
@@ -133,25 +117,14 @@ up-pip: check-venv
 	pip install wheel
 	@echo "--> Done updating pip"
 
-up-pipx: check-venv
-	@echo "--> Installing pipx"
-	pip install pipx
-	@echo "--> Done installing pipx"
-
-up-reqs: up-pip up-req-files install-dd
-
-up-reqs-dev-pt: up-reqs install-dd-all-dev-pt
-
-up-reqs-dev-tf: up-reqs install-dd-all-dev-tf
-
 up-req: check-venv
 	@echo "--> Updating Python requirements"
-	pip-compile  setup.py  --output-file requirements.txt
+	pip-compile  --output-file requirements.txt  setup.py
 	@echo "--> Done updating Python requirements"
 
 up-req-docs: check-venv
 	@echo "--> Updating Python requirements"
-	pip-compile  setup.py  --output-file requirements.txt  --extra docs
+	pip-compile  --output-file docs/requirements.txt  --extra docs  setup.py
 	@echo "--> Done updating Python requirements"
 
 
