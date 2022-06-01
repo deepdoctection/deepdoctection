@@ -63,7 +63,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 Before you start, please ensure your installation fulfills the following baseline requirements:
 
 - Linux **or** macOS
-- Python =  3.8 or 3.9.
+- Python >=  3.8 
 - PyTorch >= 1.8 and torchvision **or** Tensorflow >=2.4.1 and CUDA
 
 Windows is not supported.
@@ -73,7 +73,10 @@ You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 **deep**doctection uses [**Tensorpack**](https://github.com/tensorpack) as training framework as well as its vision 
 models for layout analysis. For PyTorch, [**Detectron2**](https://github.com/facebookresearch/detectron2) is used. 
 All models have been trained on Tensorflow and converted into Detectron2 consumable artefacts. If you want to train, 
-please use the Tensorflow framework.
+please use the Tensorflow framework. 
+
+Besides these models, **deepdoctection** has wrappers available to use models for inference in pipelines from different 
+libraries. 
 
 ### Other
 
@@ -101,11 +104,8 @@ For **Tensorflow**, run
 pip install deepdoctection[tf]
 ```
 
-For **PyTorch**, 
-
-first install **Detectron2** separately as it is not on the pypi server, either. Check the instruction 
-[here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
-Then run
+For **PyTorch**, first install **Detectron2** separately as it is not on the pypi server, either. Check the instruction 
+[here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). Then run
 
 ```
 pip install deepdoctection[pt]
@@ -119,23 +119,18 @@ This becomes visible when visualising the page of the demo notebook which is dis
 When accurate models a needed, please use the Tensorflow version.
 
 Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
-pdfplumber, fastText, ...). If you want to use them, please pip install these separately.
+pdfplumber, fastText, ...). If you want to use them, you have to pip install them by yourself.
 
 <!--- uncomment for next release
-To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
-Instead of the above, run for **Tensorflow**
+To use more features (e.g. run all available notebooks), try:
 
 ```
-pip install deepdoctection[tf-all]
+pip install deepdoctection[full-tf]
 ```
 
-or for **PyTorch**
+Note, that this option is not available for PyTorch.
+--->
 
-```
-pip install deepdoctection[pt-all]
-```
-
-respectively. -->
 
 ### Installation from source
 
@@ -145,51 +140,38 @@ Download the repository or clone via
 git clone https://github.com/deepdoctection/deepdoctection.git
 ```
 
-There is a **Makefile** that guides you though the installation process. To get started, try:
+To get started with **Tensorflow**, run:
 
 ```
 cd deepdoctection
-make clean
-make venv
-source venv/bin/activate
+pip install ".[source-tf]"
 ```
 
-For **Tensorflow**, run
+or with **PyTorch**:
  
 ```
-make install-dd-tf
+cd deepdoctection
+pip install ".[source-pt]"
 ```
 
-If you want to use the **PyTorch** framework, run:
+This will install the basic dependencies to get started with the first notebooks. More libraries can be
+used, once more dependencies have been installed: 
 
 ```
-make install-dd-pt
+cd deepdoctection
+pip install ".[source-all-tf]"
 ```
 
-<!--- remove for next release --->
-To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
-Instead of the above, run for **Tensorflow**
-
-<!--- uncomment for next release
-#Here again, there are some installation options to run evaluation, use datasets or train. To install
-#the full suite for **Tensorflow**, run --->
+or 
 
 ```
-make install-dd-tf-all
+cd deepdoctection
+pip install ".[source-all-pt]"
 ```
 
-For **PyTorch**:
-
-```
-make install-dd-pt-all
-```
- 
+installs all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
 
 For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
-
-
-If you do not work on Linux or macOS, one easy way to fulfill the requirements is to use the Docker image. A 
-[Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
 
 
 ## Credits

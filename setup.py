@@ -77,7 +77,7 @@ _DEPS = [
     # docs
     "sphinx",
     "sphinx_rtd_theme",
-    "recommonmark"
+    "recommonmark",
     # test
     "pytest",
     "pytest-cov"
@@ -117,8 +117,16 @@ source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpac
 # full dependencies for using evaluations and all datasets
 additional_deps = deps_list("lxml","pycocotools","scikit-learn")
 
+# remaining depencies to use all models
+remaining_deps = deps_list("boto3",
+                           "pdfplumber",
+                           "tensorflow-addons",
+                           "doctr",
+                           "fasttext")
+
 full_deps = dist_deps + additional_deps
 source_full_deps = source_deps + additional_deps
+source_all_deps = source_deps + additional_deps + remaining_deps
 
 # Tensorflow dependencies
 additional_tf_deps =  deps_list("tensorpack")
@@ -126,14 +134,16 @@ additional_tf_deps =  deps_list("tensorpack")
 source_tf_deps = source_deps + additional_tf_deps
 full_tf_deps = full_deps + additional_tf_deps
 source_full_tf_deps = source_full_deps + additional_tf_deps
+source_all_tf_deps = source_all_deps + additional_tf_deps
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("transformers")
+additional_pt_deps = deps_list("lxml","transformers")
 source_additional_pt_deps = additional_pt_deps + \
                             deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
-# it does not make sense to define a non-full pt dependency
+# it does not make sense to define a non-full pt dependency, because everything is already available
 full_pt_deps = full_deps + additional_pt_deps
 source_full_pt_deps = source_full_deps + source_additional_pt_deps
+source_all_pt_deps = source_all_deps + source_additional_pt_deps
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git",
@@ -159,8 +169,10 @@ EXTRA_DEPS = {"tf": additional_tf_deps,
               "source-tf": source_tf_deps,
               "full-tf": full_tf_deps,
               "source-full-tf": source_full_tf_deps,
+              "source-all-tf": source_all_tf_deps,
               "pt": full_pt_deps,
               "source-pt": source_full_pt_deps,
+              "source-all-pt": source_all_pt_deps,
               "docs": docs_deps,
               "dev": dev_deps,
               "test": test_deps}

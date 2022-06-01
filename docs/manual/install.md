@@ -19,8 +19,6 @@ will take a significant amount of work.
 The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
 some code components will have some issues on Windows. We cannot provide support for Windows.
 
-**deep**doctection might depend on other open source packages that have to be installed separately. 
-
 If you want to use Tesseract for extracting text using OCR:
 - [Tesseract](https://github.com/tesseract-ocr/tesseract)
 
@@ -29,8 +27,8 @@ If you want to convert PDF into numpy arrays:
 
 If we discover projects that cover utilities for additional features to be used in a pipeline we implement wrappers
 that simplify usage. In order to not overload requirements and incorporating never used dependencies these projects have 
-to be added separately. In most of the cases they directly accessible by a simple pip install. To discover what is 
-currently available, please check the 
+to be added separately (unless you use the 'source-all-tf', 'source-all-pt' option as described below). In most of the 
+cases they are directly accessible by a simple pip install. To discover what is currently available, please check the 
 [API documentation](https://deepdoctection.readthedocs.io/en/latest/modules/deepdoctection.extern.html)
 
 ### Install with pip
@@ -51,8 +49,8 @@ pip install deepdoctection[tf]
 
 For PyTorch,
 
-first install Detectron2 separately. Check the instruction [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
-Then run
+first install Detectron2 separately as it is not on the pypi server, either. Check the instruction 
+[here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). Then run
 
 ```
 pip install deepdoctection[pt]
@@ -70,20 +68,14 @@ Some libraries are not added to the requirements in order to keep the dependenci
 pdfplumber, fastText, ...). If you want to use them, please pip install these separately.
 
 <!--- uncomment for next release
-To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
-Instead of the above, run for **Tensorflow**
+To use more features (e.g. run all available notebooks), try:
 
 ```
-pip install deepdoctection[tf-all]
+pip install deepdoctection[full-tf]
 ```
 
-or for **PyTorch**
-
-```
-pip install deepdoctection[pt-all]
-```
-
-respectively. -->
+Note, that this option is not available for PyTorch.
+--->
 
 ## Install from source
 
@@ -93,66 +85,60 @@ Download the repository or clone via
 git clone https://github.com/deepdoctection/deepdoctection.git
 ```
 
-Install the package in a virtual environment. Learn more about [`virtualenv`](https://docs.python.org/3/tutorial/venv.html). 
-
-```
-cd deepdoctection
-make clean
-make venv
-source venv/bin/activate
-```
+Install the package in a virtual environment. Learn more about 
+[`virtualenv`](https://docs.python.org/3/tutorial/venv.html). 
 
 The installation process will not install the deep frameworks (e.g. Tensorflow or Pytorch) and
 therefore to be done by the user itself. We recommend installing Tensorflow >=2.7 as 
 this version is compatible with the required numpy version. Lower versions will not break the code, 
 but you will see a compatibility error during the installation process.
 
-
-For Tensorflow, run 
-
-```
-make install-dd-tf
-```
-
-If you want to use the PyTorch framework, run:
+To get started with Tensorflow, run:
 
 ```
-make install-dd-pt
+cd deepdoctection 
+pip install ".[source-tf]"
 ```
+
+or with **PyTorch**:
+
+```
+cd deepdoctection
+pip install ".[source-pt]"
+```
+Note that pip must run where `setup.py` resides. 
 
 This installation will give you the basic usage of this package and will allow you to run the first two tutorial 
 notebooks.
 
 
-<!--- remove for next release --->
-To run evaluation, using datasets or fine tuning models further dependencies need to be respected. 
-Instead of the above, run for **Tensorflow**
-
-<!--- uncomment for next release
-#Here again, there are some installation options to run evaluation, use datasets or train. To install
-#the full suite for **Tensorflow**, run --->
+To run evaluation, using datasets or fine tuning Tensorpack models, further dependencies need to be respected. 
+Instead of the above, run for **Tensorflow**:
 
 ```
-make install-dd-tf-all
+pip install ".[source-full-tf]"
 ```
 
-For **PyTorch**:
-
-```
-make install-dd-pt-all
-```
+There is no corresponding installation available for PyTorch, as the basic installation already covers all dependencies
+for using all datasets or running evaluation. As already mentioned, training in PyTorch is not available yet.
 
 There are options to install features which require additional dependencies. E.g, if you want to call AWS Textract OCR
 within a pipeline you will need the boto3. Please install those packages by yourself.  
 
-Run 
+If you want to have the full flexibility by composing pipelines with all available model wrappers provided by 
+deepdoctection, use
 
 ```
-install-dd-all
+cd deepdoctection
+pip install ".[source-all-tf]"
 ```
 
-to install the Tensorflow and Pytorch version in one environment. Note however, that it is not possible 
-to run pipelines that depend on both TF and Pytorch components.
+or respectively,
+
+```
+cd deepdoctection
+pip install ".[source-all-pt]"
+```
 
 
 ## IPkernel and jupyter notebooks
@@ -164,7 +150,7 @@ make install-kernel-dd
 ```
 
 This command must be run with active venv mode. You can then start a notebook as always and choose the 
-kernel in the kernel drop down menu.
+kernel 'deep-doc' in the kernel drop down menu.
 
 ## Testing the environment
 
@@ -198,13 +184,13 @@ stream
 
 
 ```
-up-reqs-dev-pt
+make install-dd-dev-pt
 ```
 
 or 
 
 ```
-up-reqs-dev-tf
+make install-dd-dev-tf
 ```
 
 Before submitting a PR, format, lint, type-check the code and run the tests:
@@ -215,4 +201,4 @@ make format-and-qa
 
 ## Makefile
 
-Check Makefile for more functionalities.
+Check the Makefile for more functionalities (jupyter lab installation etc.)
