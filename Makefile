@@ -44,7 +44,7 @@ install-dd-dev-pt: check-venv
 	@echo "--> Installing source-all-pt"
 	pip install -e ".[source-all-pt]"
 	@echo "--> Installing dev, test dependencies"
-	pip install -e ".[dev, test]"  --deps-only
+	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
 	@echo ""
 
@@ -52,7 +52,7 @@ install-dd-dev-tf: check-venv
 	@echo "--> Installing source-all-tf"
 	pip install -e ".[source-all-tf]"
 	@echo "--> Installing dev, test dependencies"
-	pip install -e ".[dev, test]"  --deps-only
+	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
 	@echo ""
 
@@ -71,7 +71,13 @@ install-kernel-dd: check-venv
 	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
 	pip install --user ipykernel
 	$(PYTHON) -m ipykernel install --user --name=deep-doc
-	@echo "--> Done installing kernel deep-doctection"
+	@echo "--> Done installing kernel deep-doc"
+
+install-kernel-dd-mac: check-venv
+	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
+	pip install ipykernel
+	$(PYTHON) -m ipykernel install --name=deep-doc
+	@echo "--> Done installing kernel deep-doc"
 
 install-prodigy-setup: check-venv install-jupyterlab-setup
 	@echo "--> Installing Jupyter Lab Prodigy plugin"
