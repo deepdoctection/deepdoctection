@@ -33,12 +33,15 @@ jobs:
       - name: Upgrade pip
         run: python3 -m pip install --upgrade pip tox
 
+      - name: libcap
+        run: sudo apt-get install build-essential libcap-dev
+
       - name: Set Python version
         # See https://pre-commit.com/#github-actions-example
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
 
-      - name: Install tesseract
-        run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
+      #- name: Install tesseract
+      #  run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
 
       - name: cd
         run: cd deepdoctection
