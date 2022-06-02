@@ -18,6 +18,9 @@
 """
 Testing the module eval.cocometric
 """
+
+from pytest import mark
+
 import numpy as np
 from numpy.testing import assert_allclose
 
@@ -42,6 +45,7 @@ class TestCocoMetric:
         self.dataflow_pr = DataFromList(dp_list)
         self.categories = get_image_results().get_dataset_categories()
 
+    @mark.full
     def test_coco_metric_returns_correct_distance(self) -> None:
         """
         when testing datapoint against itself, evaluation returns full score except when some areas do not exist
@@ -62,6 +66,7 @@ class TestCocoMetric:
 
         assert_allclose(output, expected_output, atol=1e-10)  # type: ignore
 
+    @mark.full
     def test_when_params_change_coco_metric_returns_correct_distance(self) -> None:
         """
         when parameters are changed then coco metric return correct distance
@@ -91,6 +96,7 @@ class TestCocoMetric:
         # Clean-up
         CocoMetric._params = {}  # pylint: disable=W0212
 
+    @mark.full
     def test_when_f1_score_coco_metric_returns_correct_distance(self) -> None:
         """
         when f1_score = True is set then coco metric returns correct distance

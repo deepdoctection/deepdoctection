@@ -19,6 +19,8 @@
 Testing module eval.accmetric
 """
 
+from pytest import mark
+
 from deepdoctection.dataflow import DataFromList  # type: ignore
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datasets.info import DatasetCategories
@@ -32,6 +34,7 @@ class TestAccuracyMetric:
     """
 
     @staticmethod
+    @mark.full
     def test_accuracy_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -59,6 +62,7 @@ class TestAccuracyMetric:
         AccuracyMetric._sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
+    @mark.full
     def test_accuracy_metric_for_sub_cat_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -85,6 +89,7 @@ class TestAccuracyMetric:
         AccuracyMetric._sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
+    @mark.full
     def test_accuracy_metric_for_sub_cat_returns_correct_distance_as_dict(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:

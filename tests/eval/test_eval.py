@@ -63,6 +63,7 @@ class TestEvaluator:
         self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric)
 
     @mark.requires_tf
+    @mark.full
     def test_evaluator_runs_and_returns_distance(self, setup_method) -> None:  #  type: ignore  # pylint: disable=W0613
         """
         Testing evaluator runs and returns metric distance

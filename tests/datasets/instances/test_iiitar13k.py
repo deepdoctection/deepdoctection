@@ -18,12 +18,14 @@
 """
 Testing module datasets.instances.iiitar13k
 """
+from pytest import mark
 
 from deepdoctection.datasets import IIITar13K
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
+@mark.full
 def test_dataset_iiitar13k_returns_image() -> None:
     """
     test dataset iiitar13k returns image
