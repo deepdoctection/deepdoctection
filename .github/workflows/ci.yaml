@@ -54,7 +54,7 @@ jobs:
         run:  pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
-        run: make install-dd-test
+        run: pip install pytest pytest-cov
 
       - name: Run tests
         run: make ${{ matrix.test_cases }}
