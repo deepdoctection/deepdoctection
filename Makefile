@@ -96,6 +96,7 @@ package: check-venv
 
 qa: lint analyze test
 
+# all tests - this will never succeed in full due to dependency conflicts
 test:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
@@ -106,15 +107,25 @@ test-build:
 	pip install --upgrade twine
 	$(PYTHON) -m twine upload --repository testpypi dist/*
 
-test-des-tf:
+test-tf-basic: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not full and not all" tests
+
+test-tf-full: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not all" tests
+
+test-tf-all: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
+
+test-pt-full: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not all" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
+
+test-pt-all: test-integration
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
-test-des-pt:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
-
 test-integration:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration and requires_tf and requires_pt" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
 
 up-pip: check-venv
 	@echo "--> Updating pip"
