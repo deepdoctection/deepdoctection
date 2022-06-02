@@ -107,13 +107,13 @@ test-build:
 	pip install --upgrade twine
 	$(PYTHON) -m twine upload --repository testpypi dist/*
 
-test-tf-basic: test-integration
+test-tf-basic:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not full and not all" tests
 
-test-tf-full: test-integration
+test-tf-full:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not all" tests
 
-test-tf-all: test-integration
+test-tf-all:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
 
 test-pt-full: test-integration
