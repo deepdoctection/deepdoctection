@@ -353,6 +353,17 @@ def get_cocotools_requirement() -> Requirement:
     return "pycocotools", cocotools_available(), _COCOTOOLS_ERR_MSG
 
 
+# scipy dependency
+_SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
+
+
+def scipy_available() -> bool:
+    """
+    Returns True if scipy is installed
+    """
+    return bool(_SCIPY_AVAILABLE)
+
+
 # scikit-learn dependencies
 _SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
 _SKLEARN_ERR_MSG = "scikit-learn must be installed. >> pip install scikit-learn==1.0.2"
