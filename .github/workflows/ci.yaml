@@ -53,5 +53,8 @@ jobs:
       - name: Test deepdoctection package installation
         run:  pip install ".[${{ matrix.extras }}]"
 
+      - name: Install test suite
+        run: install-dd-test
+
       - name: Run tests
         run: make ${{ matrix.test_cases }}
