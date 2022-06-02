@@ -1,0 +1,44 @@
+# This workflow will install Python dependencies, run tests
+
+name: CI
+
+on:
+  push:
+    branches: [ master, cocotools ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: '3.8', python: '3.8', os: ubuntu-20.04, tox: py310 }
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Upgrade pip
+        run: python3 -m pip install --upgrade pip tox
+
+      - name: Set Python version
+        # See https://pre-commit.com/#github-actions-example
+        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Install tesseract
+        run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-ger
+
+      - name: Test deepdoctection package installation
+        run: pip install tensorflow==2.7.0 && pip install "deepdoctection/.[source-tf]"
