@@ -20,7 +20,8 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8', python: '3.8', os: ubuntu-20.04, tox: py310 }
+          - { name: '3.8', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.7.0, extras: source-tf,
+              test_cases: test-tf-basic }
 
     steps:
       - uses: actions/checkout@v3
@@ -33,19 +34,24 @@ jobs:
       - name: Upgrade pip
         run: python3 -m pip install --upgrade pip tox
 
-      - name: libcap
+      - name: Install libcap
         run: sudo apt-get install build-essential libcap-dev
 
       - name: Set Python version
         # See https://pre-commit.com/#github-actions-example
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
 
-      #- name: Install tesseract
-      #  run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
+      - name: Install tesseract
+        run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
 
       - name: cd
         run: cd deepdoctection
 
+      - name: Install DL library
+        run: pip install ${{ matrix.dll }}
+
       - name: Test deepdoctection package installation
-        run: pip install ".[source-tf]"
-        # run: pip install tensorflow==2.7.0 && pip install "deepdoctection/.[source-tf]"
+        run:  pip install ".[${{ matrix.extras }}]"
+
+      - name: Run tests
+        run: make ${{ matrix.test_cases }}
