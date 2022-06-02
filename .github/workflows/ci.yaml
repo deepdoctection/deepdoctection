@@ -20,7 +20,7 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.7.0, extras: source-tf,
+          - { name: '3.8', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-tf,
               test_cases: test-tf-basic }
 
     steps:
