@@ -26,12 +26,12 @@ from typing import Dict, List, Optional, Union
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
 from ..utils.file_utils import lxml_available
+from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
 from .maputils import MappingContextManager, cur
 
 if lxml_available():
-    from lxml import etree  # type: ignore
+    from lxml import etree  # type: ignore  # pylint: disable=W0611
 
 
 def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:

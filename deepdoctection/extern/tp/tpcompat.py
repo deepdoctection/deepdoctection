@@ -22,8 +22,8 @@ Compatibility classes and methods related to Tensorpack package
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple, Union
 
-from tensorpack.predict import OfflinePredictor, PredictConfig
-from tensorpack.tfutils import SmartInit
+from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
+from tensorpack.tfutils import SmartInit  # pylint: disable=E0401
 
 # pylint: disable=import-error
 from tensorpack.train.model_desc import ModelDesc

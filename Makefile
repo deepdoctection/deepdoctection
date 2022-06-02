@@ -94,7 +94,7 @@ package: check-venv
 	pip install --upgrade build
 	$(PYTHON) -m build
 
-qa: lint analyze test
+qa: lint analyze test-basic
 
 # all tests - this will never succeed in full due to dependency conflicts
 test:
@@ -107,13 +107,16 @@ test-build:
 	pip install --upgrade twine
 	$(PYTHON) -m twine upload --repository testpypi dist/*
 
-test-tf-basic: test-integration
+test-basic:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not requires_tf and not full and not all" tests
+
+test-tf-basic:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not full and not all" tests
 
-test-tf-full: test-integration
+test-tf-full:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not all" tests
 
-test-tf-all: test-integration
+test-tf-all:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
 
 test-pt-full: test-integration

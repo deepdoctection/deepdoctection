@@ -19,16 +19,16 @@
 Adding some methods that convert incoming data to dataflows.
 """
 
-import os
-import json
 import itertools
-
-from typing import List, Optional, Union
+import json
+import os
+from collections import defaultdict
+from typing import DefaultDict, Dict, List, Optional, Union
 
 from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
 from jsonlines import Reader, Writer
-from collections import defaultdict
 
+from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension
 from ..utils.logger import logger
 from ..utils.pdf_utils import PDFStreamer
@@ -166,10 +166,6 @@ class SerializerFiles:
         raise NotImplementedError
 
 
-def _is_array_like(obj):
-    return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
-
-
 class CocoParser:
     """
     A simplified version of the Microsoft COCO helper class for reading  annotations. It currently supports only
@@ -180,39 +176,44 @@ class CocoParser:
     :return:
     """
 
-    def __init__(self, annotation_file: Optional[str]=None):
+    def __init__(self, annotation_file: Optional[str] = None) -> None:
 
-        self.dataset, self.anns, self.cats, self.imgs = dict(), dict(), dict(), dict()
-        self.img_to_anns, self.cat_to_imgs = defaultdict(list), defaultdict(list)
+        self.dataset: JsonDict = {}
+        self.anns: Dict[int, JsonDict] = {}
+        self.cats: Dict[int, JsonDict] = {}
+        self.imgs: Dict[int, JsonDict] = {}
+
+        self.img_to_anns: DefaultDict[int, List[int]] = defaultdict(list)
+        self.cat_to_imgs: DefaultDict[int, List[int]] = defaultdict(list)
 
         if annotation_file is not None:
             with timed_operation(message="loading annotations to memory"):
-                with open(annotation_file, 'r') as f:
-                    dataset = json.load(f)
-                assert type(dataset) == dict, 'annotation file format {} not supported'.format(type(dataset))
+                with open(annotation_file, "r", encoding="UTF-8") as file:
+                    dataset = json.load(file)
+                assert isinstance(dataset, dict), f"annotation file format {type(dataset)} not supported"
             self.dataset = dataset
             self._create_index()
 
-    def _create_index(self):
+    def _create_index(self) -> None:
         with timed_operation(message="creating index"):
             anns, cats, imgs = {}, {}, {}
-            img_to_anns,cat_to_imgs = defaultdict(list),defaultdict(list)
-            if 'annotations' in self.dataset:
-                for ann in self.dataset['annotations']:
-                    img_to_anns[ann['image_id']].append(ann)
-                    anns[ann['id']] = ann
+            img_to_anns, cat_to_imgs = defaultdict(list), defaultdict(list)
+            if "annotations" in self.dataset:
+                for ann in self.dataset["annotations"]:
+                    img_to_anns[ann["image_id"]].append(ann)
+                    anns[ann["id"]] = ann
 
-            if 'images' in self.dataset:
-                for img in self.dataset['images']:
-                    imgs[img['id']] = img
+            if "images" in self.dataset:
+                for img in self.dataset["images"]:
+                    imgs[img["id"]] = img
 
-            if 'categories' in self.dataset:
-                for cat in self.dataset['categories']:
-                    cats[cat['id']] = cat
+            if "categories" in self.dataset:
+                for cat in self.dataset["categories"]:
+                    cats[cat["id"]] = cat
 
-            if 'annotations' in self.dataset and 'categories' in self.dataset:
-                for ann in self.dataset['annotations']:
-                    cat_to_imgs[ann['category_id']].append(ann['image_id'])
+            if "annotations" in self.dataset and "categories" in self.dataset:
+                for ann in self.dataset["annotations"]:
+                    cat_to_imgs[ann["category_id"]].append(ann["image_id"])
 
             self.anns = anns
             self.img_to_anns = img_to_anns
@@ -224,11 +225,16 @@ class CocoParser:
         """
         Print information about the annotation file.
         """
-        for key, value in self.dataset['info'].items():
-            print('{}: {}'.format(key, value))
+        for key, value in self.dataset["info"].items():
+            print(f"{key}: {value}")
 
-    def get_ann_ids(self, img_ids: Optional[Union[int, List[int]]]=None, cat_ids: Optional[Union[int, List[int]]]=None,
-                          area_range: Optional[Union[float, List[float]]]=None, is_crowd: Optional[bool] = None):
+    def get_ann_ids(
+        self,
+        img_ids: Optional[Union[int, List[int]]] = None,
+        cat_ids: Optional[Union[int, List[int]]] = None,
+        area_range: Optional[List[int]] = None,
+        is_crowd: Optional[bool] = None,
+    ) -> List[int]:
         """
         Get ann ids that satisfy given filter conditions. default skips that filter
 
@@ -247,29 +253,33 @@ class CocoParser:
         if area_range is None:
             area_range = []
 
-        img_ids = img_ids if _is_array_like(img_ids) else [img_ids]
-        cat_ids = cat_ids if _is_array_like(cat_ids) else [cat_ids]
+        img_ids = [img_ids] if isinstance(img_ids, int) else img_ids
+        cat_ids = [cat_ids] if isinstance(cat_ids, int) else cat_ids
 
         if len(img_ids) == len(cat_ids) == len(area_range) == 0:
-            anns = self.dataset['annotations']
+            anns = self.dataset["annotations"]
         else:
             if not len(img_ids) == 0:
-                lists = [self.img_to_anns[imgId] for imgId in img_ids if imgId in self.img_to_anns]
+                lists = [self.img_to_anns[img_id] for img_id in img_ids if img_id in self.img_to_anns]
                 anns = list(itertools.chain.from_iterable(lists))
             else:
-                anns = self.dataset['annotations']
-            anns = anns if len(cat_ids) == 0 else [ann for ann in anns if ann['category_id'] in cat_ids]
-            anns = anns if len(area_range) == 0 else [ann for ann in anns if
-                                                      area_range[0] < ann['area'] < area_range[1]]
+                anns = self.dataset["annotations"]
+            anns = anns if len(cat_ids) == 0 else [ann for ann in anns if ann["category_id"] in cat_ids]
+            anns = (
+                anns if len(area_range) == 0 else [ann for ann in anns if area_range[0] < ann["area"] < area_range[1]]
+            )
         if is_crowd is not None:
-            ids = [ann['id'] for ann in anns if ann['iscrowd'] == is_crowd]
+            ids = [ann["id"] for ann in anns if ann["iscrowd"] == is_crowd]
         else:
-            ids = [ann['id'] for ann in anns]
+            ids = [ann["id"] for ann in anns]
         return ids
 
-    def get_cat_ids(self, category_names: Optional[Union[str, List[str]]]=None,
-                          supercategory_names: Optional[Union[str, List[str]]]=None,
-                          category_ids: Optional[Union[int, List[int]]]=None):
+    def get_cat_ids(
+        self,
+        category_names: Optional[Union[str, List[str]]] = None,
+        supercategory_names: Optional[Union[str, List[str]]] = None,
+        category_ids: Optional[Union[int, List[int]]] = None,
+    ) -> List[int]:
         """
         Filtering parameters. default skips that filter.
 
@@ -287,27 +297,32 @@ class CocoParser:
         if category_ids is None:
             category_ids = []
 
-        category_names = category_names if _is_array_like(category_names) else [category_names]
-        supercategory_names = supercategory_names if _is_array_like(supercategory_names) else [supercategory_names]
-        category_ids = category_ids if _is_array_like(category_ids) else [category_ids]
+        category_names = [category_names] if isinstance(category_names, str) else category_names
+        supercategory_names = [supercategory_names] if isinstance(supercategory_names, str) else supercategory_names
+        category_ids = [category_ids] if isinstance(category_ids, int) else category_ids
 
         if len(category_names) == len(supercategory_names) == len(category_ids) == 0:
-            cats = self.dataset['categories']
+            cats = self.dataset["categories"]
         else:
-            cats = self.dataset['categories']
-            cats = cats if len(category_names) == 0 else [cat for cat in cats if cat['name'] in category_names]
-            cats = cats if len(supercategory_names) == 0 else [cat for cat in cats if cat['supercategory'] in supercategory_names]
-            cats = cats if len(category_ids) == 0 else [cat for cat in cats if cat['id'] in category_ids]
-        ids = [cat['id'] for cat in cats]
+            cats = self.dataset["categories"]
+            cats = cats if len(category_names) == 0 else [cat for cat in cats if cat["name"] in category_names]
+            cats = (
+                cats
+                if len(supercategory_names) == 0
+                else [cat for cat in cats if cat["supercategory"] in supercategory_names]
+            )
+            cats = cats if len(category_ids) == 0 else [cat for cat in cats if cat["id"] in category_ids]
+        ids = [cat["id"] for cat in cats]
         return ids
 
-    def get_image_ids(self, img_ids: Optional[Union[int, List[int]]]=None,
-                            cat_ids: Optional[Union[int, List[int]]]=None):
+    def get_image_ids(
+        self, img_ids: Optional[Union[int, List[int]]] = None, cat_ids: Optional[Union[int, List[int]]] = None
+    ) -> List[int]:
         """
         Get img ids that satisfy given filter conditions.
 
-        :param imgIds: get imgs for given ids
-        :param catIds: get imgs with all given cats
+        :param img_ids: get imgs for given ids
+        :param cat_ids: get imgs with all given cats
 
         :return: ids: integer array of img ids
         """
@@ -317,21 +332,21 @@ class CocoParser:
         if cat_ids is None:
             cat_ids = []
 
-        img_ids = img_ids if _is_array_like(img_ids) else [img_ids]
-        cat_ids = cat_ids if _is_array_like(cat_ids) else [cat_ids]
+        img_ids = [img_ids] if isinstance(img_ids, int) else img_ids
+        cat_ids = [cat_ids] if isinstance(cat_ids, int) else cat_ids
 
         if len(img_ids) == len(cat_ids) == 0:
-            ids = self.imgs.keys()
+            ids = set(self.imgs.keys())
         else:
             ids = set(img_ids)
-            for i, catId in enumerate(cat_ids):
+            for i, cat_id in enumerate(cat_ids):
                 if i == 0 and len(ids) == 0:
-                    ids = set(self.cat_to_imgs[catId])
+                    ids = set(self.cat_to_imgs[cat_id])
                 else:
-                    ids &= set(self.cat_to_imgs[catId])
+                    ids &= set(self.cat_to_imgs[cat_id])
         return list(ids)
 
-    def load_anns(self, ids: Optional[Union[int, List[int]]]=None):
+    def load_anns(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
         """
         Load anns with the specified ids.
 
@@ -342,12 +357,12 @@ class CocoParser:
         if ids is None:
             ids = []
 
-        if _is_array_like(ids):
+        if isinstance(ids, list):
             return [self.anns[id] for id in ids]
-        elif type(ids) == int:
+        if isinstance(ids, int):
             return [self.anns[ids]]
 
-    def load_cats(self, ids: Optional[Union[int, List[int]]]=None):
+    def load_cats(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
         """
         Load cats with the specified ids.
 
@@ -358,12 +373,12 @@ class CocoParser:
         if ids is None:
             ids = []
 
-        if _is_array_like(ids):
+        if isinstance(ids, list):
             return [self.cats[id] for id in ids]
-        elif type(ids) == int:
+        if isinstance(ids, int):
             return [self.cats[ids]]
 
-    def load_imgs(self, ids: Optional[Union[int, List[int]]]=None):
+    def load_imgs(self, ids: Optional[Union[int, List[int]]] = None) -> List[JsonDict]:
         """
         Load anns with the specified ids.
 
@@ -374,10 +389,9 @@ class CocoParser:
         if ids is None:
             ids = []
 
-        if _is_array_like(ids):
+        if isinstance(ids, list):
             return [self.imgs[id] for id in ids]
-        elif type(ids) == int:
-            return [self.imgs[ids]]
+        return [self.imgs[ids]]
 
 
 class SerializerCoco:

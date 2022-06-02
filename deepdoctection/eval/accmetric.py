@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
-
 from tabulate import tabulate
 from termcolor import colored
 
@@ -30,7 +29,7 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import sklearn_available, get_sklearn_requirement, Requirement
+from ..utils.file_utils import Requirement, get_sklearn_requirement, sklearn_available
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -77,9 +76,8 @@ class AccuracyMetric(MetricBase):
 
     metric = accuracy  # type: ignore
     mapper = image_to_cat_id
-    _cats = None
-    _sub_cats = None
-
+    _cats: Optional[List[str]] = None
+    _sub_cats: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None
 
     @classmethod
     def dump(
@@ -90,7 +88,7 @@ class AccuracyMetric(MetricBase):
 
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
-            cls._cats = categories.get_categories(as_dict=False, filtered=True)
+            cls._cats = categories.get_categories(as_dict=False, filtered=True)  # type: ignore
         mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)  # type: ignore
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
