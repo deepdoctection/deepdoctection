@@ -40,5 +40,9 @@ jobs:
       - name: Install tesseract
         run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
 
+      - name: cd
+        run: cd deepdoctection
+
       - name: Test deepdoctection package installation
-        run: pip install tensorflow==2.7.0 && pip install "deepdoctection/.[source-tf]"
+        run: pip install ".[source-tf]"
+        # run: pip install tensorflow==2.7.0 && pip install "deepdoctection/.[source-tf]"
