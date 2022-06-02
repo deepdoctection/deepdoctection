@@ -28,7 +28,7 @@ jobs:
           #    test_cases: test-tf-basic }
           #- { name: '3.8-full-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu, extras: source-pt,
           #    test_cases: test-tf-basic }
-          - { name: '3.8-all-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu, extras: source-all-pt,
+          - { name: '3.8-all-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
               test_cases: test-tf-basic }
 
     steps:
