@@ -49,8 +49,11 @@ jobs:
       - name: Install DL library
         run: pip install ${{ matrix.dll }}
 
+      - name: cd
+        run: cd deepdoctection
+
       - name: Test deepdoctection package installation
-        run:  cd deepdoctection && pip install ".[${{ matrix.extras }}]"
+        run:  pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
         run: pip install pytest pytest-cov
