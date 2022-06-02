@@ -8,7 +8,7 @@
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
-
+import sys
 import importlib.util
 import multiprocessing as mp
 import string
@@ -22,6 +22,7 @@ from packaging import version
 
 from .detection_types import Requirement
 from .metacfg import AttrDict
+from .logger import logger
 
 # Tensorflow and Tensorpack dependencies
 _TF_AVAILABLE = False
@@ -438,6 +439,11 @@ def get_doctr_requirement() -> Requirement:
     """
     Return Doctr requirement
     """
+    if sys.platform == "darwin":
+        if not get_poppler_version():
+            return get_doctr_requirement()
+        # don't know yet how to check whether pango gdk-pixbuf libffi are installed
+        logger.info("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 

@@ -67,7 +67,7 @@ _DEPS = [
     "boto3",
     "pdfplumber",
     "tensorflow-addons>=0.13.0",
-    "doctr",
+    "python-doctr",
     "fasttext",
     # dev dependencies
     "black==22.3.0",
@@ -121,7 +121,7 @@ additional_deps = deps_list("lxml","pycocotools","scikit-learn")
 remaining_deps = deps_list("boto3",
                            "pdfplumber",
                            "tensorflow-addons",
-                           "doctr",
+                           "python-doctr",
                            "fasttext")
 
 full_deps = dist_deps + additional_deps
