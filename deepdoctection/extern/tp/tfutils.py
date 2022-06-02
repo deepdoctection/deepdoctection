@@ -19,7 +19,7 @@
 Tensorflow related utils.
 """
 
-from tensorpack.models import disable_layer_logging
+from tensorpack.models import disable_layer_logging  # pylint: disable=E0401
 
 
 def is_tfv2() -> bool:

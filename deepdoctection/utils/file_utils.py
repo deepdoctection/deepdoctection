@@ -8,11 +8,11 @@
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
-import sys
 import importlib.util
 import multiprocessing as mp
 import string
 import subprocess
+import sys
 from os import environ
 from shutil import which
 from typing import Tuple, Union
@@ -21,8 +21,8 @@ import importlib_metadata
 from packaging import version
 
 from .detection_types import Requirement
-from .metacfg import AttrDict
 from .logger import logger
+from .metacfg import AttrDict
 
 # Tensorflow and Tensorpack dependencies
 _TF_AVAILABLE = False

@@ -20,11 +20,11 @@ Testing module extern.fastlang
 """
 from typing import Tuple
 from unittest.mock import MagicMock, patch
-from pytest import mark
 
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
+from pytest import mark
 
 from deepdoctection.extern.fastlang import FasttextLangDetector
 from deepdoctection.extern.model import ModelCatalog

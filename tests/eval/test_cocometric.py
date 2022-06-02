@@ -19,10 +19,9 @@
 Testing the module eval.cocometric
 """
 
-from pytest import mark
-
 import numpy as np
 from numpy.testing import assert_allclose
+from pytest import mark
 
 from deepdoctection.dataflow import DataFromList  # type: ignore
 from deepdoctection.eval.cocometric import CocoMetric

@@ -13,7 +13,6 @@ from typing import List
 
 import cv2
 import numpy as np
-
 from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
 
 from ....utils.file_utils import scipy_available
@@ -23,6 +22,7 @@ from .common import clip_boxes
 
 if scipy_available():
     from scipy import interpolate
+
 
 def _scale_box(box, scale):
     w_half = (box[2] - box[0]) * 0.5

@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification  # type: ignore
+    from transformers import LayoutLMForTokenClassification
 
 
 def predict_token_classes(
@@ -157,6 +157,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "token_type_ids" in encodings
         assert "boxes" in encodings
         assert "tokens" in encodings
+
+        assert isinstance(encodings["input_ids"], list)
+        assert isinstance(encodings["attention_mask"], Tensor)
+        assert isinstance(encodings["input_ids"], Tensor)
+        assert isinstance(encodings["input_ids"], Tensor)
+        assert isinstance(encodings["input_ids"], Tensor)
 
         results = predict_token_classes(
             encodings["ids"],
