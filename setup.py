@@ -115,7 +115,9 @@ if sys.platform == "linux":
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml","pycocotools","scikit-learn")
+additional_deps = deps_list("lxml",
+                            "pycocotools",
+                            "scikit-learn")
 
 # remaining depencies to use all models
 remaining_deps = deps_list("boto3",
@@ -158,12 +160,17 @@ if "python-prctl" in docs_deps:
     docs_deps.remove("python-prctl")
 
 # test dependencies
-test_deps = deps_list("pytest","pytest-cov")
+test_deps = deps_list("pytest",
+                      "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("black","isort","pylint","mypy")
+dev_deps = deps_list("black",
+                     "isort",
+                     "pylint",
+                     "mypy")
 
-# TODO: add function that list correct not pre-installed third party libs
+# TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
+#  can be printed with correct version dependencies
 
 EXTRA_DEPS = {"tf": additional_tf_deps,
               "source-tf": source_tf_deps,
