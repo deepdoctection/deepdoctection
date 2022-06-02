@@ -59,6 +59,7 @@ _DEPS = [
     "pycocotools>=2.0.2",
     "scikit-learn",
     # Tensorflow related dependencies
+    "protobuf==3.20.1",
     "tensorpack",
     # PyTorch related dependencies
     "transformers",
@@ -131,7 +132,8 @@ source_full_deps = source_deps + additional_deps
 source_all_deps = source_deps + additional_deps + remaining_deps
 
 # Tensorflow dependencies
-additional_tf_deps =  deps_list("tensorpack")
+additional_tf_deps =  deps_list("tensorpack",
+                                "protobuf")
 
 source_tf_deps = source_deps + additional_tf_deps
 full_tf_deps = full_deps + additional_tf_deps
