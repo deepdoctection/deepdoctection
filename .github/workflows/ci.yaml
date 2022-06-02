@@ -41,17 +41,16 @@ jobs:
         # See https://pre-commit.com/#github-actions-example
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
 
-      - name: Install tesseract
-        run: sudo apt-get -y update && sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
-
-      - name: cd
-        run: cd deepdoctection
+      - name: Install tesseract and poppler
+        run: sudo apt-get -y update &&
+             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu &&
+             sudo apt-get install poppler-utils
 
       - name: Install DL library
         run: pip install ${{ matrix.dll }}
 
       - name: Test deepdoctection package installation
-        run:  pip install ".[${{ matrix.extras }}]"
+        run:  cd deepdoctection && pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
         run: pip install pytest pytest-cov
