@@ -228,8 +228,8 @@ import os
 from typing import Dict, List, Tuple
 
 import numpy as np
-from tensorpack.tfutils import collect_env_info
-from tensorpack.utils import logger
+from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401
+from tensorpack.utils import logger  # pylint: disable=E0401
 
 # pylint: disable=import-error
 from tensorpack.utils.gpu import get_num_gpu

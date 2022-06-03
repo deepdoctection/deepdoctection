@@ -24,12 +24,11 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cocostruct import image_to_coco
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import cocotools_available, get_cocotools_requirement, Requirement
+from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
 from .base import MetricBase
 from .registry import metric_registry
 
