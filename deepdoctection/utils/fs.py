@@ -40,6 +40,7 @@ __all__ = [
     "maybe_path_or_pdf",
     "download",
     "mkdir_p",
+    "is_file_extension",
 ]
 
 

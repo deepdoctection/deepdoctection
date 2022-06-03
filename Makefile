@@ -1,20 +1,13 @@
 .PHONY: clean clean-test clean-pyc clean-build develop help venv start pytest test
 
 UNAME_S := $(shell uname -s)
-PRODIGY_PATH=
 
 
-PYTHON=python3.8
+PYTHON=python3
 
 
 analyze:
 	mypy -p deepdoctection -p tests -p tests_d2
-
-test-build:
-	pip install --upgrade build
-	$(PYTHON) -m build
-	pip install --upgrade twine
-	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 check-format:
 	black --line-length 120 --check deepdoctection tests setup.py
@@ -47,58 +40,27 @@ format:
 	black --line-length 120 deepdoctection tests setup.py
 	isort  deepdoctection tests setup.py
 
-install-dd: check-venv
-	@echo "--> Installing dependencies"
-	pip install -r requirements.txt .
-	@echo "--> Done installing dependencies"
-	@echo ""
-
-install-dd-all: check-venv install-dd-tf install-dd-pt
-
 install-dd-dev-pt: check-venv
-	@echo "--> Installing requirements dependencies"
-	pip install -r requirements.txt -e .
-	@echo "--> Installing pytorch dependencies"
-	pip install -e ".[pt]"
-	@echo "--> Installing dev dependencies"
-	pip install -e ".[dev]"
-	@echo "--> Done installing dev dependencies"
+	@echo "--> Installing source-all-pt"
+	pip install -e ".[source-all-pt]"
+	@echo "--> Installing dev, test dependencies"
+	pip install -e ".[dev, test]"
+	@echo "--> Done installing dev, test dependencies"
 	@echo ""
 
 install-dd-dev-tf: check-venv
-	@echo "--> Installing requirements dependencies"
-	pip install -r requirements.txt -e .
-	@echo "--> Installing tensorflow dependencies"
-	pip install -e ".[tf]"
-	@echo "--> Installing dev dependencies"
-	pip install -e ".[dev]"
-	@echo "--> Done installing dev dependencies"
+	@echo "--> Installing source-all-tf"
+	pip install -e ".[source-all-tf]"
+	@echo "--> Installing dev, test dependencies"
+	pip install -e ".[dev, test]"
+	@echo "--> Done installing dev, test dependencies"
 	@echo ""
 
 install-dd-test: check-venv
 	@echo "--> Installing test dependencies"
 	pip install -e ".[test]"
-	pip install -U pytest
 	@echo "--> Done installing test dependencies"
 	@echo ""
-
-install-dd-all-dev-pt: check-venv install-dd-dev-pt install-dd-test
-
-install-dd-all-dev-tf: check-venv install-dd-dev-tf install-dd-test
-
-install-dd-tf: install-dd
-	@echo "--> Installing tensorflow dependencies"
-	pip install ".[tf]"
-	@echo "--> Done installing tensorflow dependencies"
-	@echo ""
-
-install-dd-pt: install-dd
-	@echo "--> Installing PT dependencies"
-	pip install ".[pt]"
-	@echo "--> Done installing PT dependencies"
-	@echo ""
-
-install-docker-env:  check-venv up-reqs-dev install-kernel-dd
 
 install-jupyterlab-setup: check-venv
 	@echo "--> Installing Jupyter Lab"
@@ -109,12 +71,15 @@ install-kernel-dd: check-venv
 	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
 	pip install --user ipykernel
 	$(PYTHON) -m ipykernel install --user --name=deep-doc
-	@echo "--> Done installing kernel deep-doctection"
+	@echo "--> Done installing kernel deep-doc"
+
+install-kernel-dd-mac: check-venv
+	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
+	pip install ipykernel
+	$(PYTHON) -m ipykernel install --name=deep-doc
+	@echo "--> Done installing kernel deep-doc"
 
 install-prodigy-setup: check-venv install-jupyterlab-setup
-	@echo "--> Installing Prodigy"
-	pip install $(PRODIGY_PATH)
-	@echo "--> Done installing Prodigy"
 	@echo "--> Installing Jupyter Lab Prodigy plugin"
 	pip install jupyterlab-prodigy
 	jupyter labextension list
@@ -129,21 +94,41 @@ package: check-venv
 	pip install --upgrade build
 	$(PYTHON) -m build
 
-qa: check-format lint analyze test
+qa: lint analyze test-basic
 
+# all tests - this will never succeed in full due to dependency conflicts
 test:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
-test-des-tf:
+test-build:
+	pip install --upgrade build
+	$(PYTHON) -m build
+	pip install --upgrade twine
+	$(PYTHON) -m twine upload --repository testpypi dist/*
+
+test-basic:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not requires_tf and not full and not all" tests
+
+test-tf-basic:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not full and not all" tests
+
+test-tf-full:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not all" tests
+
+test-tf-all:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
+
+test-pt-full: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not all" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
+
+test-pt-all: test-integration
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
-test-des-pt:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
-
 test-integration:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration and requires_tf and requires_pt" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
 
 up-pip: check-venv
 	@echo "--> Updating pip"
@@ -152,21 +137,17 @@ up-pip: check-venv
 	pip install wheel
 	@echo "--> Done updating pip"
 
-up-pipx: check-venv
-	@echo "--> Installing pipx"
-	pip install pipx
-	@echo "--> Done installing pipx"
-
-up-reqs: up-pip up-req-files install-dd
-
-up-reqs-dev-pt: up-reqs install-dd-all-dev-pt
-
-up-reqs-dev-tf: up-reqs install-dd-all-dev-tf
-
-up-req-files: check-venv
+up-req: check-venv
 	@echo "--> Updating Python requirements"
-	pip-compile --output-file requirements.txt setup.py
+	pip-compile  --output-file requirements.txt  setup.py
 	@echo "--> Done updating Python requirements"
+
+up-req-docs: check-venv
+	@echo "--> Updating Python requirements"
+	pip-compile  --output-file docs/requirements.txt  --extra docs  setup.py
+	@echo "--> Done updating Python requirements"
+
+
 
 venv:
 	$(PYTHON) -m venv venv --system-site-packages

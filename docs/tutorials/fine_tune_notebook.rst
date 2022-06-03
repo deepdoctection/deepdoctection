@@ -18,6 +18,9 @@ Here, we will fine-tune the cell predictor that is relevant for table
 extraction on the domain of tables from business documents. For this we
 use the datasets from the evaluation tutorial.
 
+Caution! From v0.14 onwards this notebook will run only when the extended package for evaluation, datasets and training
+is installed! Check the installation guidelines or the README for further informations.
+
 Table Extraction
 ----------------
 

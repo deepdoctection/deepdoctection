@@ -7,6 +7,9 @@ within the package.
 Then we will show how to evaluate a predictor in relation to a dataset
 and a metric.
 
+Caution! From v0.14 onwards this notebook will run only when the extended package for evaluation, datasets and training
+is installed! Check the installation guidelines or the README for further informations.
+
 Dataset concept
 ---------------
 

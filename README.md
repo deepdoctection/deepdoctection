@@ -63,21 +63,26 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 Before you start, please ensure your installation fulfills the following baseline requirements:
 
 - Linux **or** macOS
-- Python =  3.8 or 3.9.
+- Python >=  3.8 
 - PyTorch >= 1.8 and torchvision **or** Tensorflow >=2.4.1 and CUDA
+
+Windows is not supported.
 
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
 
 **deep**doctection uses [**Tensorpack**](https://github.com/tensorpack) as training framework as well as its vision 
 models for layout analysis. For PyTorch, [**Detectron2**](https://github.com/facebookresearch/detectron2) is used. 
 All models have been trained on Tensorflow and converted into Detectron2 consumable artefacts. If you want to train, 
-please use the Tensorflow framework.
+please use the Tensorflow framework. 
+
+Besides these models, **deepdoctection** has wrappers available to use models for inference in pipelines from different 
+libraries. 
 
 ### Other
 
 **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images and for calling [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine. 
-If you get started and want to run the notebooks for the first time it is sensible to have them installed, as well.
+If you get started and want to run the notebooks for the first time it is required to have them installed as well.
 
 ## Installation
 
@@ -85,7 +90,7 @@ We recommend using a virtual environment. You can install the package via pip or
 
 ### Install with pip
 
-[Dataflow](https://github.com/tensorpack/dataflow) is not available via pip and must be installed separately.
+[Dataflow](https://github.com/tensorpack/dataflow) is not available on the pypi server and must be installed separately.
 
 ```
 pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
@@ -99,22 +104,33 @@ For **Tensorflow**, run
 pip install deepdoctection[tf]
 ```
 
-For **PyTorch**, 
-
-first install **Detectron2** separately. Check the instruction [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html).
-Then run
+For **PyTorch**, first install **Detectron2** separately as it is not on the pypi server, either. Check the instruction 
+[here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). Then run
 
 ```
 pip install deepdoctection[pt]
 ```
+
+This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
 
 **Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
 This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
 (e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
 When accurate models a needed, please use the Tensorflow version.
 
-Some libraries are not added to the requirements in order to keep the dependencies as small as possible. If
-you want to use them, please pip install these separately.
+Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
+pdfplumber, fastText, ...). If you want to use them, you have to pip install them by yourself.
+
+<!--- uncomment for next release
+To use more features (e.g. run all available notebooks), try:
+
+```
+pip install deepdoctection[full-tf]
+```
+
+Note, that this option is not available for PyTorch.
+--->
+
 
 ### Installation from source
 
@@ -124,32 +140,38 @@ Download the repository or clone via
 git clone https://github.com/deepdoctection/deepdoctection.git
 ```
 
-There is a **Makefile** that guides you though the installation process. To get started, try:
+To get started with **Tensorflow**, run:
 
 ```
 cd deepdoctection
-make clean
-make venv
-source venv/bin/activate
+pip install ".[source-tf]"
 ```
 
-For **Tensorflow**, run
+or with **PyTorch**:
  
 ```
-make install-dd-tf
+cd deepdoctection
+pip install ".[source-pt]"
 ```
 
-If you want to use the **PyTorch** framework, run:
+This will install the basic dependencies to get started with the first notebooks. More libraries can be
+used, once more dependencies have been installed: 
 
 ```
-make install-dd-pt
+cd deepdoctection
+pip install ".[source-all-tf]"
 ```
+
+or 
+
+```
+cd deepdoctection
+pip install ".[source-all-pt]"
+```
+
+installs all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
 
 For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
-
-
-If you do not work on Linux or macOS, one easy way to fulfill the requirements is to use the Docker image. A 
-[Dockerfile](./docker/TF/Dockerfile) is provided, please follow the official instructions on how to use it. 
 
 
 ## Credits

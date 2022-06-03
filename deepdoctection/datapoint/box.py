@@ -24,16 +24,21 @@ from typing import List, Optional
 
 import numpy as np
 import numpy.typing as npt
-import pycocotools.mask as coco_mask
 from numpy import float32
 
 from ..utils.detection_types import ImageType
+from ..utils.file_utils import cocotools_available
+
+if cocotools_available():
+    import pycocotools.mask as coco_mask
 
 
-# Much faster than utils/np_box_ops
-def np_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDArray[float32]:
+# taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
+
+
+def coco_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDArray[float32]:
     """
-    Calculate iou for two arrays of bounding boxes
+    Calculate iou for two arrays of bounding boxes in xyxy format
 
     :param box_a: Array of shape Nx4
     :param box_b: Array of shape Mx4
@@ -50,6 +55,87 @@ def np_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDAr
     ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))  # type: ignore
     # can accelerate even more, if using float32
     return ret.astype("float32")
+
+
+# taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
+
+
+def area(boxes: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Computes area of boxes.
+
+    :param boxes: numpy array with shape [N, 4] holding N boxes in xyxy format
+
+    :return: a numpy array with shape [N*1] representing box areas
+    """
+    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])  # type: ignore
+
+
+# taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
+
+
+def intersection(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Compute pairwise intersection areas between boxes.
+
+    :param boxes1: a numpy array with shape [N, 4] holding N boxes in xyxy format
+    :param  boxes2: a numpy array with shape [M, 4] holding M boxes in xyxy format
+
+    :return: a numpy array with shape [N*M] representing pairwise intersection area
+    """
+    [y_min1, x_min1, y_max1, x_max1] = np.split(boxes1, 4, axis=1)  # pylint: disable=W0632
+    [y_min2, x_min2, y_max2, x_max2] = np.split(boxes2, 4, axis=1)  # pylint: disable=W0632
+
+    all_pairs_min_ymax = np.minimum(y_max1, np.transpose(y_max2))
+    all_pairs_max_ymin = np.maximum(y_min1, np.transpose(y_min2))
+    intersect_heights = np.maximum(
+        np.zeros(all_pairs_max_ymin.shape, dtype="f4"), all_pairs_min_ymax - all_pairs_max_ymin
+    )
+    all_pairs_min_xmax = np.minimum(x_max1, np.transpose(x_max2))
+    all_pairs_max_xmin = np.maximum(x_min1, np.transpose(x_min2))
+    intersect_widths = np.maximum(
+        np.zeros(all_pairs_max_xmin.shape, dtype="f4"), all_pairs_min_xmax - all_pairs_max_xmin
+    )
+    return intersect_heights * intersect_widths
+
+
+# taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
+
+
+def np_iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Computes pairwise intersection-over-union between box collections.
+
+    :param  boxes1: a numpy array with shape [N, 4] holding N boxes in xyxy format.
+    :param  boxes2: a numpy array with shape [M, 4] holding M boxes in xyxy format.
+
+    :return:  a numpy array with shape [N, M] representing pairwise iou scores.
+    """
+    intersect = intersection(boxes1, boxes2)
+    area1 = area(boxes1)
+    area2 = area(boxes2)
+    union = np.expand_dims(area1, axis=1) + np.expand_dims(area2, axis=0) - intersect
+
+    return intersect / union
+
+
+def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArray[float32]:
+    """
+    Computes pairwise intersection-over-union between box collections. The method will be chosen based on what
+    is installed:
+
+    - If pycocotools is installed it will choose pycocotools.mask.iou which is a cython implementation and much faster
+    - Otherwise it will use the numpy implementation as fallback
+
+    :param boxes1:  a numpy array with shape [N, 4] holding N boxes in xyxy format.
+    :param boxes2:  a numpy array with shape [N, 4] holding N boxes in xyxy format.
+
+    :return: a numpy array with shape [N, M] representing pairwise iou scores.
+    """
+
+    if cocotools_available():
+        return coco_iou(boxes1, boxes2)
+    return np_iou(boxes1, boxes2)
 
 
 @dataclass

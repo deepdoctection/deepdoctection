@@ -39,20 +39,22 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
 import os
 from typing import Dict, List, Union
 
-from lxml import etree  # type: ignore
-
 from ...dataflow import DataFlow, MapData, SerializerFiles  # type: ignore
 from ...datasets.info import DatasetInfo
 from ...mapper.maputils import cur
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
+from ...utils.file_utils import lxml_available
 from ...utils.settings import names
 from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 from ..registry import dataset_registry
+
+if lxml_available():
+    from lxml import etree  # type: ignore
 
 _NAME = "iiitar13k"
 

@@ -21,6 +21,16 @@ Module for MetricRegistry
 
 import catalogue  # type: ignore
 
+from .base import MetricBase
+
 metric_registry = catalogue.create("deepdoctection", "metrics", entry_points=True)
 
-# todo: add func get_metric
+
+def get_metric(name: str) -> MetricBase:
+    """
+    Returns an instance of a metric with a given name.
+
+    :param name: A metric name
+    :return: An instance of a metric
+    """
+    return metric_registry.get(name)()

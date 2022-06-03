@@ -59,6 +59,7 @@ class TestDoctrTextlineDetector:  # pylint: disable=R0903
 
     @staticmethod
     @mark.requires_tf
+    @mark.all
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
     def test_doctr_detector_predicts_image(np_image: ImageType) -> None:
         """
@@ -82,6 +83,7 @@ class TestDoctrTextRecognizer:  # pylint: disable=R0903
 
     @staticmethod
     @mark.requires_tf
+    @mark.all
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
     def test_doctr_detector_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
         """

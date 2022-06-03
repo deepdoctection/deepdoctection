@@ -8,11 +8,11 @@
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
 https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
 """
-
 import importlib.util
 import multiprocessing as mp
 import string
 import subprocess
+import sys
 from os import environ
 from shutil import which
 from typing import Tuple, Union
@@ -21,6 +21,7 @@ import importlib_metadata
 from packaging import version
 
 from .detection_types import Requirement
+from .logger import logger
 from .metacfg import AttrDict
 
 # Tensorflow and Tensorpack dependencies
@@ -102,7 +103,7 @@ def tf_addons_available() -> bool:
 
 def get_tf_addons_requirements() -> Requirement:
     """
-    Returns Tesnroflow Addons requirement
+    Returns Tensorflow Addons requirement
     """
     return "tensorflow-addons", tf_addons_available(), _TF_ADDONS_ERR_MSG
 
@@ -145,6 +146,17 @@ def get_pytorch_requirement() -> Requirement:
     Returns HF Pytorch requirement
     """
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
+
+
+# lxml
+_LXML_AVAILABLE = importlib.util.find_spec("lxml") is not None
+
+
+def lxml_available() -> bool:
+    """
+    Returns True if lxml is installed
+    """
+    return bool(_LXML_AVAILABLE)
 
 
 # Transformers
@@ -322,9 +334,56 @@ def get_pdfplumber_requirement() -> Requirement:
     return "pdfplumber", pdfplumber_available(), _PDFPLUMBER_ERR_MSG
 
 
+# pycocotools dependencies
+_COCOTOOLS_AVAILABLE = importlib.util.find_spec("pycocotools") is not None
+_COCOTOOLS_ERR_MSG = "pycocotools must be installed. >> pip install pycocotools==2.0.4"
+
+
+def cocotools_available() -> bool:
+    """
+    Returns True if pycocotools is installed
+    """
+    return bool(_COCOTOOLS_AVAILABLE)
+
+
+def get_cocotools_requirement() -> Requirement:
+    """
+    Returns cocotools requirement.
+    """
+    return "pycocotools", cocotools_available(), _COCOTOOLS_ERR_MSG
+
+
+# scipy dependency
+_SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
+
+
+def scipy_available() -> bool:
+    """
+    Returns True if scipy is installed
+    """
+    return bool(_SCIPY_AVAILABLE)
+
+
+# scikit-learn dependencies
+_SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
+_SKLEARN_ERR_MSG = "scikit-learn must be installed. >> pip install scikit-learn==1.0.2"
+
+
+def sklearn_available() -> bool:
+    """
+    Returns True if sklearn is installed
+    """
+    return bool(_SKLEARN_AVAILABLE)
+
+
+def get_sklearn_requirement() -> Requirement:
+    """
+    Returns sklearn requirement.
+    """
+    return "sklearn", sklearn_available(), _SKLEARN_ERR_MSG
+
+
 # qpdf related dependencies
-
-
 _QPDF_AVAILABLE = which("qpdf") is not None
 
 
@@ -391,6 +450,11 @@ def get_doctr_requirement() -> Requirement:
     """
     Return Doctr requirement
     """
+    if sys.platform == "darwin":
+        if not get_poppler_version():
+            return get_doctr_requirement()
+        # don't know yet how to check whether pango gdk-pixbuf libffi are installed
+        logger.info("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 

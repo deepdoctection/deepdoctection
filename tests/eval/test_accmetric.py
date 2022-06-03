@@ -19,6 +19,8 @@
 Testing module eval.accmetric
 """
 
+from pytest import mark
+
 from deepdoctection.dataflow import DataFromList  # type: ignore
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datasets.info import DatasetCategories
@@ -32,6 +34,7 @@ class TestAccuracyMetric:
     """
 
     @staticmethod
+    @mark.full
     def test_accuracy_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -59,6 +62,7 @@ class TestAccuracyMetric:
         AccuracyMetric._sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
+    @mark.full
     def test_accuracy_metric_for_sub_cat_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -70,16 +74,22 @@ class TestAccuracyMetric:
         dp_list = [dp_image_fully_segmented]
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
-        AccuracyMetric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
+        accuracy_metric = AccuracyMetric()  # type: ignore
+        accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
 
         # Arrange
-        output = AccuracyMetric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+        output = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
         # Assert
         assert len(output) == 2
         assert output[0] == {"key": names.C.RN, "val": 1.0, "num_samples": 5}
         assert output[1] == {"key": names.C.CS, "val": 1.0, "num_samples": 5}
 
+        # Clean-up
+        AccuracyMetric._cats = None  # pylint: disable=W0212
+        AccuracyMetric._sub_cats = None  # pylint: disable=W0212
+
     @staticmethod
+    @mark.full
     def test_accuracy_metric_for_sub_cat_returns_correct_distance_as_dict(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -91,11 +101,12 @@ class TestAccuracyMetric:
         dp_list = [dp_image_fully_segmented]
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
-        AccuracyMetric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
+        accuracy_metric = AccuracyMetric()  # type: ignore
+        accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
 
         # Arrange
-        result = AccuracyMetric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
-        output = AccuracyMetric.result_list_to_dict(result)
+        result = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+        output = accuracy_metric.result_list_to_dict(result)
 
         # Assert
         assert output == {"key/ROW_NUMBER/num_samples/5": 1.0, "key/COLUMN_SPAN/num_samples/5": 1.0}

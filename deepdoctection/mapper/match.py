@@ -25,7 +25,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import np_iou
+from ..datapoint.box import iou
 from ..datapoint.image import Image
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 
@@ -109,7 +109,7 @@ def match_anns_by_intersection(
     )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
-        iou_matrix = np_iou(child_ann_boxes, parent_ann_boxes)
+        iou_matrix = iou(child_ann_boxes, parent_ann_boxes)
         output = iou_matrix > iou_threshold
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:

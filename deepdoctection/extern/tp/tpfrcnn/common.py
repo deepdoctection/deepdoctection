@@ -12,11 +12,15 @@ https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.
 
 import cv2
 import numpy as np
-import pycocotools.mask as coco_mask
-from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform
+from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform  # pylint: disable=E0401
+
+from ....utils.file_utils import cocotools_available
+
+if cocotools_available():
+    import pycocotools.mask as coco_mask
 
 
-class CustomResize(ImageAugmentor):
+class CustomResize(ImageAugmentor):  # pylint: disable=R0903
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size.
     """

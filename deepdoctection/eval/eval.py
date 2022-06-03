@@ -84,7 +84,7 @@ class Evaluator:  # pylint: disable=R0903
             pre_proc_func=maybe_load_image,
             post_proc_func=maybe_remove_image,
         )
-        self.metric = metric
+        self.metric = metric()
         self._sanity_checks()
 
     def run(
