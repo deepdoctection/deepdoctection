@@ -41,7 +41,7 @@ from ..utils.settings import names
 from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
-    from tensorpack.utils.gpu import get_num_gpu
+    from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
 
     from ..extern.tp.tfutils import disable_tp_layer_logging
     from ..extern.tpdetect import TPFrcnnDetector

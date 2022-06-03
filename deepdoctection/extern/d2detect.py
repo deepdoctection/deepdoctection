@@ -34,7 +34,7 @@ from .common import InferenceResize
 
 if pytorch_available():
     import torch
-    import torch.cuda  # type: ignore
+    import torch.cuda
     from torch import nn  # pylint: disable=W0611
 
 if detectron2_available():
@@ -86,7 +86,7 @@ def d2_predict_image(
     resized_img = resizer.get_transform(np_img).apply_image(np_img)
     image = torch.as_tensor(resized_img.astype("float32").transpose(2, 0, 1))
 
-    with torch.no_grad():
+    with torch.no_grad():  # type: ignore
         inputs = {"image": image, "height": height, "width": width}
         predictions = predictor([inputs])[0]
         predictions = _d2_post_processing(predictions, nms_thresh_class_agnostic)

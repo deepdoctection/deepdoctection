@@ -24,8 +24,6 @@ from typing import List, Optional
 
 import numpy as np
 import numpy.typing as npt
-
-
 from numpy import float32
 
 from ..utils.detection_types import ImageType
@@ -36,6 +34,7 @@ if cocotools_available():
 
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
+
 
 def coco_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDArray[float32]:
     """
@@ -57,6 +56,7 @@ def coco_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.ND
     # can accelerate even more, if using float32
     return ret.astype("float32")
 
+
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
 
 
@@ -68,7 +68,8 @@ def area(boxes: npt.NDArray[float32]) -> npt.NDArray[float32]:
 
     :return: a numpy array with shape [N*1] representing box areas
     """
-    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])  # type: ignore
+
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
 
@@ -82,20 +83,21 @@ def intersection(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> 
 
     :return: a numpy array with shape [N*M] representing pairwise intersection area
     """
-    [y_min1, x_min1, y_max1, x_max1] = np.split(boxes1, 4, axis=1)
-    [y_min2, x_min2, y_max2, x_max2] = np.split(boxes2, 4, axis=1)
+    [y_min1, x_min1, y_max1, x_max1] = np.split(boxes1, 4, axis=1)  # pylint: disable=W0632
+    [y_min2, x_min2, y_max2, x_max2] = np.split(boxes2, 4, axis=1)  # pylint: disable=W0632
 
     all_pairs_min_ymax = np.minimum(y_max1, np.transpose(y_max2))
     all_pairs_max_ymin = np.maximum(y_min1, np.transpose(y_min2))
     intersect_heights = np.maximum(
-        np.zeros(all_pairs_max_ymin.shape, dtype='f4'),
-        all_pairs_min_ymax - all_pairs_max_ymin)
+        np.zeros(all_pairs_max_ymin.shape, dtype="f4"), all_pairs_min_ymax - all_pairs_max_ymin
+    )
     all_pairs_min_xmax = np.minimum(x_max1, np.transpose(x_max2))
     all_pairs_max_xmin = np.maximum(x_min1, np.transpose(x_min2))
     intersect_widths = np.maximum(
-        np.zeros(all_pairs_max_xmin.shape, dtype='f4'),
-        all_pairs_min_xmax - all_pairs_max_xmin)
+        np.zeros(all_pairs_max_xmin.shape, dtype="f4"), all_pairs_min_xmax - all_pairs_max_xmin
+    )
     return intersect_heights * intersect_widths
+
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
 
@@ -112,8 +114,7 @@ def np_iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.ND
     intersect = intersection(boxes1, boxes2)
     area1 = area(boxes1)
     area2 = area(boxes2)
-    union = np.expand_dims(area1, axis=1) + np.expand_dims(
-        area2, axis=0) - intersect
+    union = np.expand_dims(area1, axis=1) + np.expand_dims(area2, axis=0) - intersect
 
     return intersect / union
 
@@ -133,8 +134,8 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     """
 
     if cocotools_available():
-        return coco_iou(boxes1,boxes2)
-    return np_iou(boxes1,boxes2)
+        return coco_iou(boxes1, boxes2)
+    return np_iou(boxes1, boxes2)
 
 
 @dataclass

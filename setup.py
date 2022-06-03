@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import os
+import re
 import sys
 
 from setuptools import find_packages, setup
@@ -81,7 +81,7 @@ _DEPS = [
     "recommonmark",
     # test
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
 ]
 
 # lookup table with items like:
@@ -96,18 +96,20 @@ def deps_list(*pkgs: str):
 
 
 # pyp-pi dependencies without considering DL models specific dependencies
-dist_deps = deps_list("catalogue",
-                      "importlib-metadata",
-                      "huggingface_hub",
-                      "jsonlines",
-                      "mock",
-                      "networkx",
-                      "numpy",
-                      "opencv-python",
-                      "packaging",
-                      "pypdf2",
-                      "pyyaml",
-                      "types-termcolor")
+dist_deps = deps_list(
+    "catalogue",
+    "importlib-metadata",
+    "huggingface_hub",
+    "jsonlines",
+    "mock",
+    "networkx",
+    "numpy",
+    "opencv-python",
+    "packaging",
+    "pypdf2",
+    "pyyaml",
+    "types-termcolor",
+)
 
 if sys.platform == "linux":
     dist_deps.extend(deps_list("python-prctl"))
@@ -116,24 +118,17 @@ if sys.platform == "linux":
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml",
-                            "pycocotools",
-                            "scikit-learn")
+additional_deps = deps_list("lxml", "pycocotools", "scikit-learn")
 
 # remaining depencies to use all models
-remaining_deps = deps_list("boto3",
-                           "pdfplumber",
-                           "tensorflow-addons",
-                           "python-doctr",
-                           "fasttext")
+remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
 
 full_deps = dist_deps + additional_deps
 source_full_deps = source_deps + additional_deps
 source_all_deps = source_deps + additional_deps + remaining_deps
 
 # Tensorflow dependencies
-additional_tf_deps =  deps_list("tensorpack",
-                                "protobuf")
+additional_tf_deps = deps_list("tensorpack", "protobuf")
 
 source_tf_deps = source_deps + additional_tf_deps
 full_tf_deps = full_deps + additional_tf_deps
@@ -141,50 +136,51 @@ source_full_tf_deps = source_full_deps + additional_tf_deps
 source_all_tf_deps = source_all_deps + additional_tf_deps
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("lxml","transformers")
-source_additional_pt_deps = additional_pt_deps + \
-                            deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
+additional_pt_deps = deps_list("lxml", "transformers")
+source_additional_pt_deps = additional_pt_deps + deps_list(
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
+)
 # it does not make sense to define a non-full pt dependency, because everything is already available
 full_pt_deps = full_deps + additional_pt_deps
 source_full_pt_deps = source_full_deps + source_additional_pt_deps
 source_all_pt_deps = source_all_deps + source_additional_pt_deps
 
 # dependencies for rtd. Only needed to create requirements.txt
-docs_deps = deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git",
-                      "tensorpack",
-                      "boto3",
-                      "transformers",
-                      "pdfplumber",
-                      "lxml",
-                      "pycocotools",
-                      "scikit-learn")
+docs_deps = deps_list(
+    "dataflow @ git+https://github.com/tensorpack/dataflow.git",
+    "tensorpack",
+    "boto3",
+    "transformers",
+    "pdfplumber",
+    "lxml",
+    "pycocotools",
+    "scikit-learn",
+)
 if "python-prctl" in docs_deps:
     docs_deps.remove("python-prctl")
 
 # test dependencies
-test_deps = deps_list("pytest",
-                      "pytest-cov")
+test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("black",
-                     "isort",
-                     "pylint",
-                     "mypy")
+dev_deps = deps_list("black", "isort", "pylint", "mypy")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies
 
-EXTRA_DEPS = {"tf": additional_tf_deps,
-              "source-tf": source_tf_deps,
-              "full-tf": full_tf_deps,
-              "source-full-tf": source_full_tf_deps,
-              "source-all-tf": source_all_tf_deps,
-              "pt": full_pt_deps,
-              "source-pt": source_full_pt_deps,
-              "source-all-pt": source_all_pt_deps,
-              "docs": docs_deps,
-              "dev": dev_deps,
-              "test": test_deps}
+EXTRA_DEPS = {
+    "tf": additional_tf_deps,
+    "source-tf": source_tf_deps,
+    "full-tf": full_tf_deps,
+    "source-full-tf": source_full_tf_deps,
+    "source-all-tf": source_all_tf_deps,
+    "pt": full_pt_deps,
+    "source-pt": source_full_pt_deps,
+    "source-all-pt": source_all_pt_deps,
+    "docs": docs_deps,
+    "dev": dev_deps,
+    "test": test_deps,
+}
 
 setup(
     name="deepdoctection",
