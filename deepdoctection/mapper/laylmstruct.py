@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
 
 if transformers_available():
-    from transformers import PreTrainedTokenizer  # type: ignore # pylint: disable = W0611
+    from transformers import PreTrainedTokenizer  # pylint: disable = W0611
 
 
 __all__ = ["image_to_layoutlm"]
@@ -96,7 +96,7 @@ def image_to_layoutlm(
     image = resizer.apply_image(dp.image)
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
-    boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # pylint: disable = E1102
+    boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # type: ignore # pylint: disable = E1102
 
     output["image"] = image
     output["ids"] = all_ann_ids

@@ -18,6 +18,7 @@
 """
 Testing module extern.pdftext
 """
+from pytest import mark
 
 from deepdoctection.extern.pdftext import PdfPlumberTextDetector
 
@@ -28,6 +29,7 @@ class TestPdfPlumberTextDetector:
     """
 
     @staticmethod
+    @mark.all
     def test_pdf_plumber_detector_predicts_image(pdf_bytes: bytes) -> None:
         """
         PdfPlumber returns words from pdf_bytes correctly
@@ -45,6 +47,7 @@ class TestPdfPlumberTextDetector:
         assert detect_results_list[1].text == "Simple"
 
     @staticmethod
+    @mark.all
     def test_pdf_plumber_detector_returns_width_height(pdf_bytes: bytes, pdf_bytes_page_2: bytes) -> None:
         """
         PdfPlumber returns pdf width and height correctly

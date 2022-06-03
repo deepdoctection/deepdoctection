@@ -24,6 +24,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
+from pytest import mark
 
 from deepdoctection.extern.fastlang import FasttextLangDetector
 from deepdoctection.extern.model import ModelCatalog
@@ -40,6 +41,7 @@ class TestFasttextLangDetector:  # pylint: disable = R0903
     """
 
     @staticmethod
+    @mark.all
     @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
     def test_fasttext_lang_detector_predicts_language() -> None:
         """
