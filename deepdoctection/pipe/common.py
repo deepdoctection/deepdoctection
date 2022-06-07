@@ -23,7 +23,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from ..dataflow import DataFlow, MapData  # type: ignore
+from ..dataflow import DataFlow, MapData
 from ..datapoint.doc import Page
 from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager

@@ -23,7 +23,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from pytest import mark
 
-from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.dataflow import DataFromList
 from deepdoctection.eval.cocometric import CocoMetric
 
 from ..conftest import get_image_results

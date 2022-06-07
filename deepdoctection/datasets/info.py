@@ -21,7 +21,7 @@ Module for storing dataset info (e.g. general meta data or categories)
 
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, overload, Literal
 
 from ..utils.utils import call_only_once
 
@@ -113,6 +113,17 @@ class DatasetCategories:
         self._allow_update = True
         self._init_sanity_check()
 
+    @overload
+    def get_categories(
+            self, as_dict: Literal[True] = ..., name_as_key: bool = False, init: bool = False, filtered: bool = False
+    ) -> Dict[str, str]: ...
+
+    @overload
+    def get_categories(
+                self, as_dict: Literal[False], name_as_key: bool = False, init: bool = False,
+                filtered: bool = False
+        ) -> List[str]: ...
+
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
     ) -> Union[Dict[str, str], List[str]]:
@@ -158,7 +169,7 @@ class DatasetCategories:
         if isinstance(categories, str):
             categories = [categories]
         if categories is None:
-            categories = self.get_categories(as_dict=False, filtered=True)  # type: ignore
+            categories = self.get_categories(as_dict=False, filtered=True)
             if categories is None:
                 categories = []
 

@@ -55,7 +55,7 @@ def test_get_train_dataflow(
     # Arrange
     config = set_config_by_yaml(path_to_tp_frcnn_yaml)
     categories = test_dataset.dataflow.categories.get_categories(filtered=True)  # type: ignore
-    model_frcnn_config(config, categories)  # type: ignore
+    model_frcnn_config(config, categories)
 
     # Act
     df = get_train_dataflow(test_dataset, config, False)

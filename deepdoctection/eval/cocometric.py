@@ -126,7 +126,7 @@ class CocoMetric(MetricBase):
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple["COCO", "COCO"]:
-        cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True).items()]  # type: ignore
+        cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True).items()]
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
 

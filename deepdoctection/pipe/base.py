@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 from copy import copy
 from typing import Any, Dict, List, Optional, Union
 
-from ..dataflow import DataFlow, MapData  # type: ignore
+from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
 from ..mapper import DefaultMapper

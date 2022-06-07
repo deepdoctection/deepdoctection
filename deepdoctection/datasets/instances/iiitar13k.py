@@ -39,7 +39,7 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData, SerializerFiles  # type: ignore
+from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
 from ...mapper.maputils import cur
 from ...mapper.misc import xml_to_dict
