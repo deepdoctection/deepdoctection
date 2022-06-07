@@ -21,6 +21,7 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from typing import List, Optional
+from math import floor, ceil
 
 import numpy as np
 import numpy.typing as npt
@@ -52,7 +53,7 @@ def coco_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.ND
         box[:, 3] -= box[:, 1]
         return box
 
-    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))  # type: ignore
+    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=bool))
     # can accelerate even more, if using float32
     return ret.astype("float32")
 
@@ -68,7 +69,7 @@ def area(boxes: npt.NDArray[float32]) -> npt.NDArray[float32]:
 
     :return: a numpy array with shape [N*1] representing box areas
     """
-    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])  # type: ignore
+    return np.array((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]),dtype=float32)
 
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
@@ -195,7 +196,7 @@ class BoundingBox:
 
         if not self.absolute_coords:
             assert (
-                self.ulx <= 1 and self.uly <= 1 and self.lrx <= 1 and self.lry <= 1
+                self.ulx <= 1. and self.uly <= 1. and self.lrx <= 1. and self.lry <= 1.
             ), "coordinates must be between 0 and 1"
 
     @property
@@ -252,7 +253,7 @@ class BoundingBox:
             * np_poly_scale
         )
 
-    def to_list(self, mode: str, scale_x: float = 1, scale_y: float = 1.0) -> List[float]:
+    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> List[float]:
         """
         Returns the coordinates as list
 
@@ -267,27 +268,27 @@ class BoundingBox:
         assert mode in ("xyxy", "xywh", "poly"), "not a valid mode"
         if mode == "xyxy":
             return [
-                float(self.ulx) * scale_x,
-                float(self.uly) * scale_y,
-                float(self.lrx) * scale_x,
-                float(self.lry) * scale_y,
+                self.ulx * scale_x,
+                self.uly * scale_y,
+                self.lrx * scale_x,
+                self.lry * scale_y,
             ]
         if mode == "xywh":
             return [
-                float(self.ulx) * scale_x,
-                float(self.uly) * scale_y,
-                float(self.width) * scale_x,
-                float(self.height) * scale_y,
+                self.ulx * scale_x,
+                self.uly * scale_y,
+                self.width * scale_x,
+                self.height * scale_y,
             ]
         return [
-            float(self.ulx) * scale_x,
-            float(self.uly) * scale_y,
-            float(self.lrx) * scale_x,
-            float(self.uly) * scale_y,
-            float(self.lrx) * scale_x,
-            float(self.lry) * scale_y,
-            float(self.ulx) * scale_x,
-            float(self.lry) * scale_y,
+            self.ulx * scale_x,
+            self.uly * scale_y,
+            self.lrx * scale_x,
+            self.uly * scale_y,
+            self.lrx * scale_x,
+            self.lry * scale_y,
+            self.ulx * scale_x,
+            self.lry * scale_y,
         ]
 
     def transform(
@@ -356,13 +357,11 @@ def intersection_box(
 
     :return: bounding box. Will have same absolute_coords as box_2, if absolute_coords of box_1 and box_2 are note same
     """
-    if width is None and height is None:
-        assert box_1.absolute_coords == box_2.absolute_coords, (
-            "when absolute coords of boxes are not equal must " "pass width and height"
-        )
+
     if box_1.absolute_coords != box_2.absolute_coords:
         # will transform box_1
-        box_1 = box_1.transform(width, height, box_2.absolute_coords)  # type: ignore
+        assert width is not None and height is not None, "when absolute coords of boxes are not equal must pass width and height"
+        box_1 = box_1.transform(width, height, box_2.absolute_coords)
     ulx = max(box_1.ulx, box_2.ulx)
     uly = max(box_1.uly, box_2.uly)
     lrx = min(box_1.lrx, box_2.lrx)
@@ -388,23 +387,20 @@ def crop_box_from_image(
 
     :return: A numpy array cropped according to the bounding box.
     """
-    if width is None and height is None:
-        assert crop_box.absolute_coords, (
-            "when crop_box has absolute coords set to False, then width and height are " "positional args"
-        )
-    absolute_coord_box = (
-        crop_box
-        if crop_box.absolute_coords
-        else crop_box.transform(width, height, absolute_coords=True)  # type: ignore
-    )
+    if not crop_box.absolute_coords:
+        assert width is not None and height is not None, "when crop_box has absolute coords set to False must pass width and height"
+        absolute_coord_box = crop_box.transform(width, height, absolute_coords=True)
+    else:
+        absolute_coord_box = crop_box
+
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
-    return np_image[  # type: ignore
-        np.int32(np.floor(absolute_coord_box.uly)) : min(  # type: ignore
-            np.int32(np.ceil(absolute_coord_box.lry)), np_max_y
+    return np_image[
+        int(floor(absolute_coord_box.uly)) : min(
+            int(ceil(absolute_coord_box.lry)), np_max_y
         ),
-        np.int32(np.floor(absolute_coord_box.ulx)) : min(  # type: ignore
-            np.int32(np.ceil(absolute_coord_box.lrx)), np_max_x
+        int(floor(absolute_coord_box.ulx)) : min(
+            int(ceil(absolute_coord_box.lrx)), np_max_x
         ),
     ]
 
