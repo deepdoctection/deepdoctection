@@ -45,7 +45,7 @@ if tensorpack_available():
 __all__ = ["EvalCallback"]
 
 
-class EvalCallback(Callback):  # type: ignore  # pylint: disable=R0903
+class EvalCallback(Callback):  # pylint: disable=R0903
     """
     A callback that runs evaluation once a while. It supports evaluation on any pipeline component.
     """
