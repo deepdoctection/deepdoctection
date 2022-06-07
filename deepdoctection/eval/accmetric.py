@@ -34,7 +34,7 @@ from .base import MetricBase
 from .registry import metric_registry
 
 if sklearn_available():
-    from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
+    from sklearn.metrics import accuracy_score, confusion_matrix
 
 
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
