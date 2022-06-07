@@ -230,11 +230,11 @@ class CocoParser:
 
     def get_ann_ids(
         self,
-        img_ids: Optional[Union[int, List[int]]] = None,
-        cat_ids: Optional[Union[int, List[int]]] = None,
-        area_range: Optional[List[int]] = None,
+        img_ids: Optional[Union[int, Sequence[int]]] = None,
+        cat_ids: Optional[Union[int, Sequence[int]]] = None,
+        area_range: Optional[Sequence[int]] = None,
         is_crowd: Optional[bool] = None,
-    ) -> List[int]:
+    ) -> Sequence[int]:
         """
         Get ann ids that satisfy given filter conditions. default skips that filter
 
@@ -276,10 +276,10 @@ class CocoParser:
 
     def get_cat_ids(
         self,
-        category_names: Optional[Union[str, List[str]]] = None,
-        supercategory_names: Optional[Union[str, List[str]]] = None,
-        category_ids: Optional[Union[int, List[int]]] = None,
-    ) -> List[int]:
+        category_names: Optional[Union[str, Sequence[str]]] = None,
+        supercategory_names: Optional[Union[str, Sequence[str]]] = None,
+        category_ids: Optional[Union[int, Sequence[int]]] = None,
+    ) -> Sequence[int]:
         """
         Filtering parameters. default skips that filter.
 
@@ -316,8 +316,8 @@ class CocoParser:
         return ids
 
     def get_image_ids(
-        self, img_ids: Optional[Union[int, List[int]]] = None, cat_ids: Optional[Union[int, List[int]]] = None
-    ) -> List[int]:
+        self, img_ids: Optional[Union[int, Sequence[int]]] = None, cat_ids: Optional[Union[int, Sequence[int]]] = None
+    ) -> Sequence[int]:
         """
         Get img ids that satisfy given filter conditions.
 
@@ -346,7 +346,7 @@ class CocoParser:
                     ids &= set(self.cat_to_imgs[cat_id])
         return list(ids)
 
-    def load_anns(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
+    def load_anns(self, ids: Optional[Union[int, Sequence[int]]] = None) -> Optional[List[JsonDict]]:
         """
         Load anns with the specified ids.
 
@@ -361,8 +361,9 @@ class CocoParser:
             return [self.anns[id] for id in ids]
         if isinstance(ids, int):
             return [self.anns[ids]]
+        return None
 
-    def load_cats(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
+    def load_cats(self, ids: Optional[Union[int, Sequence[int]]] = None) -> Optional[List[JsonDict]]:
         """
         Load cats with the specified ids.
 
@@ -377,8 +378,9 @@ class CocoParser:
             return [self.cats[id] for id in ids]
         if isinstance(ids, int):
             return [self.cats[ids]]
+        return None
 
-    def load_imgs(self, ids: Optional[Union[int, List[int]]] = None) -> List[JsonDict]:
+    def load_imgs(self, ids: Optional[Union[int, Sequence[int]]] = None) -> List[JsonDict]:
         """
         Load anns with the specified ids.
 
@@ -388,10 +390,9 @@ class CocoParser:
         """
         if ids is None:
             ids = []
+        ids = [ids] if isinstance(ids, int) else ids
 
-        if isinstance(ids, list):
-            return [self.imgs[id] for id in ids]
-        return [self.imgs[ids]]
+        return [self.imgs[idx] for idx in ids]
 
 
 class SerializerCoco:
