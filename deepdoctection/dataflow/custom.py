@@ -72,7 +72,7 @@ class CustomDataFromList(DataFromList):
     def __init__(
         self,
         lst: List[Any],
-        shuffle: Optional[bool] = False,
+        shuffle: bool = False,
         max_datapoints: Optional[int] = None,
         rebalance_func: Optional[Callable[[List[Any]], List[Any]]] = None,
     ):
