@@ -290,21 +290,19 @@ class TestImage:
         output = test_image.get_export()
 
         # Assert
-        assert (
-            "location" in output
-            and "file_name" in output
-            and "annotations" in output
-            and "image" in output
-            and "image_id" in output
-            and "embeddings" in output
-        )
+        assert "location" in output
+        assert "file_name" in output
+        assert "annotations" in output
+        assert "image" in output
+        assert "_image_id" in output
+        assert "embeddings" in output
+
         assert len(output["annotations"]) == 1
 
         ann = output["annotations"][0]
-        assert (
-            "active" in ann
-            and "_annotation_id" in ann
-            and "category_name" in ann
-            and "category_id" in ann
-            and "score" in ann
-        )
+        assert "active" in ann
+        assert "_annotation_id" in ann
+        assert "category_name" in ann
+        assert "category_id" in ann
+        assert "score" in ann
+

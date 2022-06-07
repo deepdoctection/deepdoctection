@@ -18,14 +18,16 @@
 """
 Dataclass Image
 """
-from typing import Iterable
-
+from dataclasses import dataclass, field
+from typing import Iterable, Optional, Union, Dict, List, Any
+from copy import deepcopy
 import numpy as np
 
 from ..utils.detection_types import ImageType
-from .annotation import *  # pylint: disable=W0401, W0614
+from ..utils.identifier import is_uuid_like, get_uuid
+from .annotation import BoundingBox, Annotation, ImageAnnotation, SummaryAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
+from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2, as_dict
 
 
 @dataclass
@@ -71,17 +73,13 @@ class Image:
     """
 
     file_name: str
-    location: str = field(default_factory=str)
-    external_id: Optional[Union[str, int]] = field(default=None, init=True, repr=False)
-    image_id: str = field(init=False, repr=True)
-    _image_id: Optional[str] = field(default=None, init=False, repr=False)
-    image: Optional[ImageType] = field(init=False, repr=False)
+    location: str = field(default="")
+    external_id: Optional[Union[str, int]] = field(default=None, repr=False)
+    _image_id: Optional[str] = field(default=None, init=False, repr=True)
     _image: Optional[ImageType] = field(default=None, init=False, repr=False)
     _bbox: Optional[BoundingBox] = field(default=None, init=False, repr=False)
-    _embeddings: Dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=False)
     embeddings: Dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
     annotations: List[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
-    _annotations: List[ImageAnnotation] = field(default_factory=list, init=False, repr=False)
     _annotation_ids: List[str] = field(default_factory=list, init=False, repr=False)
     summary: Optional[SummaryAnnotation] = field(default=None, init=False, repr=False)
 
@@ -95,7 +93,7 @@ class Image:
         else:
             self.image_id = get_uuid(self.location, self.file_name)
 
-    @property  # type: ignore
+    @property
     def image_id(self) -> str:  # pylint: disable=E0102
         """
         image_id
@@ -118,7 +116,7 @@ class Image:
         else:
             raise ValueError("image_id must be uuid3 string")
 
-    @property  # type: ignore
+    @property
     def image(self) -> Optional[ImageType]:  # pylint: disable=E0102
         """
         image
@@ -151,39 +149,13 @@ class Image:
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
 
-    @property  # type: ignore
-    def embeddings(self) -> Dict[str, BoundingBox]:  # pylint: disable=E0102
-        """
-        embeddings. Rather use :meth:`get_embedding`
-        """
-        return self._embeddings
-
-    @embeddings.setter
-    def embeddings(self, inputs: Dict[str, BoundingBox]) -> None:
-        """
-        embedding setter. Only defined for technical reasons. Cannot change the underlying attribute from here.
-        """
-
-    @property  # type: ignore
-    def annotations(self) -> List[ImageAnnotation]:  # pylint: disable=E0102
-        """
-        annotations. Rather use :meth:`get_annotations` directly or with some specified filter conditions.
-        """
-        return self._annotations
-
-    @annotations.setter
-    def annotations(self, inputs: List[ImageAnnotation]) -> None:
-        """
-        annotations setter. Only defined for technical reasons. Cannot change the underlying attribute from here.
-        """
-
     @property
     def pdf_bytes(self) -> Optional[bytes]:
         """
         pdf_bytes. This attribute will be set dynamically and is not part of the core Image data model
         """
         if hasattr(self, "_pdf_bytes"):
-            return self._pdf_bytes  # type: ignore
+            return getattr(self,"_pdf_bytes")
         return None
 
     @pdf_bytes.setter
@@ -285,7 +257,7 @@ class Image:
         :param bounding_box: bounding box of this image in terms of the embedding image.
         """
         assert isinstance(bounding_box, BoundingBox), "bounding box must be of type BoundingBox"
-        self._embeddings[image_id] = bounding_box
+        self.embeddings[image_id] = bounding_box
 
     def get_embedding(self, image_id: str) -> BoundingBox:
         """
@@ -295,7 +267,7 @@ class Image:
         :return: The bounding box of this instance in terms of the embedding image
         """
 
-        return self._embeddings[image_id]
+        return self.embeddings[image_id]
 
     def _self_embedding(self) -> None:
         if self._bbox is not None:
@@ -320,7 +292,7 @@ class Image:
             f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}"
         )
         self._annotation_ids.append(annotation.annotation_id)
-        self._annotations.append(annotation)
+        self.annotations.append(annotation)
 
     def get_annotation(
         self,
@@ -340,22 +312,28 @@ class Image:
         :param annotation_types: A type name or list of type names.
         :return: A (possibly empty) list of Annotations
         """
+        if category_names is None:
+            category_names = []
+        if annotation_ids is None:
+            annotation_ids = []
+        if annotation_types is None:
+            annotation_types = []
 
         cat_names = [category_names] if isinstance(category_names, str) else category_names
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         ann_types = [annotation_types] if isinstance(annotation_types, str) else annotation_types
 
-        anns = filter(lambda x: x.active, self._annotations)
+        anns = filter(lambda x: x.active, self.annotations)
 
-        if ann_types is not None:
+        if ann_types:
             for type_name in ann_types:
                 anns = filter(lambda x: isinstance(x, eval(type_name)), anns)  # pylint: disable=W0123, W0640
 
-        if cat_names is not None:
-            anns = filter(lambda x: x.category_name in cat_names, anns)  # type: ignore
+        if cat_names:
+            anns = filter(lambda x: x.category_name in cat_names, anns)
 
-        if ann_ids is not None:
-            anns = filter(lambda x: x.annotation_id in annotation_ids, anns)  # type: ignore
+        if ann_ids:
+            anns = filter(lambda x: x.annotation_id in ann_ids, anns)
 
         return list(anns)
 
@@ -394,7 +372,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["external_id", "_image_id", "_image", "_bbox", "_embeddings", "_annotations"]
+        return ["external_id", "_image", "_bbox", "_embeddings", "_annotations"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -419,7 +397,7 @@ class Image:
         :param annotation: The annotation to remove
         """
 
-        self._annotations.remove(annotation)
+        self.annotations.remove(annotation)
         self._annotation_ids.remove(annotation.annotation_id)
 
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
@@ -475,7 +453,7 @@ class Image:
         assert ann.bounding_box is not None
         box = ann.bounding_box.to_list("xyxy")
         proposals = self.get_annotation(category_names)
-        points = np.array([prop.image.get_embedding(self.image_id).center for prop in proposals])  # type: ignore
+        points = np.array([prop.image.get_embedding(self.image_id).center for prop in proposals if prop.image is not None])
         ann_ids = np.array([prop.annotation_id for prop in proposals])
         indices = np.where(
             (box[0] < points[:, 0]) & (box[1] < points[:, 1]) & (box[2] > points[:, 0]) & (box[3] > points[:, 1])
@@ -501,12 +479,12 @@ class Image:
         """
 
         image_copy = deepcopy(self)
-        image_copy._annotations = []  # pylint: disable=W0212
+        image_copy.annotations = []  # pylint: disable=W0212
         image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
         export_dict = image_copy.as_dict()
         export_dict["annotations"] = []
         export_dict["image"] = self.get_image().to_b64()
-        for ann in self._annotations:
+        for ann in self.annotations:
             export_dict["annotations"].append(ann.get_export())
 
         return export_dict
