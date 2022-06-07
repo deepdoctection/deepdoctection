@@ -247,9 +247,9 @@ class DatapointManager:
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         if summary_value:
             ann = ContainerAnnotation(
-                category_name=summary_name, category_id=summary_number, value=summary_value, score=summary_score
+                category_name=summary_name, category_id=str(summary_number), value=summary_value, score=summary_score
             )
         else:
-            ann = CategoryAnnotation(category_name=summary_name, category_id=summary_number, score=summary_score)
+            ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
         image.summary.dump_sub_category(summary_name, ann, image.image_id)
         return ann.annotation_id

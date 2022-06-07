@@ -305,22 +305,22 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
                 )
                 cell_ann.dump_sub_category(
                     names.C.RN,
-                    CategoryAnnotation(category_name=names.C.RN, category_id=row_number),
+                    CategoryAnnotation(category_name=names.C.RN, category_id=str(row_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.CN,
-                    CategoryAnnotation(category_name=names.C.CN, category_id=col_number),
+                    CategoryAnnotation(category_name=names.C.CN, category_id=str(col_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.RS,
-                    CategoryAnnotation(category_name=names.C.RS, category_id=row_span),  # type: ignore
+                    CategoryAnnotation(category_name=names.C.RS, category_id=str(row_span)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.CS,
-                    CategoryAnnotation(category_name=names.C.CS, category_id=col_span),  # type: ignore
+                    CategoryAnnotation(category_name=names.C.CS, category_id=str(col_span)),
                     image.image_id,
                 )
 
@@ -338,16 +338,16 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
-            names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=number_of_rows), image.image_id
+            names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=str(number_of_rows)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NC, CategoryAnnotation(category_name=names.C.NC, category_id=number_of_cols), image.image_id
+            names.C.NC, CategoryAnnotation(category_name=names.C.NC, category_id=str(number_of_cols)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NRS, CategoryAnnotation(category_name=names.C.NRS, category_id=max_rs), image.image_id
+            names.C.NRS, CategoryAnnotation(category_name=names.C.NRS, category_id=str(max_rs)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NCS, CategoryAnnotation(category_name=names.C.NCS, category_id=max_cs), image.image_id
+            names.C.NCS, CategoryAnnotation(category_name=names.C.NCS, category_id=str(max_cs)), image.image_id
         )
         image.summary = summary_ann
 
