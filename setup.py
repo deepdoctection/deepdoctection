@@ -73,8 +73,8 @@ _DEPS = [
     # dev dependencies
     "black==22.3.0",
     "isort",
-    "pylint",
-    "mypy",
+    "pylint==2.13.4",
+    "mypy==0.942",
     # docs
     "sphinx",
     "sphinx_rtd_theme",
