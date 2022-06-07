@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow  # type: ignore
+from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
 from ..utils.logger import logger
 from .dataflow_builder import DataFlowBaseBuilder

@@ -28,7 +28,7 @@ from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
 
 
-class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
+class MeanFromDataFlow(ProxyDataFlow):
     """
     Gets the mean of some dataflow. Takes a component from a dataflow and calculates iteratively the mean.
 
@@ -148,7 +148,7 @@ class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
         return self.mean
 
 
-class StdFromDataFlow(ProxyDataFlow):  # type: ignore
+class StdFromDataFlow(ProxyDataFlow):
     """
     Gets the standard deviation of some dataflow. Takes a component from a dataflow and calculates iteratively
     the standard deviation.
