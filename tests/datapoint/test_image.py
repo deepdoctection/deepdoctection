@@ -303,7 +303,7 @@ class TestImage:
         ann = output["annotations"][0]
         assert (
             "active" in ann
-            and "annotation_id" in ann
+            and "_annotation_id" in ann
             and "category_name" in ann
             and "category_id" in ann
             and "score" in ann
