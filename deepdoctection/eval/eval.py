@@ -25,7 +25,7 @@ __all__ = ["Evaluator"]
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Type, Union
 
-from ..dataflow import DataFromList, MapData  # type: ignore
+from ..dataflow import DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image

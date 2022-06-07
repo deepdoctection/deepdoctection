@@ -28,7 +28,7 @@ Module for Testlayout dataset. Install the dataset following the folder structur
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData  # type: ignore
+from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.prodigystruct import prodigy_to_image

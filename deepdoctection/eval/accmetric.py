@@ -88,7 +88,7 @@ class AccuracyMetric(MetricBase):
 
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
-            cls._cats = categories.get_categories(as_dict=False, filtered=True)  # type: ignore
+            cls._cats = categories.get_categories(as_dict=False, filtered=True)
         mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)  # type: ignore
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
@@ -151,7 +151,7 @@ class AccuracyMetric(MetricBase):
     def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
         cats = categories.get_categories(as_dict=False, filtered=True)
         if cats:
-            sub_cats = categories.get_sub_categories(cats)  # type: ignore
+            sub_cats = categories.get_sub_categories(cats)
         else:
             sub_cats = categories.get_sub_categories()
 

@@ -237,7 +237,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         config.update_args(config_overwrite)
 
     categories = dataset_train.dataflow.categories.get_categories(filtered=True)  # type: ignore
-    model_frcnn_config(config, categories, False)  # type: ignore
+    model_frcnn_config(config, categories, False)
     model = ResNetFPNModel(config=config)
 
     warmup_schedule, lr_schedule, step_number = train_frcnn_config(config)
@@ -289,7 +289,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
-        category_names = list(categories.values())  # type: ignore
+        category_names = list(categories.values())
         callbacks.extend(
             [
                 EvalCallback(

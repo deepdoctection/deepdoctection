@@ -21,7 +21,7 @@ Module for saving
 
 from typing import Optional
 
-from ..dataflow import DataFlow, MapData, SerializerJsonlines  # type: ignore
+from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 

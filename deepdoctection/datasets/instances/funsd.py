@@ -37,7 +37,7 @@ import json
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData, SerializerFiles  # type: ignore
+from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image

@@ -31,7 +31,7 @@ Module for Pubtabnet dataset. Place the dataset as follows
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData  # type: ignore
+from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat

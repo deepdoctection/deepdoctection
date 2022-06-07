@@ -26,7 +26,7 @@ from typing import Union
 import numpy as np
 from pytest import fixture
 
-from deepdoctection.dataflow import DataFlow, DataFromList  # type: ignore
+from deepdoctection.dataflow import DataFlow, DataFromList
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.datasets.base import DatasetBase
 from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder

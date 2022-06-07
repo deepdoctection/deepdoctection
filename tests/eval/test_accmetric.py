@@ -21,7 +21,7 @@ Testing module eval.accmetric
 
 from pytest import mark
 
-from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.dataflow import DataFromList
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.eval.accmetric import AccuracyMetric

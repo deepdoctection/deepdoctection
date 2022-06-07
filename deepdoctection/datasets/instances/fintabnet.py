@@ -34,7 +34,7 @@ Module for Fintabnet dataset. Place the dataset as follows
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData, MultiProcessMapData  # type: ignore
+from ...dataflow import DataFlow, MapData, MultiProcessMapData
 from ...dataflow.common import FlattenData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datapoint.image import Image

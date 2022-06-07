@@ -22,7 +22,7 @@ Module for pipeline with Tensorpack predictors
 import os
 from typing import Dict, List, Optional, Union
 
-from ..dataflow import DataFlow, MapData  # type: ignore
+from ..dataflow import DataFlow, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
 from ..mapper.maputils import cur

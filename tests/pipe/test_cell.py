@@ -39,7 +39,7 @@ def test_detect_result_generator(
     # Arrange
     categories = dataset_categories.get_categories()
     detect_result_generator = DetectResultGenerator(
-        categories, dp_image.width, dp_image.height, [["1"], ["2"], ["3"], ["4"], ["5"]]  # type: ignore
+        categories, dp_image.width, dp_image.height, [["1"], ["2"], ["3"], ["4"], ["5"]]
     )
 
     # Act

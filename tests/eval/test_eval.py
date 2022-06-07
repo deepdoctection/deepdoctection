@@ -23,7 +23,7 @@ from unittest.mock import MagicMock
 
 from pytest import fixture, mark
 
-from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.dataflow import DataFromList
 from deepdoctection.datapoint import Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.eval import CocoMetric, Evaluator

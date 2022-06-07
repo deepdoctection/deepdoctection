@@ -24,7 +24,7 @@ from typing import List
 
 import numpy as np
 from cv2 import INTER_LINEAR
-from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
+from dataflow.dataflow.imgaug.transform import ResizeTransform
 
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
