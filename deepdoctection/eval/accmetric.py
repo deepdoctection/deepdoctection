@@ -34,13 +34,13 @@ from .base import MetricBase
 from .registry import metric_registry
 
 if sklearn_available():
-    from sklearn.metrics import accuracy_score, confusion_matrix
+    from sklearn.metrics import accuracy_score, confusion_matrix  # type: ignore
 
 
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks: Optional[List[int]] = None) -> float:
+def accuracy(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> float:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
@@ -61,10 +61,10 @@ def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks:
         assert len(np_label_gt) == len(
             masks
         ), f"length of label_gt ({len(np_label_gt)}) and label_predictions ({len(masks)}) must be equal"
-        masks = np.asarray(masks)  # type: ignore
-        masks.astype(bool)  # type: ignore
-        np_label_gt = np_label_gt[masks]
-        np_label_predictions = np_label_predictions[masks]
+        np_masks = np.asarray(masks)
+        np_masks.astype(bool)
+        np_label_gt = np_label_gt[np_masks]
+        np_label_predictions = np_label_predictions[np_masks]
     return accuracy_score(np_label_gt, np_label_predictions)
 
 
@@ -74,7 +74,7 @@ class AccuracyMetric(MetricBase):
     Metric induced by :func:`accuracy`
     """
 
-    metric = accuracy  # type: ignore
+    metric = accuracy
     mapper = image_to_cat_id
     _cats: Optional[List[str]] = None
     _sub_cats: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None
@@ -89,7 +89,7 @@ class AccuracyMetric(MetricBase):
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
             cls._cats = categories.get_categories(as_dict=False, filtered=True)
-        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)  # type: ignore
+        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
@@ -114,7 +114,7 @@ class AccuracyMetric(MetricBase):
 
         results = []
         for key in labels_gt:  # pylint: disable=C0206
-            res = cls.metric(labels_gt[key], labels_predictions[key])  # type: ignore
+            res = cls.metric(labels_gt[key], labels_predictions[key])
             results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
         return results
 

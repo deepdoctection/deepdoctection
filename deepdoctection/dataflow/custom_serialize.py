@@ -25,7 +25,7 @@ import os
 from collections import defaultdict
 from typing import DefaultDict, Dict, List, Optional, Union
 
-from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
+from dataflow.dataflow import DataFlow, JoinData, MapData
 from jsonlines import Reader, Writer
 
 from ..utils.detection_types import JsonDict

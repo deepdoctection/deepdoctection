@@ -39,7 +39,7 @@ from ...dataflow.common import FlattenData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datapoint.image import Image
 from ...mapper.cats import cat_to_sub_cat, filter_cat
-from ...mapper.maputils import cur
+from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
@@ -172,7 +172,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
-        @cur  # type: ignore
+        @curry
         def _map_filename(dp: JsonDict, workdir: str) -> JsonDict:
             dp["filename"] = workdir + "/pdf/" + dp["filename"]
             return dp
@@ -202,7 +202,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         if kwargs.get("build_mode", "") == "table":
 
-            @cur  # type: ignore
+            @curry
             def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
                 return image_ann_to_image(dp, category_names=category_names)
 
@@ -213,7 +213,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                         names.C.TAB,
                         names.C.CELL,
                         names.C.HEAD,
-                        names.C.BODY,  # type: ignore
+                        names.C.BODY,
                         names.C.ITEM,
                         names.C.ROW,
                         names.C.COL,
@@ -221,7 +221,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 ),
             )
             ann_to_sub_image = maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                category_names_sub_image=names.C.TAB,  # type: ignore
+                category_names_sub_image=names.C.TAB,
                 category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
             )
             df = MapData(df, ann_to_sub_image)

@@ -22,7 +22,7 @@ from typing import Any, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
-from dataflow.dataflow import DataFlow, ProxyDataFlow  # type: ignore
+from dataflow.dataflow import DataFlow, ProxyDataFlow
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm

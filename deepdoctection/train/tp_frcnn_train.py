@@ -131,7 +131,7 @@ def get_train_dataflow(
     set_mp_spawn()
     cfg = config
     df = dataset.dataflow.build(**build_train_kwargs)
-    df = MapData(df, image_to_tp_frcnn_training(add_mask=False))  # type: ignore # pylint: disable=E1120
+    df = MapData(df, image_to_tp_frcnn_training(add_mask=False))  # pylint: disable=E1120
 
     logger.info("Loading dataset into memory")
 
@@ -161,7 +161,7 @@ def get_train_dataflow(
     df = DataFromList(datapoints, shuffle=True)
     buffer_size = min(num_datapoints - 1, 200)
 
-    load_augment_anchors = LoadAugmentAddAnchors(cfg)  # can't use dec: cur as pickling will fail in mp
+    load_augment_anchors = LoadAugmentAddAnchors(cfg)  # can't use dec: curry as pickling will fail in mp
     if use_multi_proc_for_train:
         num_cpu = os.cpu_count() if os.cpu_count() is not None else 0
         df = MultiProcessMapData(

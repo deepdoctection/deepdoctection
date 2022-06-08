@@ -39,7 +39,7 @@ def test_prodigy_to_image(
 
     load_image = True
     # Act
-    prodigy_to_image_mapper = prodigy_to_image(categories_prodigy, load_image, False)  # type: ignore  # pylint: disable=E1120  # 259
+    prodigy_to_image_mapper = prodigy_to_image(categories_prodigy, load_image, False)  # pylint: disable=E1120  # 259
     dp = prodigy_to_image_mapper(datapoint_prodigy)
 
     # Assert
@@ -51,6 +51,7 @@ def test_prodigy_to_image(
     assert dp.height == datapoint.get_height(load_image)
     assert test_anns[0].category_name == datapoint.get_first_ann_category(False)
     assert test_anns[0].category_id == datapoint.get_first_ann_category(True)
+    assert test_anns[0].bounding_box
     assert isclose(test_anns[0].bounding_box.ulx, datapoint.get_first_ann_box().ulx, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.uly, datapoint.get_first_ann_box().uly, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)

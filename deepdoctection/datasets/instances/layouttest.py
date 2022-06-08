@@ -118,7 +118,7 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
 
         # Map
         df = MapData(df, lambda dp: dp if dp["answer"] == "accept" else None)
-        prodigy_mapper = prodigy_to_image(  # type: ignore # pylint: disable=E1120
+        prodigy_mapper = prodigy_to_image( # pylint: disable=E1120
             categories_name_as_key=self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
             load_image=load_image,
             fake_score=fake_score,

@@ -35,12 +35,13 @@ def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: Datap
     """
 
     # Act
-    img_to_tp_tr_mapper = image_to_tp_frcnn_training(add_mask=False)  # type: ignore # pylint: disable=E1120
+    img_to_tp_tr_mapper = image_to_tp_frcnn_training(add_mask=False) # pylint: disable=E1120
     output = img_to_tp_tr_mapper(datapoint_image)  # pylint: disable=E1102
 
     # Assert
     expected_output = image_results.get_tp_frcnn_training_anns()
 
+    assert output
     assert output.keys() == expected_output.keys()
     assert_allclose(output["gt_boxes"], expected_output["gt_boxes"])
     assert_array_equal(output["gt_labels"], expected_output["gt_labels"])

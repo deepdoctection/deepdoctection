@@ -118,7 +118,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
 
         # Map
         df = MapDataComponent(df, lambda dp: self.get_workdir() + self.get_split(split) + "/" + dp, "file_name")
-        coco_mapper = coco_to_image(  # type: ignore # pylint: disable=E1120  # 259
+        coco_mapper = coco_to_image(  # pylint: disable=E1120  # 259
             self.categories.get_categories(init=True),  # type: ignore
             load_image,
             filter_empty_image=True,
@@ -130,7 +130,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_cat(  # type: ignore  # pylint: disable=E1120
+                filter_cat(  # pylint: disable=E1120
                     self.categories.get_categories(as_dict=False, filtered=True),
                     self.categories.get_categories(as_dict=False, filtered=False),
                 ),

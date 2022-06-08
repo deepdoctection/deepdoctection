@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Union
 from ..dataflow import DataFlow, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
-from ..mapper.maputils import cur
+from ..mapper.maputils import curry
 from ..mapper.misc import to_image
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import logger
@@ -134,11 +134,11 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         assert os.path.isfile(path), f"{path} not a file"
         df = SerializerPdfDoc.load(path, max_datapoints=max_datapoints)
 
-        @cur  # type: ignore
+        @curry
         def _to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
             return to_image(dp, dpi)
 
-        df = MapData(df, _to_image(dpi=300))  # type: ignore  # pylint: disable=E1120
+        df = MapData(df, _to_image(dpi=300))   # pylint: disable=E1120
         return df
 
     def dataflow_to_page(self, df: DataFlow) -> DataFlow:

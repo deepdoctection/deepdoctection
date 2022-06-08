@@ -24,10 +24,10 @@ from collections import defaultdict
 from typing import Dict, List, Optional, Union
 
 from ..datapoint.image import Image
-from .maputils import cur
+from .maputils import curry
 
 
-@cur  # type: ignore
+@curry
 def cat_to_sub_cat(
     dp: Image, categories_dict_names_as_key: Dict[str, str], cat_to_sub_cat_dict: Optional[Dict[str, str]] = None
 ) -> Image:
@@ -55,7 +55,7 @@ def cat_to_sub_cat(
     return dp
 
 
-@cur  # type: ignore
+@curry
 def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) -> Image:
     """
     Re-assigning category ids is sometimes necessary to align with categories of the :class:`DatasetCategories` . E.g.
@@ -73,7 +73,7 @@ def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) ->
     return dp
 
 
-@cur  # type: ignore
+@curry
 def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_list_unfiltered: List[str]) -> Image:
     """
     Filters category annotations based on the on a list of categories to be kept and a list of all possible
@@ -89,19 +89,19 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 
     cats_to_remove_list = [cat for cat in categories_as_list_unfiltered if cat not in categories_as_list_filtered]
 
-    remove_cats_mapper = remove_cats(category_names=cats_to_remove_list)  # type: ignore # pylint: disable=E1120  # 259
+    remove_cats_mapper = remove_cats(category_names=cats_to_remove_list) # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp)
 
     categories_dict_name_as_key = {v: str(k) for k, v in enumerate(categories_as_list_filtered, 1)}
     re_assign_cat_ids_mapper = re_assign_cat_ids(  # pylint: disable=E1120
-        categories_dict_name_as_key=categories_dict_name_as_key  # type: ignore
+        categories_dict_name_as_key=categories_dict_name_as_key
     )
     dp = re_assign_cat_ids_mapper(dp)
 
     return dp
 
 
-@cur  # type: ignore
+@curry
 def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, List[str]]] = None,
@@ -158,7 +158,7 @@ def image_to_cat_id(
     return cat_container
 
 
-@cur  # type: ignore
+@curry
 def remove_cats(
     dp: Image,
     category_names: Optional[Union[str, List[str]]] = None,

@@ -19,7 +19,8 @@
 Typing for the whole package
 """
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Protocol, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Protocol, Tuple, Type, Union, TypeVar
+from typing_extensions import ParamSpec
 
 import numpy.typing as npt
 from numpy import float32
@@ -40,8 +41,12 @@ KeyValue = Union[str, int]
 # Numpy image type
 ImageType = npt.NDArray[float32]
 
-#
-MapFunc = Callable[[Union[Any, Tuple[Any, Any]]], Any]
+DP = TypeVar("DP")
+S = TypeVar("S")
+T = TypeVar("T")
+P = ParamSpec('P')
+
+
 if TYPE_CHECKING:
     BaseExceptionType = Type[BaseException]
 else:

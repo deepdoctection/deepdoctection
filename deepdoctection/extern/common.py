@@ -20,7 +20,7 @@ Some classes used throughout the various external libraries.
 """
 
 import cv2
-from dataflow.dataflow.imgaug import ResizeTransform  # type: ignore
+from dataflow.dataflow.imgaug import ResizeTransform
 
 from ..utils.detection_types import ImageType
 
