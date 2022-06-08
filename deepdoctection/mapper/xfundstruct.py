@@ -28,10 +28,10 @@ from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Im
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import names
-from .maputils import MappingContextManager, cur, maybe_get_fake_score
+from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 
-@cur  # type: ignore
+@curry
 def xfund_to_image(
     dp: JsonDict, load_image: bool, fake_score: bool, category_names_mapping: Dict[str, str]
 ) -> Optional[Image]:

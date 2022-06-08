@@ -21,13 +21,13 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from copy import copy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
-from ..mapper import DefaultMapper
 from ..utils.timer import timed_operation
+from ..utils.detection_types import DP
 from .anngen import DatapointManager
 
 
@@ -137,7 +137,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
     Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .
     """
 
-    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func: DefaultMapper):
+    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func: Callable[..., Callable[[Image], Dict[str, Any]]]):
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: Language model for token classification

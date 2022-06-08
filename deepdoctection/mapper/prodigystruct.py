@@ -24,12 +24,12 @@ from typing import Dict, Optional
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict
-from .maputils import MappingContextManager, cur, maybe_get_fake_score
+from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
 
 
-@cur  # type: ignore
+@curry
 def prodigy_to_image(
     dp: JsonDict,
     categories_name_as_key: Dict[str, str],

@@ -42,7 +42,7 @@ def test_pascal_voc_dict_to_image(
     """
 
     # Act
-    iiitar13k_to_image_mapper = pascal_voc_dict_to_image(  # type: ignore
+    iiitar13k_to_image_mapper = pascal_voc_dict_to_image(
         iiitar13k_categories_name_as_keys, False, False, False, iiitar13k_category_names_mapping
     )
     dp = iiitar13k_to_image_mapper(datapoint_iiitar13kjson)
@@ -55,6 +55,7 @@ def test_pascal_voc_dict_to_image(
     assert dp.width == datapoint.get_width()
     assert dp.height == datapoint.get_height()
     assert test_anns[0].category_name == datapoint.get_first_ann_category_name()
+    assert test_anns[0].bounding_box
     assert isclose(test_anns[0].bounding_box.ulx, datapoint.get_first_ann_box().ulx, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.uly, datapoint.get_first_ann_box().uly, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)

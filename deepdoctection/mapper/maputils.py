@@ -27,10 +27,10 @@ import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.detection_types import BaseExceptionType, MapFunc
+from ..utils.detection_types import BaseExceptionType, S, T, DP, P
 from ..utils.logger import log_once, logger
 
-__all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "cur"]
+__all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
 
 
 class MappingContextManager:
@@ -39,11 +39,11 @@ class MappingContextManager:
     context if an exception has been thrown.
     """
 
-    def __init__(self, dp_name: Optional[str] = "") -> None:
+    def __init__(self, dp_name: Optional[str] = None) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
         """
-        self.dp_name = dp_name
+        self.dp_name = dp_name if dp_name is not None else ""
         self.context_error = True
 
     def __enter__(self) -> "MappingContextManager":
@@ -80,7 +80,7 @@ class DefaultMapper:  # pylint: disable=R0903
     https://stackoverflow.com/questions/36314/what-is-currying
     """
 
-    def __init__(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, func: Callable[[DP, S], T], *args: Any, **kwargs: Any) -> None:
         """
         :param func: A mapping function
         :param args: Default args to pass to the function
@@ -98,7 +98,7 @@ class DefaultMapper:  # pylint: disable=R0903
         return self.func(dp, *self.argument_args, **self.argument_kwargs)
 
 
-def cur(func: MapFunc) -> DefaultMapper:
+def curry(func: Callable[..., T]) -> Callable[..., Callable[[DP], T]]:
     """
     Decorator for converting functions that map
 
@@ -111,7 +111,7 @@ def cur(func: MapFunc) -> DefaultMapper:
 
         .. code-block:: python
 
-            @cur
+            @curry
             def json_to_image(dp, config_arg_1, config_arg_2,...) -> Image:
             ...
 
@@ -128,10 +128,9 @@ def cur(func: MapFunc) -> DefaultMapper:
 
     @functools.wraps(func)
     def wrap(*args: Any, **kwargs: Any) -> DefaultMapper:
-        ret = DefaultMapper(func, *args, **kwargs)
-        return ret
+        return DefaultMapper(func, *args, **kwargs)
 
-    return wrap  # type: ignore
+    return wrap
 
 
 def maybe_get_fake_score(add_fake_score: bool) -> Optional[float]:

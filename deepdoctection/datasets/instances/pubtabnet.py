@@ -166,14 +166,14 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             df = MapData(
                 df,
                 cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
+                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat
                 ),
             )
 
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_cat(  # type: ignore # pylint: disable=E1120
+                filter_cat(  # pylint: disable=E1120
                     self.categories.get_categories(as_dict=False, filtered=True),
                     self.categories.get_categories(as_dict=False, filtered=False),
                 ),

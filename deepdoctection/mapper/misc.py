@@ -28,7 +28,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import lxml_available
 from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
-from .maputils import MappingContextManager, cur
+from .maputils import MappingContextManager, curry
 
 if lxml_available():
     from lxml import etree  # type: ignore  # pylint: disable=W0611
@@ -120,7 +120,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
     return dp
 
 
-@cur  # type: ignore
+@curry
 def maybe_ann_to_sub_image(
     dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]]
 ) -> Image:
@@ -142,7 +142,7 @@ def maybe_ann_to_sub_image(
     return dp
 
 
-@cur  # type: ignore
+@curry
 def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.

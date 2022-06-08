@@ -30,7 +30,7 @@ if tf_available():
         deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
     except Exception:  # pylint: disable=W0703
         try:
-            from tensorflow.python.util import deprecation  # pylint: disable=E0611,E0401
+            from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0611,E0401
 
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703

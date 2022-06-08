@@ -144,7 +144,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
             "header": names.C.HEAD,
         }
         df = MapData(
-            df, xfund_to_image(load_image, False, category_names_mapping)  # type: ignore # pylint: disable=E1120
+            df, xfund_to_image(load_image, False, category_names_mapping)  # pylint: disable=E1120
         )
         if self.categories.is_cat_to_sub_cat():  # type: ignore
             df = MapData(

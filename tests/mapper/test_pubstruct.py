@@ -45,7 +45,7 @@ def test_pub_to_image(
     load_image = True
 
     # Act
-    pub_to_image_mapper = pub_to_image(  # type: ignore # pylint: disable=E1120  # 259
+    pub_to_image_mapper = pub_to_image( # pylint: disable=E1120  # 259
         categories_name_as_key_pubtabnet, load_image, True, False
     )
     dp = pub_to_image_mapper(datapoint_pubtabnet)
@@ -100,7 +100,7 @@ def test_pub_to_image_when_items_are_added(
 
     load_image = False
     # Act
-    pub_to_image_mapper = pub_to_image(  # type: ignore # pylint: disable=E1120  # 259
+    pub_to_image_mapper = pub_to_image(  # pylint: disable=E1120  # 259
         categories_name_as_key_pubtabnet, load_image, True, True
     )
     dp = pub_to_image_mapper(datapoint_pubtabnet)

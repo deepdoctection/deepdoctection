@@ -40,7 +40,7 @@ from typing import Dict, List, Union
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
-from ...mapper.maputils import cur
+from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
@@ -132,7 +132,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = SerializerFiles.load(path_ann_files, ".xml", max_datapoints)
         utf8_parser = etree.XMLParser(encoding="utf-8")
 
-        @cur  # type: ignore
+        @curry
         def load_xml(path_ann: str, utf8_parser: etree.XMLParser) -> JsonDict:
             with open(path_ann, "r", encoding="utf-8") as xml_file:
                 root = etree.fromstring(xml_file.read().encode("utf_8"), parser=utf8_parser)
@@ -160,7 +160,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = MapData(df, _map_file_name)
         df = MapData(
             df,
-            pascal_voc_dict_to_image(  # type: ignore # pylint: disable = E1120
+            pascal_voc_dict_to_image(  # pylint: disable = E1120
                 self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
                 load_image,
                 filter_empty_image=True,

@@ -31,7 +31,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import names
-from .maputils import MappingContextManager, cur, maybe_get_fake_score
+from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 __all__ = ["pub_to_image"]
 
@@ -360,5 +360,5 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
     return image
 
 
-pub_to_image = cur(pub_to_image_uncur)  # type: ignore  # using cur as decorator is not possible as picking will
+pub_to_image = curry(pub_to_image_uncur)  # using curry as decorator is not possible as picking will
 # fail in multiprocessing
