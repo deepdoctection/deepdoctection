@@ -20,6 +20,7 @@ Module for globally accessible fixtures
 """
 
 from copy import deepcopy
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -59,11 +60,11 @@ def fixture_image_results() -> DatapointImage:
 
 
 @fixture(name="path_to_tp_frcnn_yaml")
-def fixture_path_to_tp_frcnn_yaml() -> str:
+def fixture_path_to_tp_frcnn_yaml() -> Path:
     """
     path to tp frcnn yaml file
     """
-    return get_package_path() + "/configs/tp/layout/conf_frcnn_layout.yaml"
+    return get_package_path() / "configs/tp/layout/conf_frcnn_layout.yaml"
 
 
 @fixture(name="categories")
@@ -97,11 +98,11 @@ def fixture_np_image() -> ImageType:
 
 
 @fixture(name="path_to_tesseract_yaml")
-def fixture_path_to_tesseract_yaml() -> str:
+def fixture_path_to_tesseract_yaml() -> Path:
     """
     path to tesseract yaml file
     """
-    return get_package_path() + "/deepdoctection/configs/conf_tesseract.yaml"
+    return get_package_path() / "deepdoctection/configs/conf_tesseract.yaml"
 
 
 @fixture(name="dp_image")

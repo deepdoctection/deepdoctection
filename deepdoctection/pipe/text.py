@@ -343,7 +343,7 @@ class TextOrderService(PipelineComponent):
         for text_block in block_anns:
             text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
             text_container_anns = dp.get_annotation(
-                annotation_ids=text_container_ann_ids if text_container_ann_ids is not None else [],
+                annotation_ids=text_container_ann_ids,
                 category_names=self._text_container,
             )
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)

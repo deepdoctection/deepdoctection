@@ -31,8 +31,8 @@ Module for Fintabnet dataset. Place the dataset as follows
 |    ├── FinTabNet_1.0.0_table_val.jsonl
 """
 
-import os
-from typing import Dict, List, Union
+from pathlib import Path
+from typing import List, Mapping, Sequence, Union
 
 from ...dataflow import DataFlow, MapData, MultiProcessMapData
 from ...dataflow.common import FlattenData
@@ -81,15 +81,15 @@ _URL = (
     "https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/"
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
-_SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
-_LOCATION = "/fintabnet"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
+_LOCATION = "fintabnet"
+_ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
 _INIT_CATEGORIES = [names.C.TAB, names.C.CELL, names.C.ITEM]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {
     names.C.CELL: {
         names.C.HEAD: [names.C.HEAD, names.C.BODY],
@@ -151,7 +151,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         :return: dataflow
         """
 
-        split = kwargs.get("split", "val")
+        split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")
         rows_and_cols = kwargs.get("rows_and_cols", True)
         load_image = kwargs.get("load_image", False)
@@ -168,13 +168,15 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             logger.info("Logic will currently display only ONE table per page, even if there are more !!")
 
         # Load
-        path = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
+        dataset_split = self.annotation_files[split]
+        assert isinstance(dataset_split, str)
+        path = self.get_workdir() / dataset_split
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
         @curry
-        def _map_filename(dp: JsonDict, workdir: str) -> JsonDict:
-            dp["filename"] = workdir + "/pdf/" + dp["filename"]
+        def _map_filename(dp: JsonDict, workdir: Path) -> JsonDict:
+            dp["filename"] = workdir / "pdf" / dp["filename"]
             return dp
 
         map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259  # type: ignore

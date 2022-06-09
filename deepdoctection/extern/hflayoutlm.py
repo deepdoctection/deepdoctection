@@ -158,11 +158,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "boxes" in encodings
         assert "tokens" in encodings
 
-        assert isinstance(encodings["input_ids"], list)
+        assert isinstance(encodings["ids"], list)
+        assert isinstance(encodings["input_ids"], Tensor)
         assert isinstance(encodings["attention_mask"], Tensor)
-        assert isinstance(encodings["input_ids"], Tensor)
-        assert isinstance(encodings["input_ids"], Tensor)
-        assert isinstance(encodings["input_ids"], Tensor)
+        assert isinstance(encodings["token_type_ids"], Tensor)
+        assert isinstance(encodings["boxes"], Tensor)
+        assert isinstance(encodings["tokens"], list)
 
         results = predict_token_classes(
             encodings["ids"],

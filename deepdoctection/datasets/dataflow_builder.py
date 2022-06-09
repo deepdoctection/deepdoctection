@@ -20,7 +20,8 @@ Module for DataflowBase class.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Union
+from pathlib import Path
+from typing import Mapping, Optional, Sequence, Union
 
 from ..dataflow import DataFlow
 from ..utils.systools import get_dataset_dir_path
@@ -43,7 +44,7 @@ class DataFlowBaseBuilder(ABC):
     def __init__(
         self,
         location: str,
-        annotation_files: Optional[Dict[str, Union[str, List[str]]]] = None,
+        annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
     ):
         """
         :param location: Relative path of the physical dataset.
@@ -54,7 +55,7 @@ class DataFlowBaseBuilder(ABC):
             annotation_files = {}
         self.annotation_files = annotation_files
         self._categories: Optional[DatasetCategories] = None
-        self._splits: Dict[str, str] = {}
+        self._splits: Mapping[str, str] = {}
 
     @property
     def categories(self) -> Optional[DatasetCategories]:
@@ -74,29 +75,29 @@ class DataFlowBaseBuilder(ABC):
         """
         split value
         """
-        return self._splits.get(key, "")
+        return self._splits[key]
 
     @property
-    def splits(self) -> Dict[str, str]:
+    def splits(self) -> Mapping[str, str]:
         """
         splits
         """
         return self._splits
 
     @splits.setter
-    def splits(self, splits: Dict[str, str]) -> None:
+    def splits(self, splits: Mapping[str, str]) -> None:
         """
         set splits
         """
         self._splits = splits
 
-    def get_workdir(self) -> str:
+    def get_workdir(self) -> Path:
         """
         Get the absolute path to the locally physically stored dataset.
 
         :return: local workdir
         """
-        return get_dataset_dir_path() + self.location
+        return get_dataset_dir_path() / self.location
 
     @abstractmethod
     def build(self, **kwargs: Union[str, int]) -> DataFlow:

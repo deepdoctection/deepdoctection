@@ -19,11 +19,12 @@
 Typing for the whole package
 """
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Protocol, Tuple, Type, Union, TypeVar
-from typing_extensions import ParamSpec
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
 import numpy.typing as npt
 from numpy import float32
+from typing_extensions import ParamSpec
 
 
 # Type for a general dataclass
@@ -44,7 +45,7 @@ ImageType = npt.NDArray[float32]
 DP = TypeVar("DP")
 S = TypeVar("S")
 T = TypeVar("T")
-P = ParamSpec('P')
+P = ParamSpec("P")
 
 
 if TYPE_CHECKING:
@@ -57,3 +58,6 @@ JsonDict = Dict[str, Any]
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
 Requirement = Tuple[str, bool, str]
+
+# Pathlike
+Pathlike = Union[str, Path]

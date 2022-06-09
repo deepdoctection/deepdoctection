@@ -147,7 +147,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
 
         # Map
         def replace_filename(dp: JsonDict) -> JsonDict:
-            dp["filename"] = self.get_workdir() + "/" + dp["split"] + "/" + dp["filename"]
+            dp["filename"] = self.get_workdir() / dp["split"] / dp["filename"]
             return dp
 
         df = MapData(df, replace_filename)
@@ -165,9 +165,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
 
         if self.categories.is_filtered():

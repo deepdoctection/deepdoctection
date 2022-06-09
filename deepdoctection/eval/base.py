@@ -24,7 +24,6 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..mapper.maputils import DefaultMapper
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
 

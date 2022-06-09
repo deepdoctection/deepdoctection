@@ -39,7 +39,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     """
     # Arrange
     categories_name_as_key_init = {names.C.CELL: "1", names.C.ITEM: "2"}
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)   # pylint: disable=E1120  # 259
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)  # pylint: disable=E1120  # 259
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
@@ -209,7 +209,7 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     sub_categories = {names.C.CELL: [names.C.RN, names.C.RS], names.C.ROW: names.C.RN}
 
     # Act
-    remove_cats_mapper = remove_cats(sub_categories=sub_categories) # pylint: disable=E1120  # 259
+    remove_cats_mapper = remove_cats(sub_categories=sub_categories)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
 
     # Assert
