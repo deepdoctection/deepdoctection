@@ -236,7 +236,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     if config_overwrite:
         config.update_args(config_overwrite)
 
-    categories = dataset_train.dataflow.categories.get_categories(filtered=True)  # type: ignore
+    categories = dataset_train.dataflow.categories.get_categories(filtered=True)
     model_frcnn_config(config, categories, False)
     model = ResNetFPNModel(config=config)
 
@@ -282,7 +282,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
-            dataset_val.dataflow.categories.get_categories(filtered=True),  # type: ignore
+            dataset_val.dataflow.categories.get_categories(filtered=True),
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
@@ -295,7 +295,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
                 EvalCallback(
                     dataset_val,
                     category_names,
-                    dataset_val.dataflow.categories.cat_to_sub_cat,  # type: ignore
+                    dataset_val.dataflow.categories.cat_to_sub_cat,
                     metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore

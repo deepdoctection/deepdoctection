@@ -35,13 +35,13 @@ Module for Funsd dataset.  Install the dataset following the folder structure
 
 import json
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Mapping, Union
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
-from ...utils.detection_types import JsonDict
+from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -62,9 +62,9 @@ _LICENSE = (
 )
 
 _URL = "https://guillaumejaume.github.io/FUNSD/download/"
-_SPLITS = {"train": "training_data", "test": "testing_data"}
-_LOCATION = "/funsd"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "annotations", "test": "annotations"}
+_SPLITS: Mapping[str, str] = {"train": "training_data", "test": "testing_data"}
+_LOCATION = "funsd"
+_ANNOTATION_FILES: Mapping[str, str] = {"train": "annotations", "test": "annotations"}
 
 _INIT_CATEGORIES = [names.C.WORD]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
@@ -120,12 +120,13 @@ class FunsdBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        path_ann_files = os.path.join(
-            self.get_workdir(), self.splits[split], self.annotation_files[split]  # type: ignore
-        )
+        annotation_split = self.annotation_files[split]
+        assert isinstance(annotation_split, str)
+        path_ann_files = self.get_workdir() / self.splits[split] / annotation_split
+
         df = SerializerFiles.load(path_ann_files, ".json", max_datapoints)
 
-        def load_json(path_ann: str) -> JsonDict:
+        def load_json(path_ann: Pathlike) -> JsonDict:
             with open(path_ann, "r", encoding="utf-8") as file:
                 anns = json.loads(file.read())
                 path, file_name = os.path.split(path_ann)
@@ -144,11 +145,9 @@ class FunsdBuilder(DataFlowBaseBuilder):
             "header": names.C.HEAD,
         }
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping))  # pylint: disable=E1120
-        if self.categories.is_cat_to_sub_cat():  # type: ignore
+        if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
         return df

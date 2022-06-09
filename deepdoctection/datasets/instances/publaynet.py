@@ -29,8 +29,8 @@ Module for Publaynet dataset. Place the dataset as follows
 |    ├── val.json
 """
 
-import os
-from typing import Dict, List, Union
+
+from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
@@ -61,11 +61,11 @@ _URL = (
     "https://dax-cdn.cdn.appdomain.cloud/dax-publaynet/1.0.0/"
     "publaynet.tar.gz?_ga=2.23017467.1796315263.1628754613-1173244232.1625045842"
 )
-_SPLITS = {"train": "/train", "val": "/val"}
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
 
-_LOCATION = "/publaynet"
+_LOCATION = "publaynet"
 
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"train": "train.json", "val": "val.json"}
+_ANNOTATION_FILES: Mapping[str, str] = {"train": "train.json", "val": "val.json"}
 _INIT_CATEGORIES = [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.TAB, names.C.FIG]
 
 
@@ -93,7 +93,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
     Publaynet dataflow builder
     """
 
-    def build(self, **kwargs: Union[str, int]) -> DataFlow:  # pylint: disable=W0221 (#3812)   type: ignore
+    def build(self, **kwargs: Union[str, int]) -> DataFlow:  # pylint: disable=W0221 (#3812)
         """
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
@@ -113,13 +113,15 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
 
         # Load
-        path = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
+        dataset_split = self.annotation_files[split]
+        assert isinstance(dataset_split, str)
+        path = self.get_workdir() / dataset_split
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
         df = MapDataComponent(df, lambda dp: self.get_workdir() / self.get_split(split) / dp, "file_name")
         coco_mapper = coco_to_image(  # pylint: disable=E1120  # 259
-            self.categories.get_categories(init=True),  # type: ignore
+            self.categories.get_categories(init=True),
             load_image,
             filter_empty_image=True,
             fake_score=fake_score,

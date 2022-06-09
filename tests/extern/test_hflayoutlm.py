@@ -27,6 +27,7 @@ from deepdoctection.extern.base import TokenClassResult
 from deepdoctection.extern.hflayoutlm import HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
+
 from ..mapper.data import DatapointXfund
 
 if pytorch_available():

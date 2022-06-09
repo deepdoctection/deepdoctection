@@ -24,7 +24,7 @@ import os
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, Literal, Optional, Protocol, Union, overload, Sequence
+from typing import Callable, Literal, Optional, Protocol, Sequence, Union, overload
 from urllib.request import urlretrieve
 
 from cv2 import IMREAD_COLOR, imread
@@ -159,7 +159,6 @@ def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]), f"image type not allowed: {path}"
     assert type_id in ("np", "b64"), "type not allowed"
-
 
     try:
         if type_id == "b64":

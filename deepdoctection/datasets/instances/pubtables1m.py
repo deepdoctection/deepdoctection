@@ -36,7 +36,7 @@ Module for PubTables1M-Detection-PASCAL-VOC dataset. Install the dataset followi
 """
 
 import os
-from typing import Dict, List, Union
+from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
@@ -70,9 +70,9 @@ _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
 
 _URL = "https://msropendata.com/datasets/505fcbe3-1383-42b1-913a-f651b8b712d3"
 
-_SPLITS = {"train": "train", "val": "val", "test": "test"}
-_LOCATION = "/PubTables1M-Detection-PASCAL-VOC"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
+_LOCATION = "PubTables1M-Detection-PASCAL-VOC"
+_ANNOTATION_FILES: Mapping[str, str] = {
     "train": "train",
     "val": "val",
     "test": "test",
@@ -127,7 +127,9 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        path_ann_files = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
+        dataset_split = self.annotation_files[split]
+        assert isinstance(dataset_split, str)
+        path_ann_files = self.get_workdir() / dataset_split
 
         df = SerializerFiles.load(path_ann_files, ".xml", max_datapoints)
         utf8_parser = etree.XMLParser(encoding="utf-8")
@@ -161,7 +163,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         df = MapData(
             df,
             pascal_voc_dict_to_image(  # pylint: disable = E1120
-                self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
+                self.categories.get_categories(init=True, name_as_key=True),
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
