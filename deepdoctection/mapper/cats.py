@@ -89,7 +89,7 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 
     cats_to_remove_list = [cat for cat in categories_as_list_unfiltered if cat not in categories_as_list_filtered]
 
-    remove_cats_mapper = remove_cats(category_names=cats_to_remove_list) # pylint: disable=E1120  # 259
+    remove_cats_mapper = remove_cats(category_names=cats_to_remove_list)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp)
 
     categories_dict_name_as_key = {v: str(k) for k, v in enumerate(categories_as_list_filtered, 1)}

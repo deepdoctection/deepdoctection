@@ -306,7 +306,7 @@ class MergeDataset(DatasetBase):
                 """
 
                 split = kwargs.get("split", "train")
-                assert isinstance(split,str)
+                assert isinstance(split, str)
                 max_datapoints = kwargs.get("max_datapoints")
                 if isinstance(max_datapoints, str):
                     max_datapoints = int(max_datapoints)

@@ -18,16 +18,17 @@
 """
 Dataclass Image
 """
-from dataclasses import dataclass, field
-from typing import Iterable, Optional, Union, Dict, List, Any
 from copy import deepcopy
+from dataclasses import dataclass, field
+from typing import Any, Dict, Iterable, List, Optional, Union
+
 import numpy as np
 
 from ..utils.detection_types import ImageType
-from ..utils.identifier import is_uuid_like, get_uuid
-from .annotation import BoundingBox, Annotation, ImageAnnotation, SummaryAnnotation
+from ..utils.identifier import get_uuid, is_uuid_like
+from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2, as_dict
+from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
 @dataclass
@@ -155,7 +156,7 @@ class Image:
         pdf_bytes. This attribute will be set dynamically and is not part of the core Image data model
         """
         if hasattr(self, "_pdf_bytes"):
-            return getattr(self,"_pdf_bytes")
+            return getattr(self, "_pdf_bytes")
         return None
 
     @pdf_bytes.setter
@@ -312,12 +313,6 @@ class Image:
         :param annotation_types: A type name or list of type names.
         :return: A (possibly empty) list of Annotations
         """
-        if category_names is None:
-            category_names = []
-        if annotation_ids is None:
-            annotation_ids = []
-        if annotation_types is None:
-            annotation_types = []
 
         cat_names = [category_names] if isinstance(category_names, str) else category_names
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
@@ -325,15 +320,15 @@ class Image:
 
         anns = filter(lambda x: x.active, self.annotations)
 
-        if ann_types:
+        if ann_types is not None:
             for type_name in ann_types:
                 anns = filter(lambda x: isinstance(x, eval(type_name)), anns)  # pylint: disable=W0123, W0640
 
-        if cat_names:
-            anns = filter(lambda x: x.category_name in cat_names, anns)
+        if cat_names is not None:
+            anns = filter(lambda x: x.category_name in cat_names, anns)  # type:ignore
 
-        if ann_ids:
-            anns = filter(lambda x: x.annotation_id in ann_ids, anns)
+        if ann_ids is not None:
+            anns = filter(lambda x: x.annotation_id in ann_ids, anns)  # type:ignore
 
         return list(anns)
 
@@ -453,7 +448,9 @@ class Image:
         assert ann.bounding_box is not None
         box = ann.bounding_box.to_list("xyxy")
         proposals = self.get_annotation(category_names)
-        points = np.array([prop.image.get_embedding(self.image_id).center for prop in proposals if prop.image is not None])
+        points = np.array(
+            [prop.image.get_embedding(self.image_id).center for prop in proposals if prop.image is not None]
+        )
         ann_ids = np.array([prop.annotation_id for prop in proposals])
         indices = np.where(
             (box[0] < points[:, 0]) & (box[1] < points[:, 1]) & (box[2] > points[:, 0]) & (box[3] > points[:, 1])

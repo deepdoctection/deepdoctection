@@ -31,14 +31,14 @@ from cv2 import IMREAD_COLOR, imread
 from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
 
 from .context import save_tmp_file, timeout_manager
-from .detection_types import ImageType
+from .detection_types import ImageType, Pathlike
 from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import logger
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
 
-def decrypt_pdf_document(path: str) -> bool:
+def decrypt_pdf_document(path: Pathlike) -> bool:
     """
     Decrypting a pdf. As copying a pdf document removes the password that protects pdf, this method
     generates a copy and decrypts the copy using qpdf. The result is saved as the original
@@ -68,7 +68,7 @@ def decrypt_pdf_document(path: str) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: str) -> PdfFileReader:
+def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See :func:`decrypt_pdf_document` to understand what is meant with "decrypt").
@@ -116,7 +116,7 @@ class PDFStreamer:
 
     """
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Pathlike) -> None:
         """
         :param path to a pdf.
         """
@@ -140,7 +140,7 @@ class PDFStreamer:
 
 
 def _input_to_cli_str(
-    input_file_name: str, output_file_name: str, dpi: int, size: Optional[Tuple[int, int]] = None
+    input_file_name: Pathlike, output_file_name: Pathlike, dpi: int, size: Optional[Tuple[int, int]] = None
 ) -> List[str]:
 
     cmd_args: List[str] = []
@@ -155,9 +155,9 @@ def _input_to_cli_str(
     if platform.system() == "Windows":
         command = command + ".exe"
     cmd_args.append(command)
-    cmd_args.extend(["-r", str(dpi), input_file_name])
+    cmd_args.extend(["-r", str(dpi), str(input_file_name)])
     cmd_args.append("-png")
-    cmd_args.append(output_file_name)
+    cmd_args.append(str(output_file_name))
 
     if size:
         assert len(size) == 2, size

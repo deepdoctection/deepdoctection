@@ -20,8 +20,8 @@ Implementation of BoundingBox class and related methods
 """
 
 from dataclasses import dataclass
+from math import ceil, floor
 from typing import List, Optional
-from math import floor, ceil
 
 import numpy as np
 import numpy.typing as npt
@@ -69,7 +69,7 @@ def area(boxes: npt.NDArray[float32]) -> npt.NDArray[float32]:
 
     :return: a numpy array with shape [N*1] representing box areas
     """
-    return np.array((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]),dtype=float32)
+    return np.array((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]), dtype=float32)
 
 
 # taken from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/np_box_ops.py
@@ -196,7 +196,7 @@ class BoundingBox:
 
         if not self.absolute_coords:
             assert (
-                self.ulx <= 1. and self.uly <= 1. and self.lrx <= 1. and self.lry <= 1.
+                self.ulx <= 1.0 and self.uly <= 1.0 and self.lrx <= 1.0 and self.lry <= 1.0
             ), "coordinates must be between 0 and 1"
 
     @property
@@ -360,7 +360,9 @@ def intersection_box(
 
     if box_1.absolute_coords != box_2.absolute_coords:
         # will transform box_1
-        assert width is not None and height is not None, "when absolute coords of boxes are not equal must pass width and height"
+        assert (
+            width is not None and height is not None
+        ), "when absolute coords of boxes are not equal must pass width and height"
         box_1 = box_1.transform(width, height, box_2.absolute_coords)
     ulx = max(box_1.ulx, box_2.ulx)
     uly = max(box_1.uly, box_2.uly)
@@ -388,7 +390,9 @@ def crop_box_from_image(
     :return: A numpy array cropped according to the bounding box.
     """
     if not crop_box.absolute_coords:
-        assert width is not None and height is not None, "when crop_box has absolute coords set to False must pass width and height"
+        assert (
+            width is not None and height is not None
+        ), "when crop_box has absolute coords set to False must pass width and height"
         absolute_coord_box = crop_box.transform(width, height, absolute_coords=True)
     else:
         absolute_coord_box = crop_box
@@ -396,12 +400,8 @@ def crop_box_from_image(
     assert isinstance(absolute_coord_box, BoundingBox)
     np_max_y, np_max_x = np_image.shape[0:2]
     return np_image[
-        int(floor(absolute_coord_box.uly)) : min(
-            int(ceil(absolute_coord_box.lry)), np_max_y
-        ),
-        int(floor(absolute_coord_box.ulx)) : min(
-            int(ceil(absolute_coord_box.lrx)), np_max_x
-        ),
+        int(floor(absolute_coord_box.uly)) : min(int(ceil(absolute_coord_box.lry)), np_max_y),
+        int(floor(absolute_coord_box.ulx)) : min(int(ceil(absolute_coord_box.lrx)), np_max_x),
     ]
 
 

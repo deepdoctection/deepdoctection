@@ -305,4 +305,3 @@ class TestImage:
         assert "category_name" in ann
         assert "category_id" in ann
         assert "score" in ann
-

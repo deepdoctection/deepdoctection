@@ -32,7 +32,7 @@ Module for Publaynet dataset. Place the dataset as follows
 import os
 from typing import Dict, List, Union
 
-from ...dataflow import DataFlow, MapData, MapDataComponent  # type: ignore
+from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import filter_cat
@@ -117,7 +117,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
-        df = MapDataComponent(df, lambda dp: self.get_workdir() + self.get_split(split) + "/" + dp, "file_name")
+        df = MapDataComponent(df, lambda dp: self.get_workdir() / self.get_split(split) / dp, "file_name")
         coco_mapper = coco_to_image(  # pylint: disable=E1120  # 259
             self.categories.get_categories(init=True),  # type: ignore
             load_image,

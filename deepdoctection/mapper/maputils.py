@@ -27,7 +27,7 @@ import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.detection_types import BaseExceptionType, S, T, DP, P
+from ..utils.detection_types import DP, BaseExceptionType, S, T
 from ..utils.logger import log_once, logger
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]

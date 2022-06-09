@@ -26,8 +26,11 @@ from pytest import mark, raises
 from deepdoctection.extern.base import TokenClassResult
 from deepdoctection.extern.hflayoutlm import HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
-
+from deepdoctection.utils.file_utils import pytorch_available
 from ..mapper.data import DatapointXfund
+
+if pytorch_available():
+    import torch
 
 
 def get_token_class_results(  # type: ignore
@@ -110,7 +113,15 @@ class TestHFLayoutLmTokenClassifier:
         layoutlm = HFLayoutLmTokenClassifier(categories_semantics, categories_bio)
 
         # Act
-        results = layoutlm.predict(**layoutlm_input)
+        inputs = {}
+        inputs["ids"] = layoutlm_input["ids"]
+        inputs["input_ids"] = torch.tensor(layoutlm_input["input_ids"])
+        inputs["attention_mask"] = torch.tensor(layoutlm_input["attention_mask"])
+        inputs["token_type_ids"] = torch.tensor(layoutlm_input["token_type_ids"])
+        inputs["boxes"] = torch.tensor(layoutlm_input["boxes"])
+        inputs["tokens"] = layoutlm_input["tokens"]
+
+        results = layoutlm.predict(**inputs)
 
         # Assert
         assert len(results) == 18

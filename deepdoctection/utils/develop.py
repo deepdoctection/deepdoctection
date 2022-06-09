@@ -28,9 +28,9 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, List, Optional
 
-from . import logger
+from .logger import logger
 
-__all__: List[str] = []
+__all__: List[str] = ["deprecated"]
 
 # Copy and paste from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/develop.py
 

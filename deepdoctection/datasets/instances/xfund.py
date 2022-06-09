@@ -155,9 +155,7 @@ class XfundBuilder(DataFlowBaseBuilder):
             "answer": names.C.A,
             "header": names.C.HEAD,
         }
-        df = MapData(
-            df, xfund_to_image(load_image, False, category_names_mapping)  # pylint: disable=E1120
-        )
+        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping))  # pylint: disable=E1120
 
         if self.categories.is_cat_to_sub_cat():  # type: ignore
             df = MapData(

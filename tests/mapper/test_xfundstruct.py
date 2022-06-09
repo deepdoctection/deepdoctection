@@ -25,7 +25,6 @@ from unittest.mock import MagicMock, patch
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
-from deepdoctection.datapoint.annotation import ContainerAnnotation
 
 from .conftest import get_always_pubtabnet_white_image
 
@@ -39,7 +38,7 @@ def test_xfund_to_image(datapoint_xfund: JsonDict, xfund_category_names: Dict[st
     """
 
     # Act
-    xfund_to_image_func = xfund_to_image(False, False, xfund_category_names)   # pylint: disable=E1120
+    xfund_to_image_func = xfund_to_image(False, False, xfund_category_names)  # pylint: disable=E1120
     img = xfund_to_image_func(datapoint_xfund)
 
     # Assert
