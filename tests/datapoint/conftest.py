@@ -135,7 +135,7 @@ class WhiteImage:
     np_array, dummy location and file name and ids for testing
     """
 
-    img = np.ones([4, 6, 3], dtype=np.float32)
+    img = np.ones([4, 6, 3], dtype=np.uint8)
     loc = "/testlocation/test"
     file_name = "test_image.png"
     external_id = "1234"

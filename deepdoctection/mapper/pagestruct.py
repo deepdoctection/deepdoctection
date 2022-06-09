@@ -21,9 +21,7 @@ Module for mapping Images or exported dictionaries into page formats
 from itertools import chain
 from typing import List, Optional, Tuple
 
-from numpy import float32
-
-from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.annotation import ImageAnnotation, ContainerAnnotation
 from ..datapoint.convert import convert_np_array_to_b64
 from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
@@ -31,10 +29,6 @@ from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 
 __all__ = ["to_page", "page_dict_to_page"]
-
-
-def _to_float(value: Optional[float32]) -> float:
-    return float(value) if value is not None else 0.0
 
 
 def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
@@ -50,7 +44,7 @@ def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
         annotation.annotation_id,
         bounding_box.to_list(mode="xyxy"),
         annotation.category_name,
-        _to_float(annotation.score),  # type: ignore
+        annotation.score,
     )
 
 
@@ -77,7 +71,7 @@ def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tup
             int(annotation.get_sub_category(names.C.CN).category_id),
             int(annotation.get_sub_category(names.C.RS).category_id),
             int(annotation.get_sub_category(names.C.CS).category_id),
-            _to_float(annotation.score),  # type: ignore
+            annotation.score,
         ),
         text,
     )
@@ -141,7 +135,7 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
         number_rows,
         number_cols,
         html,
-        _to_float(annotation.score),  # type: ignore
+        annotation.score,
     )
 
 
@@ -170,7 +164,7 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
         annotation.category_name,
         reading_order,
         text,
-        _to_float(annotation.score),  # type: ignore
+        annotation.score,
     )
 
 

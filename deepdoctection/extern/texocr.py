@@ -55,7 +55,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
     return all_results
 
 
-def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type:ignore
+def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
     """
     Calls AWS Textract client (:meth:`detect_document_text`) and returns plain OCR results.
     AWS account required.

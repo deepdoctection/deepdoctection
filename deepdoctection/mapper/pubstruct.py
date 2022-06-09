@@ -20,7 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Sequence, Iterable
 
 import numpy as np
 
@@ -60,7 +60,7 @@ def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
     return annotation
 
 
-def _cell_token(html: List[str]) -> List[List[int]]:
+def _cell_token(html: Sequence[str]) -> List[List[int]]:
 
     index_rows = [i for i, tag in enumerate(html) if tag == "<tr>"]
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
@@ -74,7 +74,7 @@ def _cell_token(html: List[str]) -> List[List[int]]:
     return index_cells_tmp
 
 
-def _item_spans(html: List[str], index_cells: List[List[int]], item: str) -> List[List[int]]:
+def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> List[List[int]]:
 
     item_spans = [
         [
@@ -92,7 +92,7 @@ def _item_spans(html: List[str], index_cells: List[List[int]], item: str) -> Lis
     return item_spans
 
 
-def _end_of_header(html: List[str]) -> int:
+def _end_of_header(html: Sequence[str]) -> int:
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
     header_in_html = [i for i, tag in enumerate(html) if tag == "</thead>"]
     index_header_end = max(header_in_html)
@@ -103,7 +103,7 @@ def _end_of_header(html: List[str]) -> int:
     return 0
 
 
-def tile_table(row_spans: List[List[int]], col_spans: List[List[int]]) -> List[List[int]]:
+def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[int]]) -> List[List[int]]:
     """
     Tiles a table according the row and column span scheme. A table can be represented as a list of list, where each
     inner list has the same length. Each cell with a cell id can be located according to their row and column spans in
@@ -177,16 +177,16 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
             ulx = float(
-                min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             uly = float(
-                min([cell.bounding_box.uly for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                min([cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             lrx = float(
-                max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             lry = float(
-                max([cell.bounding_box.lry for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             item_ann = ImageAnnotation(
                 category_id=categories_name_as_key[names.C.ITEM],

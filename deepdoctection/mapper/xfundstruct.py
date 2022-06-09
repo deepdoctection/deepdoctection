@@ -22,7 +22,7 @@ Module for mapping annotations to and from xfund data structure
 import os
 from collections import defaultdict
 from itertools import chain
-from typing import Dict, Optional
+from typing import Dict, Optional, Mapping
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict
@@ -33,7 +33,7 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 @curry
 def xfund_to_image(
-    dp: JsonDict, load_image: bool, fake_score: bool, category_names_mapping: Dict[str, str]
+    dp: JsonDict, load_image: bool, fake_score: bool, category_names_mapping: Mapping[str, str]
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from xfund or funsd dataset in to an Image structure

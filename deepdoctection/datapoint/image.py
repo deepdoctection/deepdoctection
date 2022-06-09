@@ -20,7 +20,7 @@ Dataclass Image
 """
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union, Sequence
 
 import numpy as np
 
@@ -297,9 +297,9 @@ class Image:
 
     def get_annotation(
         self,
-        category_names: Optional[Union[str, List[str]]] = None,
-        annotation_ids: Optional[Union[str, List[str]]] = None,
-        annotation_types: Optional[Union[str, List[str]]] = None,
+        category_names: Optional[Union[str, Sequence[str]]] = None,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        annotation_types: Optional[Union[str, Sequence[str]]] = None,
     ) -> List[ImageAnnotation]:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying

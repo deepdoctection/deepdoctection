@@ -63,7 +63,7 @@ def get_tf_version() -> str:
 
         for pkg in candidates:
             try:
-                tf_version = importlib_metadata.version(pkg)  # type: ignore
+                tf_version = importlib_metadata.version(pkg)
                 break
             except importlib_metadata.PackageNotFoundError:
                 pass

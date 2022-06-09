@@ -50,16 +50,16 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         _, file_name = os.path.split(dp)
         location = dp
     elif isinstance(dp, dict):
-        file_name = dp.get("file_name")  # type: ignore
-        location = dp.get("location")  # type: ignore
+        file_name = str(dp.get("file_name",""))
+        location = str(dp.get("location",""))
         if location is None:
-            location = dp.get("path")  # type: ignore
-            location = os.path.join(location, file_name)  # type: ignore
+            location = str(dp.get("path",""))
+            location = os.path.join(location, file_name)
     else:
         raise TypeError("datapoint not of expected type for converting to image")
 
     with MappingContextManager(dp_name=file_name) as mapping_context:
-        dp_image = Image(file_name=file_name, location=location)  # type: ignore
+        dp_image = Image(file_name=file_name, location=location)
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
                 dp_image.pdf_bytes = dp.get("pdf_bytes")  # type: ignore

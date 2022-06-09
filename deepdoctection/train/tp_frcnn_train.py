@@ -91,10 +91,10 @@ def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> JsonDict:
     cfg = config
     if "image" not in dp:
         loader = get_load_image_func(dp["file_name"])
-        dp["image"] = loader(dp["file_name"])  # type: ignore
+        dp["image"] = loader(dp["file_name"])
 
     augment_list = [
-        CustomResize(cfg.PREPROC.TRAIN_SHORT_EDGE_SIZE, cfg.PREPROC.MAX_SIZE),  # type: ignore
+        CustomResize(cfg.PREPROC.TRAIN_SHORT_EDGE_SIZE, cfg.PREPROC.MAX_SIZE),
         imgaug.Flip(horiz=True),
     ]
     dp = augment(dp, augment_list, False)

@@ -47,7 +47,7 @@ class Datapoint:
     """
 
     image = Image(location="/test/to/path", file_name="test_name")
-    np_image = np.ones([400, 600, 3], dtype=np.float32)
+    np_image = np.ones([400, 600, 3], dtype=np.uint8)
     anns = [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=100.0, lrx=200.0, lry=400.0, absolute_coords=True),

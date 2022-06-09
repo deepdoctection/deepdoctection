@@ -96,11 +96,11 @@ def image_to_layoutlm(
     image = resizer.apply_image(dp.image)
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
-    boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # type: ignore # pylint: disable = E1102
+    pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # pylint: disable = E1102
 
     output["image"] = image
     output["ids"] = all_ann_ids
-    output["boxes"] = boxes
+    output["boxes"] = pt_boxes
     output["tokens"] = all_tokens
     output["input_ids"] = encoding["input_ids"]
     output["attention_mask"] = encoding["attention_mask"]

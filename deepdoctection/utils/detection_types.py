@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
 import numpy.typing as npt
-from numpy import float32
+from numpy import float32, uint8
 
 
 # Type for a general dataclass
@@ -39,7 +39,7 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
 KeyValue = Union[str, int]
 
 # Numpy image type
-ImageType = npt.NDArray[float32]
+ImageType = npt.NDArray[uint8]
 
 # typing for curry decorator
 DP = TypeVar("DP")

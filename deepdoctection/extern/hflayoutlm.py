@@ -119,18 +119,18 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
                                     semantics and tags explicitly.
         """
 
-        if categories_explicit is None:
-            assert categories_semantics is not None
-            assert categories_bio is not None
+        self.categories_semantics = categories_semantics if categories_semantics is not None else []
+        self.categories_bio = categories_bio if categories_bio is not None else []
+        self.categories_explicit = categories_explicit if categories_explicit is not None else []
 
-        self.categories_semantics = categories_semantics
-        self.categories_bio = categories_bio
-        self.categories_ecplicit = categories_explicit
+        if not self.categories_explicit:
+            assert self.categories_semantics
+            assert self.categories_bio
 
         self._categories: Dict[int, str] = (
-            dict(enumerate(categories_explicit))
-            if categories_explicit is not None
-            else self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
+            dict(enumerate(self.categories_explicit))
+            if self.categories_explicit
+            else self._categories_orig_to_categories(self.categories_semantics, self.categories_bio)
         )
         self.device = set_torch_auto_device()
         self.model = LayoutLMForTokenClassification.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
@@ -200,4 +200,4 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._categories
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.categories_semantics, self.categories_bio, self.categories_ecplicit)
+        return self.__class__(self.categories_semantics, self.categories_bio, self.categories_explicit)

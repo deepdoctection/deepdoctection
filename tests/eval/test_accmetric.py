@@ -74,7 +74,7 @@ class TestAccuracyMetric:
         dp_list = [dp_image_fully_segmented]
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
-        accuracy_metric = AccuracyMetric()  # type: ignore
+        accuracy_metric = AccuracyMetric()
         accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
 
         # Arrange
@@ -101,7 +101,7 @@ class TestAccuracyMetric:
         dp_list = [dp_image_fully_segmented]
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
-        accuracy_metric = AccuracyMetric()  # type: ignore
+        accuracy_metric = AccuracyMetric()
         accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
 
         # Arrange

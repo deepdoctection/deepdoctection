@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Mapping, Sequence
 
 from ..datapoint.image import Image
 from .maputils import curry
@@ -104,8 +104,8 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 @curry
 def image_to_cat_id(
     dp: Image,
-    category_names: Optional[Union[str, List[str]]] = None,
-    sub_category_names: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
+    category_names: Optional[Union[str, Sequence[str]]] = None,
+    sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
 ) -> Dict[str, List[int]]:
     """
     Extracts all category_ids with given names into a defaultdict with names as keys.
@@ -136,21 +136,19 @@ def image_to_cat_id(
     if not category_names:
         category_names = []
 
-    if sub_category_names is None:
-        sub_category_names = {}  # type: ignore
+    tmp_sub_category_names: Dict[str, Sequence[str]] = {}
 
-    assert sub_category_names is not None
-
-    for key, val in sub_category_names.items():
-        if isinstance(val, str):
-            val = [val]
-            sub_category_names[key] = val  # type: ignore
+    if sub_category_names is not None:
+        for key, val in sub_category_names.items():
+            if isinstance(val, str):
+                val = [val]
+            tmp_sub_category_names[key] = val
 
     for ann in dp.get_annotation_iter():
         if ann.category_name in category_names:
             cat_container[ann.category_name].append(int(ann.category_id))
-        if ann.category_name in sub_category_names.keys():
-            for sub_cat_name in sub_category_names[ann.category_name]:
+        if ann.category_name in tmp_sub_category_names.keys():
+            for sub_cat_name in tmp_sub_category_names[ann.category_name]:
                 sub_cat = ann.get_sub_category(sub_cat_name)
                 if sub_cat is not None:
                     cat_container[sub_cat_name].append(int(sub_cat.category_id))
@@ -161,8 +159,8 @@ def image_to_cat_id(
 @curry
 def remove_cats(
     dp: Image,
-    category_names: Optional[Union[str, List[str]]] = None,
-    sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
+    category_names: Optional[Union[str, Sequence[str]]] = None,
+    sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
 ) -> Image:
     """
     Remove categories according to given category names or sub category names. Note that these will change the container
@@ -181,15 +179,15 @@ def remove_cats(
         category_names = []
 
     if sub_categories is None:
-        sub_categories = {}  # type: ignore
+        sub_categories = {}
 
     anns_to_remove = []
 
     for ann in dp.get_annotation_iter():
         if ann.category_name in category_names:
             anns_to_remove.append(ann)
-        if ann.category_name in sub_categories.keys():  # type: ignore
-            sub_cats_to_remove = sub_categories[ann.category_name]  # type: ignore
+        if ann.category_name in sub_categories.keys():
+            sub_cats_to_remove = sub_categories[ann.category_name]
             if isinstance(sub_cats_to_remove, str):
                 sub_cats_to_remove = [sub_cats_to_remove]
             for sub_cat in sub_cats_to_remove:
