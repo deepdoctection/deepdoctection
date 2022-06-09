@@ -175,8 +175,8 @@ class LabelSummarizer:
 
         :param item: A category number.
         """
-        item = np.asarray(item, dtype="int8")  # type: ignore
-        self.summary += np.histogram(item, bins=self.hist_bins)[0]
+        np_item = np.asarray(item, dtype="int8")
+        self.summary += np.histogram(np_item, bins=self.hist_bins)[0]
 
     def get_summary(self) -> Dict[str, np.int32]:
         """

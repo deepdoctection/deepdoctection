@@ -106,7 +106,7 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
 
     try:
         with get_tqdm(unit="B", unit_scale=True, miniters=1, desc=file_name) as time:
-            f_path, _ = urlretrieve(url, f_path, reporthook=hook(time))  # type: ignore
+            f_path, _ = urlretrieve(url, f_path, reporthook=hook(time))
         stat_info = os.stat(f_path)
         size = stat_info.st_size
     except IOError:
@@ -196,15 +196,7 @@ class LoadImageFunc(Protocol):  # pylint: disable = R0903
     Protocol for typing load_image_from_file
     """
 
-    @overload
-    def __call__(self, path: Pathlike, type_id: Literal["np"]) -> Optional[ImageType]:
-        ...
-
-    @overload
-    def __call__(self, path: Pathlike, type_id: Literal["b64"]) -> Optional[str]:
-        ...
-
-    def __call__(self, path: Pathlike, type_id: Literal["np", "b64"]) -> Optional[Union[str, ImageType]]:
+    def __call__(self, path: Pathlike) -> Optional[ImageType]:
         ...
 
 

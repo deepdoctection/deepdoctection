@@ -20,10 +20,10 @@ Module for mapping annotations to and from prodigy data structure
 """
 
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Mapping
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
-from ..utils.detection_types import JsonDict
+from ..utils.detection_types import JsonDict, Pathlike
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
@@ -32,12 +32,12 @@ _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
 @curry
 def prodigy_to_image(
     dp: JsonDict,
-    categories_name_as_key: Dict[str, str],
+    categories_name_as_key: Mapping[str, str],
     load_image: bool,
     fake_score: bool,
-    path_reference_ds: str = "",
+    path_reference_ds: Optional[Pathlike] = None,
     accept_only_answer: bool = False,
-    category_name_mapping: Optional[Dict[str, str]] = None,
+    category_name_mapping: Optional[Mapping[str, str]] = None,
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from Prodigy database to an Image
@@ -80,11 +80,14 @@ def prodigy_to_image(
         external_id = file_name
 
     with MappingContextManager(file_name) as mapping_context:
-        location = dp.get("path") if dp.get("path") else os.path.join(path_reference_ds, file_name)
-        if not os.path.isfile(location):  # type: ignore
+        path_reference_location = ""
+        if path_reference_ds:
+            path_reference_location = os.path.join(path_reference_ds, file_name)
+        location = dp.get("path", path_reference_location)
+        if not os.path.isfile(location):
             location = None
 
-        image = Image(file_name=file_name, location=location, external_id=external_id)  # type: ignore
+        image = Image(file_name=file_name, location=location, external_id=external_id)
 
         if dp.get("image"):
             image.image = dp["image"].split(",")[1]

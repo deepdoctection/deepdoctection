@@ -19,7 +19,7 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -32,13 +32,13 @@ from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 
 def match_anns_by_intersection(
     dp: Image,
-    parent_ann_category_names: Union[str, List[str]],
-    child_ann_category_names: Union[str, List[str]],
+    parent_ann_category_names: Union[str, Sequence[str]],
+    child_ann_category_names: Union[str, Sequence[str]],
     matching_rule: str,
-    threshold: np.float32,
+    threshold: float,
     use_weighted_intersections: bool = False,
-    parent_ann_ids: Optional[Union[List[str], str]] = None,
-    child_ann_ids: Optional[Union[str, List[str]]] = None,
+    parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
+    child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
     max_parent_only: bool = False,
 ) -> Tuple[Any, Any, List[ImageAnnotation], List[ImageAnnotation]]:
     """
@@ -94,18 +94,18 @@ def match_anns_by_intersection(
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
     iou_threshold, ioa_threshold = 0.0, 0.0
     if matching_rule in ["iou"]:
-        iou_threshold = threshold  # type: ignore
+        iou_threshold = threshold
     else:
-        ioa_threshold = threshold  # type: ignore
+        ioa_threshold = threshold
 
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in child_anns]  # type: ignore
+        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in child_anns if ann.image is not None]
     )
 
     parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
     parent_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in parent_anns]  # type: ignore
+        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in parent_anns if ann.image is not None]
     )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
@@ -113,7 +113,7 @@ def match_anns_by_intersection(
         output = iou_matrix > iou_threshold
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:
-        ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))  # type: ignore
+        ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))
 
         if max_parent_only:
             # set all matrix values below threshold to 0

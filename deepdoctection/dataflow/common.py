@@ -20,7 +20,7 @@ Some additional DataFlow classes for transforming and processing datapoints
 """
 from typing import Any
 
-from dataflow.dataflow import ProxyDataFlow  # type: ignore
+from dataflow.dataflow import ProxyDataFlow
 
 
 class FlattenData(ProxyDataFlow):
