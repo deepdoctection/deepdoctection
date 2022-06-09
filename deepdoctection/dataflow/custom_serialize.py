@@ -32,7 +32,7 @@ from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.fs import is_file_extension
 from ..utils.logger import logger
 from ..utils.pdf_utils import PDFStreamer
-from ..utils.timer import timed_operation
+from ..utils.context import timed_operation
 from ..utils.tqdm import get_tqdm
 from .common import FlattenData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList

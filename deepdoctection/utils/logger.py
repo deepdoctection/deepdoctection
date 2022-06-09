@@ -30,8 +30,10 @@ import shutil
 import sys
 from datetime import datetime
 from typing import Optional
-
+from pathlib import Path
 from termcolor import colored
+
+from .detection_types import Pathlike
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
@@ -81,7 +83,9 @@ def _get_time_str() -> str:
     return datetime.now().strftime("%m%d-%H%M%S")
 
 
-def _set_file(path: str) -> None:
+def _set_file(path: Pathlike) -> None:
+    if isinstance(path, Path):
+        path = path.as_posix()
     global _FILE_HANDLER  # pylint: disable=W0603
     if os.path.isfile(path):
         backup_name = path + "." + _get_time_str()
@@ -95,7 +99,7 @@ def _set_file(path: str) -> None:
     logger.info("Argv: %s ", sys.argv)
 
 
-def set_logger_dir(dir_name: str, action: Optional[str] = None) -> None:
+def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
     """
     Set the directory for global logging.
 
@@ -111,7 +115,8 @@ def set_logger_dir(dir_name: str, action: Optional[str] = None) -> None:
                    Note that this option does not load old models or any other
                    old states for you. It simply does nothing.
     """
-    assert dir_name is not None
+    if isinstance(dir_name,Path):
+        dir_name = dir_name.as_posix()
     dir_name = os.path.normpath(dir_name)
     global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0602, W0603
     if _FILE_HANDLER:

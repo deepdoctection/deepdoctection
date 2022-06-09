@@ -23,7 +23,7 @@ import pprint
 from typing import Any, Dict, List
 
 import yaml
-
+from .detection_types import Pathlike
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -122,7 +122,7 @@ class AttrDict:
         raise NotImplementedError()
 
 
-def set_config_by_yaml(path_yaml: str) -> AttrDict:
+def set_config_by_yaml(path_yaml: Pathlike) -> AttrDict:
     """
     Use to initialize the config class for tensorpack faster rcnn
 
@@ -139,7 +139,7 @@ def set_config_by_yaml(path_yaml: str) -> AttrDict:
     return config
 
 
-def save_config_to_yaml(config: AttrDict, path_yaml: str) -> None:
+def save_config_to_yaml(config: AttrDict, path_yaml: Pathlike) -> None:
     """
     :param config: The configuration instance as an AttrDict
     :param path_yaml: Save the config class for tensorpack faster rcnn
