@@ -79,7 +79,6 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         self.dataset_name = dataset.dataset_info.name
         self.build_eval_kwargs = build_eval_kwargs
         self.in_names, self.out_names = in_names, out_names
-        assert hasattr(pipeline_component, "predictor"), "pipeline component must have a predictor"
         self.num_gpu = get_num_gpu()
         self.category_names = category_names
         self.sub_categories = sub_categories
@@ -93,7 +92,8 @@ class EvalCallback(Callback):  # pylint: disable=R0903
     def _setup_graph(self) -> None:
         if _use_replicated(self.cfg):
             for idx, comp in enumerate(self.evaluator.pipe_component.pipe_components):
-                comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)  # type: ignore
+                assert isinstance(comp.predictor, TPFrcnnDetector)
+                comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
 
     def _build_predictor(self, idx: int) -> OnlinePredictor:
         return self.trainer.get_predictor(self.in_names, self.out_names, device=idx)

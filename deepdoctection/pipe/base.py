@@ -125,7 +125,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         super().__init__(category_id_mapping)
         self.predictor = predictor
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
         assert isinstance(predictor, (ObjectDetector, PdfMiner))
         return self.__class__(predictor, copy(self.dp_manager.category_id_mapping))
@@ -151,7 +151,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.language_model = language_model
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> "LanguageModelPipelineComponent":
         return self.__class__(copy(self.tokenizer), copy(self.language_model), copy(self.mapping_to_lm_input_func))
 
 
