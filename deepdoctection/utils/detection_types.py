@@ -42,10 +42,10 @@ KeyValue = Union[str, int]
 # Numpy image type
 ImageType = npt.NDArray[float32]
 
+# typing for curry decorator
 DP = TypeVar("DP")
 S = TypeVar("S")
 T = TypeVar("T")
-P = ParamSpec("P")
 
 
 if TYPE_CHECKING:
@@ -59,5 +59,5 @@ JsonDict = Dict[str, Any]
 # available
 Requirement = Tuple[str, bool, str]
 
-# Pathlike
+# Pathlike, use this typing for everything where a path (absolute/relative) is involved
 Pathlike = Union[str, Path]

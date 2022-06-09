@@ -26,7 +26,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
-from ..utils.timer import timed_operation
+from ..utils.context import timed_operation
 from .anngen import DatapointManager
 
 
