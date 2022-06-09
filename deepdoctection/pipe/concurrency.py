@@ -24,14 +24,14 @@ import queue
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Sequence, Union
 
 import tqdm  # type: ignore
 
 from ..dataflow import DataFlow
 from ..datapoint.image import Image
 from ..utils.tqdm import get_tqdm
-from .base import PipelineComponent
+from .base import PipelineComponent, PredictorPipelineComponent
 
 
 class MultiThreadPipelineComponent:
@@ -67,7 +67,7 @@ class MultiThreadPipelineComponent:
 
     def __init__(
         self,
-        pipeline_components: List[PipelineComponent],
+        pipeline_components: Sequence[PredictorPipelineComponent],
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
