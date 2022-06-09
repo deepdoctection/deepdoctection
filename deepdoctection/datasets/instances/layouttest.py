@@ -25,8 +25,7 @@ Module for Testlayout dataset. Install the dataset following the folder structur
 |    │ ├── xrf_layout_test.jsonl
 """
 
-import os
-from typing import Dict, List, Union
+from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
@@ -56,10 +55,10 @@ _URL = [
     "https://www.googleapis.com/drive/v3/files/18HD62LFLa1iAmqffo4SyjuEQ32MzyNQ0?alt"
     "=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
 ]
-_SPLITS = {"test": "test", "predict": "predict"}
-_LOCATION = "/testlayout"
+_SPLITS: Mapping[str, str] = {"test": "test", "predict": "predict"}
+_LOCATION = "testlayout"
 
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_ANNOTATION_FILES: Mapping[str, str] = {
     "test": "xrf_layout_test.jsonl",
     "predict": "xrf_layout_test_predict.jsonl",
 }
@@ -111,18 +110,19 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
 
         # Load
-        path = os.path.join(
-            self.get_workdir(), os.path.join(self.splits[split], self.annotation_files[split])  # type: ignore
-        )
+        dataset_split = self.annotation_files[split]
+        assert isinstance(dataset_split, str)
+        path = self.get_workdir() / self.splits[split] / dataset_split
+
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
         df = MapData(df, lambda dp: dp if dp["answer"] == "accept" else None)
         prodigy_mapper = prodigy_to_image(  # pylint: disable=E1120
-            categories_name_as_key=self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
+            categories_name_as_key=self.categories.get_categories(init=True, name_as_key=True),
             load_image=load_image,
             fake_score=fake_score,
-        )  # pylint: disable=E1120  # 259 # type: ignore
+        )  # pylint: disable=E1120  # 259
         df = MapData(df, prodigy_mapper)
 
         return df

@@ -29,8 +29,9 @@ import os
 import shutil
 import sys
 from datetime import datetime
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
 from termcolor import colored
 
 from .detection_types import Pathlike
@@ -115,7 +116,7 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
                    Note that this option does not load old models or any other
                    old states for you. It simply does nothing.
     """
-    if isinstance(dir_name,Path):
+    if isinstance(dir_name, Path):
         dir_name = dir_name.as_posix()
     dir_name = os.path.normpath(dir_name)
     global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0602, W0603

@@ -179,13 +179,13 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             dp["filename"] = workdir / "pdf" / dp["filename"]
             return dp
 
-        map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259  # type: ignore
+        map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259
         df = MapData(df, map_filename)
 
         buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
 
         pub_mapper = pub_to_image(
-            self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
+            self.categories.get_categories(name_as_key=True, init=True),
             # pylint: disable=E1120  # 259
             load_image,
             fake_score=fake_score,
@@ -231,20 +231,18 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 
-        if self.categories.is_cat_to_sub_cat():  # type: ignore
+        if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
 
-        if self.categories.is_filtered():  # type: ignore
+        if self.categories.is_filtered():
             df = MapData(
                 df,
                 filter_cat(  # pylint: disable=E1120
-                    self.categories.get_categories(as_dict=False, filtered=True),  # type: ignore
-                    self.categories.get_categories(as_dict=False, filtered=False),  # type: ignore
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
                 ),
             )
         return df

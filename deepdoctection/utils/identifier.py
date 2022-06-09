@@ -20,6 +20,7 @@ Methods for generating and checking uuids
 """
 import hashlib
 import uuid
+
 from .detection_types import Pathlike
 
 __all__ = ["is_uuid_like", "get_uuid_from_str", "get_uuid"]

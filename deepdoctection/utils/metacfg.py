@@ -23,7 +23,9 @@ import pprint
 from typing import Any, Dict, List
 
 import yaml
+
 from .detection_types import Pathlike
+
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")

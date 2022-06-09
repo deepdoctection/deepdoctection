@@ -30,7 +30,7 @@ Module for XFUND dataset. Install the dataset following the folder structure
 
 import json
 import os
-from typing import Dict, List, Union
+from typing import Mapping, Sequence, Union
 
 from ...dataflow import CustomDataFromList, DataFlow, MapData
 from ...datasets.info import DatasetInfo
@@ -54,9 +54,9 @@ _LICENSE = (
     "Microsoft Open Source Code of Conduct"
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
-_SPLITS = {"train": "train", "val": "val"}
-_LOCATION = "/xfund"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
+_LOCATION = "xfund"
+_ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     "train": [
         "de.train.json",
         "es.train.json",
@@ -69,7 +69,7 @@ _ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
     "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
 }
 _INIT_CATEGORIES = [names.C.WORD]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {names.C.WORD: {names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD]}}
 
 _LANGUAGES = ["de", "es", "fr", "it", "ja", "pt", "zh"]
@@ -115,7 +115,7 @@ class XfundBuilder(DataFlowBaseBuilder):
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)
         max_datapoints = kwargs.get("max_datapoints")
-        language = kwargs.get("languages")
+        language = str(kwargs.get("languages"))
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -123,7 +123,7 @@ class XfundBuilder(DataFlowBaseBuilder):
         if language is None:
             languages = _LANGUAGES
         else:
-            languages = [language]  # type: ignore
+            languages = [language]
 
         if not all(elem in _LANGUAGES for elem in languages):
             raise ValueError("Not all languages available")
@@ -157,11 +157,9 @@ class XfundBuilder(DataFlowBaseBuilder):
         }
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping))  # pylint: disable=E1120
 
-        if self.categories.is_cat_to_sub_cat():  # type: ignore
+        if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
         return df

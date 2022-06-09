@@ -58,11 +58,13 @@ class DataFlowBaseBuilder(ABC):
         self._splits: Mapping[str, str] = {}
 
     @property
-    def categories(self) -> Optional[DatasetCategories]:
+    def categories(self) -> DatasetCategories:
         """
         categories
         """
-        return self._categories
+        if self._categories is not None:
+            return self._categories
+        raise ValueError(f"DatasetCategories not defined for {self.__class__.__name__}")
 
     @categories.setter
     def categories(self, categories: DatasetCategories) -> None:

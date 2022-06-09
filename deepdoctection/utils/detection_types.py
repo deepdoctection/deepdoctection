@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Uni
 
 import numpy.typing as npt
 from numpy import float32
-from typing_extensions import ParamSpec
 
 
 # Type for a general dataclass

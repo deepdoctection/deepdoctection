@@ -26,7 +26,7 @@ from glob import iglob
 from os import path, remove
 from tempfile import NamedTemporaryFile
 from time import perf_counter as timer
-from typing import Iterator, Optional, Tuple, Union, Any, Generator
+from typing import Any, Generator, Iterator, Optional, Tuple, Union
 
 import numpy as np
 from cv2 import imwrite
@@ -34,8 +34,7 @@ from cv2 import imwrite
 from .detection_types import ImageType
 from .logger import logger
 
-
-__all__ = ["timeout_manager", "save_tmp_file","timed_operation"]
+__all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
 
 
 @contextmanager
@@ -109,6 +108,7 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
             except OSError as error:
                 if error.errno != ENOENT:
                     raise error
+
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
