@@ -51,7 +51,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         location = dp
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name",""))
-        location = str(dp.get("location",""))
+        location = dp.get("location")
         if location is None:
             location = str(dp.get("path",""))
             location = os.path.join(location, file_name)
