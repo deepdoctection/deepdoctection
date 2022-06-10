@@ -24,7 +24,7 @@ from typing import List
 
 import numpy as np
 from cv2 import INTER_LINEAR
-from dataflow.dataflow.imgaug.transform import ResizeTransform  # type: ignore
+from dataflow.dataflow.imgaug.transform import ResizeTransform
 
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import names
-from .maputils import cur
+from .maputils import curry
 
 if pytorch_available():
     from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
@@ -44,7 +44,7 @@ if transformers_available():
 __all__ = ["image_to_layoutlm"]
 
 
-@cur  # type: ignore
+@curry
 def image_to_layoutlm(
     dp: Image, tokenizer: "PreTrainedTokenizer", input_width: int = 1000, input_height: int = 1000
 ) -> JsonDict:
@@ -96,11 +96,11 @@ def image_to_layoutlm(
     image = resizer.apply_image(dp.image)
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
-    boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # type: ignore # pylint: disable = E1102
+    pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # pylint: disable = E1102
 
     output["image"] = image
     output["ids"] = all_ann_ids
-    output["boxes"] = boxes
+    output["boxes"] = pt_boxes
     output["tokens"] = all_tokens
     output["input_ids"] = encoding["input_ids"]
     output["attention_mask"] = encoding["attention_mask"]

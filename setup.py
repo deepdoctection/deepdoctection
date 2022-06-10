@@ -71,10 +71,11 @@ _DEPS = [
     "python-doctr",
     "fasttext",
     # dev dependencies
+    "click==8.0.4",  # because this does not break black
     "black==22.3.0",
     "isort",
-    "pylint",
-    "mypy",
+    "pylint==2.13.4",
+    "mypy==0.942",
     # docs
     "sphinx",
     "sphinx_rtd_theme",
@@ -163,7 +164,7 @@ if "python-prctl" in docs_deps:
 test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("black", "isort", "pylint", "mypy")
+dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies

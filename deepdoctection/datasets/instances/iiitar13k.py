@@ -37,11 +37,11 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
 """
 
 import os
-from typing import Dict, List, Union
+from typing import Mapping, Union
 
-from ...dataflow import DataFlow, MapData, SerializerFiles  # type: ignore
+from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
-from ...mapper.maputils import cur
+from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
@@ -72,9 +72,9 @@ _LICENSE = "NN"
 
 _URL = "http://cvit.iiit.ac.in/usodi/iiitar13k.php"
 
-_SPLITS = {"train": "training_images", "val": "validation_images", "test": "test_images"}
-_LOCATION = "/iiitar13k"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_SPLITS: Mapping[str, str] = {"train": "training_images", "val": "validation_images", "test": "test_images"}
+_LOCATION = "iiitar13k"
+_ANNOTATION_FILES: Mapping[str, str] = {
     "train": "training_xml",
     "val": "validation_xml",
     "test": "test_xml",
@@ -129,12 +129,14 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        path_ann_files = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
+        annotation_split = self.annotation_files[split]
+        assert isinstance(annotation_split, str)
+        path_ann_files = self.get_workdir() / annotation_split
 
         df = SerializerFiles.load(path_ann_files, ".xml", max_datapoints)
         utf8_parser = etree.XMLParser(encoding="utf-8")
 
-        @cur  # type: ignore
+        @curry
         def load_xml(path_ann: str, utf8_parser: etree.XMLParser) -> JsonDict:
             with open(path_ann, "r", encoding="utf-8") as xml_file:
                 root = etree.fromstring(xml_file.read().encode("utf_8"), parser=utf8_parser)
@@ -160,8 +162,8 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         df = MapData(df, _map_file_name)
         df = MapData(
             df,
-            pascal_voc_dict_to_image(  # type: ignore # pylint: disable = E1120
-                self.categories.get_categories(init=True, name_as_key=True),  # type: ignore
+            pascal_voc_dict_to_image(  # pylint: disable = E1120
+                self.categories.get_categories(init=True, name_as_key=True),
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,

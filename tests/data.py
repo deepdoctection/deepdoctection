@@ -209,86 +209,86 @@ class Annotations:  # pylint: disable=R0904
     ]
 
     row_sub_cats = [
-        CategoryAnnotation(category_name=names.C.RN, category_id=1),
-        CategoryAnnotation(category_name=names.C.RN, category_id=2),
+        CategoryAnnotation(category_name=names.C.RN, category_id="1"),
+        CategoryAnnotation(category_name=names.C.RN, category_id="2"),
     ]
 
     col_sub_cats = [
-        CategoryAnnotation(category_name=names.C.CN, category_id=1),
-        CategoryAnnotation(category_name=names.C.CN, category_id=2),
+        CategoryAnnotation(category_name=names.C.CN, category_id="1"),
+        CategoryAnnotation(category_name=names.C.CN, category_id="2"),
     ]
 
     cell_sub_cats = [
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=1),
-            CategoryAnnotation(category_name=names.C.CN, category_id=1),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=2),
-            CategoryAnnotation(category_name=names.C.CN, category_id=1),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=1),
-            CategoryAnnotation(category_name=names.C.CN, category_id=2),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=2),
-            CategoryAnnotation(category_name=names.C.CN, category_id=2),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=0),
-            CategoryAnnotation(category_name=names.C.CN, category_id=0),
-            CategoryAnnotation(category_name=names.C.RS, category_id=0),
-            CategoryAnnotation(category_name=names.C.CS, category_id=0),
+            CategoryAnnotation(category_name=names.C.RN, category_id="0"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="0"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="0"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="0"),
         ),
     ]
 
     cell_sub_cats_when_table_fully_tiled = [
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=1),
-            CategoryAnnotation(category_name=names.C.CN, category_id=1),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=2),
-            CategoryAnnotation(category_name=names.C.CN, category_id=1),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=1),
-            CategoryAnnotation(category_name=names.C.CN, category_id=2),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=2),
-            CategoryAnnotation(category_name=names.C.CN, category_id=2),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id=2),
-            CategoryAnnotation(category_name=names.C.CN, category_id=2),
-            CategoryAnnotation(category_name=names.C.RS, category_id=1),
-            CategoryAnnotation(category_name=names.C.CS, category_id=1),
+            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
+            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
         ),
     ]
 
     summary_sub_cat_when_table_fully_tiled = (
-        CategoryAnnotation(category_name=names.C.NR, category_id=2),
-        CategoryAnnotation(category_name=names.C.NC, category_id=2),
-        CategoryAnnotation(category_name=names.C.NRS, category_id=1),
-        CategoryAnnotation(category_name=names.C.NCS, category_id=1),
+        CategoryAnnotation(category_name=names.C.NR, category_id="2"),
+        CategoryAnnotation(category_name=names.C.NC, category_id="2"),
+        CategoryAnnotation(category_name=names.C.NRS, category_id="1"),
+        CategoryAnnotation(category_name=names.C.NCS, category_id="1"),
     )
 
     summary_htab_sub_cat = ContainerAnnotation(

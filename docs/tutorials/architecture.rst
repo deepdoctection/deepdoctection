@@ -31,7 +31,7 @@ Define my_mapper
 
 .. code:: python
 
-   @cur
+   @curry
    def  my_mapper(dp: Image, config_1: ... , config_2: ...) -> Image:
        # map Image to Image
 

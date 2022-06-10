@@ -20,10 +20,10 @@ Some additional DataFlow classes for transforming and processing datapoints
 """
 from typing import Any
 
-from dataflow.dataflow import ProxyDataFlow  # type: ignore
+from dataflow.dataflow import ProxyDataFlow
 
 
-class FlattenData(ProxyDataFlow):  # type: ignore
+class FlattenData(ProxyDataFlow):
     """
     Flatten an iterator within a datapoint. Will flatten the datapoint if it is a list or a tuple.
 

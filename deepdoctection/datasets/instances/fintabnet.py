@@ -31,15 +31,15 @@ Module for Fintabnet dataset. Place the dataset as follows
 |    ├── FinTabNet_1.0.0_table_val.jsonl
 """
 
-import os
-from typing import Dict, List, Union
+from pathlib import Path
+from typing import List, Mapping, Sequence, Union
 
-from ...dataflow import DataFlow, MapData, MultiProcessMapData  # type: ignore
+from ...dataflow import DataFlow, MapData, MultiProcessMapData
 from ...dataflow.common import FlattenData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datapoint.image import Image
 from ...mapper.cats import cat_to_sub_cat, filter_cat
-from ...mapper.maputils import cur
+from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
@@ -81,15 +81,15 @@ _URL = (
     "https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/"
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
-_SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
-_LOCATION = "/fintabnet"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
+_LOCATION = "fintabnet"
+_ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
 _INIT_CATEGORIES = [names.C.TAB, names.C.CELL, names.C.ITEM]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {
     names.C.CELL: {
         names.C.HEAD: [names.C.HEAD, names.C.BODY],
@@ -151,7 +151,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         :return: dataflow
         """
 
-        split = kwargs.get("split", "val")
+        split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")
         rows_and_cols = kwargs.get("rows_and_cols", True)
         load_image = kwargs.get("load_image", False)
@@ -168,22 +168,24 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             logger.info("Logic will currently display only ONE table per page, even if there are more !!")
 
         # Load
-        path = os.path.join(self.get_workdir(), self.annotation_files[split])  # type: ignore
+        dataset_split = self.annotation_files[split]
+        assert isinstance(dataset_split, str)
+        path = self.get_workdir() / dataset_split
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
-        @cur  # type: ignore
-        def _map_filename(dp: JsonDict, workdir: str) -> JsonDict:
-            dp["filename"] = workdir + "/pdf/" + dp["filename"]
+        @curry
+        def _map_filename(dp: JsonDict, workdir: Path) -> JsonDict:
+            dp["filename"] = workdir / "pdf" / dp["filename"]
             return dp
 
-        map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259  # type: ignore
+        map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259
         df = MapData(df, map_filename)
 
         buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
 
         pub_mapper = pub_to_image(
-            self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
+            self.categories.get_categories(name_as_key=True, init=True),
             # pylint: disable=E1120  # 259
             load_image,
             fake_score=fake_score,
@@ -202,7 +204,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         if kwargs.get("build_mode", "") == "table":
 
-            @cur  # type: ignore
+            @curry
             def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
                 return image_ann_to_image(dp, category_names=category_names)
 
@@ -213,7 +215,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                         names.C.TAB,
                         names.C.CELL,
                         names.C.HEAD,
-                        names.C.BODY,  # type: ignore
+                        names.C.BODY,
                         names.C.ITEM,
                         names.C.ROW,
                         names.C.COL,
@@ -221,7 +223,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 ),
             )
             ann_to_sub_image = maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                category_names_sub_image=names.C.TAB,  # type: ignore
+                category_names_sub_image=names.C.TAB,
                 category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
             )
             df = MapData(df, ann_to_sub_image)
@@ -229,20 +231,18 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 
-        if self.categories.is_cat_to_sub_cat():  # type: ignore
+        if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
 
-        if self.categories.is_filtered():  # type: ignore
+        if self.categories.is_filtered():
             df = MapData(
                 df,
                 filter_cat(  # pylint: disable=E1120
-                    self.categories.get_categories(as_dict=False, filtered=True),  # type: ignore
-                    self.categories.get_categories(as_dict=False, filtered=False),  # type: ignore
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
                 ),
             )
         return df

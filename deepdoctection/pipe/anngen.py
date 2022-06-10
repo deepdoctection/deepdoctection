@@ -18,7 +18,7 @@
 """
 Module for datapoint populating helpers
 """
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, List, Mapping
 
 import numpy as np
 
@@ -41,14 +41,14 @@ class DatapointManager:
     The manager is part of each PipelineComponent.
     """
 
-    def __init__(self, category_id_mapping: Optional[Dict[int, int]]) -> None:
+    def __init__(self, category_id_mapping: Optional[Mapping[int, int]]) -> None:
         """
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
         self._datapoint: Optional[Image] = None
         self._cache_anns: Dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
-        self.category_id_mapping: Optional[Dict[int, int]] = category_id_mapping
+        self.category_id_mapping: Optional[Mapping[int, int]] = category_id_mapping
 
     @property
     def datapoint(self) -> Image:
@@ -143,20 +143,22 @@ class DatapointManager:
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
-                parent_ann.image.dump(ann)  # type: ignore
-                parent_ann.image.image_ann_to_image(ann.annotation_id)  # type: ignore
+                assert parent_ann.image
+                parent_ann.image.dump(ann)
+                parent_ann.image.image_ann_to_image(ann.annotation_id)
                 ann_global_box = local_to_global_coords(
-                    ann.bounding_box, parent_ann.image.get_embedding(self._datapoint.image_id)  # type: ignore
+                    ann.bounding_box, parent_ann.image.get_embedding(self.datapoint.image_id)  # type: ignore
                 )
-                ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)  # type: ignore
-                ann.image.set_embedding(self._datapoint.image_id, ann_global_box)  # type: ignore
+                assert ann.image
+                ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)
+                ann.image.set_embedding(self.datapoint.image_id, ann_global_box)
                 parent_ann.dump_relationship(names.C.CHILD, ann.annotation_id)
 
-            self._datapoint.dump(ann)  # type: ignore
+            self.datapoint.dump(ann)
             self._cache_anns[ann.annotation_id] = ann
 
             if to_image and to_annotation_id is None:
-                self._datapoint.image_ann_to_image(  # type: ignore
+                self.datapoint.image_ann_to_image(
                     annotation_id=ann.annotation_id, crop_image=crop_image
                 )
 
@@ -183,7 +185,7 @@ class DatapointManager:
         :return: the annotation_id of the generated category annotation
         """
         self.assert_datapoint_passed()
-        cat_ann = CategoryAnnotation(category_name=category_name, category_id=category_id, score=score)  # type: ignore
+        cat_ann = CategoryAnnotation(category_name=category_name, category_id=str(category_id), score=score)
         self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
         return cat_ann.annotation_id
 
@@ -193,7 +195,7 @@ class DatapointManager:
         category_id: Optional[Union[str, int]],
         sub_cat_key: str,
         annotation_id: str,
-        value: str,
+        value: Union[str, List[str]],
         score: Optional[float] = None,
     ) -> str:
         """
@@ -209,8 +211,7 @@ class DatapointManager:
         """
         self.assert_datapoint_passed()
         cont_ann = ContainerAnnotation(
-            category_name=category_name, category_id=category_id, value=value, score=score  # type: ignore
-        )
+            category_name=category_name, category_id=str(category_id), value=value, score=score)
         self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
         return cont_ann.annotation_id
 
@@ -238,7 +239,7 @@ class DatapointManager:
         if annotation_id is not None:
             image = self._cache_anns[annotation_id].image
         else:
-            image = self._datapoint
+            image = self.datapoint
         assert image is not None
         if image.summary is None:
             image.summary = SummaryAnnotation()
@@ -247,9 +248,9 @@ class DatapointManager:
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         if summary_value:
             ann = ContainerAnnotation(
-                category_name=summary_name, category_id=summary_number, value=summary_value, score=summary_score
+                category_name=summary_name, category_id=str(summary_number), value=summary_value, score=summary_score
             )
         else:
-            ann = CategoryAnnotation(category_name=summary_name, category_id=summary_number, score=summary_score)
+            ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
         image.summary.dump_sub_category(summary_name, ann, image.image_id)
         return ann.annotation_id

@@ -21,13 +21,12 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from copy import copy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Mapping
 
-from ..dataflow import DataFlow, MapData  # type: ignore
+from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
-from ..mapper import DefaultMapper
-from ..utils.timer import timed_operation
+from ..utils.context import timed_operation
 from .anngen import DatapointManager
 
 
@@ -50,7 +49,7 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
     Caution: Currently, predictors can only process single images. Processing higher number of batches is not planned.
     """
 
-    def __init__(self, category_id_mapping: Optional[Dict[int, int]]):
+    def __init__(self, category_id_mapping: Optional[Mapping[int, int]]):
         """
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
@@ -118,7 +117,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     def __init__(
         self,
         predictor: Union[ObjectDetector, PdfMiner, TextRecognizer],
-        category_id_mapping: Optional[Dict[int, int]],
+        category_id_mapping: Optional[Mapping[int, int]],
     ) -> None:
         """
         :param predictor: An Object detector for predicting
@@ -126,7 +125,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         super().__init__(category_id_mapping)
         self.predictor = predictor
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
         assert isinstance(predictor, (ObjectDetector, PdfMiner))
         return self.__class__(predictor, copy(self.dp_manager.category_id_mapping))
@@ -137,7 +136,12 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
     Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .
     """
 
-    def __init__(self, tokenizer: Any, language_model: LMTokenClassifier, mapping_to_lm_input_func: DefaultMapper):
+    def __init__(
+        self,
+        tokenizer: Any,
+        language_model: LMTokenClassifier,
+        mapping_to_lm_input_func: Callable[..., Callable[[Image], Dict[str, Any]]],
+    ):
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: Language model for token classification
@@ -147,7 +151,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.language_model = language_model
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> "LanguageModelPipelineComponent":
         return self.__class__(copy(self.tokenizer), copy(self.language_model), copy(self.mapping_to_lm_input_func))
 
 
@@ -191,7 +195,7 @@ class Pipeline(ABC):  # pylint: disable=R0903
         self.pipe_component_list = pipeline_component_list
 
     @abstractmethod
-    def _entry(self, **kwargs: str) -> DataFlow:
+    def _entry(self, **kwargs: Any) -> DataFlow:
         """
         Use this method to bundle all preprocessing, such as loading one or more documents, so that a dataflow is
         provided as a return value that can be passed on to the pipeline backbone.
@@ -210,7 +214,7 @@ class Pipeline(ABC):  # pylint: disable=R0903
         return df
 
     @abstractmethod
-    def analyze(self, **kwargs: str) -> DataFlow:
+    def analyze(self, **kwargs: Any) -> DataFlow:
         """
         Try to keep this method as the only one necessary for the user. All processing steps, such as preprocessing,
         setting up the backbone and post-processing are to be bundled. A dataflow generator df is returned, which is

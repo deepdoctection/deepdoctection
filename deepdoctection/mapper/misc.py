@@ -21,20 +21,20 @@ Module for small mapping functions
 
 import ast
 import os
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union, Mapping
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import lxml_available
 from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
-from .maputils import MappingContextManager, cur
+from .maputils import MappingContextManager, curry
 
 if lxml_available():
     from lxml import etree  # type: ignore  # pylint: disable=W0611
 
 
-def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
+def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
     """
     Mapping an input from :class:`dataflow.SerializerFiles` or similar to an Image
 
@@ -50,19 +50,19 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         _, file_name = os.path.split(dp)
         location = dp
     elif isinstance(dp, dict):
-        file_name = dp.get("file_name")  # type: ignore
-        location = dp.get("location")  # type: ignore
-        if location is None:
-            location = dp.get("path")  # type: ignore
-            location = os.path.join(location, file_name)  # type: ignore
+        file_name = str(dp.get("file_name",""))
+        location = str(dp.get("location",""))
+        if location == "":
+            location = str(dp.get("path",""))
+            location = os.path.join(location, file_name)
     else:
         raise TypeError("datapoint not of expected type for converting to image")
 
     with MappingContextManager(dp_name=file_name) as mapping_context:
-        dp_image = Image(file_name=file_name, location=location)  # type: ignore
+        dp_image = Image(file_name=file_name, location=location)
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
-                dp_image.pdf_bytes = dp.get("pdf_bytes")  # type: ignore
+                dp_image.pdf_bytes = dp.get("pdf_bytes")
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)
@@ -120,7 +120,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
     return dp
 
 
-@cur  # type: ignore
+@curry
 def maybe_ann_to_sub_image(
     dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]]
 ) -> Image:
@@ -142,7 +142,7 @@ def maybe_ann_to_sub_image(
     return dp
 
 
-@cur  # type: ignore
+@curry
 def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.

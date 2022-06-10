@@ -20,7 +20,7 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Dict, List, Optional, Type
+from typing import Dict, Optional, Type, Sequence, List
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
@@ -75,11 +75,11 @@ class LoadAugmentAddAnchors:  # pylint: disable=R0903
     def __init__(self, config: AttrDict) -> None:
         self.cfg = config
 
-    def __call__(self, dp: JsonDict) -> JsonDict:
+    def __call__(self, dp: JsonDict) -> Optional[JsonDict]:
         return load_augment_add_anchors(dp, self.cfg)
 
 
-def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> JsonDict:
+def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> Optional[JsonDict]:
     """
     Transforming an image before entering the graph. This function bundles all the necessary steps to feed
     the network for training.
@@ -91,14 +91,14 @@ def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> JsonDict:
     cfg = config
     if "image" not in dp:
         loader = get_load_image_func(dp["file_name"])
-        dp["image"] = loader(dp["file_name"])  # type: ignore
+        dp["image"] = loader(dp["file_name"])
 
     augment_list = [
-        CustomResize(cfg.PREPROC.TRAIN_SHORT_EDGE_SIZE, cfg.PREPROC.MAX_SIZE),  # type: ignore
+        CustomResize(cfg.PREPROC.TRAIN_SHORT_EDGE_SIZE, cfg.PREPROC.MAX_SIZE),
         imgaug.Flip(horiz=True),
     ]
     dp = augment(dp, augment_list, False)
-    dp = anchors_and_labels(  # type: ignore
+    dp_with_anchors = anchors_and_labels(
         dp,
         cfg.FPN.ANCHOR_STRIDES,
         cfg.RPN.ANCHOR_SIZES,
@@ -110,12 +110,13 @@ def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> JsonDict:
         cfg.RPN.NEGATIVE_ANCHOR_THRESH,
         cfg.RPN.CROWD_OVERLAP_THRESH,
     )
-    dp.pop("file_name")
-    return dp
+    if dp_with_anchors is not None:
+        dp_with_anchors.pop("file_name")
+    return dp_with_anchors
 
 
 def get_train_dataflow(
-    dataset: DatasetBase, config: AttrDict, use_multi_proc_for_train: bool = True, **build_train_kwargs: str
+    dataset: DatasetBase, config: AttrDict, use_multi_proc_for_train: bool, **build_train_kwargs: str
 ) -> DataFlow:
     """
     Return a dataflow for training TP Frcnn. The returned dataflow depends on the dataset and the configuration of
@@ -131,19 +132,19 @@ def get_train_dataflow(
     set_mp_spawn()
     cfg = config
     df = dataset.dataflow.build(**build_train_kwargs)
-    df = MapData(df, image_to_tp_frcnn_training(add_mask=False))  # type: ignore # pylint: disable=E1120
+    df = MapData(df, image_to_tp_frcnn_training(add_mask=False))  # pylint: disable=E1120
 
     logger.info("Loading dataset into memory")
 
-    max_datapoints = build_train_kwargs.get("max_datapoints")
-    if max_datapoints:
-        max_datapoints = int(max_datapoints)  # type: ignore
+    max_datapoints: Optional[int] = int(build_train_kwargs.get("max_datapoints",0))
+    if not max_datapoints:
+        max_datapoints = None
 
     datapoints = []
     summarizer = LabelSummarizer(cfg.DATA.CLASS_DICT)
     df.reset_state()
 
-    with get_tqdm(total=max_datapoints) as status_bar:  # type: ignore
+    with get_tqdm(total=max_datapoints) as status_bar:
         for dp in df:
             if "image" in dp:
                 log_once(
@@ -161,12 +162,14 @@ def get_train_dataflow(
     df = DataFromList(datapoints, shuffle=True)
     buffer_size = min(num_datapoints - 1, 200)
 
-    load_augment_anchors = LoadAugmentAddAnchors(cfg)  # can't use dec: cur as pickling will fail in mp
+    load_augment_anchors = LoadAugmentAddAnchors(cfg)  # can't use dec: curry as pickling will fail in mp
     if use_multi_proc_for_train:
-        num_cpu = os.cpu_count() if os.cpu_count() is not None else 0
+        num_cpu = os.cpu_count()
+        if num_cpu is None:
+            num_cpu = 0
         df = MultiProcessMapData(
             df,
-            num_proc=1 if buffer_size < 3 else num_cpu // 2,  # type: ignore
+            num_proc=1 if buffer_size < 3 else num_cpu // 2,
             map_func=load_augment_anchors,
             buffer_size=buffer_size,
         )
@@ -181,9 +184,9 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     path_weights: str = "",
     config_overwrite: Optional[List[str]] = None,
     log_dir: str = "train_log/frcnn",
-    build_train_config: Optional[List[str]] = None,
+    build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
-    build_val_config: Optional[List[str]] = None,
+    build_val_config: Optional[Sequence[str]] = None,
     metric_name: Optional[str] = None,
     metric: Optional[Type[MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
@@ -236,13 +239,13 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     if config_overwrite:
         config.update_args(config_overwrite)
 
-    categories = dataset_train.dataflow.categories.get_categories(filtered=True)  # type: ignore
-    model_frcnn_config(config, categories, False)  # type: ignore
+    categories = dataset_train.dataflow.categories.get_categories(filtered=True)
+    model_frcnn_config(config, categories, False)
     model = ResNetFPNModel(config=config)
 
     warmup_schedule, lr_schedule, step_number = train_frcnn_config(config)
 
-    train_dataflow = get_train_dataflow(dataset_train, config, **build_train_dict)  # type: ignore
+    train_dataflow = get_train_dataflow(dataset_train, config, True, **build_train_dict)
     # This is what's commonly referred to as "epochs"
 
     try:
@@ -282,21 +285,21 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
-            dataset_val.dataflow.categories.get_categories(filtered=True),  # type: ignore
+            dataset_val.dataflow.categories.get_categories(filtered=True),
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
-        category_names = list(categories.values())  # type: ignore
+        category_names = list(categories.values())
         callbacks.extend(
             [
                 EvalCallback(
                     dataset_val,
                     category_names,
-                    dataset_val.dataflow.categories.cat_to_sub_cat,  # type: ignore
-                    metric,  # type: ignore
+                    dataset_val.dataflow.categories.cat_to_sub_cat,
+                    metric,   # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
                     **build_val_dict

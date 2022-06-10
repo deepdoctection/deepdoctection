@@ -27,10 +27,10 @@ from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
-from .maputils import MappingContextManager, cur, maybe_get_fake_score
+from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 
-@cur  # type: ignore
+@curry
 def coco_to_image(
     dp: JsonDict,
     categories: Dict[str, str],

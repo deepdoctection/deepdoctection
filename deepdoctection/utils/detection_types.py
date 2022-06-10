@@ -19,10 +19,11 @@
 Typing for the whole package
 """
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Protocol, Tuple, Type, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
 import numpy.typing as npt
-from numpy import float32
+from numpy import float32, uint8
 
 
 # Type for a general dataclass
@@ -38,10 +39,14 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
 KeyValue = Union[str, int]
 
 # Numpy image type
-ImageType = npt.NDArray[float32]
+ImageType = npt.NDArray[uint8]
 
-#
-MapFunc = Callable[[Union[Any, Tuple[Any, Any]]], Any]
+# typing for curry decorator
+DP = TypeVar("DP")
+S = TypeVar("S")
+T = TypeVar("T")
+
+
 if TYPE_CHECKING:
     BaseExceptionType = Type[BaseException]
 else:
@@ -52,3 +57,6 @@ JsonDict = Dict[str, Any]
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
 Requirement = Tuple[str, bool, str]
+
+# Pathlike, use this typing for everything where a path (absolute/relative) is involved
+Pathlike = Union[str, Path]

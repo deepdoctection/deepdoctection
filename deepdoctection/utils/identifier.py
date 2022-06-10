@@ -21,6 +21,8 @@ Methods for generating and checking uuids
 import hashlib
 import uuid
 
+from .detection_types import Pathlike
+
 __all__ = ["is_uuid_like", "get_uuid_from_str", "get_uuid"]
 
 
@@ -63,7 +65,7 @@ def get_uuid(*inputs: str) -> str:
     return get_uuid_from_str(str_input)
 
 
-def get_md5_hash(path: str, buffer_size: int = 65536) -> str:
+def get_md5_hash(path: Pathlike, buffer_size: int = 65536) -> str:
     """
     Calculate a md5 hash for a given file
 

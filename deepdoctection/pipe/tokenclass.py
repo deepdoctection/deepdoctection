@@ -59,7 +59,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
 
     def serve(self, dp: Image) -> None:
-        image_to_lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)  # type: ignore
+        image_to_lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)
         lm_input = image_to_lm_input(dp)
         lm_output = self.language_model.predict(**lm_input)
 

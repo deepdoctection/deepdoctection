@@ -18,7 +18,6 @@
 """
 Conversion functions associated to functionalities of datapoint classes
 """
-
 import base64
 import copy
 from dataclasses import fields, is_dataclass

@@ -263,13 +263,13 @@ class TestImage:
         test_image.image_ann_to_image(annotation_id=annotation_id, crop_image=True)
 
         # Assert
-        assert hasattr(cat_1, "image")
-        assert cat_1.image.height == 4  # type: ignore # pylint: disable=E1101
-        assert cat_1.image.width == 10  # type: ignore # pylint: disable=E1101
-        assert cat_1.image.get_embedding(test_image.image_id) == BoundingBox(  # type: ignore  # pylint: disable=E1101
+        assert cat_1.image
+        assert cat_1.image.height == 4   # pylint: disable=E1101
+        assert cat_1.image.width == 10   # pylint: disable=E1101
+        assert cat_1.image.get_embedding(test_image.image_id) == BoundingBox(    # pylint: disable=E1101
             ulx=15.0, uly=20.0, width=10.0, height=4.0, absolute_coords=True
         )  # pylint: disable=E1101
-        assert cat_1.image.image.shape == (4, 10, 3)  # type: ignore # pylint: disable=E1101
+        assert cat_1.image.image.shape == (4, 10, 3)   # pylint: disable=E1101
 
     @staticmethod
     def test_image_with_anns_can_be_exported(image: WhiteImage) -> None:
@@ -290,21 +290,18 @@ class TestImage:
         output = test_image.get_export()
 
         # Assert
-        assert (
-            "location" in output
-            and "file_name" in output
-            and "annotations" in output
-            and "image" in output
-            and "image_id" in output
-            and "embeddings" in output
-        )
+        assert "location" in output
+        assert "file_name" in output
+        assert "annotations" in output
+        assert "image" in output
+        assert "_image_id" in output
+        assert "embeddings" in output
+
         assert len(output["annotations"]) == 1
 
         ann = output["annotations"][0]
-        assert (
-            "active" in ann
-            and "annotation_id" in ann
-            and "category_name" in ann
-            and "category_id" in ann
-            and "score" in ann
-        )
+        assert "active" in ann
+        assert "_annotation_id" in ann
+        assert "category_name" in ann
+        assert "category_id" in ann
+        assert "score" in ann

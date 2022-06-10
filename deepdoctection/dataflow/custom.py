@@ -45,7 +45,7 @@ def _get_cache(self: CacheData) -> List[Any]:
 CacheData.get_cache = _get_cache
 
 
-class CustomDataFromList(DataFromList):  # type: ignore
+class CustomDataFromList(DataFromList):
     """
     Wraps a list of datapoints to a dataflow. Compared to :class:`Tensorpack.DataFlow.DataFromList` implementation you
     can specify a number of datapoints after that the iteration stops. You can also pass a rebalance function that
@@ -72,7 +72,7 @@ class CustomDataFromList(DataFromList):  # type: ignore
     def __init__(
         self,
         lst: List[Any],
-        shuffle: Optional[bool] = False,
+        shuffle: bool = False,
         max_datapoints: Optional[int] = None,
         rebalance_func: Optional[Callable[[List[Any]], List[Any]]] = None,
     ):
@@ -125,7 +125,7 @@ class CustomDataFromList(DataFromList):  # type: ignore
                 yield from lst_tmp
 
 
-class CustomDataFromIterable(DataFromIterable):  # type: ignore
+class CustomDataFromIterable(DataFromIterable):
     """
     Wrap an iterable of datapoints to a dataflow. Can stop iteration after max_datapoints.
     """

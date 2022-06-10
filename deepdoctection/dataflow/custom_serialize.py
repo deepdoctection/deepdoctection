@@ -23,16 +23,16 @@ import itertools
 import json
 import os
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Optional, Union
+from typing import DefaultDict, Dict, List, Optional, Sequence, Union
 
-from dataflow.dataflow import DataFlow, JoinData, MapData  # type: ignore
+from dataflow.dataflow import DataFlow, JoinData, MapData
 from jsonlines import Reader, Writer
 
-from ..utils.detection_types import JsonDict
+from ..utils.context import timed_operation
+from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.fs import is_file_extension
 from ..utils.logger import logger
 from ..utils.pdf_utils import PDFStreamer
-from ..utils.timer import timed_operation
 from ..utils.tqdm import get_tqdm
 from .common import FlattenData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
@@ -63,7 +63,7 @@ class SerializerJsonlines:
     """
 
     @staticmethod
-    def load(path: str, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
+    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
         """
         :param path: a path to a .jsonl file.
         :param max_datapoints: Will stop the iteration once max_datapoints have been streamed
@@ -75,7 +75,7 @@ class SerializerJsonlines:
         return CustomDataFromIterable(iterator, max_datapoints=max_datapoints)
 
     @staticmethod
-    def save(df: DataFlow, path: str, file_name: str, max_datapoints: Optional[int] = None) -> None:
+    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
         Writes a dataflow iteratively to a .jsonl file. Every datapoint must be a dict where all items are serializable.
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
@@ -115,8 +115,8 @@ class SerializerFiles:
 
     @staticmethod
     def load(
-        path: str,
-        file_type: Union[str, List[str]],
+        path: Pathlike,
+        file_type: Union[str, Sequence[str]],
         max_datapoints: Optional[int] = None,
         shuffle: Optional[bool] = False,
         sort: Optional[bool] = True,
@@ -176,7 +176,7 @@ class CocoParser:
     :return:
     """
 
-    def __init__(self, annotation_file: Optional[str] = None) -> None:
+    def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
 
         self.dataset: JsonDict = {}
         self.anns: Dict[int, JsonDict] = {}
@@ -230,11 +230,11 @@ class CocoParser:
 
     def get_ann_ids(
         self,
-        img_ids: Optional[Union[int, List[int]]] = None,
-        cat_ids: Optional[Union[int, List[int]]] = None,
-        area_range: Optional[List[int]] = None,
+        img_ids: Optional[Union[int, Sequence[int]]] = None,
+        cat_ids: Optional[Union[int, Sequence[int]]] = None,
+        area_range: Optional[Sequence[int]] = None,
         is_crowd: Optional[bool] = None,
-    ) -> List[int]:
+    ) -> Sequence[int]:
         """
         Get ann ids that satisfy given filter conditions. default skips that filter
 
@@ -276,10 +276,10 @@ class CocoParser:
 
     def get_cat_ids(
         self,
-        category_names: Optional[Union[str, List[str]]] = None,
-        supercategory_names: Optional[Union[str, List[str]]] = None,
-        category_ids: Optional[Union[int, List[int]]] = None,
-    ) -> List[int]:
+        category_names: Optional[Union[str, Sequence[str]]] = None,
+        supercategory_names: Optional[Union[str, Sequence[str]]] = None,
+        category_ids: Optional[Union[int, Sequence[int]]] = None,
+    ) -> Sequence[int]:
         """
         Filtering parameters. default skips that filter.
 
@@ -316,8 +316,8 @@ class CocoParser:
         return ids
 
     def get_image_ids(
-        self, img_ids: Optional[Union[int, List[int]]] = None, cat_ids: Optional[Union[int, List[int]]] = None
-    ) -> List[int]:
+        self, img_ids: Optional[Union[int, Sequence[int]]] = None, cat_ids: Optional[Union[int, Sequence[int]]] = None
+    ) -> Sequence[int]:
         """
         Get img ids that satisfy given filter conditions.
 
@@ -346,7 +346,7 @@ class CocoParser:
                     ids &= set(self.cat_to_imgs[cat_id])
         return list(ids)
 
-    def load_anns(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
+    def load_anns(self, ids: Optional[Union[int, Sequence[int]]] = None) -> [List[JsonDict]]:
         """
         Load anns with the specified ids.
 
@@ -356,13 +356,11 @@ class CocoParser:
         """
         if ids is None:
             ids = []
+        ids = [ids] if isinstance(ids, int) else ids
 
-        if isinstance(ids, list):
-            return [self.anns[id] for id in ids]
-        if isinstance(ids, int):
-            return [self.anns[ids]]
+        return [self.anns[id] for id in ids]
 
-    def load_cats(self, ids: Optional[Union[int, List[int]]] = None) -> Optional[List[JsonDict]]:
+    def load_cats(self, ids: Optional[Union[int, Sequence[int]]] = None) -> [List[JsonDict]]:
         """
         Load cats with the specified ids.
 
@@ -372,13 +370,11 @@ class CocoParser:
         """
         if ids is None:
             ids = []
+        ids = [ids] if isinstance(ids, int) else ids
 
-        if isinstance(ids, list):
-            return [self.cats[id] for id in ids]
-        if isinstance(ids, int):
-            return [self.cats[ids]]
+        return [self.cats[idx] for idx in ids]
 
-    def load_imgs(self, ids: Optional[Union[int, List[int]]] = None) -> List[JsonDict]:
+    def load_imgs(self, ids: Optional[Union[int, Sequence[int]]] = None) -> List[JsonDict]:
         """
         Load anns with the specified ids.
 
@@ -388,10 +384,9 @@ class CocoParser:
         """
         if ids is None:
             ids = []
+        ids = [ids] if isinstance(ids, int) else ids
 
-        if isinstance(ids, list):
-            return [self.imgs[id] for id in ids]
-        return [self.imgs[ids]]
+        return [self.imgs[idx] for idx in ids]
 
 
 class SerializerCoco:
@@ -403,7 +398,7 @@ class SerializerCoco:
     """
 
     @staticmethod
-    def load(path: str, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads a .json file and generates a dataflow.
 
@@ -469,7 +464,7 @@ class SerializerPdfDoc:
     """
 
     @staticmethod
-    def load(path: str, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads the document page wise and returns a dataflow accordingly.
 
@@ -486,14 +481,14 @@ class SerializerPdfDoc:
         return df
 
     @staticmethod
-    def save(path: str) -> None:
+    def save(path: Pathlike) -> None:
         """
         Not implemented
         """
         raise NotImplementedError
 
     @staticmethod
-    def split(path: str, path_target: Optional[str] = None, max_datapoint: Optional[int] = None) -> None:
+    def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:
         """
         Split a Document into single pages.
         """

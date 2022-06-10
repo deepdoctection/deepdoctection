@@ -25,14 +25,16 @@ from errno import ENOENT
 from glob import iglob
 from os import path, remove
 from tempfile import NamedTemporaryFile
-from typing import Iterator, Optional, Tuple, Union
+from time import perf_counter as timer
+from typing import Any, Generator, Iterator, Optional, Tuple, Union
 
 import numpy as np
 from cv2 import imwrite
 
 from .detection_types import ImageType
+from .logger import logger
 
-__all__ = ["timeout_manager", "save_tmp_file"]
+__all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
 
 
 @contextmanager
@@ -106,3 +108,24 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
             except OSError as error:
                 if error.errno != ENOENT:
                     raise error
+
+
+# Copyright (c) Tensorpack Contributors
+# Licensed under the Apache License, Version 2.0 (the "License")
+
+
+@contextmanager
+def timed_operation(message: str, log_start: bool = False) -> Generator[Any, None, None]:
+    """
+    Contextmanager with a timer. Can therefore be used in a with statement.
+
+    :param message: a log to print
+    :param log_start: whether to print also the beginning
+    """
+
+    assert len(message)
+    if log_start:
+        logger.info("start task: %s ...", message)
+    start = timer()
+    yield
+    logger.info("%s finished, %s sec.", message, round(timer() - start, 4))

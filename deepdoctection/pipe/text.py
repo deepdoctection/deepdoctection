@@ -19,7 +19,7 @@
 Module for text extraction pipeline component
 """
 from itertools import chain
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Sequence, Mapping
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
@@ -66,8 +66,8 @@ class TextExtractionService(PredictorPipelineComponent):
     def __init__(
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
-        extract_from_roi: Optional[Union[List[str], str]] = None,
-        category_id_mapping: Optional[Dict[int, int]] = None,
+        extract_from_roi: Optional[Union[Sequence[str], str]] = None,
+        category_id_mapping: Optional[Mapping[int, int]] = None,
     ):
         """
         :param text_extract_detector: ObjectDetector
@@ -122,7 +122,7 @@ class TextExtractionService(PredictorPipelineComponent):
                             names.C.TLINE, detect_result.line, names.C.TLINE, detect_ann_id
                         )
 
-    def get_text_rois(self, dp: Image) -> List[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
+    def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
         """
         Return image rois based on selected categories. As this selection makes only sense for specific text extractors
         (e.g. those who do proper OCR and do not mine from text from native pdfs) it will do some sanity checks.
@@ -132,7 +132,7 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             if self.predictor.accepts_batch:
                 return [dp.get_annotation(category_names=self.extract_from_category)]
-            return dp.get_annotation(category_names=self.extract_from_category)  # type: ignore
+            return dp.get_annotation(category_names=self.extract_from_category)
         return [dp]
 
     def get_predictor_input(
@@ -245,9 +245,9 @@ def _reading_columns(
     columns_dict = {
         idx: key[0] for idx, key in enumerate(sorted(columns_dict.items(), key=lambda it: it[1]["left"]))  # type:ignore
     }
-    reading_blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]  # type:ignore
-    reading_blocks.sort(key=lambda x: x[0])
-    reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(reading_blocks)]
+    _blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]
+    _blocks.sort(key=lambda x: x[0])  # type:ignore
+    reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(_blocks)]
     return reading_blocks
 
 
@@ -290,8 +290,8 @@ class TextOrderService(PipelineComponent):
     def __init__(
         self,
         text_container: str,
-        floating_text_block_names: Optional[Union[str, List[str]]] = None,
-        text_block_names: Optional[Union[str, List[str]]] = None,
+        floating_text_block_names: Optional[Union[str, Sequence[str]]] = None,
+        text_block_names: Optional[Union[str, Sequence[str]]] = None,
         text_containers_to_text_block: bool = False,
     ) -> None:
         """
@@ -343,7 +343,7 @@ class TextOrderService(PipelineComponent):
         for text_block in block_anns:
             text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
             text_container_anns = dp.get_annotation(
-                annotation_ids=text_container_ann_ids if text_container_ann_ids is not None else [],
+                annotation_ids=text_container_ann_ids,
                 category_names=self._text_container,
             )
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)

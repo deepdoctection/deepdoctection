@@ -25,11 +25,11 @@ __all__ = ["Evaluator"]
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Type, Union
 
-from ..dataflow import DataFromList, MapData  # type: ignore
+from ..dataflow import DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image
-from ..pipe.base import PipelineComponent, PredictorPipelineComponent
+from ..pipe.base import PredictorPipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..utils.logger import logger
 from .base import MetricBase
@@ -70,7 +70,7 @@ class Evaluator:  # pylint: disable=R0903
             "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
             num_threads,
         )
-        pipeline_components: List[PipelineComponent] = []
+        pipeline_components: List[PredictorPipelineComponent] = []
 
         for _ in range(num_threads - 1):
             copy_pipe_component = predictor_pipe_component.clone()
@@ -111,7 +111,7 @@ class Evaluator:  # pylint: disable=R0903
         df_gt = self.dataset.dataflow.build(**kwargs)
         df_pr = self.dataset.dataflow.build(**kwargs)
 
-        remove = remove_cats(category_names, sub_categories)  # type: ignore
+        remove = remove_cats(category_names, sub_categories)
         df_pr = MapData(df_pr, deepcopy)
         df_pr = MapData(df_pr, remove)
         self.pipe_component.put_task(df_pr)

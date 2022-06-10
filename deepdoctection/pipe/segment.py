@@ -55,7 +55,7 @@ class SegmentationResult:
 def choose_items_by_iou(
     dp: Image,
     item_proposals: List[ImageAnnotation],
-    iou_threshold: np.float32,
+    iou_threshold: float,
     above_threshold: bool = True,
     reference_item_proposals: Optional[List[ImageAnnotation]] = None,
 ) -> Image:
@@ -70,15 +70,15 @@ def choose_items_by_iou(
     :param reference_item_proposals:
     """
     item_proposals_boxes = np.array(
-        [item.image.get_embedding(dp.image_id).to_list(mode="xyxy") for item in item_proposals]  # type: ignore
+        [item.image.get_embedding(dp.image_id).to_list(mode="xyxy") for item in item_proposals if item.image is not None]
     )
 
     triangle_ind = None
     if reference_item_proposals is not None:
         reference_item_proposals_boxes = np.array(
             [
-                item.image.get_embedding(dp.image_id).to_list(mode="xyxy")  # type: ignore
-                for item in reference_item_proposals
+                item.image.get_embedding(dp.image_id).to_list(mode="xyxy")
+                for item in reference_item_proposals if item.image is not None
             ]
         )
 
@@ -111,8 +111,8 @@ def stretch_item_per_table(
     table: ImageAnnotation,
     row_name: str,
     col_name: str,
-    remove_iou_threshold_rows: np.float32,
-    remove_iou_threshold_cols: np.float32,
+    remove_iou_threshold_rows: float,
+    remove_iou_threshold_cols: float,
 ) -> Image:
     """
     Stretch rows horizontally and stretch columns vertically. Since the predictor usually does not predict a box for
@@ -208,8 +208,8 @@ def stretch_items(
     table_name: str,
     row_name: str,
     col_name: str,
-    remove_iou_threshold_rows: np.float32,
-    remove_iou_threshold_cols: np.float32,
+    remove_iou_threshold_rows: float,
+    remove_iou_threshold_cols: float,
 ) -> Image:
     """
     Stretch rows and columns from item detector to full table length and width. See :func:`stretch_item_per_table`
@@ -252,8 +252,8 @@ def segment_table(  # pylint: disable=R0913, R0914
     item_names: Union[str, List[str]],
     cell_names: Union[str, List[str]],
     segment_rule: str,
-    threshold_rows: Optional[np.float32] = None,
-    threshold_cols: Optional[np.float32] = None,
+    threshold_rows: float,
+    threshold_cols: float,
 ) -> List[SegmentationResult]:
     """
     Segments a table,i.e. produces for each cell a SegmentationResult. It uses numbered rows and columns that have to
@@ -280,7 +280,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[0],
         cell_names,
         segment_rule,
-        threshold_rows,  # type: ignore
+        threshold_rows,
         True,
         child_ann_ids,
         child_ann_ids,
@@ -291,7 +291,7 @@ def segment_table(  # pylint: disable=R0913, R0914
         item_names[1],
         cell_names,
         segment_rule,
-        threshold_cols,  # type: ignore
+        threshold_cols,
         True,
         child_ann_ids,
         child_ann_ids,
@@ -367,11 +367,11 @@ class TableSegmentationService(PipelineComponent):
     def __init__(  # pylint: disable=R0913
         self,
         segment_rule: str,
-        threshold_rows: np.float32,
-        threshold_cols: np.float32,
+        threshold_rows: float,
+        threshold_cols: float,
         tile_table_with_items: bool,
-        remove_iou_threshold_rows: np.float32,
-        remove_iou_threshold_cols: np.float32,
+        remove_iou_threshold_rows: float,
+        remove_iou_threshold_cols: float,
     ):
         """
         :param segment_rule: rule to assign cell to row, columns resp. must be either iou or ioa
@@ -415,7 +415,7 @@ class TableSegmentationService(PipelineComponent):
                 reference_items_proposals = dp.get_annotation(
                     category_names=self._cell_names, annotation_ids=item_ann_ids
                 )
-                dp = choose_items_by_iou(dp, items_proposals, float32(0.0001), False, reference_items_proposals)
+                dp = choose_items_by_iou(dp, items_proposals, 0.0001, False, reference_items_proposals)
 
                 # new query of items so that we only get active annotations
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)

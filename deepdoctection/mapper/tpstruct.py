@@ -25,10 +25,10 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from .maputils import cur
+from .maputils import curry
 
 
-@cur  # type: ignore
+@curry
 def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[JsonDict]:
     """
     Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned
