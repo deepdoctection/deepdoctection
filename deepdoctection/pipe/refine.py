@@ -430,7 +430,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_summary_annotation(names.C.NCS, max_col_span, annotation_id=table.annotation_id)
             html = generate_html_string(table)
             self.dp_manager.set_container_annotation(
-                names.C.HTAB, -1, names.C.HTAB, table.annotation_id, html  # type: ignore
+                names.C.HTAB, -1, names.C.HTAB, table.annotation_id, html
             )
 
     def clone(self) -> PipelineComponent:

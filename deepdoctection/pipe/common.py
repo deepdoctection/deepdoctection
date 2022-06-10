@@ -86,7 +86,7 @@ class MatchingService(PipelineComponent):
         parent_categories: Union[str, List[str]],
         child_categories: Union[str, List[str]],
         matching_rule: str,
-        threshold: Optional[np.float32] = None,
+        threshold: float,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
@@ -113,7 +113,7 @@ class MatchingService(PipelineComponent):
             parent_ann_category_names=self.parent_categories,
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
-            threshold=self.threshold,  # type: ignore
+            threshold=self.threshold,
             max_parent_only=True,
         )
 

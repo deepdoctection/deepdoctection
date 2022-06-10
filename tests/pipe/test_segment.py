@@ -37,7 +37,7 @@ def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: I
     item_names = [names.C.ROW, names.C.COL]
 
     # Act
-    dp = stretch_items(dp, table_name, item_names[0], item_names[1], float32(0.001), float32(0.001))
+    dp = stretch_items(dp, table_name, item_names[0], item_names[1], 0.001, 0.001)
 
     # Assert
     tables = dp.get_annotation(category_names=table_name)
@@ -75,12 +75,12 @@ class TestTableSegmentationService:
         """
 
         self._segment_rule = "iou"
-        self._iou_threshold_rows = float32(0.001)
-        self._iou_threshold_cols = float32(0.001)
-        self._ioa_threshold_rows = float32(0.4)
-        self._ioa_threshold_cols = float32(0.4)
-        self._remove_iou_threshold_rows = float32(0.001)
-        self._remove_iou_threshold_cols = float32(0.001)
+        self._iou_threshold_rows = 0.001
+        self._iou_threshold_cols = 0.001
+        self._ioa_threshold_rows = 0.4
+        self._ioa_threshold_cols = 0.4
+        self._remove_iou_threshold_rows = 0.001
+        self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = False
 
         self.table_segmentation_service = TableSegmentationService(
@@ -201,12 +201,12 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         """
 
         self._segment_rule = "iou"
-        self._iou_threshold_rows = float32(0.001)
-        self._iou_threshold_cols = float32(0.001)
-        self._ioa_threshold_rows = float32(0.4)
-        self._ioa_threshold_cols = float32(0.4)
-        self._remove_iou_threshold_rows = float32(0.001)
-        self._remove_iou_threshold_cols = float32(0.001)
+        self._iou_threshold_rows = 0.001
+        self._iou_threshold_cols = 0.001
+        self._ioa_threshold_rows = 0.4
+        self._ioa_threshold_cols = 0.4
+        self._remove_iou_threshold_rows = 0.001
+        self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = True
 
         self.tp_table_segmentation_service = TableSegmentationService(

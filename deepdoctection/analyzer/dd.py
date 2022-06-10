@@ -156,7 +156,7 @@ def get_dd_analyzer(
             " reading order."
         )
 
-    pipe_component_list: List[Union[PipelineComponent, PredictorPipelineComponent, PageParsingService]] = []
+    pipe_component_list: List[PipelineComponent] = []
 
     # will silent all TP loggings while building the tower
     if tensorpack_available():

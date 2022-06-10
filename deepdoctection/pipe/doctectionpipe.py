@@ -49,8 +49,9 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
     """
 
     def __init__(
-        self, pipeline_component_list: List[Union[PipelineComponent, PredictorPipelineComponent, PageParsingService]]
+        self, pipeline_component_list: List[PipelineComponent]
     ):
+        self.page_parser: PageParsingService
         if isinstance(pipeline_component_list[-1], PageParsingService):
             self.page_parser = pipeline_component_list.pop()
         else:
@@ -62,7 +63,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
         assert all(
             isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
         )
-        super().__init__(pipeline_component_list)  # type: ignore
+        super().__init__(pipeline_component_list)
 
     def _entry(self, **kwargs: Union[str, DataFlow, bool, int, Pathlike, Union[str, List[str]]]) -> DataFlow:
         dataset_dataflow = kwargs.get("dataset_dataflow")
@@ -127,8 +128,8 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
         def _to_image(dp: str) -> Optional[Image]:
             _, file_name = os.path.split(dp)
-            dp = {"file_name": file_name, "location": dp}  # type: ignore
-            return to_image(dp)
+            dp_dict = {"file_name": file_name, "location": dp}
+            return to_image(dp_dict)
 
         df = MapData(df, _to_image)
         return df
