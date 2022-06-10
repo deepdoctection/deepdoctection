@@ -20,40 +20,43 @@ module for various basic functions that are needed everywhere
 """
 
 import os
+from pathlib import Path
 
+from .develop import deprecated
 from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 
 __all__ = ["sub_path", "get_package_path", "get_configs_dir_path", "get_weights_dir_path", "get_dataset_dir_path"]
 
 
-def get_package_path() -> str:
+def get_package_path() -> Path:
     """
     :return: full base path of this package
     """
     return PATH
 
 
-def get_weights_dir_path() -> str:
+def get_weights_dir_path() -> Path:
     """
     :return: full base path to the model dir
     """
     return MODEL_DIR
 
 
-def get_configs_dir_path() -> str:
+def get_configs_dir_path() -> Path:
     """
     :return: full base path to the configs dir
     """
     return CONFIGS
 
 
-def get_dataset_dir_path() -> str:
+def get_dataset_dir_path() -> Path:
     """
     :return: full base path to the dataset dir
     """
     return DATASET_DIR
 
 
+@deprecated("Use pathlib operations instead", "2022-06-08")
 def sub_path(anchor_dir: str, *paths: str) -> str:
     """
     Generate a path from the anchor directory and various paths args.

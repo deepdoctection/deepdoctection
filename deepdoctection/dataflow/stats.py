@@ -22,13 +22,13 @@ from typing import Any, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
-from dataflow.dataflow import DataFlow, ProxyDataFlow  # type: ignore
+from dataflow.dataflow import DataFlow, ProxyDataFlow
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
 
 
-class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
+class MeanFromDataFlow(ProxyDataFlow):
     """
     Gets the mean of some dataflow. Takes a component from a dataflow and calculates iteratively the mean.
 
@@ -148,7 +148,7 @@ class MeanFromDataFlow(ProxyDataFlow):  # type: ignore
         return self.mean
 
 
-class StdFromDataFlow(ProxyDataFlow):  # type: ignore
+class StdFromDataFlow(ProxyDataFlow):
     """
     Gets the standard deviation of some dataflow. Takes a component from a dataflow and calculates iteratively
     the standard deviation.

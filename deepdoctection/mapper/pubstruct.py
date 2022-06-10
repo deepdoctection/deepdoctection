@@ -20,7 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Sequence, Iterable
 
 import numpy as np
 
@@ -31,7 +31,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import names
-from .maputils import MappingContextManager, cur, maybe_get_fake_score
+from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 __all__ = ["pub_to_image"]
 
@@ -60,7 +60,7 @@ def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
     return annotation
 
 
-def _cell_token(html: List[str]) -> List[List[int]]:
+def _cell_token(html: Sequence[str]) -> List[List[int]]:
 
     index_rows = [i for i, tag in enumerate(html) if tag == "<tr>"]
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
@@ -74,7 +74,7 @@ def _cell_token(html: List[str]) -> List[List[int]]:
     return index_cells_tmp
 
 
-def _item_spans(html: List[str], index_cells: List[List[int]], item: str) -> List[List[int]]:
+def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> List[List[int]]:
 
     item_spans = [
         [
@@ -92,7 +92,7 @@ def _item_spans(html: List[str], index_cells: List[List[int]], item: str) -> Lis
     return item_spans
 
 
-def _end_of_header(html: List[str]) -> int:
+def _end_of_header(html: Sequence[str]) -> int:
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
     header_in_html = [i for i, tag in enumerate(html) if tag == "</thead>"]
     index_header_end = max(header_in_html)
@@ -103,7 +103,7 @@ def _end_of_header(html: List[str]) -> int:
     return 0
 
 
-def tile_table(row_spans: List[List[int]], col_spans: List[List[int]]) -> List[List[int]]:
+def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[int]]) -> List[List[int]]:
     """
     Tiles a table according the row and column span scheme. A table can be represented as a list of list, where each
     inner list has the same length. Each cell with a cell id can be located according to their row and column spans in
@@ -177,16 +177,16 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
             ulx = float(
-                min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             uly = float(
-                min([cell.bounding_box.uly for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                min([cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             lrx = float(
-                max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             lry = float(
-                max([cell.bounding_box.lry for cell in cell_item if isinstance(cell, ImageAnnotation)])  # type: ignore
+                max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
             )
             item_ann = ImageAnnotation(
                 category_id=categories_name_as_key[names.C.ITEM],
@@ -305,22 +305,22 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
                 )
                 cell_ann.dump_sub_category(
                     names.C.RN,
-                    CategoryAnnotation(category_name=names.C.RN, category_id=row_number),
+                    CategoryAnnotation(category_name=names.C.RN, category_id=str(row_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.CN,
-                    CategoryAnnotation(category_name=names.C.CN, category_id=col_number),
+                    CategoryAnnotation(category_name=names.C.CN, category_id=str(col_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.RS,
-                    CategoryAnnotation(category_name=names.C.RS, category_id=row_span),  # type: ignore
+                    CategoryAnnotation(category_name=names.C.RS, category_id=str(row_span)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
                     names.C.CS,
-                    CategoryAnnotation(category_name=names.C.CS, category_id=col_span),  # type: ignore
+                    CategoryAnnotation(category_name=names.C.CS, category_id=str(col_span)),
                     image.image_id,
                 )
 
@@ -338,16 +338,16 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
-            names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=number_of_rows), image.image_id
+            names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=str(number_of_rows)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NC, CategoryAnnotation(category_name=names.C.NC, category_id=number_of_cols), image.image_id
+            names.C.NC, CategoryAnnotation(category_name=names.C.NC, category_id=str(number_of_cols)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NRS, CategoryAnnotation(category_name=names.C.NRS, category_id=max_rs), image.image_id
+            names.C.NRS, CategoryAnnotation(category_name=names.C.NRS, category_id=str(max_rs)), image.image_id
         )
         summary_ann.dump_sub_category(
-            names.C.NCS, CategoryAnnotation(category_name=names.C.NCS, category_id=max_cs), image.image_id
+            names.C.NCS, CategoryAnnotation(category_name=names.C.NCS, category_id=str(max_cs)), image.image_id
         )
         image.summary = summary_ann
 
@@ -360,5 +360,5 @@ def pub_to_image_uncur(  # pylint: disable=R0914, R0915
     return image
 
 
-pub_to_image = cur(pub_to_image_uncur)  # type: ignore  # using cur as decorator is not possible as picking will
+pub_to_image = curry(pub_to_image_uncur)  # using curry as decorator is not possible as picking will
 # fail in multiprocessing

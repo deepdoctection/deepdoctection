@@ -28,10 +28,9 @@ Module for Pubtabnet dataset. Place the dataset as follows
 |    ├── PubTabNet_2.0.0.jsonl
 """
 
-import os
-from typing import Dict, List, Union
+from typing import Dict, List, Mapping, Union
 
-from ...dataflow import DataFlow, MapData  # type: ignore
+from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
@@ -69,10 +68,10 @@ _URL = (
     "https://dax-cdn.cdn.appdomain.cloud/dax-pubtabnet/2.0.0/"
     "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
 )
-_SPLITS = {"train": "/train", "val": "/val", "test": "/test"}
+_SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
 
-_LOCATION = "/pubtabnet"
-_ANNOTATION_FILES: Dict[str, Union[str, List[str]]] = {"all": "PubTabNet_2.0.0.jsonl"}
+_LOCATION = "pubtabnet"
+_ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
 _INIT_CATEGORIES = [names.C.CELL, names.C.ITEM]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
@@ -130,7 +129,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
 
         :return: dataflow
         """
-        split = kwargs.get("split", "val")
+        split = str(kwargs.get("split", "val"))
         if split == "val":
             log_once("Loading annotations for 'val' split from Pubtabnet will take some time...")
         max_datapoints = kwargs.get("max_datapoints")
@@ -142,18 +141,20 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
 
         # Load
-        path = os.path.join(self.get_workdir(), self.annotation_files["all"])  # type: ignore
+        dataset_split = self.annotation_files["all"]
+        assert isinstance(dataset_split, str)
+        path = self.get_workdir() / dataset_split
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
         def replace_filename(dp: JsonDict) -> JsonDict:
-            dp["filename"] = self.get_workdir() + "/" + dp["split"] + "/" + dp["filename"]
+            dp["filename"] = self.get_workdir() / dp["split"] / dp["filename"]
             return dp
 
         df = MapData(df, replace_filename)
         df = MapData(df, lambda dp: dp if dp["split"] == split else None)
         pub_mapper = pub_to_image(
-            self.categories.get_categories(name_as_key=True, init=True),  # type: ignore
+            self.categories.get_categories(name_as_key=True, init=True),
             # pylint: disable=E1120  # 259
             load_image,
             fake_score=fake_score,
@@ -161,19 +162,16 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         )
 
         df = MapData(df, pub_mapper)
-        assert self.categories is not None  # avoid many typing issues
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
-                cat_to_sub_cat(
-                    self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat  # type: ignore
-                ),
+                cat_to_sub_cat(self.categories.get_categories(name_as_key=True), self.categories.cat_to_sub_cat),
             )
 
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_cat(  # type: ignore # pylint: disable=E1120
+                filter_cat(  # pylint: disable=E1120
                     self.categories.get_categories(as_dict=False, filtered=True),
                     self.categories.get_categories(as_dict=False, filtered=False),
                 ),

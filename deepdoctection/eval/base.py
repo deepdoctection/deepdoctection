@@ -24,7 +24,6 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..mapper.maputils import DefaultMapper
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
 
@@ -44,8 +43,8 @@ class MetricBase(ABC):
     executed and the results should be saved in separate lists.
     """
 
-    metric: Optional[Callable[[Any], Tuple[Any, Any]]] = None
-    mapper: Optional[DefaultMapper] = None
+    metric: Callable[[Any, Any], Optional[Any]]
+    mapper: Callable[[Any, Any], Optional[Any]]
 
     def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
         requirements = cls.get_requirements()

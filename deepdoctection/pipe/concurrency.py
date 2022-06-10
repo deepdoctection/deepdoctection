@@ -21,17 +21,21 @@ Module for multithreading tasks
 
 import itertools
 import queue
-import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Sequence, Union, TYPE_CHECKING
 
 import tqdm  # type: ignore
 
 from ..dataflow import DataFlow
 from ..datapoint.image import Image
 from ..utils.tqdm import get_tqdm
-from .base import PipelineComponent
+from .base import PipelineComponent, PredictorPipelineComponent
+
+if TYPE_CHECKING:
+    QueueType = queue.Queue[Image]
+else:
+    QueueType = queue.Queue
 
 
 class MultiThreadPipelineComponent:
@@ -67,7 +71,7 @@ class MultiThreadPipelineComponent:
 
     def __init__(
         self,
-        pipeline_components: List[PipelineComponent],
+        pipeline_components: Sequence[PredictorPipelineComponent],
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
@@ -84,7 +88,7 @@ class MultiThreadPipelineComponent:
         """
 
         self.pipe_components = pipeline_components
-        self.input_queue: queue.Queue = queue.Queue()  # type: ignore
+        self.input_queue: QueueType = queue.Queue()
         self.pre_proc_func = pre_proc_func
         self.post_proc_func = post_proc_func
         self.max_datapoints = max_datapoints
@@ -106,8 +110,7 @@ class MultiThreadPipelineComponent:
 
         :return: A list of Images
         """
-        kwargs = {"thread_name_prefix": "EvalWorker"} if sys.version_info.minor >= 6 else {}
-        with ThreadPoolExecutor(max_workers=len(self.pipe_components), **kwargs) as executor, tqdm.tqdm(  # type: ignore
+        with ThreadPoolExecutor(max_workers=len(self.pipe_components), thread_name_prefix="EvalWorker") as executor, tqdm.tqdm(
             total=self.input_queue.qsize()
         ) as pbar:
             futures = []
@@ -127,7 +130,7 @@ class MultiThreadPipelineComponent:
 
     @staticmethod
     def _thread_predict_on_queue(
-        input_queue: queue.Queue,  # type: ignore
+        input_queue: QueueType,
         component: PipelineComponent,
         tqdm_bar: Optional[tqdm.tqdm] = None,
         pre_proc_func: Optional[Callable[[Image], Image]] = None,

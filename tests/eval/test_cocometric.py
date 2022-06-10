@@ -23,7 +23,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 from pytest import mark
 
-from deepdoctection.dataflow import DataFromList  # type: ignore
+from deepdoctection.dataflow import DataFromList
 from deepdoctection.eval.cocometric import CocoMetric
 
 from ..conftest import get_image_results
@@ -75,7 +75,7 @@ class TestCocoMetric:
 
         # Arrange
         CocoMetric.set_params(
-            area_range=[[0**2, 1e5**2], [0**2, 1**2], [1**2, 100**2], [100**2, 1e5**2]],  # type: ignore
+            area_range=[[0 ** 2, 1e5 ** 2], [0 ** 2, 1 ** 2], [1 ** 2, 100 ** 2], [100 ** 2, 1e5 ** 2]],  # type: ignore
             max_detections=[1, 2, 3],
         )
 

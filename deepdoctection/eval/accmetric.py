@@ -21,6 +21,7 @@ Module for Accuracy metric
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+from numpy import float32
 from numpy.typing import NDArray
 from tabulate import tabulate
 from termcolor import colored
@@ -40,7 +41,7 @@ if sklearn_available():
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks: Optional[List[int]] = None) -> float:
+def accuracy(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
@@ -61,11 +62,11 @@ def accuracy(label_gt: List[np.int32], label_predictions: List[np.int32], masks:
         assert len(np_label_gt) == len(
             masks
         ), f"length of label_gt ({len(np_label_gt)}) and label_predictions ({len(masks)}) must be equal"
-        masks = np.asarray(masks)  # type: ignore
-        masks.astype(bool)  # type: ignore
-        np_label_gt = np_label_gt[masks]
-        np_label_predictions = np_label_predictions[masks]
-    return accuracy_score(np_label_gt, np_label_predictions)
+        np_masks = np.asarray(masks)
+        np_masks.astype(bool)
+        np_label_gt = np_label_gt[np_masks]
+        np_label_predictions = np_label_predictions[np_masks]
+    return np.array(accuracy_score(np_label_gt, np_label_predictions), dtype=float32)
 
 
 @metric_registry.register("accuracy")
@@ -74,7 +75,7 @@ class AccuracyMetric(MetricBase):
     Metric induced by :func:`accuracy`
     """
 
-    metric = accuracy  # type: ignore
+    metric = accuracy
     mapper = image_to_cat_id
     _cats: Optional[List[str]] = None
     _sub_cats: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None
@@ -88,8 +89,8 @@ class AccuracyMetric(MetricBase):
 
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
-            cls._cats = categories.get_categories(as_dict=False, filtered=True)  # type: ignore
-        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)  # type: ignore
+            cls._cats = categories.get_categories(as_dict=False, filtered=True)
+        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
@@ -114,7 +115,7 @@ class AccuracyMetric(MetricBase):
 
         results = []
         for key in labels_gt:  # pylint: disable=C0206
-            res = cls.metric(labels_gt[key], labels_predictions[key])  # type: ignore
+            res = cls.metric(labels_gt[key], labels_predictions[key])
             results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
         return results
 
@@ -143,7 +144,7 @@ class AccuracyMetric(MetricBase):
         """
 
         if category_names is not None:
-            cls._cats = category_names  # type: ignore
+            cls._cats = category_names if isinstance(category_names, list) else [category_names]
         if sub_category_names is not None:
             cls._sub_cats = sub_category_names
 
@@ -151,7 +152,7 @@ class AccuracyMetric(MetricBase):
     def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
         cats = categories.get_categories(as_dict=False, filtered=True)
         if cats:
-            sub_cats = categories.get_sub_categories(cats)  # type: ignore
+            sub_cats = categories.get_sub_categories(cats)
         else:
             sub_cats = categories.get_sub_categories()
 
@@ -168,9 +169,7 @@ class AccuracyMetric(MetricBase):
         return [get_sklearn_requirement()]
 
 
-def confusion(
-    label_gt: List[int], label_predictions: List[int], masks: Optional[List[bool]] = None
-) -> NDArray[np.float32]:
+def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
     """
     Calculates the accuracy matrix given the predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.confusion_matrix`
@@ -185,10 +184,10 @@ def confusion(
     np_label_gt, np_label_predictions = np.asarray(label_gt), np.asarray(label_predictions)
 
     if masks is not None:
-        masks = np.asarray(masks)  # type: ignore
-        masks.astype(bool)  # type: ignore
-        np_label_gt = np_label_gt[masks]
-        np_label_predictions = np_label_predictions[masks]
+        np_masks = np.asarray(masks)
+        np_masks.astype(bool)
+        np_label_gt = np_label_gt[np_masks]
+        np_label_predictions = np_label_predictions[np_masks]
 
     return confusion_matrix(np_label_gt, np_label_predictions)
 
@@ -199,7 +198,7 @@ class ConfusionMetric(AccuracyMetric):
     Metric induced by :func:`confusion`
     """
 
-    metric = confusion  # type: ignore
+    metric = confusion
 
     @classmethod
     def print_distance(cls, results: List[JsonDict]) -> None:
@@ -209,12 +208,12 @@ class ConfusionMetric(AccuracyMetric):
         key_list = [list(k.keys())[0] for k in results]
         for key, result in zip(key_list, results):
             data = []
-            header: List[Union[int, str]] = ["predictions -> \n ground truth |\n              v"]
+            header: List[str] = ["predictions -> \n ground truth |\n              v"]
             conf = result[key]
             for idx, row in enumerate(conf):
                 row = row.tolist()
                 row.insert(0, idx)
                 data.append(row)
-                header.append(idx)
-            table = tabulate(data, headers=header, tablefmt="pipe")  # type: ignore
+                header.append(str(idx))
+            table = tabulate(data, headers=header, tablefmt="pipe")
             print(f"Confusion matrix for {key}: \n" + colored(table, "cyan"))

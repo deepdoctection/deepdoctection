@@ -98,7 +98,7 @@ class LanguageDetectionService(PipelineComponent):
 
     def _init_sanity_checks(self) -> None:
         assert self.text_detector or self._text_container, (
-            "if no text_detector is provided a text container must be " "specified"
+            "if no text_detector is provided a text container must be specified"
         )
         if not self.text_detector:
             assert self._text_container in [names.C.WORD, names.C.LINE], (

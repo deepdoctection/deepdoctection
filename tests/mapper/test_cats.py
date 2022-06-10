@@ -39,7 +39,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     """
     # Arrange
     categories_name_as_key_init = {names.C.CELL: "1", names.C.ITEM: "2"}
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)  # type: ignore # pylint: disable=E1120  # 259
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)  # pylint: disable=E1120  # 259
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
@@ -52,7 +52,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
 
     # Act
     if dp is not None:
-        cat_to_sub_cat_mapper = cat_to_sub_cat(  # type: ignore
+        cat_to_sub_cat_mapper = cat_to_sub_cat(
             categories.get_categories(), categories._cat_to_sub_cat  # pylint: disable=W0212
         )  # pylint: disable=E1120  # 259
         dp = cat_to_sub_cat_mapper(dp)
@@ -78,7 +78,7 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
 
     # Arrange
     categories_name_as_key_init = {names.C.CELL: "1", names.C.ITEM: "2"}
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)  # type: ignore # pylint: disable=E1120  # 259
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)  # pylint: disable=E1120  # 259
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
 
@@ -88,7 +88,7 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     datapoint = pubtabnet_results
 
     # Act
-    filter_cat_mapper = filter_cat(  # type: ignore  # pylint: disable=E1120
+    filter_cat_mapper = filter_cat(  # pylint: disable=E1120
         categories.get_categories(as_dict=False, filtered=True),
         list(categories_name_as_key_init.keys()),
     )  # pylint: disable=E1120  # 259
@@ -151,7 +151,7 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.RS: [1, 1, 1, 1, 0]}
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # type: ignore # pylint: disable=E1120  # 259
+    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable=E1120  # 259
     output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable=E1102  # 259
 
     # Assert
@@ -173,7 +173,7 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     }
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # type: ignore # pylint: disable=E1120  # 259
+    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable=E1120  # 259
     output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable=E1102  # 259
 
     # Assert
@@ -192,7 +192,7 @@ def test_remove_cats(dp_image_fully_segmented: Image) -> None:
     categories = names.C.ROW
 
     # Act
-    remove_cats_mapper = remove_cats(category_names=categories)  # type: ignore # pylint: disable=E1120  # 259
+    remove_cats_mapper = remove_cats(category_names=categories)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
 
     # Assert
@@ -209,7 +209,7 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     sub_categories = {names.C.CELL: [names.C.RN, names.C.RS], names.C.ROW: names.C.RN}
 
     # Act
-    remove_cats_mapper = remove_cats(sub_categories=sub_categories)  # type: ignore # pylint: disable=E1120  # 259
+    remove_cats_mapper = remove_cats(sub_categories=sub_categories)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
 
     # Assert

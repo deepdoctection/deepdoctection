@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow  # type: ignore
+from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
 from ..utils.logger import logger
 from .dataflow_builder import DataFlowBaseBuilder
@@ -306,9 +306,12 @@ class MergeDataset(DatasetBase):
                 """
 
                 split = kwargs.get("split", "train")
-                max_datapoints = int(kwargs.get("max_datapoints"))  # type: ignore
+                assert isinstance(split, str)
+                max_datapoints = kwargs.get("max_datapoints")
+                if isinstance(max_datapoints, str):
+                    max_datapoints = int(max_datapoints)
 
-                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints)  # type: ignore
+                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints)
 
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()

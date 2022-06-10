@@ -23,13 +23,14 @@ import errno
 import os
 from base64 import b64encode
 from io import BytesIO
-from typing import Callable, List, Literal, Optional, Protocol, Union, overload
+from pathlib import Path
+from typing import Callable, Literal, Optional, Protocol, Sequence, Union, overload
 from urllib.request import urlretrieve
 
 from cv2 import IMREAD_COLOR, imread
 
 from ..utils.pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .detection_types import ImageType
+from .detection_types import ImageType, Pathlike
 from .logger import logger
 from .tqdm import get_tqdm
 
@@ -57,7 +58,7 @@ def sizeof_fmt(num: float, suffix: str = "B") -> str:
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
-def mkdir_p(dir_name: str) -> None:
+def mkdir_p(dir_name: Pathlike) -> None:
     """
     Like "mkdir -p", make a dir recursively, but do nothing if the dir exists
 
@@ -75,7 +76,7 @@ def mkdir_p(dir_name: str) -> None:
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
-def download(url: str, directory: str, file_name: Optional[str] = None, expect_size: Optional[int] = None) -> str:
+def download(url: str, directory: Pathlike, file_name: Optional[str] = None, expect_size: Optional[int] = None) -> str:
     """
     Download URL to a directory. Will figure out the filename automatically from URL, if not given.
     """
@@ -105,7 +106,7 @@ def download(url: str, directory: str, file_name: Optional[str] = None, expect_s
 
     try:
         with get_tqdm(unit="B", unit_scale=True, miniters=1, desc=file_name) as time:
-            f_path, _ = urlretrieve(url, f_path, reporthook=hook(time))  # type: ignore
+            f_path, _ = urlretrieve(url, f_path, reporthook=hook(time))
         stat_info = os.stat(f_path)
         size = stat_info.st_size
     except IOError:
@@ -121,7 +122,7 @@ def download(url: str, directory: str, file_name: Optional[str] = None, expect_s
     return f_path
 
 
-def is_file_extension(file_name: str, extension: Union[str, List[str]]) -> bool:
+def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:
     """
     Check if a given file name has a given extension
 
@@ -134,34 +135,17 @@ def is_file_extension(file_name: str, extension: Union[str, List[str]]) -> bool:
     return os.path.splitext(file_name)[-1].lower() in extension
 
 
-class LoadImageFunc(Protocol):  # pylint: disable = R0903
-    """
-    Protocol for typing load_image_from_file
-    """
-
-    @overload
-    def __call__(self, path: str, type_id: Literal["np"]) -> Optional[ImageType]:
-        ...
-
-    @overload
-    def __call__(self, path: str, type_id: Literal["b64"]) -> Optional[str]:
-        ...
-
-    def __call__(self, path: str, type_id: Literal["np", "b64"]) -> Optional[Union[str, ImageType]]:
-        ...
-
-
 @overload
-def load_image_from_file(path: str, type_id: Literal["np"] = "np") -> Optional[ImageType]:
+def load_image_from_file(path: Pathlike, type_id: Literal["np"] = "np") -> Optional[ImageType]:
     ...
 
 
 @overload
-def load_image_from_file(path: str, type_id: Literal["b64"]) -> Optional[str]:
+def load_image_from_file(path: Pathlike, type_id: Literal["b64"]) -> Optional[str]:
     ...
 
 
-def load_image_from_file(path: str, type_id: Literal["np", "b64"] = "np") -> Optional[Union[str, ImageType]]:
+def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -> Optional[Union[str, ImageType]]:
     """
     Loads an image from path and passes back an encoded base64 string, a numpy array or None if file is not found
     or a conversion error occurs.
@@ -171,6 +155,7 @@ def load_image_from_file(path: str, type_id: Literal["np", "b64"] = "np") -> Opt
     :return: image of desired representation
     """
     image: Optional[Union[str, ImageType]] = None
+    path = path.as_posix() if isinstance(path, Path) else path
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]), f"image type not allowed: {path}"
     assert type_id in ("np", "b64"), "type not allowed"
@@ -187,7 +172,7 @@ def load_image_from_file(path: str, type_id: Literal["np", "b64"] = "np") -> Opt
     return image
 
 
-def load_bytes_from_pdf_file(path: str) -> bytes:
+def load_bytes_from_pdf_file(path: Pathlike) -> bytes:
     """
     Loads a pdf file with one single page and passes back a bytes' representation of this file. Can be converted into
     a numpy or directly passed to the attr: image of Image.
@@ -206,9 +191,18 @@ def load_bytes_from_pdf_file(path: str) -> bytes:
     return buffer.getvalue()
 
 
+class LoadImageFunc(Protocol):  # pylint: disable = R0903
+    """
+    Protocol for typing load_image_from_file
+    """
+
+    def __call__(self, path: Pathlike) -> Optional[ImageType]:
+        ...
+
+
 def get_load_image_func(
-    path: str,
-) -> Union[LoadImageFunc, Callable[[str], bytes]]:
+    path: Pathlike,
+) -> Union[LoadImageFunc, Callable[[Pathlike], bytes]]:
     """
     Return the loading function according to its file extension.
 
@@ -225,7 +219,7 @@ def get_load_image_func(
     return NotImplemented
 
 
-def maybe_path_or_pdf(path: str) -> int:
+def maybe_path_or_pdf(path: Pathlike) -> int:
     """
     Checks if the path points to a directory or a pdf document. Returns 1 if the path points to a directory, 2
     if the path points to a pdf doc or 0, if none of the previous is true.

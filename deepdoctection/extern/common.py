@@ -19,8 +19,10 @@
 Some classes used throughout the various external libraries.
 """
 
+from typing import Union
+
 import cv2
-from dataflow.dataflow.imgaug import ResizeTransform  # type: ignore
+from dataflow.dataflow.imgaug import ResizeTransform
 
 from ..utils.detection_types import ImageType
 
@@ -45,15 +47,18 @@ class InferenceResize:  # pylint: disable=R0903
         get transform
         """
         h, w = img.shape[:2]
+        new_w: Union[int,float]
+        new_h: Union[int,float]
 
         scale = self.short_edge_length * 1.0 / min(h, w)
+
         if h < w:
             new_h, new_w = self.short_edge_length, scale * w
         else:
-            new_h, new_w = scale * h, self.short_edge_length  # type: ignore
+            new_h, new_w = scale * h, self.short_edge_length
         if max(new_h, new_w) > self.max_size:
             scale = self.max_size * 1.0 / max(new_h, new_w)
-            new_h = new_h * scale  # type: ignore
+            new_h = new_h * scale
             new_w = new_w * scale
         new_w = int(new_w + 0.5)
         new_h = int(new_h + 0.5)

@@ -81,14 +81,6 @@ deepdoctection.utils.systools
    :undoc-members:
    :show-inheritance:
 
-deepdoctection.utils.timer
------------------------------------
-
-.. automodule:: deepdoctection.utils.timer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 deepdoctection.utils.tqdm
 ----------------------------------
 

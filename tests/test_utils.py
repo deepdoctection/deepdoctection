@@ -20,27 +20,27 @@ Module for methods that might be helpful for testing
 """
 
 import os
+from pathlib import Path
 from typing import Any, Iterable, List, Optional, Union
 
 from dataflow import DataFlow  # type: ignore
 
 from deepdoctection.datapoint import Annotation
-from deepdoctection.utils import sub_path
 from deepdoctection.utils.systools import get_package_path
 
 
-def get_test_path() -> str:
+def get_test_path() -> Path:
     """
     get path to test objects
     """
-    return sub_path(os.path.split(__file__)[0], "tests/test_objects")
+    return Path(os.path.split(__file__)[0]) / "test_objects"
 
 
-def get_integration_test_path() -> str:
+def get_integration_test_path() -> Path:
     """
     fixture integration test path
     """
-    return os.path.join(get_package_path(), "notebooks/pics/samples/sample_2")
+    return get_package_path() / "notebooks" / "pics" / "samples" / "sample_2"
 
 
 def collect_datapoint_from_dataflow(df: DataFlow) -> List[Any]:

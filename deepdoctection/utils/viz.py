@@ -286,9 +286,9 @@ def interactive_imshow(
 
     def mouse_cb(event, x, y, *args):  # type: ignore
         if event == cv2.EVENT_LBUTTONUP and lclick_cb is not None:
-            lclick_cb(img, x, y)
+            lclick_cb(img.astype(dtype=float32), x, y)
         elif event == cv2.EVENT_RBUTTONUP and rclick_cb is not None:
-            rclick_cb(img, x, y)
+            rclick_cb(img.astype(dtype=float32), x, y)
 
     cv2.setMouseCallback(name, mouse_cb)
     key = cv2.waitKey(-1)

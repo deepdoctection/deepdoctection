@@ -50,13 +50,12 @@ class Annotation(ABC):
     :attr:`external_id`: A string or integer value for generating an annotation id. Note, that the resulting annotation
     id will not depend on the defining attributes.
 
-    :attr:`annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
+    :attr:`_annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
     """
 
     active: bool = field(default=True, init=False, repr=True)
     external_id: Optional[Union[str, int]] = field(default=None, init=True, repr=False)
-    annotation_id: str = field(init=False, repr=True)
-    _annotation_id: Optional[str] = field(default=None, init=False, repr=False)
+    _annotation_id: Optional[str] = field(default=None, init=False, repr=True)
 
     def __post_init__(self) -> None:
         """
@@ -72,7 +71,7 @@ class Annotation(ABC):
                 self.annotation_id = get_uuid(external_id)
         self._assert_defining_attributes_have_str()
 
-    @property  # type: ignore
+    @property
     def annotation_id(self) -> str:  # pylint: disable=E0102
         """
         annotation_id
@@ -96,7 +95,7 @@ class Annotation(ABC):
             raise ValueError("annotation_id must be uuid3 string")
 
     @abstractmethod
-    def get_defining_attributes(self) -> List[str]:  # type: ignore
+    def get_defining_attributes(self) -> List[str]:
         """
         Defining attributes of an Annotation instance are attributes, of which you think that they uniquely
         describe the annotation object. If you do not provide an external id, only the defining attributes will be used
@@ -104,7 +103,7 @@ class Annotation(ABC):
 
         :return: A list of attributes.
         """
-        NotImplemented  # pylint: disable=W0104
+        raise NotImplementedError  # pylint: disable=W0104
 
     def _assert_defining_attributes_have_str(self) -> None:
         for attr in self.get_defining_attributes():
@@ -148,12 +147,12 @@ class Annotation(ABC):
         self.active = False
 
     @abstractmethod
-    def get_export(self) -> Dict[str, Any]:  # type: ignore  # pylint: disable=C0116
+    def get_export(self) -> Dict[str, Any]:  # pylint: disable=C0116
         """
         Generate a dictionary representing the object that can be saved to a file. See some
         built-in examples e.g. :meth:`CategoryAnnotation.get_export`
         """
-        NotImplemented  # pylint: disable=W0104
+        raise NotImplementedError  # pylint: disable=W0104
 
 
 @dataclass
@@ -182,55 +181,16 @@ class CategoryAnnotation(Annotation):
     :meth:`dump_relationship` instead.
     """
 
-    category_name: str = field(default_factory=str)
-    _category_id: str = field(default="-1", init=False, repr=False)
-    category_id: Union[str, int] = field(default="-1")
+    category_name: str = field(default="")
+    category_id: str = field(default="")
     score: Optional[float] = field(default=None)
-    _sub_categories: Dict[str, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=False)
-    _relationships: Dict[str, List[str]] = field(default_factory=dict, init=False, repr=False)
     sub_categories: Dict[str, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
     relationships: Dict[str, List[str]] = field(default_factory=dict, init=False, repr=True)
 
     def __post_init__(self) -> None:
+        self.category_id = str(self.category_id)
         assert self.category_name
         super().__post_init__()
-
-    @property  # type: ignore
-    def category_id(self) -> str:  # pylint: disable=E0102
-        """
-        category_id
-        """
-        return self._category_id
-
-    @category_id.setter
-    def category_id(self, input_id: Optional[Union[str, int]]) -> None:
-        self._category_id = str(input_id)
-
-    @property  # type: ignore
-    def sub_categories(self) -> Dict[str, "CategoryAnnotation"]:  # pylint: disable=E0102
-        """
-        sub_categories
-        """
-        return self._sub_categories
-
-    @sub_categories.setter
-    def sub_categories(self, inputs: Dict[str, "CategoryAnnotation"]) -> None:  # pylint: disable=E0102
-        """
-        sub_categories setter
-        """
-
-    @property  # type: ignore
-    def relationships(self) -> Dict[str, List[str]]:  # pylint: disable=E0102
-        """
-        relationships
-        """
-        return self._relationships
-
-    @relationships.setter
-    def relationships(self, inputs: Dict[str, List[str]]) -> None:
-        """
-        relationships setter
-        """
 
     def dump_sub_category(
         self, sub_category_name: str, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
@@ -245,7 +205,7 @@ class CategoryAnnotation(Annotation):
         :param container_id_context: Tuple/list of context ids.
         """
 
-        assert sub_category_name not in self._sub_categories, (
+        assert sub_category_name not in self.sub_categories, (
             f"{sub_category_name} as sub category already defined for " f"{self.annotation_id}"
         )
         if self._annotation_id is not None:
@@ -257,7 +217,7 @@ class CategoryAnnotation(Annotation):
                 annotation.annotation_id = annotation.set_annotation_id(
                     annotation, tmp_annotation_id, *container_id_context
                 )
-        self._sub_categories[sub_category_name] = annotation
+        self.sub_categories[sub_category_name] = annotation
 
     def get_sub_category(self, sub_category_name: str) -> "CategoryAnnotation":
         """
@@ -267,7 +227,7 @@ class CategoryAnnotation(Annotation):
 
         :return: sub category as CategoryAnnotation
         """
-        return self._sub_categories[sub_category_name]
+        return self.sub_categories[sub_category_name]
 
     def remove_sub_category(self, key: str) -> None:
         """
@@ -277,7 +237,7 @@ class CategoryAnnotation(Annotation):
         :param key: A key to a sub category.
         """
 
-        self._sub_categories.pop(key)
+        self.sub_categories.pop(key)
 
     def dump_relationship(self, key: str, annotation_id: str) -> None:
         """
@@ -288,10 +248,10 @@ class CategoryAnnotation(Annotation):
         :param annotation_id: An annotation id
         """
         assert is_uuid_like(annotation_id), "annotation_id must be uuid"
-        if key not in self._relationships:
-            self._relationships[key] = []
-        if annotation_id not in self._relationships[key]:
-            self._relationships[key].append(annotation_id)
+        if key not in self.relationships:
+            self.relationships[key] = []
+        if annotation_id not in self.relationships[key]:
+            self.relationships[key].append(annotation_id)
 
     def get_relationship(self, key: str) -> List[str]:
         """
@@ -300,8 +260,8 @@ class CategoryAnnotation(Annotation):
         :param key: The key for the required relationship.
         :return: Get a (possibly) empty list of annotation ids.
         """
-        if key in self._relationships:
-            return self._relationships[key]
+        if key in self.relationships:
+            return self.relationships[key]
         return []
 
     def remove_relationship(self, key: str, annotation_ids: Optional[Union[List[str], str]] = None) -> None:
@@ -319,11 +279,11 @@ class CategoryAnnotation(Annotation):
                 annotation_ids = [annotation_ids]
             for ann_id in annotation_ids:
                 try:
-                    self._relationships[key].remove(ann_id)
+                    self.relationships[key].remove(ann_id)
                 except ValueError:
                     pass
         else:
-            self._relationships[key].clear()
+            self.relationships[key].clear()
 
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "category_id"]
@@ -335,7 +295,7 @@ class CategoryAnnotation(Annotation):
 
         :return: List of attributes.
         """
-        return ["_annotation_id", "_category_id", "_relationships", "_sub_categories", "external_id"]
+        return ["_category_id", "_relationships", "_sub_categories", "external_id"]
 
     def get_export(self) -> Dict[str, Any]:
         """
@@ -344,12 +304,12 @@ class CategoryAnnotation(Annotation):
         :return: dict that e.g. can be saved to a file.
         """
         ann_copy = deepcopy(self)
-        ann_copy._sub_categories = {}  # pylint: disable=W0212
+        ann_copy.sub_categories = {}  # pylint: disable=W0212
         export_dict = self.as_dict()
 
         export_dict["sub_categories"] = {}
 
-        for key, value in self._sub_categories.items():
+        for key, value in self.sub_categories.items():
             export_dict["sub_categories"][key] = value.get_export()
         try:
             int(export_dict["category_id"])
@@ -375,7 +335,7 @@ class ImageAnnotation(CategoryAnnotation):
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
-    image: Optional["Image"] = field(default=None, init=False, repr=False)  # type:ignore
+    image: Optional["Image"] = field(default=None, init=False, repr=False)  # type: ignore
 
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "bounding_box"]

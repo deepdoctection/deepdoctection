@@ -42,7 +42,7 @@ def test_image_to_layoutlm(
     """
 
     # Arrange
-    xfund_to_image_func = xfund_to_image(True, False, xfund_category_names)  # type: ignore # pylint: disable=E1120
+    xfund_to_image_func = xfund_to_image(True, False, xfund_category_names)  # pylint: disable=E1120
     image = xfund_to_image_func(datapoint_xfund)
     tokenizer_output = {
         "input_ids": layoutlm_input["input_ids"],
@@ -57,7 +57,7 @@ def test_image_to_layoutlm(
     tokenizer.tokenize = MagicMock(side_effect=word_output)
 
     # Act
-    image_to_layoutlm_func = image_to_layoutlm(tokenizer=tokenizer)  # type: ignore # pylint: disable=E1120
+    image_to_layoutlm_func = image_to_layoutlm(tokenizer=tokenizer)  # pylint: disable=E1120
     output = image_to_layoutlm_func(image)  # pylint: disable=E1102
 
     # Assert

@@ -41,7 +41,7 @@ def test_coco_to_image(datapoint_coco: JsonDict, categories_coco: Dict[str, str]
     """
     load_image = True
     # Act
-    coco_to_image_mapper = coco_to_image(categories_coco, load_image, True, True)  # type: ignore # pylint: disable=E1120  # 259
+    coco_to_image_mapper = coco_to_image(categories_coco, load_image, True, True)  # pylint: disable=E1120  # 259
     dp = coco_to_image_mapper(datapoint_coco)
 
     # Assert
@@ -53,14 +53,16 @@ def test_coco_to_image(datapoint_coco: JsonDict, categories_coco: Dict[str, str]
     assert dp.height == datapoint.get_height(load_image)
     assert test_anns[0].category_name == datapoint.get_first_ann_category(False)
     assert test_anns[0].category_id == datapoint.get_first_ann_category(True)
+    assert test_anns[0].bounding_box
     assert isclose(test_anns[0].bounding_box.ulx, datapoint.get_first_ann_box().ulx, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.uly, datapoint.get_first_ann_box().uly, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)
     assert isclose(test_anns[0].bounding_box.height, datapoint.get_first_ann_box().h, rel_tol=1e-15)
 
     load_image = False
-    coco_to_image_mapper = coco_to_image(categories_coco, load_image, True, True)  # type: ignore # pylint: disable=E1120  # 259
+    coco_to_image_mapper = coco_to_image(categories_coco, load_image, True, True)  # pylint: disable=E1120  # 259
     dp = coco_to_image_mapper(datapoint_coco)
+    assert dp
     assert isclose(dp.width, datapoint.get_width(load_image), rel_tol=1e-15)
     assert isclose(dp.height, datapoint.get_height(load_image), rel_tol=1e-15)
 

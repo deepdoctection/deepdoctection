@@ -137,6 +137,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
         str_col_idx = -1
         str_col_idx += length
 
+        val: Union[str,int]
         for i, head in enumerate(header):
             result[head] = []
             for row in rows:
@@ -145,7 +146,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
 
                 val = row[i]
                 if row[i].isdigit() and i != -1 and head != "text":
-                    val = int(row[i])  # type: ignore
+                    val = int(row[i])
                 elif head == "text":
                     val = str(row[i])
                 result[head].append(val)

@@ -22,15 +22,16 @@ Module for tools around processing documents with Pipelines.
 import json
 import os
 
-from dataflow.dataflow import DataFlow, MapData  # type:ignore
+from dataflow.dataflow import DataFlow, MapData
 
 from ..dataflow.custom_serialize import SerializerJsonlines
 from ..datapoint.doc import Page
 from ..mapper.pagestruct import page_dict_to_page
 from ..utils.fs import is_file_extension
+from ..utils.detection_types import Pathlike
 
 
-def load_page(path: str) -> Page:
+def load_page(path: Pathlike) -> Page:
     """
     Load a json file and generate a page object.
 
@@ -39,16 +40,16 @@ def load_page(path: str) -> Page:
     """
 
     assert os.path.isfile(path), path
-    file = os.path.split(path)[1]
-    assert is_file_extension(file, ".json"), file
+    file_name = os.path.split(path)[1]
+    assert is_file_extension(file_name, ".json"), file_name
 
-    with open(path, "r", encoding="UTF-8") as file:  # type: ignore
-        page_dict = json.load(file)  # type: ignore
+    with open(path, "r", encoding="UTF-8") as file:
+        page_dict = json.load(file)
 
     return page_dict_to_page(page_dict)
 
 
-def load_document(path: str) -> DataFlow:
+def load_document(path: Pathlike) -> DataFlow:
     """
     Load a parsed document from a .jsonl file and generate a DataFlow that can be streamed.
 
