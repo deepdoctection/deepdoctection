@@ -21,7 +21,7 @@ Module for small mapping functions
 
 import ast
 import os
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union, Mapping
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
@@ -34,7 +34,7 @@ if lxml_available():
     from lxml import etree  # type: ignore  # pylint: disable=W0611
 
 
-def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
+def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
     """
     Mapping an input from :class:`dataflow.SerializerFiles` or similar to an Image
 
@@ -51,8 +51,8 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         location = dp
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name",""))
-        location = dp.get("location")
-        if location is None:
+        location = str(dp.get("location",""))
+        if location == "":
             location = str(dp.get("path",""))
             location = os.path.join(location, file_name)
     else:
@@ -62,7 +62,7 @@ def to_image(dp: Union[str, Dict[str, Union[str, bytes]]], dpi: Optional[int] = 
         dp_image = Image(file_name=file_name, location=location)
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
-                dp_image.pdf_bytes = dp.get("pdf_bytes")  # type: ignore
+                dp_image.pdf_bytes = dp.get("pdf_bytes")
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)

@@ -40,7 +40,7 @@ def match_anns_by_intersection(
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
     max_parent_only: bool = False,
-) -> Tuple[Any, Any, List[ImageAnnotation], List[ImageAnnotation]]:
+) -> Tuple[Any, Any, Sequence[ImageAnnotation], Sequence[ImageAnnotation]]:
     """
     Generates an iou/ioa-matrix for parent_ann_categories and child_ann_categories and returns pairs of child/parent
     indices that are above some intersection threshold. It will also return a list of all pre selected parent and child

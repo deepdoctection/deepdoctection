@@ -21,7 +21,7 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Mapping
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
@@ -49,7 +49,7 @@ class PipelineComponent(ABC):  # pylint: disable=R0903
     Caution: Currently, predictors can only process single images. Processing higher number of batches is not planned.
     """
 
-    def __init__(self, category_id_mapping: Optional[Dict[int, int]]):
+    def __init__(self, category_id_mapping: Optional[Mapping[int, int]]):
         """
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
@@ -117,7 +117,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
     def __init__(
         self,
         predictor: Union[ObjectDetector, PdfMiner, TextRecognizer],
-        category_id_mapping: Optional[Dict[int, int]],
+        category_id_mapping: Optional[Mapping[int, int]],
     ) -> None:
         """
         :param predictor: An Object detector for predicting
