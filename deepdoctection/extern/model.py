@@ -202,7 +202,7 @@ class ModelCatalog:
             tp_model=False,
             hf_repo_id="mrm8488/layoutlm-finetuned-funsd",
             hf_model_name="pytorch_model.bin",
-            hf_config_file=["layoutlm-finetuned-funsd/config.json"],
+            hf_config_file=["config.json"],
             categories={"1":"B-ANSWER", "2":"B-HEADER", "3":"B-QUESTION", "4":"E-ANSWER", "5":"E-HEADER",
                         "6":"E-QUESTION", "7":"I-ANSWER", "8":"I-HEADER", "9":"I-QUESTION", "10":"O",
                         "11":"S-ANSWER", "12":"S-HEADER", "13":"S-QUESTION"},
