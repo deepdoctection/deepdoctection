@@ -29,9 +29,14 @@ import numpy as np
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
 from ..utils.logger import logger
+from ..utils.file_utils import pytorch_available
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
+from .registry import get_dataset
+
+if pytorch_available():
+    from torch.utils.data import IterableDataset
 
 class DatasetBase(ABC):
     """
@@ -315,3 +320,16 @@ class MergeDataset(DatasetBase):
 
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
+
+
+class DatasetAdapter(IterableDataset):
+
+    def __init__(self, name: str, cache_dataset: bool, **build_kwargs ):
+        self.dataset = get_dataset(name)
+        self.df = self.dataset.dataflow.build(**build_kwargs)
+        if cache_dataset:
+            df_list = CacheData(self.df, shuffle = True).get_cache()
+            self.df = CustomDataFromList(df_list)
+
+    def __iter__(self):
+        return iter(self.df)
