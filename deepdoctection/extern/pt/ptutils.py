@@ -19,6 +19,7 @@
 Torch related utils
 """
 
+
 from ...utils.file_utils import pytorch_available
 
 
@@ -31,3 +32,7 @@ def set_torch_auto_device() -> "torch.device":  # type: ignore
 
         return device("cuda" if cuda.is_available() else "cpu")
     raise ModuleNotFoundError
+
+
+
+
