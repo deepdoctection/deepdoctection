@@ -1,5 +1,5 @@
 
-from typing import Union, Callable, Optional, Iterable
+from typing import Union, Callable, Optional, Iterator
 
 from ..utils.logger import logger
 from ..utils.detection_types import  JsonDict
@@ -39,7 +39,7 @@ class DatasetAdapter(IterableDataset):
         else:
             self.df.reset_state()
 
-    def __iter__(self) -> Iterable[Image]:
+    def __iter__(self) -> Iterator[Image]:
         return iter(self.df)
 
     def __len__(self) -> int:
