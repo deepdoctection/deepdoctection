@@ -28,7 +28,7 @@ from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
 from cv2 import IMREAD_COLOR, imread
-from PyPDF2 import PdfFileReader, PdfFileWriter  # type: ignore
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike

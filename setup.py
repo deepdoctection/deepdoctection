@@ -109,7 +109,9 @@ dist_deps = deps_list(
     "packaging",
     "pypdf2",
     "pyyaml",
+    "types-PyYAML",
     "types-termcolor",
+    "types-tabulate",
 )
 
 if sys.platform == "linux":
