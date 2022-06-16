@@ -28,7 +28,7 @@ from typing import Any, Optional, Union
 import cv2
 import numpy as np
 from numpy.typing import NDArray
-from PyPDF2 import PdfFileReader  # type: ignore
+from PyPDF2 import PdfFileReader
 
 from ..utils.detection_types import ImageType
 from ..utils.develop import deprecated

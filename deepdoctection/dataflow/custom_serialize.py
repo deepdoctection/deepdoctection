@@ -346,7 +346,7 @@ class CocoParser:
                     ids &= set(self.cat_to_imgs[cat_id])
         return list(ids)
 
-    def load_anns(self, ids: Optional[Union[int, Sequence[int]]] = None) -> [List[JsonDict]]:
+    def load_anns(self, ids: Optional[Union[int, Sequence[int]]] = None) -> List[JsonDict]:
         """
         Load anns with the specified ids.
 
@@ -360,7 +360,7 @@ class CocoParser:
 
         return [self.anns[id] for id in ids]
 
-    def load_cats(self, ids: Optional[Union[int, Sequence[int]]] = None) -> [List[JsonDict]]:
+    def load_cats(self, ids: Optional[Union[int, Sequence[int]]] = None) -> List[JsonDict]:
         """
         Load cats with the specified ids.
 
