@@ -282,10 +282,11 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     ):
         if metric_name is not None:
             metric = metric_registry.get(metric_name)
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
-            dataset_val.dataflow.categories.get_categories(filtered=True),
+            categories,
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback

@@ -12,7 +12,7 @@ from detectron2.solver import build_lr_scheduler, build_optimizer
 from detectron2.data.transforms import ResizeShortestEdge, RandomFlip
 from detectron2.data import build_detection_train_loader, DatasetMapper
 from detectron2.checkpoint import DetectionCheckpointer, PeriodicCheckpointer
-from detectron2.engine import default_writers
+from detectron2.engine import default_writers, DefaultTrainer, EvalHook, launch
 
 
 from ..utils.logger import logger
@@ -21,23 +21,45 @@ from ..datasets.adapter import DatasetAdapter
 from ..mapper.d2struct import image_to_d2_training
 from ..utils.utils import string_to_dict
 from ..eval.base import MetricBase
+from ..eval.eval import Evaluator
+from ..eval.registry import metric_registry
+from ..extern.d2detect import D2FrcnnDetector
+from ..pipe.base import PredictorPipelineComponent
+from ..pipe.registry import pipeline_component_registry
 
 
 def _set_config(path_config_yaml: str, conf_list: List[str]) -> "CfgNode":
     cfg = get_cfg()
+    cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.01
     cfg.merge_from_file(path_config_yaml)
     cfg.merge_from_list(conf_list)
-    cfg.TRAIN_SHORT_EDGE_SIZE = [400,600]
-    cfg.MAX_SIZE = 1333
-    cfg.MODEL.DEVICE = "cpu"
     cfg.freeze()
     return cfg
+
+
+class D2Trainer(DefaultTrainer):
+
+    def __init__(self,cfg, dataset, mapper):
+        self.dataset = dataset
+        self.mapper = mapper
+        self.evaluator = None
+        super().__init__(cfg)
+
+    def build_train_loader(self,cfg):
+        return build_detection_train_loader(dataset=self.dataset,mapper=self.mapper,total_batch_size=cfg.SOLVER.IMS_PER_BATCH)
+
+    def eval_with_dd_evaluator(self,category_names,sub_categories,**build_eval_kwargs):
+        scores = self.evaluator.run(category_names, sub_categories, True, **build_eval_kwargs)
+        return scores
+
+    def setup_evaluator(self, dataset, pipeline_component, metric):
+        self.evaluator = Evaluator(dataset, pipeline_component, metric, num_threads=torch.cuda.device_count() * 2)
 
 
 def train_d2_faster_rcnn(path_config_yaml: str,
                          dataset_train: Union[str, DatasetBase],
                          path_weights: str,
-                         config_overwrite: Optional[List[str]],
+                         config_overwrite: Optional[List[str]]= None,
                          log_dir: str = "train_log/frcnn",
                          build_train_config: Optional[Sequence[str]] = None,
                          dataset_val: Optional[DatasetBase] = None,
@@ -53,6 +75,12 @@ def train_d2_faster_rcnn(path_config_yaml: str,
     if "split" not in build_train_dict:
         build_train_dict["split"] = "train"
 
+    build_val_dict: Dict[str, str] = {}
+    if build_val_config is not None:
+        build_val_dict = string_to_dict(",".join(build_val_config))
+    if "split" not in build_val_dict:
+        build_val_dict["split"] = "val"
+
     if config_overwrite is None:
         config_overwrite = []
     conf_list = ["MODEL.WEIGHTS", path_weights, "OUTPUT_DIR", log_dir]
@@ -61,59 +89,30 @@ def train_d2_faster_rcnn(path_config_yaml: str,
         conf_list.extend([key, val])
     cfg = _set_config(path_config_yaml, conf_list)
 
+    if metric_name is not None:
+        metric = metric_registry.get(metric_name)
 
 
-    model = build_model(cfg)
-    model.train()
-    logger.info("Model:\n{}".format(model))
-
-    optimizer = build_optimizer(cfg, model)
-    scheduler = build_lr_scheduler(cfg, optimizer)
-
-    checkpointer = DetectionCheckpointer(
-        model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
-    )
-    start_iter = (
-        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS).get("iteration", -1) + 1
-    )
-    max_iter = 5 #cfg.SOLVER.MAX_ITER
-
-    periodic_checkpointer = PeriodicCheckpointer(
-        checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter
-    )
-
-    writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
     dataset = DatasetAdapter(dataset_train,False,image_to_d2_training(False),**build_train_dict)
-
-    try:
-        total_passes = (max_iter-start_iter) * cfg.SOLVER.IMS_PER_BATCH / len(dataset)
-        logger.info("Total passes of the training set is: %i", total_passes)
-    except TypeError:
-        logger.info("Cannot evaluate size of dataflow and total passes")
-
-    augment_list = [ResizeShortestEdge(cfg.TRAIN_SHORT_EDGE_SIZE,cfg.MAX_SIZE),RandomFlip()]
+    augment_list = [ResizeShortestEdge(cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN),RandomFlip()]
     mapper = DatasetMapper(is_train=True,augmentations=augment_list,image_format="BGR")
-    data_loader = build_detection_train_loader(dataset=dataset, mapper=mapper,total_batch_size=1)
 
-    with EventStorage(start_iter) as storage:
-        for data, iteration in zip(data_loader, range(start_iter, max_iter)):
-            storage.iter = iteration
-            loss_dict = model(data)
-            losses = sum(loss_dict.values())
-            assert torch.isfinite(losses).all(), loss_dict
-            loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
-            losses_reduced = sum(loss for loss in loss_dict_reduced.values())
-            if comm.is_main_process():
-                storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
-            optimizer.zero_grad()
-            losses.backward()
-            optimizer.step()
-            storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
-            scheduler.step()
-            if iteration - start_iter > 0 and (
-                (iteration + 1) % 1 == 0 or iteration == max_iter - 1
-            ):
-                for writer in writers:
-                    writer.write()
-            periodic_checkpointer.step(iteration)
+    trainer = D2Trainer(cfg,dataset,mapper)
+    trainer.resume_or_load()
+
+    if cfg.TEST.EVAL_PERIOD > 0:
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
+        detector = D2FrcnnDetector(path_config_yaml, path_weights,categories, config_overwrite,cfg.MODEL.DEVICE)
+        pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
+        pipeline_component = pipeline_component_cls(detector)
+        assert isinstance(pipeline_component, PredictorPipelineComponent)
+
+        trainer.setup_evaluator(dataset_val, pipeline_component,metric)
+        trainer.register_hooks([EvalHook(cfg.TEST.EVAL_PERIOD,lambda: trainer.eval_with_dd_evaluator(category_names = categories,
+                               sub_categories=dataset_val.dataflow.categories.cat_to_sub_cat, **build_val_dict))])
+
+    return trainer.train()
+
+
+
