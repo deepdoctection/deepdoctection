@@ -28,4 +28,5 @@ development. For a more application-related access, we refer to the notebooks th
   :maxdepth: 1
   :caption: Scripts
 
+  eval_tp_vs_d2
   scripts
