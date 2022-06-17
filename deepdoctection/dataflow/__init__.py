@@ -21,6 +21,7 @@ from dataflow.dataflow import (  # pylint: disable=W0622
     MapDataComponent,
     MultiProcessMapData,
     ProxyDataFlow,
+    RepeatedData,
 )
 
 from .common import *

@@ -27,6 +27,7 @@ from io import BytesIO
 from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
+from numpy import uint8
 from cv2 import IMREAD_COLOR, imread
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
@@ -208,4 +209,4 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dp
         _run_poppler(_input_to_cli_str(input_file_name, tmp_name, dpi, size))
         image = imread(tmp_name + "-1.png", IMREAD_COLOR)
 
-    return image
+    return image.astype(uint8)
