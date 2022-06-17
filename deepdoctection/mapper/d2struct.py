@@ -1,4 +1,4 @@
-from typing import Dict, Union, Optional
+from typing import Dict, Union, Optional, List
 
 from detectron2.structures import BoxMode
 from ..utils.detection_types import JsonDict
@@ -34,7 +34,7 @@ def image_to_d2_training(dp: Image, add_mask: bool = False) -> Optional[JsonDict
     annotations = []
 
     for ann in anns:
-        mapped_ann: Dict[str,Union[str,int]] = {}
+        mapped_ann: Dict[str,Union[str,int,List[float]]] = {}
         mapped_ann["bbox_mode"] = BoxMode.XYXY_ABS
         mapped_ann["bbox"] = ann.bounding_box.to_list(mode="xyxy")
         mapped_ann["category_id"]=int(ann.category_id) - 1

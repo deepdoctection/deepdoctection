@@ -187,7 +187,7 @@ class CocoParser:
         self.cat_to_imgs: DefaultDict[int, List[int]] = defaultdict(list)
 
         if annotation_file is not None:
-            with timed_operation(message="loading annotations to memory"):
+            with timed_operation(message="Loading annotations to memory"):
                 with open(annotation_file, "r", encoding="UTF-8") as file:
                     dataset = json.load(file)
                 assert isinstance(dataset, dict), f"annotation file format {type(dataset)} not supported"

@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Union, Sequence
 
 import numpy as np
+from numpy import uint8
 
 from ..utils.detection_types import ImageType
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -146,7 +147,7 @@ class Image:
             self._self_embedding()
         else:
             assert isinstance(image, np.ndarray), f"cannot load image is of type: {type(image)}"
-            self._image = image
+            self._image = image.astype(uint8)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
 
