@@ -92,8 +92,6 @@ def train_d2_faster_rcnn(path_config_yaml: str,
     if metric_name is not None:
         metric = metric_registry.get(metric_name)
 
-
-
     dataset = DatasetAdapter(dataset_train,False,image_to_d2_training(False),**build_train_dict)
     augment_list = [ResizeShortestEdge(cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN),RandomFlip()]
     mapper = DatasetMapper(is_train=True,augmentations=augment_list,image_format="BGR")
