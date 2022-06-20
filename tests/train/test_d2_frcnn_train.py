@@ -21,7 +21,7 @@ Testing module train.d2_frcnn_train
 
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from pytest import mark
 
@@ -32,7 +32,15 @@ if detectron2_available():
     from deepdoctection.train.d2_frcnn_train import train_d2_faster_rcnn
 
 
+def set_num_gpu_to_one() -> int:
+    """
+    set gpu number to one
+    """
+    return 1
+
+
 @mark.requires_pt
+@patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deepdoctection.train.d2_frcnn_train.D2Trainer.train")
 def test_train_faster_rcnn(
     patch_train: Any, path_to_d2_frcnn_yaml: str, test_dataset: DatasetBase, tmp_path: Path
