@@ -120,15 +120,18 @@ test-tf-all:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
 
 test-pt-full: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not all" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not all and not requires_gpu" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-pt-all: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not requires_gpu" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-integration:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
+
+test-gpu:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "requires_gpu" tests
 
 up-pip: check-venv
 	@echo "--> Updating pip"
