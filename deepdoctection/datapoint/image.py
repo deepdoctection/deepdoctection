@@ -20,7 +20,7 @@ Dataclass Image
 """
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Union, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 import numpy as np
 from numpy import uint8

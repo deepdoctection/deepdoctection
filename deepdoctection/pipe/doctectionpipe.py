@@ -48,9 +48,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
     """
 
-    def __init__(
-        self, pipeline_component_list: List[PipelineComponent]
-    ):
+    def __init__(self, pipeline_component_list: List[PipelineComponent]):
         self.page_parser: PageParsingService
         if isinstance(pipeline_component_list[-1], PageParsingService):
             self.page_parser = pipeline_component_list.pop()

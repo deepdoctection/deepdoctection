@@ -21,7 +21,7 @@ Utility functions related to mapping tasks
 import functools
 import itertools
 from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
 from tabulate import tabulate
@@ -169,7 +169,7 @@ class LabelSummarizer:
         self.hist_bins = np.arange(1, cat_numbers + 2)
         self.summary = np.zeros(cat_numbers)
 
-    def dump(self, item: Union[List[Union[str, int]], str, int]) -> None:
+    def dump(self, item: Union[Sequence[Union[str, int]], str, int]) -> None:
         """
         Dump a category number
 

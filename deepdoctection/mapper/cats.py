@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Union, Mapping, Sequence
+from typing import Dict, List, Mapping, Optional, Sequence, Union
 
 from ..datapoint.image import Image
 from .maputils import curry
@@ -147,7 +147,7 @@ def image_to_cat_id(
     for ann in dp.get_annotation_iter():
         if ann.category_name in category_names:
             cat_container[ann.category_name].append(int(ann.category_id))
-        if ann.category_name in tmp_sub_category_names.keys():
+        if ann.category_name in tmp_sub_category_names:
             for sub_cat_name in tmp_sub_category_names[ann.category_name]:
                 sub_cat = ann.get_sub_category(sub_cat_name)
                 if sub_cat is not None:

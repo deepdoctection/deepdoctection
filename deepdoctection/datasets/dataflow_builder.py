@@ -110,5 +110,3 @@ class DataFlowBaseBuilder(ABC):
         :return: dataflow
         """
         raise NotImplementedError
-
-

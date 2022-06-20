@@ -22,7 +22,7 @@ Module for mapping annotations to and from xfund data structure
 import os
 from collections import defaultdict
 from itertools import chain
-from typing import Dict, Optional, Mapping
+from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict

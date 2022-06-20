@@ -21,7 +21,7 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Union, Mapping
+from typing import Any, Callable, Dict, List, Mapping, Optional, Union
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image

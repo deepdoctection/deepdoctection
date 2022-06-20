@@ -23,7 +23,7 @@ import itertools
 import queue
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from typing import Callable, List, Optional, Sequence, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, List, Optional, Sequence, Union
 
 import tqdm  # type: ignore
 
@@ -33,7 +33,7 @@ from ..utils.tqdm import get_tqdm
 from .base import PipelineComponent, PredictorPipelineComponent
 
 if TYPE_CHECKING:
-    QueueType = queue.Queue[Image]
+    QueueType = queue.Queue[Image]  # pylint: disable=E1136
 else:
     QueueType = queue.Queue
 
@@ -110,9 +110,9 @@ class MultiThreadPipelineComponent:
 
         :return: A list of Images
         """
-        with ThreadPoolExecutor(max_workers=len(self.pipe_components), thread_name_prefix="EvalWorker") as executor, tqdm.tqdm(
-            total=self.input_queue.qsize()
-        ) as pbar:
+        with ThreadPoolExecutor(
+            max_workers=len(self.pipe_components), thread_name_prefix="EvalWorker"
+        ) as executor, tqdm.tqdm(total=self.input_queue.qsize()) as pbar:
             futures = []
             for component in self.pipe_components:
                 futures.append(

@@ -21,7 +21,7 @@ Testing the module mapper.misc
 from typing import Dict, Union
 from unittest.mock import MagicMock, patch
 
-from numpy import  uint8, ones
+from numpy import ones, uint8
 from numpy.testing import assert_array_equal
 from pytest import mark
 

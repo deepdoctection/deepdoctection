@@ -29,10 +29,8 @@ import numpy as np
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
 from ..utils.logger import logger
-from ..utils.file_utils import pytorch_available
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
-
 
 
 class DatasetBase(ABC):
