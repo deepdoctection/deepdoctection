@@ -24,10 +24,13 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import LayoutTest
-from deepdoctection.datasets.adapter import DatasetAdapter
 from deepdoctection.mapper import image_to_d2_frcnn_training
+from deepdoctection.utils import pytorch_available
 
 from ..test_utils import collect_datapoint_from_dataflow, get_test_path
+
+if pytorch_available():
+    from deepdoctection.datasets.adapter import DatasetAdapter
 
 
 @mark.requires_pt
