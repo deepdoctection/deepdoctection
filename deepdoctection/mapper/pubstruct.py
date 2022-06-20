@@ -20,7 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import Dict, List, Optional, Tuple, Sequence, Iterable
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 

@@ -137,7 +137,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
         str_col_idx = -1
         str_col_idx += length
 
-        val: Union[str,int]
+        val: Union[str, int]
         for i, head in enumerate(header):
             result[head] = []
             for row in rows:

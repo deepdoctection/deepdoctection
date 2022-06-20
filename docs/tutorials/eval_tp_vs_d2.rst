@@ -57,80 +57,6 @@ Detectron2 on Publaynet
 
 .. parsed-literal::
 
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-    [32m[0617 08:36.46 @eval.py:69][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-
-
-.. parsed-literal::
-
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-    [32m[0617 08:36.49 @context.py:131][0m [32mINF[0m loading annotations to memory finished, 2.3439 sec.
-    [32m[0617 08:36.49 @context.py:131][0m [32mINF[0m creating index finished, 0.1014 sec.
-
-
-.. parsed-literal::
-
-    100%|###################################################################################################################################################################################|11245/11245[00:00<00:00,512083.61it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:36.49 @context.py:131][0m [32mINF[0m Start loading .json file and serializing finished, 2.4739 sec.
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    [32m[0617 08:36.51 @context.py:131][0m [32mINF[0m loading annotations to memory finished, 1.4471 sec.
-    [32m[0617 08:36.51 @context.py:131][0m [32mINF[0m creating index finished, 0.0872 sec.
-
-
-.. parsed-literal::
-
-    100%|###################################################################################################################################################################################|11245/11245[00:00<00:00,471291.30it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:36.51 @context.py:131][0m [32mINF[0m Start loading .json file and serializing finished, 1.5654 sec.
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    [32m[0617 08:36.51 @eval.py:119][0m [32mINF[0m Predicting objects...
-
-
-.. parsed-literal::
-
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 498/498 [00:25<00:00, 19.71it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:37.17 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
     creating index...
     index created!
     creating index...
@@ -189,68 +115,6 @@ Maybe, a restart of the kernel is necessary.
     
     output= evaluator.run(max_datapoints=500,category_names=category_names)
 
-
-.. parsed-literal::
-
-    [32m[0617 08:49.12 @context.py:131][0m [32mINF[0m loading annotations to memory finished, 1.5383 sec.
-    [32m[0617 08:49.12 @context.py:131][0m [32mINF[0m creating index finished, 0.0836 sec.
-
-
-.. parsed-literal::
-
-    100%|##################################################################################################################################################################################|11245/11245[00:00<00:00,1275141.90it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:49.12 @context.py:131][0m [32mINF[0m Start loading .json file and serializing finished, 1.6426 sec.
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    [32m[0617 08:49.14 @context.py:131][0m [32mINF[0m loading annotations to memory finished, 1.723 sec.
-    [32m[0617 08:49.14 @context.py:131][0m [32mINF[0m creating index finished, 0.0894 sec.
-
-
-.. parsed-literal::
-
-    100%|###################################################################################################################################################################################|11245/11245[00:00<00:00,528535.79it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:49.14 @context.py:131][0m [32mINF[0m Start loading .json file and serializing finished, 1.841 sec.
-    [32m[0617 08:49.14 @logger.py:201][0m [32mINF[0m dp: /home/janis/.cache/deepdoctection/datasets/publaynet/val/PMC5409806_00015.jpg, err: AssertionError,
-                msg: bounding box must have height and width >0. Check coords ulx: 51.04, uly: 292.81, lrx: 544.28, lry: 0.0. in: <frame at 0x845bcb0, file '/home/janis/Public/deepdoctection_pt/deepdoctection/deepdoctection/mapper/cocostruct.py', line 89, code coco_to_image> will be filtered
-    [32m[0617 08:49.14 @logger.py:201][0m [32mINF[0m dp: /home/janis/.cache/deepdoctection/datasets/publaynet/val/PMC5335545_00006.jpg, err: AssertionError,
-                msg: bounding box must have height and width >0. Check coords ulx: 51.04, uly: 112.11, lrx: 544.28, lry: 0.0. in: <frame at 0x845bcb0, file '/home/janis/Public/deepdoctection_pt/deepdoctection/deepdoctection/mapper/cocostruct.py', line 89, code coco_to_image> will be filtered
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    [32m[0617 08:49.14 @eval.py:119][0m [32mINF[0m Predicting objects...
-
-
-.. parsed-literal::
-
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 498/498 [00:39<00:00, 12.56it/s]
-
-.. parsed-literal::
-
-    [32m[0617 08:49.54 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
 
 
 .. parsed-literal::
@@ -329,36 +193,6 @@ Maybe switch kernel again
     output= evaluator.run(max_datapoints=500,category_names=category_names)
 
 
-.. parsed-literal::
-
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-    [32m[0617 09:11.04 @eval.py:69][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-
-
-.. parsed-literal::
-
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-      0%|                                                                                                                                                                                                  | 0/489 [00:00<?, ?it/s]/home/janis/Public/deepdoctection_pt/venv/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /pytorch/c10/core/TensorImpl.h:1156.)
-      return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 489/489 [00:26<00:00, 18.68it/s]
-
-.. parsed-literal::
-
-    [32m[0617 09:12.26 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
-
 
 .. parsed-literal::
 
@@ -407,40 +241,6 @@ Detectron2 on Pubtabnet for row and column predictions
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500,category_names=category_names, rows_and_cols=True)
-
-
-.. parsed-literal::
-
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-    [32m[0617 09:35.41 @eval.py:69][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-
-
-.. parsed-literal::
-
-    WARNING:fvcore.common.config:Loading config /home/janis/.cache/deepdoctection/configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml with yaml.unsafe_load. Your machine may be at risk if the file contains malicious content.
-
-
-.. parsed-literal::
-
-    [32m[0617 09:36.34 @eval.py:119][0m [32mINF[0m Predicting objects...
-
-
-.. parsed-literal::
-
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 489/489 [00:22<00:00, 21.27it/s]
-
-.. parsed-literal::
-
-    [32m[0617 09:36.57 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
 
 
 .. parsed-literal::
@@ -506,38 +306,6 @@ Tensorpack on Pubtabnet for cell predictions
 
 .. parsed-literal::
 
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only
-
-
-.. parsed-literal::
-
-    [32m[0617 10:11.39 @eval.py:69][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-    [32m[0617 10:11:39 @varmanip.py:214][0m Checkpoint path /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only.data-00000-of-00001 is auto-corrected to /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only.
-    [32m[0617 10:11:42 @sessinit.py:114][0m Restoring checkpoint from /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only ...
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only
-
-
-.. parsed-literal::
-
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/cell/model-1800000_inf_only
-
-
-.. parsed-literal::
-
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 489/489 [00:42<00:00, 11.61it/s]
-
-.. parsed-literal::
-
-    [32m[0617 10:13.18 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
     creating index...
     index created!
     creating index...
@@ -586,45 +354,6 @@ Detectron2 on Pubtabnet for row and column predictions
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500,category_names=category_names, rows_and_cols=True)
-
-
-.. parsed-literal::
-
-    [32m[0617 10:24:03 @varmanip.py:214][0m Checkpoint path /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only.data-00000-of-00001 is auto-corrected to /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only.
-    [32m[0617 10:24:06 @sessinit.py:114][0m Restoring checkpoint from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only ...
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only
-
-
-.. parsed-literal::
-
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only
-
-
-.. parsed-literal::
-
-    [32m[0617 10:24.06 @eval.py:69][0m [32mINF[0m Building multi threading pipeline component to increase prediction throughput. Using 2 threads
-    [32m[0617 10:24:06 @varmanip.py:214][0m Checkpoint path /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only.data-00000-of-00001 is auto-corrected to /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only.
-    [32m[0617 10:24:09 @sessinit.py:114][0m Restoring checkpoint from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only ...
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only
-
-
-.. parsed-literal::
-
-    INFO:tensorflow:Restoring parameters from /home/janis/.cache/deepdoctection/weights/item/model-1620000_inf_only
-
-
-.. parsed-literal::
-
-    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 489/489 [00:33<00:00, 14.56it/s]
-
-.. parsed-literal::
-
-    [32m[0617 10:25.36 @eval.py:124][0m [32mINF[0m Starting evaluation...
-
-
-.. parsed-literal::
-
-    
 
 
 .. parsed-literal::

@@ -264,12 +264,12 @@ class TestImage:
 
         # Assert
         assert cat_1.image
-        assert cat_1.image.height == 4   # pylint: disable=E1101
-        assert cat_1.image.width == 10   # pylint: disable=E1101
-        assert cat_1.image.get_embedding(test_image.image_id) == BoundingBox(    # pylint: disable=E1101
+        assert cat_1.image.height == 4  # pylint: disable=E1101
+        assert cat_1.image.width == 10  # pylint: disable=E1101
+        assert cat_1.image.get_embedding(test_image.image_id) == BoundingBox(  # pylint: disable=E1101
             ulx=15.0, uly=20.0, width=10.0, height=4.0, absolute_coords=True
         )  # pylint: disable=E1101
-        assert cat_1.image.image.shape == (4, 10, 3)   # pylint: disable=E1101
+        assert cat_1.image.image.shape == (4, 10, 3)  # pylint: disable=E1101
 
     @staticmethod
     def test_image_with_anns_can_be_exported(image: WhiteImage) -> None:

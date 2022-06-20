@@ -67,6 +67,14 @@ def fixture_path_to_tp_frcnn_yaml() -> Path:
     return get_package_path() / "configs/tp/layout/conf_frcnn_layout.yaml"
 
 
+@fixture(name="path_to_d2_frcnn_yaml")
+def fixture_path_to_d2_frcnn_yaml() -> Path:
+    """
+    path to d2 frcnn yaml file
+    """
+    return get_package_path() / "configs/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml"
+
+
 @fixture(name="categories")
 def fixture_categories() -> Dict[str, str]:
     """

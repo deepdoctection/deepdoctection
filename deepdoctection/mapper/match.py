@@ -19,7 +19,7 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import Any, List, Optional, Tuple, Union, Sequence
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray

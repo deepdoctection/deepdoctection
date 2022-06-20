@@ -97,9 +97,9 @@ class LanguageDetectionService(PipelineComponent):
         self.dp_manager.set_summary_annotation(names.NLP.LANG.LANG, 1, predict_result.text, predict_result.score)
 
     def _init_sanity_checks(self) -> None:
-        assert self.text_detector or self._text_container, (
-            "if no text_detector is provided a text container must be specified"
-        )
+        assert (
+            self.text_detector or self._text_container
+        ), "if no text_detector is provided a text container must be specified"
         if not self.text_detector:
             assert self._text_container in [names.C.WORD, names.C.LINE], (
                 f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"

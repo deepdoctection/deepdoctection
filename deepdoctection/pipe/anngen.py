@@ -18,7 +18,7 @@
 """
 Module for datapoint populating helpers
 """
-from typing import Dict, Optional, Union, List, Mapping
+from typing import Dict, List, Mapping, Optional, Union
 
 import numpy as np
 
@@ -158,9 +158,7 @@ class DatapointManager:
             self._cache_anns[ann.annotation_id] = ann
 
             if to_image and to_annotation_id is None:
-                self.datapoint.image_ann_to_image(
-                    annotation_id=ann.annotation_id, crop_image=crop_image
-                )
+                self.datapoint.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=crop_image)
 
         if annotation_context.context_error:
             return None
@@ -211,7 +209,8 @@ class DatapointManager:
         """
         self.assert_datapoint_passed()
         cont_ann = ContainerAnnotation(
-            category_name=category_name, category_id=str(category_id), value=value, score=score)
+            category_name=category_name, category_id=str(category_id), value=value, score=score
+        )
         self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
         return cont_ann.annotation_id
 

@@ -20,7 +20,7 @@ HF Layoutlm model for diverse downstream tasks.
 """
 
 from copy import copy
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import (
@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification, PretrainedConfig  # type: ignore
+    from transformers import LayoutLMForTokenClassification, PretrainedConfig
 
 
 def predict_token_classes(
@@ -109,9 +109,9 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories_semantics: Optional[List[str]] = None,
-        categories_bio: Optional[List[str]] = None,
-        categories_explicit: Optional[List[str]] = None,
+        categories_semantics: Optional[Sequence[str]] = None,
+        categories_bio: Optional[Sequence[str]] = None,
+        categories_explicit: Optional[Sequence[str]] = None,
     ):
         """
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
@@ -131,17 +131,18 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self.path_weights = path_weights
         self.categories_semantics = copy(categories_semantics) if categories_semantics is not None else None
         self.categories_bio = copy(categories_bio) if categories_bio is not None else None
-        self.categories_explicit = copy(categories_explicit)  if categories_explicit is not None else None
+        self.categories_explicit = copy(categories_explicit) if categories_explicit is not None else None
 
         self._categories: Dict[int, str] = (
-            dict(enumerate(self.categories_explicit))
+            dict(enumerate(self.categories_explicit))  # type: ignore
             if categories_explicit is not None
             else self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
         )
         self.device = set_torch_auto_device()
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights,
-                                                                    config=config)
+        self.model = LayoutLMForTokenClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -165,6 +166,13 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         assert "token_type_ids" in encodings
         assert "boxes" in encodings
         assert "tokens" in encodings
+
+        assert isinstance(encodings["ids"], list)
+        assert isinstance(encodings["input_ids"], torch.Tensor)
+        assert isinstance(encodings["attention_mask"], torch.Tensor)
+        assert isinstance(encodings["token_type_ids"], torch.Tensor)
+        assert isinstance(encodings["boxes"], torch.Tensor)
+        assert isinstance(encodings["tokens"], list)
 
         results = predict_token_classes(
             encodings["ids"],
@@ -201,5 +209,10 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._categories
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.path_config_json, self.path_weights,
-                              self.categories_semantics, self.categories_bio, self.categories_explicit)
+        return self.__class__(
+            self.path_config_json,
+            self.path_weights,
+            self.categories_semantics,
+            self.categories_bio,
+            self.categories_explicit,
+        )

@@ -20,7 +20,7 @@ Module for mapping annotations to and from prodigy data structure
 """
 
 import os
-from typing import Dict, Optional, Mapping
+from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict, Pathlike

@@ -22,7 +22,7 @@ Init file for mapper package. Contains everything that is related to transformat
 from typing import Callable, Optional
 
 from ..datapoint.image import Image
-from ..utils.file_utils import pytorch_available, transformers_available
+from ..utils.file_utils import detectron2_available, pytorch_available, transformers_available
 from .cats import *
 from .cocostruct import *
 from .maputils import *
@@ -34,6 +34,9 @@ from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
 from .xfundstruct import *
+
+if detectron2_available():
+    from .d2struct import *
 
 if pytorch_available() and transformers_available():
     from .laylmstruct import *  # pylint: disable = W0622

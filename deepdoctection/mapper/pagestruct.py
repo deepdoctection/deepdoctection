@@ -21,7 +21,7 @@ Module for mapping Images or exported dictionaries into page formats
 from itertools import chain
 from typing import List, Optional, Tuple
 
-from ..datapoint.annotation import ImageAnnotation, ContainerAnnotation
+from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.convert import convert_np_array_to_b64
 from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image

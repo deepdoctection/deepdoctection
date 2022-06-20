@@ -25,7 +25,6 @@ from dataclasses import dataclass
 from typing import List, Optional, Union
 
 import numpy as np
-from numpy import float32
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox, iou
@@ -70,7 +69,11 @@ def choose_items_by_iou(
     :param reference_item_proposals:
     """
     item_proposals_boxes = np.array(
-        [item.image.get_embedding(dp.image_id).to_list(mode="xyxy") for item in item_proposals if item.image is not None]
+        [
+            item.image.get_embedding(dp.image_id).to_list(mode="xyxy")
+            for item in item_proposals
+            if item.image is not None
+        ]
     )
 
     triangle_ind = None
@@ -78,7 +81,8 @@ def choose_items_by_iou(
         reference_item_proposals_boxes = np.array(
             [
                 item.image.get_embedding(dp.image_id).to_list(mode="xyxy")
-                for item in reference_item_proposals if item.image is not None
+                for item in reference_item_proposals
+                if item.image is not None
             ]
         )
 

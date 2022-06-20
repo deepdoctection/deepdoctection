@@ -21,7 +21,7 @@ Module for methods that might be helpful for testing
 
 import os
 from pathlib import Path
-from typing import Any, Iterable, List, Optional, Union
+from typing import Any, Iterable, Iterator, List, Optional, Union
 
 from dataflow import DataFlow  # type: ignore
 
@@ -43,15 +43,25 @@ def get_integration_test_path() -> Path:
     return get_package_path() / "notebooks" / "pics" / "samples" / "sample_2"
 
 
-def collect_datapoint_from_dataflow(df: DataFlow) -> List[Any]:
+def collect_datapoint_from_dataflow(
+    df: Union[DataFlow, Iterator[Any]], max_datapoints: Optional[int] = None
+) -> List[Any]:
     """
     Calls the reset_state method of a dataflow and collects all datapoints to an output list
     :param df: A Dataflow
+    :param max_datapoints: The maximum number of datapoints to yield from
     :return: A list of datapoints of df
     """
+
     output: List[Any] = []
-    df.reset_state()
-    for dp in df:
+    if isinstance(df, DataFlow):
+        df.reset_state()
+
+    for idx, dp in enumerate(df):
+        if max_datapoints is not None:
+            if idx >= max_datapoints:
+                break
+
         output.append(dp)
 
     return output

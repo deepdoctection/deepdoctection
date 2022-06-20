@@ -20,7 +20,7 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Dict, Optional, Type, Sequence, List
+from typing import Dict, List, Optional, Sequence, Type
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
@@ -136,7 +136,7 @@ def get_train_dataflow(
 
     logger.info("Loading dataset into memory")
 
-    max_datapoints: Optional[int] = int(build_train_kwargs.get("max_datapoints",0))
+    max_datapoints: Optional[int] = int(build_train_kwargs.get("max_datapoints", 0))
     if not max_datapoints:
         max_datapoints = None
 
@@ -300,7 +300,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
                     dataset_val,
                     category_names,
                     dataset_val.dataflow.categories.cat_to_sub_cat,
-                    metric,   # type: ignore
+                    metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
                     **build_val_dict

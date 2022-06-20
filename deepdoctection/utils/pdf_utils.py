@@ -27,8 +27,8 @@ from io import BytesIO
 from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
-from numpy import uint8
 from cv2 import IMREAD_COLOR, imread
+from numpy import uint8
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from .context import save_tmp_file, timeout_manager

@@ -50,6 +50,12 @@ from ..registry import dataset_registry
 
 
 def load_json(path_ann: Pathlike) -> JsonDict:
+    """
+    Loading json file
+
+    :param path_ann: path
+    :return: dict
+    """
     with open(path_ann, "r", encoding="utf-8") as file:
         anns = json.loads(file.read())
         path, file_name = os.path.split(path_ann)
