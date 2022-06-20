@@ -23,7 +23,10 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datapoint.image import Image
-from deepdoctection.mapper.d2struct import image_to_d2_frcnn_training
+from deepdoctection.utils import detectron2_available
+
+if detectron2_available():
+    from deepdoctection.mapper.d2struct import image_to_d2_frcnn_training
 
 from .data import DatapointImage
 
