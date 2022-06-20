@@ -54,7 +54,7 @@ def collect_datapoint_from_dataflow(
     """
 
     output: List[Any] = []
-    if isinstance(df, DataFlow):
+    if hasattr(df, "reset_state"):
         df.reset_state()
 
     for idx, dp in enumerate(df):
