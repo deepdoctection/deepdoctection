@@ -4,7 +4,7 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, layoutlm ]
   pull_request:
     branches: [ master ]
 
