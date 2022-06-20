@@ -13,6 +13,7 @@
 import os
 import sys
 import mock
+from unittest.mock import MagicMock
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.dirname(__file__))))
 
@@ -26,7 +27,7 @@ def get_version():
 
 
 # Mock the following modules for building the docs in rtd
-# Tensorflow, Tensorpack and everything that is related to
+# so that we do not need to import them explicitly. This will reduce some very likely dependency conflicts
 mod = sys.modules['tensorflow'] = mock.Mock(name='tensorflow')
 mod.__version__ = mod.VERSION = '2.4.1'
 mod.__spec__ = mock.Mock(name='tensorflow')
@@ -37,7 +38,7 @@ MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','te
 
 
 # Pytorch
-MOCK_MODULES.extend(['torch','torch.cuda'])
+MOCK_MODULES.extend(['torch','torch.cuda','torch.utils'])
 
 # Detectron2
 MOCK_MODULES.extend(['detectron2',
@@ -45,7 +46,10 @@ MOCK_MODULES.extend(['detectron2',
                      'detectron2.layers',
                      'detectron2.config',
                      'detectron2.modeling',
-                     'detectron2.checkpoint'])
+                     'detectron2.checkpoint',
+                     'detectron2.data',
+                     'detectron2.data.transforms',
+                     'detectron2.engine'])
 
 # Transformers
 MOCK_MODULES.extend(['transformers'])
@@ -55,10 +59,15 @@ MOCK_MODULES.extend(['doctr','doctr.models','doctr.models.detection','doctr.mode
                      'doctr.models.detection.predictor','doctr.models.detection.zoo',
                      'doctr.models.recognition.predictor','doctr.models.recognition.zoo'])
 
-
 for mod_name in MOCK_MODULES:
     mod = sys.modules[mod_name] = mock.Mock(name=mod_name)
     mod.__spec__ = mock.Mock(name=mod_name)
+
+# Some modules need to be subscriptable. We use magic mocks to mock them
+MAGIC_MOCK_MODULES = ['torch.utils.data']
+
+for mod_name in MAGIC_MOCK_MODULES:
+    mod = sys.modules[mod_name] = MagicMock(name=mod_name)
 
 ON_RTD = (os.environ.get('READTHEDOCS') == 'True')
 
