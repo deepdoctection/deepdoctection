@@ -26,7 +26,10 @@ from unittest.mock import patch
 from pytest import mark
 
 from deepdoctection.datasets import DatasetBase
-from deepdoctection.train.d2_frcnn_train import train_d2_faster_rcnn
+from deepdoctection.utils import detectron2_available
+
+if detectron2_available():
+    from deepdoctection.train.d2_frcnn_train import train_d2_faster_rcnn
 
 
 @mark.requires_pt
