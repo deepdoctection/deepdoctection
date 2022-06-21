@@ -7,22 +7,21 @@
 - Python >=  3.8
 - PyTorch >= 1.8 **or** Tensorflow >=2.4.1 and CUDA
 
-Windows is not supported. 
-
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
-For fine-tuning layout models **deep**doctection uses Tensorpack as training framework and therefore only 
-Tensorflow training scripts are provided. Tensorpack has been developed for TF1, the model however runs on TF2
-as well by using tf.compat.v1. This is not ideal, however transferring all Tensorpack features into a TF2 framework
-will take a significant amount of work.
+As of release v.014 it is possible to fine-tune vision models either with Tensorpack or Detectron2. Experiments
+show, that Detectron2 trains faster and evaluation results are more accurate. 
+Tensorpack has been developed for TF1, models however run on TF2 as well by using tf.compat.v1. This is not ideal, 
+however transferring all Tensorpack features into a TF2 framework will take a significant amount of work and it is not 
+our top priority.
 
-The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been test on MacOS. It is known that 
-some code components will have some issues on Windows. We cannot provide support for Windows.
+The code has been tested on Ubuntu20.04. Functions not involving a GPU have also been tested on MacOS. It is known that 
+some code components will have some issues on Windows. We therefore do not support Windows.
 
-If you want to use Tesseract for extracting text using OCR:
+If you want to use Tesseract for extracting text using OCR check the installation instructions here
 - [Tesseract](https://github.com/tesseract-ocr/tesseract)
 
-If you want to convert PDF into numpy arrays:
+If you want to convert PDF into numpy arrays, please consult 
 - [Poppler](https://poppler.freedesktop.org/)
 
 If we discover projects that cover utilities for additional features to be used in a pipeline we implement wrappers
@@ -59,15 +58,10 @@ pip install deepdoctection[pt]
 
 This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
 
-**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
-This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
-(e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
-When accurate models a needed, please use the Tensorflow version.
-
 Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
-pdfplumber, fastText, ...). If you want to use them, please pip install these separately.
+pdfplumber, fastText, ...). If you want to use them, please pip install these separately or install this package from 
+source (see below). 
 
-<!--- uncomment for next release
 To use more features (e.g. run all available notebooks), try:
 
 ```
@@ -75,7 +69,7 @@ pip install deepdoctection[full-tf]
 ```
 
 Note, that this option is not available for PyTorch.
---->
+
 
 ## Install from source
 
@@ -88,8 +82,8 @@ git clone https://github.com/deepdoctection/deepdoctection.git
 Install the package in a virtual environment. Learn more about 
 [`virtualenv`](https://docs.python.org/3/tutorial/venv.html). 
 
-The installation process will not install the deep frameworks (e.g. Tensorflow or Pytorch) and
-therefore to be done by the user itself. We recommend installing Tensorflow >=2.7 as 
+The installation process will not install the deep learning frameworks Tensorflow or PyTorch and
+therefore has to be installed by the user itself. We recommend installing Tensorflow >=2.7 as 
 this version is compatible with the required numpy version. Lower versions will not break the code, 
 but you will see a compatibility error during the installation process.
 
@@ -106,13 +100,12 @@ or with **PyTorch**:
 cd deepdoctection
 pip install ".[source-pt]"
 ```
-Note that pip must run where `setup.py` resides. 
+Note that pip must run where `setup.py` module resides. 
 
 This installation will give you the basic usage of this package and will allow you to run the first two tutorial 
 notebooks.
 
-
-To run evaluation, using datasets or fine tuning Tensorpack models, further dependencies need to be respected. 
+To run evaluation, using datasets or fine tuning models, further dependencies need to be respected. 
 Instead of the above, run for **Tensorflow**:
 
 ```
@@ -120,10 +113,12 @@ pip install ".[source-full-tf]"
 ```
 
 There is no corresponding installation available for PyTorch, as the basic installation already covers all dependencies
-for using all datasets or running evaluation. As already mentioned, training in PyTorch is not available yet.
+for using all datasets or running evaluation.
 
 There are options to install features which require additional dependencies. E.g, if you want to call AWS Textract OCR
 within a pipeline you will need the boto3. Please install those packages by yourself.  
+
+### Installing with all dependencies
 
 If you want to have the full flexibility by composing pipelines with all available model wrappers provided by 
 deepdoctection, use
@@ -154,24 +149,24 @@ kernel 'deep-doc' in the kernel drop down menu.
 
 ## Testing the environment
 
-To check, if the installation has been throughout successful you can run some tests. You need to install the test 
-dependencies for that.
+To check, if the installation has been throughout successful you can run some tests. You need to install the 
+test dependencies for that.
 
 ```
-make install-dd-test
+pip install -e ".[test]"
 ```
 
 To run the test cases, use
 
 ```
-make test-des-pt
+make test-tf-basic
 ```
 
-if you decided to run in Tensorflow framework. This will run all tests that do not 
+if you decided to run in Tensorflow framework. This will run some test cases that do not 
 require Pytorch. Run
 
 ```
-make test-des-tf
+make test-pt-full
 ```
 
 otherwise. Note that some tests depend on packages that are not listed in the requirements. In order to run
@@ -184,13 +179,13 @@ stream
 
 
 ```
-make install-dd-dev-pt
+make install-dd-dev-tf
 ```
 
 or 
 
 ```
-make install-dd-dev-tf
+make install-dd-dev-pt
 ```
 
 Before submitting a PR, format, lint, type-check the code and run the tests:
