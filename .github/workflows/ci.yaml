@@ -4,7 +4,7 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, train_d2]
   pull_request:
     branches: [ master ]
 
