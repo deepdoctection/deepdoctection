@@ -44,8 +44,8 @@ def get_state_dict(path_yaml, path_weights):
 
 if __name__ == '__main__':
 
-    path_model_weights = "/path/to/model.pth"
-    path_config_yaml = "/path/to/config.yaml"
+    path_model_weights = "/home/janis/Documents/d2_training/layout/model_0029999.pth"
+    path_config_yaml = "/home/janis/.cache/deepdoctection/configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml"
     stat_info_orig = os.stat(path_model_weights)
     size_orig = stat_info_orig.st_size
     path, file_name = os.path.split(path_model_weights)

@@ -45,8 +45,8 @@ Detectron2 on Publaynet
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("layout/d2_model-800000-layout.pkl")
-    path_weights = ModelCatalog.get_full_path_weights("layout/d2_model-800000-layout.pkl")
+    path_config_yaml = ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
+    path_weights = ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
 
 .. code:: ipython3
 
@@ -71,18 +71,18 @@ Detectron2 on Publaynet
     DONE (t=0.72s).
     Accumulating evaluation results...
     DONE (t=0.11s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.674
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.873
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.856
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.585
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.557
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.689
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.431
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.701
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.702
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.606
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.590
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.712
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.919
+     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.952
+     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.939
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.809
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.809
+     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.953
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.550
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.929
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.934
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.835
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.838
+     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.961
 
 
 Tensorpack on Publaynet
