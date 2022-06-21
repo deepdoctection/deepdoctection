@@ -8,8 +8,13 @@ Detectron2 is much quicker in when evaluating with two threads,
 evaluation results however are worse. Decrease in performance results
 from the fact that the model has been trained in Tensorpack framework.
 Weights have been then transposed into Detectron2 framework where the
-model however has slightly different padding mode. (This summary is
-valid for evaluations
+model however has slightly different padding mode.
+
+**Update** As training scripts are available for Detectron2 we used the
+those checkpoints to resume training for Detectron2. The second training
+further improved the model performance by a significant amount so that
+in summary we can say: Detectron2 is trains faster and performs better
+than Tensorpack.
 
 Layout
 ------
@@ -381,3 +386,6 @@ Detectron2 on Pubtabnet for row and column predictions
      Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.909
 
 
+
+Detectron2 after resuming training
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

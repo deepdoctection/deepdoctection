@@ -1,4 +1,4 @@
-Some trainings scripts
+Some Tensorpack trainings scripts
 ----------------------
 
 Training script for cell detection task. Use TRAIN.LR_SCHEDULE=2x for
@@ -36,7 +36,7 @@ checkpoint.
                       dataset_train=dataset_train,
                       path_weights=path_weights,
                       config_overwrite=config_overwrite,
-                      log_dir="/home/janis/Documents/train",
+                      log_dir="/path/to/dir/train",
                       build_train_config=build_train_config,
                       dataset_val=dataset_val,
                       build_val_config=build_val_config,
@@ -72,7 +72,7 @@ last checkpoint.
                        dataset_train=pubtabnet,
                        path_weights=path_weights,
                        config_overwrite=config_overwrite,
-                       log_dir="/home/janis/Documents/train",
+                       log_dir="/path/to/dir/train",
                        build_train_config=build_train_config,
                        dataset_val=dataset_val,
                        build_val_config=build_val_config,
