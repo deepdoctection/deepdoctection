@@ -184,11 +184,16 @@ class LabelSummarizer:
         """
         return dict(list(zip(self.categories.keys(), self.summary.astype(np.int32))))
 
-    def print_summary_histogram(self) -> None:
+    def print_summary_histogram(self, dd_logic: bool = True) -> None:
         """
         Prints a summary from all dumps.
+
+        :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
-        data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
+        if dd_logic:
+            data = list(itertools.chain(*[[self.categories[str(i)], v] for i, v in enumerate(self.summary,1)]))
+        else:
+            data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
         num_columns = min(6, len(data))
         total_img_anns = sum(data[1::2])
         data.extend([None] * ((num_columns - len(data) % num_columns) % num_columns))
