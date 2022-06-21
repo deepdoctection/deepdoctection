@@ -10,9 +10,9 @@ WEIGHTS:
   TPLAYOUT: layout/model-800000_inf_only.data-00000-of-00001
   TPCELL: cell/model-1800000_inf_only.data-00000-of-00001
   TPITEM: item/model-1620000_inf_only.data-00000-of-00001
-  D2LAYOUT: layout/d2_model-800000-layout.pkl
-  D2CELL: cell/d2_model-1800000-cell.pkl
-  D2ITEM: item/d2_model-1620000-item.pkl
+  D2LAYOUT: layout/d2_model_0829999_layout_inf_only.pt
+  D2CELL: cell/d2_model_1849999_cell_inf_only.pt
+  D2ITEM: item/d2_model_1639999_item_inf_only.pt
 SEGMENTATION:
   ASSIGNMENT_RULE: ioa
   IOU_THRESHOLD_ROWS: 0.01
