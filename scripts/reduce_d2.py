@@ -46,9 +46,16 @@ if __name__ == '__main__':
 
     path_model_weights = "/path/to/model.pth"
     path_config_yaml = "/path/to/config.yaml"
+    stat_info_orig = os.stat(path_model_weights)
+    size_orig = stat_info_orig.st_size
     path, file_name = os.path.split(path_model_weights)
     file_name,_ = file_name.split(".")
     path_target = path + "/" + file_name + "_inf_only.pt"
     state_dict = get_state_dict(path_config_yaml,path_model_weights)
 
     torch.save(state_dict,path_target)
+    stat_info_reduced = os.stat(path_target)
+    size_reduced = stat_info_reduced.st_size
+
+    print(f"{path_model_weights} size: {size_orig}")
+    print(f"{path_target} size: {size_reduced}")

@@ -71,9 +71,7 @@ Windows is not supported.
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
 
 **deep**doctection uses [**Tensorpack**](https://github.com/tensorpack) as training framework as well as its vision 
-models for layout analysis. For PyTorch, [**Detectron2**](https://github.com/facebookresearch/detectron2) is used. 
-All models have been trained on Tensorflow and converted into Detectron2 consumable artefacts. If you want to train, 
-please use the Tensorflow framework. 
+models for layout analysis. For PyTorch, [**Detectron2**](https://github.com/facebookresearch/detectron2) is used.
 
 Besides these models, **deepdoctection** has wrappers available to use models for inference in pipelines from different 
 libraries. 
@@ -113,23 +111,15 @@ pip install deepdoctection[pt]
 
 This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
 
-**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
-This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
-(e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
-When accurate models a needed, please use the Tensorflow version.
-
 Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
-pdfplumber, fastText, ...). If you want to use them, you have to pip install them by yourself.
-
-<!--- uncomment for next release
-To use more features (e.g. run all available notebooks), try:
+pdfplumber, fastText, ...). If you want to use them, you have to pip install them individually by yourself or use the 
+package extensions. E.g. try:
 
 ```
 pip install deepdoctection[full-tf]
 ```
 
 Note, that this option is not available for PyTorch.
---->
 
 
 ### Installation from source
@@ -154,8 +144,7 @@ cd deepdoctection
 pip install ".[source-pt]"
 ```
 
-This will install the basic dependencies to get started with the first notebooks. More libraries can be
-used, once more dependencies have been installed: 
+This will install the basic dependencies to get started with the first notebooks. To get all package extensions,
 
 ```
 cd deepdoctection
@@ -169,7 +158,7 @@ cd deepdoctection
 pip install ".[source-all-pt]"
 ```
 
-installs all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
+will install all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
 
 For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
 

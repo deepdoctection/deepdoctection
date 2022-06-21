@@ -172,6 +172,17 @@ class ModelCatalog:
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG},
         ),
+        "layout/d2_model-820000-layout.pkl": ModelProfile(
+            name="",
+            description="Detectron2 layout detection model trained on Publaynet",
+            config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
+            size=[],
+            tp_model=False,
+            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
+            hf_model_name="",
+            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
+            categories={"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG},
+        ),
         "cell/d2_model-1800000-cell.pkl": ModelProfile(
             name="cell/d2_model-1800000-cell.pkl",
             description="Detectron2 cell detection inference only model trained on Pubtabnet",
