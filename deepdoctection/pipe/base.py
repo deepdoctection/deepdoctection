@@ -30,7 +30,7 @@ from ..utils.context import timed_operation
 from .anngen import DatapointManager
 
 
-class PipelineComponent(ABC):  # pylint: disable=R0903
+class PipelineComponent(ABC):
     """
     Base class for pipeline components. Pipeline components are the parts that make up a pipeline. They contain the
     abstract :meth:`serve`, in which the component steps are defined. Within pipelines, pipeline components take an

@@ -27,7 +27,7 @@ from typing import Any, List, Optional, Tuple, Union
 from ..utils.detection_types import ImageType, Requirement
 
 
-class PredictorBase(ABC):  # pylint: disable=R0903
+class PredictorBase(ABC):
     """
     Abstract base class for all types of predictors (e.g. object detectors language models, ...)
     """
@@ -98,7 +98,7 @@ class DetectionResult:
     uuid: Optional[str] = None
 
 
-class ObjectDetector(PredictorBase):  # pylint: disable=R0903
+class ObjectDetector(PredictorBase):
     """
     Abstract base class for object detection. This can be anything ranging from layout detection to OCR.
     Use this to connect external detectors with Deep-Doctection predictors on images.

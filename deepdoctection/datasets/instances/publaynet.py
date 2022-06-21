@@ -93,7 +93,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
     Publaynet dataflow builder
     """
 
-    def build(self, **kwargs: Union[str, int]) -> DataFlow:  # pylint: disable=W0221 (#3812)
+    def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:

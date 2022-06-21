@@ -250,7 +250,7 @@ def _default_segment_table(cells: List[ImageAnnotation]) -> List[SegmentationRes
     return raw_table_segments
 
 
-def segment_table(  # pylint: disable=R0913, R0914
+def segment_table(
     dp: Image,
     table: ImageAnnotation,
     item_names: Union[str, List[str]],
@@ -368,7 +368,7 @@ class TableSegmentationService(PipelineComponent):
     If this should be excluded, class:`TableSegmentationRefinementService` can be used to merge cells.
     """
 
-    def __init__(  # pylint: disable=R0913
+    def __init__(
         self,
         segment_rule: str,
         threshold_rows: float,
@@ -425,7 +425,7 @@ class TableSegmentationService(PipelineComponent):
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
                 items.sort(
                     key=lambda x: x.bounding_box.cx  # type: ignore
-                    if item_name == names.C.COL  # pylint: disable=C0301, W0640
+                    if item_name == names.C.COL  # pylint: disable=C0301
                     else x.bounding_box.cy  # type: ignore
                 )
                 for item_number, item in enumerate(items, 1):

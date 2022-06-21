@@ -96,7 +96,7 @@ class Image:
             self.image_id = get_uuid(self.location, self.file_name)
 
     @property
-    def image_id(self) -> str:  # pylint: disable=E0102
+    def image_id(self) -> str:
         """
         image_id
         """
@@ -119,7 +119,7 @@ class Image:
             raise ValueError("image_id must be uuid3 string")
 
     @property
-    def image(self) -> Optional[ImageType]:  # pylint: disable=E0102
+    def image(self) -> Optional[ImageType]:
         """
         image
         """
@@ -221,7 +221,7 @@ class Image:
         return _Img(self.image)
 
     @property
-    def width(self) -> float:  # pylint: disable=R1710
+    def width(self) -> float:
         """
         width
         """
@@ -230,7 +230,7 @@ class Image:
         return self._bbox.width
 
     @property
-    def height(self) -> float:  # pylint: disable=R1710
+    def height(self) -> float:
         """
         height
         """
@@ -477,7 +477,7 @@ class Image:
         """
 
         image_copy = deepcopy(self)
-        image_copy.annotations = []  # pylint: disable=W0212
+        image_copy.annotations = []
         image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
         export_dict = image_copy.as_dict()
         export_dict["annotations"] = []

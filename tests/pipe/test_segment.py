@@ -41,11 +41,11 @@ def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: I
     tables = dp.get_annotation(category_names=table_name)
     assert len(tables) == 1
 
-    rows = dp.get_annotation(category_names=item_names[0])  # pylint: disable=W0212
-    cols = dp.get_annotation(category_names=item_names[1])  # pylint: disable=W0212
+    rows = dp.get_annotation(category_names=item_names[0])
+    cols = dp.get_annotation(category_names=item_names[1])
 
-    rows_expected = dp_expected.get_annotation(category_names=item_names[0])  # pylint: disable=W0212
-    cols_expected = dp_expected.get_annotation(category_names=item_names[1])  # pylint: disable=W0212
+    rows_expected = dp_expected.get_annotation(category_names=item_names[0])
+    cols_expected = dp_expected.get_annotation(category_names=item_names[1])
 
     for row, row_expected in zip(rows, rows_expected):
         assert isinstance(row.image, Image)
@@ -166,8 +166,8 @@ def test_tile_tables_with_items_per_table(
     item_names = [names.C.ROW, names.C.COL]  # row names must be before column name
 
     # Act
-    dp = tile_tables_with_items_per_table(dp, table[0], item_names[0])  # pylint: disable=W0212)
-    dp = tile_tables_with_items_per_table(dp, table[0], item_names[1])  # pylint: disable=W0212
+    dp = tile_tables_with_items_per_table(dp, table[0], item_names[0])
+    dp = tile_tables_with_items_per_table(dp, table[0], item_names[1])
 
     # Assert
     rows = dp.get_annotation(category_names=names.C.ROW)

@@ -72,8 +72,8 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, frcnn_fg_thresh, frcnn_
     proposal_metrics(iou)
 
     # add ground truth as proposals as well
-    boxes = tf.concat([boxes, gt_boxes], axis=0)  # (n+m) x 4  # pylint: disable = E1123, E1120
-    iou = tf.concat([iou, tf.eye(tf.shape(gt_boxes)[0])], axis=0)  # (n+m) x m  # pylint: disable = E1123, E1120
+    boxes = tf.concat([boxes, gt_boxes], axis=0)  # (n+m) x 4
+    iou = tf.concat([iou, tf.eye(tf.shape(gt_boxes)[0])], axis=0)  # (n+m) x m
     # #proposal=n+m from now on
 
     def sample_fg_bg(iou):
@@ -105,15 +105,15 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, frcnn_fg_thresh, frcnn_
         lambda: tf.argmax(iou, axis=1),  # #proposal, each in 0~m-1
         lambda: tf.zeros(tf.shape(iou)[0], dtype=tf.int64),
     )
-    fg_inds_wrt_gt = tf.gather(best_iou_ind, fg_inds)  # num_fg  # pylint: disable = E1123, E1120
+    fg_inds_wrt_gt = tf.gather(best_iou_ind, fg_inds)  # num_fg
 
-    all_indices = tf.concat(  # pylint: disable = E1123, E1120
+    all_indices = tf.concat(
         [fg_inds, bg_inds], axis=0
     )  # indices w.r.t all n+m proposal boxes
-    ret_boxes = tf.gather(boxes, all_indices)  # pylint: disable = E1120
+    ret_boxes = tf.gather(boxes, all_indices)
 
-    ret_labels = tf.concat(  # pylint: disable = E1120, E1123
-        [tf.gather(gt_labels, fg_inds_wrt_gt), tf.zeros_like(bg_inds, dtype=tf.int64)],  # pylint: disable = E1120
+    ret_labels = tf.concat(
+        [tf.gather(gt_labels, fg_inds_wrt_gt), tf.zeros_like(bg_inds, dtype=tf.int64)],
         axis=0,
     )
     # stop the gradient -- they are meant to be training targets
@@ -165,13 +165,13 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
     label_loss = tf.reduce_mean(label_loss, name="label_loss")
 
     fg_inds = tf.where(labels > 0)[:, 0]
-    fg_labels = tf.gather(labels, fg_inds)  # pylint: disable = E1120
+    fg_labels = tf.gather(labels, fg_inds)
     num_fg = tf.size(fg_inds, out_type=tf.int64)
     empty_fg = tf.equal(num_fg, 0)
     if int(fg_box_logits.shape[1]) > 1:
         if get_tf_version_tuple() >= (1, 14):
             fg_labels = tf.expand_dims(fg_labels, axis=1)  # nfg x 1
-            fg_box_logits = tf.gather(fg_box_logits, fg_labels, batch_dims=1)  # pylint: disable = E1120
+            fg_box_logits = tf.gather(fg_box_logits, fg_labels, batch_dims=1)
         else:
             indices = tf.stack([tf.range(num_fg), fg_labels], axis=1)  # number front ground x2
             fg_box_logits = tf.gather_nd(fg_box_logits, indices)
@@ -181,13 +181,13 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
         prediction = tf.argmax(label_logits, axis=1, name="label_prediction")
         correct = tf.cast(tf.equal(prediction, labels), tf.float32)  # boolean/integer gather is unavailable on GPU
         accuracy = tf.reduce_mean(correct, name="accuracy")
-        fg_label_pred = tf.argmax(tf.gather(label_logits, fg_inds), axis=1)  # pylint: disable = E1120
+        fg_label_pred = tf.argmax(tf.gather(label_logits, fg_inds), axis=1)
         num_zero = tf.reduce_sum(tf.cast(tf.equal(fg_label_pred, 0), tf.int64), name="num_zero")
         false_negative = tf.where(
             empty_fg, 0.0, tf.cast(tf.truediv(num_zero, num_fg), tf.float32), name="false_negative"
         )
         fg_accuracy = tf.where(
-            empty_fg, 0.0, tf.reduce_mean(tf.gather(correct, fg_inds)), name="fg_accuracy"  # pylint: disable = E1120
+            empty_fg, 0.0, tf.reduce_mean(tf.gather(correct, fg_inds)), name="fg_accuracy"
         )
 
     box_loss = tf.reduce_sum(tf.abs(fg_boxes - fg_box_logits))
@@ -227,9 +227,9 @@ def fastrcnn_predictions(boxes, scores, output_result_score_thresh, output_resul
     offsets = tf.cast(cls_per_box, tf.float32) * (max_coord + 1)  # F,1
     nms_boxes = filtered_boxes + offsets
     selection = tf.image.non_max_suppression(nms_boxes, filtered_scores, output_results_per_im, output_frcnn_nms_thresh)
-    pre_scores = tf.gather(filtered_scores, selection, name="pre_scores")  # pylint: disable = E1120
-    pre_labels = tf.add(tf.gather(cls_per_box[:, 0], selection), 1, name="pre_labels")  # pylint: disable = E1120
-    pre_boxes = tf.gather(filtered_boxes, selection, name="pre_boxes")  # pylint: disable = E1120
+    pre_scores = tf.gather(filtered_scores, selection, name="pre_scores")
+    pre_labels = tf.add(tf.gather(cls_per_box[:, 0], selection), 1, name="pre_labels")
+    pre_boxes = tf.gather(filtered_boxes, selection, name="pre_boxes")
     return pre_boxes, pre_scores, pre_labels
 
 
@@ -254,9 +254,9 @@ def nms_post_processing(boxes, scores, labels, output_results_per_im, output_nms
     selection = tf.image.non_max_suppression(
         boxes, scores, max_output_size=output_results_per_im, iou_threshold=output_nms_thresh_class_agnostic
     )
-    final_boxes = tf.gather(boxes, selection, name="boxes")  # pylint: disable = E1120
-    final_scores = tf.gather(scores, selection, name="scores")  # pylint: disable = E1120
-    final_labels = tf.gather(labels, selection, name="labels")  # pylint: disable = E1120
+    final_boxes = tf.gather(boxes, selection, name="boxes")
+    final_scores = tf.gather(scores, selection, name="scores")
+    final_labels = tf.gather(labels, selection, name="labels")
     return final_boxes, final_scores, final_labels
 
 
@@ -273,10 +273,10 @@ def fastrcnn_2fc_head(feature, cfg):
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
     init = tfv1.variance_scaling_initializer()
-    hidden = FullyConnected(  # pylint: disable = E1124
+    hidden = FullyConnected(
         "fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu
     )
-    hidden = FullyConnected(  # pylint: disable = E1124
+    hidden = FullyConnected(
         "fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu
     )
     return hidden
@@ -310,7 +310,7 @@ def fastrcnn_Xconv1fc_head(feature, num_convs, norm=None, **kwargs):  # pylint: 
             l = Conv2D(f"conv{k}", l, cfg.FPN.FRCNN_CONV_HEAD_DIM, 3, activation=tf.nn.relu)
             if norm is not None:
                 l = GroupNorm(f"gn{k}", l)
-        l = FullyConnected(  # pylint: disable = E1124
+        l = FullyConnected(
             "fc",
             l,
             cfg.FPN.FRCNN_FC_HEAD_DIM,
@@ -364,14 +364,14 @@ class BoxProposals:
         """
         Returns: #fg x4
         """
-        return tf.gather(self.boxes, self.fg_inds(), name="fg_boxes")  # pylint: disable = E1120, E1101
+        return tf.gather(self.boxes, self.fg_inds(), name="fg_boxes")  # pylint: disable = E1101
 
     @memoized_method
     def fg_labels(self):
         """
         Returns: #fg
         """
-        return tf.gather(self.labels, self.fg_inds(), name="fg_labels")  # pylint: disable = E1120, E1101
+        return tf.gather(self.labels, self.fg_inds(), name="fg_labels")  # pylint: disable = E1101
 
 
 class FastRCNNHead:
@@ -402,7 +402,7 @@ class FastRCNNHead:
         """
         Returns: #fg x ? x 4
         """
-        return tf.gather(  # pylint: disable =E1120
+        return tf.gather(
             self.box_logits, self.proposals.fg_inds(), name="fg_box_logits"  # pylint: disable =E1101
         )
 
@@ -413,8 +413,8 @@ class FastRCNNHead:
         """
         encoded_fg_gt_boxes = (
             encode_bbox_target(
-                tf.gather(self.gt_boxes, self.proposals.fg_inds_wrt_gt),  # pylint: disable =E1120,E1101
-                self.proposals.fg_boxes(),  # pylint: disable =E1120, E1101
+                tf.gather(self.gt_boxes, self.proposals.fg_inds_wrt_gt),  # pylint: disable =E1101
+                self.proposals.fg_boxes(),  # pylint: disable =E1101
             )
             * self.bbox_regression_weights  # pylint: disable =E1101
         )
@@ -422,7 +422,7 @@ class FastRCNNHead:
             self.proposals.labels,  # pylint: disable =E1101
             self.label_logits,  # pylint: disable =E1101
             encoded_fg_gt_boxes,
-            self.fg_box_logits(),  # pylint: disable =E1101
+            self.fg_box_logits(),
         )
 
     @memoized_method
@@ -463,7 +463,7 @@ class FastRCNNHead:
         decoded = decode_bbox_target(
             needed_logits / self.bbox_regression_weights,  # pylint: disable =E1101
             self.proposals.boxes,  # pylint: disable =E1101
-            self.cfg.PREPROC.MAX_SIZE,  # pylint: disable =E1101
+            self.cfg.PREPROC.MAX_SIZE,
         )
         return decoded
 
@@ -477,7 +477,7 @@ class FastRCNNHead:
         decoded = decode_bbox_target(
             box_logits / self.bbox_regression_weights,  # pylint: disable =E1101
             self.proposals.boxes,  # pylint: disable =E1101
-            self.cfg.PREPROC.MAX_SIZE,  # pylint: disable =E1101
+            self.cfg.PREPROC.MAX_SIZE,
         )
         return decoded
 

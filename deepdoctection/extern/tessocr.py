@@ -230,7 +230,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
     return all_results
 
 
-class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
+class TesseractOcrDetector(ObjectDetector):
     """
     Text object detector based on Tesseracts OCR engine. Note that tesseract has to be installed separately.
 

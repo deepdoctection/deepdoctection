@@ -94,8 +94,8 @@ class AccuracyMetric(MetricBase):
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
-            dp_labels_gt = mapper_with_setting(dp_gt)  # pylint: disable=E1102
-            dp_labels_predictions = mapper_with_setting(dp_pd)  # pylint: disable=E1102
+            dp_labels_gt = mapper_with_setting(dp_gt)
+            dp_labels_predictions = mapper_with_setting(dp_pd)
             for key in dp_labels_gt.keys():
                 if key not in labels_gt:
                     labels_gt[key] = dp_labels_gt[key]

@@ -126,7 +126,7 @@ class TableSegment:
 
 def _get_table_str(cells: List[Cell], number_rows: int, plain: bool = False) -> str:
     output = ""
-    for row in range(1, number_rows + 1):  # pylint: disable=W0640
+    for row in range(1, number_rows + 1):
         if not plain:
             output += f"______________ row: {row} ______________\n"
         cells_row = sorted(

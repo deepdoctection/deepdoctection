@@ -748,7 +748,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
         """
         return self.first_ann_box
 
-    def get_first_ann_category(self, as_index: bool = True) -> str:  # pylint: disable=R0201
+    def get_first_ann_category(self, as_index: bool = True) -> str:
         """
         category_name or category_id
         """

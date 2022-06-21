@@ -36,7 +36,7 @@ from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
 
 
-class DoctectionPipe(Pipeline):  # pylint: disable=W0221
+class DoctectionPipe(Pipeline):
     """
     Prototype for a document layout pipeline. Contains implementation for loading document types (images in directory,
     single PDF document, dataflow from datasets), conversions in dataflows and building a pipeline.

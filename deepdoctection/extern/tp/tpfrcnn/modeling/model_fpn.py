@@ -63,7 +63,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
                 x = tf.transpose(x, [0, 3, 1, 2])
                 return x
         except AttributeError:
-            return FixedUnPooling(  # pylint: disable =E1124
+            return FixedUnPooling(
                 name, x, 2, unpool_mat=np.ones((2, 2), dtype="float32"), data_format="channels_first"
             )
 
@@ -87,7 +87,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
         p2345 = [Conv2D(f"posthoc_3x3_p{i + 2}", c, num_channel, 3) for i, c in enumerate(lat_sum_5432[::-1])]
         if use_gn:
             p2345 = [GroupNorm(f"gn_p{i + 2}", c) for i, c in enumerate(p2345)]
-        p6 = MaxPooling(  # pylint: disable =E1124
+        p6 = MaxPooling(
             "maxpool_p6", p2345[-1], pool_size=1, strides=2, data_format="channels_first", padding="VALID"
         )
         return p2345 + [p6]
@@ -117,7 +117,7 @@ def fpn_map_rois_to_levels(boxes):
     num_in_levels = [tf.size(x, name=f"num_roi_level{i + 2}") for i, x in enumerate(level_ids)]
     add_moving_summary(*num_in_levels)
 
-    level_boxes = [tf.gather(boxes, ids) for ids in level_ids]  # pylint: disable =E1120
+    level_boxes = [tf.gather(boxes, ids) for ids in level_ids]
     return level_ids, level_boxes
 
 
@@ -146,11 +146,11 @@ def multilevel_roi_align(features, rcnn_boxes, resolution, fpn_anchor_strides):
             all_rois.append(roi_align(featuremap, boxes_on_featuremap, resolution))
 
     # this can fail if using TF<=1.8 with MKL build
-    all_rois = tf.concat(all_rois, axis=0)  # NCHW  # pylint: disable =E1120, E1123
+    all_rois = tf.concat(all_rois, axis=0)  # NCHW
     # Unshuffle to the original order, to match the original samples
-    level_id_perm = tf.concat(level_ids, axis=0)  # A permutation of 1~N  # pylint: disable =E1123, E1120
+    level_id_perm = tf.concat(level_ids, axis=0)  # A permutation of 1~N
     level_id_invert_perm = tf.math.invert_permutation(level_id_perm)
-    all_rois = tf.gather(all_rois, level_id_invert_perm, name="output")  # pylint: disable =E1120
+    all_rois = tf.gather(all_rois, level_id_invert_perm, name="output")
     return all_rois
 
 
@@ -178,7 +178,7 @@ def multilevel_rpn_losses(
     with tf.name_scope("rpn_losses"):
         for lvl in range(num_lvl):
             anchors = multilevel_anchors[lvl]
-            label_loss, box_loss = rpn_losses(  # pylint: disable =E1123
+            label_loss, box_loss = rpn_losses(
                 anchors.gt_labels,
                 anchors.encoded_gt_boxes(),
                 multilevel_label_logits[lvl],
@@ -255,21 +255,21 @@ def generate_fpn_proposals(  # pylint: disable =R0913
                 all_boxes.append(proposal_boxes)
                 all_scores.append(proposal_scores)
 
-        proposal_boxes = tf.concat(all_boxes, axis=0)  # nx4  # pylint: disable =E1123, E1120
-        proposal_scores = tf.concat(all_scores, axis=0)  # n  # pylint: disable =E1123, E1120
+        proposal_boxes = tf.concat(all_boxes, axis=0)  # nx4
+        proposal_scores = tf.concat(all_scores, axis=0)  # n
         # Here we are different from Detectron.
         # Detectron picks top-k within the batch, rather than within an image, however we do not have a batch.
         proposal_topk = tf.minimum(tf.size(proposal_scores), fpn_nms_top_k)
         proposal_scores, topk_indices = tf.nn.top_k(proposal_scores, k=proposal_topk, sorted=False)
-        proposal_boxes = tf.gather(proposal_boxes, topk_indices, name="all_proposals")  # pylint: disable =E1120
+        proposal_boxes = tf.gather(proposal_boxes, topk_indices, name="all_proposals")
     else:
         for lvl in range(num_lvl):
             with tf.name_scope(f"Lvl{lvl + 2}"):
                 pred_boxes_decoded = multilevel_pred_boxes[lvl]
                 all_boxes.append(tf.reshape(pred_boxes_decoded, [-1, 4]))
                 all_scores.append(tf.reshape(multilevel_label_logits[lvl], [-1]))
-        all_boxes = tf.concat(all_boxes, axis=0)  # pylint: disable =E1123, E1120
-        all_scores = tf.concat(all_scores, axis=0)  # pylint: disable =E1123, E1120
+        all_boxes = tf.concat(all_boxes, axis=0)
+        all_scores = tf.concat(all_scores, axis=0)
         proposal_boxes, proposal_scores = generate_rpn_proposals(
             all_boxes,
             all_scores,

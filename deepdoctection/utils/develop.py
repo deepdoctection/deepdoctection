@@ -48,7 +48,7 @@ def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnin
     """
     assert name or text
     if eos:
-        eos = "after " + datetime(*map(int, eos.split("-"))).strftime("%d %b")  # type: ignore # pylint: disable=C0209
+        eos = "after " + datetime(*map(int, eos.split("-"))).strftime("%d %b")  # type: ignore
     if name:
         if eos:
             info_msg = f"{name} will be deprecated {eos}. {text}"

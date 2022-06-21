@@ -36,7 +36,7 @@ def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: Datap
 
     # Act
     img_to_tp_tr_mapper = image_to_tp_frcnn_training(add_mask=False)  # pylint: disable=E1120
-    output = img_to_tp_tr_mapper(datapoint_image)  # pylint: disable=E1102
+    output = img_to_tp_tr_mapper(datapoint_image)
 
     # Assert
     expected_output = image_results.get_tp_frcnn_training_anns()

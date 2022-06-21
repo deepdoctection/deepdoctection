@@ -39,7 +39,7 @@ def disable_tfv2() -> bool:
     Disable TF in V2 mode.
     """
     try:
-        import tensorflow as tf  # pylint: disable=C0415,E0401
+        import tensorflow as tf  # pylint: disable=C0415
 
         tfv1 = tf.compat.v1
         if is_tfv2():
