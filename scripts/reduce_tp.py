@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: reduce.py
+# File: reduce_tp.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -16,10 +16,11 @@
 # limitations under the License.
 
 """
-A script to reduce the model size by removing variables that are only relevant for
+A script to reduce the Tesnorpack model size by removing variables that are only relevant for
 training. Note, that once reduced the model can ony be used for inference not for fine
 tuning.
 """
+
 import os.path
 
 from tensorpack.tfutils.varmanip import load_checkpoint_vars, save_checkpoint_vars
