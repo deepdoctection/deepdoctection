@@ -31,9 +31,9 @@ For further text processing tasks, use one of the many other great NLP libraries
    - Table extraction with full table semantics (rows, columns, multi line cell spans), again with help of Cascade-RCNN
    - OCR or text mining with  [Tesseract](https://github.com/tesseract-ocr/tesseract), 
      [DocTr](https://github.com/mindee/doctr), [pdfplumber](https://github.com/jsvine/pdfplumber) or other
-   - reading order
-   - language detection with [fastText](https://github.com/facebookresearch/fastText)
-   - parsed output available as JSON object for further NLP tasks, labeling or reviewing
+   - Reading order
+   - Language detection with [fastText](https://github.com/facebookresearch/fastText)
+   - Parsed output available as JSON object for further NLP tasks, labeling or reviewing
 
 Off the shelf actually means off the shelf. The results will look okay, but useful outputs for downstream tasks will 
 only come out when models are adapted to actual documents you deal with. Therefore:
@@ -61,7 +61,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 
 ### Platform and Python
 
-Before you start, please ensure your installation fulfills the following baseline requirements:
+Before you start, please ensure your installation fulfills the following requirements:
 
 - Linux **or** macOS
 - Python >=  3.8 
@@ -80,7 +80,7 @@ If you get started and want to run the notebooks for the first time it is requir
 ## Installation
 
 We recommend using a virtual environment. You can install the package via pip or from source. Bug fixes or enhancements
-will be deployed tp PyPi every 4 to 6 weeks.
+will be deployed to PyPi every 4 to 6 weeks.
 
 ### Install with pip from PyPi
 
@@ -151,12 +151,15 @@ pip install ".[source-all-pt]"
 
 will install all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
 
-For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
+Again, for other installation options check 
+[**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
 
 
 ## Credits
 
-Many utils, concepts and some models are inspired and taken from [**Tensorpack**](https://github.com/tensorpack) . 
+Many utilities, concepts and models are inspired or taken from [**Tensorpack**](https://github.com/tensorpack), 
+[**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2), 
+[**Transformers**](https://github.com/huggingface/transformers). 
 We heavily make use of [Dataflow](https://github.com/tensorpack/dataflow) for loading and streaming data.  
 
 
