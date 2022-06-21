@@ -146,12 +146,12 @@ def generate_rpn_proposals(
 
     top_k = tf.minimum(pre_nms_top_k, tf.size(scores))
     top_k_scores, top_k_indices = tf.nn.top_k(scores, k=top_k, sorted=False)
-    top_k_boxes = tf.gather(boxes, top_k_indices)  # pylint: disable =E1120
+    top_k_boxes = tf.gather(boxes, top_k_indices)
     top_k_boxes = clip_boxes(top_k_boxes, img_shape)
 
     if rpn_min_size > 0:
         top_k_boxes_x1y1x2y2 = tf.reshape(top_k_boxes, (-1, 2, 2))
-        top_k_boxes_x1y1, top_k_boxes_x2y2 = tf.split(top_k_boxes_x1y1x2y2, 2, axis=1)  # pylint: disable =E1120, E1124
+        top_k_boxes_x1y1, top_k_boxes_x2y2 = tf.split(top_k_boxes_x1y1x2y2, 2, axis=1)
         # nx1x2 each
         wbhb = tf.squeeze(top_k_boxes_x2y2 - top_k_boxes_x1y1, axis=1)
         valid = tf.reduce_all(wbhb > rpn_min_size, axis=1)  # n,
@@ -165,8 +165,8 @@ def generate_rpn_proposals(
         top_k_valid_boxes, top_k_valid_scores, max_output_size=post_nms_top_k, iou_threshold=rpn_proposal_nms_thres
     )
 
-    proposal_boxes = tf.gather(top_k_valid_boxes, nms_indices)  # pylint: disable =E1120
-    proposal_scores = tf.gather(top_k_valid_scores, nms_indices)  # pylint: disable =E1120
+    proposal_boxes = tf.gather(top_k_valid_boxes, nms_indices)
+    proposal_scores = tf.gather(top_k_valid_scores, nms_indices)
     tf.sigmoid(proposal_scores, name="probs")  # for visualization
     return tf.stop_gradient(proposal_boxes, name="boxes"), tf.stop_gradient(proposal_scores, name="scores")
 

@@ -34,7 +34,7 @@ from .base import LMTokenClassifier, PredictorBase, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
-    import torch  # pylint: disable=W0611
+    import torch
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():

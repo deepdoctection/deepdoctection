@@ -25,10 +25,12 @@ from pytest import mark
 from deepdoctection.datapoint.image import Image
 from deepdoctection.utils import detectron2_available
 
+from .data import DatapointImage
+
 if detectron2_available():
     from deepdoctection.mapper.d2struct import image_to_d2_frcnn_training
 
-from .data import DatapointImage
+
 
 
 @mark.requires_pt

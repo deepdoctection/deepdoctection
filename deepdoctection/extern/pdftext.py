@@ -28,7 +28,7 @@ from ..utils.settings import names
 from .base import DetectionResult, PdfMiner
 
 if pdfplumber_available():
-    from pdfplumber.pdf import PDF  # type: ignore  # pylint: disable=E0401
+    from pdfplumber.pdf import PDF  # type: ignore
 
 
 def _to_detect_result(word: Dict[str, str]) -> DetectionResult:

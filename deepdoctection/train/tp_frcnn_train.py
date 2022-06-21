@@ -178,7 +178,7 @@ def get_train_dataflow(
     return df
 
 
-def train_faster_rcnn(  # pylint: disable=R0913, R0915
+def train_faster_rcnn(
     path_config_yaml: str,
     dataset_train: DatasetBase,
     path_weights: str = "",

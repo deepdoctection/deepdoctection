@@ -548,7 +548,7 @@ def print_model_infos() -> None:
     print(colored(table, "cyan"))
 
 
-class ModelDownloadManager:  # pylint: disable=R0903
+class ModelDownloadManager:
     """
     Class for organizing downloads of config files and weights from various sources. Internally, it will use model
     profiles to know where things are stored.

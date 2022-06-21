@@ -71,7 +71,7 @@ class AttrDict:
         """Convert to a nested dict."""
         return {
             k: v.to_dict() if isinstance(v, AttrDict) else v
-            for k, v in self.__dict__.items()  # pylint: disable=C0103
+            for k, v in self.__dict__.items()
             if not k.startswith("_")
         }
 

@@ -72,7 +72,7 @@ class Annotation(ABC):
         self._assert_defining_attributes_have_str()
 
     @property
-    def annotation_id(self) -> str:  # pylint: disable=E0102
+    def annotation_id(self) -> str:
         """
         annotation_id
         """
@@ -103,7 +103,7 @@ class Annotation(ABC):
 
         :return: A list of attributes.
         """
-        raise NotImplementedError  # pylint: disable=W0104
+        raise NotImplementedError
 
     def _assert_defining_attributes_have_str(self) -> None:
         for attr in self.get_defining_attributes():
@@ -147,12 +147,12 @@ class Annotation(ABC):
         self.active = False
 
     @abstractmethod
-    def get_export(self) -> Dict[str, Any]:  # pylint: disable=C0116
+    def get_export(self) -> Dict[str, Any]:
         """
         Generate a dictionary representing the object that can be saved to a file. See some
         built-in examples e.g. :meth:`CategoryAnnotation.get_export`
         """
-        raise NotImplementedError  # pylint: disable=W0104
+        raise NotImplementedError
 
 
 @dataclass
@@ -304,7 +304,7 @@ class CategoryAnnotation(Annotation):
         :return: dict that e.g. can be saved to a file.
         """
         ann_copy = deepcopy(self)
-        ann_copy.sub_categories = {}  # pylint: disable=W0212
+        ann_copy.sub_categories = {}
         export_dict = self.as_dict()
 
         export_dict["sub_categories"] = {}
