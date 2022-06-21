@@ -183,8 +183,8 @@ Maybe switch kernel again
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("cell/d2_model-1800000-cell.pkl")
-    path_weights = ModelCatalog.get_full_path_weights("cell/d2_model-1800000-cell.pkl")
+    path_config_yaml = ModelCatalog.get_full_path_configs("cell/d2_model_1849999_cell_inf_only.pt")
+    path_weights = ModelCatalog.get_full_path_weights("cell/d2_model_1849999_cell_inf_only.pt")
 
 .. code:: ipython3
 
@@ -210,18 +210,18 @@ Maybe switch kernel again
     DONE (t=45.76s).
     Accumulating evaluation results...
     DONE (t=0.54s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.979
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.927
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.750
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.780
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.703
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.489
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.781
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.807
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.798
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.827
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.755
+      Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+      Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.989
+      Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.955
+      Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.813
+      Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.867
+      Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.849
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.536
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.855
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.884
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.863
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.907
+      Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.880
 
 
 Detectron2 on Pubtabnet for row and column predictions
@@ -384,8 +384,3 @@ Detectron2 on Pubtabnet for row and column predictions
      Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.726
      Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.769
      Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.909
-
-
-
-Detectron2 after resuming training
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
