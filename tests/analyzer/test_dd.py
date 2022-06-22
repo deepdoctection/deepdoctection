@@ -46,7 +46,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10}
+    assert len(page.items) in {9, 10, 12}
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
@@ -72,7 +72,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10}
+    assert len(page.items) in {9, 10, 12}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}
@@ -110,7 +110,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10}
+    assert len(page.items) in {9, 10, 12}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}
@@ -133,4 +133,4 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert page.height == 2339
     assert page.width == 1654
     # first number for tp model, second for pt model
-    assert len(page.get_text()) in {4291, 4662}
+    assert len(page.get_text()) in {4291, 4662, 5045}
