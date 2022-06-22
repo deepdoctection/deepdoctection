@@ -23,6 +23,9 @@ from setuptools import find_packages, setup
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
+with open(os.path.join(ROOT, 'README.md'), 'rb') as f:
+    long_description = f.read().decode('utf-8')
+
 
 def get_version():
     init_path = os.path.join(ROOT, "deepdoctection", "__init__.py")
@@ -192,6 +195,8 @@ setup(
     url="https://github.com/deepdoctection/deepdoctection",
     license="Apache License 2.0",
     description="Repository for Document AI",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=dist_deps,
     extras_require=EXTRA_DEPS,
     packages=find_packages(),
