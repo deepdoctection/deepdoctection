@@ -23,11 +23,11 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Type, Union
 
 from ..dataflow import DataFromList, MapData
 from ..datasets.base import DatasetBase
-from ..mapper.cats import remove_cats
+from ..mapper.cats import remove_cats, filter_cat
 from ..mapper.misc import maybe_load_image, maybe_remove_image
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
@@ -49,6 +49,28 @@ class Evaluator:  # pylint: disable=R0903
     be invoked twice as one dataflow must be kept with its ground truth while the other must go through an annotation
     erasing process and after that passing the predictor. Predicted and gt datapoints will be converted into the
     required metric input format and dumped into lists. Both lists will be passed to :meth:`MetricBase.get_distance`.
+
+    **Example:**
+
+        You can evaluate the predictor on a subset of categories by filtering the ground truth dataset. When using
+        the coco metric all predicted objects that are not in the set of filtered objects will be not taken into
+        account.
+
+        .. code-block:: python
+
+            publaynet = get_dataset("publaynet")
+            publaynet.dataflow.categories.filter_categories(categories=["TEXT","TITLE"])
+            coco_metric = metric_registry.get("coco")
+            profile = ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt")
+            path_weights = ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
+            path_config_yaml= ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
+
+            layout_detector = D2FrcnnDetector(path_config_yaml, path_weights, profile.categories)
+            layout_service = ImageLayoutService(layout_detector)
+            evaluator = Evaluator(publaynet, layout_service, coco_metric)
+
+            output = evaluator.run(max_datapoints=10)
+
     """
 
     def __init__(
@@ -87,19 +109,11 @@ class Evaluator:  # pylint: disable=R0903
         self.metric = metric()
         self._sanity_checks()
 
-    def run(
-        self,
-        category_names: Optional[Union[str, List[str]]] = None,
-        sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
-        output_as_dict: bool = False,
-        **kwargs: str
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    def run(self, output_as_dict: bool = False, **kwargs: Union[str,int]) -> \
+            Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Start evaluation process and return the results.
 
-        :param category_names: Single or list of categories on which evaluation should run. Pass nothing to do
-                               something else.
-        :param sub_categories: Dict of categories/sub-categories or categories/ list of sub categories.
         :param output_as_dict: Return result in a list or dict.
         :param kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split", "build_mode",
                        "max_datapoints" etc.
@@ -111,9 +125,16 @@ class Evaluator:  # pylint: disable=R0903
         df_gt = self.dataset.dataflow.build(**kwargs)
         df_pr = self.dataset.dataflow.build(**kwargs)
 
-        remove = remove_cats(category_names, sub_categories)
         df_pr = MapData(df_pr, deepcopy)
-        df_pr = MapData(df_pr, remove)
+
+        if hasattr(self.metric, "sub_cats"):
+            df_pr = MapData(df_pr, remove_cats(None, self.metric.sub_cats))
+        else:
+            # if sub_categories are not provided will filter all categories by default
+            df_pr = MapData(df_pr,
+                            filter_cat([], self.dataset.dataflow.categories.get_categories(as_dict=False,
+                                                                                           filtered=True)))
+
         self.pipe_component.put_task(df_pr)
 
         logger.info("Predicting objects...")
