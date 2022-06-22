@@ -23,13 +23,14 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Type, Union, Optional
 
-from ..dataflow import DataFromList, MapData
+from ..dataflow import DataFromList, MapData, DataFlow
 from ..datasets.base import DatasetBase
 from ..mapper.cats import remove_cats, filter_cat
 from ..mapper.misc import maybe_load_image, maybe_remove_image
 from ..pipe.base import PredictorPipelineComponent
+from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..utils.logger import logger
 from .base import MetricBase
@@ -76,7 +77,7 @@ class Evaluator:  # pylint: disable=R0903
     def __init__(
         self,
         dataset: DatasetBase,
-        predictor_pipe_component: PredictorPipelineComponent,
+        component_or_pipeline: Union[PredictorPipelineComponent, DoctectionPipe],
         metric: Type[MetricBase],
         num_threads: int = 2,
     ) -> None:
@@ -84,7 +85,7 @@ class Evaluator:  # pylint: disable=R0903
         Evaluating a pipeline component on a dataset with a given metric.
 
         :param dataset: dataset
-        :param predictor_pipe_component: A pipeline component with predictor and annotation factory.
+        :param component_or_pipeline: A pipeline component with predictor and annotation factory.
         :param metric: metric
         """
 
@@ -92,20 +93,31 @@ class Evaluator:  # pylint: disable=R0903
             "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
             num_threads,
         )
-        pipeline_components: List[PredictorPipelineComponent] = []
 
-        for _ in range(num_threads - 1):
-            copy_pipe_component = predictor_pipe_component.clone()
-            pipeline_components.append(copy_pipe_component)
+        self.pipe_component: Optional[MultiThreadPipelineComponent] = None
+        self.pipe: Optional[DoctectionPipe] = None
 
-        pipeline_components.append(predictor_pipe_component)
-        self.dataset = dataset
+        # when passing a component, we will process prediction on num_threads
+        if isinstance(component_or_pipeline, PredictorPipelineComponent):
+            pipeline_components: List[PredictorPipelineComponent] = []
 
-        self.pipe_component = MultiThreadPipelineComponent(
-            pipeline_components=pipeline_components,
-            pre_proc_func=maybe_load_image,
-            post_proc_func=maybe_remove_image,
-        )
+            for _ in range(num_threads - 1):
+                copy_pipe_component = component_or_pipeline.clone()
+                pipeline_components.append(copy_pipe_component)
+
+            pipeline_components.append(component_or_pipeline)
+            self.dataset = dataset
+
+            self.pipe_component = MultiThreadPipelineComponent(
+                pipeline_components=pipeline_components,
+                pre_proc_func=maybe_load_image,
+                post_proc_func=maybe_remove_image,
+            )
+        else:
+            self.pipe = component_or_pipeline
+            for component in self.pipe.pipe_component_list:
+                component.timer_on = False
+
         self.metric = metric()
         self._sanity_checks()
 
@@ -135,12 +147,10 @@ class Evaluator:  # pylint: disable=R0903
                             filter_cat([], self.dataset.dataflow.categories.get_categories(as_dict=False,
                                                                                            filtered=True)))
 
-        self.pipe_component.put_task(df_pr)
-
-        logger.info("Predicting objects...")
-        df_pr_list = self.pipe_component.start()
-
-        df_pr = DataFromList(df_pr_list)
+        if self.pipe_component:
+            df_pr = self._run_on_component(df_pr)
+        else:
+            df_pr = self._run_on_predictor(df_pr)
 
         logger.info("Starting evaluation...")
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
@@ -152,3 +162,13 @@ class Evaluator:  # pylint: disable=R0903
 
     def _sanity_checks(self) -> None:
         assert self.dataset.dataflow.categories is not None
+
+    def _run_on_component(self, df_pr: DataFlow) -> DataFlow:
+        self.pipe_component.put_task(df_pr)
+        logger.info("Predicting objects...")
+        df_pr_list = self.pipe_component.start()
+        return DataFromList(df_pr_list)
+
+    def _run_on_predictor(self, df_pr: DataFlow) -> DataFlow:
+        return self.pipe.analyze(dataset_dataflow=df_pr)
+
