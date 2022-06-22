@@ -55,7 +55,7 @@ Detectron2 on Publaynet
     
     layout_detector = D2FrcnnDetector(path_config_yaml,path_weights,categories)
     layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(publaynet,layout_service, coco_metric)
+    evaluator = Evaluator(publaynet, layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500)
 
