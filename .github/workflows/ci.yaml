@@ -20,15 +20,15 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8-basic-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.8, extras: source-tf,
+          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-tf,
               test_cases: test-tf-basic }
-          - { name: '3.8-full-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.8, extras: source-full-tf,
+          - { name: '3.8-full-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-full-tf,
               test_cases: test-tf-full }
-          - { name: '3.8-all-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'tensorflow==2.8 tensorflow-addons>=0.13.0', extras: source-all-tf,
+          - { name: '3.8-all-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'tensorflow==2.8 tensorflow-addons>=0.13.0', extras: source-all-tf,
               test_cases: test-tf-all }
-          - { name: '3.8-full-pt', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-pt,
+          - { name: '3.8-full-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-pt,
               test_cases: test-pt-full }
-          - { name: '3.8-all-pt', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
+          - { name: '3.8-all-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
               test_cases: test-pt-all }
 
     steps:
@@ -62,6 +62,73 @@ jobs:
 
       - name: Test deepdoctection package installation
         run:  pip install ".[${{ matrix.extras }}]"
+
+      - name: Install test suite
+        run: pip install pytest pytest-cov
+
+      - name: Run tests
+        run: make ${{ matrix.test_cases }}
+
+  tests-release:
+    if: "contains(github.event.head_commit.message, '[release]')"
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-tf,
+              test_cases: test-tf-basic }
+          - { name: '3.8-full-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-full-tf,
+              test_cases: test-tf-full }
+          - { name: '3.8-all-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'tensorflow==2.8 tensorflow-addons>=0.13.0', extras: source-all-tf,
+              test_cases: test-tf-all }
+          - { name: '3.8-full-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-pt,
+              test_cases: test-pt-full }
+          - { name: '3.8-all-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
+              test_cases: test-pt-all }
+          - { name: '3.10-basic-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.8, extras: source-tf,
+              test_cases: test-tf-basic }
+          - { name: '3.10-full-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.8, extras: source-full-tf,
+              test_cases: test-tf-full }
+          - { name: '3.10-all-tf', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'tensorflow==2.8 tensorflow-addons>=0.13.0', extras: source-all-tf,
+              test_cases: test-tf-all }
+          - { name: '3.10-full-pt', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-pt,
+              test_cases: test-pt-full }
+          - { name: '3.10-all-pt', python: '3.10', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
+              test_cases: test-pt-all }
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Upgrade pip
+        run: python3 -m pip install --upgrade pip tox
+
+      - name: Install libcap
+        run: sudo apt-get install build-essential libcap-dev
+
+      - name: Set Python version
+        # See https://pre-commit.com/#github-actions-example
+        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Install tesseract and poppler
+        run: sudo apt-get -y update &&
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu &&
+          sudo apt-get install poppler-utils
+
+      - name: Install DL library
+        run: pip install ${{ matrix.dll }}
+
+      - name: cd
+        run: cd deepdoctection
+
+      - name: Test deepdoctection package installation
+        run: pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
         run: pip install pytest pytest-cov
