@@ -315,7 +315,7 @@ previous evaluation.
     fintabnet.dataflow.categories.filter_categories(categories="CELL")
     
     evaluator = Evaluator(fintabnet,layout_service, coco_metric)
-    output= evaluator.run(category_names=["CELL"],max_datapoints=100,build_mode="table",load_image=True, use_multi_proc=False)
+    output= evaluator.run(max_datapoints=100,build_mode="table",load_image=True, use_multi_proc=False)
 
 What stands out ?
 

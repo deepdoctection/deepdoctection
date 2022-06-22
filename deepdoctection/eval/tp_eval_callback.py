@@ -109,7 +109,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         logger.info("[EvalCallback] Will evaluate every %i epochs", eval_period)
 
     def _eval(self) -> None:
-        scores = self.evaluator.run(self.category_names, self.sub_categories, True, **self.build_eval_kwargs)
+        scores = self.evaluator.run(True, **self.build_eval_kwargs)
         assert isinstance(scores, dict)
         for k, val in scores.items():
             self.trainer.monitors.put_scalar(self.dataset_name + "-" + k, val)
