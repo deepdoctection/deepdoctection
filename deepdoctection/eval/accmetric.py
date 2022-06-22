@@ -168,6 +168,10 @@ class AccuracyMetric(MetricBase):
     def get_requirements(cls) -> List[Requirement]:
         return [get_sklearn_requirement()]
 
+    @property
+    def sub_cats(self):
+        return self._sub_cats
+
 
 def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
     """

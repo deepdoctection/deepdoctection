@@ -23,6 +23,7 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Dict, List, Mapping, Optional, Sequence, Union
 
+from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from .maputils import curry
 
@@ -62,13 +63,22 @@ def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) ->
     consider the situation where some categories are filtered. In order to guarantee alignment of category ids of the
     :class:`DatasetCategories` the ids in the annotation have to be re-assigned.
 
+    Annotations that as not in the dictionary provided will removed from the image.
+
     :param dp: Image
     :param categories_dict_name_as_key:
     :return: Image
     """
 
+    anns_to_remove: List[ImageAnnotation] = []
     for ann in dp.get_annotation_iter():
-        ann.category_id = categories_dict_name_as_key[ann.category_name]
+        if ann.category_name in categories_dict_name_as_key:
+            ann.category_id = categories_dict_name_as_key[ann.category_name]
+        else:
+            anns_to_remove.append(ann)
+
+    for ann in anns_to_remove:
+        dp.remove(ann)
 
     return dp
 

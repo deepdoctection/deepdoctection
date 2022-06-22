@@ -57,7 +57,7 @@ Detectron2 on Publaynet
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(publaynet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names)
+    output= evaluator.run(max_datapoints=500)
 
 
 .. parsed-literal::
@@ -118,7 +118,7 @@ Maybe, a restart of the kernel is necessary.
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(publaynet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names)
+    output= evaluator.run(max_datapoints=500)
 
 
 
@@ -195,7 +195,7 @@ Maybe switch kernel again
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names)
+    output= evaluator.run(max_datapoints=500)
 
 
 
@@ -245,7 +245,7 @@ Detectron2 on Pubtabnet for row and column predictions
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names, rows_and_cols=True)
+    output= evaluator.run(max_datapoints=500, rows_and_cols=True)
 
 
 .. parsed-literal::
@@ -306,7 +306,7 @@ Tensorpack on Pubtabnet for cell predictions
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names)
+    output= evaluator.run(max_datapoints=500)
 
 
 .. parsed-literal::
@@ -358,7 +358,7 @@ Detectron2 on Pubtabnet for row and column predictions
     layout_service =  ImageLayoutService(layout_detector)
     evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
     
-    output= evaluator.run(max_datapoints=500,category_names=category_names, rows_and_cols=True)
+    output= evaluator.run(max_datapoints=500,rows_and_cols=True)
 
 
 .. parsed-literal::

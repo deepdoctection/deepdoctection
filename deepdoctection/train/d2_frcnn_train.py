@@ -77,15 +77,11 @@ class D2Trainer(DefaultTrainer):
 
     def eval_with_dd_evaluator(
         self,
-        category_names: Union[str, List[str]],
-        sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
         **build_eval_kwargs: str
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Running the Evaluator. This method will be called from the EvalHook
 
-        :param category_names: A single category name or a list on which to run evaluation
-        :param sub_categories: A dict of cats to sub cats
         :param build_eval_kwargs: dataflow eval config kwargs of the underlying dataset
         :return: A dict of evaluation results
         """
@@ -93,7 +89,7 @@ class D2Trainer(DefaultTrainer):
         assert self.evaluator.pipe_component is not None
         for comp in self.evaluator.pipe_component.pipe_components:
             comp.predictor.d2_predictor = copy.deepcopy(self.model).eval()  # type: ignore # pylint: disable=E1101
-        scores = self.evaluator.run(category_names, sub_categories, True, **build_eval_kwargs)
+        scores = self.evaluator.run(True, **build_eval_kwargs)
         return scores
 
     def setup_evaluator(
@@ -233,11 +229,7 @@ def train_d2_faster_rcnn(
             [
                 EvalHook(
                     cfg.TEST.EVAL_PERIOD,
-                    lambda: trainer.eval_with_dd_evaluator(
-                        category_names=category_names,
-                        sub_categories=dataset_val.dataflow.categories.cat_to_sub_cat,
-                        **build_val_dict
-                    ),
+                    lambda: trainer.eval_with_dd_evaluator(**build_val_dict),
                 )
             ]
         )
