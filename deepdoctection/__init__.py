@@ -12,7 +12,7 @@ from packaging import version
 from .utils.file_utils import get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
 
-__version__ = 0.13
+__version__ = 0.14
 
 if not tf_available() and not pytorch_available():
     logger.info(
