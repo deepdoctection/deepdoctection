@@ -748,7 +748,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
         """
         return self.first_ann_box
 
-    def get_first_ann_category(self, as_index: bool = True) -> str:  # pylint: disable=R0201
+    def get_first_ann_category(self, as_index: bool = True) -> str:
         """
         category_name or category_id
         """
@@ -966,6 +966,17 @@ class DatapointImage:
             "gt_labels": np.asarray([1, 2]).astype("float32"),
             "file_name": "/to/path",
         }
+        self.d2_frcnn_training: JsonDict = {
+            "image": _img_np,
+            "width": 96,
+            "height": 34,
+            "image_id": self.image.image_id,
+            "file_name": self.image.location,
+            "annotations": [
+                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [2.6, 3.7, 4.6, 5.7], "category_id": 0},
+                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [16.6, 26.6, 30.6, 30.6], "category_id": 1},
+            ],
+        }
 
     def get_image_str(self) -> str:
         """
@@ -1020,6 +1031,12 @@ class DatapointImage:
         Dict of tp frcnn training anns
         """
         return self.tp_frcnn_training
+
+    def get_d2_frcnn_training_anns(self) -> JsonDict:
+        """
+        Dict of tp D2 training anns
+        """
+        return self.d2_frcnn_training
 
 
 class DatapointPageDict:  # pylint: disable=R0903

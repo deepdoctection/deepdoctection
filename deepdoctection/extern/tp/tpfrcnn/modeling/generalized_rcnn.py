@@ -98,14 +98,14 @@ class GeneralizedRCNN(ModelDescWithConfig):
 
         image = self.preprocess(inputs["image"])  # 1CHW
 
-        features = self.backbone(image)  # pylint: disable=E1101
+        features = self.backbone(image)
         anchor_inputs = {k: v for k, v in inputs.items() if k.startswith("anchor_")}
-        proposals, rpn_losses = self.rpn(image, features, anchor_inputs)  # pylint: disable=E1101
+        proposals, rpn_losses = self.rpn(image, features, anchor_inputs)
 
         targets = [inputs[k] for k in ["gt_boxes", "gt_labels", "gt_masks"] if k in inputs]
         gt_boxes_area = tf.reduce_mean(tf_area(inputs["gt_boxes"]), name="mean_gt_box_area")
         add_moving_summary(gt_boxes_area)
-        head_losses = self.roi_heads(image, features, proposals, targets)  # pylint: disable=E1101
+        head_losses = self.roi_heads(image, features, proposals, targets)
 
         if self.training:
             wd_cost = regularize_cost(".*/W", l2_regularizer(self.cfg.TRAIN.WEIGHT_DECAY), name="wd_cost")
@@ -244,7 +244,7 @@ class ResNetFPNModel(GeneralizedRCNN):
 
         return BoxProposals(proposal_boxes), losses
 
-    def roi_heads(self, image, features, proposals, targets):  # pylint: disable=R0914
+    def roi_heads(self, image, features, proposals, targets):
         """
         Region of Interest head classifier and regressor
 
@@ -305,7 +305,7 @@ class ResNetFPNModel(GeneralizedRCNN):
             if self.cfg.MODE_MASK:
                 gt_masks = targets[2]
                 # maskrcnn loss
-                roi_feature_maskrcnn = multilevel_roi_align(  # pylint: disable=E1123
+                roi_feature_maskrcnn = multilevel_roi_align(
                     features[:4],
                     proposals.fg_boxes(),
                     14,
@@ -326,7 +326,7 @@ class ResNetFPNModel(GeneralizedRCNN):
         decoded_boxes = fastrcnn_head.decoded_output_boxes()
         decoded_boxes = clip_boxes(decoded_boxes, image_shape2d, name="fastrcnn_all_boxes")
         label_scores = fastrcnn_head.output_scores(name="fastrcnn_all_scores")
-        boxes, scores, labels = fastrcnn_predictions(  # pylint: disable=E1123
+        boxes, scores, labels = fastrcnn_predictions(
             decoded_boxes,
             label_scores,
             self.cfg.OUTPUT.RESULT_SCORE_THRESH,
@@ -334,7 +334,7 @@ class ResNetFPNModel(GeneralizedRCNN):
             self.cfg.OUTPUT.FRCNN_NMS_THRESH,
             name_scope="pre_output",
         )
-        final_boxes, _, final_labels = nms_post_processing(  # pylint: disable=E1123
+        final_boxes, _, final_labels = nms_post_processing(
             boxes,
             scores,
             labels,

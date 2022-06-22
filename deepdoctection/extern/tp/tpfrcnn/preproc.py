@@ -67,7 +67,7 @@ def augment(dp: JsonDict, imgaug_list: List[ImageAugmentor], add_mask: bool) -> 
     return dp
 
 
-def anchors_and_labels(  # pylint: disable=R0913
+def anchors_and_labels(
     dp: JsonDict,
     anchor_strides: Tuple[int],
     anchor_sizes: Tuple[int],
@@ -126,7 +126,7 @@ def anchors_and_labels(  # pylint: disable=R0913
     return dp
 
 
-def get_multilevel_rpn_anchor_input(  # pylint: disable=R0913
+def get_multilevel_rpn_anchor_input(
     image: np.array,
     boxes: np.array,
     is_crowd: np.array,

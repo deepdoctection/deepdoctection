@@ -20,7 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import Dict, List, Optional, Tuple, Sequence, Iterable
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -215,7 +215,7 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
     return rows_col_cell_ids
 
 
-def pub_to_image_uncur(  # pylint: disable=R0914, R0915
+def pub_to_image_uncur(  # pylint: disable=R0914
     dp: JsonDict,
     categories_name_as_key: Dict[str, str],
     load_image: bool,

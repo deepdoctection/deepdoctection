@@ -27,6 +27,7 @@ from typing import Any, Optional, Union
 
 import cv2
 import numpy as np
+from numpy import uint8
 from numpy.typing import NDArray
 from PyPDF2 import PdfFileReader
 
@@ -65,7 +66,7 @@ def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
             result.append((attribute.name, value))
         return dict_factory(result)
     if isinstance(obj, (list, tuple)):
-        return type(obj)(as_dict(v, dict_factory) for v in obj)  # pylint: disable=E0110
+        return type(obj)(as_dict(v, dict_factory) for v in obj)
     if isinstance(obj, dict):
         return type(obj)(  # pylint: disable=E0110
             (as_dict(k, dict_factory), as_dict(v, dict_factory)) for k, v in obj.items()
@@ -84,7 +85,7 @@ def convert_b64_to_np_array(image: str) -> ImageType:
     """
     np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
     np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
-    return np_array
+    return np_array.astype(uint8)
 
 
 def convert_np_array_to_b64(np_image: ImageType) -> str:
@@ -144,7 +145,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     image.save(buffered, format="JPEG")
     image = base64.b64encode(buffered.getvalue()).decode("utf-8")
     np_array = convert_b64_to_np_array(image)
-    return np_array
+    return np_array.astype(uint8)
 
 
 def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:

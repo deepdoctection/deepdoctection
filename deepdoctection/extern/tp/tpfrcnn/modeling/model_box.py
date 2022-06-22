@@ -48,10 +48,10 @@ def decode_bbox_target(box_predictions, anchors, preproc_max_size):
 
     orig_shape = tf.shape(anchors)
     box_pred_txtytwth = tf.reshape(box_predictions, (-1, 2, 2))
-    box_pred_txty, box_pred_twth = tf.split(box_pred_txtytwth, 2, axis=1)  # pylint: disable =E1124, E1120
+    box_pred_txty, box_pred_twth = tf.split(box_pred_txtytwth, 2, axis=1)
     # each is (...)x1x2
     anchors_x1y1x2y2 = tf.reshape(anchors, (-1, 2, 2))
-    anchors_x1y1, anchors_x2y2 = tf.split(anchors_x1y1x2y2, 2, axis=1)  # pylint: disable =E1124, E1120
+    anchors_x1y1, anchors_x2y2 = tf.split(anchors_x1y1x2y2, 2, axis=1)
 
     waha = anchors_x2y2 - anchors_x1y1
     xaya = (anchors_x2y2 + anchors_x1y1) * 0.5
@@ -61,7 +61,7 @@ def decode_bbox_target(box_predictions, anchors, preproc_max_size):
     xbyb = box_pred_txty * waha + xaya
     x1y1 = xbyb - wbhb * 0.5
     x2y2 = xbyb + wbhb * 0.5  # (...)x1x2
-    out = tf.concat([x1y1, x2y2], axis=-2)  # pylint: disable =E1123, E1120
+    out = tf.concat([x1y1, x2y2], axis=-2)  # pylint: disable =E1123
     return tf.reshape(out, orig_shape)
 
 
@@ -76,19 +76,19 @@ def encode_bbox_target(boxes, anchors):
     """
 
     anchors_x1y1x2y2 = tf.reshape(anchors, (-1, 2, 2))
-    anchors_x1y1, anchors_x2y2 = tf.split(anchors_x1y1x2y2, 2, axis=1)  # pylint: disable =E1124, E1120
+    anchors_x1y1, anchors_x2y2 = tf.split(anchors_x1y1x2y2, 2, axis=1)
     waha = anchors_x2y2 - anchors_x1y1
     xaya = (anchors_x2y2 + anchors_x1y1) * 0.5
 
     boxes_x1y1x2y2 = tf.reshape(boxes, (-1, 2, 2))
-    boxes_x1y1, boxes_x2y2 = tf.split(boxes_x1y1x2y2, 2, axis=1)  # pylint: disable =E1124, E1120
+    boxes_x1y1, boxes_x2y2 = tf.split(boxes_x1y1x2y2, 2, axis=1)
     wbhb = boxes_x2y2 - boxes_x1y1
     xbyb = (boxes_x2y2 + boxes_x1y1) * 0.5
 
     # Note that here not all boxes are valid. Some may be zero
     txty = (xbyb - xaya) / waha
     twth = tf.math.log(wbhb / waha)  # may contain -inf for invalid boxes
-    encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)  # pylint: disable =E1123, E1120
+    encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)  # pylint: disable =E1123
     return tf.reshape(encoded, tf.shape(boxes))
 
 
@@ -111,7 +111,7 @@ def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):
     # TF's crop_and_resize produces zeros on border
     if pad_border:
         # this can be quite slow
-        image = tf.pad(image, [[0, 0], [0, 0], [1, 1], [1, 1]], mode="SYMMETRIC")  # pylint: disable =E1123, E1120
+        image = tf.pad(image, [[0, 0], [0, 0], [1, 1], [1, 1]], mode="SYMMETRIC")  # pylint: disable =E1123
         boxes += 1
 
     @under_name_scope()
@@ -136,7 +136,7 @@ def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):
         :return:  y1x1y2x2
         """
 
-        x_0, y_0, x_1, y_1 = tf.split(boxes, 4, axis=1)  # pylint: disable =E1124, E1120
+        x_0, y_0, x_1, y_1 = tf.split(boxes, 4, axis=1)
 
         spacing_w = (x_1 - x_0) / tf.cast(crop_shape[1], tf.float32)
         spacing_h = (y_1 - y_0) / tf.cast(crop_shape[0], tf.float32)
@@ -148,7 +148,7 @@ def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):
         n_w = spacing_w * tf.cast(crop_shape[1] - 1, tf.float32) / imshape[1]
         n_h = spacing_h * tf.cast(crop_shape[0] - 1, tf.float32) / imshape[0]
 
-        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)  # pylint: disable =E1123, E1120
+        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)  # pylint: disable =E1123
 
     image_shape = tf.shape(image)[2:]
 
@@ -208,8 +208,8 @@ class RPNAnchors(namedtuple("_RPNAnchors", ["boxes", "gt_labels", "gt_boxes"])):
         Slice anchors to the spatial size of this feature map.
         """
         shape2d = tf.shape(featuremap)[2:]  # h,w
-        slice3d = tf.concat([shape2d, [-1]], axis=0)  # pylint: disable =E1123, E1120
-        slice4d = tf.concat([shape2d, [-1, -1]], axis=0)  # pylint: disable =E1123, E1120
+        slice3d = tf.concat([shape2d, [-1]], axis=0)  # pylint: disable =E1123
+        slice4d = tf.concat([shape2d, [-1, -1]], axis=0)  # pylint: disable =E1123
         boxes = tf.slice(self.boxes, [0, 0, 0, 0], slice4d)
         gt_labels = tf.slice(self.gt_labels, [0, 0, 0], slice3d)
         gt_boxes = tf.slice(self.gt_boxes, [0, 0, 0, 0], slice4d)

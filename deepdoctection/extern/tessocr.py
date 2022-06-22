@@ -137,7 +137,7 @@ def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Un
         str_col_idx = -1
         str_col_idx += length
 
-        val: Union[str,int]
+        val: Union[str, int]
         for i, head in enumerate(header):
             result[head] = []
             for row in rows:
@@ -230,7 +230,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
     return all_results
 
 
-class TesseractOcrDetector(ObjectDetector):  # pylint: disable=R0903
+class TesseractOcrDetector(ObjectDetector):
     """
     Text object detector based on Tesseracts OCR engine. Note that tesseract has to be installed separately.
 

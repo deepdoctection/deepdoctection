@@ -32,7 +32,7 @@ from .maputils import curry
 def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[JsonDict]:
     """
     Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned
-    will not suffice for training as gt for RPN and anchors still need to be created.
+    dict will not suffice for training as gt for RPN and anchors still need to be created.
 
     :param dp: Image
     :param add_mask: True is not implemented (yet).

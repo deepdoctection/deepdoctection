@@ -21,7 +21,7 @@ Module for small mapping functions
 
 import ast
 import os
-from typing import List, Optional, Union, Mapping
+from typing import List, Mapping, Optional, Union
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
@@ -50,10 +50,10 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
         _, file_name = os.path.split(dp)
         location = dp
     elif isinstance(dp, dict):
-        file_name = str(dp.get("file_name",""))
-        location = str(dp.get("location",""))
+        file_name = str(dp.get("file_name", ""))
+        location = str(dp.get("location", ""))
         if location == "":
-            location = str(dp.get("path",""))
+            location = str(dp.get("path", ""))
             location = os.path.join(location, file_name)
     else:
         raise TypeError("datapoint not of expected type for converting to image")

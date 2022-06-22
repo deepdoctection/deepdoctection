@@ -36,7 +36,7 @@ from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
 
 
-class DoctectionPipe(Pipeline):  # pylint: disable=W0221
+class DoctectionPipe(Pipeline):
     """
     Prototype for a document layout pipeline. Contains implementation for loading document types (images in directory,
     single PDF document, dataflow from datasets), conversions in dataflows and building a pipeline.
@@ -48,9 +48,7 @@ class DoctectionPipe(Pipeline):  # pylint: disable=W0221
 
     """
 
-    def __init__(
-        self, pipeline_component_list: List[PipelineComponent]
-    ):
+    def __init__(self, pipeline_component_list: List[PipelineComponent]):
         self.page_parser: PageParsingService
         if isinstance(pipeline_component_list[-1], PageParsingService):
             self.page_parser = pipeline_component_list.pop()

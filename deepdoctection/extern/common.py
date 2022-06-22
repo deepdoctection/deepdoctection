@@ -47,8 +47,8 @@ class InferenceResize:  # pylint: disable=R0903
         get transform
         """
         h, w = img.shape[:2]
-        new_w: Union[int,float]
-        new_h: Union[int,float]
+        new_w: Union[int, float]
+        new_h: Union[int, float]
 
         scale = self.short_edge_length * 1.0 / min(h, w)
 

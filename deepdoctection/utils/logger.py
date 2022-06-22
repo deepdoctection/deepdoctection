@@ -119,7 +119,7 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
     if isinstance(dir_name, Path):
         dir_name = dir_name.as_posix()
     dir_name = os.path.normpath(dir_name)
-    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0602, W0603
+    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0603
     if _FILE_HANDLER:
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER

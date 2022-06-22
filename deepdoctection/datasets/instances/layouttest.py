@@ -122,7 +122,7 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
             categories_name_as_key=self.categories.get_categories(init=True, name_as_key=True),
             load_image=load_image,
             fake_score=fake_score,
-        )  # pylint: disable=E1120  # 259
+        )
         df = MapData(df, prodigy_mapper)
 
         return df

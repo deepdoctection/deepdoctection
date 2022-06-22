@@ -11,7 +11,7 @@ https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.html
 To make it easier to use, we re-import dataflow into the package of the same name.
 """
 
-from dataflow.dataflow import (  # pylint: disable=W0622
+from dataflow.dataflow import (
     ConcatData,
     DataFlow,
     DataFromIterable,
@@ -21,6 +21,7 @@ from dataflow.dataflow import (  # pylint: disable=W0622
     MapDataComponent,
     MultiProcessMapData,
     ProxyDataFlow,
+    RepeatedData,
 )
 
 from .common import *

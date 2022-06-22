@@ -25,7 +25,7 @@ from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_req
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
 if fasttext_available():
-    from fasttext import load_model   # type: ignore # pylint: disable=E0401
+    from fasttext import load_model  # type: ignore
 
 
 class FasttextLangDetector(LanguageDetector):

@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
 import numpy.typing as npt
-from numpy import float32, uint8
+from numpy import uint8
 
 
 # Type for a general dataclass

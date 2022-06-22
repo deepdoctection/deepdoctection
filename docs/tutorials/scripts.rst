@@ -1,4 +1,4 @@
-Some trainings scripts
+Some Tensorpack trainings scripts
 ----------------------
 
 Training script for cell detection task. Use TRAIN.LR_SCHEDULE=2x for
@@ -36,7 +36,7 @@ checkpoint.
                       dataset_train=dataset_train,
                       path_weights=path_weights,
                       config_overwrite=config_overwrite,
-                      log_dir="/home/janis/Documents/train",
+                      log_dir="/path/to/dir/train",
                       build_train_config=build_train_config,
                       dataset_val=dataset_val,
                       build_val_config=build_val_config,
@@ -72,51 +72,10 @@ last checkpoint.
                        dataset_train=pubtabnet,
                        path_weights=path_weights,
                        config_overwrite=config_overwrite,
-                       log_dir="/home/janis/Documents/train",
+                       log_dir="/path/to/dir/train",
                        build_train_config=build_train_config,
                        dataset_val=dataset_val,
                        build_val_config=build_val_config,
                        metric_name="coco",
                        pipeline_component_name="ImageLayoutService"
                        )
-
-Some evaluation scripts
------------------------
-
-Evaluation of some checkpoints for cell detection. Uncomment to evaluate
-checkpoint of current model.
-
-.. code:: ipython3
-
-    from os import listdir
-    from os.path import isfile
-    from deepdoctection.utils.fs import is_file_extension
-    from deepdoctection.extern import TPFrcnnDetector
-    from deepdoctection.pipe import ImageLayoutService
-    from deepdoctection.eval import Evaluator
-
-.. code:: ipython3
-
-    pubtabnet = get_dataset("pubtabnet")
-    coco_metric = metric_registry.get_metric("coco")
-    coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
-    
-    #pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEAD"})
-    
-    #pubtabnet.dataflow.categories.filter_categories(["HEAD","BODY"])
-    
-    pubtabnet.dataflow.categories.filter_categories("CELL")
-    categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
-    
-    path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
-    
-    mypath = "/path/to/dir/cell_21/"
-    onlyfiles = [f for f in os.listdir(mypath) if (os.path.isfile(os.path.join(mypath, f)) and is_file_extension(f,".data-00000-of-00001"))]
-    
-    for file in onlyfiles:
-        path_weights = mypath+file
-        print(path_weights)
-        cell_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
-        layout_service =  ImageLayoutService(cell_detector)
-        evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
-        output= evaluator.run(category_names="CELL", max_datapoints=400)

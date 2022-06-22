@@ -20,9 +20,10 @@ Dataclass Image
 """
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Union, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 import numpy as np
+from numpy import uint8
 
 from ..utils.detection_types import ImageType
 from ..utils.identifier import get_uuid, is_uuid_like
@@ -95,7 +96,7 @@ class Image:
             self.image_id = get_uuid(self.location, self.file_name)
 
     @property
-    def image_id(self) -> str:  # pylint: disable=E0102
+    def image_id(self) -> str:
         """
         image_id
         """
@@ -118,7 +119,7 @@ class Image:
             raise ValueError("image_id must be uuid3 string")
 
     @property
-    def image(self) -> Optional[ImageType]:  # pylint: disable=E0102
+    def image(self) -> Optional[ImageType]:
         """
         image
         """
@@ -146,7 +147,7 @@ class Image:
             self._self_embedding()
         else:
             assert isinstance(image, np.ndarray), f"cannot load image is of type: {type(image)}"
-            self._image = image
+            self._image = image.astype(uint8)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
 
@@ -220,7 +221,7 @@ class Image:
         return _Img(self.image)
 
     @property
-    def width(self) -> float:  # pylint: disable=R1710
+    def width(self) -> float:
         """
         width
         """
@@ -229,7 +230,7 @@ class Image:
         return self._bbox.width
 
     @property
-    def height(self) -> float:  # pylint: disable=R1710
+    def height(self) -> float:
         """
         height
         """
@@ -476,7 +477,7 @@ class Image:
         """
 
         image_copy = deepcopy(self)
-        image_copy.annotations = []  # pylint: disable=W0212
+        image_copy.annotations = []
         image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
         export_dict = image_copy.as_dict()
         export_dict["annotations"] = []

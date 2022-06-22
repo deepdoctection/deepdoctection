@@ -27,8 +27,8 @@ from dataflow.dataflow import DataFlow, MapData
 from ..dataflow.custom_serialize import SerializerJsonlines
 from ..datapoint.doc import Page
 from ..mapper.pagestruct import page_dict_to_page
-from ..utils.fs import is_file_extension
 from ..utils.detection_types import Pathlike
+from ..utils.fs import is_file_extension
 
 
 def load_page(path: Pathlike) -> Page:
