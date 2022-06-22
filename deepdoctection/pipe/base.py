@@ -21,7 +21,7 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Union, Mapping
+from typing import Any, Callable, Dict, List, Mapping, Optional, Union
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
@@ -30,7 +30,7 @@ from ..utils.context import timed_operation
 from .anngen import DatapointManager
 
 
-class PipelineComponent(ABC):  # pylint: disable=R0903
+class PipelineComponent(ABC):
     """
     Base class for pipeline components. Pipeline components are the parts that make up a pipeline. They contain the
     abstract :meth:`serve`, in which the component steps are defined. Within pipelines, pipeline components take an

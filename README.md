@@ -26,19 +26,20 @@ For further text processing tasks, use one of the many other great NLP libraries
 
 1. Use an **off the shelf analyzer** for restructuring your **PDF** or **scanned documents**:
          
-   - layout recognition with deep neural networks (Cascade-RCNN and more) trained on large public datasets
-   - table extraction with full table semantics (rows, columns, multi line cell spans), again with help of Cascade-RCNN
+   - Layout recognition with deep neural networks from well renowned open source libraries (Cascade-RCNN from 
+     Tensorpack or Detectron2) trained on large public datasets. Tensorflow or PyTorch models available. 
+   - Table extraction with full table semantics (rows, columns, multi line cell spans), again with help of Cascade-RCNN
    - OCR or text mining with  [Tesseract](https://github.com/tesseract-ocr/tesseract), 
-     [DocTr](https://github.com/mindee/doctr) or [pdfplumber](https://github.com/jsvine/pdfplumber)
-   - reading order
-   - language detection with [fastText](https://github.com/facebookresearch/fastText)
-   - parsed output available as JSON object for further NLP tasks
+     [DocTr](https://github.com/mindee/doctr), [pdfplumber](https://github.com/jsvine/pdfplumber) or other
+   - Reading order
+   - Language detection with [fastText](https://github.com/facebookresearch/fastText)
+   - Parsed output available as JSON object for further NLP tasks, labeling or reviewing
 
 Off the shelf actually means off the shelf. The results will look okay, but useful outputs for downstream tasks will 
 only come out when models are adapted to actual documents you deal with. Therefore:
 
 2. **Fine-tune pre-trained DNN** on your own labeled dataset. Use generally acknowledged metrics for evaluating training
-    improvements.
+    improvements. Training scripts available.
 
 
 3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline. For example, you can use
@@ -60,7 +61,7 @@ Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  
 
 ### Platform and Python
 
-Before you start, please ensure your installation fulfills the following baseline requirements:
+Before you start, please ensure your installation fulfills the following requirements:
 
 - Linux **or** macOS
 - Python >=  3.8 
@@ -68,15 +69,7 @@ Before you start, please ensure your installation fulfills the following baselin
 
 Windows is not supported.
 
-You can run on PyTorch with a CPU only. For Tensorflow a GPU is required. 
-
-**deep**doctection uses [**Tensorpack**](https://github.com/tensorpack) as training framework as well as its vision 
-models for layout analysis. For PyTorch, [**Detectron2**](https://github.com/facebookresearch/detectron2) is used. 
-All models have been trained on Tensorflow and converted into Detectron2 consumable artefacts. If you want to train, 
-please use the Tensorflow framework. 
-
-Besides these models, **deepdoctection** has wrappers available to use models for inference in pipelines from different 
-libraries. 
+You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
 ### Other
 
@@ -86,11 +79,12 @@ If you get started and want to run the notebooks for the first time it is requir
 
 ## Installation
 
-We recommend using a virtual environment. You can install the package via pip or from source. 
+We recommend using a virtual environment. You can install the package via pip or from source. Bug fixes or enhancements
+will be deployed to PyPi every 4 to 6 weeks.
 
-### Install with pip
+### Install with pip from PyPi
 
-[Dataflow](https://github.com/tensorpack/dataflow) is not available on the pypi server and must be installed separately.
+[Dataflow](https://github.com/tensorpack/dataflow) is not available on the PyPi server and must be installed separately.
 
 ```
 pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
@@ -104,7 +98,7 @@ For **Tensorflow**, run
 pip install deepdoctection[tf]
 ```
 
-For **PyTorch**, first install **Detectron2** separately as it is not on the pypi server, either. Check the instruction 
+For **PyTorch**, first install **Detectron2** separately as it is not on the PyPi, either. Check the instruction 
 [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). Then run
 
 ```
@@ -113,23 +107,10 @@ pip install deepdoctection[pt]
 
 This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
 
-**Please note:** Prediction results in PyTorch are worse and suffer from bounding boxes shifted to the right. 
-This becomes visible when visualising the page of the demo notebook which is displayed in high resolution 
-(e.g. approx. 2000/3000 pixels). This model has been mainly added for demo purposes without the need of a GPU. 
-When accurate models a needed, please use the Tensorflow version.
-
 Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
-pdfplumber, fastText, ...). If you want to use them, you have to pip install them by yourself.
-
-<!--- uncomment for next release
-To use more features (e.g. run all available notebooks), try:
-
-```
-pip install deepdoctection[full-tf]
-```
-
-Note, that this option is not available for PyTorch.
---->
+pdfplumber, fastText, ...). If you want to use them, you have to pip install them individually by yourself. 
+Alternatively, consult the 
+[**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html).
 
 
 ### Installation from source
@@ -154,8 +135,7 @@ cd deepdoctection
 pip install ".[source-pt]"
 ```
 
-This will install the basic dependencies to get started with the first notebooks. More libraries can be
-used, once more dependencies have been installed: 
+This will install the basic dependencies to get started with the first notebooks. To get all package extensions,
 
 ```
 cd deepdoctection
@@ -169,14 +149,17 @@ cd deepdoctection
 pip install ".[source-all-pt]"
 ```
 
-installs all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
+will install all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
 
-For more installation options check [**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
+Again, for other installation options check 
+[**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
 
 
 ## Credits
 
-Many utils, concepts and some models are inspired and taken from [**Tensorpack**](https://github.com/tensorpack) . 
+Many utilities, concepts and models are inspired or taken from [**Tensorpack**](https://github.com/tensorpack), 
+[**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2), 
+[**Transformers**](https://github.com/huggingface/transformers). 
 We heavily make use of [Dataflow](https://github.com/tensorpack/dataflow) for loading and streaming data.  
 
 

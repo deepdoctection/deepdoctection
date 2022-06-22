@@ -19,6 +19,7 @@
 Torch related utils
 """
 
+
 from ...utils.file_utils import pytorch_available
 
 
@@ -27,7 +28,21 @@ def set_torch_auto_device() -> "torch.device":  # type: ignore
     Returns cuda device if available, otherwise cpu
     """
     if pytorch_available():
-        from torch import cuda, device  # pylint: disable=C0415, E0611
+        from torch import cuda, device  # pylint: disable=C0415
 
         return device("cuda" if cuda.is_available() else "cpu")
-    raise ModuleNotFoundError
+    raise ModuleNotFoundError("Pytorch must be installed")
+
+
+def get_num_gpu() -> int:
+    """
+    Returns number of CUDA devices if pytorch is available
+
+    :return:
+    """
+
+    if pytorch_available():
+        from torch import cuda  # pylint: disable=C0415
+
+        return cuda.device_count()
+    raise ModuleNotFoundError("Pytorch must be installed")

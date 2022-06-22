@@ -21,7 +21,7 @@ Utility functions related to mapping tasks
 import functools
 import itertools
 from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
 from tabulate import tabulate
@@ -169,7 +169,7 @@ class LabelSummarizer:
         self.hist_bins = np.arange(1, cat_numbers + 2)
         self.summary = np.zeros(cat_numbers)
 
-    def dump(self, item: Union[List[Union[str, int]], str, int]) -> None:
+    def dump(self, item: Union[Sequence[Union[str, int]], str, int]) -> None:
         """
         Dump a category number
 
@@ -184,11 +184,16 @@ class LabelSummarizer:
         """
         return dict(list(zip(self.categories.keys(), self.summary.astype(np.int32))))
 
-    def print_summary_histogram(self) -> None:
+    def print_summary_histogram(self, dd_logic: bool = True) -> None:
         """
         Prints a summary from all dumps.
+
+        :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
-        data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
+        if dd_logic:
+            data = list(itertools.chain(*[[self.categories[str(i)], v] for i, v in enumerate(self.summary,1)]))
+        else:
+            data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
         num_columns = min(6, len(data))
         total_img_anns = sum(data[1::2])
         data.extend([None] * ((num_columns - len(data) % num_columns) % num_columns))

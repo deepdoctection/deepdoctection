@@ -37,7 +37,7 @@ def test_dataset_layouttest_returns_image() -> None:
     layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
     df = layouttest.dataflow.build()
 
-    # Act
+    # Act & Assert
     df_list = collect_datapoint_from_dataflow(df)
     assert len(df_list) == 2
 
@@ -54,7 +54,7 @@ def test_dataset_layouttest_with_load_image_returns_image() -> None:
     layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
     df = layouttest.dataflow.build(load_image=True)
 
-    # Act
+    # Act & Assert
     df_list = collect_datapoint_from_dataflow(df)
     assert len(df_list) == 2
     assert df_list[0].image is not None

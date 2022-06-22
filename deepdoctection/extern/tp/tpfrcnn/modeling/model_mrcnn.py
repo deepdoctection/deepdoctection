@@ -31,7 +31,7 @@ def maskrcnn_loss(mask_logits, fg_labels, fg_target_masks):
     """
 
     if get_tf_version_tuple() >= (1, 14):
-        mask_logits = tf.gather(mask_logits, tf.reshape(fg_labels - 1, [-1, 1]), batch_dims=1)  # pylint: disable =E1120
+        mask_logits = tf.gather(mask_logits, tf.reshape(fg_labels - 1, [-1, 1]), batch_dims=1)
         mask_logits = tf.squeeze(mask_logits, axis=1)
     else:
         indices = tf.stack([tf.range(tf.size(fg_labels, out_type=tf.int64)), fg_labels - 1], axis=1)  # #fgx2
@@ -41,7 +41,7 @@ def maskrcnn_loss(mask_logits, fg_labels, fg_target_masks):
 
     # add some training visualizations to tensorboard
     with tf.name_scope("mask_viz"):
-        viz = tf.concat([fg_target_masks, mask_probs], axis=1)  # pylint: disable =E1123, E1120
+        viz = tf.concat([fg_target_masks, mask_probs], axis=1)  # pylint: disable =E1123
         viz = tf.expand_dims(viz, 3)
         viz = tf.cast(viz * 255, tf.uint8, name="viz")
         tf.summary.image("mask_truth|pred", viz, max_outputs=10)
@@ -77,7 +77,7 @@ def maskrcnn_upXconv_head(feature, num_category, num_convs, norm=None, **kwargs)
     with argscope(
         [Conv2D, Conv2DTranspose],
         data_format="channels_first",
-        kernel_initializer=tf.variance_scaling_initializer(  # pylint: disable =E1101
+        kernel_initializer=tf.variance_scaling_initializer(
             scale=2.0,
             mode="fan_out",
             distribution="untruncated_normal" if get_tf_version_tuple() >= (1, 12) else "normal",
@@ -88,7 +88,7 @@ def maskrcnn_upXconv_head(feature, num_category, num_convs, norm=None, **kwargs)
             l = Conv2D(f"fcn{k}", l, cfg.MRCNN.HEAD_DIM, 3, activation=tf.nn.relu)
             if norm is not None:
                 l = GroupNorm(f"gn{k}", l)
-        l = Conv2DTranspose(  # pylint: disable =E1124
+        l = Conv2DTranspose(
             "deconv", l, cfg.MRCNN.HEAD_DIM, 2, strides=2, activation=tf.nn.relu
         )
         l = Conv2D("conv", l, num_category, 1, kernel_initializer=tf.random_normal_initializer(stddev=0.001))
@@ -122,6 +122,6 @@ def unpackbits_masks(masks):
     bits = tf.constant((128, 64, 32, 16, 8, 4, 2, 1), dtype=tf.uint8)
     unpacked = tf.bitwise.bitwise_and(tf.expand_dims(masks, -1), bits) > 0
     unpacked = tf.reshape(
-        unpacked, tf.concat([tf.shape(masks)[:-1], [8 * tf.shape(masks)[-1]]], axis=0)  # pylint: disable =E1123,E1120
+        unpacked, tf.concat([tf.shape(masks)[:-1], [8 * tf.shape(masks)[-1]]], axis=0)  # pylint: disable =E1123
     )
     return unpacked

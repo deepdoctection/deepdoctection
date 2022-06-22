@@ -20,7 +20,7 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Dict, Optional, Type, Sequence, List
+from typing import Dict, List, Optional, Sequence, Type
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
@@ -136,7 +136,7 @@ def get_train_dataflow(
 
     logger.info("Loading dataset into memory")
 
-    max_datapoints: Optional[int] = int(build_train_kwargs.get("max_datapoints",0))
+    max_datapoints: Optional[int] = int(build_train_kwargs.get("max_datapoints", 0))
     if not max_datapoints:
         max_datapoints = None
 
@@ -156,7 +156,7 @@ def get_train_dataflow(
             summarizer.dump(dp["gt_labels"])
             datapoints.append(dp)
             status_bar.update()
-    summarizer.print_summary_histogram()
+    summarizer.print_summary_histogram(dd_logic=False)
     num_datapoints = len(datapoints)
     logger.info("Total #images for training: %i", num_datapoints)
     df = DataFromList(datapoints, shuffle=True)
@@ -178,7 +178,7 @@ def get_train_dataflow(
     return df
 
 
-def train_faster_rcnn(  # pylint: disable=R0913, R0915
+def train_faster_rcnn(
     path_config_yaml: str,
     dataset_train: DatasetBase,
     path_weights: str = "",
@@ -282,10 +282,11 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
     ):
         if metric_name is not None:
             metric = metric_registry.get(metric_name)
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
         detector = TPFrcnnDetector(
             path_config_yaml,
             path_weights,
-            dataset_val.dataflow.categories.get_categories(filtered=True),
+            categories,
             config_overwrite,
             True,
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
@@ -299,7 +300,7 @@ def train_faster_rcnn(  # pylint: disable=R0913, R0915
                     dataset_val,
                     category_names,
                     dataset_val.dataflow.categories.cat_to_sub_cat,
-                    metric,   # type: ignore
+                    metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
                     **build_val_dict

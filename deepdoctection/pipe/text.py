@@ -19,7 +19,7 @@
 Module for text extraction pipeline component
 """
 from itertools import chain
-from typing import Dict, List, Optional, Tuple, Union, Sequence, Mapping
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image

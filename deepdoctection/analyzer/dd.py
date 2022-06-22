@@ -25,9 +25,9 @@ from typing import List, Optional, Tuple, Union
 
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.tessocr import TesseractOcrDetector
-from ..pipe.base import PipelineComponent, PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.cell import SubImageLayoutService
-from ..pipe.common import MatchingService, PageParsingService
+from ..pipe.common import MatchingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.refine import TableSegmentationRefinementService

@@ -35,7 +35,7 @@ from ..utils.settings import names
 from .maputils import curry
 
 if pytorch_available():
-    from torch import clamp, round, tensor  # pylint: disable = E0611, W0611, W0622
+    from torch import clamp, round, tensor  # pylint: disable = W0622
 
 if transformers_available():
     from transformers import PreTrainedTokenizer  # pylint: disable = W0611
@@ -96,7 +96,7 @@ def image_to_layoutlm(
     image = resizer.apply_image(dp.image)
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
-    pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()  # pylint: disable = E1102
+    pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()
 
     output["image"] = image
     output["ids"] = all_ann_ids
