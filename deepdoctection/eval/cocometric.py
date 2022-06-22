@@ -27,6 +27,7 @@ import numpy as np
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cocostruct import image_to_coco
+from ..mapper.cats import re_assign_cat_ids, filter_cat
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
 from .base import MetricBase
@@ -126,14 +127,15 @@ class CocoMetric(MetricBase):
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple["COCO", "COCO"]:
-        cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True).items()]
+        cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True, filtered=True).items()]
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
 
         dataflow_gt.reset_state(), dataflow_predictions.reset_state()  # pylint: disable=W0106
 
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            img_gt, ann_gt = cls.mapper(dp_gt)  # type: ignore
+            img_gt, ann_gt = cls.mapper(dp_gt) # type: ignore
+            dp_pred = re_assign_cat_ids(categories.get_categories(as_dict=True, filtered=True, name_as_key=True))(dp_pred)
             img_pr, ann_pr = cls.mapper(dp_pred)  # type: ignore
             imgs_gt.append(img_gt)
             imgs_pr.append(img_pr)
