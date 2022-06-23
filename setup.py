@@ -61,6 +61,8 @@ _DEPS = [
     "lxml",
     "pycocotools>=2.0.2",
     "scikit-learn",
+    "distance",
+    "apted",
     # Tensorflow related dependencies
     "protobuf==3.20.1",
     "tensorpack",
@@ -124,7 +126,7 @@ if sys.platform == "linux":
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "pycocotools", "scikit-learn")
+additional_deps = deps_list("lxml", "pycocotools", "scikit-learn", "distance", "apted")
 
 # remaining depencies to use all models
 remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
@@ -142,7 +144,7 @@ source_full_tf_deps = source_full_deps + additional_tf_deps
 source_all_tf_deps = source_all_deps + additional_tf_deps
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("lxml", "transformers")
+additional_pt_deps = deps_list("lxml", "transformers", "distance", "apted")
 source_additional_pt_deps = additional_pt_deps + deps_list(
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )

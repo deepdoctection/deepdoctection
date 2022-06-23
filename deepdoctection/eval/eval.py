@@ -38,9 +38,9 @@ from .base import MetricBase
 
 class Evaluator:  # pylint: disable=R0903
     """
-    The API for evaluating pipeline components on a given dataset. For a given model, a given dataset and a given
-    metric, this class will stream the dataset, call the predictor and will evaluate the predictions against the ground
-    truth with respect to the given metric.
+    The API for evaluating pipeline components or pipelines on a given dataset. For a given model, a given dataset and
+    a given metric, this class will stream the dataset, call the predictor(s) and will evaluate the predictions against
+    the ground truth with respect to the given metric.
 
     After initializing the evaluator the process itself will start after calling the meth:`run`.
 
@@ -171,4 +171,3 @@ class Evaluator:  # pylint: disable=R0903
 
     def _run_on_predictor(self, df_pr: DataFlow) -> DataFlow:
         return self.pipe.analyze(dataset_dataflow=df_pr)
-
