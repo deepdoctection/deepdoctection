@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from ..datapoint import BoundingBox, CategoryAnnotation, ImageAnnotation
+from ..datapoint import BoundingBox, CategoryAnnotation, ImageAnnotation, ContainerAnnotation
 from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
@@ -176,18 +176,14 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         )
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
-            ulx = float(
-                min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
-            )
-            uly = float(
-                min([cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
-            )
-            lrx = float(
-                max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
-            )
-            lry = float(
-                max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
-            )
+            ulx = min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+
+            uly = min([cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+
+            lrx = max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+
+            lry = max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+
             item_ann = ImageAnnotation(
                 category_id=categories_name_as_key[names.C.ITEM],
                 category_name=names.C.ITEM,
@@ -215,12 +211,34 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
     return rows_col_cell_ids
 
 
+def embedding_in_image(dp: Image, html) -> Image:
+    image = Image(file_name=dp.file_name,location=dp.location,external_id=dp.image_id + "image")
+    image.set_width_height(dp.width,dp.height)
+    table_ann = ImageAnnotation(category_name=names.C.TAB,bounding_box=BoundingBox(absolute_coords=True,
+                                                                                   ulx=0.,uly=0.,lrx=dp.width,
+                                                                                   lry=dp.height))
+    image.dump(table_ann)
+    image.image_ann_to_image(table_ann.annotation_id)
+    html_ann = ContainerAnnotation(category_name=names.C.HTAB,value=html)
+    table_ann.dump_sub_category(names.C.HTAB,html_ann)
+    for ann in dp.get_annotation():
+        image.dump(ann)
+        table_ann.image.dump(ann)
+        table_ann.dump_relationship(names.C.CHILD, ann.annotation_id)
+
+    return image
+
+def nth_index(iterable, value, n):
+    matches = (idx for idx, val in enumerate(iterable) if val == value)
+    return next(itertools.islice(matches, n-1, n), None)
+
 def pub_to_image_uncur(  # pylint: disable=R0914
     dp: JsonDict,
     categories_name_as_key: Dict[str, str],
     load_image: bool,
     fake_score: bool,
     rows_and_cols: bool,
+    dd_pipe_like: bool
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
@@ -255,6 +273,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
         tiling = tile_table(row_spans, col_spans)
 
         rows_cols_cell_ids = row_col_cell_ids(tiling)
+        number_of_cells = len(rows_cols_cell_ids)
         col_spans = list(itertools.chain(*col_spans))  # type: ignore
         row_spans = list(itertools.chain(*row_spans))  # type: ignore
 
@@ -297,9 +316,10 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
             if "bbox" in cell:  # empty cells have no box
                 ulx, uly, lrx, lry = list(map(float, cell["bbox"]))
+                cell_bounding_box = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
                 cell_ann = ImageAnnotation(
                     category_name=names.C.CELL,
-                    bounding_box=BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry),
+                    bounding_box=cell_bounding_box,
                     category_id=categories_name_as_key[names.C.CELL],
                     score=maybe_get_fake_score(fake_score),
                 )
@@ -336,6 +356,22 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 if table_ann is not None:
                     table_ann.dump_relationship(names.C.CHILD, cell_ann.annotation_id)
 
+                if dd_pipe_like:
+                    tokens = cell["tokens"]
+                    if "<b>" and "</b>" in tokens:
+                        tokens.remove("<b>")
+                        tokens.remove("</b>")
+                    text = "".join(tokens)
+                    # we are not separating each word but view the full table content as one word
+                    word = ImageAnnotation(category_name=names.C.WORD,bounding_box=cell_bounding_box)
+                    text_container = ContainerAnnotation(category_name=names.C.CHARS,value=text)
+                    word.dump_sub_category(names.C.CHARS,text_container)
+                    image.dump(word)
+                    cell_ann.dump_relationship(names.C.CHILD,word.annotation_id)
+
+                    index = nth_index(html,"<td>",number_of_cells-idx)
+                    html.insert(index+1,cell_ann.annotation_id)
+
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
             names.C.NR, CategoryAnnotation(category_name=names.C.NR, category_id=str(number_of_rows)), image.image_id
@@ -351,10 +387,12 @@ def pub_to_image_uncur(  # pylint: disable=R0914
         )
         image.summary = summary_ann
 
-        if rows_and_cols:
+        if rows_and_cols or dd_pipe_like:
             image = _add_items(image, names.C.ROW, categories_name_as_key)
             image = _add_items(image, names.C.COL, categories_name_as_key)
 
+        if dd_pipe_like:
+            image = embedding_in_image(image, html)
     if mapping_context.context_error:
         return None
     return image
