@@ -39,7 +39,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     """
     # Arrange
     categories_name_as_key_init = {names.C.CELL: "1", names.C.ITEM: "2"}
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
@@ -78,7 +78,7 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
 
     # Arrange
     categories_name_as_key_init = {names.C.CELL: "1", names.C.ITEM: "2"}
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True)
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
 

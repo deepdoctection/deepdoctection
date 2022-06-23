@@ -139,6 +139,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         load_image = kwargs.get("load_image", False)
         rows_and_cols = kwargs.get("rows_and_cols", False)
         fake_score = kwargs.get("fake_score", False)
+        dd_pipe_like = kwargs.get("dd_pipe_like", False)
 
         # Load
         dataset_split = self.annotation_files["all"]
@@ -158,6 +159,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
+            dd_pipe_like = dd_pipe_like
         )
 
         df = MapData(df, pub_mapper)
