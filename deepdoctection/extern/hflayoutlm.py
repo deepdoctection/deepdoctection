@@ -216,3 +216,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             self.categories_bio,
             self.categories_explicit,
         )
+
+    def possible_tokens(self) -> List[str]:
+        return list(self._categories.values())
+

@@ -22,6 +22,7 @@ from typing import Dict, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector
+from ..utils.detection_types import JsonDict
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -61,12 +62,18 @@ class ImageLayoutService(PredictorPipelineComponent):
                            to its bounding box and populate the resulting sub image to
                            :attr:`ImageAnnotation.image.image`.
         """
-        super().__init__(layout_detector, category_id_mapping)
         self.to_image = to_image
         self.crop_image = crop_image
+        super().__init__(layout_detector, category_id_mapping)
 
     def serve(self, dp: Image) -> None:
         assert dp.image is not None
         detect_result_list = self.predictor.predict(dp.image)  # type: ignore
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", self.predictor.possible_categories()),
+                     ("sub_categories",{}),
+                     ("relationships",{}),
+                     ("summaries", [])])

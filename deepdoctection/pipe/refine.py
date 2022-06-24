@@ -32,6 +32,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.settings import names
+from ..utils.detection_types import JsonDict
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -385,9 +386,9 @@ class TableSegmentationRefinementService(PipelineComponent):
     """
 
     def __init__(self) -> None:
-        super().__init__(None)
         self._table_name = names.C.TAB
         self._cell_names = [names.C.HEAD, names.C.BODY, names.C.CELL]
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         tables = dp.get_annotation(category_names=self._table_name)
@@ -433,3 +434,9 @@ class TableSegmentationRefinementService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__()
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", []),
+                     ("sub_categories",{names.C.CELL: [names.C.RN, names.C.CN, names.C.RS, names.C.CS]}),
+                     ("relationships",{}),
+                     ("summaries", [])])
