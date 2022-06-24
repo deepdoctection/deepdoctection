@@ -310,3 +310,8 @@ class TesseractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.config_overwrite)
+
+    def possible_categories(self) -> List[str]:
+        if self.config.LINES:
+            return [names.C.WORD, names.C.LINE]
+        return [names.C.WORD]

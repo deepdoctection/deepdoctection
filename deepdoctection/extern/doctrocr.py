@@ -116,6 +116,9 @@ class DoctrTextlineDetector(ObjectDetector):
     def clone(self) -> PredictorBase:
         return self.__class__()
 
+    def possible_categories(self) -> List[str]:
+        return [names.C.WORD]
+
 
 class DoctrTextRecognizer(TextRecognizer):
     """

@@ -24,6 +24,7 @@ from typing import Dict, List, Optional, Union
 
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector
+from ..utils.detection_types import JsonDict
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -130,7 +131,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         :param add_dummy_detection: If set to True will add an ImageAnnotation for each class for which no sample have
                                     been detected.
         """
-        super().__init__(sub_image_detector, category_id_mapping)
+
         self.sub_image_name = sub_image_names
         self.dummy_generator_cls = None
         if add_dummy_detection:
@@ -143,6 +144,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 group_categories_dict[group[1]].append(str(group[0]))
             group_categories = list(group_categories_dict.values())
             self.group_categories = group_categories
+        super().__init__(sub_image_detector, category_id_mapping)
 
     def serve(self, dp: Image) -> None:
         """
@@ -194,3 +196,9 @@ class SubImageLayoutService(PredictorPipelineComponent):
         if self.dummy_generator_cls is None:
             return False
         return True
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", self.predictor.possible_categories()),
+                     ("sub_categories",{}),
+                     ("relationships",{}),
+                     ("summaries", [])])
