@@ -230,3 +230,6 @@ class D2FrcnnDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
+
+    def possible_categories(self) -> List[str]:
+        return list(self.categories.values())

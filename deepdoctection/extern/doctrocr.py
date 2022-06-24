@@ -33,7 +33,6 @@ if doctr_available() and tf_addons_available():
     from doctr.models.recognition.zoo import recognition_predictor
 
 
-
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor") -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
@@ -116,6 +115,9 @@ class DoctrTextlineDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    def possible_categories(self) -> List[str]:
+        return [names.C.WORD]
 
 
 class DoctrTextRecognizer(TextRecognizer):
