@@ -237,7 +237,8 @@ class CategoryAnnotation(Annotation):
         :param key: A key to a sub category.
         """
 
-        self.sub_categories.pop(key)
+        if key in self.sub_categories:
+            self.sub_categories.pop(key)
 
     def dump_relationship(self, key: str, annotation_id: str) -> None:
         """
