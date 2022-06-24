@@ -469,8 +469,8 @@ class TableSegmentationService(PipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
         return dict([("image_annotations", []),
-                     ("sub_categories",{names.C.CELL: [names.C.RN, names.C.CN, names.C.RS, names.C.CS],
-                                        names.C.ROW: [names.C.RN],
-                                        names.C.COL: [names.C.CN]}),
+                     ("sub_categories",{names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS},
+                                        names.C.ROW: {names.C.RN},
+                                        names.C.COL: {names.C.CN}}),
                      ("relationships",{}),
                      ("summaries", [])])

@@ -138,7 +138,7 @@ class MatchingService(PipelineComponent):
 
         return dict([("image_annotations", []),
                      ("sub_categories",{}),
-                     ("relationships",{parent: [names.C.CHILD] for parent in self.parent_categories}),
+                     ("relationships",{parent: {names.C.CHILD} for parent in self.parent_categories}),
                      ("summaries", [])])
 
 

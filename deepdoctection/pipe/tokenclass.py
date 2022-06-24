@@ -82,6 +82,6 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
         return dict([("image_annotations", []),
-                     ("sub_categories", {names.C.WORD: [names.C.SE, names.NER.TAG]}),
+                     ("sub_categories", {names.C.WORD: {names.C.SE, names.NER.TAG}}),
                      ("relationships", {}),
                      ("summaries", [])])
