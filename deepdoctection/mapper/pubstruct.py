@@ -211,14 +211,15 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
     return rows_col_cell_ids
 
 
-def embedding_in_image(dp: Image, html) -> Image:
+def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[str, str]) -> Image:
     image = Image(file_name=dp.file_name,location=dp.location,external_id=dp.image_id + "image")
+    image.image = dp.image
     image.set_width_height(dp.width,dp.height)
-    table_ann = ImageAnnotation(category_name=names.C.TAB,bounding_box=BoundingBox(absolute_coords=True,
-                                                                                   ulx=0.,uly=0.,lrx=dp.width,
-                                                                                   lry=dp.height))
+    table_ann = ImageAnnotation(category_name=names.C.TAB,category_id=categories_name_as_key[names.C.TAB],
+                                bounding_box=BoundingBox(absolute_coords=True,ulx=0.,uly=0.,lrx=dp.width,
+                                                                              lry=dp.height))
     image.dump(table_ann)
-    image.image_ann_to_image(table_ann.annotation_id)
+    image.image_ann_to_image(table_ann.annotation_id, True)
     html_ann = ContainerAnnotation(category_name=names.C.HTAB,value=html)
     table_ann.dump_sub_category(names.C.HTAB,html_ann)
     for ann in dp.get_annotation():
@@ -228,9 +229,11 @@ def embedding_in_image(dp: Image, html) -> Image:
 
     return image
 
+
 def nth_index(iterable, value, n):
     matches = (idx for idx, val in enumerate(iterable) if val == value)
     return next(itertools.islice(matches, n-1, n), None)
+
 
 def pub_to_image_uncur(  # pylint: disable=R0914
     dp: JsonDict,
@@ -238,7 +241,8 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     load_image: bool,
     fake_score: bool,
     rows_and_cols: bool,
-    dd_pipe_like: bool
+    dd_pipe_like: bool,
+    is_fintabnet: bool,
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
@@ -251,6 +255,10 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                        will be added.
     :param rows_and_cols: If set to True, synthetic "ITEM" ImageAnnotations will be added.  Each item has a
                           sub-category "row_col" that is equal to "ROW" or "COL".
+    :param dd_pipe_like: This will generate an image identical to the output of the dd analyzer (e.g. table and words
+                         annotations as well as sub annotations and relationships will be generated)
+    :param is_fintabnet: Set True, if this mapping is used for generating fintabnet datapoints.
+
     :return: Image
     """
 
@@ -301,7 +309,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
             image.set_width_height(np_image.shape[1], np_image.shape[0])
 
         table_ann: Optional[ImageAnnotation] = None
-        if categories_name_as_key.get(names.C.TAB):
+        if is_fintabnet:  # cannot use for synthetic table ann creation
             table_ann = _get_table_annotation(dp, categories_name_as_key[names.C.TAB])
             image.dump(table_ann)
 
@@ -363,7 +371,8 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                         tokens.remove("</b>")
                     text = "".join(tokens)
                     # we are not separating each word but view the full table content as one word
-                    word = ImageAnnotation(category_name=names.C.WORD,bounding_box=cell_bounding_box)
+                    word = ImageAnnotation(category_name=names.C.WORD,category_id=categories_name_as_key[names.C.WORD],
+                                           bounding_box=cell_bounding_box)
                     text_container = ContainerAnnotation(category_name=names.C.CHARS,value=text)
                     word.dump_sub_category(names.C.CHARS,text_container)
                     image.dump(word)
@@ -392,7 +401,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
             image = _add_items(image, names.C.COL, categories_name_as_key)
 
         if dd_pipe_like:
-            image = embedding_in_image(image, html)
+            image = embedding_in_image(image, html, categories_name_as_key)
     if mapping_context.context_error:
         return None
     return image
