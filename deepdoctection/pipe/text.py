@@ -162,9 +162,9 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
         if self.extract_from_category:
-            sub_cat_dict = {category: [names.C.CHARS] for category in self.extract_from_category}
+            sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
         else:
-            sub_cat_dict = {category: [names.C.CHARS] for category in self.predictor.possible_categories()}
+            sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
         return dict([("image_annotations", self.predictor.possible_categories() if isinstance(self.predictor,
                                                                                               (ObjectDetector,
                                                                                                PdfMiner)) else []),
@@ -405,7 +405,7 @@ class TextOrderService(PipelineComponent):
         anns_with_reading_order = deepcopy(self._floating_text_block_names)
         anns_with_reading_order.extend([names.C.WORD,names.C.LINE])
         return dict([("image_annotations", []),
-                     ("sub_categories", {category: [names.C.RO] for category in anns_with_reading_order}),
+                     ("sub_categories", {category: {names.C.RO} for category in anns_with_reading_order}),
                      ("relationships", {}),
                      ("summaries", [])])
 
