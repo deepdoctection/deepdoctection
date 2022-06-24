@@ -251,7 +251,7 @@ class Pipeline(ABC):  # pylint: disable=R0903
         """
         raise NotImplementedError
 
-    def collect_component_meta_annotations(self) -> JsonDict:
+    def get_meta_annotation(self) -> JsonDict:
         pipeline_populations = {"image_annotations": [],
                                 "sub_categories": defaultdict(set),
                                 "relationships": defaultdict(set),
