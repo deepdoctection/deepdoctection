@@ -25,7 +25,7 @@ __all__ = ["Evaluator"]
 from copy import deepcopy
 from typing import Any, Dict, List, Type, Union, Optional
 
-from ..dataflow import DataFromList, MapData, DataFlow
+from ..dataflow import DataFromList, MapData, DataFlow, CacheData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import remove_cats, filter_cat
 from ..mapper.misc import maybe_load_image, maybe_remove_image
@@ -89,16 +89,17 @@ class Evaluator:  # pylint: disable=R0903
         :param metric: metric
         """
 
-        logger.info(
-            "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
-            num_threads,
-        )
 
+        self.dataset = dataset
         self.pipe_component: Optional[MultiThreadPipelineComponent] = None
         self.pipe: Optional[DoctectionPipe] = None
 
         # when passing a component, we will process prediction on num_threads
         if isinstance(component_or_pipeline, PredictorPipelineComponent):
+            logger.info(
+                "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
+                num_threads,
+            )
             pipeline_components: List[PredictorPipelineComponent] = []
 
             for _ in range(num_threads - 1):
@@ -106,7 +107,6 @@ class Evaluator:  # pylint: disable=R0903
                 pipeline_components.append(copy_pipe_component)
 
             pipeline_components.append(component_or_pipeline)
-            self.dataset = dataset
 
             self.pipe_component = MultiThreadPipelineComponent(
                 pipeline_components=pipeline_components,
@@ -138,19 +138,8 @@ class Evaluator:  # pylint: disable=R0903
         df_pr = self.dataset.dataflow.build(**kwargs)
 
         df_pr = MapData(df_pr, deepcopy)
-
-        if hasattr(self.metric, "sub_cats"):
-            df_pr = MapData(df_pr, remove_cats(None, self.metric.sub_cats))
-        else:
-            # if sub_categories are not provided will filter all categories by default
-            df_pr = MapData(df_pr,
-                            filter_cat([], self.dataset.dataflow.categories.get_categories(as_dict=False,
-                                                                                           filtered=True)))
-
-        if self.pipe_component:
-            df_pr = self._run_on_component(df_pr)
-        else:
-            df_pr = self._run_on_predictor(df_pr)
+        df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
+        df_pr = self._run_pipe_or_component(df_pr)
 
         logger.info("Starting evaluation...")
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
@@ -163,11 +152,28 @@ class Evaluator:  # pylint: disable=R0903
     def _sanity_checks(self) -> None:
         assert self.dataset.dataflow.categories is not None
 
-    def _run_on_component(self, df_pr: DataFlow) -> DataFlow:
-        self.pipe_component.put_task(df_pr)
-        logger.info("Predicting objects...")
-        df_pr_list = self.pipe_component.start()
-        return DataFromList(df_pr_list)
+    def _run_pipe_or_component(self, df_pr: DataFlow) -> DataFlow:
+        if self.pipe_component:
+            self.pipe_component.put_task(df_pr)
+            logger.info("Predicting objects...")
+            df_pr_list = self.pipe_component.start()
+            return DataFromList(df_pr_list)
+        df_pr = MapData(df_pr,maybe_load_image)
+        df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")
+        df_pr = MapData(df_pr,maybe_remove_image)
+        df_list = CacheData(df_pr).get_cache()
+        return DataFromList(df_list)
 
-    def _run_on_predictor(self, df_pr: DataFlow) -> DataFlow:
-        return self.pipe.analyze(dataset_dataflow=df_pr)
+    def _clean_up_predict_dataflow_annotations(self, df_pr: DataFlow) -> DataFlow:
+        # will use the first pipe component of the multi thread component
+        pipe_or_component = self.pipe_component.pipe_components[0] if self.pipe_component is not None else self.pipe
+        meta_anns = pipe_or_component.get_meta_annotation()
+        possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
+        anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
+        sub_cats_to_remove = meta_anns["sub_categories"]
+        df_pr = MapData(df_pr,filter_cat(anns_to_keep , possible_cats_in_datapoint))
+        df_pr = MapData(df_pr,remove_cats(sub_categories=sub_cats_to_remove))
+        return df_pr
+
+
+
