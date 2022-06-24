@@ -32,6 +32,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.settings import names
+from ..utils.detection_types import JsonDict
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -387,7 +388,7 @@ class TableSegmentationService(PipelineComponent):
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
         """
         assert segment_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
-        super().__init__(None)
+
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows
         self.threshold_cols = threshold_cols
@@ -398,6 +399,7 @@ class TableSegmentationService(PipelineComponent):
         self._cell_names = [names.C.HEAD, names.C.BODY, names.C.CELL]
         self._item_names = [names.C.ROW, names.C.COL]  # row names must be before column name
         self._sub_item_names = [names.C.RN, names.C.CN]
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         dp = stretch_items(
@@ -464,3 +466,11 @@ class TableSegmentationService(PipelineComponent):
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
         )
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", []),
+                     ("sub_categories",{names.C.CELL: [names.C.RN, names.C.CN, names.C.RS, names.C.CS],
+                                        names.C.ROW: [names.C.RN],
+                                        names.C.COL: [names.C.CN]}),
+                     ("relationships",{}),
+                     ("summaries", [])])

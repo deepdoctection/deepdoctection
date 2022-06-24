@@ -150,3 +150,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         return self.__class__(
             self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
         )
+
+    def possible_categories(self) -> List[str]:
+        return list(self.categories.values())

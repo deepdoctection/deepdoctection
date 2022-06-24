@@ -106,3 +106,6 @@ class PdfPlumberTextDetector(PdfMiner):
                 self._page = _pdf.pages[0]
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
+
+    def possible_categories(self) -> List[str]:
+        return [names.C.WORD]
