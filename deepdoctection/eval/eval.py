@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Type, Union, Optional
 from ..dataflow import DataFromList, MapData, DataFlow, CacheData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import remove_cats, filter_cat
-from ..mapper.misc import maybe_load_image, maybe_remove_image
+from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.concurrency import MultiThreadPipelineComponent
@@ -89,7 +89,6 @@ class Evaluator:  # pylint: disable=R0903
         :param metric: metric
         """
 
-
         self.dataset = dataset
         self.pipe_component: Optional[MultiThreadPipelineComponent] = None
         self.pipe: Optional[DoctectionPipe] = None
@@ -115,8 +114,6 @@ class Evaluator:  # pylint: disable=R0903
             )
         else:
             self.pipe = component_or_pipeline
-            for component in self.pipe.pipe_component_list:
-                component.timer_on = False
 
         self.metric = metric()
         self._sanity_checks()
@@ -160,20 +157,29 @@ class Evaluator:  # pylint: disable=R0903
             return DataFromList(df_pr_list)
         df_pr = MapData(df_pr,maybe_load_image)
         df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")
+        # deactivate timer for components
+        for comp in self.pipe.pipe_component_list:
+            comp.timer_on = False
         df_pr = MapData(df_pr,maybe_remove_image)
         df_list = CacheData(df_pr).get_cache()
         return DataFromList(df_list)
 
     def _clean_up_predict_dataflow_annotations(self, df_pr: DataFlow) -> DataFlow:
-        # will use the first pipe component of the multi thread component
+        # will use the first pipe component of MultiThreadPipelineComponent to get meta annotation
         pipe_or_component = self.pipe_component.pipe_components[0] if self.pipe_component is not None else self.pipe
         meta_anns = pipe_or_component.get_meta_annotation()
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
+
+        # we keep all image annotations that will not be generated through processing
         anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
         sub_cats_to_remove = meta_anns["sub_categories"]
+        relationships_to_remove = meta_anns["relationships"]
+
+        # removing annotations takes place in three steps: First we remove all image annotations. Then, with all
+        # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and remove
+        # it as well, if necessary. In the last step we remove all sub categories and relationships, if generated in
+        # pipeline.
         df_pr = MapData(df_pr,filter_cat(anns_to_keep , possible_cats_in_datapoint))
-        df_pr = MapData(df_pr,remove_cats(sub_categories=sub_cats_to_remove))
+        df_pr = MapData(df_pr,maybe_remove_image_from_category(anns_to_keep))
+        df_pr = MapData(df_pr,remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove))
         return df_pr
-
-
-
