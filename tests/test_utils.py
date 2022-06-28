@@ -55,7 +55,7 @@ def collect_datapoint_from_dataflow(
 
     output: List[Any] = []
     if hasattr(df, "reset_state"):
-        df.reset_state()
+        df.reset_state()  # type: ignore
 
     for idx, dp in enumerate(df):
         if max_datapoints is not None:

@@ -70,9 +70,7 @@ class AttrDict:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to a nested dict."""
         return {
-            k: v.to_dict() if isinstance(v, AttrDict) else v
-            for k, v in self.__dict__.items()
-            if not k.startswith("_")
+            k: v.to_dict() if isinstance(v, AttrDict) else v for k, v in self.__dict__.items() if not k.startswith("_")
         }
 
     def from_dict(self, d: Dict[str, Any]) -> None:  # pylint: disable=C0103

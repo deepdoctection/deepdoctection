@@ -425,7 +425,7 @@ class TableSegmentationService(PipelineComponent):
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
                 items.sort(
                     key=lambda x: x.bounding_box.cx  # type: ignore
-                    if item_name == names.C.COL  # pylint: disable=C0301
+                    if item_name == names.C.COL  # pylint: disable=W0640
                     else x.bounding_box.cy  # type: ignore
                 )
                 for item_number, item in enumerate(items, 1):

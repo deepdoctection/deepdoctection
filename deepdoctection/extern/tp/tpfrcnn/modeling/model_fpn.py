@@ -63,9 +63,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
                 x = tf.transpose(x, [0, 3, 1, 2])
                 return x
         except AttributeError:
-            return FixedUnPooling(
-                name, x, 2, unpool_mat=np.ones((2, 2), dtype="float32"), data_format="channels_first"
-            )
+            return FixedUnPooling(name, x, 2, unpool_mat=np.ones((2, 2), dtype="float32"), data_format="channels_first")
 
     with argscope(
         Conv2D,
@@ -87,9 +85,7 @@ def fpn_model(features, fpn_num_channels, fpn_norm):
         p2345 = [Conv2D(f"posthoc_3x3_p{i + 2}", c, num_channel, 3) for i, c in enumerate(lat_sum_5432[::-1])]
         if use_gn:
             p2345 = [GroupNorm(f"gn_p{i + 2}", c) for i, c in enumerate(p2345)]
-        p6 = MaxPooling(
-            "maxpool_p6", p2345[-1], pool_size=1, strides=2, data_format="channels_first", padding="VALID"
-        )
+        p6 = MaxPooling("maxpool_p6", p2345[-1], pool_size=1, strides=2, data_format="channels_first", padding="VALID")
         return p2345 + [p6]
 
 

@@ -31,8 +31,6 @@ if detectron2_available():
     from deepdoctection.mapper.d2struct import image_to_d2_frcnn_training
 
 
-
-
 @mark.requires_pt
 @patch("deepdoctection.mapper.d2struct.os.path.isfile", MagicMock(return_value=True))
 def test_image_to_d2_frcnn_training(datapoint_image: Image, image_results: DatapointImage) -> None:

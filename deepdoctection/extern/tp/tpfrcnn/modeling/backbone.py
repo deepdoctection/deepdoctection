@@ -183,9 +183,7 @@ def resnet_bottleneck(l, ch_out, stride, cfg):
 
     l = Conv2D("conv1", l, ch_out, 1, strides=1)
     if stride == 2:
-        l = tf.pad(
-            l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)]
-        )
+        l = tf.pad(l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)])
         l = Conv2D("conv2", l, ch_out, 3, strides=2, padding="VALID")
     else:
         l = Conv2D("conv2", l, ch_out, 3, strides=stride)
@@ -266,9 +264,7 @@ def resnet_fpn_backbone(image, cfg):
         )
         l.set_shape([None, chan, None, None])
         l = Conv2D("conv0", l, 64, 7, strides=2, padding="VALID")
-        l = tf.pad(
-            l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)]
-        )
+        l = tf.pad(l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)])
         l = MaxPooling("pool0", l, 3, strides=2, padding="VALID")
 
     bottleneck = resnet_bottleneck if cfg.BACKBONE.BOTTLENECK == "resnet" else resnext32x4d_bottleneck

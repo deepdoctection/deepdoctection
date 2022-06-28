@@ -107,9 +107,7 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, frcnn_fg_thresh, frcnn_
     )
     fg_inds_wrt_gt = tf.gather(best_iou_ind, fg_inds)  # num_fg
 
-    all_indices = tf.concat(
-        [fg_inds, bg_inds], axis=0
-    )  # indices w.r.t all n+m proposal boxes
+    all_indices = tf.concat([fg_inds, bg_inds], axis=0)  # indices w.r.t all n+m proposal boxes
     ret_boxes = tf.gather(boxes, all_indices)
 
     ret_labels = tf.concat(
@@ -186,9 +184,7 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
         false_negative = tf.where(
             empty_fg, 0.0, tf.cast(tf.truediv(num_zero, num_fg), tf.float32), name="false_negative"
         )
-        fg_accuracy = tf.where(
-            empty_fg, 0.0, tf.reduce_mean(tf.gather(correct, fg_inds)), name="fg_accuracy"
-        )
+        fg_accuracy = tf.where(empty_fg, 0.0, tf.reduce_mean(tf.gather(correct, fg_inds)), name="fg_accuracy")
 
     box_loss = tf.reduce_sum(tf.abs(fg_boxes - fg_box_logits))
     box_loss = tf.truediv(box_loss, tf.cast(tf.shape(labels)[0], tf.float32), name="box_loss")
@@ -273,12 +269,8 @@ def fastrcnn_2fc_head(feature, cfg):
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
     init = tfv1.variance_scaling_initializer()
-    hidden = FullyConnected(
-        "fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu
-    )
-    hidden = FullyConnected(
-        "fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu
-    )
+    hidden = FullyConnected("fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu)
+    hidden = FullyConnected("fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu)
     return hidden
 
 
@@ -402,9 +394,7 @@ class FastRCNNHead:
         """
         Returns: #fg x ? x 4
         """
-        return tf.gather(
-            self.box_logits, self.proposals.fg_inds(), name="fg_box_logits"  # pylint: disable =E1101
-        )
+        return tf.gather(self.box_logits, self.proposals.fg_inds(), name="fg_box_logits")  # pylint: disable =E1101
 
     @memoized_method
     def losses(self):

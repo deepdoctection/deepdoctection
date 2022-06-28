@@ -191,7 +191,7 @@ class LabelSummarizer:
         :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
         if dd_logic:
-            data = list(itertools.chain(*[[self.categories[str(i)], v] for i, v in enumerate(self.summary,1)]))
+            data = list(itertools.chain(*[[self.categories[str(i)], v] for i, v in enumerate(self.summary, 1)]))
         else:
             data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
         num_columns = min(6, len(data))
