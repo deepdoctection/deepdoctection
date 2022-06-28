@@ -167,7 +167,7 @@ class DoctectionPipe(Pipeline):
                                 assumed that the pdf documents consist of only one page. If there are multiple pages,
                                 only the first page is processed through the pipeline.
                                 Alternatively, a path to a pdf document with multiple pages.
-        :param kwargs key file_type: Selection of the file type, if: args: `path` is passed
+        :param kwargs key file_type: Selection of the file type, if: args:`file_type` is passed
         :param kwargs key max_datapoints: Stops processing as soon as max_datapoints images have been processed
         :return: dataflow
         """

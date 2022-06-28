@@ -18,6 +18,7 @@
 import os
 import re
 import sys
+from copy import deepcopy
 
 from setuptools import find_packages, setup
 
@@ -162,8 +163,14 @@ docs_deps = deps_list(
     "pycocotools",
     "scikit-learn",
 )
+
 if "python-prctl" in docs_deps:
     docs_deps.remove("python-prctl")
+
+# dependencies for HF Spaces
+hf_spaces_deps = deepcopy(full_pt_deps)
+if "python-prctl" in docs_deps:
+    hf_spaces_deps.remove("python-prctl")
 
 # test dependencies
 test_deps = deps_list("pytest", "pytest-cov")
@@ -186,6 +193,7 @@ EXTRA_DEPS = {
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
+    "hf": hf_spaces_deps,
 }
 
 setup(
