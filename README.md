@@ -115,7 +115,16 @@ Alternatively, consult the
 
 ### Installation from source
 
-Download the repository or clone via
+In a virtual environment, run for PyTorch:
+
+```
+pip install git+https://github.com/deepdoctection/deepdoctection#egg=deepdoctection[source-pt]
+```
+
+This will install the package without cloning the whole repo. Do a similar command with `source-tf` to
+install the package for Tensorflow. 
+
+Otherwise, download the repository or clone via
 
 ```
 git clone https://github.com/deepdoctection/deepdoctection.git
