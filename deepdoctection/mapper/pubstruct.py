@@ -19,6 +19,7 @@
 Module for mapping annotations in pubtabnet style structure
 """
 import itertools
+from collections import Counter
 import os
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -31,7 +32,11 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import names
+from ..utils.file_utils import lxml_available
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
+
+if lxml_available():
+    from lxml import etree
 
 __all__ = ["pub_to_image"]
 
@@ -220,6 +225,18 @@ def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[
                                                                               lry=dp.height))
     image.dump(table_ann)
     image.image_ann_to_image(table_ann.annotation_id, True)
+
+    # will check if header is in category. Will then manipulate html in order to remove header and if necessary body
+    # node.
+    html.insert(0,"<table>")
+    html.append("</table>")
+    if names.C.HEAD not in categories_name_as_key:
+        html.remove("<thead>")
+        html.remove("</thead>")
+        if "<tbody>" and "</tbody>" in html:
+            html.remove("<tbody>")
+            html.remove("</tbody>")
+
     html_ann = ContainerAnnotation(category_name=names.C.HTAB,value=html)
     table_ann.dump_sub_category(names.C.HTAB,html_ann)
     for ann in dp.get_annotation():
@@ -375,6 +392,8 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                                            bounding_box=cell_bounding_box)
                     text_container = ContainerAnnotation(category_name=names.C.CHARS,value=text)
                     word.dump_sub_category(names.C.CHARS,text_container)
+                    reading_order = CategoryAnnotation(category_name=names.C.RO,category_id="1")
+                    word.dump_sub_category(names.C.RO,reading_order)
                     image.dump(word)
                     cell_ann.dump_relationship(names.C.CHILD,word.annotation_id)
 

@@ -61,7 +61,7 @@ class MappingContextManager:
         """
         context exit
         """
-        if exc_type in (KeyError, ValueError, IndexError, AssertionError) and exc_tb is not None:
+        if exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError) and exc_tb is not None:
             log_once(
                 f"""dp: {self.dp_name}, err: {type(exc_val).__name__},
             msg: {str(exc_val)} in: {str(exc_tb.tb_frame)} will be filtered"""

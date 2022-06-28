@@ -150,6 +150,7 @@ def get_pytorch_requirement() -> Requirement:
 
 # lxml
 _LXML_AVAILABLE = importlib.util.find_spec("lxml") is not None
+_LXML_ERR_MSG = "lxml must be installed: pip install lxml"
 
 
 def lxml_available() -> bool:
@@ -157,6 +158,51 @@ def lxml_available() -> bool:
     Returns True if lxml is installed
     """
     return bool(_LXML_AVAILABLE)
+
+
+def get_lxml_requirement() -> Requirement:
+    """
+    Returns lxml requirement
+    """
+    return "lxml", lxml_available(), _TRANSFORMERS_ERR_MSG
+
+
+# apted
+_APTED_AVAILABLE = importlib.util.find_spec("apted") is not None
+_APTED_ERR_MSG = "APTED must be installed: pip install apted"
+
+
+def apted_available() -> bool:
+    """
+    Returns True if apted available
+    """
+    return bool(_APTED_AVAILABLE)
+
+
+def get_apted_requirement() -> Requirement:
+    """
+    Returns APTED requirement
+    """
+    return "apted", apted_available(), _TRANSFORMERS_ERR_MSG
+
+
+# distance
+_DISTANCE_AVAILABLE = importlib.util.find_spec("distance") is not None
+_DISTANCE_ERR_MSG = "distance must be installed: pip install distance"
+
+
+def distance_available() -> bool:
+    """
+    Returns True if apted available
+    """
+    return bool(_DISTANCE_AVAILABLE)
+
+
+def get_distance_requirement() -> Requirement:
+    """
+    Returns distance requirement
+    """
+    return "distance", distance_available(), _DISTANCE_ERR_MSG
 
 
 # Transformers
