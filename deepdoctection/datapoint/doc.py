@@ -226,7 +226,7 @@ class Page:
 
         return text
 
-    def viz(self, show_tables: bool = True, show_items: bool = True, interactive: bool = False) -> Optional[ImageType]:
+    def viz(self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True, interactive: bool = False) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
 
@@ -241,6 +241,7 @@ class Page:
 
         :param show_tables: Will display all tables boxes as well as cells, rows and columns
         :param show_items: Will display all other layout components.
+        :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
         :return: If interactive will return nothing else a numpy array.
@@ -259,7 +260,10 @@ class Page:
                 category_names_list.append(names.C.TAB)
                 for cell in table.cells:
                     box_stack.append(cell.bounding_box)
-                    category_names_list.append(f"({cell.row_number},{cell.col_number})")
+                    if show_cells:
+                        category_names_list.append(f"({cell.row_number},{cell.col_number})")
+                    else:
+                        category_names_list.append(None)
                 for segment_item in table.items:
                     box_stack.append(segment_item.bounding_box)
                     category_names_list.append(segment_item.category)
