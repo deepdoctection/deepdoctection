@@ -169,7 +169,7 @@ if "python-prctl" in docs_deps:
 
 # dependencies for HF Spaces
 hf_spaces_deps = deepcopy(full_pt_deps)
-if "python-prctl" in docs_deps:
+if "python-prctl" in hf_spaces_deps:
     hf_spaces_deps.remove("python-prctl")
 
 # test dependencies
@@ -224,3 +224,4 @@ setup(
     ],
     python_requires=">=3.8",
 )
+
