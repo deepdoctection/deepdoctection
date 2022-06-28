@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Union
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector
 from ..utils.detection_types import JsonDict
+from ..utils.settings import names
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -132,6 +133,9 @@ class SubImageLayoutService(PredictorPipelineComponent):
                                     been detected.
         """
 
+        if isinstance(sub_image_names, str):
+            sub_image_names = [sub_image_names]
+
         self.sub_image_name = sub_image_names
         self.dummy_generator_cls = None
         if add_dummy_detection:
@@ -200,5 +204,6 @@ class SubImageLayoutService(PredictorPipelineComponent):
     def get_meta_annotation(self) -> JsonDict:
         return dict([("image_annotations", self.predictor.possible_categories()),
                      ("sub_categories",{}),
-                     ("relationships",{}),
+                     # implicit setup of relations by using set_image_annotation with explicit annotation_id
+                     ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
                      ("summaries", [])])

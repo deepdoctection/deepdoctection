@@ -21,7 +21,7 @@ Module for small mapping functions
 
 import ast
 import os
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union, Sequence
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
@@ -100,6 +100,21 @@ def maybe_remove_image(dp: Image) -> Image:
 
     if dp.location is not None:
         dp.clear_image()
+    return dp
+
+
+@curry
+def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[str, Sequence[str]]] = None) -> Image:
+    if category_names is None:
+        category_names = []
+    elif isinstance(category_names, str):
+        category_names = [category_names]
+
+    anns = dp.get_annotation(category_names=category_names)
+
+    for ann in anns:
+        ann.image = None
+
     return dp
 
 

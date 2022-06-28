@@ -16,30 +16,44 @@
 Tree distance similarity metric taken from https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py
 """
 
-from typing import List
+from typing import List, Tuple, Optional
 
-import distance
+
 import statistics
-from apted import APTED, Config
-from apted.helpers import Tree
-from lxml import html, etree
-from collections import deque
 
-from ..dataflow import DataFromList, MultiThreadMapData
-from ..utils.tqdm import get_tqdm
+from collections import deque, defaultdict
+
+from ..dataflow import DataFromList, MultiThreadMapData, DataFlow, MapData
+
+from ..utils.file_utils import get_apted_requirement, get_distance_requirement, Requirement, get_lxml_requirement, lxml_available, apted_available, distance_available
+from ..utils.detection_types import JsonDict
+from ..utils.settings import names
+from ..utils.logger import logger
+from ..mapper.pagestruct import to_page
+from ..datasets.base import DatasetCategories
 from .base import MetricBase
 from .registry import metric_registry
 
+if distance_available() and lxml_available() and apted_available():
+    import distance
+    from apted import APTED, Config
+    from apted.helpers import Tree
+    from lxml import html, etree
+
 
 class TableTree(Tree):
-    def __init__(self, tag, colspan=None, rowspan=None, content=None, *children):
+    """
+    TableTree is derived class from :class:`APTED.helpers.Tree`.
+    """
+    def __init__(self, tag: str, colspan: Optional[int] =None, rowspan: Optional[int] =None, content: List[str] =None, *children) -> None:
         self.tag = tag
         self.colspan = colspan
         self.rowspan = rowspan
         self.content = content
         self.children = list(children)
+        super().__init__("", *children)
 
-    def bracket(self):
+    def bracket(self) -> str:
         """Show tree using brackets notation"""
         if self.tag == 'td':
             result = '"tag": %s, "colspan": %d, "rowspan": %d, "text": %s' % \
@@ -52,18 +66,21 @@ class TableTree(Tree):
 
 
 class CustomConfig(Config):
+    """
+    CustomConfig for calculating APTED tree edit distance. Check APTED docs for more information
+    """
     @staticmethod
-    def maximum(*sequences):
+    def maximum(*sequences) -> int:
         """Get maximum possible value
         """
         return max(map(len, sequences))
 
-    def normalized_distance(self, *sequences):
+    def normalized_distance(self, *sequences) -> float:
         """Get distance from 0 to 1
         """
         return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
 
-    def rename(self, node1, node2):
+    def rename(self, node1, node2) -> float:
         """Compares attributes of trees"""
         if (node1.tag != node2.tag) or (node1.colspan != node2.colspan) or (node1.rowspan != node2.rowspan):
             return 1.
@@ -75,11 +92,8 @@ class CustomConfig(Config):
 
 class TEDS(object):
     """ Tree Edit Distance basead Similarity"""
-    def __init__(self, structure_only=False, n_jobs=1, ignore_nodes=None):
-        assert isinstance(n_jobs, int) and (n_jobs >= 1), 'n_jobs must be an integer greather than 1'
+    def __init__(self, structure_only: bool = False):
         self.structure_only = structure_only
-        self.n_jobs = n_jobs
-        self.ignore_nodes = ignore_nodes
         self.__tokens__ = []
 
     def tokenize(self, node):
@@ -122,54 +136,99 @@ class TEDS(object):
         """ Computes TEDS score between the prediction and the ground truth of a
             given sample
         """
-        pred, true = inputs[0], inputs[1]
-        if (not pred) or (not true):
+        gt, pred, file_name = inputs[0], inputs[1], inputs[2]
+        if (not pred) or (not gt):
             return 0.0
-        parser = html.HTMLParser(remove_comments=True, encoding='utf-8')
-        pred = html.fromstring(pred, parser=parser)
-        true = html.fromstring(true, parser=parser)
-        if pred.xpath('body/table') and true.xpath('body/table'):
-            pred = pred.xpath('body/table')[0]
-            true = true.xpath('body/table')[0]
-            if self.ignore_nodes:
-                etree.strip_tags(pred, *self.ignore_nodes)
-                etree.strip_tags(true, *self.ignore_nodes)
-            n_nodes_pred = len(pred.xpath(".//*"))
-            n_nodes_true = len(true.xpath(".//*"))
-            n_nodes = max(n_nodes_pred, n_nodes_true)
-            tree_pred = self.load_html_tree(pred)
-            tree_true = self.load_html_tree(true)
-            distance = APTED(tree_pred, tree_true, CustomConfig()).compute_edit_distance()
+        parser = etree.XMLParser()
+        try:
+            gt = etree.XML(gt, parser)
+            pred = etree.XML(pred, parser)
+        except etree.XMLSyntaxError:
+            logger.info("Error while xml parsing for %s. Will be removed",file_name)
+            return -1.0
+
+        etree.strip_tags(pred)
+        etree.strip_tags(gt)
+        n_nodes_pred = len(pred.xpath(".//*"))
+        n_nodes_true = len(gt.xpath(".//*"))
+        n_nodes = max(n_nodes_pred, n_nodes_true)
+        tree_pred = self.load_html_tree(pred)
+        tree_true = self.load_html_tree(gt)
+        distance = APTED(tree_pred, tree_true, CustomConfig()).compute_edit_distance()
+        if n_nodes:
             return 1.0 - (float(distance) / n_nodes)
         else:
             return 0.0
 
 
-def batch_evaluate(pred_json, true_json, teds):
-    """ Computes TEDS score between the prediction and the ground truth of
-        a batch of samples
-        @params pred_json: {'FILENAME': 'HTML CODE', ...}
-        @params true_json: {'FILENAME': {'html': 'HTML CODE'}, ...}
-        @output: {'FILENAME': 'TEDS SCORE', ...}
+def teds_metric(gt_list: List[str], predict_list: List[str], file_name_list: List[str], structure_only: bool):
     """
+    Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
+    approach to measure similarity of tables by means of their html representation has been adovacated in
+    https://arxiv.org/abs/1911.10683 .
 
-    input_list = list(zip(pred_json, true_json))
+    """
+    teds = TEDS(structure_only=structure_only)
+
+    input_list = list(zip(gt_list, predict_list, file_name_list))
     df = DataFromList(input_list)
-    df = MultiThreadMapData(df, teds.evaluate)
+    df = MultiThreadMapData(df, 2, teds.evaluate,  strict=True)
     scores = []
+    df.reset_state()
 
     for dp in df:
-        scores.append(dp)
+        if dp!=-1.0:
+            scores.append(dp)
 
-    return statistics.fmean(scores)
-
-
-#@metric_registry.register("teds")
-#class TedsMetric(MetricBase):
-#    """
-#    Metric induced by :func:`teds`
-#    """
-#
-#    metric =
+    return statistics.fmean(scores), len(scores)
 
 
+@metric_registry.register("teds")
+class TedsMetric(MetricBase):
+    """
+    Metric induced by :func:`teds`
+    """
+
+    metric = teds_metric
+    mapper = to_page
+    structure_only = False
+
+    @classmethod
+    def dump(cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories) -> Tuple[List[str],List[str],List[str]]:
+
+        dataflow_gt.reset_state(), dataflow_predictions.reset_state()
+
+        # gt and predictions are not necessarily in same order. Will need to reorder
+        gt_dict = defaultdict(list)
+        pred_dict = defaultdict(list)
+        for dp_gt, dp_pred in zip(dataflow_gt,dataflow_predictions):
+            page_gt = cls.mapper(dp_gt, names.C.WORD, None, [names.C.TAB])
+            for table in page_gt.tables:
+                gt_dict[page_gt.uuid].append(table.html)
+
+            page_pred = cls.mapper(dp_pred, names.C.WORD, None, [names.C.TAB])
+            for table in page_pred.tables:
+                pred_dict[page_pred.uuid].append(table.html)
+
+        gt_list = []
+        pred_list = []
+        file_name_list = []
+        for sample in gt_dict:
+            gt_list.extend(gt_dict[sample])
+            pred_list.extend(pred_dict[sample])
+            file_name_list.append(sample)
+
+        return gt_list, pred_list, file_name_list
+
+    @classmethod
+    def get_distance(
+        cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
+    ) -> List[JsonDict]:
+        html_gt_list, html_pr_list, file_name_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
+
+        score, num_samples = cls.metric(html_gt_list,html_pr_list, file_name_list, cls.structure_only)
+        return [{"teds_score": score, "num_samples": num_samples}]
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_apted_requirement(),get_distance_requirement(), get_lxml_requirement()]
