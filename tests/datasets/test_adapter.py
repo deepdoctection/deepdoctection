@@ -24,8 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import LayoutTest
-
-from deepdoctection.utils import pytorch_available, detectron2_available
+from deepdoctection.utils import detectron2_available, pytorch_available
 
 from ..test_utils import collect_datapoint_from_dataflow, get_test_path
 

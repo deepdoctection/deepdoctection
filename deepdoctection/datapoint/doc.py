@@ -226,7 +226,9 @@ class Page:
 
         return text
 
-    def viz(self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True, interactive: bool = False) -> Optional[ImageType]:
+    def viz(
+        self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True, interactive: bool = False
+    ) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
 
@@ -263,7 +265,7 @@ class Page:
                     if show_cells:
                         category_names_list.append(f"({cell.row_number},{cell.col_number})")
                     else:
-                        category_names_list.append(None)
+                        category_names_list.append("")
                 for segment_item in table.items:
                     box_stack.append(segment_item.bounding_box)
                     category_names_list.append(segment_item.category)

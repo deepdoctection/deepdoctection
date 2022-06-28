@@ -258,7 +258,9 @@ def draw_boxes(
         if category_names_list is not None:
             choose_color = random_color() if color is None else color
             if category_names_list[i] is not None:
-                np_image = draw_text(np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=1.0)
+                np_image = draw_text(
+                    np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=1.0
+                )
                 cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color, thickness=4)
     return np_image
 

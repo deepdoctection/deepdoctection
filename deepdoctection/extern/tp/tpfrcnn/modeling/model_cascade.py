@@ -114,7 +114,7 @@ class CascadeRCNNHead:
                 iou = pairwise_iou(boxes, self.gt_boxes)  # NxM
                 max_iou_per_box = tf.reduce_max(iou, axis=1)  # N
                 best_iou_ind = tf.argmax(iou, axis=1)  # N
-                labels_per_box = tf.gather(self.gt_labels, best_iou_ind)  # pylint: disable =E1120
+                labels_per_box = tf.gather(self.gt_labels, best_iou_ind)
                 fg_mask = max_iou_per_box >= iou_threshold
                 fg_inds_wrt_gt = tf.boolean_mask(best_iou_ind, fg_mask)
                 labels_per_box = tf.stop_gradient(labels_per_box * tf.cast(fg_mask, tf.int64))

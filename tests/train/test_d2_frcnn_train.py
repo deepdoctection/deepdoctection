@@ -21,7 +21,7 @@ Testing module train.d2_frcnn_train
 
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
