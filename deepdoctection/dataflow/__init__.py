@@ -23,6 +23,7 @@ from dataflow.dataflow import (
     MultiThreadMapData,
     ProxyDataFlow,
     RepeatedData,
+    MultiThreadMapData,
 )
 
 from .common import *
