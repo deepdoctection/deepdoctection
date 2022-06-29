@@ -62,12 +62,11 @@ class TestEvaluator:
         self._dataset.dataflow.categories = categories
 
         self._layout_detector = TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories.get_categories())
-        self._layout_detector.tp_predictor = MagicMock()
         self._pipe_component = ImageLayoutService(self._layout_detector)
-        self._layout_detector.predict = MagicMock(return_value=detection_results)
+        self._pipe_component.predictor.predict = MagicMock(return_value=detection_results)
         self._metric = CocoMetric
 
-        self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric)
+        self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric,1)
 
     @mark.requires_tf
     @mark.full
