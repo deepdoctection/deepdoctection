@@ -123,4 +123,8 @@ def test_pub_to_image_when_dd_pipe_like(
     # Act
     pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, True, True, True, True, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
-    assert dp is None  # output is None because of misalignment of gt html
+    assert dp is not None
+    table_list = dp.get_annotation(category_names=names.C.TAB)
+    assert len(table_list) == 1
+    table = table_list[0]
+    assert table.image is not None
