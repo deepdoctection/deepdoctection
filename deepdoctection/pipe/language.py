@@ -23,9 +23,9 @@ from typing import List, Optional
 from ..datapoint.image import Image
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..mapper.pagestruct import to_page
+from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
 from ..utils.settings import names
-from ..utils.detection_types import JsonDict
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -124,8 +124,11 @@ class LanguageDetectionService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []),
-                     ("sub_categories", {}),
-                     ("relationships", {}),
-                     ("summaries", [names.NLP.LANG.LANG])])
-
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {}),
+                ("relationships", {}),
+                ("summaries", [names.NLP.LANG.LANG]),
+            ]
+        )

@@ -24,5 +24,5 @@ from .accmetric import *
 from .base import *
 from .cocometric import *
 from .eval import *
-from .tedsmetric import *
 from .registry import *
+from .tedsmetric import *

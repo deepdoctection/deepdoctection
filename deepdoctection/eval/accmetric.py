@@ -170,6 +170,7 @@ class AccuracyMetric(MetricBase):
 
     @property
     def sub_cats(self):
+        """ sub cats"""
         return self._sub_cats
 
 

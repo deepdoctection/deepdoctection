@@ -87,7 +87,7 @@ _SUB_CATEGORIES = {
     names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
     names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
     names.C.TAB: {names.C.HTAB: [names.C.HTAB]},
-    names.C.WORD: {names.C.CHARS: [names.C.CHARS]}
+    names.C.WORD: {names.C.CHARS: [names.C.CHARS]},
 }
 
 
@@ -164,8 +164,8 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
-            dd_pipe_like = dd_pipe_like,
-            is_fintabnet=False
+            dd_pipe_like=dd_pipe_like,
+            is_fintabnet=False,
         )
 
         df = MapData(df, pub_mapper)

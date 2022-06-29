@@ -19,24 +19,21 @@
 Module for mapping annotations in pubtabnet style structure
 """
 import itertools
-from collections import Counter
 import os
-from typing import Dict, List, Optional, Sequence, Tuple
+
+from typing import Dict, List, Optional, Sequence, Tuple, Iterable
 
 import numpy as np
 
-from ..datapoint import BoundingBox, CategoryAnnotation, ImageAnnotation, ContainerAnnotation
+from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import names
-from ..utils.file_utils import lxml_available
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
-if lxml_available():
-    from lxml import etree
 
 __all__ = ["pub_to_image"]
 
@@ -217,28 +214,40 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
 
 
 def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[str, str]) -> Image:
-    image = Image(file_name=dp.file_name,location=dp.location,external_id=dp.image_id + "image")
+    """
+    Generating an image, that resembles the output of an analyzer. The layout of the image is table spanning
+    the full page, i.e. there is one table image annotation. Moreover, the table annotation has an image, with cells
+    as image annotations.
+
+    :param dp: Image
+    :param html: list with html tags
+    :param categories_name_as_key: category dictionary with all possible annotations
+    :return: Image
+    """
+    image = Image(file_name=dp.file_name, location=dp.location, external_id=dp.image_id + "image")
     image.image = dp.image
-    image.set_width_height(dp.width,dp.height)
-    table_ann = ImageAnnotation(category_name=names.C.TAB,category_id=categories_name_as_key[names.C.TAB],
-                                bounding_box=BoundingBox(absolute_coords=True,ulx=0.,uly=0.,lrx=dp.width,
-                                                                              lry=dp.height))
+    image.set_width_height(dp.width, dp.height)
+    table_ann = ImageAnnotation(
+        category_name=names.C.TAB,
+        category_id=categories_name_as_key[names.C.TAB],
+        bounding_box=BoundingBox(absolute_coords=True, ulx=0.0, uly=0.0, lrx=dp.width, lry=dp.height),
+    )
     image.dump(table_ann)
     image.image_ann_to_image(table_ann.annotation_id, True)
 
     # will check if header is in category. Will then manipulate html in order to remove header and if necessary body
     # node.
-    html.insert(0,"<table>")
+    html.insert(0, "<table>")
     html.append("</table>")
     if names.C.HEAD not in categories_name_as_key:
         html.remove("<thead>")
         html.remove("</thead>")
-        if "<tbody>" and "</tbody>" in html:
+        if "<tbody>" in html and "</tbody>" in html:
             html.remove("<tbody>")
             html.remove("</tbody>")
 
-    html_ann = ContainerAnnotation(category_name=names.C.HTAB,value=html)
-    table_ann.dump_sub_category(names.C.HTAB,html_ann)
+    html_ann = ContainerAnnotation(category_name=names.C.HTAB, value=html)
+    table_ann.dump_sub_category(names.C.HTAB, html_ann)
     for ann in dp.get_annotation():
         image.dump(ann)
         table_ann.image.dump(ann)
@@ -247,9 +256,17 @@ def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[
     return image
 
 
-def nth_index(iterable, value, n):
+def nth_index(iterable: Iterable[str], value: str, n: int) -> Optional[int]:
+    """
+    Returns the position of the n-th string value in an iterable, e.g. a list
+
+    :param iterable: e.g. list
+    :param value: any value
+    :param n: n-th value
+    :return: position if n-th value exists else None
+    """
     matches = (idx for idx, val in enumerate(iterable) if val == value)
-    return next(itertools.islice(matches, n-1, n), None)
+    return next(itertools.islice(matches, n - 1, n), None)
 
 
 def pub_to_image_uncur(  # pylint: disable=R0914
@@ -386,22 +403,25 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
                 if dd_pipe_like:
                     tokens = cell["tokens"]
-                    if "<b>" and "</b>" in tokens:
+                    if "<b>" in tokens and "</b>" in tokens:
                         tokens.remove("<b>")
                         tokens.remove("</b>")
                     text = "".join(tokens)
                     # we are not separating each word but view the full table content as one word
-                    word = ImageAnnotation(category_name=names.C.WORD,category_id=categories_name_as_key[names.C.WORD],
-                                           bounding_box=cell_bounding_box)
-                    text_container = ContainerAnnotation(category_name=names.C.CHARS,value=text)
-                    word.dump_sub_category(names.C.CHARS,text_container)
-                    reading_order = CategoryAnnotation(category_name=names.C.RO,category_id="1")
-                    word.dump_sub_category(names.C.RO,reading_order)
+                    word = ImageAnnotation(
+                        category_name=names.C.WORD,
+                        category_id=categories_name_as_key[names.C.WORD],
+                        bounding_box=cell_bounding_box,
+                    )
+                    text_container = ContainerAnnotation(category_name=names.C.CHARS, value=text)
+                    word.dump_sub_category(names.C.CHARS, text_container)
+                    reading_order = CategoryAnnotation(category_name=names.C.RO, category_id="1")
+                    word.dump_sub_category(names.C.RO, reading_order)
                     image.dump(word)
-                    cell_ann.dump_relationship(names.C.CHILD,word.annotation_id)
+                    cell_ann.dump_relationship(names.C.CHILD, word.annotation_id)
 
-                    index = nth_index(html,"<td>",number_of_cells-idx)
-                    html.insert(index+1,cell_ann.annotation_id)
+                    index = nth_index(html, "<td>", number_of_cells - idx)
+                    html.insert(index + 1, cell_ann.annotation_id)
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(

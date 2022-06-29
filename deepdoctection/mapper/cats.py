@@ -21,9 +21,9 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Mapping, Optional, Sequence, Union, overload, Literal
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union, overload
 
-from ..datapoint.annotation import ImageAnnotation, ContainerAnnotation
+from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
 from .maputils import curry
 
@@ -117,7 +117,9 @@ def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: Literal["id"] = ...) -> Dict[str, List[int]]: ...
+    id_name_or_value: Literal["id"] = ...,
+) -> Dict[str, List[int]]:
+    ...
 
 
 @overload
@@ -126,7 +128,9 @@ def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: Literal["name", "value"] = ...) -> Dict[str, List[str]]: ...
+    id_name_or_value: Literal["name", "value"] = ...,
+) -> Dict[str, List[str]]:
+    ...
 
 
 @curry
@@ -134,7 +138,7 @@ def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: str = "id"
+    id_name_or_value: str = "id",
 ) -> Dict[str, List[int]]:
     """
     Extracts all category_ids or sub category information with given names into a defaultdict with names as keys.
@@ -184,11 +188,11 @@ def image_to_cat_id(
             for sub_cat_name in tmp_sub_category_names[ann.category_name]:
                 sub_cat = ann.get_sub_category(sub_cat_name)
                 if sub_cat is not None:
-                    if id_name_or_value=="id":
+                    if id_name_or_value == "id":
                         cat_container[sub_cat_name].append(int(sub_cat.category_id))
-                    if id_name_or_value=="name":
+                    if id_name_or_value == "name":
                         cat_container[sub_cat_name].append(sub_cat.category_name)
-                    if id_name_or_value=="value":
+                    if id_name_or_value == "value":
                         assert isinstance(sub_cat, ContainerAnnotation)
                         cat_container[sub_cat_name].append(sub_cat.value)
 
@@ -238,7 +242,7 @@ def remove_cats(
                 ann.remove_sub_category(sub_cat)
         if ann.category_name in relationships.keys():
             relationships_to_remove = relationships[ann.category_name]
-            if isinstance( relationships_to_remove, str):
+            if isinstance(relationships_to_remove, str):
                 relationships_to_remove = [relationships_to_remove]
             for relation in relationships_to_remove:
                 ann.remove_relationship(key=relation)

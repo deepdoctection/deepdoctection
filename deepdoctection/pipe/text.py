@@ -165,12 +165,19 @@ class TextExtractionService(PredictorPipelineComponent):
             sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
         else:
             sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
-        return dict([("image_annotations", self.predictor.possible_categories() if isinstance(self.predictor,
-                                                                                              (ObjectDetector,
-                                                                                               PdfMiner)) else []),
-                     ("sub_categories",sub_cat_dict),
-                     ("relationships", {}),
-                     ("summaries", [])])
+        return dict(
+            [
+                (
+                    "image_annotations",
+                    self.predictor.possible_categories()
+                    if isinstance(self.predictor, (ObjectDetector, PdfMiner))
+                    else [],
+                ),
+                ("sub_categories", sub_cat_dict),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )
 
 
 def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
@@ -403,9 +410,12 @@ class TextOrderService(PipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
         anns_with_reading_order = deepcopy(self._floating_text_block_names)
-        anns_with_reading_order.extend([names.C.WORD,names.C.LINE])
-        return dict([("image_annotations", []),
-                     ("sub_categories", {category: {names.C.RO} for category in anns_with_reading_order}),
-                     ("relationships", {}),
-                     ("summaries", [])])
-
+        anns_with_reading_order.extend([names.C.WORD, names.C.LINE])
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {category: {names.C.RO} for category in anns_with_reading_order}),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )

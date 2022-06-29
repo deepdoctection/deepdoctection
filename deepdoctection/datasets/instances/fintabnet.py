@@ -189,8 +189,8 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
-            dd_pipe_like = False,
-            is_fintabnet = True
+            dd_pipe_like=False,
+            is_fintabnet=True,
         )
         if use_multi_proc:
             df = MultiProcessMapData(

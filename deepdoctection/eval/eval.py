@@ -23,15 +23,15 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Type, Union, Optional
+from typing import Any, Dict, List, Optional, Type, Union
 
-from ..dataflow import DataFromList, MapData, DataFlow, CacheData
+from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
-from ..mapper.cats import remove_cats, filter_cat
+from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import PredictorPipelineComponent
-from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.concurrency import MultiThreadPipelineComponent
+from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.logger import logger
 from .base import MetricBase
 
@@ -118,8 +118,9 @@ class Evaluator:  # pylint: disable=R0903
         self.metric = metric()
         self._sanity_checks()
 
-    def run(self, output_as_dict: bool = False, **kwargs: Union[str,int]) -> \
-            Union[List[Dict[str, Any]], Dict[str, Any]]:
+    def run(
+        self, output_as_dict: bool = False, **kwargs: Union[str, int]
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Start evaluation process and return the results.
 
@@ -155,12 +156,12 @@ class Evaluator:  # pylint: disable=R0903
             logger.info("Predicting objects...")
             df_pr_list = self.pipe_component.start()
             return DataFromList(df_pr_list)
-        df_pr = MapData(df_pr,maybe_load_image)
+        df_pr = MapData(df_pr, maybe_load_image)
         df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")
         # deactivate timer for components
         for comp in self.pipe.pipe_component_list:
             comp.timer_on = False
-        df_pr = MapData(df_pr,maybe_remove_image)
+        df_pr = MapData(df_pr, maybe_remove_image)
         df_list = CacheData(df_pr).get_cache()
         return DataFromList(df_list)
 
@@ -179,7 +180,7 @@ class Evaluator:  # pylint: disable=R0903
         # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and remove
         # it as well, if necessary. In the last step we remove all sub categories and relationships, if generated in
         # pipeline.
-        df_pr = MapData(df_pr,filter_cat(anns_to_keep , possible_cats_in_datapoint))
-        df_pr = MapData(df_pr,maybe_remove_image_from_category(anns_to_keep))
-        df_pr = MapData(df_pr,remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove))
+        df_pr = MapData(df_pr, filter_cat(anns_to_keep, possible_cats_in_datapoint))  # pylint: disable=E1120
+        df_pr = MapData(df_pr, maybe_remove_image_from_category(anns_to_keep))
+        df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove))  # pylint: disable=E1120
         return df_pr
