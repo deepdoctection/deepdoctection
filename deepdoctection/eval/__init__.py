@@ -20,10 +20,13 @@ Init file for eval package. Contains metrics (customized for special tasks), eva
 for training.
 """
 
+from ..utils.file_utils import apted_available
 from .accmetric import *
 from .base import *
 from .cocometric import *
 from .eval import *
 from .tedsmetric import *
 from .registry import *
-from .tedsmetric import *
+
+if apted_available():
+    from .tedsmetric import *

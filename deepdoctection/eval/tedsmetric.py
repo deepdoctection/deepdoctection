@@ -63,7 +63,6 @@ class TableTree(Tree):
         self.rowspan = rowspan
         self.content = content
         self.children = list(children)
-        super().__init__("", *children)
 
     def bracket(self) -> str:
         """Show tree using brackets notation"""
