@@ -22,7 +22,7 @@ Testing module pipe.layout
 from unittest.mock import MagicMock
 
 from deepdoctection.datapoint import Image, ImageAnnotation
-from deepdoctection.extern.base import DetectionResult
+from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.layout import ImageLayoutService
 
 
@@ -36,7 +36,7 @@ class TestImageLayoutService:
         setup necessary components
         """
 
-        self._layout_detector = MagicMock()
+        self._layout_detector = MagicMock(spec=ObjectDetector)
         self.image_layout_service = ImageLayoutService(self._layout_detector, to_image=True)
 
     def test_pass_datapoint(
