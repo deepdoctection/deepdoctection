@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union, overload
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
 
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
@@ -111,35 +111,13 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
     return dp
 
 
-@overload
 @curry
 def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: Literal["id"] = ...,
-) -> Dict[str, List[int]]:
-    ...
-
-
-@overload
-@curry
-def image_to_cat_id(
-    dp: Image,
-    category_names: Optional[Union[str, Sequence[str]]] = None,
-    sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: Literal["name", "value"] = ...,
-) -> Dict[str, List[str]]:
-    ...
-
-
-@curry
-def image_to_cat_id(
-    dp: Image,
-    category_names: Optional[Union[str, Sequence[str]]] = None,
-    sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    id_name_or_value: str = "id",
-) -> Dict[str, List[int]]:
+    id_name_or_value: Literal["id","name","value"] = "id",
+) -> Dict[str, Union[List[int],List[int]]]:
     """
     Extracts all category_ids or sub category information with given names into a defaultdict with names as keys.
 
@@ -191,10 +169,10 @@ def image_to_cat_id(
                     if id_name_or_value == "id":
                         cat_container[sub_cat_name].append(int(sub_cat.category_id))
                     if id_name_or_value == "name":
-                        cat_container[sub_cat_name].append(sub_cat.category_name)
+                        cat_container[sub_cat_name].append(sub_cat.category_name)  # type: ignore
                     if id_name_or_value == "value":
                         assert isinstance(sub_cat, ContainerAnnotation)
-                        cat_container[sub_cat_name].append(sub_cat.value)
+                        cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
 
     return cat_container
 

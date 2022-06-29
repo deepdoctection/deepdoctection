@@ -23,7 +23,7 @@ from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Union
 
 from ..datapoint.image import Image
-from ..extern.base import DetectionResult, ObjectDetector
+from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .base import PredictorPipelineComponent
@@ -202,6 +202,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         return True
 
     def get_meta_annotation(self) -> JsonDict:
+        assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
         return dict(
             [
                 ("image_annotations", self.predictor.possible_categories()),

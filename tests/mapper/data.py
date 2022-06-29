@@ -862,7 +862,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
         """
         html string
         """
-        return "".join(self.dp["html"]["structure"]["tokens"])
+        return "".join(self.dp["html"]["structure"]["tokens"])  # type: ignore
 
 
 @dataclass

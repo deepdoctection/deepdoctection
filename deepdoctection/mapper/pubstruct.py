@@ -250,6 +250,7 @@ def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[
     table_ann.dump_sub_category(names.C.HTAB, html_ann)
     for ann in dp.get_annotation():
         image.dump(ann)
+        assert table_ann.image
         table_ann.image.dump(ann)
         table_ann.dump_relationship(names.C.CHILD, ann.annotation_id)
 
@@ -421,7 +422,8 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                     cell_ann.dump_relationship(names.C.CHILD, word.annotation_id)
 
                     index = nth_index(html, "<td>", number_of_cells - idx)
-                    html.insert(index + 1, cell_ann.annotation_id)
+                    if index:
+                        html.insert(index + 1, cell_ann.annotation_id)
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(

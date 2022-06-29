@@ -54,7 +54,7 @@ from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 if lxml_available():
-    from lxml import etree  # type: ignore
+    from lxml import etree
 
 _NAME = "iiitar13k"
 

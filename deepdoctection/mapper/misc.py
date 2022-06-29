@@ -31,7 +31,7 @@ from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_f
 from .maputils import MappingContextManager, curry
 
 if lxml_available():
-    from lxml import etree  # type: ignore  # pylint: disable=W0611
+    from lxml import etree  # pylint: disable=W0611
 
 
 def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
