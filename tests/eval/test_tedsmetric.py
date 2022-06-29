@@ -31,9 +31,7 @@ def test_teds_metric_returns_correct_distance() -> None:
     """
 
     html_str = "<table><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></table>"
-    results, number_results = teds_metric([html_str],[html_str],["test_file"],False)
+    results, number_results = teds_metric([html_str], [html_str], ["test_file"], False)
 
-    assert number_results==1
+    assert number_results == 1
     assert results == 1.0
-
-

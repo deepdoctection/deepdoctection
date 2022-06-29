@@ -75,10 +75,7 @@ class D2Trainer(DefaultTrainer):
             dataset=self.dataset, mapper=self.mapper, total_batch_size=cfg.SOLVER.IMS_PER_BATCH
         )
 
-    def eval_with_dd_evaluator(
-        self,
-        **build_eval_kwargs: str
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    def eval_with_dd_evaluator(self, **build_eval_kwargs: str) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Running the Evaluator. This method will be called from the EvalHook
 
@@ -214,7 +211,6 @@ def train_d2_faster_rcnn(
         and pipeline_component_name is not None
     ):
         categories = dataset_val.dataflow.categories.get_categories(filtered=True)
-        category_names = dataset_val.dataflow.categories.get_categories(filtered=True, as_dict=False)
         detector = D2FrcnnDetector(path_config_yaml, path_weights, categories, config_overwrite, cfg.MODEL.DEVICE)
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
@@ -228,8 +224,7 @@ def train_d2_faster_rcnn(
         trainer.register_hooks(
             [
                 EvalHook(
-                    cfg.TEST.EVAL_PERIOD,
-                    lambda: trainer.eval_with_dd_evaluator(**build_val_dict),
+                    cfg.TEST.EVAL_PERIOD, trainer.eval_with_dd_evaluator(**build_val_dict),
                 )
             ]
         )

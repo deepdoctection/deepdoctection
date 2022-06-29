@@ -202,8 +202,12 @@ class SubImageLayoutService(PredictorPipelineComponent):
         return True
 
     def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", self.predictor.possible_categories()),
-                     ("sub_categories",{}),
-                     # implicit setup of relations by using set_image_annotation with explicit annotation_id
-                     ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
-                     ("summaries", [])])
+        return dict(
+            [
+                ("image_annotations", self.predictor.possible_categories()),
+                ("sub_categories", {}),
+                # implicit setup of relations by using set_image_annotation with explicit annotation_id
+                ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
+                ("summaries", []),
+            ]
+        )

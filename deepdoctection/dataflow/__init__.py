@@ -20,9 +20,9 @@ from dataflow.dataflow import (
     MapData,
     MapDataComponent,
     MultiProcessMapData,
+    MultiThreadMapData,
     ProxyDataFlow,
     RepeatedData,
-    MultiThreadMapData,
 )
 
 from .common import *

@@ -21,8 +21,8 @@ Module for token classification pipeline
 from typing import List
 
 from ..datapoint.image import Image
-from ..utils.settings import names
 from ..utils.detection_types import JsonDict
+from ..utils.settings import names
 from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -81,7 +81,11 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 words_populated.append(token.uuid)
 
     def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []),
-                     ("sub_categories", {names.C.WORD: {names.C.SE, names.NER.TAG}}),
-                     ("relationships", {}),
-                     ("summaries", [])])
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {names.C.WORD: {names.C.SE, names.NER.TAG}}),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )

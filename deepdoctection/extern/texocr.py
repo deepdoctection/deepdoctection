@@ -127,6 +127,5 @@ class TextractOcrDetector(ObjectDetector):
 
     def possible_categories(self) -> List[str]:
         if self.text_lines:
-            return [names.C.WORD,names.C.LINE]
+            return [names.C.WORD, names.C.LINE]
         return [names.C.WORD]
-

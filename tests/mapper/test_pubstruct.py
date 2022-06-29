@@ -24,7 +24,6 @@ from unittest.mock import MagicMock, patch
 
 from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
-from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper import pub_to_image
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
@@ -114,8 +113,9 @@ def test_pub_to_image_when_items_are_added(
 
 
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
-def test_pub_to_image_when_dd_pipe_like(datapoint_pubtabnet: JsonDict,
-                                        categories_name_as_key_pubtabnet: Dict[str,str])-> None:
+def test_pub_to_image_when_dd_pipe_like(
+    datapoint_pubtabnet: JsonDict, categories_name_as_key_pubtabnet: Dict[str, str]
+) -> None:
     """
     testing pub_to_image generates Image like dd-analyzer
     """
@@ -123,6 +123,4 @@ def test_pub_to_image_when_dd_pipe_like(datapoint_pubtabnet: JsonDict,
     # Act
     pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, True, True, True, True, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
-    assert dp is None   # output is None because of misalignment of gt html
-
-
+    assert dp is None  # output is None because of misalignment of gt html

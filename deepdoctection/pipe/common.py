@@ -29,8 +29,8 @@ from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.pagestruct import to_page
-from ..utils.settings import names
 from ..utils.detection_types import JsonDict
+from ..utils.settings import names
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -61,10 +61,7 @@ class ImageCroppingService(PipelineComponent):
         return self.__class__(self.category_names)
 
     def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []),
-                     ("sub_categories",{}),
-                     ("relationships",{}),
-                     ("summaries", [])])
+        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -136,10 +133,14 @@ class MatchingService(PipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
 
-        return dict([("image_annotations", []),
-                     ("sub_categories",{}),
-                     ("relationships",{parent: {names.C.CHILD} for parent in self.parent_categories}),
-                     ("summaries", [])])
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {}),
+                ("relationships", {parent: {names.C.CHILD} for parent in self.parent_categories}),
+                ("summaries", []),
+            ]
+        )
 
 
 @pipeline_component_registry.register("PageParsingService")

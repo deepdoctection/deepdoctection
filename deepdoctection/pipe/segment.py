@@ -31,8 +31,8 @@ from ..datapoint.box import BoundingBox, iou
 from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
-from ..utils.settings import names
 from ..utils.detection_types import JsonDict
+from ..utils.settings import names
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -468,9 +468,18 @@ class TableSegmentationService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []),
-                     ("sub_categories",{names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS},
-                                        names.C.ROW: {names.C.RN},
-                                        names.C.COL: {names.C.CN}}),
-                     ("relationships",{}),
-                     ("summaries", [])])
+        return dict(
+            [
+                ("image_annotations", []),
+                (
+                    "sub_categories",
+                    {
+                        names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS},
+                        names.C.ROW: {names.C.RN},
+                        names.C.COL: {names.C.CN},
+                    },
+                ),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )

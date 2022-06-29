@@ -119,7 +119,5 @@ def unpackbits_masks(masks):
     assert masks.dtype == tf.uint8, masks
     bits = tf.constant((128, 64, 32, 16, 8, 4, 2, 1), dtype=tf.uint8)
     unpacked = tf.bitwise.bitwise_and(tf.expand_dims(masks, -1), bits) > 0
-    unpacked = tf.reshape(
-        unpacked, tf.concat([tf.shape(masks)[:-1], [8 * tf.shape(masks)[-1]]], axis=0)
-    )
+    unpacked = tf.reshape(unpacked, tf.concat([tf.shape(masks)[:-1], [8 * tf.shape(masks)[-1]]], axis=0))
     return unpacked
