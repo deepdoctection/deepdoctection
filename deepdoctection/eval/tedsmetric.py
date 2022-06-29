@@ -18,7 +18,7 @@ Tree distance similarity metric taken from https://github.com/ibm-aur-nlp/PubTab
 
 import statistics
 from collections import defaultdict, deque
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datasets.base import DatasetCategories
@@ -39,9 +39,9 @@ from .base import MetricBase
 from .registry import metric_registry
 
 if distance_available() and lxml_available() and apted_available():
-    import distance
-    from apted import APTED, Config
-    from apted.helpers import Tree
+    import distance  # type: ignore
+    from apted import APTED, Config  # type: ignore
+    from apted.helpers import Tree  # type: ignore
     from lxml import etree
 
 
@@ -52,11 +52,11 @@ class TableTree(Tree):
 
     def __init__(
         self,
-        *children: str,
+        *children: Any,
         tag: str,
         colspan: Optional[int] = None,
         rowspan: Optional[int] = None,
-        content: List[str] = None,
+        content: Optional[List[str]] = None,
     ) -> None:
         self.tag = tag
         self.colspan = colspan
@@ -82,15 +82,15 @@ class CustomConfig(Config):
     """
 
     @staticmethod
-    def maximum(*sequences) -> int:
+    def maximum(*sequences: Any) -> int:
         """Get maximum possible value"""
         return max(map(len, sequences))
 
-    def normalized_distance(self, *sequences) -> float:
+    def normalized_distance(self, *sequences: Any) -> float:
         """Get distance from 0 to 1"""
         return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
 
-    def rename(self, node1, node2) -> float:
+    def rename(self, node1: Any, node2: Any) -> float:
         """Compares attributes of trees"""
         if (node1.tag != node2.tag) or (node1.colspan != node2.colspan) or (node1.rowspan != node2.rowspan):
             return 1.0
@@ -105,9 +105,9 @@ class TEDS:
 
     def __init__(self, structure_only: bool = False):
         self.structure_only = structure_only
-        self.__tokens__ = []
+        self.__tokens__: List[str] = []
 
-    def tokenize(self, node):
+    def tokenize(self, node: TableTree) -> None:
         """Tokenizes table cells"""
         self.__tokens__.append(f"<{node.tag}>")
         if node.text is not None:
@@ -119,7 +119,7 @@ class TEDS:
         if node.tag != "td" and node.tail is not None:
             self.__tokens__ += list(node.tail)
 
-    def load_html_tree(self, node, parent=None):
+    def load_html_tree(self, node: TableTree, parent: Optional[TableTree] =None) -> Optional[TableTree]:
         """Converts HTML tree to the format required by apted"""
         global __tokens__   # pylint: disable = W0602
         if node.tag == "td":
@@ -130,10 +130,11 @@ class TEDS:
                 self.tokenize(node)
                 cell = self.__tokens__[1:-1].copy()
             new_node = TableTree(*deque(),
-                node.tag, int(node.attrib.get("colspan", "1")), int(node.attrib.get("rowspan", "1")), cell
+                tag=node.tag, colspan=int(node.attrib.get("colspan", "1")),
+                                 rowspan=int(node.attrib.get("rowspan", "1")), content=cell
             )
         else:
-            new_node = TableTree(*deque(), node.tag, None, None, None)
+            new_node = TableTree(*deque(), tag=node.tag, rowspan=None, colspan=None, content=None)
         if parent is not None:
             parent.children.append(new_node)
         if node.tag != "td":
@@ -141,36 +142,37 @@ class TEDS:
                 self.load_html_tree(n, new_node)
         if parent is None:
             return new_node
+        return None
 
-    def evaluate(self, inputs):
+    def evaluate(self, inputs: Tuple[str,str]) -> float:
         """Computes TEDS score between the prediction and the ground truth of a
         given sample
         """
-        ground_truth, pred, file_name = inputs[0], inputs[1], inputs[2]
+        ground_truth, pred = inputs[0], inputs[1]
         if (not pred) or (not ground_truth):
             return 0.0
         parser = etree.XMLParser()
         try:
-            ground_truth = etree.XML(ground_truth, parser)
-            pred = etree.XML(pred, parser)
+            ground_truth_tr = etree.XML(ground_truth, parser)
+            pred_tr = etree.XML(pred, parser)
         except etree.XMLSyntaxError:
-            logger.info("Error while xml parsing for %s. Will be removed", file_name)
+            logger.info("Error while xml parsing. Sample will be removed")
             return -1.0
 
-        etree.strip_tags(pred)
-        etree.strip_tags(ground_truth)
-        n_nodes_pred = len(pred.xpath(".//*"))
-        n_nodes_true = len(ground_truth.xpath(".//*"))
+        etree.strip_tags(pred_tr)
+        etree.strip_tags(ground_truth_tr)
+        n_nodes_pred = len(pred_tr.xpath(".//*"))  # type: ignore
+        n_nodes_true = len(ground_truth_tr.xpath(".//*"))  # type: ignore
         n_nodes = max(n_nodes_pred, n_nodes_true)
-        tree_pred = self.load_html_tree(pred)
-        tree_true = self.load_html_tree(ground_truth)
+        tree_pred = self.load_html_tree(pred_tr)  # type: ignore
+        tree_true = self.load_html_tree(ground_truth_tr)  # type: ignore
         dist = APTED(tree_pred, tree_true, CustomConfig()).compute_edit_distance()
         if n_nodes:
             return 1.0 - (float(dist) / n_nodes)
         return 0.0
 
 
-def teds_metric(gt_list: List[str], predict_list: List[str], file_name_list: List[str], structure_only: bool):
+def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: bool) -> Tuple[float,int]:
     """
     Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
     approach to measure similarity of tables by means of their html representation has been adovacated in
@@ -179,7 +181,7 @@ def teds_metric(gt_list: List[str], predict_list: List[str], file_name_list: Lis
     """
     teds = TEDS(structure_only=structure_only)
 
-    input_list = list(zip(gt_list, predict_list, file_name_list))
+    input_list = list(zip(gt_list, predict_list))
     df = DataFromList(input_list)
     if len(input_list)>=2:
         df = MultiThreadMapData(df, 2, teds.evaluate, strict=True)
@@ -201,14 +203,14 @@ class TedsMetric(MetricBase):
     Metric induced by :func:`teds`
     """
 
-    metric = teds_metric
+    metric = teds_metric # type: ignore
     mapper = to_page
     structure_only = False
 
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> Tuple[List[str], List[str], List[str]]:
+    ) -> Tuple[List[str], List[str]]:
 
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
@@ -227,21 +229,19 @@ class TedsMetric(MetricBase):
 
         gt_list = []
         pred_list = []
-        file_name_list = []
         for sample in gt_dict:
             gt_list.extend(gt_dict[sample])
             pred_list.extend(pred_dict[sample])
-            file_name_list.append(sample)
 
-        return gt_list, pred_list, file_name_list
+        return gt_list, pred_list
 
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-        html_gt_list, html_pr_list, file_name_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
+        html_gt_list, html_pr_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
-        score, num_samples = cls.metric(html_gt_list, html_pr_list, file_name_list, cls.structure_only)
+        score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only) # type: ignore
         return [{"teds_score": score, "num_samples": num_samples}]
 
     @classmethod

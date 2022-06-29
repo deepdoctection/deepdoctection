@@ -116,7 +116,7 @@ def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
 
     # Act
     image_to_cat_id_mapper = image_to_cat_id(category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)
+    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.TAB] == expected_output
@@ -133,7 +133,7 @@ def test_image_to_cat_id_2(dp_image_fully_segmented: Image) -> None:
 
     # Act
     image_to_cat_id_mapper = image_to_cat_id(category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)
+    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.TAB] == expected_output[names.C.TAB]
@@ -151,8 +151,8 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.RS: [1, 1, 1, 1, 0]}
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)
+    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable = E1120
+    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.RS] == expected_output[names.C.RS]
@@ -173,8 +173,8 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     }
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)
+    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable = E1120
+    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.RN] == expected_output[names.C.RN]

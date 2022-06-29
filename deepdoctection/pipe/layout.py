@@ -21,7 +21,7 @@ Module for layout pipeline component
 from typing import Dict, Optional
 
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector
+from ..extern.base import ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
@@ -73,6 +73,7 @@ class ImageLayoutService(PredictorPipelineComponent):
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
 
     def get_meta_annotation(self) -> JsonDict:
+        assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
         return dict(
             [
                 ("image_annotations", self.predictor.possible_categories()),

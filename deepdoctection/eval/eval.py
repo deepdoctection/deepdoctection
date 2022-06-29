@@ -157,6 +157,7 @@ class Evaluator:  # pylint: disable=R0903
             df_pr_list = self.pipe_component.start()
             return DataFromList(df_pr_list)
         df_pr = MapData(df_pr, maybe_load_image)
+        assert self.pipe
         df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")
         # deactivate timer for components
         for comp in self.pipe.pipe_component_list:
@@ -168,6 +169,7 @@ class Evaluator:  # pylint: disable=R0903
     def _clean_up_predict_dataflow_annotations(self, df_pr: DataFlow) -> DataFlow:
         # will use the first pipe component of MultiThreadPipelineComponent to get meta annotation
         pipe_or_component = self.pipe_component.pipe_components[0] if self.pipe_component is not None else self.pipe
+        assert pipe_or_component
         meta_anns = pipe_or_component.get_meta_annotation()
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 

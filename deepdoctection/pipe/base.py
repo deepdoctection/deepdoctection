@@ -22,7 +22,7 @@ Module for the base class for building pipelines
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, List, Mapping, Optional, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Union, DefaultDict, Set
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
@@ -262,7 +262,7 @@ class Pipeline(ABC):
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        pipeline_populations = {
+        pipeline_populations: Dict[str,Union[List[str],DefaultDict[str,Set[str]]]] = {
             "image_annotations": [],
             "sub_categories": defaultdict(set),
             "relationships": defaultdict(set),
@@ -270,11 +270,11 @@ class Pipeline(ABC):
         }
         for component in self.pipe_component_list:
             meta_anns = deepcopy(component.get_meta_annotation())
-            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])
+            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])  # type: ignore
             for key, value in meta_anns["sub_categories"].items():
                 pipeline_populations["sub_categories"][key].update(value)
             for key, value in meta_anns["relationships"].items():
                 pipeline_populations["relationships"][key].update(value)
-            pipeline_populations["summaries"].extend(meta_anns["summaries"])
+            pipeline_populations["summaries"].extend(meta_anns["summaries"])  # type: ignore
 
         return pipeline_populations

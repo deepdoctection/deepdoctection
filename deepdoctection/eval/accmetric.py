@@ -169,7 +169,7 @@ class AccuracyMetric(MetricBase):
         return [get_sklearn_requirement()]
 
     @property
-    def sub_cats(self):
+    def sub_cats(self) -> Optional[Union[Dict[str, str], Dict[str, List[str]]]]:
         """ sub cats"""
         return self._sub_cats
 

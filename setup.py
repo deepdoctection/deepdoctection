@@ -60,6 +60,7 @@ _DEPS = [
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
     # additional requirements to run eval and datasets (again without considering DL models)
     "lxml",
+    "lxml-stubs",
     "pycocotools>=2.0.2",
     "scikit-learn",
     "distance",
@@ -127,7 +128,7 @@ if sys.platform == "linux":
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "pycocotools", "scikit-learn", "distance", "apted")
+additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "scikit-learn", "distance", "apted")
 
 # remaining depencies to use all models
 remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
@@ -145,7 +146,7 @@ source_full_tf_deps = source_full_deps + additional_tf_deps
 source_all_tf_deps = source_all_deps + additional_tf_deps
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("lxml", "transformers", "distance", "apted")
+additional_pt_deps = deps_list("lxml", "lxml-stubs", "transformers", "distance", "apted")
 source_additional_pt_deps = additional_pt_deps + deps_list(
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )
@@ -162,6 +163,7 @@ docs_deps = deps_list(
     "transformers",
     "pdfplumber",
     "lxml",
+    "lxml-stubs",
     "pycocotools",
     "scikit-learn",
 )

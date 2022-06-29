@@ -100,6 +100,7 @@ class D2Trainer(DefaultTrainer):
         :param metric: A metric class
         """
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=get_num_gpu() * 2)
+        assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
             assert isinstance(comp.predictor, D2FrcnnDetector)
             comp.predictor.d2_predictor = None

@@ -164,6 +164,7 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
         else:
+            assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
             sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
         return dict(
             [
@@ -409,7 +410,7 @@ class TextOrderService(PipelineComponent):
             )
 
     def get_meta_annotation(self) -> JsonDict:
-        anns_with_reading_order = deepcopy(self._floating_text_block_names)
+        anns_with_reading_order = list(deepcopy(self._floating_text_block_names))
         anns_with_reading_order.extend([names.C.WORD, names.C.LINE])
         return dict(
             [
