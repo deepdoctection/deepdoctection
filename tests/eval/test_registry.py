@@ -27,13 +27,18 @@ from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.eval import metric_registry
 from deepdoctection.eval.base import MetricBase
 from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.file_utils import apted_available
 
 
 def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     test metric registry has all metrics registered
     """
-    assert len(metric_registry.get_all()) == 4
+    if apted_available():
+        # cannot register when apted not installed
+        assert len(metric_registry.get_all()) == 4
+    else:
+        assert len(metric_registry.get_all()) == 3
 
 
 def test_metric_registry_registered_new_metric() -> None:
