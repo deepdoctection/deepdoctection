@@ -279,6 +279,9 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     :return: Image
     """
 
+    if dd_pipe_like:
+        assert load_image, load_image
+
     idx = dp.get("imgid")
     if not idx:
         idx = dp.get("table_id", "")
