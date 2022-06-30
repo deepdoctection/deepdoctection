@@ -146,7 +146,7 @@ source_full_tf_deps = source_full_deps + additional_tf_deps
 source_all_tf_deps = source_all_deps + additional_tf_deps
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("lxml", "lxml-stubs", "transformers", "distance", "apted")
+additional_pt_deps = deps_list("transformers")
 source_additional_pt_deps = additional_pt_deps + deps_list(
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )
@@ -171,8 +171,8 @@ docs_deps = deps_list(
 if "python-prctl" in docs_deps:
     docs_deps.remove("python-prctl")
 
-# dependencies for HF Spaces
-hf_spaces_deps = deepcopy(full_pt_deps)
+# dependencies for HF Spaces - basically removing detectron2, because we install it differently
+hf_spaces_deps = deepcopy(source_full_deps) + deepcopy(additional_pt_deps)
 if "python-prctl" in hf_spaces_deps:
     hf_spaces_deps.remove("python-prctl")
 
