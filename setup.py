@@ -183,7 +183,7 @@ test_deps = deps_list("pytest", "pytest-cov")
 dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
-#  can be printed with correct version dependencies
+#  can be printed with correct version dependencies.
 
 EXTRA_DEPS = {
     "tf": additional_tf_deps,
