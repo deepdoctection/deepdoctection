@@ -227,7 +227,9 @@ class Page:
         return text
 
     def viz(
-        self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True, interactive: bool = False
+        self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True,
+            show_table_structure: bool =True,
+            interactive: bool = False
     ) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
@@ -244,6 +246,7 @@ class Page:
         :param show_tables: Will display all tables boxes as well as cells, rows and columns
         :param show_items: Will display all other layout components.
         :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
+        :param show_table_structure: Will display rows and columns
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
         :return: If interactive will return nothing else a numpy array.
@@ -260,15 +263,14 @@ class Page:
             for table in self.tables:
                 box_stack.append(table.bounding_box)
                 category_names_list.append(names.C.TAB)
-                for cell in table.cells:
-                    box_stack.append(cell.bounding_box)
-                    if show_cells:
-                        category_names_list.append(f"({cell.row_number},{cell.col_number})")
-                    else:
-                        category_names_list.append("")
-                for segment_item in table.items:
-                    box_stack.append(segment_item.bounding_box)
-                    category_names_list.append(segment_item.category)
+                if show_cells:
+                    for cell in table.cells:
+                        box_stack.append(cell.bounding_box)
+                        category_names_list.append(None)
+                if show_table_structure:
+                    for segment_item in table.items:
+                        box_stack.append(segment_item.bounding_box)
+                        category_names_list.append(None)
 
         if self.image is not None:
             img = convert_b64_to_np_array(self.image)
