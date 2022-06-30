@@ -40,8 +40,6 @@ pyparsing==3.0.7
     # via packaging
 pypdf2==1.27.9
     # via deepdoctection (setup.py)
-python-prctl==1.8.1
-    # via deepdoctection (setup.py)
 pyyaml==6.0
     # via
     #   deepdoctection (setup.py)
