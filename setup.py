@@ -121,8 +121,8 @@ dist_deps = deps_list(
     "types-tabulate",
 )
 
-if sys.platform == "linux":
-    dist_deps.extend(deps_list("python-prctl"))
+#if sys.platform == "linux":
+#    dist_deps.extend(deps_list("python-prctl"))
 
 # source dependencies with dataflow
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
