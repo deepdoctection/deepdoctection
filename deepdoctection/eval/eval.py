@@ -72,6 +72,7 @@ class Evaluator:  # pylint: disable=R0903
 
             output = evaluator.run(max_datapoints=10)
 
+    For another example check the script in :ref:`Evaluation of table recognition`
     """
 
     def __init__(
