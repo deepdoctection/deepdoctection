@@ -25,6 +25,7 @@ from unittest.mock import MagicMock
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.pipe.base import ObjectDetector
 from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import names
 
@@ -62,7 +63,7 @@ class TestSubImageLayoutService:
         setup necessary components
         """
 
-        self._cell_detector = MagicMock()
+        self._cell_detector = MagicMock(spec=ObjectDetector)
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, names.C.TAB)
 
     def test_pass_datapoint(

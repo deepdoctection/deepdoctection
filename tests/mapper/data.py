@@ -708,7 +708,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
     """
 
     dp = _SAMPLE_PUBTABNET
-    categories = {"1": "CELL", "2": "ITEM"}
+    categories = {"1": "CELL", "2": "ITEM", "3": "TABLE", "4": "WORD"}
     categories_as_names = {v: k for k, v in categories.items()}
     first_ann_box = Box(475, 162, 10, 9)
     white_image: ImageType = np.ones((1334, 996, 3), dtype=np.int32) * 255  # type: ignore
@@ -857,6 +857,12 @@ class DatapointPubtabnet:  # pylint: disable=R0904
         number of body cells
         """
         return 108
+
+    def get_html(self) -> str:
+        """
+        html string
+        """
+        return "".join(self.dp["html"]["structure"]["tokens"])  # type: ignore
 
 
 @dataclass

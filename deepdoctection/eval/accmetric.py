@@ -53,9 +53,9 @@ def accuracy(label_gt: List[int], label_predictions: List[int], masks: Optional[
     :return: Accuracy score with only unmasked values to be considered
     """
 
-    np_label_gt, np_label_predictions = np.asarray(label_gt), np.asarray(label_predictions)
+    np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
     assert len(np_label_gt) == len(
-        np_label_predictions
+        np_label_pr
     ), f"length of label_gt ({len(np_label_gt)}) and label_predictions ({len(np_label_gt)}) must be equal"
 
     if masks is not None:
@@ -65,8 +65,8 @@ def accuracy(label_gt: List[int], label_predictions: List[int], masks: Optional[
         np_masks = np.asarray(masks)
         np_masks.astype(bool)
         np_label_gt = np_label_gt[np_masks]
-        np_label_predictions = np_label_predictions[np_masks]
-    return np.array(accuracy_score(np_label_gt, np_label_predictions), dtype=float32)
+        np_label_pr = np_label_pr[np_masks]
+    return np.array(accuracy_score(np_label_gt, np_label_pr), dtype=float32)
 
 
 @metric_registry.register("accuracy")
@@ -111,11 +111,11 @@ class AccuracyMetric(MetricBase):
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
 
-        labels_gt, labels_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
+        labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
         for key in labels_gt:  # pylint: disable=C0206
-            res = cls.metric(labels_gt[key], labels_predictions[key])
+            res = cls.metric(labels_gt[key], labels_pr[key])
             results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
         return results
 
@@ -168,6 +168,11 @@ class AccuracyMetric(MetricBase):
     def get_requirements(cls) -> List[Requirement]:
         return [get_sklearn_requirement()]
 
+    @property
+    def sub_cats(self) -> Optional[Union[Dict[str, str], Dict[str, List[str]]]]:
+        """ sub cats"""
+        return self._sub_cats
+
 
 def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
     """
@@ -181,15 +186,15 @@ def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional
     :return: numpy array
     """
 
-    np_label_gt, np_label_predictions = np.asarray(label_gt), np.asarray(label_predictions)
+    np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
 
     if masks is not None:
         np_masks = np.asarray(masks)
         np_masks.astype(bool)
         np_label_gt = np_label_gt[np_masks]
-        np_label_predictions = np_label_predictions[np_masks]
+        np_label_pr = np_label_pr[np_masks]
 
-    return confusion_matrix(np_label_gt, np_label_predictions)
+    return confusion_matrix(np_label_gt, np_label_pr)
 
 
 @metric_registry.register("confusion")

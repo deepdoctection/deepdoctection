@@ -31,6 +31,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
+from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
@@ -385,9 +386,9 @@ class TableSegmentationRefinementService(PipelineComponent):
     """
 
     def __init__(self) -> None:
-        super().__init__(None)
         self._table_name = names.C.TAB
         self._cell_names = [names.C.HEAD, names.C.BODY, names.C.CELL]
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         tables = dp.get_annotation(category_names=self._table_name)
@@ -424,6 +425,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             number_of_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cells])
             max_row_span = max([int(cell.get_sub_category(names.C.RS).category_id) for cell in cells])
             max_col_span = max([int(cell.get_sub_category(names.C.CS).category_id) for cell in cells])
+            # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(names.C.NR, number_of_rows, annotation_id=table.annotation_id)
             self.dp_manager.set_summary_annotation(names.C.NC, number_of_cols, annotation_id=table.annotation_id)
             self.dp_manager.set_summary_annotation(names.C.NRS, max_row_span, annotation_id=table.annotation_id)
@@ -433,3 +435,16 @@ class TableSegmentationRefinementService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__()
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict(
+            [
+                ("image_annotations", []),
+                (
+                    "sub_categories",
+                    {names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS}, names.C.TAB: {names.C.HTAB}},
+                ),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )

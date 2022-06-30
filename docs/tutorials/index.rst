@@ -30,3 +30,4 @@ development. For a more application-related access, we refer to the notebooks th
 
   eval_tp_vs_d2
   scripts
+  table_recognition_eval

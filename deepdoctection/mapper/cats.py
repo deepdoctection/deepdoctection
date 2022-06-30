@@ -21,8 +21,9 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Mapping, Optional, Sequence, Union
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
 
+from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
 from .maputils import curry
 
@@ -62,13 +63,22 @@ def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) ->
     consider the situation where some categories are filtered. In order to guarantee alignment of category ids of the
     :class:`DatasetCategories` the ids in the annotation have to be re-assigned.
 
+    Annotations that as not in the dictionary provided will removed from the image.
+
     :param dp: Image
     :param categories_dict_name_as_key:
     :return: Image
     """
 
+    anns_to_remove: List[ImageAnnotation] = []
     for ann in dp.get_annotation_iter():
-        ann.category_id = categories_dict_name_as_key[ann.category_name]
+        if ann.category_name in categories_dict_name_as_key:
+            ann.category_id = categories_dict_name_as_key[ann.category_name]
+        else:
+            anns_to_remove.append(ann)
+
+    for ann in anns_to_remove:
+        dp.remove(ann)
 
     return dp
 
@@ -106,9 +116,10 @@ def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-) -> Dict[str, List[int]]:
+    id_name_or_value: Literal["id","name","value"] = "id",
+) -> Dict[str, Union[List[int],List[int]]]:
     """
-    Extracts all category_ids with given names into a defaultdict with names as keys.
+    Extracts all category_ids or sub category information with given names into a defaultdict with names as keys.
 
     **Example:**
 
@@ -127,6 +138,8 @@ def image_to_cat_id(
     :param dp: Image datapoint
     :param category_names: A list of category names
     :param sub_category_names: A dict {'cat':'sub_cat'} or a list. Will dump the results with sub_cat as key
+    :param id_name_or_value: Only relevant for sub categories. It will extract the sub category id, the name or, if the
+                             sub category is a container, it will extract a value.
     :return: A defaultdict of lists
     """
 
@@ -144,6 +157,8 @@ def image_to_cat_id(
                 val = [val]
             tmp_sub_category_names[key] = val
 
+    assert id_name_or_value in ("id", "name", "value")
+
     for ann in dp.get_annotation_iter():
         if ann.category_name in category_names:
             cat_container[ann.category_name].append(int(ann.category_id))
@@ -151,7 +166,13 @@ def image_to_cat_id(
             for sub_cat_name in tmp_sub_category_names[ann.category_name]:
                 sub_cat = ann.get_sub_category(sub_cat_name)
                 if sub_cat is not None:
-                    cat_container[sub_cat_name].append(int(sub_cat.category_id))
+                    if id_name_or_value == "id":
+                        cat_container[sub_cat_name].append(int(sub_cat.category_id))
+                    if id_name_or_value == "name":
+                        cat_container[sub_cat_name].append(sub_cat.category_name)  # type: ignore
+                    if id_name_or_value == "value":
+                        assert isinstance(sub_cat, ContainerAnnotation)
+                        cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
 
     return cat_container
 
@@ -161,6 +182,7 @@ def remove_cats(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
+    relationships: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
 ) -> Image:
     """
     Remove categories according to given category names or sub category names. Note that these will change the container
@@ -170,6 +192,7 @@ def remove_cats(
     :param category_names: A single category name or a list of categories to remove. On default will remove
                            nothing.
     :param sub_categories: A dict with category names and a list of their sub categories to be removed
+    :param relationships: A dict with category names and a list of relationship names to be removed
     :return: A datapoint image with removed categories
     """
 
@@ -180,6 +203,9 @@ def remove_cats(
 
     if sub_categories is None:
         sub_categories = {}
+
+    if relationships is None:
+        relationships = {}
 
     anns_to_remove = []
 
@@ -192,6 +218,12 @@ def remove_cats(
                 sub_cats_to_remove = [sub_cats_to_remove]
             for sub_cat in sub_cats_to_remove:
                 ann.remove_sub_category(sub_cat)
+        if ann.category_name in relationships.keys():
+            relationships_to_remove = relationships[ann.category_name]
+            if isinstance(relationships_to_remove, str):
+                relationships_to_remove = [relationships_to_remove]
+            for relation in relationships_to_remove:
+                ann.remove_relationship(key=relation)
 
     for ann in anns_to_remove:
         dp.remove(ann)

@@ -45,7 +45,7 @@ def test_pub_to_image(
     load_image = True
 
     # Act
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, load_image, True, False)
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, load_image, True, False, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     datapoint = pubtabnet_results
     assert dp is not None
@@ -98,7 +98,7 @@ def test_pub_to_image_when_items_are_added(
 
     load_image = False
     # Act
-    pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, load_image, True, True)
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, load_image, True, True, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
 
@@ -110,3 +110,21 @@ def test_pub_to_image_when_items_are_added(
     assert len(test_anns) == int(summary_ann.get_sub_category(names.C.NR).category_id) + int(
         summary_ann.get_sub_category(names.C.NC).category_id
     )
+
+
+@patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
+def test_pub_to_image_when_dd_pipe_like(
+    datapoint_pubtabnet: JsonDict, categories_name_as_key_pubtabnet: Dict[str, str]
+) -> None:
+    """
+    testing pub_to_image generates Image like dd-analyzer
+    """
+
+    # Act
+    pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, True, True, True, True, False)
+    dp = pub_to_image_mapper(datapoint_pubtabnet)
+    assert dp is not None
+    table_list = dp.get_annotation(category_names=names.C.TAB)
+    assert len(table_list) == 1
+    table = table_list[0]
+    assert table.image is not None

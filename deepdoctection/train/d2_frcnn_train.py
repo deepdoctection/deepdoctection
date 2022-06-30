@@ -75,17 +75,10 @@ class D2Trainer(DefaultTrainer):
             dataset=self.dataset, mapper=self.mapper, total_batch_size=cfg.SOLVER.IMS_PER_BATCH
         )
 
-    def eval_with_dd_evaluator(
-        self,
-        category_names: Union[str, List[str]],
-        sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
-        **build_eval_kwargs: str
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    def eval_with_dd_evaluator(self, **build_eval_kwargs: str) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         Running the Evaluator. This method will be called from the EvalHook
 
-        :param category_names: A single category name or a list on which to run evaluation
-        :param sub_categories: A dict of cats to sub cats
         :param build_eval_kwargs: dataflow eval config kwargs of the underlying dataset
         :return: A dict of evaluation results
         """
@@ -93,7 +86,7 @@ class D2Trainer(DefaultTrainer):
         assert self.evaluator.pipe_component is not None
         for comp in self.evaluator.pipe_component.pipe_components:
             comp.predictor.d2_predictor = copy.deepcopy(self.model).eval()  # type: ignore # pylint: disable=E1101
-        scores = self.evaluator.run(category_names, sub_categories, True, **build_eval_kwargs)
+        scores = self.evaluator.run(True, **build_eval_kwargs)
         return scores
 
     def setup_evaluator(
@@ -107,6 +100,7 @@ class D2Trainer(DefaultTrainer):
         :param metric: A metric class
         """
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=get_num_gpu() * 2)
+        assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
             assert isinstance(comp.predictor, D2FrcnnDetector)
             comp.predictor.d2_predictor = None
@@ -218,7 +212,6 @@ def train_d2_faster_rcnn(
         and pipeline_component_name is not None
     ):
         categories = dataset_val.dataflow.categories.get_categories(filtered=True)
-        category_names = dataset_val.dataflow.categories.get_categories(filtered=True, as_dict=False)
         detector = D2FrcnnDetector(path_config_yaml, path_weights, categories, config_overwrite, cfg.MODEL.DEVICE)
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
@@ -232,12 +225,7 @@ def train_d2_faster_rcnn(
         trainer.register_hooks(
             [
                 EvalHook(
-                    cfg.TEST.EVAL_PERIOD,
-                    lambda: trainer.eval_with_dd_evaluator(
-                        category_names=category_names,
-                        sub_categories=dataset_val.dataflow.categories.cat_to_sub_cat,
-                        **build_val_dict
-                    ),
+                    cfg.TEST.EVAL_PERIOD, trainer.eval_with_dd_evaluator(**build_val_dict),
                 )
             ]
         )

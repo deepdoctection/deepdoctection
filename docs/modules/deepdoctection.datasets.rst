@@ -9,6 +9,14 @@ deepdoctection.datasets
 
    deepdoctection.datasets.instances
 
+deepdoctection.datasets.adapter
+-------------------------------------
+
+.. automodule:: deepdoctection.datasets.adapter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 deepdoctection.datasets.base
 -------------------------------------
@@ -26,7 +34,7 @@ deepdoctection.datasets.dataflow\_builder
    :undoc-members:
    :show-inheritance:
 
-deep\_doctection.datasets.info
+deepdoctection.datasets.info
 -------------------------------------
 
 .. automodule:: deepdoctection.datasets.info

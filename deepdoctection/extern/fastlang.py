@@ -74,3 +74,6 @@ class FasttextLangDetector(LanguageDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_weights, self.categories)
+
+    def possible_languages(self) -> List[str]:
+        return list(self.categories.values())

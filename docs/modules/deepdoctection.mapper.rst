@@ -18,6 +18,14 @@ deepdoctection.mapper.cocostruct
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.mapper.d2struct
+-----------------------------------------
+
+.. automodule:: deepdoctection.mapper.d2struct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.mapper.laylmstruct
 -----------------------------------------
 

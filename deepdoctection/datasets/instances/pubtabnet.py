@@ -36,7 +36,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
-from ...utils.logger import log_once
+from ...utils.logger import log_once, logger
 from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -73,7 +73,7 @@ _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
-_INIT_CATEGORIES = [names.C.CELL, names.C.ITEM]
+_INIT_CATEGORIES = [names.C.CELL, names.C.ITEM, names.C.TAB, names.C.WORD]
 _SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
 _SUB_CATEGORIES = {
     names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
@@ -86,6 +86,8 @@ _SUB_CATEGORIES = {
     },
     names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
     names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+    names.C.TAB: {names.C.HTAB: [names.C.HTAB]},
+    names.C.WORD: {names.C.CHARS: [names.C.CHARS]},
 }
 
 
@@ -139,6 +141,10 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         load_image = kwargs.get("load_image", False)
         rows_and_cols = kwargs.get("rows_and_cols", False)
         fake_score = kwargs.get("fake_score", False)
+        dd_pipe_like = kwargs.get("dd_pipe_like", False)
+        if dd_pipe_like:
+            logger.info("When 'dd_pipe_like' is set to True will reset 'load_image' to True")
+            load_image = True
 
         # Load
         dataset_split = self.annotation_files["all"]
@@ -158,6 +164,8 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
+            dd_pipe_like=dd_pipe_like,
+            is_fintabnet=False,
         )
 
         df = MapData(df, pub_mapper)

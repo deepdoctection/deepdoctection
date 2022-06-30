@@ -20,13 +20,15 @@
 Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
-from copy import copy
-from typing import Any, Callable, Dict, List, Mapping, Optional, Union
+from collections import defaultdict
+from copy import copy, deepcopy
+from typing import Any, Callable, Dict, List, Mapping, Optional, Union, DefaultDict, Set
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.context import timed_operation
+from ..utils.detection_types import JsonDict
 from .anngen import DatapointManager
 
 
@@ -53,6 +55,7 @@ class PipelineComponent(ABC):
         """
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
+        self._meta_has_all_types()
         self.dp_manager = DatapointManager(category_id_mapping)
         self.timer_on = False
 
@@ -107,6 +110,27 @@ class PipelineComponent(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_meta_annotation(self) -> JsonDict:
+        """
+        Get a dict of list of annotation type. The dict must contain
+        "image_annotation" with values: a list of category names,
+        "sub_categories" with values: a dict with category names as keys and a list of the generated sub categories
+        "relationships" with values: a dict with category names as keys and a list of the generated relationships
+        "summaries" with values: A list of summary sub categories
+        :return: Dict with meta infos as just described
+        """
+        raise NotImplementedError
+
+    def _meta_has_all_types(self) -> None:
+        if not {"image_annotations", "sub_categories", "relationships", "summaries"}.issubset(
+            set(self.get_meta_annotation().keys())
+        ):
+            raise TypeError(
+                f" 'get_meta_annotation' must return dict with all required keys. "
+                f"Got {self.get_meta_annotation().keys()}"
+            )
+
 
 class PredictorPipelineComponent(PipelineComponent, ABC):
     """
@@ -122,8 +146,8 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         """
         :param predictor: An Object detector for predicting
         """
-        super().__init__(category_id_mapping)
         self.predictor = predictor
+        super().__init__(category_id_mapping)
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
@@ -146,16 +170,17 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: Language model for token classification
         """
-        super().__init__(None)
+
         self.tokenizer = tokenizer
         self.language_model = language_model
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
+        super().__init__(None)
 
     def clone(self) -> "LanguageModelPipelineComponent":
         return self.__class__(copy(self.tokenizer), copy(self.language_model), copy(self.mapping_to_lm_input_func))
 
 
-class Pipeline(ABC):  # pylint: disable=R0903
+class Pipeline(ABC):
     """
     Abstract base class for creating pipelines. Pipelines represent the framework with which documents can be processed
     by reading individual pages, processing the pages through the pipeline infrastructure and returning the extracted
@@ -228,3 +253,28 @@ class Pipeline(ABC):  # pylint: disable=R0903
         can be triggered.
         """
         raise NotImplementedError
+
+    def get_meta_annotation(self) -> JsonDict:
+        """
+        Collects meta annotations from all pipeline components and summarizes the returned results
+
+        :return: Meta annotations with informations about image annotations (list), sub categories (dict with category
+                 names and generated sub categories), relationships (dict with category names and generated
+                 relationships) as well as summaries (list with sub categories)
+        """
+        pipeline_populations: Dict[str,Union[List[str],DefaultDict[str,Set[str]]]] = {
+            "image_annotations": [],
+            "sub_categories": defaultdict(set),
+            "relationships": defaultdict(set),
+            "summaries": [],
+        }
+        for component in self.pipe_component_list:
+            meta_anns = deepcopy(component.get_meta_annotation())
+            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])  # type: ignore
+            for key, value in meta_anns["sub_categories"].items():
+                pipeline_populations["sub_categories"][key].update(value)
+            for key, value in meta_anns["relationships"].items():
+                pipeline_populations["relationships"][key].update(value)
+            pipeline_populations["summaries"].extend(meta_anns["summaries"])  # type: ignore
+
+        return pipeline_populations

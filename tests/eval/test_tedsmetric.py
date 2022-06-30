@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: __init__.py
+# File: test_tedsmetric.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -16,16 +16,24 @@
 # limitations under the License.
 
 """
-Init file for eval package. Contains metrics (customized for special tasks), evaluators and tensorpack related callbacks
-for training.
+Testing module eval.tedsmetric
 """
 
-from ..utils.file_utils import apted_available
-from .accmetric import *
-from .base import *
-from .cocometric import *
-from .eval import *
-from .registry import *
+from pytest import mark
+from deepdoctection.utils.file_utils import apted_available
 
 if apted_available():
-    from .tedsmetric import *
+    from deepdoctection.eval.tedsmetric import teds_metric
+
+
+@mark.full
+def test_teds_metric_returns_correct_distance() -> None:
+    """
+    teds returns score of 1.0 when comparing identical html strings
+    """
+
+    html_str = "<table><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></table>"
+    results, number_results = teds_metric([html_str], [html_str], False)
+
+    assert number_results == 1
+    assert results == 1.0

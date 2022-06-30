@@ -29,6 +29,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.pagestruct import to_page
+from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
@@ -46,10 +47,11 @@ class ImageCroppingService(PipelineComponent):
         """
         :param category_names: A single name or a list of category names to crop
         """
-        super().__init__(None)
+
         if isinstance(category_names, str):
             category_names = [category_names]
         self.category_names = category_names
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         for ann in dp.get_annotation(category_names=self.category_names):
@@ -57,6 +59,9 @@ class ImageCroppingService(PipelineComponent):
 
     def clone(self) -> "PipelineComponent":
         return self.__class__(self.category_names)
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -94,12 +99,12 @@ class MatchingService(PipelineComponent):
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
         """
-        super().__init__(None)
         self.parent_categories = parent_categories
         self.child_categories = child_categories
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
         self.threshold = threshold
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         """
@@ -125,6 +130,17 @@ class MatchingService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
+
+    def get_meta_annotation(self) -> JsonDict:
+
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {}),
+                ("relationships", {parent: {names.C.CHILD} for parent in self.parent_categories}),
+                ("summaries", []),
+            ]
+        )
 
 
 @pipeline_component_registry.register("PageParsingService")
