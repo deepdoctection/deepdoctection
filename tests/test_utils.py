@@ -75,3 +75,10 @@ def anns_to_ids(annotations: Union[Iterable[Annotation], List[Annotation]]) -> L
     """
 
     return [ann.annotation_id for ann in annotations]
+
+
+def set_num_gpu_to_one() -> int:
+    """
+    set gpu number to one
+    """
+    return 1

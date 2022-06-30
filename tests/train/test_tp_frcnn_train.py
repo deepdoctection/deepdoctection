@@ -27,18 +27,14 @@ from deepdoctection.datasets import DatasetBase
 from deepdoctection.utils.file_utils import tf_available
 from deepdoctection.utils.metacfg import set_config_by_yaml
 
-from ..test_utils import collect_datapoint_from_dataflow
+from ..test_utils import collect_datapoint_from_dataflow, set_num_gpu_to_one
 
 if tf_available():
     from deepdoctection.extern.tp.tpfrcnn.config.config import model_frcnn_config
     from deepdoctection.train.tp_frcnn_train import get_train_dataflow, train_faster_rcnn
 
 
-def set_num_gpu_to_one() -> int:
-    """
-    set gpu number to one
-    """
-    return 1
+
 
 
 @mark.requires_tf
