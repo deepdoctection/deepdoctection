@@ -124,3 +124,8 @@ class TextractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    def possible_categories(self) -> List[str]:
+        if self.text_lines:
+            return [names.C.WORD, names.C.LINE]
+        return [names.C.WORD]

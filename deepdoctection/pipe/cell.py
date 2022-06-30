@@ -23,7 +23,9 @@ from collections import Counter, defaultdict
 from typing import Dict, List, Optional, Union
 
 from ..datapoint.image import Image
-from ..extern.base import DetectionResult, ObjectDetector
+from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
+from ..utils.detection_types import JsonDict
+from ..utils.settings import names
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -130,7 +132,10 @@ class SubImageLayoutService(PredictorPipelineComponent):
         :param add_dummy_detection: If set to True will add an ImageAnnotation for each class for which no sample have
                                     been detected.
         """
-        super().__init__(sub_image_detector, category_id_mapping)
+
+        if isinstance(sub_image_names, str):
+            sub_image_names = [sub_image_names]
+
         self.sub_image_name = sub_image_names
         self.dummy_generator_cls = None
         if add_dummy_detection:
@@ -143,6 +148,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 group_categories_dict[group[1]].append(str(group[0]))
             group_categories = list(group_categories_dict.values())
             self.group_categories = group_categories
+        super().__init__(sub_image_detector, category_id_mapping)
 
     def serve(self, dp: Image) -> None:
         """
@@ -194,3 +200,15 @@ class SubImageLayoutService(PredictorPipelineComponent):
         if self.dummy_generator_cls is None:
             return False
         return True
+
+    def get_meta_annotation(self) -> JsonDict:
+        assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
+        return dict(
+            [
+                ("image_annotations", self.predictor.possible_categories()),
+                ("sub_categories", {}),
+                # implicit setup of relations by using set_image_annotation with explicit annotation_id
+                ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
+                ("summaries", []),
+            ]
+        )

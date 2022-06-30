@@ -23,6 +23,7 @@ from typing import List, Optional
 from ..datapoint.image import Image
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..mapper.pagestruct import to_page
+from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
 from ..utils.settings import names
 from .base import PipelineComponent
@@ -74,13 +75,13 @@ class LanguageDetectionService(PipelineComponent):
                                  when passing a text detector.
         """
 
-        super().__init__(None)  # cannot use PredictorPipelineComponent class because of return type of predict meth
         self.predictor = language_detector
         self.text_detector = text_detector
         self._text_container = text_container
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
         self._init_sanity_checks()
+        super().__init__(None)  # cannot use PredictorPipelineComponent class because of return type of predict meth
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
@@ -120,4 +121,14 @@ class LanguageDetectionService(PipelineComponent):
             self._text_container,
             self._floating_text_block_names,
             self._text_block_names,
+        )
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {}),
+                ("relationships", {}),
+                ("summaries", [names.NLP.LANG.LANG]),
+            ]
         )

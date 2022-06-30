@@ -91,6 +91,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
 
     def _setup_graph(self) -> None:
         if _use_replicated(self.cfg):
+            assert self.evaluator.pipe_component
             for idx, comp in enumerate(self.evaluator.pipe_component.pipe_components):
                 assert isinstance(comp.predictor, TPFrcnnDetector)
                 comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
@@ -109,7 +110,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         logger.info("[EvalCallback] Will evaluate every %i epochs", eval_period)
 
     def _eval(self) -> None:
-        scores = self.evaluator.run(self.category_names, self.sub_categories, True, **self.build_eval_kwargs)
+        scores = self.evaluator.run(True, **self.build_eval_kwargs)
         assert isinstance(scores, dict)
         for k, val in scores.items():
             self.trainer.monitors.put_scalar(self.dataset_name + "-" + k, val)

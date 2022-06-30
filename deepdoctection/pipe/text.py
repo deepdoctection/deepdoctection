@@ -18,13 +18,14 @@
 """
 Module for text extraction pipeline component
 """
+from copy import deepcopy
 from itertools import chain
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
-from ..utils.detection_types import ImageType
+from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
 from ..utils.settings import names
 from .base import PipelineComponent, PredictorPipelineComponent
@@ -77,8 +78,8 @@ class TextExtractionService(PredictorPipelineComponent):
               Example: {1: 9} sets the ID of the image annotation WORD to 9.
         """
 
-        super().__init__(text_extract_detector, category_id_mapping)
         self.extract_from_category = extract_from_roi
+        super().__init__(text_extract_detector, category_id_mapping)
         if self.extract_from_category:
             assert isinstance(
                 self.predictor, (ObjectDetector, TextRecognizer)
@@ -158,6 +159,26 @@ class TextExtractionService(PredictorPipelineComponent):
             assert all(roi.image.image is not None for roi in text_roi)  # type: ignore
             return [(roi.annotation_id, roi.image.image) for roi in text_roi]  # type: ignore
         return text_roi.pdf_bytes
+
+    def get_meta_annotation(self) -> JsonDict:
+        if self.extract_from_category:
+            sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
+        else:
+            assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
+            sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
+        return dict(
+            [
+                (
+                    "image_annotations",
+                    self.predictor.possible_categories()
+                    if isinstance(self.predictor, (ObjectDetector, PdfMiner))
+                    else [],
+                ),
+                ("sub_categories", sub_cat_dict),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )
 
 
 def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
@@ -316,12 +337,12 @@ class TextOrderService(PipelineComponent):
         elif text_block_names is None:
             text_block_names = []
 
-        super().__init__(None)
         self._text_container = text_container
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
         self._text_containers_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
+        super().__init__(None)
 
     def serve(self, dp: Image) -> None:
         # select all text blocks that are considered to be relevant for page text. This does not include some layout
@@ -387,3 +408,15 @@ class TextOrderService(PipelineComponent):
                 names.C.WORD,
                 names.C.LINE,
             )
+
+    def get_meta_annotation(self) -> JsonDict:
+        anns_with_reading_order = list(deepcopy(self._floating_text_block_names))
+        anns_with_reading_order.extend([names.C.WORD, names.C.LINE])
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {category: {names.C.RO} for category in anns_with_reading_order}),
+                ("relationships", {}),
+                ("summaries", []),
+            ]
+        )

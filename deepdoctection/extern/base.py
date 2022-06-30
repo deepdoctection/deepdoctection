@@ -126,6 +126,14 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
+    @abstractmethod
+    def possible_categories(self) -> List[str]:
+        """
+        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
+        categories
+        """
+        raise NotImplementedError
+
 
 class PdfMiner(PredictorBase):
     """
@@ -161,6 +169,14 @@ class PdfMiner(PredictorBase):
         whether to accept batches in :meth:`predict`
         """
         return False
+
+    @abstractmethod
+    def possible_categories(self) -> List[str]:
+        """
+        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
+        categories
+        """
+        raise NotImplementedError
 
 
 class TextRecognizer(PredictorBase):
@@ -227,6 +243,14 @@ class LMTokenClassifier(PredictorBase):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def possible_tokens(self) -> List[str]:
+        """
+        Abstract method possible_tokens. Must implement a method that returns a list of possible detectable
+        tokens
+        """
+        raise NotImplementedError
+
 
 class LanguageDetector(PredictorBase):
     """
@@ -238,5 +262,13 @@ class LanguageDetector(PredictorBase):
     def predict(self, text_string: str) -> DetectionResult:
         """
         Abstract method predict
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def possible_languages(self) -> List[str]:
+        """
+        Abstract method possible_languages. Must implement a method that returns a list of possible detectable
+        languages
         """
         raise NotImplementedError

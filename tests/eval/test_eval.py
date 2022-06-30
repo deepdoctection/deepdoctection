@@ -19,7 +19,7 @@
 Testing the module eval.eval
 """
 from typing import List
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark
 
@@ -30,6 +30,7 @@ from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.layout import ImageLayoutService
 from deepdoctection.utils import tensorpack_available
+from ..test_utils import set_num_gpu_to_one
 
 if tensorpack_available():
     from deepdoctection.extern.tpdetect import TPFrcnnDetector
@@ -41,8 +42,9 @@ class TestEvaluator:
     """
 
     @fixture
+    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
     def setup_method(
-        self, image_with_anns: Image, categories: DatasetCategories, detection_results: List[DetectionResult]
+        self, path_to_tp_frcnn_yaml: str, image_with_anns: Image, categories: DatasetCategories, detection_results: List[DetectionResult]
     ) -> None:
         """
         setup the necessary requirements
@@ -53,14 +55,12 @@ class TestEvaluator:
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([image_with_anns]))
         self._dataset.dataflow.categories = categories
 
-        self._layout_detector = MagicMock(spec=TPFrcnnDetector)
-        self._layout_detector.clone = MagicMock(return_value=MagicMock(spec=TPFrcnnDetector))
-        self._layout_detector.tp_predictor = MagicMock()
+        self._layout_detector = TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories.get_categories())
         self._pipe_component = ImageLayoutService(self._layout_detector)
-        self._layout_detector.predict = MagicMock(return_value=detection_results)
+        self._pipe_component.predictor.predict = MagicMock(return_value=detection_results)
         self._metric = CocoMetric
 
-        self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric)
+        self.evaluator = Evaluator(self._dataset, self._pipe_component, self._metric,1)
 
     @mark.requires_tf
     @mark.full
@@ -70,8 +70,7 @@ class TestEvaluator:
         """
 
         # Act
-        cat_list = self._dataset.dataflow.categories.get_categories(as_dict=False, name_as_key=True)
-        out = self.evaluator.run(category_names=cat_list)
+        out = self.evaluator.run()
 
         # Assert
         assert len(out) == 12

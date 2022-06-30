@@ -21,7 +21,7 @@ Module for small mapping functions
 
 import ast
 import os
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Sequence, Union
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
@@ -31,7 +31,7 @@ from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_f
 from .maputils import MappingContextManager, curry
 
 if lxml_available():
-    from lxml import etree  # type: ignore  # pylint: disable=W0611
+    from lxml import etree  # pylint: disable=W0611
 
 
 def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
@@ -100,6 +100,28 @@ def maybe_remove_image(dp: Image) -> Image:
 
     if dp.location is not None:
         dp.clear_image()
+    return dp
+
+
+@curry
+def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[str, Sequence[str]]] = None) -> Image:
+    """
+    Removes image from image annotation for some category names
+
+    :param dp: An Image
+    :param category_names: category names
+    :return: Image with image attributes from image annotations removed
+    """
+    if category_names is None:
+        category_names = []
+    elif isinstance(category_names, str):
+        category_names = [category_names]
+
+    anns = dp.get_annotation(category_names=category_names)
+
+    for ann in anns:
+        ann.image = None
+
     return dp
 
 
