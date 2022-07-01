@@ -20,7 +20,7 @@ departments in process optimization or for analysts who have to investigate into
 
 For further text processing tasks, use one of the many other great NLP libraries.
 
-You can fine a demo on :hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) .
+You can find a demo on :hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) .
 
 ![image info](./notebooks/pics/dd_rm_sample.png)
 
