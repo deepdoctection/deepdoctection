@@ -73,21 +73,6 @@ Note, that this option is not available for PyTorch.
 
 ## Install from source
 
-One of the easiest ways to install the basic setup without worrying about the additional dependencies like
-Dataflow or Detectron2 is by running the command 
-
-```
-pip install git+https://github.com/deepdoctection/deepdoctection#egg=deepdoctection[source-pt]
-```
-
-for Pytorch under a virtual environment. For Tensorflow use 
-
-```
-pip install git+https://github.com/deepdoctection/deepdoctection#egg=deepdoctection[source-tf]
-```
-
-This will install the package without cloning. 
-
 If you want the whole repo with all files, notebooks etc. then download the repository or clone via
 
 ```
