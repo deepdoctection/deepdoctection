@@ -20,6 +20,8 @@ departments in process optimization or for analysts who have to investigate into
 
 For further text processing tasks, use one of the many other great NLP libraries.
 
+You can fine a demo on :hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) .
+
 ![image info](./notebooks/pics/dd_rm_sample.png)
 
 ## Characteristics
@@ -51,7 +53,7 @@ only come out when models are adapted to actual documents you deal with. Therefo
    models**.
 
 
-6. All models are now available at the :hugs: [**Huggingface Model Hub**](https://huggingface.co/deepdoctection) .
+6. All models are now available at the [**Hugging Face Model Hub**](https://huggingface.co/deepdoctection) .
 You can acquire more details in the respective model cards.
 
 Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
