@@ -225,7 +225,7 @@ def train_d2_faster_rcnn(
         trainer.register_hooks(
             [
                 EvalHook(
-                    cfg.TEST.EVAL_PERIOD, trainer.eval_with_dd_evaluator(**build_val_dict),
+                    cfg.TEST.EVAL_PERIOD,lambda: trainer.eval_with_dd_evaluator(**build_val_dict),
                 )
             ]
         )
