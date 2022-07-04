@@ -617,6 +617,10 @@ class ModelDownloadManager:
         file_names: List[str] = []
         if ModelCatalog.is_registered(name):
             profile = ModelCatalog.get_profile(name)
+            # there is nothing to download if hf_repo_id or urls is not provided
+            if not profile.hf_repo_id and not profile.urls:
+                return absolute_path_weights
+            # determine the right model name
             if profile.tp_model:
                 file_names = get_tp_weight_names(name)
             else:
