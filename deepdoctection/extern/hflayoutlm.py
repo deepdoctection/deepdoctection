@@ -20,7 +20,7 @@ HF Layoutlm model for diverse downstream tasks.
 """
 
 from copy import copy
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union, Mapping
 
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import (
@@ -30,7 +30,7 @@ from ..utils.file_utils import (
     transformers_available,
 )
 from ..utils.settings import names
-from .base import LMTokenClassifier, PredictorBase, TokenClassResult
+from .base import LMTokenClassifier, PredictorBase, TokenClassResult, LMSequenceClassifier, SequenceClassResult
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
@@ -38,7 +38,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from transformers import LayoutLMForTokenClassification, PretrainedConfig
+    from transformers import LayoutLMForTokenClassification, PretrainedConfig, LayoutLMForSequenceClassification
 
 
 def predict_token_classes(
@@ -67,6 +67,19 @@ def predict_token_classes(
         TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
         for out in zip(uuids, input_ids_list, token_class_predictions, tokens)
     ]
+
+
+def predict_sequence_classes(
+        input_ids: "Tensor",
+    attention_mask: "Tensor",
+    token_type_ids: "Tensor",
+    boxes: "Tensor",
+    model: "LayoutLMForSequenceClassification",
+) -> SequenceClassResult:
+    outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
+
+    return token_class_predictions
 
 
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
@@ -111,7 +124,8 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         path_weights: str,
         categories_semantics: Optional[Sequence[str]] = None,
         categories_bio: Optional[Sequence[str]] = None,
-        categories_explicit: Optional[Sequence[str]] = None,
+        categories_explicit: Optional[Union[Sequence[str], Mapping[str,str]]] = None,
+        device: str = "cuda"
     ):
         """
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
@@ -131,7 +145,11 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self.path_weights = path_weights
         self.categories_semantics = copy(categories_semantics) if categories_semantics is not None else None
         self.categories_bio = copy(categories_bio) if categories_bio is not None else None
-        self.categories_explicit = copy(categories_explicit) if categories_explicit is not None else None
+
+        if isinstance(categories_explicit, dict):
+            self.categories_explicit = list(categories_explicit.values())
+        else:
+            self.categories_explicit = copy(categories_explicit) if categories_explicit is not None else None
 
         self._categories: Dict[int, str] = (
             dict(enumerate(self.categories_explicit))  # type: ignore
@@ -143,6 +161,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self.model = LayoutLMForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
         )
+        self.model.to(device)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -219,3 +238,60 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def possible_tokens(self) -> List[str]:
         return list(self._categories.values())
+
+
+class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
+
+    def __init__(self, path_config_json: str, path_weights: str, categories: Dict[str, str],device: str = "cuda"):
+        self.path_config = path_config_json
+        self.path_weights = path_weights
+        self.categories = copy(categories)
+        self.device = set_torch_auto_device()
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        self.model = LayoutLMForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
+        self.model.to(device)
+
+    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> SequenceClassResult:
+        assert "input_ids" in encodings
+        assert "attention_mask" in encodings
+        assert "token_type_ids" in encodings
+        assert "boxes" in encodings
+
+        assert isinstance(encodings["input_ids"], torch.Tensor)
+        assert isinstance(encodings["attention_mask"], torch.Tensor)
+        assert isinstance(encodings["token_type_ids"], torch.Tensor)
+        assert isinstance(encodings["boxes"], torch.Tensor)
+
+        result = predict_sequence_classes(
+            encodings["input_ids"],
+            encodings["attention_mask"],
+            encodings["token_type_ids"],
+            encodings["boxes"],
+            self.model,
+        )
+
+        result.class_name = self.categories[str(result.class_id)]
+        return result
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_pytorch_requirement(), get_transformers_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(
+            self.path_config,
+            self.path_weights,
+            self.categories
+        )
+
+    def possible_categories(self) -> List[str]:
+        return list(self.categories.values())
+
+
+
+
+
+
+

@@ -90,7 +90,7 @@ class DoctrTextlineDetector(ObjectDetector):
                  det = DoctrTextlineDetector()
                  layout = ImageLayoutService(det,to_image=True, crop_image=True)
                  rec = DoctrTextRecognizer()
-                 text = TextExtractionService(rec,extract_from_roi="LINE")
+                 text = TextExtractionService(rec,extract_from_roi="WORD")
                  analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
                  df = analyzer.analyze(path = path)
 
