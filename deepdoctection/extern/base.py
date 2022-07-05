@@ -230,6 +230,19 @@ class TokenClassResult:
     bio_tag: str = ""
 
 
+@dataclass
+class SequenceClassResult:
+    """
+    Storage for sequence classification results
+
+    :attr:`class_id`: category id
+    :attr:`class_name`: category name
+    """
+
+    class_id: int
+    class_name: str = ""
+
+
 class LMTokenClassifier(PredictorBase):
     """
     Abstract base class for token classifiers. If you want to connect external token classifiers with Deepdoctection
@@ -259,7 +272,7 @@ class LMSequenceClassifier(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[DetectionResult]:
+    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> SequenceClassResult:
         """
         Abstract method predict
         """
