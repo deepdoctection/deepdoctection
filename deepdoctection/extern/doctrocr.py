@@ -22,7 +22,11 @@ Deepdoctection wrappers for DocTr OCR text line detection and text recognition m
 from typing import List, Tuple
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import doctr_available, get_doctr_requirement, get_tf_addons_requirements, tf_addons_available
+from ..utils.file_utils import (
+    doctr_available, get_doctr_requirement, get_tf_addons_requirements, tf_addons_available,
+    get_tensorflow_requirement, tf_available, pytorch_available, get_pytorch_requirement
+)
+
 from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
@@ -111,7 +115,10 @@ class DoctrTextlineDetector(ObjectDetector):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_doctr_requirement(), get_tf_addons_requirements()]
+        if tf_available():
+            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
+        elif pytorch_available():
+            return [get_pytorch_requirement(), get_doctr_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__()
@@ -163,7 +170,10 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_doctr_requirement(), get_tf_addons_requirements()]
+        if tf_available():
+            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
+        elif pytorch_available():
+            return [get_pytorch_requirement(), get_doctr_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__()
