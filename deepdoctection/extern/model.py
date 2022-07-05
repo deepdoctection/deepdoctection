@@ -285,6 +285,18 @@ class ModelCatalog:
                 "13": "S-QUESTION",
             },
         ),
+        "microsoft/layoutlm-base-uncased": ModelProfile(
+            name="microsoft/layoutlm-base-uncased",
+            description="LayoutLM is a simple but effective pre-training method of text and layout for document image"
+                        " understanding and information extraction tasks, such as form understanding and receipt"
+                        " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
+                        "contain any head and has to be fine tuned on a downstream task.",
+            size = [453093832],
+            tp_model = False,
+            config="microsoft/layoutlm-base-uncased/config.json",
+            hf_repo_id="microsoft/layoutlm-base-uncased",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json"]),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",
@@ -483,7 +495,7 @@ class ModelCatalog:
         :return: absolute weight path
         """
         profile = ModelCatalog.get_profile(name)
-        if profile.config is not None:
+        if profile.name is not None:
             return os.path.join(get_weights_dir_path(), profile.name)
         logger.info(
             "Model is not registered. Please make sure the weights are available in the weights cache " "directory"
