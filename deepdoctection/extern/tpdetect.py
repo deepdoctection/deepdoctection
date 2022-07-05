@@ -23,7 +23,7 @@ from copy import copy
 from typing import Dict, List, Optional, Union
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_tensorpack_requirement, tensorpack_available
+from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
 from ..utils.metacfg import set_config_by_yaml
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
@@ -144,7 +144,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_tensorpack_requirement()]
+        return [get_tensorflow_requirement(), get_tensorpack_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__(
