@@ -34,13 +34,12 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
-from ...datasets.info import DatasetInfo
 from ...mapper.cats import filter_cat
 from ...mapper.cocostruct import coco_to_image
 from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
-from ..info import DatasetCategories
+from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "publaynet"
