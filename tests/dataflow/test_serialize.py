@@ -26,6 +26,7 @@ from deepdoctection.dataflow import (
     SerializerFiles,
     SerializerJsonlines,
     SerializerPdfDoc,
+    SerializerTabsepFiles
 )
 
 from ..test_utils import collect_datapoint_from_dataflow, get_test_path
@@ -83,7 +84,7 @@ class TestSerializerFiles:  # pylint: disable=R0903
     @staticmethod
     def test_loading() -> None:
         """
-        Test the loading of elements of a file directory
+        Test the loading of elements of a .jsonl file
         """
 
         # Arrange and Act
@@ -92,6 +93,25 @@ class TestSerializerFiles:  # pylint: disable=R0903
 
         # Assert
         assert len(output) == 3
+
+
+class TestSerializerTabsepFiles:
+    """
+    Testing SerializerTabsepFiles loading function
+    """
+
+    @staticmethod
+    def test_loading() -> None:
+        """
+        Test the loading of elements of a .txt file
+        """
+
+        # Arrange and Act
+        df = SerializerTabsepFiles.load(get_test_path() / "test_file.txt")
+        output = collect_datapoint_from_dataflow(df=df)
+
+        # Assert
+        assert len(output) == 5
 
 
 class TestSerializerCoco:  # pylint: disable=R0903
