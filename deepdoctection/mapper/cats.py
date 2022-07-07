@@ -112,6 +112,31 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 
 
 @curry
+def filter_summary(dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[str, Sequence[str]],
+                   use_category_name: bool = True) -> Optional[Image]:
+    """
+    Filters datapoints with given summary conditions. If several conditions are given, it will filter out datapoints
+    that do not satisfy all conditions.
+
+    :param dp: Image datapoint
+    :param sub_cat_to_sub_cat_names_or_ids: A dict of list. The key correspond to the sub category key to look for in
+                                            the summary. The value correspond to a sequence of either category names
+                                            or category ids
+    :param use_category_name: With respect to the previous argument, if set to True, it will look if the category name
+                              corresponds to any of the given values. If False it will look for category ids.
+    :return: Image or None
+    """
+    for key, values in sub_cat_to_sub_cat_names_or_ids.items():
+        if use_category_name:
+            if dp.summary.get_sub_category(key).category_name in values:
+                return dp
+        else:
+            if dp.summary.get_sub_category(key).category_id in values:
+                return dp
+    return None
+
+
+@curry
 def image_to_cat_id(
     dp: Image,
     category_names: Optional[Union[str, Sequence[str]]] = None,
