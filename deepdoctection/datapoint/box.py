@@ -225,7 +225,9 @@ class BoundingBox:
         """
         Bounding box area
         """
-        return self.width * self.height
+        if self.absolute_coords:
+            return self.width * self.height
+        raise ValueError("Cannot calculate area, when bounding box coords are relative")
 
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
         """

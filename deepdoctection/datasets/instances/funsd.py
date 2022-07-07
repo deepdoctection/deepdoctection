@@ -43,25 +43,25 @@ from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.settings import names
+from ...utils.fs import load_json
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 
-def load_json(path_ann: Pathlike) -> JsonDict:
+def load_file(path_ann: Pathlike) -> JsonDict:
     """
     Loading json file
 
     :param path_ann: path
     :return: dict
     """
-    with open(path_ann, "r", encoding="utf-8") as file:
-        anns = json.loads(file.read())
-        path, file_name = os.path.split(path_ann)
-        base_path, _ = os.path.split(path)
-        path = os.path.join(base_path, "images")
-        anns["file_name"] = os.path.join(path, file_name[:-4] + "png")
+    anns = load_json(path_ann)
+    path, file_name = os.path.split(path_ann)
+    base_path, _ = os.path.split(path)
+    path = os.path.join(base_path, "images")
+    anns["file_name"] = os.path.join(path, file_name[:-4] + "png")
     return anns
 
 
@@ -143,7 +143,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
 
         df = SerializerFiles.load(path_ann_files, ".json", max_datapoints)
 
-        df = MapData(df, load_json)
+        df = MapData(df, load_file)
 
         # Map
         category_names_mapping = {
