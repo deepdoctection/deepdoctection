@@ -27,8 +27,8 @@ from pytest import mark, raises
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
-
-from ..test_utils import anns_to_ids
+from deepdoctection.dataflow import SerializerJsonlines, MapData
+from ..test_utils import anns_to_ids, get_test_path, collect_datapoint_from_dataflow
 from .conftest import TestPdfPage, WhiteImage
 
 
@@ -293,7 +293,6 @@ class TestImage:
         assert "location" in output
         assert "file_name" in output
         assert "annotations" in output
-        assert "image" in output
         assert "_image_id" in output
         assert "embeddings" in output
 
@@ -305,3 +304,15 @@ class TestImage:
         assert "category_name" in ann
         assert "category_id" in ann
         assert "score" in ann
+
+    @staticmethod
+    def test_load_image_from_dict() -> None:
+        """
+        test class meth: from_dict returns a image
+        """
+
+        df = SerializerJsonlines.load(get_test_path() / "test_image.jsonl")
+        df = MapData(df, lambda dp: Image.from_dict(**dp))
+        image_list = collect_datapoint_from_dataflow(df)
+        assert len(image_list) == 1
+

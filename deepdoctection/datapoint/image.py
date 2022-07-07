@@ -368,7 +368,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["external_id", "_image", "_bbox", "_embeddings", "_annotations"]
+        return ["_image"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -468,21 +468,35 @@ class Image:
             )
             ann.image.dump(sub_image)
 
-    def get_export(self) -> Dict[str, Any]:
+    def get_export(self, save_image: bool = False) -> Dict[str, Any]:
         """
         Exporting image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
         base64 encodings.
 
         :return: Dict that e.g. can be saved to a file.
         """
-
-        image_copy = deepcopy(self)
-        image_copy.annotations = []
-        image_copy.image = np.ones((1, 1, 3), dtype=np.float32)
-        export_dict = image_copy.as_dict()
-        export_dict["annotations"] = []
-        export_dict["image"] = self.get_image().to_b64()
-        for ann in self.annotations:
-            export_dict["annotations"].append(ann.get_export())
+        export_dict = self.as_dict()
+        if save_image:
+            export_dict["_image"] = convert_np_array_to_b64(self.image)
 
         return export_dict
+
+    @classmethod
+    def from_dict(cls, **kwargs):
+        image = cls(kwargs.get("file_name"),kwargs.get("location"),kwargs.get("external_id"))
+        image._image_id = kwargs.get("_image_id")
+        if b64_image := kwargs.get("_image"):
+            image.image = b64_image
+        if box_kwargs:= kwargs.get("_bbox"):
+            image._bbox = BoundingBox.from_dict(**box_kwargs)
+        for image_id, box_dict in kwargs.get("embeddings").items():
+            image.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
+        for ann_dict in kwargs.get("annotations"):
+            image_ann = ImageAnnotation.from_dict(**ann_dict)
+            if "image" in ann_dict:
+                image_dict = ann_dict["image"]
+                image_ann.image = cls.from_dict(**image_dict)
+            image.dump(image_ann)
+
+        return image
+
