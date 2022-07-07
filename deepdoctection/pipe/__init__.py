@@ -32,4 +32,4 @@ from .refine import *
 from .registry import *
 from .segment import *
 from .text import *
-from .tokenclass import *
+from .lm import *

@@ -102,7 +102,7 @@ deepdoctection.pipe.text
 deepdoctection.pipe.tokenclass
 ---------------------------------
 
-.. automodule:: deepdoctection.pipe.tokenclass
+.. automodule:: deepdoctection.pipe.lm
    :members:
    :undoc-members:
    :show-inheritance:
