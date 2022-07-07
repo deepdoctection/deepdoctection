@@ -92,7 +92,7 @@ class TestSerializerFiles:  # pylint: disable=R0903
         output = collect_datapoint_from_dataflow(df=df)
 
         # Assert
-        assert len(output) == 3
+        assert len(output) == 4
 
 
 class TestSerializerTabsepFiles:

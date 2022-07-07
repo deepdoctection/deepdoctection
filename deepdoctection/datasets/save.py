@@ -26,7 +26,8 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 
 
-def dataflow_to_jsonl(df: DataFlow, path: str, file_name: str, max_datapoints: Optional[int] = None) -> None:
+def dataflow_to_jsonl(df: DataFlow, path: str, file_name: str, max_datapoints: Optional[int] = None,
+                      save_image: bool = False) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
     JSON object.
@@ -35,10 +36,11 @@ def dataflow_to_jsonl(df: DataFlow, path: str, file_name: str, max_datapoints: O
     :param path: Path to save the file to
     :param file_name: File name of the .jsonl file
     :param max_datapoints: Will stop saving after dumping max_datapoint images.
+    :param save_image: Will save the image to the JSON object
     """
 
     def image_to_json(dp: Image) -> JsonDict:
-        return dp.get_export()
+        return dp.get_export(save_image)
 
     df = MapData(df, image_to_json)
     SerializerJsonlines.save(df, path, file_name, max_datapoints)

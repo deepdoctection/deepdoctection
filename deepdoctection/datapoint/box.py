@@ -338,6 +338,10 @@ class BoundingBox:
         """
         return ["height", "width"]
 
+    @classmethod
+    def from_dict(cls, **kwargs):
+        return cls(**kwargs)
+
 
 def intersection_box(
     box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
