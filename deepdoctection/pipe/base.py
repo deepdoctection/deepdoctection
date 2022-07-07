@@ -26,7 +26,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Union, DefaultD
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer, LMSequenceClassifier
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
 from .anngen import DatapointManager
@@ -163,7 +163,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LMTokenClassifier,
+        language_model: Union[LMTokenClassifier, LMSequenceClassifier],
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Dict[str, Any]]],
     ):
         """
