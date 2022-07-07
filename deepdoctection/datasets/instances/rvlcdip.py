@@ -41,7 +41,7 @@ from ...dataflow import MapData, DataFlow
 from ...datapoint.image import Image
 from ...datapoint.annotation import SummaryAnnotation, CategoryAnnotation
 from ...mapper.maputils import curry
-from ...mapper.cats import filter_cat
+from ...mapper.cats import filter_summary
 from ..registry import dataset_registry
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -143,12 +143,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         assert self.categories is not None
         if self.categories.is_filtered():
             df = MapData(
-                df,
-                filter_cat(
-                    self.categories.get_categories(as_dict=False, filtered=True),
-                    self.categories.get_categories(as_dict=False, filtered=False),
-                ),
-            )
+                df, filter_summary({names.C.DOC: self.categories.get_categories(as_dict=False, filtered=True)}))
 
         return df
 
