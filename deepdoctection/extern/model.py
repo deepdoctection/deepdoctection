@@ -285,8 +285,8 @@ class ModelCatalog:
                 "13": "S-QUESTION",
             },
         ),
-        "microsoft/layoutlm-base-uncased": ModelProfile(
-            name="microsoft/layoutlm-base-uncased",
+        "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
+            name="microsoft/layoutlm-base-uncased/pytorch_model.bin",
             description="LayoutLM is a simple but effective pre-training method of text and layout for document image"
                         " understanding and information extraction tasks, such as form understanding and receipt"
                         " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
