@@ -50,7 +50,7 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deepdoctection.extern.pt.ptutils.pytorch_available", MagicMock(return_value=False))
+    @patch("deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY")))
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
@@ -84,14 +84,13 @@ class TestHFLayoutLmTokenClassifier:
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert model.categories == {0: "B-FOO", 1: "I-FOO", 2: "O"}
+        assert model.categories == {"1": "B-FOO", "2": "I-FOO", "3": "O"}
 
         # Arrange
-        categories_explicit_list = ["FOO", "BAK", "O"]
-        categories_explicit = {0: "FOO", 1: "BAK", 2: "O"}
+        categories_explicit = {"1": "FOO", "2": "BAK", "3": "O"}
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_explicit=categories_explicit_list)
+        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_explicit=categories_explicit)
 
         # Assert
         assert model.categories == categories_explicit
@@ -115,15 +114,15 @@ class TestHFLayoutLmTokenClassifier:
         categories_semantics = ["FOO"]
         categories_bio = ["B", "I", "O"]
         layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        layoutlm.model.device = "cpu"
 
         # Act
-        inputs = {}
-        inputs["ids"] = layoutlm_input["ids"]
-        inputs["input_ids"] = torch.tensor(layoutlm_input["input_ids"])
-        inputs["attention_mask"] = torch.tensor(layoutlm_input["attention_mask"])
-        inputs["token_type_ids"] = torch.tensor(layoutlm_input["token_type_ids"])
-        inputs["boxes"] = torch.tensor(layoutlm_input["boxes"])
-        inputs["tokens"] = layoutlm_input["tokens"]
+        inputs = {"ids": layoutlm_input["ids"],
+                  "input_ids": torch.tensor(layoutlm_input["input_ids"]),
+                  "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
+                  "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
+                  "boxes": torch.tensor(layoutlm_input["boxes"]),
+                  "tokens": layoutlm_input["tokens"]}
 
         results = layoutlm.predict(**inputs)
 

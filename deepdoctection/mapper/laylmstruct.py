@@ -77,6 +77,8 @@ def image_to_layoutlm(
         else:
             box = ann.bounding_box
         assert box is not None
+        if not box.absolute_coords:
+            box = box.transform(dp.width, dp.height, absolute_coords=True)
         box = box.to_list(mode="xyxy")
 
         if word_tokens:
@@ -93,12 +95,14 @@ def image_to_layoutlm(
     encoding = tokenizer(" ".join(words), return_tensors="pt")
 
     resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
-    image = resizer.apply_image(dp.image)
+    if dp.image is not None:
+        image = resizer.apply_image(dp.image)
+        output["image"] = image
+
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
     pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()
 
-    output["image"] = image
     output["ids"] = all_ann_ids
     output["boxes"] = pt_boxes
     output["tokens"] = all_tokens
