@@ -152,8 +152,8 @@ class TestDatapointManager:
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0], to_image=True)
 
         # Act
-        summ_id_1 = dp_manager.set_summary_annotation("foo", 1)
-        summ_id_2 = dp_manager.set_summary_annotation("bak", 2, annotation_id=ann_id)
+        summ_id_1 = dp_manager.set_summary_annotation("foo", "foo", 1)
+        summ_id_2 = dp_manager.set_summary_annotation("bak","bak", 2, annotation_id=ann_id)
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
 
         # Assert
