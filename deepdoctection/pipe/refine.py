@@ -426,10 +426,14 @@ class TableSegmentationRefinementService(PipelineComponent):
             max_row_span = max([int(cell.get_sub_category(names.C.RS).category_id) for cell in cells])
             max_col_span = max([int(cell.get_sub_category(names.C.CS).category_id) for cell in cells])
             # TODO: the summaries should be sub categories of the underlying ann
-            self.dp_manager.set_summary_annotation(names.C.NR, number_of_rows, annotation_id=table.annotation_id)
-            self.dp_manager.set_summary_annotation(names.C.NC, number_of_cols, annotation_id=table.annotation_id)
-            self.dp_manager.set_summary_annotation(names.C.NRS, max_row_span, annotation_id=table.annotation_id)
-            self.dp_manager.set_summary_annotation(names.C.NCS, max_col_span, annotation_id=table.annotation_id)
+            self.dp_manager.set_summary_annotation(names.C.NR, names.C.NR, number_of_rows,
+                                                   annotation_id=table.annotation_id)
+            self.dp_manager.set_summary_annotation(names.C.NC, names.C.NC, number_of_cols,
+                                                   annotation_id=table.annotation_id)
+            self.dp_manager.set_summary_annotation(names.C.NRS, names.C.NRS, max_row_span,
+                                                   annotation_id=table.annotation_id)
+            self.dp_manager.set_summary_annotation(names.C.NCS, names.C.NCS, max_col_span,
+                                                   annotation_id=table.annotation_id)
             html = generate_html_string(table)
             self.dp_manager.set_container_annotation(names.C.HTAB, -1, names.C.HTAB, table.annotation_id, html)
 

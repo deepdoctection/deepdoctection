@@ -60,8 +60,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
 
     def serve(self, dp: Image) -> None:
-        image_to_lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)
-        lm_input = image_to_lm_input(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
         lm_output = self.language_model.predict(**lm_input)
 
         # turn to word level predictions
@@ -89,3 +88,23 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 ("summaries", []),
             ]
         )
+
+
+class LMSequenceClassifierService(LanguageModelPipelineComponent):
+
+    def serve(self, dp: Image) -> None:
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
+        lm_output = self.language_model.predict(**lm_input)
+        self.dp_manager.set_summary_annotation(names.C.DOC,lm_output.class_name,lm_output.class_id)
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict(
+            [
+                ("image_annotations", []),
+                ("sub_categories", {}),
+                ("relationships", {}),
+                ("summaries", [names.C.DOC]),
+            ]
+        )
+
+
