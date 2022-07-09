@@ -158,6 +158,11 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         use_multi_proc = to_bool(kwargs.get("use_multi_proc", True))
         use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", False))
         fake_score = kwargs.get("fake_score", False)
+        build_mode = kwargs.get("build_mode")
+
+        if build_mode and not load_image:
+            logger.info("When 'build_mode' is set to True will reset 'load_image' to True")
+            load_image = True
 
         if use_multi_proc or use_multi_proc_strict:
             set_mp_spawn()
@@ -203,7 +208,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         else:
             df = MapData(df, pub_mapper)
 
-        if kwargs.get("build_mode", "") == "table":
+        if build_mode == "table":
 
             @curry
             def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
@@ -223,11 +228,11 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     ]
                 ),
             )
-            ann_to_sub_image = maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
+            df = MapData(df, maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
                 category_names_sub_image=names.C.TAB,
                 category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
-            )
-            df = MapData(df, ann_to_sub_image)
+                add_summary= True
+            ))
             df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=names.C.TAB)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
