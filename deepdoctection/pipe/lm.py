@@ -90,6 +90,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         )
 
 
+@pipeline_component_registry.register("LMSequenceClassifierService")
 class LMSequenceClassifierService(LanguageModelPipelineComponent):
 
     def serve(self, dp: Image) -> None:
@@ -106,5 +107,3 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                 ("summaries", [names.C.DOC]),
             ]
         )
-
-
