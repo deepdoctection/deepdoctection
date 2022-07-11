@@ -219,6 +219,8 @@ class TokenClassResult:
      :attr:`semantic_name`: semantic name
 
      :attr:`bio_tag`: bio tag
+
+     :attr:`score`: prediction score
     """
 
     uuid: str
@@ -228,6 +230,7 @@ class TokenClassResult:
     class_name: str = ""
     semantic_name: str = ""
     bio_tag: str = ""
+    score: Optional[float] = None
 
 
 @dataclass
@@ -237,10 +240,12 @@ class SequenceClassResult:
 
     :attr:`class_id`: category id
     :attr:`class_name`: category name
+    :attr:`score`: prediction score
     """
 
     class_id: int
     class_name: str = ""
+    score: Optional[float] = None
 
 
 class LMTokenClassifier(PredictorBase):

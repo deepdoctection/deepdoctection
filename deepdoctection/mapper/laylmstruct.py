@@ -59,11 +59,15 @@ def image_to_layoutlm(
     """
 
     output: JsonDict = {}
+    _CLS_BOX = [0.0, 0.0, 0.0, 0.0]
+    _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
+
     anns = dp.get_annotation_iter(category_names=names.C.WORD)
     all_tokens = []
     all_boxes = []
     all_ann_ids = []
     words: List[str] = []
+    all_input_ids= []
     for ann in anns:
         char_cat = ann.get_sub_category(names.C.CHARS)
         assert isinstance(char_cat, ContainerAnnotation)
@@ -71,6 +75,8 @@ def image_to_layoutlm(
         assert isinstance(word, str)
         words.append(word)
         word_tokens = tokenizer.tokenize(word)
+        all_input_ids.extend(tokenizer.convert_tokens_to_ids(word_tokens))
+
         all_tokens.extend(word_tokens)
         if ann.image is not None:
             box = ann.image.get_embedding(dp.image_id)
@@ -85,14 +91,20 @@ def image_to_layoutlm(
             all_boxes.extend([box] * len(word_tokens))
             all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
 
-    all_boxes = [[0.0, 0.0, 0.0, 0.0]] + all_boxes + [[1000.0, 1000.0, 1000.0, 1000.0]]
+    all_boxes = [_CLS_BOX] + all_boxes + [_SEP_BOX]
     all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
     all_tokens = ["CLS"] + all_tokens + ["SEP"]
 
+    max_length = tokenizer.max_model_input_sizes["microsoft/layoutlm-base-uncased"]
+    encoding = tokenizer(" ".join(words), return_tensors="pt", max_length=max_length)
+
+    if len(all_ann_ids)>max_length:
+        all_ann_ids = all_ann_ids[:max_length-1] + ["SEP"]
+        all_boxes = all_boxes[:max_length-1] + [_SEP_BOX]
+        all_tokens = all_tokens[:max_length-1] + ["SEP"]
+
     boxes = np.asarray(all_boxes, dtype="float32")
     boxes = box_to_point4(boxes)
-
-    encoding = tokenizer(" ".join(words), return_tensors="pt")
 
     resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
     if dp.image is not None:
