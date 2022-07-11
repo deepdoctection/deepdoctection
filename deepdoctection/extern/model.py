@@ -260,8 +260,8 @@ class ModelCatalog:
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": names.C.ROW, "2": names.C.COL},
         ),
-        "mrm8488/layoutlm-finetuned-funsd": ModelProfile(
-            name="mrm8488/layoutlm-finetuned-funsd",
+        "mrm8488/layoutlm-finetuned-funsd/pytorch_model.bin": ModelProfile(
+            name="mrm8488/layoutlm-finetuned-funsd/pytorch_model.bin",
             description="LayoutLM pre-trained on CDIP and fine tuned on funsd",
             config="mrm8488/layoutlm-finetuned-funsd/config.json",
             size=[450639205],
