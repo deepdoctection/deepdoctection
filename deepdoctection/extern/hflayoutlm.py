@@ -36,6 +36,7 @@ from .pt.ptutils import set_torch_auto_device
 if pytorch_available():
     import torch
     from torch import Tensor  # pylint: disable=W0611
+    import torch.nn.functional as F
 
 if transformers_available():
     from transformers import LayoutLMForTokenClassification, PretrainedConfig, LayoutLMForSequenceClassification
@@ -61,11 +62,12 @@ def predict_token_classes(
     :return: A list of TokenClassResults
     """
     outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    score = torch.max(F.softmax(outputs.logits.squeeze(),dim=1),dim=1)
     token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
     input_ids_list = input_ids.squeeze().tolist()
     return [
-        TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
-        for out in zip(uuids, input_ids_list, token_class_predictions, tokens)
+        TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3], score= out[4].tolist())
+        for out in zip(uuids, input_ids_list, token_class_predictions, tokens, score[0])
     ]
 
 
@@ -78,9 +80,10 @@ def predict_sequence_classes(
 ) -> SequenceClassResult:
 
     outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    score = torch.max(F.softmax(outputs.logits)).tolist()
     token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
-    return token_class_predictions
+    return SequenceClassResult(class_id=token_class_predictions, score= score)
 
 
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
