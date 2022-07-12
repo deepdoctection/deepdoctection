@@ -103,7 +103,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         return iter(self.df)
 
     def __len__(self) -> int:
-        raise NotImplementedError
+        try:
+            return len(self.df)
+        except NotImplementedError:
+            logger.warn("Cannot determine length of dataflow")
 
     def __getitem__(self, item: Any) -> None:
         raise NotImplementedError
