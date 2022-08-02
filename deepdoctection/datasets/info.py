@@ -58,6 +58,10 @@ class DatasetInfo:
     :attr:`url`: url, where the dataset can be downloaded from.
 
     :attr:`splits`: A dict of splits. The value must store the relative path, where the split can be found.
+
+    :attr:`type`: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
+                  sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification
+                  ('TOKEN_CLASSIFICATION'). Optionally, pass nothing.
     """
 
     name: str
@@ -65,6 +69,7 @@ class DatasetInfo:
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")
     splits: Mapping[str, str] = field(default_factory=dict)
+    type: str = field(default="")
 
     def get_split(self, key: str) -> str:
         """
