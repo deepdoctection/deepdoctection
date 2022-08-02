@@ -69,7 +69,7 @@ _URL = (
     "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-
+_TYPE = names.DS.TYPE.OBJ
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
@@ -101,7 +101,7 @@ class Pubtabnet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
