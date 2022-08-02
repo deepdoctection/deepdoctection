@@ -39,7 +39,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
     """
     A helper class derived from `torch.utils.data.IterableDataset` to process datasets within
     pytorch frameworks (e.g. Detectron2). It wraps the dataset and defines the compulsory
-    `:meth:__iter__` using  meth:`dataflow.build` .
+    :meth:`__iter__` using  meth:`dataflow.build` .
 
     DatasetAdapter is meant for training and will therefore produce an infinite number of datapoints
     by shuffling and restart iteration once the previous dataflow is exhausted.
