@@ -65,7 +65,7 @@ _URL = (
 )
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-
+_TYPE = names.DS.TYPE.SEQ
 _LOCATION = "rvl-cdip"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "labels/train.txt", "val": "labels/val.txt", "test": "labels/test.txt"}
@@ -84,7 +84,7 @@ class Rvlcdip(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS,type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
