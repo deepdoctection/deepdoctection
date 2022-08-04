@@ -67,6 +67,8 @@ datasets. We assume that in "custom_dataset" the dataset was physically placed i
 
 .. code:: python
 
+    import deepdoctection as dd
+
     _NAME = "dataset name"
     _DESCRIPTION = "a short description"
     _SPLITS = {"train": "/train"}
@@ -74,14 +76,14 @@ datasets. We assume that in "custom_dataset" the dataset was physically placed i
     _ANNOTATION_FILES = {"train": "gt_train.json"}
     _CATEGORIES = ["label_1","label_2"]
 
-    class CustomDataset(DatasetBase):
+    class CustomDataset(dd.DatasetBase):
 
         @classmethod
         def _info(cls):
-            return DatasetInfo(name=_NAME, description=_DESCRIPTION, splits=_SPLITS)
+            return dd.DatasetInfo(name=_NAME, description=_DESCRIPTION, splits=_SPLITS)
 
         def _categories(self):
-            return DatasetCategories(init_categories=_CATEGORIES)
+            return dd.DatasetCategories(init_categories=_CATEGORIES)
 
         def _builder(self):
             return CustomDataFlowBuilder(location=_LOCATION,annotation_files=_ANNOTATION_FILES)
@@ -149,15 +151,15 @@ are some functions available for different annotation syntax in the mapper packa
 
             # Load
             path = os.path.join(self.location,self.annotation_files["train"])
-            df = SerializerCoco.load(path)
+            df = dd.SerializerCoco.load(path)
             # yields {'image':{'id',...},'annotations':[{'id':..,'bbox':...}]}
 
             # Map
-            coco_to_image_mapper = coco_to_image(self.categories.get_categories(),
+            coco_to_image_mapper = dd.coco_to_image(self.categories.get_categories(),
                                                  load_image=True,
                                                  filter_empty_image=True,
                                                  fake_score=False)
-            df = MapData(df,coco_to_image_mapper)
+            df = dd.MapData(df,coco_to_image_mapper)
             # yields Image(file_name= ... ,location= ...,annotations = ...)
 
             return df
@@ -170,7 +172,7 @@ build configurations of the dataflows.
 
 .. code:: python
 
-   dataset = get_dataset("dataset_name")
+   dataset = dd.get_dataset("dataset_name")
    df = dataset.dataflow.build(**kwargs_config)
 
    for sample in df:
