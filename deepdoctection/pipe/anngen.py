@@ -252,5 +252,5 @@ class DatapointManager:
             )
         else:
             ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
-        image.summary.dump_sub_category(summary_name, ann, image.image_id)
+        image.summary.dump_sub_category(summary_key, ann, image.image_id)
         return ann.annotation_id
