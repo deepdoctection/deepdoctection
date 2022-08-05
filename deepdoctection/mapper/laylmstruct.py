@@ -44,7 +44,7 @@ if transformers_available():
 
 
 __all__ = ["image_to_layoutlm", "image_to_raw_layoutlm_features", "raw_features_to_layoutlm_features",
-           "LayoutLMDataCollator"]
+           "LayoutLMDataCollator", "image_to_layoutlm_features"]
 
 
 RawLayoutLMFeatures = NewType("RawLayoutLMFeatures", JsonDict)
@@ -292,11 +292,11 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
              "token_type_ids", "attention_mask", "bbox", "labels".
     """
 
-    _has_token_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.TOK and raw_features[0].get("labels") is not None
-    _has_sequence_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.SEQ and raw_features[0].get("labels") is not None
-
     if isinstance(raw_features, dict):
         raw_features = [raw_features]
+
+    _has_token_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.TOK and raw_features[0].get("labels") is not None
+    _has_sequence_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.SEQ and raw_features[0].get("labels") is not None
 
     tokenized_inputs = tokenizer(
         [dp["words"] for dp in raw_features],
@@ -327,7 +327,8 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         ann_ids.append(raw_features[batch_index_orig]["ann_ids"])
 
         boxes = raw_features[batch_index_orig]["bbox"]
-        labels = raw_features[batch_index_orig]["labels"]
+        if _has_token_labels:
+            labels = raw_features[batch_index_orig]["labels"]
         word_ids = tokenized_inputs.word_ids(batch_index=batch_index)
         tokens = tokenized_inputs.tokens(batch_index= batch_index)
 
@@ -430,3 +431,14 @@ class LayoutLMDataCollator:
         """
         return raw_features_to_layoutlm_features(raw_features, self.tokenizer, self.padding, self.truncation,
                                                  self.return_overflowing_tokens, self.return_tensors, True)
+
+
+@curry
+def image_to_layoutlm_features(dp: Image,
+                               tokenizer: "PreTrainedTokenizerFast",
+                               return_tensors: Optional[Literal["pt"]] = None,
+                               input_width: int = 1000,
+                               input_height: int = 1000) -> LayoutLMFeatures:
+    dp = image_to_raw_layoutlm_features(None, None, input_width, input_height)(dp)
+    dp = raw_features_to_layoutlm_features(dp, tokenizer,return_tensors=return_tensors)
+    return dp

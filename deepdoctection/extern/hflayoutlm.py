@@ -184,7 +184,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
-        boxes = encodings.get("boxes")
+        boxes = encodings.get("bbox")
         tokens = encodings.get("tokens")
 
         assert isinstance(ids, list)
@@ -262,7 +262,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
-        boxes = encodings.get("boxes")
+        boxes = encodings.get("bbox")
 
         assert isinstance(input_ids, torch.Tensor)
         assert isinstance(attention_mask, torch.Tensor)

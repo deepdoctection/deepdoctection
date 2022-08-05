@@ -94,9 +94,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 class LMSequenceClassifierService(LanguageModelPipelineComponent):
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
         lm_output = self.language_model.predict(**lm_input)
-        self.dp_manager.set_summary_annotation(names.C.DOC,lm_output.class_name,lm_output.class_id)
+        self.dp_manager.set_summary_annotation(names.C.DOC,lm_output.class_name,lm_output.class_id,None,lm_output.score)
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

@@ -213,9 +213,9 @@ def get_load_image_func(
     :return: The function loading the file (and converting to its desired format)
     """
 
-    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf"]), f"image type not allowed: {path}"
+    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: {path}"
 
-    if is_file_extension(path, [".png", ".jpeg", ".jpg"]):
+    if is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]):
         return load_image_from_file
     if is_file_extension(path, [".pdf"]):
         return load_bytes_from_pdf_file
