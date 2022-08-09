@@ -65,6 +65,7 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
         tokenizer.cls_token_id = 101
         tokenizer.sep_token_id = 102
         tokenizer.pad_token_id = 0
+        tokenizer.max_model_input_sizes = {"microsoft/layoutlm-base-uncased": 512}
 
         lm = MagicMock()  # pylint: disable=C0103
         lm.predict = MagicMock(return_value=token_class_result)

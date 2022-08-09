@@ -49,21 +49,22 @@ def test_image_to_layoutlm(
         "attention_mask": layoutlm_input["attention_mask"],
         "token_type_ids": layoutlm_input["token_type_ids"],
     }
+
     tokenizer = MagicMock(return_value=tokenizer_output)
-    word_output = copy(layoutlm_input["tokens"])
+    word_output = copy(layoutlm_input["tokens"][0]) # tokens are now batched
     word_output.pop(0)
     word_output.pop(-1)
     word_output = [word_output[0:6], word_output[6:13], word_output[13:16]]
     tokenizer.tokenize = MagicMock(side_effect=word_output)
+    tokenizer.max_model_input_sizes={"microsoft/layoutlm-base-uncased": 512}
 
     # Act
-    image_to_layoutlm_func = image_to_layoutlm(tokenizer=tokenizer)  # pylint: disable=E1120
-    output = image_to_layoutlm_func(image)  # pylint: disable=E1102
+    output = image_to_layoutlm(tokenizer=tokenizer)(image)  # pylint: disable=E1102
 
     # Assert
     assert len(output["ids"]) == 18
     assert output["boxes"].shape == (1, 18, 4)
-    assert output["tokens"] == layoutlm_input["tokens"]
+    assert output["tokens"] == layoutlm_input["tokens"][0]
     assert output["input_ids"] == layoutlm_input["input_ids"]
     assert output["attention_mask"] == layoutlm_input["attention_mask"]
     assert output["token_type_ids"] == layoutlm_input["token_type_ids"]
