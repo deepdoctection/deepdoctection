@@ -117,12 +117,15 @@ class TestHFLayoutLmTokenClassifier:
         layoutlm.model.device = "cpu"
 
         # Act
-        inputs = {"ids": layoutlm_input["ids"],
+        inputs = {"image_ids": layoutlm_input["image_ids"],
+                  "width": layoutlm_input["width"],
+                  "height": layoutlm_input["height"],
+                  "ann_ids": layoutlm_input["ann_ids"],
+                  "bbox": torch.tensor(layoutlm_input["boxes"]),
                   "input_ids": torch.tensor(layoutlm_input["input_ids"]),
                   "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
-                  "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
-                  "boxes": torch.tensor(layoutlm_input["boxes"]),
-                  "tokens": layoutlm_input["tokens"]}
+                  "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"])
+                  }
 
         results = layoutlm.predict(**inputs)
 

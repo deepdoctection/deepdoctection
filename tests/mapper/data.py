@@ -1751,8 +1751,10 @@ class DatapointXfund:
 
     category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A, "header": names.C.HEAD}
     layout_input = {
-        "image": np.ones((1000, 1000, 3)),
-        "ids": [
+        "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
+        "width": [1000],
+        "height": [1000],
+        "ann_ids": [[
             "CLS",
             "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
             "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
@@ -1771,8 +1773,8 @@ class DatapointXfund:
             "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
             "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
             "SEP",
-        ],
-        "boxes": [
+        ]],
+        "bbox": [[
             [0.0, 0.0, 0.0, 0.0],
             [325.0, 184.0, 578.0, 230.0],
             [325.0, 184.0, 578.0, 230.0],
@@ -1791,7 +1793,7 @@ class DatapointXfund:
             [1058.0, 413.0, 1701.0, 482.0],
             [1058.0, 413.0, 1701.0, 482.0],
             [1000.0, 1000.0, 1000.0, 1000.0],
-        ],
+        ]],
         "tokens": [
             "CLS",
             "aka",
