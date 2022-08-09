@@ -90,7 +90,7 @@ class TestHFLayoutLmTokenClassifier:
         categories_explicit = {"1": "FOO", "2": "BAK", "3": "O"}
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_explicit=categories_explicit)
+        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
         assert model.categories == categories_explicit

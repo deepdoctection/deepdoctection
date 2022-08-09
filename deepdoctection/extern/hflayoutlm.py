@@ -128,7 +128,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         path_weights: str,
         categories_semantics: Optional[Sequence[str]] = None,
         categories_bio: Optional[Sequence[str]] = None,
-        categories_explicit: Optional[Mapping[str,str]] = None,
+        categories: Optional[Mapping[str, str]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None
     ):
         """
@@ -137,10 +137,10 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
                                      be done internally.
         :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
                                consistent with detectors use only values>0. Conversion will be done internally.
-        :param categories_explicit: If you have a pre-trained model you can pass a complete dict of NER categories
+        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         """
 
-        if categories_explicit is None:
+        if categories is None:
             assert categories_semantics is not None
             assert categories_bio is not None
 
@@ -148,8 +148,8 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self.path_weights = path_weights
         self.categories_semantics = categories_semantics
         self.categories_bio = categories_bio
-        if categories_explicit:
-            self.categories = copy(categories_explicit)
+        if categories:
+            self.categories = copy(categories)
         else:
             self.categories = self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
 
