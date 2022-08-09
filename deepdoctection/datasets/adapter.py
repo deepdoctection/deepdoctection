@@ -122,6 +122,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
             if _data_statistics:
                 summarizer.print_summary_histogram()
+            self.number_datapoints = len(datapoints)
             df = CustomDataFromList(datapoints, shuffle=True)
             df = RepeatedData(df, -1)
         if image_to_framework_func:
@@ -133,6 +134,8 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         return iter(self.df)
 
     def __len__(self) -> int:
+        if self.number_datapoints:
+            return self.number_datapoints
         try:
             return len(self.df)
         except NotImplementedError:
