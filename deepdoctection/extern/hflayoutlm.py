@@ -111,7 +111,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
                                                                         'S-QUESTION'])
 
             # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm,image_to_layoutlm)
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
