@@ -180,14 +180,16 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         :return: A list of TokenClassResults
         """
 
-        ids = encodings.get("ids")
+        ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
         boxes = encodings.get("bbox")
         tokens = encodings.get("tokens")
 
-        assert isinstance(ids, list)
+        assert isinstance(ann_ids, list)
+        if len(ann_ids) >1:
+            raise ValueError("HFLayoutLmTokenClassifier accepts for inference only batch size of 1")
         assert isinstance(input_ids, torch.Tensor)
         assert isinstance(attention_mask, torch.Tensor)
         assert isinstance(token_type_ids, torch.Tensor)
@@ -200,12 +202,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         boxes = boxes.to(self.device)
 
         results = predict_token_classes(
-            ids,
+            ann_ids[0],
             input_ids,
             attention_mask,
             token_type_ids,
             boxes,
-            tokens,
+            tokens[0],
             self.model,
         )
 
@@ -299,10 +301,3 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
     def possible_categories(self) -> List[str]:
         return list(self.categories.values())
-
-
-
-
-
-
-

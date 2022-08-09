@@ -121,7 +121,8 @@ class TestHFLayoutLmTokenClassifier:
                   "width": layoutlm_input["width"],
                   "height": layoutlm_input["height"],
                   "ann_ids": layoutlm_input["ann_ids"],
-                  "bbox": torch.tensor(layoutlm_input["boxes"]),
+                  "tokens": layoutlm_input["tokens"],
+                  "bbox": torch.tensor(layoutlm_input["bbox"]),
                   "input_ids": torch.tensor(layoutlm_input["input_ids"]),
                   "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
                   "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"])
