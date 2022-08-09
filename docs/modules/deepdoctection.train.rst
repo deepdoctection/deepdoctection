@@ -9,6 +9,15 @@ deepdoctection.train.d2\_frcnn\_train
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.train.hf\_layoutlm\_train
+----------------------------------------------
+
+.. automodule:: deepdoctection.train.hf_layoutlm_train
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 deepdoctection.train.tp\_frcnn\_train
 ----------------------------------------------
 

@@ -20,7 +20,7 @@ Module for mapping annotations from image to layout lm input structure. Heavily 
 https://github.com/NielsRogge/Transformers-Tutorials
 """
 
-from typing import List, Optional, Dict, Literal, Union, Mapping, NewType
+from typing import List, Optional, Dict, Literal, Union, Mapping, NewType, Any, Callable
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -44,11 +44,19 @@ if transformers_available():
 
 
 __all__ = ["image_to_layoutlm", "image_to_raw_layoutlm_features", "raw_features_to_layoutlm_features",
-           "LayoutLMDataCollator", "image_to_layoutlm_features"]
+           "LayoutLMDataCollator", "image_to_layoutlm_features", "DataCollator"]
 
 
 RawLayoutLMFeatures = NewType("RawLayoutLMFeatures", JsonDict)
 LayoutLMFeatures = NewType("LayoutLMFeatures", JsonDict)
+
+"""
+https://github.com/huggingface/transformers/src/transformers/data/data_collator.py
+A DataCollator is a function that takes a list of samples from a Dataset and collate them into a batch, as a dictionary
+of PyTorch/TensorFlow tensors or NumPy arrays. 
+"""
+InputDataClass = NewType("InputDataClass", Any)
+DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])
 
 _CLS_BOX = [0.0, 0.0, 0.0, 0.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
