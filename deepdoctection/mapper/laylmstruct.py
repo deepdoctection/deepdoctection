@@ -322,6 +322,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
     token_labels = []
     sequence_labels = []
     token_ann_ids = []
+    tokens = []
     for batch_index in range(len(tokenized_inputs["input_ids"])):
         batch_index_orig = batch_index
         if return_overflowing_tokens:
@@ -337,7 +338,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         if _has_token_labels:
             labels = raw_features[batch_index_orig]["labels"]
         word_ids = tokenized_inputs.word_ids(batch_index=batch_index)
-        tokens = tokenized_inputs.tokens(batch_index= batch_index)
+        token_batch = tokenized_inputs.tokens(batch_index= batch_index)
 
         token_batch_ann_ids = []
         token_batch_boxes = []
@@ -346,17 +347,17 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
             # Special tokens have a word id that is None. We make a lookup for the specific token and append a dummy
             # bounding box accordingly
             if word_id is None:
-                if tokens[idx] == "[CLS]":
+                if token_batch[idx] == "[CLS]":
                     token_batch_boxes.append(_CLS_BOX)
                     token_batch_ann_ids.append("[CLS]")
-                elif tokens[idx] in ("[SEP]","[PAD]"):
+                elif token_batch[idx] in ("[SEP]","[PAD]"):
                     token_batch_boxes.append(_SEP_BOX)
-                    if tokens[idx] == "[SEP]":
+                    if token_batch[idx] == "[SEP]":
                         token_batch_ann_ids.append("[SEP]")
                     else:
                         token_batch_ann_ids.append("[PAD]")
                 else:
-                    raise ValueError(f"Special token {tokens[idx]} not allowed")
+                    raise ValueError(f"Special token {token_batch[idx]} not allowed")
                 if _has_token_labels:
                     token_batch_labels.append(-100)
             else:
@@ -368,7 +369,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         token_labels.append(token_batch_labels)
         token_boxes.append(token_batch_boxes)
         token_ann_ids.append(token_batch_ann_ids)
-
+        tokens.append(token_batch)
         if _has_sequence_labels:
             sequence_labels.append(raw_features[batch_index_orig]["labels"][0])
 
@@ -387,7 +388,8 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
      "input_ids": tokenized_inputs["input_ids"],
      "token_type_ids": tokenized_inputs["token_type_ids"],
      "attention_mask": tokenized_inputs["attention_mask"],
-     "bbox": token_boxes}
+     "bbox": token_boxes,
+     "tokens": tokens}
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
@@ -397,6 +399,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         input_dict.pop("width")
         input_dict.pop("height")
         input_dict.pop("ann_ids")
+        input_dict.pop("tokens")
         return LayoutLMFeatures(input_dict)
     return LayoutLMFeatures(input_dict)
 
