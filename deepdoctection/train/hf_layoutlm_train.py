@@ -123,19 +123,7 @@ def train_hf_layoutlm(
     metric: Optional[Type[MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
-    """
-    :param path_config_json:
-    :param dataset_train:
-    :param path_weights:
-    :param config_overwrite:
-    :param log_dir:
-    :param build_train_config:
-    :param dataset_val:
-    :param build_val_config:
-    :param metric:
-    :param pipeline_component_name:
-    :return:
-    """
+
 
     assert get_num_gpu() > 0, "Has to train with GPU!"
 
@@ -194,7 +182,3 @@ def train_hf_layoutlm(
         trainer.setup_evaluator(dataset_val,pipeline_component,metric,**build_val_dict)
 
     trainer.train()
-
-    #tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-
-

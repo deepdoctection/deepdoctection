@@ -213,6 +213,22 @@ def fixture_layoutlm_input() -> JsonDict:
     return DatapointXfund().get_layout_input()
 
 
+@fixture(name="raw_layoutlm_features")
+def fixture_raw_layoutlm_featurest() -> JsonDict:
+    """
+    Layoutlm input
+    """
+    return DatapointXfund().get_raw_layoutlm_features()
+
+
+@fixture(name="xfund_categories_dict_name_as_key")
+def fixture_xfund_categories_dict_name_as_key() -> JsonDict:
+    """
+    categories_dict_name_as_key
+    """
+    return DatapointXfund().get_categories_dict_names_as_key()
+
+
 @fixture(name="datapoint_iiitar13kjson")
 def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
     """

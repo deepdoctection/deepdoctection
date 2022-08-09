@@ -27,9 +27,10 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from pytest import mark
 
-from deepdoctection.mapper.laylmstruct import image_to_layoutlm
+from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_raw_layoutlm_features
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import names
 
 
 @mark.requires_pt
@@ -68,3 +69,61 @@ def test_image_to_layoutlm(
     assert output["input_ids"] == layoutlm_input["input_ids"]
     assert output["attention_mask"] == layoutlm_input["attention_mask"]
     assert output["token_type_ids"] == layoutlm_input["token_type_ids"]
+
+
+@patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
+def test_image_to_raw_layoutlm_features_for_token_data(datapoint_xfund: JsonDict,
+                                                       xfund_category_names: Dict[str, str],
+                                                       xfund_categories_dict_name_as_key: Dict[str,str],
+                                                       raw_layoutlm_features: JsonDict):
+    """
+    testing image_to_raw_layoutlm_features is mapping correctly for dataset type "TOKEN_CLASSIFICATION"
+    """
+
+    # Arrange
+    image = xfund_to_image(True, False, xfund_category_names)(datapoint_xfund)
+
+    # Act
+    raw_features = image_to_raw_layoutlm_features(xfund_categories_dict_name_as_key,names.DS.TYPE.TOK)(image)
+
+    # Assert
+    assert raw_features["image_id"] == raw_layoutlm_features["image_id"]
+    assert raw_features["width"] == raw_layoutlm_features["width"]
+    assert raw_features["height"] == raw_layoutlm_features["height"]
+    assert raw_features["ann_ids"] == raw_layoutlm_features["ann_ids"]
+    assert raw_features["words"] == raw_layoutlm_features["words"]
+    assert raw_features["bbox"] == raw_layoutlm_features["bbox"]
+    assert raw_features["dataset_type"] == raw_layoutlm_features["dataset_type"]
+    assert raw_features["labels"] == raw_layoutlm_features["labels"]
+
+
+@patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
+def test_image_to_raw_layoutlm_features_for_inference(datapoint_xfund: JsonDict,
+                                                       xfund_category_names: Dict[str, str],
+                                                       raw_layoutlm_features: JsonDict):
+    """
+    testing image_to_raw_layoutlm_features is mapping correctly. Semantic entities and tags have been removed, so that
+    the scenario covers the inference case
+    """
+
+    # Arrange
+    image = xfund_to_image(True, False, xfund_category_names)(datapoint_xfund)
+
+    for ann in image.get_annotation():
+        ann.remove_sub_category(names.C.SE)
+        ann.remove_sub_category(names.NER.TAG)
+
+    # Act
+    raw_features = image_to_raw_layoutlm_features(None,names.DS.TYPE.TOK)(image)
+
+    # Assert
+    assert raw_features["image_id"] == raw_layoutlm_features["image_id"]
+    assert raw_features["width"] == raw_layoutlm_features["width"]
+    assert raw_features["height"] == raw_layoutlm_features["height"]
+    assert raw_features["ann_ids"] == raw_layoutlm_features["ann_ids"]
+    assert raw_features["words"] == raw_layoutlm_features["words"]
+    assert raw_features["bbox"] == raw_layoutlm_features["bbox"]
+    assert raw_features["dataset_type"] == raw_layoutlm_features["dataset_type"]
+    assert "labels" not in raw_features
+
+
