@@ -31,6 +31,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement, get_sklearn_requirement, sklearn_available
+from ..utils.logger import logger
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -180,6 +181,10 @@ class AccuracyMetric(MetricBase):
         if cls._sub_cats:
             for key, val in cls._sub_cats.items():
                 assert set(val) <= set(sub_cats[key])
+
+        if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
+            logger.warn("Accuracy metric has not correctly been set up: No category, sub category or summary has been"
+                        "defined, therefore it is undefined what to evaluate.")
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
