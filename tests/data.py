@@ -24,7 +24,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
-from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.extern.base import DetectionResult, TokenClassResult, SequenceClassResult
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 
@@ -1480,3 +1480,11 @@ def get_token_class_result() -> List[TokenClassResult]:
             uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag  # type: ignore
         )
     ]
+
+
+def get_sequence_class_result() -> SequenceClassResult:
+    """
+    sequence class result
+    """
+    return SequenceClassResult(class_name="FOO", class_id=1)
+

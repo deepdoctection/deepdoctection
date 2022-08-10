@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
-from deepdoctection.mapper import cat_to_sub_cat, filter_cat, image_to_cat_id, pub_to_image, remove_cats
+from deepdoctection.mapper import cat_to_sub_cat, filter_cat, image_to_cat_id, pub_to_image, remove_cats, filter_summary
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 
@@ -103,6 +103,30 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     )
     assert items[0].category_id == "1"
     assert len(cells) == 0
+
+
+def test_filter_summary_1(datapoint_image_with_summary: Image) -> None:
+    """
+    test func:`filter_summary` does not filter dataset, if condition is satisfied.
+    """
+
+    # Arrange
+    output = filter_summary({"BAK": "FOO"}, True)(datapoint_image_with_summary)
+
+    # Assert
+    assert output is not None
+
+
+def test_filter_summary_2(datapoint_image_with_summary: Image) -> None:
+    """
+    test func:`filter_summary`  does filter dataset, if condition is not satisfied.
+    """
+
+    # Arrange
+    output = filter_summary({"BAK": ["BAZ"]}, True)(datapoint_image_with_summary)
+
+    # Assert
+    assert output is None
 
 
 def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:

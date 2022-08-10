@@ -29,6 +29,7 @@ from datetime import datetime
 from typing import Any, Callable, List, Optional
 
 from .logger import logger
+from .detection_types import T
 
 __all__: List[str] = ["deprecated"]
 
@@ -66,7 +67,7 @@ def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnin
     logger.info("[Deprecated] %s", info_msg)
 
 
-def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> Callable[[Any], Any]:
+def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> Callable[..., T]:
     """
 
     :param text: same as :func:`log_deprecated`.
