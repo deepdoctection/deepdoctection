@@ -88,7 +88,7 @@ def image_to_layoutlm(
     all_boxes = []
     all_ann_ids = []
     words: List[str] = []
-    all_input_ids= []
+    all_input_ids = []
     for ann in anns:
         char_cat = ann.get_sub_category(names.C.CHARS)
         assert isinstance(char_cat, ContainerAnnotation)

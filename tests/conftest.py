@@ -35,12 +35,12 @@ from deepdoctection.datapoint import (
     local_to_global_coords,
 )
 from deepdoctection.datasets import DatasetCategories
-from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.extern.base import DetectionResult, TokenClassResult, SequenceClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 from deepdoctection.utils.systools import get_package_path
 
-from .data import Annotations, get_layoutlm_input, get_token_class_result
+from .data import Annotations, get_layoutlm_input, get_token_class_result, get_sequence_class_result
 from .mapper.data import DatapointImage
 
 
@@ -433,6 +433,12 @@ def fixture_textract_response() -> JsonDict:
 def fixture_token_class_result() -> List[TokenClassResult]:
     """fixture token_class_result"""
     return get_token_class_result()
+
+
+@fixture(name="sequence_class_result")
+def fixture_sequence_class_result() -> SequenceClassResult:
+    """fixture sequence_class_result"""
+    return get_sequence_class_result()
 
 
 @fixture(name="text_lines")

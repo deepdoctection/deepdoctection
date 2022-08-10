@@ -179,6 +179,14 @@ def fixture_datapoint_image() -> Image:
     return DatapointImage().image
 
 
+@fixture(name="datapoint_image_with_summary")
+def fixture_datapoint_image_with_summary() -> Image:
+    """
+    Image with summary annotation
+    """
+    return DatapointImage().get_image_with_summary()
+
+
 @fixture(name="page_dict")
 def fixture_page_dict() -> JsonDict:
     """

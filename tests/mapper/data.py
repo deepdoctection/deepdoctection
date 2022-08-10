@@ -25,9 +25,10 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation, convert_np_array_to_b64
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation, convert_np_array_to_b64, SummaryAnnotation, \
+    CategoryAnnotation
 from deepdoctection.datasets.info import DatasetCategories
-from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.extern.base import TokenClassResult, SequenceClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 
@@ -1044,6 +1045,14 @@ class DatapointImage:
         """
         return self.d2_frcnn_training
 
+    def get_image_with_summary(self) -> Image:
+        """
+        Image with summary "BAK" and CategoryAnnotation "FOO"
+        """
+        self.image.summary = SummaryAnnotation()
+        self.image.summary.dump_sub_category("BAK", CategoryAnnotation(category_name="FOO", category_id="1"))
+        return self.image
+
 
 class DatapointPageDict:  # pylint: disable=R0903
     """
@@ -1895,6 +1904,10 @@ class DatapointXfund:
             TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
             for out in zip(uuids, input_ids, token_class_predictions, tokens)  # type: ignore
         ]
+
+    @staticmethod
+    def get_sequence_class_results() -> SequenceClassResult:
+        return SequenceClassResult(class_id=1, score=0.93)
 
     @staticmethod
     def get_categories_semantics() -> List[str]:
