@@ -40,7 +40,13 @@ from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 from deepdoctection.utils.systools import get_package_path
 
-from .data import Annotations, get_layoutlm_input, get_token_class_result, get_sequence_class_result
+from .data import (
+    Annotations,
+    get_layoutlm_input,
+    get_token_class_result,
+    get_sequence_class_result,
+    get_layoutlm_features
+)
 from .mapper.data import DatapointImage
 
 
@@ -424,9 +430,15 @@ def fixture_col_box_tiling_table() -> List[BoundingBox]:
 
 
 @fixture(name="layoutlm_input")
-def fixture_textract_response() -> JsonDict:
-    """fixture textract_response"""
+def fixture_layoutlm_input() -> JsonDict:
+    """fixture layoutlm_input"""
     return get_layoutlm_input()
+
+
+@fixture(name="layoutlm_features")
+def fixture_layoutlm_features() -> JsonDict:
+    """fixture layoutlm_features"""
+    return get_layoutlm_features()
 
 
 @fixture(name="token_class_result")

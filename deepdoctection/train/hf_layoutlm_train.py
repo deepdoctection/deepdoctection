@@ -124,7 +124,6 @@ def train_hf_layoutlm(
     pipeline_component_name: Optional[str] = None,
 ) -> None:
 
-
     assert get_num_gpu() > 0, "Has to train with GPU!"
 
     build_train_dict: Dict[str, str] = {}
