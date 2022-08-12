@@ -33,7 +33,6 @@ Module for Funsd dataset.  Install the dataset following the folder structure
 |    │ │ ├── ...
 """
 
-import json
 import os
 from typing import Dict, List, Mapping, Union
 
@@ -42,8 +41,8 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
-from ...utils.settings import names
 from ...utils.fs import load_json
+from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories

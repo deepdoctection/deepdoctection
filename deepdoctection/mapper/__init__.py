@@ -39,7 +39,7 @@ if detectron2_available():
     from .d2struct import *
 
 if pytorch_available() and transformers_available():
-    from .laylmstruct import *  # pylint: disable = W0622
+    from .laylmstruct import *
 
 
 # Mapper

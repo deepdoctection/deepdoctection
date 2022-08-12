@@ -25,10 +25,11 @@ from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
+from deepdoctection.dataflow import MapData, SerializerJsonlines
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
-from deepdoctection.dataflow import SerializerJsonlines, MapData
-from ..test_utils import anns_to_ids, get_test_path, collect_datapoint_from_dataflow
+
+from ..test_utils import anns_to_ids, collect_datapoint_from_dataflow, get_test_path
 from .conftest import TestPdfPage, WhiteImage
 
 
@@ -315,4 +316,3 @@ class TestImage:
         df = MapData(df, lambda dp: Image.from_dict(**dp))
         image_list = collect_datapoint_from_dataflow(df)
         assert len(image_list) == 1
-

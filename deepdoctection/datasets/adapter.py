@@ -20,7 +20,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 """
 
 
-from typing import Any, Callable, Iterator, Optional, Union, Dict
+from typing import Any, Callable, Dict, Iterator, Optional, Union
 
 from torch.utils.data import IterableDataset
 
@@ -30,8 +30,8 @@ from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.logger import log_once, logger
-from ..utils.tqdm import get_tqdm
 from ..utils.settings import names
+from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
 
@@ -51,7 +51,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         name_or_dataset: Union[str, DatasetBase],
         cache_dataset: bool,
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
-        **build_kwargs: str
+        **build_kwargs: str,
     ) -> None:
         """
         :param name_or_dataset: Registered name of the dataset or an instance.
@@ -69,17 +69,23 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info("Yielding dataflow into memory and create torch dataset")
-            categories: Dict[str,str] = {}
+            categories: Dict[str, str] = {}
             _data_statistics = True
             if self.dataset.dataset_info.type in (names.DS.TYPE.OBJ, names.DS.TYPE.SEQ):
                 categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
             elif self.dataset.dataset_info.type in (names.DS.TYPE.TOK,):
-                categories = {str(k):v for k,v in
-                              enumerate(self.dataset.dataflow.categories.init_sub_categories[names.C.WORD][names.C.SE],1)}
-                categories_name_as_key = {v:k for k,v in categories.items()}
+                categories = {
+                    str(k): v
+                    for k, v in enumerate(
+                        self.dataset.dataflow.categories.init_sub_categories[names.C.WORD][names.C.SE], 1
+                    )
+                }
+                categories_name_as_key = {v: k for k, v in categories.items()}
             else:
-                logger.info(f"dataset is of type {self.dataset.dataset_info.type}. Cannot generate statistics for this"
-                            f"type of dataset")
+                logger.info(
+                    "dataset is of type %s. Cannot generate statistics for this type of dataset",
+                    self.dataset.dataset_info.type,
+                )
                 _data_statistics = False
 
             if _data_statistics:
@@ -112,7 +118,9 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
                     elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
                         anns = dp.get_annotation()
-                        cat_ids = [int(categories_name_as_key[ann.get_sub_category(names.C.SE).category_name]) for ann in anns]
+                        cat_ids = [
+                            int(categories_name_as_key[ann.get_sub_category(names.C.SE).category_name]) for ann in anns
+                        ]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)
@@ -136,10 +144,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
     def __len__(self) -> int:
         if self.number_datapoints:
             return self.number_datapoints
-        try:
-            return len(self.df)
-        except NotImplementedError:
-            logger.warn("Cannot determine length of dataflow")
+        return len(self.df)
 
     def __getitem__(self, item: Any) -> None:
         raise NotImplementedError

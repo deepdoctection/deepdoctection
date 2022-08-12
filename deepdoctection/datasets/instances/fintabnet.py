@@ -229,11 +229,14 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     ]
                 ),
             )
-            df = MapData(df, maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                category_names_sub_image=names.C.TAB,
-                category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
-                add_summary= True
-            ))
+            df = MapData(
+                df,
+                maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
+                    category_names_sub_image=names.C.TAB,
+                    category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
+                    add_summary=True,
+                ),
+            )
             df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=names.C.TAB)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])

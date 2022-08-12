@@ -23,8 +23,8 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 
-from deepdoctection.extern.base import TokenClassResult, SequenceClassResult
-from deepdoctection.extern.hflayoutlm import HFLayoutLmTokenClassifier, HFLayoutLmSequenceClassifier
+from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
+from deepdoctection.extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 
@@ -43,7 +43,8 @@ def get_token_class_results(  # type: ignore
     return DatapointXfund().get_token_class_results()
 
 
-def get_sequence_class_result(input_ids, attention_mask, token_type_ids, boxes, model) -> SequenceClassResult:
+def get_sequence_class_result(  # type: ignore
+        input_ids, attention_mask, token_type_ids, boxes, model) -> SequenceClassResult:    # pylint: disable=W0613
     """
     sequence class result
     """
@@ -57,7 +58,9 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.requires_pt
-    @patch("deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY")))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
+    )
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
@@ -124,16 +127,17 @@ class TestHFLayoutLmTokenClassifier:
         layoutlm.model.device = "cpu"
 
         # Act
-        inputs = {"image_ids": layoutlm_input["image_ids"],
-                  "width": layoutlm_input["width"],
-                  "height": layoutlm_input["height"],
-                  "ann_ids": layoutlm_input["ann_ids"],
-                  "tokens": layoutlm_input["tokens"],
-                  "bbox": torch.tensor(layoutlm_input["bbox"]),
-                  "input_ids": torch.tensor(layoutlm_input["input_ids"]),
-                  "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
-                  "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"])
-                  }
+        inputs = {
+            "image_ids": layoutlm_input["image_ids"],
+            "width": layoutlm_input["width"],
+            "height": layoutlm_input["height"],
+            "ann_ids": layoutlm_input["ann_ids"],
+            "tokens": layoutlm_input["tokens"],
+            "bbox": torch.tensor(layoutlm_input["bbox"]),
+            "input_ids": torch.tensor(layoutlm_input["input_ids"]),
+            "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
+            "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
+        }
 
         results = layoutlm.predict(**inputs)
 
@@ -143,7 +147,7 @@ class TestHFLayoutLmTokenClassifier:
         assert class_names == token_class_names
 
 
-class TestHFLayoutLmSequenceClassifier:
+class TestHFLayoutLmSequenceClassifier:   # pylint: disable=R0903
     """
     Test HFLayoutLmSequenceClassifier
     """
@@ -152,12 +156,11 @@ class TestHFLayoutLmSequenceClassifier:
     @mark.requires_pt
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForSequenceClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result))
+    @patch(
+        "deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result)
+    )
     def test_hf_layout_lm_predicts_token(
-            layoutlm_input: JsonDict,
-            categories_semantics: List[str],
-            categories_bio: List[str],
-            token_class_names: List[str],
+        layoutlm_input: JsonDict,
     ) -> None:
         """
         HFLayoutLmTokenClassifier calls predict_token_classes and post processes TokenClassResult correctly
@@ -169,19 +172,19 @@ class TestHFLayoutLmSequenceClassifier:
         layoutlm.model.device = "cpu"
 
         # Act
-        inputs = {"image_ids": layoutlm_input["image_ids"],
-                  "width": layoutlm_input["width"],
-                  "height": layoutlm_input["height"],
-                  "ann_ids": layoutlm_input["ann_ids"],
-                  "tokens": layoutlm_input["tokens"],
-                  "bbox": torch.tensor(layoutlm_input["bbox"]),
-                  "input_ids": torch.tensor(layoutlm_input["input_ids"]),
-                  "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
-                  "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"])
-                  }
+        inputs = {
+            "image_ids": layoutlm_input["image_ids"],
+            "width": layoutlm_input["width"],
+            "height": layoutlm_input["height"],
+            "ann_ids": layoutlm_input["ann_ids"],
+            "tokens": layoutlm_input["tokens"],
+            "bbox": torch.tensor(layoutlm_input["bbox"]),
+            "input_ids": torch.tensor(layoutlm_input["input_ids"]),
+            "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
+            "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
+        }
 
         results = layoutlm.predict(**inputs)
 
         # Assert
         assert results.class_name == "BAK"
-

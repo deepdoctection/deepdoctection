@@ -255,7 +255,7 @@ class LMTokenClassifier(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
         """
         Abstract method predict
         """
@@ -277,7 +277,7 @@ class LMSequenceClassifier(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
         """
         Abstract method predict
         """

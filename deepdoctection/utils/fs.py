@@ -20,9 +20,8 @@ Methods and classes that incorporate filesystem operations as well as file check
 """
 
 import errno
-import os
 import json
-
+import os
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
@@ -32,7 +31,7 @@ from urllib.request import urlretrieve
 from cv2 import IMREAD_COLOR, imread
 
 from ..utils.pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .detection_types import ImageType, Pathlike, JsonDict
+from .detection_types import ImageType, JsonDict, Pathlike
 from .logger import logger
 from .tqdm import get_tqdm
 
@@ -44,7 +43,7 @@ __all__ = [
     "download",
     "mkdir_p",
     "is_file_extension",
-    "load_json"
+    "load_json",
 ]
 
 
@@ -249,5 +248,5 @@ def load_json(path_ann: Pathlike) -> JsonDict:
     :return: dict
     """
     with open(path_ann, "r", encoding="utf-8") as file:
-        json_dict =  json.loads(file.read())
+        json_dict = json.loads(file.read())
     return json_dict

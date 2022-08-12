@@ -144,8 +144,8 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
 
 @curry
 def maybe_ann_to_sub_image(
-    dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]],
-add_summary: bool) -> Image:
+    dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]], add_summary: bool
+) -> Image:
     """
     Assigns to sub image with given category names all annotations with given category names whose bounding box lie
     within the bounding box of the sub image.
@@ -161,7 +161,7 @@ add_summary: bool) -> Image:
     anns = dp.get_annotation(category_names=category_names_sub_image)
     for ann in anns:
         dp.maybe_ann_to_sub_image(annotation_id=ann.annotation_id, category_names=category_names)
-        if add_summary:
+        if add_summary and ann.image:
             ann.image.summary = dp.summary
 
     return dp

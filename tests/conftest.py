@@ -35,17 +35,17 @@ from deepdoctection.datapoint import (
     local_to_global_coords,
 )
 from deepdoctection.datasets import DatasetCategories
-from deepdoctection.extern.base import DetectionResult, TokenClassResult, SequenceClassResult
+from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 from deepdoctection.utils.systools import get_package_path
 
 from .data import (
     Annotations,
+    get_layoutlm_features,
     get_layoutlm_input,
-    get_token_class_result,
     get_sequence_class_result,
-    get_layoutlm_features
+    get_token_class_result,
 )
 from .mapper.data import DatapointImage
 

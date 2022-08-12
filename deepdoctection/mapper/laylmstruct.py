@@ -20,8 +20,8 @@ Module for mapping annotations from image to layout lm input structure. Heavily 
 https://github.com/NielsRogge/Transformers-Tutorials
 """
 
-from typing import List, Optional, Dict, Literal, Union, Mapping, NewType, Any, Callable
 from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List, Literal, Mapping, NewType, Optional, Union
 
 import numpy as np
 from cv2 import INTER_LINEAR
@@ -31,31 +31,39 @@ from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import names
-from ..utils.develop import deprecated
 from .maputils import curry
 
 if pytorch_available():
-    from torch import clamp, round, tensor, long, float  # pylint: disable = W0622
+    import torch
 
 if transformers_available():
     from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast  # pylint: disable = W0611
 
 
-__all__ = ["image_to_layoutlm", "image_to_raw_layoutlm_features", "raw_features_to_layoutlm_features",
-           "LayoutLMDataCollator", "image_to_layoutlm_features", "DataCollator"]
+__all__ = [
+    "image_to_layoutlm",
+    "image_to_raw_layoutlm_features",
+    "raw_features_to_layoutlm_features",
+    "LayoutLMDataCollator",
+    "image_to_layoutlm_features",
+    "DataCollator",
+    "LayoutLMFeatures",
+]
 
 RawLayoutLMFeatures = NewType("RawLayoutLMFeatures", JsonDict)
 LayoutLMFeatures = NewType("LayoutLMFeatures", JsonDict)
-InputDataClass = NewType("InputDataClass", Any)
+InputDataClass = NewType("InputDataClass", JsonDict)
 
 """
 https://github.com/huggingface/transformers/src/transformers/data/data_collator.py
 A DataCollator is a function that takes a list of samples from a Dataset and collate them into a batch, as a dictionary
-of PyTorch/TensorFlow tensors or NumPy arrays. 
+of PyTorch/TensorFlow tensors or NumPy arrays.
 """
-DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])
+
+DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])  # type: ignore
 
 _CLS_BOX = [0.0, 0.0, 0.0, 0.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
@@ -64,9 +72,12 @@ _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 @deprecated("Use image_to_raw_layoutlm_features and LayoutLMDataCollator instead", "2022-07-12")
 @curry
 def image_to_layoutlm(
-    dp: Image, tokenizer: "PreTrainedTokenizer", categories_dict_name_as_key: Optional[Dict[str,str]]=None,
-        input_width: int = 1000, input_height: int = 1000,
-        ) -> JsonDict:
+    dp: Image,
+    tokenizer: "PreTrainedTokenizer",
+    categories_dict_name_as_key: Optional[Dict[str, str]] = None,
+    input_width: int = 1000,
+    input_height: int = 1000,
+) -> LayoutLMFeatures:
     """
     Maps an image to a dict that can be consumed by a tokenizer and ultimately be passed
     to a LayoutLM language model.
@@ -112,8 +123,11 @@ def image_to_layoutlm(
             all_boxes.extend([box] * len(word_tokens))
             all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
 
-        if names.C.SE in ann.sub_categories and names.NER.TAG in ann.sub_categories and categories_dict_name_as_key \
-                is not None:
+        if (
+            names.C.SE in ann.sub_categories
+            and names.NER.TAG in ann.sub_categories
+            and categories_dict_name_as_key is not None
+        ):
             semantic_label = ann.get_sub_category(names.C.SE).category_name
             bio_tag = ann.get_sub_category(names.NER.TAG).category_name
             if bio_tag == "O":
@@ -133,10 +147,10 @@ def image_to_layoutlm(
     max_length = tokenizer.max_model_input_sizes["microsoft/layoutlm-base-uncased"]
     encoding = tokenizer(" ".join(words), return_tensors="pt", max_length=max_length)
 
-    if len(all_ann_ids)>max_length:
-        all_ann_ids = all_ann_ids[:max_length-1] + ["SEP"]
-        all_boxes = all_boxes[:max_length-1] + [_SEP_BOX]
-        all_tokens = all_tokens[:max_length-1] + ["SEP"]
+    if len(all_ann_ids) > max_length:
+        all_ann_ids = all_ann_ids[: max_length - 1] + ["SEP"]
+        all_boxes = all_boxes[: max_length - 1] + [_SEP_BOX]
+        all_tokens = all_tokens[: max_length - 1] + ["SEP"]
 
     boxes = np.asarray(all_boxes, dtype="float32")
     boxes = box_to_point4(boxes)
@@ -148,7 +162,7 @@ def image_to_layoutlm(
 
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
-    pt_boxes = clamp(round(tensor([boxes.tolist()])), min=0.0, max=1000.0).int()
+    pt_boxes = torch.clamp(torch.round(torch.tensor([boxes.tolist()])), min=0.0, max=1000.0).int()
 
     output["ids"] = all_ann_ids
     output["boxes"] = pt_boxes
@@ -157,16 +171,17 @@ def image_to_layoutlm(
     output["attention_mask"] = encoding["attention_mask"]
     output["token_type_ids"] = encoding["token_type_ids"]
 
-    return output
+    return LayoutLMFeatures(output)
 
 
 @curry
-def image_to_raw_layoutlm_features(dp: Image,
-                                   categories_dict_name_as_key: Optional[Mapping[str,str]]=None,
-                                   dataset_type: Optional[Literal["SEQUENCE_CLASSIFICATION",
-                                                                  "TOKEN_CLASSIFICATION"]] = None,
-                                   input_width: int = 1000,
-                                   input_height: int = 1000) -> Optional[RawLayoutLMFeatures]:
+def image_to_raw_layoutlm_features(
+    dp: Image,
+    categories_dict_name_as_key: Optional[Mapping[str, str]] = None,
+    dataset_type: Optional[Literal["SEQUENCE_CLASSIFICATION", "TOKEN_CLASSIFICATION"]] = None,
+    input_width: int = 1000,
+    input_height: int = 1000,
+) -> Optional[RawLayoutLMFeatures]:
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
     can be used for sequence or token classification as well as for inference. To generate input features for the model
@@ -218,8 +233,12 @@ def image_to_raw_layoutlm_features(dp: Image,
             box = box.transform(dp.width, dp.height, absolute_coords=True)
         all_boxes.append(box.to_list(mode="xyxy"))
 
-        if names.C.SE in ann.sub_categories and names.NER.TAG in ann.sub_categories and categories_dict_name_as_key \
-                is not None and dataset_type == names.DS.TYPE.TOK:
+        if (
+            names.C.SE in ann.sub_categories
+            and names.NER.TAG in ann.sub_categories
+            and categories_dict_name_as_key is not None
+            and dataset_type == names.DS.TYPE.TOK
+        ):
             semantic_label = ann.get_sub_category(names.C.SE).category_name
             bio_tag = ann.get_sub_category(names.NER.TAG).category_name
             if bio_tag == "O":
@@ -230,7 +249,7 @@ def image_to_raw_layoutlm_features(dp: Image,
 
     if dp.summary is not None and categories_dict_name_as_key is not None and dataset_type == names.DS.TYPE.SEQ:
         category_name = dp.summary.get_sub_category(names.C.DOC).category_name
-        all_labels.append(int(categories_dict_name_as_key[category_name])-1)
+        all_labels.append(int(categories_dict_name_as_key[category_name]) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -242,7 +261,7 @@ def image_to_raw_layoutlm_features(dp: Image,
 
     if dp.image is not None:
         image = resizer.apply_image(dp.image)
-        raw_features["image"] = image
+        raw_features["image"] = image  # pylint: disable=E1137  #3162
 
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
@@ -250,6 +269,7 @@ def image_to_raw_layoutlm_features(dp: Image,
     # input box coordinates must be of type long. We floor the ul and ceil the lr coords
     boxes = np.concatenate((np.floor(boxes)[:, :2], np.ceil(boxes)[:, 2:]), axis=1).tolist()
 
+    # pylint: disable=E1137  #3162
     raw_features["image_id"] = dp.image_id
     raw_features["width"] = input_width
     raw_features["height"] = input_height
@@ -260,18 +280,31 @@ def image_to_raw_layoutlm_features(dp: Image,
 
     if categories_dict_name_as_key:
         raw_features["labels"] = all_labels
-
+    # pylint: enable=E1137
     return raw_features
 
 
-def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,List[RawLayoutLMFeatures]],
-                                      tokenizer: "PreTrainedTokenizerFast",
-                                      padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
-                                      truncation: bool = True,
-                                      return_overflowing_tokens: bool = False,
-                                      return_tensors: Optional[Literal["pt"]] = None,
-                                      remove_columns_for_training: bool = False
-                                      ) -> LayoutLMFeatures:
+def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
+    """
+    Converting list of floats to pytorch tensors
+    :param features: LayoutLMFeatures
+    :return: LayoutLMFeatures
+    """
+    features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
+    if "labels" in features:
+        features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
+    return features
+
+
+def raw_features_to_layoutlm_features(
+    raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]],
+    tokenizer: "PreTrainedTokenizerFast",
+    padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
+    truncation: bool = True,
+    return_overflowing_tokens: bool = False,
+    return_tensors: Optional[Literal["pt"]] = None,
+    remove_columns_for_training: bool = False,
+) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
 
@@ -288,8 +321,8 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
                        sequences (or a batch of pairs) is provided.
                        If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
                        model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can be
-                                  returned as an additional batch element. Not that in this case, the number of input
+    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can
+                                  be returned as an additional batch element. Not that in this case, the number of input
                                   batch samples will be smaller than the output batch samples.
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
@@ -301,9 +334,13 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
     if isinstance(raw_features, dict):
         raw_features = [raw_features]
 
-    _has_token_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.TOK and raw_features[0].get("labels") is not None
-    _has_sequence_labels = raw_features[0]["dataset_type"] == names.DS.TYPE.SEQ and raw_features[0].get("labels") is not None
-    _has_labels = True if _has_token_labels or _has_sequence_labels else False
+    _has_token_labels = (
+        raw_features[0]["dataset_type"] == names.DS.TYPE.TOK and raw_features[0].get("labels") is not None
+    )
+    _has_sequence_labels = (
+        raw_features[0]["dataset_type"] == names.DS.TYPE.SEQ and raw_features[0].get("labels") is not None
+    )
+    _has_labels = bool(_has_token_labels or _has_sequence_labels)
 
     tokenized_inputs = tokenizer(
         [dp["words"] for dp in raw_features],
@@ -311,7 +348,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         truncation=truncation,
         return_overflowing_tokens=return_overflowing_tokens,
         is_split_into_words=True,
-        return_tensors = return_tensors
+        return_tensors=return_tensors,
     )
 
     image_ids = []
@@ -338,7 +375,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         if _has_token_labels:
             labels = raw_features[batch_index_orig]["labels"]
         word_ids = tokenized_inputs.word_ids(batch_index=batch_index)
-        token_batch = tokenized_inputs.tokens(batch_index= batch_index)
+        token_batch = tokenized_inputs.tokens(batch_index=batch_index)
 
         token_batch_ann_ids = []
         token_batch_boxes = []
@@ -350,7 +387,7 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
                 if token_batch[idx] == "[CLS]":
                     token_batch_boxes.append(_CLS_BOX)
                     token_batch_ann_ids.append("[CLS]")
-                elif token_batch[idx] in ("[SEP]","[PAD]"):
+                elif token_batch[idx] in ("[SEP]", "[PAD]"):
                     token_batch_boxes.append(_SEP_BOX)
                     if token_batch[idx] == "[SEP]":
                         token_batch_ann_ids.append("[SEP]")
@@ -373,23 +410,17 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         if _has_sequence_labels:
             sequence_labels.append(raw_features[batch_index_orig]["labels"][0])
 
-    if return_tensors == "pt":
-        token_boxes = tensor(token_boxes,dtype=long)
-        if _has_token_labels:
-            token_labels = tensor(token_labels,dtype=long)
-        if _has_sequence_labels:
-            sequence_labels = tensor(sequence_labels,dtype=long)
-
     input_dict = {
-     "image_ids": image_ids,
-     "width": widths,
-     "height": heights,
-     "ann_ids": token_ann_ids,
-     "input_ids": tokenized_inputs["input_ids"],
-     "token_type_ids": tokenized_inputs["token_type_ids"],
-     "attention_mask": tokenized_inputs["attention_mask"],
-     "bbox": token_boxes,
-     "tokens": tokens}
+        "image_ids": image_ids,
+        "width": widths,
+        "height": heights,
+        "ann_ids": token_ann_ids,
+        "input_ids": tokenized_inputs["input_ids"],
+        "token_type_ids": tokenized_inputs["token_type_ids"],
+        "attention_mask": tokenized_inputs["attention_mask"],
+        "bbox": token_boxes,
+        "tokens": tokens,
+    }
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
@@ -400,7 +431,9 @@ def raw_features_to_layoutlm_features(raw_features: Union[RawLayoutLMFeatures,Li
         input_dict.pop("height")
         input_dict.pop("ann_ids")
         input_dict.pop("tokens")
-        return LayoutLMFeatures(input_dict)
+
+    if return_tensors == "pt":
+        return features_to_pt_tensors(LayoutLMFeatures(input_dict))
     return LayoutLMFeatures(input_dict)
 
 
@@ -420,8 +453,8 @@ class LayoutLMDataCollator:
                        sequences (or a batch of pairs) is provided.
                        If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
                        model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can be
-                                  returned as an additional batch element. Not that in this case, the number of input
+    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can
+                                  be returned as an additional batch element. Not that in this case, the number of input
                                   batch samples will be smaller than the output batch samples.
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
@@ -444,23 +477,32 @@ class LayoutLMDataCollator:
         if self.return_overflowing_tokens:
             assert self.truncation
 
-    def __call__(self, raw_features: Union[RawLayoutLMFeatures,List[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
+    def __call__(self, raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
         """
         Calling the DataCollator to form model inputs for training and inference. Takes a single raw
         :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
                              boxes, dataset_type`.
         :return: LayoutLMFeatures
         """
-        return raw_features_to_layoutlm_features(raw_features, self.tokenizer, self.padding, self.truncation,
-                                                 self.return_overflowing_tokens, self.return_tensors, True)
+        return raw_features_to_layoutlm_features(
+            raw_features,
+            self.tokenizer,
+            self.padding,
+            self.truncation,
+            self.return_overflowing_tokens,
+            self.return_tensors,
+            True,
+        )
 
 
 @curry
-def image_to_layoutlm_features(dp: Image,
-                               tokenizer: "PreTrainedTokenizerFast",
-                               return_tensors: Optional[Literal["pt"]] = None,
-                               input_width: int = 1000,
-                               input_height: int = 1000) -> LayoutLMFeatures:
+def image_to_layoutlm_features(
+    dp: Image,
+    tokenizer: "PreTrainedTokenizerFast",
+    return_tensors: Optional[Literal["pt"]] = None,
+    input_width: int = 1000,
+    input_height: int = 1000,
+) -> Optional[LayoutLMFeatures]:
     """
     Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
     :class:`LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
@@ -485,6 +527,8 @@ def image_to_layoutlm_features(dp: Image,
                          normalized to an image height equal to 1000.
     :return: A dict of layoutlm features
     """
-    dp = image_to_raw_layoutlm_features(None, None, input_width, input_height)(dp)
-    dp = raw_features_to_layoutlm_features(dp, tokenizer,return_tensors=return_tensors)
-    return dp
+    raw_features = image_to_raw_layoutlm_features(None, None, input_width, input_height)(dp)
+    if raw_features is None:
+        return None
+    features = raw_features_to_layoutlm_features(raw_features, tokenizer, return_tensors=return_tensors)
+    return features

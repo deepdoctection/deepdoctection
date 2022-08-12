@@ -26,7 +26,7 @@ from deepdoctection.dataflow import (
     SerializerFiles,
     SerializerJsonlines,
     SerializerPdfDoc,
-    SerializerTabsepFiles
+    SerializerTabsepFiles,
 )
 
 from ..test_utils import collect_datapoint_from_dataflow, get_test_path
@@ -95,7 +95,7 @@ class TestSerializerFiles:  # pylint: disable=R0903
         assert len(output) == 4
 
 
-class TestSerializerTabsepFiles:
+class TestSerializerTabsepFiles:  # pylint: disable=R0903
     """
     Testing SerializerTabsepFiles loading function
     """

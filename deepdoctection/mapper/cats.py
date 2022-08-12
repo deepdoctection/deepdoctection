@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union, Tuple
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
@@ -112,8 +112,9 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 
 
 @curry
-def filter_summary(dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[str, Sequence[str]],
-                   use_category_name: bool = True) -> Optional[Image]:
+def filter_summary(
+    dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[str, Sequence[str]], use_category_name: bool = True
+) -> Optional[Image]:
     """
     Filters datapoints with given summary conditions. If several conditions are given, it will filter out datapoints
     that do not satisfy all conditions.
@@ -127,10 +128,10 @@ def filter_summary(dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[str, Sequ
     :return: Image or None
     """
     for key, values in sub_cat_to_sub_cat_names_or_ids.items():
-        if use_category_name:
+        if use_category_name and dp.summary:
             if dp.summary.get_sub_category(key).category_name in values:
                 return dp
-        else:
+        elif dp.summary:
             if dp.summary.get_sub_category(key).category_id in values:
                 return dp
     return None
@@ -142,7 +143,7 @@ def image_to_cat_id(
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
     summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None,
-    id_name_or_value: Literal["id","name","value"] = "id",
+    id_name_or_value: Literal["id", "name", "value"] = "id",
 ) -> Tuple[Dict[str, Union[List[int], List[int]]], str]:
     """
     Extracts all category_ids, sub category information or summary sub category information with given names into a
@@ -210,7 +211,7 @@ def image_to_cat_id(
     if not category_names:
         category_names = []
 
-    if isinstance(summary_sub_category_names,str):
+    if isinstance(summary_sub_category_names, str):
         summary_sub_category_names = [summary_sub_category_names]
     if not summary_sub_category_names:
         summary_sub_category_names = []
@@ -226,7 +227,7 @@ def image_to_cat_id(
     if id_name_or_value not in ("id", "name", "value"):
         raise ValueError(f"id_name_or_value must be in ('id', 'name', 'value') but is {id_name_or_value}")
 
-    if category_names or sub_categories:
+    if category_names or sub_categories:  # pylint: disable=R1702
         for ann in dp.get_annotation_iter():
             if ann.category_name in category_names:
                 cat_container[ann.category_name].append(int(ann.category_id))
@@ -242,7 +243,8 @@ def image_to_cat_id(
                             if not isinstance(sub_cat, ContainerAnnotation):
                                 raise ValueError(
                                     f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
-                                    f"value for argument id_name_or_value")
+                                    f"value for argument id_name_or_value"
+                                )
                             cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
 
     if dp.summary is not None and summary_sub_category_names:
@@ -254,8 +256,10 @@ def image_to_cat_id(
                 cat_container[sub_cat_name].append(sub_cat.category_name)  # type: ignore
             if id_name_or_value == "value":
                 if not isinstance(sub_cat, ContainerAnnotation):
-                    raise ValueError(f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
-                                     f"value for argument id_name_or_value")
+                    raise ValueError(
+                        f"sub category {sub_cat_name} does not have a ContainerAnnotation. Choose another"
+                        f"value for argument id_name_or_value"
+                    )
                 cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
 
     return cat_container, dp.image_id
@@ -267,7 +271,7 @@ def remove_cats(
     category_names: Optional[Union[str, Sequence[str]]] = None,
     sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
     relationships: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    summary_sub_categories: Optional[Union[str, Sequence[str]]] = None
+    summary_sub_categories: Optional[Union[str, Sequence[str]]] = None,
 ) -> Image:
     """
     Remove categories according to given category names or sub category names. Note that these will change the container

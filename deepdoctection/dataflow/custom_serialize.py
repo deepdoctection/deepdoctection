@@ -130,8 +130,8 @@ class SerializerTabsepFiles:
         :return: dataflow to iterate from
         """
 
-        file =  open(path, 'r')
-        iterator = file.readlines()
+        with open(path, "r", encoding="UTF-8") as file:
+            iterator = file.readlines()
         return CustomDataFromIterable(iterator, max_datapoints=max_datapoins)
 
     @staticmethod
@@ -150,7 +150,7 @@ class SerializerTabsepFiles:
         assert os.path.isdir(path), f"not a dir {path}"
         assert is_file_extension(file_name, ".txt")
 
-        with open(os.path.join(path, file_name), "w") as file:
+        with open(os.path.join(path, file_name), "w", encoding="UTF-8") as file:
             length = _reset_df_and_get_length(df)
             if length == 0:
                 logger.info("cannot estimate length of dataflow")

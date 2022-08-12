@@ -20,6 +20,7 @@ Testing module eval.tedsmetric
 """
 
 from pytest import mark
+
 from deepdoctection.utils.file_utils import apted_available
 
 if apted_available():

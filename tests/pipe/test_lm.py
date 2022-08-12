@@ -26,18 +26,18 @@ from unittest.mock import MagicMock
 from pytest import mark
 
 from deepdoctection.datapoint import Image
-from deepdoctection.extern.base import TokenClassResult, SequenceClassResult
+from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layoutlm_features
-from deepdoctection.pipe import LMTokenClassifierService, LMSequenceClassifierService
+from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import names
 from deepdoctection.utils.file_utils import transformers_available
+from deepdoctection.utils.settings import names
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
 
 
-class TestLMTokenClassifierService:  # pylint: disable=R0903
+class TestLMTokenClassifierService:
     """
     Test LMTokenClassifierService
     """
@@ -101,7 +101,6 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
     @mark.requires_pt
     def test_pass_datapoint_2(
         dp_image_with_layout_and_word_annotations: Image,
-        layoutlm_input: JsonDict,
         token_class_result: List[TokenClassResult],
     ) -> None:
         """
@@ -111,9 +110,9 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
         # Arrange
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
 
-        lm = MagicMock()
-        lm.predict = MagicMock(return_value=token_class_result)
-        lm_service = LMTokenClassifierService(tokenizer_fast, lm, image_to_layoutlm_features)
+        language_model = MagicMock()
+        language_model.predict = MagicMock(return_value=token_class_result)
+        lm_service = LMTokenClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
 
         dp = dp_image_with_layout_and_word_annotations
 
@@ -147,7 +146,6 @@ class TestLMSequenceClassifierService:  # pylint: disable=R0903
     @mark.requires_pt
     def test_pass_datapoint(
         dp_image_with_layout_and_word_annotations: Image,
-        layoutlm_input: JsonDict,
         sequence_class_result: SequenceClassResult,
     ) -> None:
         """
@@ -157,14 +155,15 @@ class TestLMSequenceClassifierService:  # pylint: disable=R0903
         # Arrange
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
 
-        lm = MagicMock()
-        lm.predict = MagicMock(return_value=sequence_class_result)
-        lm_service = LMSequenceClassifierService(tokenizer_fast, lm, image_to_layoutlm_features)
+        language_model = MagicMock()
+        language_model.predict = MagicMock(return_value=sequence_class_result)
+        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
 
         dp = dp_image_with_layout_and_word_annotations
 
         # Act
         dp = lm_service.pass_datapoint(dp)
+        assert dp.summary is not None
 
         # Assert
         assert dp.summary.get_sub_category(names.C.DOC).category_name == "FOO"

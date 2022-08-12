@@ -23,10 +23,15 @@ from typing import List, Tuple
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
-    doctr_available, get_doctr_requirement, get_tf_addons_requirements, tf_addons_available,
-    get_tensorflow_requirement, tf_available, pytorch_available, get_pytorch_requirement
+    doctr_available,
+    get_doctr_requirement,
+    get_pytorch_requirement,
+    get_tensorflow_requirement,
+    get_tf_addons_requirements,
+    pytorch_available,
+    tf_addons_available,
+    tf_available,
 )
-
 from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
@@ -117,8 +122,9 @@ class DoctrTextlineDetector(ObjectDetector):
     def get_requirements(cls) -> List[Requirement]:
         if tf_available():
             return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-        elif pytorch_available():
+        if pytorch_available():
             return [get_pytorch_requirement(), get_doctr_requirement()]
+        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
     def clone(self) -> PredictorBase:
         return self.__class__()
@@ -172,8 +178,9 @@ class DoctrTextRecognizer(TextRecognizer):
     def get_requirements(cls) -> List[Requirement]:
         if tf_available():
             return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-        elif pytorch_available():
+        if pytorch_available():
             return [get_pytorch_requirement(), get_doctr_requirement()]
+        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
     def clone(self) -> PredictorBase:
         return self.__class__()
