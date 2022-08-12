@@ -463,7 +463,7 @@ class LayoutLMDataCollator:
              token_type_ids, attention_masks, boxes, labels`.
     """
 
-    tokenizer: PreTrainedTokenizerFast
+    tokenizer: "PreTrainedTokenizerFast"
     padding: Literal["max_length", "do_not_pad", "longest"] = field(default="max_length")
     truncation: bool = field(default=True)
     return_overflowing_tokens: bool = field(default=False)
