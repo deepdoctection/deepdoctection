@@ -18,9 +18,9 @@
 """
 Dataclass Image
 """
-from copy import deepcopy
+
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
@@ -476,18 +476,25 @@ class Image:
         :return: Dict that e.g. can be saved to a file.
         """
         export_dict = self.as_dict()
-        if save_image:
+        if save_image and self.image:
             export_dict["_image"] = convert_np_array_to_b64(self.image)
 
         return export_dict
 
     @classmethod
-    def from_dict(cls, **kwargs):
-        image = cls(kwargs.get("file_name"),kwargs.get("location"),kwargs.get("external_id"))
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "Image":
+        """
+        Create :class:`Image` instance from dict.
+
+        :param kwargs: dict with  :class:`Image` attributes and nested dicts for initializing annotations,
+        :return: Initialized image
+        """
+        image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
         image._image_id = kwargs.get("_image_id")
         if b64_image := kwargs.get("_image"):
             image.image = b64_image
-        if box_kwargs:= kwargs.get("_bbox"):
+        if box_kwargs := kwargs.get("_bbox"):
             image._bbox = BoundingBox.from_dict(**box_kwargs)
         for image_id, box_dict in kwargs.get("embeddings").items():
             image.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
@@ -500,4 +507,3 @@ class Image:
         if summary_dict := kwargs.get("summary"):
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
         return image
-

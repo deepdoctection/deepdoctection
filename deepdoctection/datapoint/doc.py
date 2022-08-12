@@ -25,7 +25,7 @@ evaluating the text extractions.
 import json
 import os
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import cv2
 import numpy as np
@@ -227,9 +227,12 @@ class Page:
         return text
 
     def viz(
-        self, show_tables: bool = True, show_items: bool = True, show_cells: bool = True,
-            show_table_structure: bool =True,
-            interactive: bool = False
+        self,
+        show_tables: bool = True,
+        show_items: bool = True,
+        show_cells: bool = True,
+        show_table_structure: bool = True,
+        interactive: bool = False,
     ) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
@@ -251,7 +254,7 @@ class Page:
                             can be displayed differently.
         :return: If interactive will return nothing else a numpy array.
         """
-        category_names_list = []
+        category_names_list: List[Union[str, None]] = []
         box_stack = []
 
         if show_items:

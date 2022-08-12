@@ -202,7 +202,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         return True
 
     def get_meta_annotation(self) -> JsonDict:
-        assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
+        assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
         return dict(
             [
                 ("image_annotations", self.predictor.possible_categories()),

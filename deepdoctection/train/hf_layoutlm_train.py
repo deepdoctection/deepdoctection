@@ -19,78 +19,121 @@
 Module for training Huggingface implementation of LayoutLm
 """
 
-import json
 import copy
-from typing import Optional, List, Dict, Union, Type, Any, Sequence
+import json
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
-from torch.utils.data import Dataset
 from torch.nn import Module
-
+from torch.utils.data import Dataset
+from transformers import (
+    IntervalStrategy,
+    LayoutLMForSequenceClassification,
+    LayoutLMForTokenClassification,
+    LayoutLMTokenizerFast,
+    PretrainedConfig,
+    PreTrainedModel,
+)
 from transformers.trainer import Trainer, TrainingArguments
-from transformers import PreTrainedModel, PretrainedConfig, LayoutLMForSequenceClassification, \
-    LayoutLMForTokenClassification, LayoutLMTokenizerFast, IntervalStrategy
-from ..eval.eval import Evaluator
-from ..eval.base import MetricBase
-from ..eval.registry import metric_registry
-from ..datasets.base import DatasetBase
+
 from ..datasets.adapter import DatasetAdapter
-from ..pipe.base import PredictorPipelineComponent, LanguageModelPipelineComponent
-from ..pipe.registry import pipeline_component_registry
-from ..extern.pt.ptutils import get_num_gpu
+from ..datasets.base import DatasetBase
+from ..datasets.registry import get_dataset
+from ..eval.base import MetricBase
+from ..eval.eval import Evaluator
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenClassifier
-from ..mapper.laylmstruct import DataCollator, image_to_raw_layoutlm_features, LayoutLMDataCollator, image_to_layoutlm_features
-from ..utils.utils import string_to_dict
+from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_features, image_to_raw_layoutlm_features
+from ..pipe.base import LanguageModelPipelineComponent
+from ..pipe.registry import pipeline_component_registry
 from ..utils.settings import names
+from ..utils.utils import string_to_dict
 
-
-_ARCHITECTURES_TO_MODEL_CLASS = {"LayoutLMForTokenClassification": LayoutLMForTokenClassification,
-                                 "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification}
-_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {("layoutlm",names.DS.TYPE.SEQ): LayoutLMForSequenceClassification,
-                                       ("layoutlm",names.DS.TYPE.TOK): LayoutLMForTokenClassification}
+_ARCHITECTURES_TO_MODEL_CLASS = {
+    "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
+    "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification,
+}
+_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {
+    ("layoutlm", names.DS.TYPE.SEQ): LayoutLMForSequenceClassification,
+    ("layoutlm", names.DS.TYPE.TOK): LayoutLMForTokenClassification,
+}
 _MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
-_DS_TYPE_TO_DD_LM_CLASS = {names.DS.TYPE.TOK: HFLayoutLmTokenClassifier,
-                           names.DS.TYPE.SEQ: HFLayoutLmSequenceClassifier}
+_DS_TYPE_TO_DD_LM_CLASS = {
+    names.DS.TYPE.TOK: HFLayoutLmTokenClassifier,
+    names.DS.TYPE.SEQ: HFLayoutLmSequenceClassifier,
+}
 
 
 class LayoutLMTrainer(Trainer):
+    """
+    Huggingface Trainer for training Transformer models with a custom evaluate method in order
+    to use dd Evaluator. Train setting is not defined in the trainer itself but in config setting as
+    defined in `TrainingArguments`. Please check the Transformer documentation
 
-    def __init__(self, model: Union[PreTrainedModel, Module],
-                       args: TrainingArguments, data_collator: DataCollator, train_dataset):
+    https://huggingface.co/docs/transformers/main_classes/trainer
+
+    for custom training setting.
+    """
+
+    def __init__(
+        self,
+        model: Union[PreTrainedModel, Module],
+        args: TrainingArguments,
+        data_collator: LayoutLMDataCollator,
+        train_dataset: Dataset[Any],
+    ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[Dict[str, Any]] = None
-        super().__init__(model,args,data_collator, train_dataset)
+        super().__init__(model, args, data_collator, train_dataset)
 
-    def setup_evaluator(self, dataset_val: DatasetBase, pipeline_component: LanguageModelPipelineComponent, metric: Type[MetricBase],
-    **build_eval_kwargs) -> None:
+    def setup_evaluator(
+        self,
+        dataset_val: DatasetBase,
+        pipeline_component: LanguageModelPipelineComponent,
+        metric: Type[MetricBase],
+        **build_eval_kwargs: Union[str, int],
+    ) -> None:
+        """
+        Setup of evaluator before starting training. During training, predictors will be replaced by current
+        checkpoints.
 
-        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=get_num_gpu() * 2)
+        :param dataset_val: dataset on which to run evaluation
+        :param pipeline_component: pipeline component to plug into the evaluator
+        :param metric: A metric class
+        :param build_eval_kwargs:
+        """
+
+        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=2)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.language_model.model = None
+            comp.language_model.model = None  # type: ignore
         self.build_eval_kwargs = build_eval_kwargs
 
     def evaluate(
         self,
-        eval_dataset: Optional[Dataset] = None,
+        eval_dataset: Optional[Dataset[Any]] = None,
         ignore_keys: Optional[List[str]] = None,
         metric_key_prefix: str = "eval",
     ) -> Dict[str, float]:
-
+        """
+        Overwritten method from :class:`Trainer`. Arguments will not be used.
+        """
         assert self.evaluator is not None
         assert self.evaluator.pipe_component is not None
 
         # memory metrics - must set up as early as possible
         self._memory_tracker.start()
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.language_model.model = copy.deepcopy(self.model).eval()
-        scores = self.evaluator.run(True, **self.build_eval_kwargs)
+            comp.language_model.model = copy.deepcopy(self.model).eval()  # type: ignore
+        if isinstance(self.build_eval_kwargs, dict):
+            scores = self.evaluator.run(True, **self.build_eval_kwargs)
+        else:
+            scores = self.evaluator.run(True)
 
         self.log(scores)
 
         return scores
 
 
-def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str):
+def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> Tuple[Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
@@ -99,7 +142,7 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str):
     if architectures := config_json.get("architectures"):
         model_cls = _ARCHITECTURES_TO_MODEL_CLASS.get(architectures[0])
     elif model_type:
-        model_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type,dataset_type))
+        model_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type, dataset_type))
     else:
         raise KeyError("model_type and architectures not available in configs")
 
@@ -123,8 +166,54 @@ def train_hf_layoutlm(
     metric: Optional[Type[MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
+    """
+    Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
+    classification using HF Trainer and custom evaluation. The theoretical foundation can be taken from
 
-    assert get_num_gpu() > 0, "Has to train with GPU!"
+    https://arxiv.org/abs/1912.13318
+
+    This is not the pre-training script.
+
+    In order to remain within the framework of this library, the basic LayoutLM model must be downloaded from the HF-hub
+    in a first step for fine-tuning. Two models are available for this, which are registered in the ModelCatalog:
+
+    "microsoft/layoutlm-base-uncased/pytorch_model.bin"
+
+     and
+
+     "microsoft/layoutlm-large-uncased/pytorch_model.bin"
+
+
+    .. code-block:: python
+
+        ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
+
+    The corresponding cased models are currently not available, but this is only to keep the model selection small.
+
+    If the config file and weights have been downloaded, the model can be trained for the desired task.
+
+    How does the model selection work?
+
+    The base model is selected by the transferred config file and the weights. Depending on the dataset type
+    ("SEQUENCE_CLASSIFICATION" or "TOKEN_CLASSIFICATION"), the complete model is then put together by placing a suitable
+    top layer on the base model.
+
+    :param path_config_json: Absolute path to HF config file, e.g.
+                             ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
+    :param dataset_train: Dataset to use for training. Only datasets of type "SEQUENCE_CLASSIFICATION" or
+                          "TOKEN_CLASSIFICATION" are supported.
+    :param path_weights: path to a checkpoint for further fine-tuning
+    :param config_overwrite: Pass a list of arguments if some configs from `TrainingArguments` should be replaced. Check
+                             https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments
+                             for the full training default setting.
+    :param log_dir: Path to log dir. Will default to `train_log/layoutlm`
+    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
+    :param dataset_val: Dataset to use for validation. Dataset type must be the same as type of `dataset_train`
+    :param build_val_config: same as `build_train_config` but for validation
+    :param metric: A metric to choose for validation.
+    :param pipeline_component_name: A pipeline component name to use for validation (e.g. LMSequenceClassifierService or
+                                    LMTokenClassifierService.
+    """
 
     build_train_dict: Dict[str, str] = {}
     if build_train_config is not None:
@@ -140,14 +229,21 @@ def train_hf_layoutlm(
 
     if config_overwrite is None:
         config_overwrite = []
+
     # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
     # that are necessary for the tokenizer. We also define some default settings.
-    conf_dict = {"output_dir": log_dir,
-                 "remove_unused_columns": False,
-                 "per_device_train_batch_size": 8,
-                 "max_steps":130,
-                 "evaluation_strategy": "steps" if (dataset_val is not None and metric is not None and pipeline_component_name is not None) else "no",
-                 "eval_steps": 100 }
+    conf_dict = {
+        "output_dir": log_dir,
+        "remove_unused_columns": False,
+        "per_device_train_batch_size": 8,
+        "max_steps": 130,
+        "evaluation_strategy": "steps"
+        if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
+        else "no",
+        "eval_steps": 100,
+    }
+    if isinstance(dataset_train, str):
+        dataset_train = get_dataset(dataset_train)
 
     for conf in config_overwrite:
         key, val = conf.split("=", maxsplit=1)
@@ -156,28 +252,33 @@ def train_hf_layoutlm(
     arguments = TrainingArguments(**conf_dict)
     dataset_type = dataset_train.dataset_info.type
 
-    model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json,dataset_type)
+    model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
 
     id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
-    id2label = {int(k)-1:v for k,v in id_str_2label.items()}
-    dataset = DatasetAdapter(dataset_train,
-                             True,
-                             image_to_raw_layoutlm_features(dataset_train.dataflow.categories.get_categories(as_dict=True,
-                             name_as_key=True),
-                             dataset_type), **build_train_dict)
+    id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
+    dataset = DatasetAdapter(
+        dataset_train,
+        True,
+        image_to_raw_layoutlm_features(
+            dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True), dataset_type
+        ),
+        **build_train_dict,
+    )
     config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
     data_collator = LayoutLMDataCollator(tokenizer_fast, return_tensors="pt")
-    trainer = LayoutLMTrainer(model,arguments,data_collator, dataset)
+    trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         dd_model_cls = _DS_TYPE_TO_DD_LM_CLASS[dataset_type]
-        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
-        dd_model = dd_model_cls(path_config_json=path_config_json, path_weights=path_weights, categories=categories,device="cuda")
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        dd_model = dd_model_cls(
+            path_config_json=path_config_json, path_weights=path_weights, categories=categories, device="cuda"
+        )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        pipeline_component = pipeline_component_cls(tokenizer_fast,dd_model,image_to_layoutlm_features)
+        pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
-        trainer.setup_evaluator(dataset_val,pipeline_component,metric,**build_val_dict)
+        trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore
 
     trainer.train()

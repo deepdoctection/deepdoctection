@@ -18,9 +18,11 @@
 """
 Module for token classification pipeline
 """
-from typing import List
+from typing import Any, Callable, List, Optional
 
 from ..datapoint.image import Image
+from ..extern.base import LMSequenceClassifier, LMTokenClassifier
+from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .base import LanguageModelPipelineComponent
@@ -42,8 +44,8 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             ocr_service = TextExtractionService(tess)
 
             # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
-            layoutlm = HFLayoutLmTokenClassifier(categories_explicit= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmTokenClassifier(categories= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
                                                                'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
                                                                'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD', 'S-QUESTION'])
 
@@ -59,8 +61,24 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 ...
     """
 
+    def __init__(
+        self,
+        tokenizer: Any,
+        language_model: LMTokenClassifier,
+        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+    ) -> None:
+        """
+        :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
+        :param language_model: language model token classifier
+        :param mapping_to_lm_input_func: Function mapping image to layout language model features
+        """
+        self.language_model = language_model
+        super().__init__(tokenizer, mapping_to_lm_input_func)
+
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
+        if lm_input is None:
+            return
         lm_output = self.language_model.predict(**lm_input)
 
         # turn to word level predictions
@@ -92,11 +110,58 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
 class LMSequenceClassifierService(LanguageModelPipelineComponent):
+    """
+    Pipeline component for sequence classification
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+                                                     categories=["HANDWRITTEN", "PRESENTATION", "RESUME"])
+
+            # token classification service
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+
+    """
+
+    def __init__(
+        self,
+        tokenizer: Any,
+        language_model: LMSequenceClassifier,
+        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+    ) -> None:
+        """
+        :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
+        :param language_model: language model sequence classifier
+        :param mapping_to_lm_input_func: Function mapping image to layout language model features
+        """
+        self.language_model = language_model
+        super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
+        if lm_input is None:
+            return
         lm_output = self.language_model.predict(**lm_input)
-        self.dp_manager.set_summary_annotation(names.C.DOC,lm_output.class_name,lm_output.class_id,None,lm_output.score)
+        self.dp_manager.set_summary_annotation(
+            names.C.DOC, lm_output.class_name, lm_output.class_id, None, lm_output.score
+        )
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

@@ -34,9 +34,6 @@ if tf_available():
     from deepdoctection.train.tp_frcnn_train import get_train_dataflow, train_faster_rcnn
 
 
-
-
-
 @mark.requires_tf
 @mark.full
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))

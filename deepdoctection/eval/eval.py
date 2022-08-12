@@ -23,13 +23,13 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Dict, List, Literal, Optional, Type, Union, overload
 
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
-from ..pipe.base import PredictorPipelineComponent, LanguageModelPipelineComponent
+from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.logger import logger
@@ -80,7 +80,7 @@ class Evaluator:  # pylint: disable=R0903
         self,
         dataset: DatasetBase,
         component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
-        metric: Union[Type[MetricBase],MetricBase],
+        metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
     ) -> None:
         """
@@ -101,7 +101,7 @@ class Evaluator:  # pylint: disable=R0903
                 "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
                 num_threads,
             )
-            pipeline_components: List[PredictorPipelineComponent] = []
+            pipeline_components: List[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
 
             for _ in range(num_threads - 1):
                 copy_pipe_component = component_or_pipeline.clone()
@@ -117,12 +117,23 @@ class Evaluator:  # pylint: disable=R0903
         else:
             self.pipe = component_or_pipeline
 
-        self.metric = metric()
+        if not isinstance(metric, MetricBase):
+            self.metric = metric()
         self._sanity_checks()
+
+    @overload
+    def run(
+        self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
+    ) -> List[Dict[str, float]]:
+        ...
+
+    @overload
+    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> Dict[str, float]:
+        ...
 
     def run(
         self, output_as_dict: bool = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    ) -> Union[List[Dict[str, float]], Dict[str, float]]:
         """
         Start evaluation process and return the results.
 
@@ -187,12 +198,18 @@ class Evaluator:  # pylint: disable=R0903
             # generated in pipeline.
             df_pr = MapData(df_pr, filter_cat(anns_to_keep, possible_cats_in_datapoint))  # pylint: disable=E1120
             df_pr = MapData(df_pr, maybe_remove_image_from_category(anns_to_keep))
-            df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove,
-                                               relationships=relationships_to_remove))  # pylint: disable=E1120
+            df_pr = MapData(
+                df_pr,
+                remove_cats(
+                    sub_categories=sub_cats_to_remove, relationships=relationships_to_remove
+                ),
+            )
 
         elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
             summary_sub_cats_to_remove = meta_anns["summaries"]
-            df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
+            df_pr = MapData(
+                df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove)
+            )
 
         else:
             raise NotImplementedError

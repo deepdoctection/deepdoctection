@@ -24,13 +24,18 @@ from pathlib import Path
 from typing import Optional
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
-from ..utils.fs import mkdir_p
 from ..utils.detection_types import Pathlike
+from ..utils.fs import mkdir_p
 
 
-def dataflow_to_json(df: DataFlow, path: Pathlike, single_files: bool = False,
-                     file_name: Optional[str] = None, max_datapoints: Optional[int] = None,
-                     save_image: bool = False) -> None:
+def dataflow_to_json(
+    df: DataFlow,
+    path: Pathlike,
+    single_files: bool = False,
+    file_name: Optional[str] = None,
+    max_datapoints: Optional[int] = None,
+    save_image: bool = False,
+) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
     JSON object.
@@ -43,7 +48,7 @@ def dataflow_to_json(df: DataFlow, path: Pathlike, single_files: bool = False,
     :param max_datapoints: Will stop saving after dumping max_datapoint images.
     :param save_image: Will save the image to the JSON object
     """
-    if isinstance(path,str):
+    if isinstance(path, str):
         path = Path(path)
     if single_files:
         mkdir_p(path)
@@ -54,13 +59,9 @@ def dataflow_to_json(df: DataFlow, path: Pathlike, single_files: bool = False,
         for idx, dp in enumerate(df):
             if idx == max_datapoints:
                 break
-            target_file = path /  (dp["file_name"].split(".")[0] + ".json")
-            with open(target_file, 'w') as fp:
-                json.dump(dp, fp)
+            target_file = path / (dp["file_name"].split(".")[0] + ".json")
+            with open(target_file, "w", encoding="UTF-8") as file:
+                json.dump(dp, file)
     else:
         assert file_name, "if single_files is set to False must pass a valid file name for .jsonl file"
         SerializerJsonlines.save(df, path, file_name, max_datapoints)
-
-
-
-

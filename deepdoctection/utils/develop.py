@@ -26,10 +26,10 @@ import functools
 import inspect
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
-from .logger import logger
 from .detection_types import T
+from .logger import logger
 
 __all__: List[str] = ["deprecated"]
 
@@ -67,7 +67,9 @@ def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnin
     logger.info("[Deprecated] %s", info_msg)
 
 
-def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> Callable[..., T]:
+def deprecated(
+    text: str = "", eos: str = "", max_num_warnings: Optional[int] = None
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
 
     :param text: same as :func:`log_deprecated`.
@@ -94,7 +96,7 @@ def deprecated(text: str = "", eos: str = "", max_num_warnings: Optional[int] = 
         entry = stack[2]
         return f"{entry[1]}:{entry[2]}"
 
-    def deprecated_inner(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    def deprecated_inner(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         def new_func(*args, **kwargs):  # type: ignore
             name = f"{func.__name__} [{get_location()}]"

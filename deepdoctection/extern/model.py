@@ -288,15 +288,16 @@ class ModelCatalog:
         "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlm-base-uncased/pytorch_model.bin",
             description="LayoutLM is a simple but effective pre-training method of text and layout for document image"
-                        " understanding and information extraction tasks, such as form understanding and receipt"
-                        " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
-                        "contain any head and has to be fine tuned on a downstream task.",
-            size = [453093832],
-            tp_model = False,
+            " understanding and information extraction tasks, such as form understanding and receipt"
+            " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
+            "contain any head and has to be fine tuned on a downstream task.",
+            size=[453093832],
+            tp_model=False,
             config="microsoft/layoutlm-base-uncased/config.json",
             hf_repo_id="microsoft/layoutlm-base-uncased",
             hf_model_name="pytorch_model.bin",
-            hf_config_file=["config.json"]),
+            hf_config_file=["config.json"],
+        ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",

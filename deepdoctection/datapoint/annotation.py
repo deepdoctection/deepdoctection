@@ -20,27 +20,30 @@ Dataclass for annotations and their derived classes.
 """
 
 from abc import ABC, abstractmethod
-
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, no_type_check
 
-from ..utils import get_uuid, is_uuid_like
+from ..utils.detection_types import JsonDict
+from ..utils.identifier import get_uuid, is_uuid_like
 from .box import BoundingBox
 from .convert import as_dict
 
 
+@no_type_check
 def _ann_from_dict(cls, **kwargs):
-    ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"),
-                       kwargs.get("score"))
+    ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
     ann.active = kwargs.get("active")
-    ann._annotation_id = kwargs.get("_annotation_id")
-    for key, value in kwargs.get("sub_categories").items():
-        if "value" in value:
-            ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
-        else:
-            ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
-    for key, value in kwargs.get("relationships"):
-        ann.dump_relationship(key, value)
+    ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
+    if isinstance(kwargs.get("sub_categories"), dict):
+        for key, value in kwargs["sub_categories"].items():
+            if "value" in value:
+                ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
+            else:
+                ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
+    if isinstance(kwargs.get("relationships"), dict):
+        for key, values in kwargs["relationships"].items():
+            for value in values:
+                ann.dump_relationship(key, value)
     return ann
 
 
@@ -163,7 +166,12 @@ class Annotation(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, **kwargs) -> "Annotation":
+    def from_dict(cls, **kwargs: JsonDict) -> "Annotation":
+        """
+        Method to initialize a derived class from dict.
+        :param kwargs: dict with  :class:`Annotation` attributes
+        :return: Annotation instance
+        """
         raise NotImplementedError
 
 
@@ -311,7 +319,7 @@ class CategoryAnnotation(Annotation):
         return []
 
     @classmethod
-    def from_dict(cls, **kwargs) -> "CategoryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> "CategoryAnnotation":
         category_ann = _ann_from_dict(cls, **kwargs)
         return category_ann
 
@@ -338,9 +346,9 @@ class ImageAnnotation(CategoryAnnotation):
         return ["category_name", "bounding_box"]
 
     @classmethod
-    def from_dict(cls, **kwargs) -> "ImageAnnotation":
-        image_ann = _ann_from_dict(cls,**kwargs)
-        if box_kwargs:= kwargs.get("bounding_box"):
+    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotation":
+        image_ann = _ann_from_dict(cls, **kwargs)
+        if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
         return image_ann
 
@@ -359,7 +367,7 @@ class SummaryAnnotation(CategoryAnnotation):
         super().__post_init__()
 
     @classmethod
-    def from_dict(cls, **kwargs) -> "SummaryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
         summary_ann = _ann_from_dict(cls, **kwargs)
         summary_ann.category_name = "SUMMARY"
         return summary_ann
@@ -380,12 +388,7 @@ class ContainerAnnotation(CategoryAnnotation):
         return ["category_name", "value"]
 
     @classmethod
-    def from_dict(cls, **kwargs) -> "SummaryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
         container_ann = _ann_from_dict(cls, **kwargs)
         container_ann.value = kwargs.get("value")
         return container_ann
-
-
-
-
-

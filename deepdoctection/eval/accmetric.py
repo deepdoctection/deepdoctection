@@ -18,7 +18,7 @@
 """
 Module for Accuracy metric
 """
-from typing import Any, Dict, List, Optional, Tuple, Union, Sequence, Mapping
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy import float32
@@ -42,8 +42,9 @@ if sklearn_available():
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int],
-             masks: Optional[Sequence[int]] = None) -> NDArray[float32]:
+def accuracy(
+    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
+) -> NDArray[float32]:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
@@ -107,8 +108,7 @@ class AccuracyMetric(MetricBase):
             dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)
             labels_per_image_predictions[image_id_pr] = dp_labels_predictions
 
-        for image_id in labels_per_image_gt:
-            dp_labels_gt = labels_per_image_gt[image_id]
+        for image_id, dp_labels_gt in labels_per_image_gt.items():
             dp_labels_predictions = labels_per_image_predictions[image_id]
             for key in dp_labels_gt.keys():
                 if key not in labels_gt:
@@ -138,7 +138,7 @@ class AccuracyMetric(MetricBase):
         cls,
         category_names: Optional[Union[str, Sequence[str]]] = None,
         sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-        summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None
+        summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None,
     ) -> None:
         """
         Set categories that are supposed to be evaluated. If sub_categories have to be considered then they need to be
@@ -160,7 +160,7 @@ class AccuracyMetric(MetricBase):
         """
 
         if category_names is not None:
-            cls._cats = category_names if isinstance(category_names, list) else [category_names]
+            cls._cats = [category_names] if isinstance(category_names, str) else category_names
         if sub_category_names is not None:
             cls._sub_cats = sub_category_names
         if summary_sub_category_names is not None:
@@ -183,8 +183,10 @@ class AccuracyMetric(MetricBase):
                 assert set(val) <= set(sub_cats[key])
 
         if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
-            logger.warn("Accuracy metric has not correctly been set up: No category, sub category or summary has been"
-                        "defined, therefore it is undefined what to evaluate.")
+            logger.warning(
+                "Accuracy metric has not correctly been set up: No category, sub category or summary has been"
+                "defined, therefore it is undefined what to evaluate."
+            )
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -192,7 +194,7 @@ class AccuracyMetric(MetricBase):
 
     @property
     def sub_cats(self) -> Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]]:
-        """ sub cats"""
+        """sub cats"""
         return self._sub_cats
 
     @property
@@ -201,7 +203,9 @@ class AccuracyMetric(MetricBase):
         return self._summary_sub_cats
 
 
-def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
+def confusion(
+    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
+) -> NDArray[float32]:
     """
     Calculates the accuracy matrix given the predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.confusion_matrix`

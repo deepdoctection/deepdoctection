@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
-from deepdoctection.mapper import cat_to_sub_cat, filter_cat, image_to_cat_id, pub_to_image, remove_cats, filter_summary
+from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 
@@ -173,7 +173,9 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.RS: [1, 1, 1, 1, 0]}
 
     # Act
-    output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(   # pylint: disable = E1102
+        dp_image_fully_segmented
+    )
 
     # Assert
     assert output[names.C.RS] == expected_output[names.C.RS]
@@ -194,7 +196,9 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     }
 
     # Act
-    output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(  # pylint: disable = E1102
+        dp_image_fully_segmented
+    )
 
     # Assert
     assert output[names.C.RN] == expected_output[names.C.RN]
@@ -280,7 +284,8 @@ def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
     # Act
     remove_cats_mapper = remove_cats(summary_sub_categories="TEST_SUMMARY")  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
+    assert dp.summary is not None
 
     # Assert
     with pytest.raises(Exception):
-         dp.summary.get_sub_category("TEST_SUMMARY")
+        dp.summary.get_sub_category("TEST_SUMMARY")

@@ -21,7 +21,7 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import List, Optional
+from typing import List, Optional, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -341,7 +341,14 @@ class BoundingBox:
         return ["height", "width"]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "BoundingBox":
+        """
+        Create :class:`BoundingBox` instance from dict
+
+        :param kwargs: dict with  :class:`BoundingBox` attributes
+        :return: Initialized BoundingBox
+        """
         return cls(**kwargs)
 
 

@@ -28,8 +28,8 @@ from .concurrency import *
 from .doctectionpipe import *
 from .language import *
 from .layout import *
+from .lm import *
 from .refine import *
 from .registry import *
 from .segment import *
 from .text import *
-from .lm import *

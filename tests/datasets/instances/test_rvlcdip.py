@@ -21,6 +21,7 @@ Testing module datasets.instances.rvlcdip
 from unittest.mock import MagicMock, patch
 
 from deepdoctection.datasets import Rvlcdip
+
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
 
@@ -33,7 +34,7 @@ def test_dataset_pubtabnet_returns_image() -> None:
 
     # Arrange
     rvlcdip = Rvlcdip()
-    rvlcdip.dataflow.get_workdir = get_test_path
+    rvlcdip.dataflow.get_workdir = get_test_path  # type: ignore
     rvlcdip.dataflow.annotation_files = {"val": "test_file.txt"}
     df = rvlcdip.dataflow.build()
 
