@@ -25,9 +25,16 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 
-from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation, convert_np_array_to_b64
+from deepdoctection.datapoint import (
+    BoundingBox,
+    CategoryAnnotation,
+    Image,
+    ImageAnnotation,
+    SummaryAnnotation,
+    convert_np_array_to_b64,
+)
 from deepdoctection.datasets.info import DatasetCategories
-from deepdoctection.extern.base import TokenClassResult
+from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 
@@ -1044,6 +1051,14 @@ class DatapointImage:
         """
         return self.d2_frcnn_training
 
+    def get_image_with_summary(self) -> Image:
+        """
+        Image with summary "BAK" and CategoryAnnotation "FOO"
+        """
+        self.image.summary = SummaryAnnotation()
+        self.image.summary.dump_sub_category("BAK", CategoryAnnotation(category_name="FOO", category_id="1"))
+        return self.image
+
 
 class DatapointPageDict:  # pylint: disable=R0903
     """
@@ -1750,67 +1765,90 @@ class DatapointXfund:
     dp = _SAMPLE_XFUND["documents"][0]
 
     category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A, "header": names.C.HEAD}
+    categories_dict_name_as_key = {
+        "B-ANSWER": "1",
+        "B-HEAD": "2",
+        "B-QUESTION": "3",
+        "E-ANSWER": "4",
+        "E-HEAD": "5",
+        "E-QUESTION": "6",
+        "I-ANSWER": "7",
+        "I-HEAD": "8",
+        "I-QUESTION": "9",
+        "O": "10",
+        "S-ANSWER": "11",
+        "S-HEAD": "12",
+        "S-QUESTION": "13",
+    }
     layout_input = {
-        "image": np.ones((1000, 1000, 3)),
-        "ids": [
-            "CLS",
-            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
-            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
-            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
-            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
-            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
-            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
-            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
-            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-            "SEP",
+        "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
+        "width": [1000],
+        "height": [1000],
+        "ann_ids": [
+            [
+                "CLS",
+                "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+                "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+                "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+                "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+                "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+                "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+                "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+                "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+                "SEP",
+            ]
         ],
-        "boxes": [
-            [0.0, 0.0, 0.0, 0.0],
-            [325.0, 184.0, 578.0, 230.0],
-            [325.0, 184.0, 578.0, 230.0],
-            [325.0, 184.0, 578.0, 230.0],
-            [325.0, 184.0, 578.0, 230.0],
-            [586.0, 186.0, 834.0, 232.0],
-            [586.0, 186.0, 834.0, 232.0],
-            [586.0, 186.0, 834.0, 232.0],
-            [586.0, 186.0, 834.0, 232.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1058.0, 413.0, 1701.0, 482.0],
-            [1000.0, 1000.0, 1000.0, 1000.0],
+        "bbox": [
+            [
+                [0, 0, 0, 0],
+                [325, 184, 578, 230],
+                [325, 184, 578, 230],
+                [325, 184, 578, 230],
+                [325, 184, 578, 230],
+                [586, 186, 834, 232],
+                [586, 186, 834, 232],
+                [586, 186, 834, 232],
+                [586, 186, 834, 232],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [858, 413, 961, 482],
+                [1000, 1000, 1000, 1000],
+            ]
         ],
         "tokens": [
-            "CLS",
-            "aka",
-            "##de",
-            "##mis",
-            "##ches",
-            "aus",
-            "##lands",
-            "##am",
-            "##t",
-            "be",
-            "##wer",
-            "##bu",
-            "##ng",
-            "##sf",
-            "##or",
-            "##mu",
-            "##lar",
-            "SEP",
+            [
+                "CLS",
+                "aka",
+                "##de",
+                "##mis",
+                "##ches",
+                "aus",
+                "##lands",
+                "##am",
+                "##t",
+                "be",
+                "##wer",
+                "##bu",
+                "##ng",
+                "##sf",
+                "##or",
+                "##mu",
+                "##lar",
+                "SEP",
+            ]
         ],
         "input_ids": [
             [
@@ -1837,6 +1875,20 @@ class DatapointXfund:
         "attention_mask": [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]],
         "token_type_ids": [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
     }
+    raw_layout_features = {
+        "image_id": "c421a065-cfd4-3057-8d50-4b98e3c09810",
+        "width": 1000,
+        "height": 1000,
+        "ann_ids": [
+            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
+            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
+            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
+        ],
+        "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
+        "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
+        "dataset_type": names.DS.TYPE.TOK,
+        "labels": [10, 10, 2],
+    }
 
     def get_category_names_mapping(self) -> Dict[str, str]:
         """
@@ -1850,18 +1902,31 @@ class DatapointXfund:
         """
         return self.layout_input
 
+    def get_raw_layoutlm_features(self) -> JsonDict:
+        """
+        raw layoutlm features
+        """
+        return self.raw_layout_features
+
     def get_token_class_results(self) -> List[TokenClassResult]:
         """
         List of TokenClassResult
         """
-        uuids = self.layout_input["ids"]
+        uuids = self.layout_input["ann_ids"][0]  # type: ignore
         input_ids = self.layout_input["input_ids"][0]  # type: ignore
         token_class_predictions = [0, 1, 1, 0, 1, 2, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 1, 1]
-        tokens = self.layout_input["tokens"]
+        tokens = self.layout_input["tokens"][0]  # type: ignore
         return [
             TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3])
-            for out in zip(uuids, input_ids, token_class_predictions, tokens)  # type: ignore
+            for out in zip(uuids, input_ids, token_class_predictions, tokens)
         ]
+
+    @staticmethod
+    def get_sequence_class_results() -> SequenceClassResult:
+        """
+        sequence class results
+        """
+        return SequenceClassResult(class_id=1, score=0.93)
 
     @staticmethod
     def get_categories_semantics() -> List[str]:
@@ -1902,6 +1967,10 @@ class DatapointXfund:
             "I-FOO",
             "I-FOO",
         ]
+
+    def get_categories_dict_names_as_key(self) -> Dict[str, str]:
+        """categories dict names as key"""
+        return self.categories_dict_name_as_key
 
 
 @dataclass

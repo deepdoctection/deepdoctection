@@ -43,7 +43,7 @@ from .datapoint import *
 from .datasets import *
 from .eval import *
 from .extern import *
-from .mapper import *  # pylint: disable = W0622
+from .mapper import *
 from .pipe import *
 from .train import *
 from .utils import *

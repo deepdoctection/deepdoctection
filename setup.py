@@ -121,7 +121,7 @@ dist_deps = deps_list(
     "types-tabulate",
 )
 
-#if sys.platform == "linux":
+# if sys.platform == "linux":
 #    dist_deps.extend(deps_list("python-prctl"))
 
 # source dependencies with dataflow

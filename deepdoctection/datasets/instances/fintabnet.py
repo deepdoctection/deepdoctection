@@ -82,6 +82,7 @@ _URL = (
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
+_TYPE = names.DS.TYPE.OBJ
 _LOCATION = "fintabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
@@ -114,7 +115,7 @@ class Fintabnet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -158,6 +159,11 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         use_multi_proc = to_bool(kwargs.get("use_multi_proc", True))
         use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", False))
         fake_score = kwargs.get("fake_score", False)
+        build_mode = kwargs.get("build_mode")
+
+        if build_mode and not load_image:
+            logger.info("When 'build_mode' is set to True will reset 'load_image' to True")
+            load_image = True
 
         if use_multi_proc or use_multi_proc_strict:
             set_mp_spawn()
@@ -203,7 +209,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         else:
             df = MapData(df, pub_mapper)
 
-        if kwargs.get("build_mode", "") == "table":
+        if build_mode == "table":
 
             @curry
             def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
@@ -223,11 +229,14 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     ]
                 ),
             )
-            ann_to_sub_image = maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                category_names_sub_image=names.C.TAB,
-                category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
+            df = MapData(
+                df,
+                maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
+                    category_names_sub_image=names.C.TAB,
+                    category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
+                    add_summary=True,
+                ),
             )
-            df = MapData(df, ann_to_sub_image)
             df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=names.C.TAB)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])

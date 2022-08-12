@@ -26,14 +26,18 @@ from unittest.mock import MagicMock
 from pytest import mark
 
 from deepdoctection.datapoint import Image
-from deepdoctection.extern.base import TokenClassResult
-from deepdoctection.mapper.laylmstruct import image_to_layoutlm
-from deepdoctection.pipe import LMTokenClassifierService
+from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
+from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layoutlm_features
+from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.file_utils import transformers_available
 from deepdoctection.utils.settings import names
 
+if transformers_available():
+    from transformers import LayoutLMTokenizerFast
 
-class TestLMTokenClassifierService:  # pylint: disable=R0903
+
+class TestLMTokenClassifierService:
     """
     Test LMTokenClassifierService
     """
@@ -65,6 +69,7 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
         tokenizer.cls_token_id = 101
         tokenizer.sep_token_id = 102
         tokenizer.pad_token_id = 0
+        tokenizer.max_model_input_sizes = {"microsoft/layoutlm-base-uncased": 512}
 
         lm = MagicMock()  # pylint: disable=C0103
         lm.predict = MagicMock(return_value=token_class_result)
@@ -91,3 +96,74 @@ class TestLMTokenClassifierService:  # pylint: disable=R0903
         words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
         assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
         assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+
+    @staticmethod
+    @mark.requires_pt
+    def test_pass_datapoint_2(
+        dp_image_with_layout_and_word_annotations: Image,
+        token_class_result: List[TokenClassResult],
+    ) -> None:
+        """
+        Testing pass_datapoint with new mapping functions and fast tokenizer
+        """
+
+        # Arrange
+        tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+
+        language_model = MagicMock()
+        language_model.predict = MagicMock(return_value=token_class_result)
+        lm_service = LMTokenClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
+
+        dp = dp_image_with_layout_and_word_annotations
+
+        # Act
+        dp = lm_service.pass_datapoint(dp)
+
+        # Assert
+        words = dp.get_annotation(annotation_ids="3a696daf-15d5-3b88-be63-02912ef35cfb")
+        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
+        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+
+        words = dp.get_annotation(annotation_ids="37d79fd7-ab87-30fe-b460-9b6e62e901b9")
+        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
+        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+
+        words = dp.get_annotation(annotation_ids="5d40236e-430c-3d56-a8a3-fe9e46b872ac")
+        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
+        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+
+        words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
+        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
+        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+
+
+class TestLMSequenceClassifierService:  # pylint: disable=R0903
+    """
+    Test LMSequenceClassifierService
+    """
+
+    @staticmethod
+    @mark.requires_pt
+    def test_pass_datapoint(
+        dp_image_with_layout_and_word_annotations: Image,
+        sequence_class_result: SequenceClassResult,
+    ) -> None:
+        """
+        Testing pass_datapoint
+        """
+
+        # Arrange
+        tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+
+        language_model = MagicMock()
+        language_model.predict = MagicMock(return_value=sequence_class_result)
+        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
+
+        dp = dp_image_with_layout_and_word_annotations
+
+        # Act
+        dp = lm_service.pass_datapoint(dp)
+        assert dp.summary is not None
+
+        # Assert
+        assert dp.summary.get_sub_category(names.C.DOC).category_name == "FOO"

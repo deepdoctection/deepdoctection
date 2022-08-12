@@ -58,6 +58,14 @@ deepdoctection.datasets.instances.pubtabnet
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.datasets.instances.rvlcdip
+----------------------------------------------------
+
+.. automodule:: deepdoctection.datasets.instances.rvlcdip
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.datasets.instances.xfund
 ----------------------------------------------------
 

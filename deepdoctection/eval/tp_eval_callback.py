@@ -93,6 +93,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         if _use_replicated(self.cfg):
             assert self.evaluator.pipe_component
             for idx, comp in enumerate(self.evaluator.pipe_component.pipe_components):
+                assert isinstance(comp, PredictorPipelineComponent)
                 assert isinstance(comp.predictor, TPFrcnnDetector)
                 comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
 

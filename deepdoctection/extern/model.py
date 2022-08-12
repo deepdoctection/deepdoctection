@@ -260,8 +260,8 @@ class ModelCatalog:
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": names.C.ROW, "2": names.C.COL},
         ),
-        "mrm8488/layoutlm-finetuned-funsd": ModelProfile(
-            name="mrm8488/layoutlm-finetuned-funsd",
+        "mrm8488/layoutlm-finetuned-funsd/pytorch_model.bin": ModelProfile(
+            name="mrm8488/layoutlm-finetuned-funsd/pytorch_model.bin",
             description="LayoutLM pre-trained on CDIP and fine tuned on funsd",
             config="mrm8488/layoutlm-finetuned-funsd/config.json",
             size=[450639205],
@@ -271,19 +271,32 @@ class ModelCatalog:
             hf_config_file=["config.json"],
             categories={
                 "1": "B-ANSWER",
-                "2": "B-HEADER",
+                "2": "B-HEAD",
                 "3": "B-QUESTION",
                 "4": "E-ANSWER",
-                "5": "E-HEADER",
+                "5": "E-HEAD",
                 "6": "E-QUESTION",
                 "7": "I-ANSWER",
-                "8": "I-HEADER",
+                "8": "I-HEAD",
                 "9": "I-QUESTION",
                 "10": "O",
                 "11": "S-ANSWER",
-                "12": "S-HEADER",
+                "12": "S-HEAD",
                 "13": "S-QUESTION",
             },
+        ),
+        "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
+            name="microsoft/layoutlm-base-uncased/pytorch_model.bin",
+            description="LayoutLM is a simple but effective pre-training method of text and layout for document image"
+            " understanding and information extraction tasks, such as form understanding and receipt"
+            " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
+            "contain any head and has to be fine tuned on a downstream task.",
+            size=[453093832],
+            tp_model=False,
+            config="microsoft/layoutlm-base-uncased/config.json",
+            hf_repo_id="microsoft/layoutlm-base-uncased",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json"],
         ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
@@ -483,7 +496,7 @@ class ModelCatalog:
         :return: absolute weight path
         """
         profile = ModelCatalog.get_profile(name)
-        if profile.config is not None:
+        if profile.name is not None:
             return os.path.join(get_weights_dir_path(), profile.name)
         logger.info(
             "Model is not registered. Please make sure the weights are available in the weights cache " "directory"

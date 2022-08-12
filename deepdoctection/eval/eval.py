@@ -23,16 +23,17 @@ Module for :class:`Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Dict, List, Literal, Optional, Type, Union, overload
 
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
-from ..pipe.base import PredictorPipelineComponent
+from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.logger import logger
+from ..utils.settings import names
 from .base import MetricBase
 
 
@@ -78,8 +79,8 @@ class Evaluator:  # pylint: disable=R0903
     def __init__(
         self,
         dataset: DatasetBase,
-        component_or_pipeline: Union[PredictorPipelineComponent, DoctectionPipe],
-        metric: Type[MetricBase],
+        component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
+        metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
     ) -> None:
         """
@@ -95,12 +96,12 @@ class Evaluator:  # pylint: disable=R0903
         self.pipe: Optional[DoctectionPipe] = None
 
         # when passing a component, we will process prediction on num_threads
-        if isinstance(component_or_pipeline, PredictorPipelineComponent):
+        if isinstance(component_or_pipeline, (PredictorPipelineComponent, LanguageModelPipelineComponent)):
             logger.info(
                 "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
                 num_threads,
             )
-            pipeline_components: List[PredictorPipelineComponent] = []
+            pipeline_components: List[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
 
             for _ in range(num_threads - 1):
                 copy_pipe_component = component_or_pipeline.clone()
@@ -116,25 +117,36 @@ class Evaluator:  # pylint: disable=R0903
         else:
             self.pipe = component_or_pipeline
 
-        self.metric = metric()
+        if not isinstance(metric, MetricBase):
+            self.metric = metric()
         self._sanity_checks()
 
+    @overload
     def run(
-        self, output_as_dict: bool = False, **kwargs: Union[str, int]
-    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
+    ) -> List[Dict[str, float]]:
+        ...
+
+    @overload
+    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> Dict[str, float]:
+        ...
+
+    def run(
+        self, output_as_dict: bool = False, **dataflow_build_kwargs: Union[str, int]
+    ) -> Union[List[Dict[str, float]], Dict[str, float]]:
         """
         Start evaluation process and return the results.
 
         :param output_as_dict: Return result in a list or dict.
-        :param kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split", "build_mode",
-                       "max_datapoints" etc.
+        :param dataflow_build_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split",
+                                      "build_mode", "max_datapoints" etc.
 
         :return: dict with metric results.
         """
 
         assert self.dataset.dataflow.categories is not None, "dataset requires dataflow.categories to be not None"
-        df_gt = self.dataset.dataflow.build(**kwargs)
-        df_pr = self.dataset.dataflow.build(**kwargs)
+        df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
+        df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
 
         df_pr = MapData(df_pr, deepcopy)
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
@@ -174,16 +186,32 @@ class Evaluator:  # pylint: disable=R0903
         meta_anns = pipe_or_component.get_meta_annotation()
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 
-        # we keep all image annotations that will not be generated through processing
-        anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
-        sub_cats_to_remove = meta_anns["sub_categories"]
-        relationships_to_remove = meta_anns["relationships"]
+        # clean-up procedure depends on the dataset type
+        if self.dataset.dataset_info.type == names.DS.TYPE.OBJ:
+            # we keep all image annotations that will not be generated through processing
+            anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
+            sub_cats_to_remove = meta_anns["sub_categories"]
+            relationships_to_remove = meta_anns["relationships"]
+            # removing annotations takes place in three steps: First we remove all image annotations. Then, with all
+            # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and
+            # remove it as well, if necessary. In the last step we remove all sub categories and relationships, if
+            # generated in pipeline.
+            df_pr = MapData(df_pr, filter_cat(anns_to_keep, possible_cats_in_datapoint))  # pylint: disable=E1120
+            df_pr = MapData(df_pr, maybe_remove_image_from_category(anns_to_keep))
+            df_pr = MapData(
+                df_pr,
+                remove_cats(
+                    sub_categories=sub_cats_to_remove, relationships=relationships_to_remove
+                ),
+            )
 
-        # removing annotations takes place in three steps: First we remove all image annotations. Then, with all
-        # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and remove
-        # it as well, if necessary. In the last step we remove all sub categories and relationships, if generated in
-        # pipeline.
-        df_pr = MapData(df_pr, filter_cat(anns_to_keep, possible_cats_in_datapoint))  # pylint: disable=E1120
-        df_pr = MapData(df_pr, maybe_remove_image_from_category(anns_to_keep))
-        df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove))  # pylint: disable=E1120
+        elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
+            summary_sub_cats_to_remove = meta_anns["summaries"]
+            df_pr = MapData(
+                df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove)
+            )
+
+        else:
+            raise NotImplementedError
+
         return df_pr

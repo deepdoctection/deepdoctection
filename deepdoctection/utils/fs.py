@@ -20,6 +20,7 @@ Methods and classes that incorporate filesystem operations as well as file check
 """
 
 import errno
+import json
 import os
 from base64 import b64encode
 from io import BytesIO
@@ -30,7 +31,7 @@ from urllib.request import urlretrieve
 from cv2 import IMREAD_COLOR, imread
 
 from ..utils.pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .detection_types import ImageType, Pathlike
+from .detection_types import ImageType, JsonDict, Pathlike
 from .logger import logger
 from .tqdm import get_tqdm
 
@@ -42,6 +43,7 @@ __all__ = [
     "download",
     "mkdir_p",
     "is_file_extension",
+    "load_json",
 ]
 
 
@@ -210,9 +212,9 @@ def get_load_image_func(
     :return: The function loading the file (and converting to its desired format)
     """
 
-    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf"]), f"image type not allowed: {path}"
+    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: {path}"
 
-    if is_file_extension(path, [".png", ".jpeg", ".jpg"]):
+    if is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]):
         return load_image_from_file
     if is_file_extension(path, [".pdf"]):
         return load_bytes_from_pdf_file
@@ -236,3 +238,15 @@ def maybe_path_or_pdf(path: Pathlike) -> int:
     if is_pdf:
         return 2
     return 0
+
+
+def load_json(path_ann: Pathlike) -> JsonDict:
+    """
+    Loading json file
+
+    :param path_ann: path
+    :return: dict
+    """
+    with open(path_ann, "r", encoding="utf-8") as file:
+        json_dict = json.loads(file.read())
+    return json_dict

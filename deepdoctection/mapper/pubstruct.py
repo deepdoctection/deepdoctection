@@ -20,8 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-
-from typing import Dict, List, Optional, Sequence, Tuple, Iterable
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -33,7 +32,6 @@ from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import names
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
-
 
 __all__ = ["pub_to_image"]
 

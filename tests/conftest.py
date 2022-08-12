@@ -35,12 +35,18 @@ from deepdoctection.datapoint import (
     local_to_global_coords,
 )
 from deepdoctection.datasets import DatasetCategories
-from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import names
 from deepdoctection.utils.systools import get_package_path
 
-from .data import Annotations, get_layoutlm_input, get_token_class_result
+from .data import (
+    Annotations,
+    get_layoutlm_features,
+    get_layoutlm_input,
+    get_sequence_class_result,
+    get_token_class_result,
+)
 from .mapper.data import DatapointImage
 
 
@@ -424,15 +430,27 @@ def fixture_col_box_tiling_table() -> List[BoundingBox]:
 
 
 @fixture(name="layoutlm_input")
-def fixture_textract_response() -> JsonDict:
-    """fixture textract_response"""
+def fixture_layoutlm_input() -> JsonDict:
+    """fixture layoutlm_input"""
     return get_layoutlm_input()
+
+
+@fixture(name="layoutlm_features")
+def fixture_layoutlm_features() -> JsonDict:
+    """fixture layoutlm_features"""
+    return get_layoutlm_features()
 
 
 @fixture(name="token_class_result")
 def fixture_token_class_result() -> List[TokenClassResult]:
     """fixture token_class_result"""
     return get_token_class_result()
+
+
+@fixture(name="sequence_class_result")
+def fixture_sequence_class_result() -> SequenceClassResult:
+    """fixture sequence_class_result"""
+    return get_sequence_class_result()
 
 
 @fixture(name="text_lines")

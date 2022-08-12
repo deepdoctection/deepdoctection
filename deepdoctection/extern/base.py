@@ -219,6 +219,8 @@ class TokenClassResult:
      :attr:`semantic_name`: semantic name
 
      :attr:`bio_tag`: bio tag
+
+     :attr:`score`: prediction score
     """
 
     uuid: str
@@ -228,16 +230,32 @@ class TokenClassResult:
     class_name: str = ""
     semantic_name: str = ""
     bio_tag: str = ""
+    score: Optional[float] = None
+
+
+@dataclass
+class SequenceClassResult:
+    """
+    Storage for sequence classification results
+
+    :attr:`class_id`: category id
+    :attr:`class_name`: category name
+    :attr:`score`: prediction score
+    """
+
+    class_id: int
+    class_name: str = ""
+    score: Optional[float] = None
 
 
 class LMTokenClassifier(PredictorBase):
     """
-    Abstract base class for token classifiers. If you want to connect external token classifiers with Deep-Doctection
+    Abstract base class for token classifiers. If you want to connect external token classifiers with Deepdoctection
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
     """
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[str], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
         """
         Abstract method predict
         """
@@ -248,6 +266,28 @@ class LMTokenClassifier(PredictorBase):
         """
         Abstract method possible_tokens. Must implement a method that returns a list of possible detectable
         tokens
+        """
+        raise NotImplementedError
+
+
+class LMSequenceClassifier(PredictorBase):
+    """
+    Abstract base class for sequence classification. If you want to connect external sequence classifiers with
+    Deepdoctection predictors, wrap them into a class derived from this class.
+    """
+
+    @abstractmethod
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def possible_categories(self) -> List[str]:
+        """
+        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
+        categories for a sequence
         """
         raise NotImplementedError
 

@@ -23,8 +23,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from deepdoctection.datapoint import CategoryAnnotation, Image
-from deepdoctection.mapper import cat_to_sub_cat, filter_cat, image_to_cat_id, pub_to_image, remove_cats
+from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
+from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 
@@ -105,6 +105,30 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     assert len(cells) == 0
 
 
+def test_filter_summary_1(datapoint_image_with_summary: Image) -> None:
+    """
+    test func:`filter_summary` does not filter dataset, if condition is satisfied.
+    """
+
+    # Arrange
+    output = filter_summary({"BAK": "FOO"}, True)(datapoint_image_with_summary)
+
+    # Assert
+    assert output is not None
+
+
+def test_filter_summary_2(datapoint_image_with_summary: Image) -> None:
+    """
+    test func:`filter_summary`  does filter dataset, if condition is not satisfied.
+    """
+
+    # Arrange
+    output = filter_summary({"BAK": ["BAZ"]}, True)(datapoint_image_with_summary)
+
+    # Assert
+    assert output is None
+
+
 def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
     """
     test func: image_to_cat_id returns extraction of category_ids
@@ -115,8 +139,7 @@ def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
     expected_output = [2]
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.TAB] == expected_output
@@ -132,8 +155,7 @@ def test_image_to_cat_id_2(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.TAB: [2], names.C.ROW: [6, 6], names.C.COL: [7, 7]}
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(category_names)
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.TAB] == expected_output[names.C.TAB]
@@ -151,8 +173,9 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.RS: [1, 1, 1, 1, 0]}
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable = E1120
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(   # pylint: disable = E1102
+        dp_image_fully_segmented
+    )
 
     # Assert
     assert output[names.C.RS] == expected_output[names.C.RS]
@@ -173,8 +196,9 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     }
 
     # Act
-    image_to_cat_id_mapper = image_to_cat_id(sub_category_names=sub_category_names)  # pylint: disable = E1120
-    output = image_to_cat_id_mapper(dp_image_fully_segmented)  # pylint: disable = E1102
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(  # pylint: disable = E1102
+        dp_image_fully_segmented
+    )
 
     # Assert
     assert output[names.C.RN] == expected_output[names.C.RN]
@@ -244,3 +268,24 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
 
     assert isinstance(scd_ann_cell.get_sub_category(names.C.CN), CategoryAnnotation)
     assert isinstance(scd_ann_cell.get_sub_category(names.C.CS), CategoryAnnotation)
+
+
+def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
+    """
+    test func: remove_cats removes summary sub category
+    """
+
+    # Arrange
+    sub_category_ann = CategoryAnnotation(category_name="TEST")
+    summary = SummaryAnnotation()
+    summary.dump_sub_category("TEST_SUMMARY", sub_category_ann)
+    dp_image_fully_segmented.summary = summary
+
+    # Act
+    remove_cats_mapper = remove_cats(summary_sub_categories="TEST_SUMMARY")  # pylint: disable=E1120  # 259
+    dp = remove_cats_mapper(dp_image_fully_segmented)
+    assert dp.summary is not None
+
+    # Assert
+    with pytest.raises(Exception):
+        dp.summary.get_sub_category("TEST_SUMMARY")

@@ -21,7 +21,7 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import List, Optional
+from typing import List, Optional, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -225,7 +225,9 @@ class BoundingBox:
         """
         Bounding box area
         """
-        return self.width * self.height
+        if self.absolute_coords:
+            return self.width * self.height
+        raise ValueError("Cannot calculate area, when bounding box coords are relative")
 
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
         """
@@ -337,6 +339,17 @@ class BoundingBox:
         A list of attributes to suspend from as_dict creation.
         """
         return ["height", "width"]
+
+    @classmethod
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "BoundingBox":
+        """
+        Create :class:`BoundingBox` instance from dict
+
+        :param kwargs: dict with  :class:`BoundingBox` attributes
+        :return: Initialized BoundingBox
+        """
+        return cls(**kwargs)
 
 
 def intersection_box(

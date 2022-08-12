@@ -34,13 +34,12 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
-from ...datasets.info import DatasetInfo
 from ...mapper.cats import filter_cat
 from ...mapper.cocostruct import coco_to_image
 from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
-from ..info import DatasetCategories
+from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "publaynet"
@@ -62,6 +61,7 @@ _URL = (
     "publaynet.tar.gz?_ga=2.23017467.1796315263.1628754613-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
+_TYPE = names.DS.TYPE.OBJ
 
 _LOCATION = "publaynet"
 
@@ -79,7 +79,7 @@ class Publaynet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
