@@ -29,7 +29,7 @@ from deepdoctection.datasets import DatasetCategories
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.layout import ImageLayoutService
-from deepdoctection.utils import tensorpack_available
+from deepdoctection.utils import tensorpack_available, names
 
 from ..test_utils import set_num_gpu_to_one
 
@@ -57,8 +57,10 @@ class TestEvaluator:
 
         self._dataset = MagicMock()
         self._dataset.dataflow = MagicMock()
+        self._dataset.dataset_info = MagicMock()
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([image_with_anns]))
         self._dataset.dataflow.categories = categories
+        self._dataset.dataset_info.type = names.DS.TYPE.OBJ
 
         self._layout_detector = TPFrcnnDetector(
             path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories.get_categories()
