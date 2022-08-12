@@ -18,7 +18,7 @@
 """
 Module for Accuracy metric
 """
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy import float32
@@ -31,6 +31,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement, get_sklearn_requirement, sklearn_available
+from ..utils.logger import logger
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -41,7 +42,9 @@ if sklearn_available():
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
+def accuracy(
+    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
+) -> NDArray[float32]:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
@@ -77,8 +80,9 @@ class AccuracyMetric(MetricBase):
 
     metric = accuracy
     mapper = image_to_cat_id
-    _cats: Optional[List[str]] = None
-    _sub_cats: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None
+    _cats: Optional[Sequence[str]] = None
+    _sub_cats: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None
+    _summary_sub_cats: Optional[Sequence[str]] = None
 
     @classmethod
     def dump(
@@ -90,12 +94,22 @@ class AccuracyMetric(MetricBase):
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
             cls._cats = categories.get_categories(as_dict=False, filtered=True)
-        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats)
+        mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats, cls._summary_sub_cats)
         labels_gt: Dict[str, List[int]] = {}
         labels_predictions: Dict[str, List[int]] = {}
+
+        # returned images of gt and predictions are likely not in the same order. We therefore first stream all data
+        # into a dict and generate our result vectors thereafter.
+        labels_per_image_gt = {}
+        labels_per_image_predictions = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
-            dp_labels_gt = mapper_with_setting(dp_gt)
-            dp_labels_predictions = mapper_with_setting(dp_pd)
+            dp_labels_gt, image_id_gt = mapper_with_setting(dp_gt)
+            labels_per_image_gt[image_id_gt] = dp_labels_gt
+            dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)
+            labels_per_image_predictions[image_id_pr] = dp_labels_predictions
+
+        for image_id, dp_labels_gt in labels_per_image_gt.items():
+            dp_labels_predictions = labels_per_image_predictions[image_id]
             for key in dp_labels_gt.keys():
                 if key not in labels_gt:
                     labels_gt[key] = dp_labels_gt[key]
@@ -122,8 +136,9 @@ class AccuracyMetric(MetricBase):
     @classmethod
     def set_categories(
         cls,
-        category_names: Optional[Union[str, List[str]]] = None,
-        sub_category_names: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
+        category_names: Optional[Union[str, Sequence[str]]] = None,
+        sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
+        summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None,
     ) -> None:
         """
         Set categories that are supposed to be evaluated. If sub_categories have to be considered then they need to be
@@ -141,12 +156,15 @@ class AccuracyMetric(MetricBase):
         :param category_names: List of category names
         :param sub_category_names: Dict of categories and their sub categories that are supposed to be evaluated,
                                    e.g. {"FOO": ["bak","baz"]} will evaluate "bak" and "baz"
+        :param summary_sub_category_names: string or list of summary sub categories
         """
 
         if category_names is not None:
-            cls._cats = category_names if isinstance(category_names, list) else [category_names]
+            cls._cats = [category_names] if isinstance(category_names, str) else category_names
         if sub_category_names is not None:
             cls._sub_cats = sub_category_names
+        if summary_sub_category_names is not None:
+            cls._summary_sub_cats = summary_sub_category_names
 
     @classmethod
     def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
@@ -164,17 +182,30 @@ class AccuracyMetric(MetricBase):
             for key, val in cls._sub_cats.items():
                 assert set(val) <= set(sub_cats[key])
 
+        if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
+            logger.warning(
+                "Accuracy metric has not correctly been set up: No category, sub category or summary has been"
+                "defined, therefore it is undefined what to evaluate."
+            )
+
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_sklearn_requirement()]
 
     @property
-    def sub_cats(self) -> Optional[Union[Dict[str, str], Dict[str, List[str]]]]:
-        """ sub cats"""
+    def sub_cats(self) -> Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]]:
+        """sub cats"""
         return self._sub_cats
 
+    @property
+    def summary_sub_cats(self) -> Optional[Sequence[str]]:
+        """summary sub categories"""
+        return self._summary_sub_cats
 
-def confusion(label_gt: List[int], label_predictions: List[int], masks: Optional[List[int]] = None) -> NDArray[float32]:
+
+def confusion(
+    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
+) -> NDArray[float32]:
     """
     Calculates the accuracy matrix given the predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.confusion_matrix`
@@ -206,7 +237,7 @@ class ConfusionMetric(AccuracyMetric):
     metric = confusion
 
     @classmethod
-    def print_distance(cls, results: List[JsonDict]) -> None:
+    def print_distance(cls, results: Sequence[JsonDict]) -> None:
         """
         print distance results
         """

@@ -55,6 +55,7 @@ _LICENSE = (
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
+_TYPE = names.DS.TYPE.TOK
 _LOCATION = "xfund"
 _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     "train": [
@@ -85,7 +86,7 @@ class Xfund(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)

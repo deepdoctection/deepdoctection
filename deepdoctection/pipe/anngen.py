@@ -216,6 +216,7 @@ class DatapointManager:
 
     def set_summary_annotation(
         self,
+        summary_key: str,
         summary_name: str,
         summary_number: int,
         summary_value: Optional[str] = None,
@@ -225,8 +226,8 @@ class DatapointManager:
         """
         Creates a sub category of a summary annotation. If a summary of the given annotation_id does not exist, it will
         create a new one.
-        :param summary_name: will create the summary name as category name and store the generated annotation under the
-        same key name
+        :param summary_key: will store the category annotation as sub category
+        :param summary_name: will create the summary name as category name
         :param summary_number: will store the value in category_id.
         :param summary_value: will create a ContainerAnnotation and store the corresponding value
         :param summary_score: will store the score
@@ -251,5 +252,5 @@ class DatapointManager:
             )
         else:
             ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
-        image.summary.dump_sub_category(summary_name, ann, image.image_id)
+        image.summary.dump_sub_category(summary_key, ann, image.image_id)
         return ann.annotation_id

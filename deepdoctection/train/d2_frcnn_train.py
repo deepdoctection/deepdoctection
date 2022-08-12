@@ -93,15 +93,17 @@ class D2Trainer(DefaultTrainer):
         self, dataset_val: DatasetBase, pipeline_component: PredictorPipelineComponent, metric: Type[MetricBase]
     ) -> None:
         """
-        Setup of evaluator before starting training. While training, predictors will be replaced by current checkpoints.
+        Setup of evaluator before starting training. During training, predictors will be replaced by current
+        checkpoints.
 
-        :param dataset_val: dataset to run evaluation from
+        :param dataset_val: dataset on which to run evaluation
         :param pipeline_component: pipeline component to plug into the evaluator
         :param metric: A metric class
         """
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=get_num_gpu() * 2)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
+            assert isinstance(comp, PredictorPipelineComponent)
             assert isinstance(comp.predictor, D2FrcnnDetector)
             comp.predictor.d2_predictor = None
 
@@ -165,11 +167,11 @@ def train_d2_faster_rcnn(
     :param log_dir: Path to log dir. Will default to `train_log/frcnn`
     :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
     :param dataset_val: the dataset to use for validation.
-    :param build_val_config: same as 'build_train_config' but for validation
+    :param build_val_config: same as `build_train_config` but for validation
     :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
                         metric setting pass a metric explicitly.
     :param metric: A metric to choose for validation.
-    :param pipeline_component_name: A pipeline component to use for validation.
+    :param pipeline_component_name: A pipeline component name to use for validation.
     """
 
     assert get_num_gpu() > 0, "Has to train with GPU!"
@@ -225,7 +227,8 @@ def train_d2_faster_rcnn(
         trainer.register_hooks(
             [
                 EvalHook(
-                    cfg.TEST.EVAL_PERIOD,lambda: trainer.eval_with_dd_evaluator(**build_val_dict),
+                    cfg.TEST.EVAL_PERIOD,
+                    lambda: trainer.eval_with_dd_evaluator(**build_val_dict),  # pylint: disable=W0108
                 )
             ]
         )

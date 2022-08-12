@@ -222,7 +222,7 @@ def draw_text(
 def draw_boxes(
     np_image: ImageType,
     boxes: npt.NDArray[float32],
-    category_names_list: Optional[List[str]] = None,
+    category_names_list: Optional[List[Optional[str]]] = None,
     color: Optional[Tuple[int, int, int]] = None,
 ) -> ImageType:
     """

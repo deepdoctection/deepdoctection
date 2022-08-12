@@ -73,6 +73,7 @@ _LICENSE = "NN"
 _URL = "http://cvit.iiit.ac.in/usodi/iiitar13k.php"
 
 _SPLITS: Mapping[str, str] = {"train": "training_images", "val": "validation_images", "test": "test_images"}
+_TYPE = names.DS.TYPE.OBJ
 _LOCATION = "iiitar13k"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "training_xml",
@@ -93,7 +94,7 @@ class IIITar13K(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)

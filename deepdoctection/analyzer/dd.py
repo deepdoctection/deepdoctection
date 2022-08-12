@@ -36,7 +36,7 @@ from ..pipe.text import TextExtractionService, TextOrderService
 from ..utils.file_utils import pytorch_available, tensorpack_available, tf_available
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
-from ..utils.metacfg import set_config_by_yaml, AttrDict
+from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import names
 from ..utils.systools import get_configs_dir_path, get_package_path
 

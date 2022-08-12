@@ -33,7 +33,6 @@ Module for Funsd dataset.  Install the dataset following the folder structure
 |    │ │ ├── ...
 """
 
-import json
 import os
 from typing import Dict, List, Mapping, Union
 
@@ -42,6 +41,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
+from ...utils.fs import load_json
 from ...utils.settings import names
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -49,19 +49,18 @@ from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 
-def load_json(path_ann: Pathlike) -> JsonDict:
+def load_file(path_ann: Pathlike) -> JsonDict:
     """
     Loading json file
 
     :param path_ann: path
     :return: dict
     """
-    with open(path_ann, "r", encoding="utf-8") as file:
-        anns = json.loads(file.read())
-        path, file_name = os.path.split(path_ann)
-        base_path, _ = os.path.split(path)
-        path = os.path.join(base_path, "images")
-        anns["file_name"] = os.path.join(path, file_name[:-4] + "png")
+    anns = load_json(path_ann)
+    path, file_name = os.path.split(path_ann)
+    base_path, _ = os.path.split(path)
+    path = os.path.join(base_path, "images")
+    anns["file_name"] = os.path.join(path, file_name[:-4] + "png")
     return anns
 
 
@@ -80,6 +79,7 @@ _LICENSE = (
 
 _URL = "https://guillaumejaume.github.io/FUNSD/download/"
 _SPLITS: Mapping[str, str] = {"train": "training_data", "test": "testing_data"}
+_TYPE = names.DS.TYPE.TOK
 _LOCATION = "funsd"
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "annotations", "test": "annotations"}
 
@@ -103,7 +103,7 @@ class Funsd(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
@@ -143,7 +143,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
 
         df = SerializerFiles.load(path_ann_files, ".json", max_datapoints)
 
-        df = MapData(df, load_json)
+        df = MapData(df, load_file)
 
         # Map
         category_names_mapping = {

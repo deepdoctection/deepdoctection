@@ -20,7 +20,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 """
 
 
-from typing import Any, Callable, Iterator, Optional, Union
+from typing import Any, Callable, Dict, Iterator, Optional, Union
 
 from torch.utils.data import IterableDataset
 
@@ -30,6 +30,7 @@ from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.logger import log_once, logger
+from ..utils.settings import names
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
@@ -38,10 +39,11 @@ class DatasetAdapter(IterableDataset):  # type: ignore
     """
     A helper class derived from `torch.utils.data.IterableDataset` to process datasets within
     pytorch frameworks (e.g. Detectron2). It wraps the dataset and defines the compulsory
-    `:meth:__iter__` using  meth:`dataflow.build` .
+    :meth:`__iter__` using  meth:`dataflow.build` .
 
     DatasetAdapter is meant for training and will therefore produce an infinite number of datapoints
     by shuffling and restart iteration once the previous dataflow is exhausted.
+
     """
 
     def __init__(
@@ -49,11 +51,12 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         name_or_dataset: Union[str, DatasetBase],
         cache_dataset: bool,
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
-        **build_kwargs: str
+        **build_kwargs: str,
     ) -> None:
         """
         :param name_or_dataset: Registered name of the dataset or an instance.
-        :param cache_dataset: If set to true, it will cache the dataset (without loading images).
+        :param cache_dataset: If set to true, it will cache the dataset (without loading images). If possible,
+                              some statistics, e.g. number of specific labels will be printed.
         :param image_to_framework_func: A mapping function that converts image datapoints into the framework format
         :param build_kwargs: optional parameters for defining the dataflow.
         """
@@ -66,8 +69,28 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info("Yielding dataflow into memory and create torch dataset")
-            categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
-            summarizer = LabelSummarizer(categories)
+            categories: Dict[str, str] = {}
+            _data_statistics = True
+            if self.dataset.dataset_info.type in (names.DS.TYPE.OBJ, names.DS.TYPE.SEQ):
+                categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
+            elif self.dataset.dataset_info.type in (names.DS.TYPE.TOK,):
+                categories = {
+                    str(k): v
+                    for k, v in enumerate(
+                        self.dataset.dataflow.categories.init_sub_categories[names.C.WORD][names.C.SE], 1
+                    )
+                }
+                categories_name_as_key = {v: k for k, v in categories.items()}
+            else:
+                logger.info(
+                    "dataset is of type %s. Cannot generate statistics for this type of dataset",
+                    self.dataset.dataset_info.type,
+                )
+                _data_statistics = False
+
+            if _data_statistics:
+                summarizer = LabelSummarizer(categories)
+
             df.reset_state()
             max_datapoints_str = build_kwargs.get("max_datapoints")
 
@@ -86,12 +109,28 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                             "images when needed and reduce memory costs!!!",
                             "warn",
                         )
-                    anns = dp.get_annotation()
-                    cat_ids = [int(ann.category_id) for ann in anns]
-                    summarizer.dump(cat_ids)
+                    if self.dataset.dataset_info.type == names.DS.TYPE.OBJ:
+                        anns = dp.get_annotation()
+                        cat_ids = [int(ann.category_id) for ann in anns]
+
+                    elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
+                        cat_ids = dp.summary.get_sub_category(names.C.DOC).category_id
+
+                    elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
+                        anns = dp.get_annotation()
+                        cat_ids = [
+                            int(categories_name_as_key[ann.get_sub_category(names.C.SE).category_name]) for ann in anns
+                        ]
+
+                    if _data_statistics:
+                        summarizer.dump(cat_ids)
+
                     datapoints.append(dp)
                     status_bar.update()
-            summarizer.print_summary_histogram()
+
+            if _data_statistics:
+                summarizer.print_summary_histogram()
+            self.number_datapoints = len(datapoints)
             df = CustomDataFromList(datapoints, shuffle=True)
             df = RepeatedData(df, -1)
         if image_to_framework_func:
@@ -103,7 +142,9 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         return iter(self.df)
 
     def __len__(self) -> int:
-        raise NotImplementedError
+        if self.number_datapoints:
+            return self.number_datapoints
+        return len(self.df)
 
     def __getitem__(self, item: Any) -> None:
         raise NotImplementedError

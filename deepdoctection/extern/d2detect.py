@@ -20,7 +20,7 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -31,6 +31,7 @@ from ..utils.file_utils import (
 )
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .common import InferenceResize
+from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch
@@ -130,7 +131,7 @@ class D2FrcnnDetector(ObjectDetector):
         path_weights: str,
         categories: Dict[str, str],
         config_overwrite: Optional[List[str]] = None,
-        device: str = "cuda",
+        device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
         Set up the predictor.
@@ -146,6 +147,7 @@ class D2FrcnnDetector(ObjectDetector):
                            where models in the model zoo are trained with 'BG' class having the highest index.
         :param config_overwrite:  Overwrite some hyper parameters defined by the yaml file with some new values. E.g.
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
+        :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
         """
 
         self._categories_d2 = self._map_to_d2_categories(copy(categories))
@@ -160,13 +162,18 @@ class D2FrcnnDetector(ObjectDetector):
         self.path_yaml = path_yaml
         self.categories = copy(categories)
         self.config_overwrite = config_overwrite
-        self.device = device
+        if device is not None:
+            self.device = device
+        else:
+            self.device = set_torch_auto_device()
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
         self._instantiate_d2_predictor()
 
     @staticmethod
-    def _set_config(path_yaml: str, d2_conf_list: List[str], device: str) -> "CfgNode":
+    def _set_config(
+        path_yaml: str, d2_conf_list: List[str], device: Optional[Literal["cpu", "cuda"]] = None
+    ) -> "CfgNode":
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
@@ -217,7 +224,7 @@ class D2FrcnnDetector(ObjectDetector):
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
             assert isinstance(result.class_id, int)
-            result.class_id = result.class_id + 1
+            result.class_id += 1
         return detection_results
 
     @classmethod

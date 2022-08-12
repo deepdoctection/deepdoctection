@@ -20,13 +20,31 @@ Dataclass for annotations and their derived classes.
 """
 
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, no_type_check
 
-from ..utils import get_uuid, is_uuid_like
+from ..utils.detection_types import JsonDict
+from ..utils.identifier import get_uuid, is_uuid_like
 from .box import BoundingBox
 from .convert import as_dict
+
+
+@no_type_check
+def _ann_from_dict(cls, **kwargs):
+    ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
+    ann.active = kwargs.get("active")
+    ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
+    if isinstance(kwargs.get("sub_categories"), dict):
+        for key, value in kwargs["sub_categories"].items():
+            if "value" in value:
+                ann.dump_sub_category(key, ContainerAnnotation.from_dict(**value))
+            else:
+                ann.dump_sub_category(key, CategoryAnnotation.from_dict(**value))
+    if isinstance(kwargs.get("relationships"), dict):
+        for key, values in kwargs["relationships"].items():
+            for value in values:
+                ann.dump_relationship(key, value)
+    return ann
 
 
 @dataclass  # type: ignore
@@ -146,11 +164,13 @@ class Annotation(ABC):
         """
         self.active = False
 
+    @classmethod
     @abstractmethod
-    def get_export(self) -> Dict[str, Any]:
+    def from_dict(cls, **kwargs: JsonDict) -> "Annotation":
         """
-        Generate a dictionary representing the object that can be saved to a file. See some
-        built-in examples e.g. :meth:`CategoryAnnotation.get_export`
+        Method to initialize a derived class from dict.
+        :param kwargs: dict with  :class:`Annotation` attributes
+        :return: Annotation instance
         """
         raise NotImplementedError
 
@@ -296,28 +316,12 @@ class CategoryAnnotation(Annotation):
 
         :return: List of attributes.
         """
-        return ["_category_id", "_relationships", "_sub_categories", "external_id"]
+        return []
 
-    def get_export(self) -> Dict[str, Any]:
-        """
-        Exporting annotations as dictionary.
-
-        :return: dict that e.g. can be saved to a file.
-        """
-        ann_copy = deepcopy(self)
-        ann_copy.sub_categories = {}
-        export_dict = self.as_dict()
-
-        export_dict["sub_categories"] = {}
-
-        for key, value in self.sub_categories.items():
-            export_dict["sub_categories"][key] = value.get_export()
-        try:
-            int(export_dict["category_id"])
-        except ValueError:
-            export_dict["category_id"] = None
-
-        return export_dict
+    @classmethod
+    def from_dict(cls, **kwargs: JsonDict) -> "CategoryAnnotation":
+        category_ann = _ann_from_dict(cls, **kwargs)
+        return category_ann
 
 
 @dataclass
@@ -341,23 +345,16 @@ class ImageAnnotation(CategoryAnnotation):
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "bounding_box"]
 
-    def get_export(self) -> Dict[str, str]:
-        """
-        Exporting annotations as dictionary.
-
-        :return: dict that e.g. can be saved to a file.
-        """
-
-        export_dict = super().get_export()
-        if export_dict["image"] is not None:
-            export_dict["embeddings"] = export_dict["image"]["embeddings"]
-        export_dict.pop("image")
-
-        return export_dict
+    @classmethod
+    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotation":
+        image_ann = _ann_from_dict(cls, **kwargs)
+        if box_kwargs := kwargs.get("bounding_box"):
+            image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
+        return image_ann
 
 
 @dataclass
-class SummaryAnnotation(ImageAnnotation):
+class SummaryAnnotation(CategoryAnnotation):
     """
     A dataclass for adding summaries. The various summaries can be stored as sub categories.
 
@@ -368,6 +365,12 @@ class SummaryAnnotation(ImageAnnotation):
     def __post_init__(self) -> None:
         self.category_name = "SUMMARY"
         super().__post_init__()
+
+    @classmethod
+    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
+        summary_ann = _ann_from_dict(cls, **kwargs)
+        summary_ann.category_name = "SUMMARY"
+        return summary_ann
 
 
 @dataclass
@@ -383,3 +386,9 @@ class ContainerAnnotation(CategoryAnnotation):
 
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "value"]
+
+    @classmethod
+    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
+        container_ann = _ann_from_dict(cls, **kwargs)
+        container_ann.value = kwargs.get("value")
+        return container_ann

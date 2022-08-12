@@ -37,7 +37,7 @@ from ..utils.tqdm import get_tqdm
 from .common import FlattenData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
 
-__all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc"]
+__all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles"]
 
 
 def _reset_df_and_get_length(df: DataFlow) -> int:
@@ -103,6 +103,65 @@ class SerializerJsonlines:
                     writer.write(dp)
                 elif k < max_datapoints:
                     writer.write(dp)
+                else:
+                    break
+
+
+class SerializerTabsepFiles:
+    """
+    Serialize a dataflow from a tab separated text file. Alternatively, save a dataflow of plain text
+    to a .txt file.
+
+    **Example**:
+
+        .. code-block:: python
+
+            df = SerializerTabsepFiles.load("path/to/file.txt")
+
+        will yield each text line of the file.
+    """
+
+    @staticmethod
+    def load(path: Pathlike, max_datapoins: Optional[int] = None) -> CustomDataFromIterable:
+        """
+        :param path: a path to a .txt file.
+        :param max_datapoins: Will stop the iteration once max_datapoints have been streamed
+
+        :return: dataflow to iterate from
+        """
+
+        with open(path, "r", encoding="UTF-8") as file:
+            iterator = file.readlines()
+        return CustomDataFromIterable(iterator, max_datapoints=max_datapoins)
+
+    @staticmethod
+    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
+        """
+        Writes a dataflow iteratively to a .txt file. Every datapoint must be a string.
+        As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
+        unexpectedly large file
+
+        :param df: The dataflow to write from.
+        :param path: The path, the .txt file to write to.
+        :param file_name: name of the target file.
+        :param max_datapoints: maximum number of datapoint to consider writing to a file.
+        """
+
+        assert os.path.isdir(path), f"not a dir {path}"
+        assert is_file_extension(file_name, ".txt")
+
+        with open(os.path.join(path, file_name), "w", encoding="UTF-8") as file:
+            length = _reset_df_and_get_length(df)
+            if length == 0:
+                logger.info("cannot estimate length of dataflow")
+            if max_datapoints is not None:
+                if max_datapoints < length:
+                    logger.info("dataflow larger than max_datapoints")
+            for k, dp in enumerate(df):
+                if max_datapoints is None:
+                    file.write(dp)
+                elif k < max_datapoints:
+                    file.write(dp)
                 else:
                     break
 

@@ -24,13 +24,13 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
-from deepdoctection.extern.base import DetectionResult, TokenClassResult
+from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import names
 
 
 @dataclass
-class Annotations:  # pylint: disable=R0904
+class Annotations:
     """
     dataclass Annotations for building fixtures
     """
@@ -1447,12 +1447,49 @@ _LAYOUT_INPUT = {
     "token_type_ids": [[0, 0, 0, 0, 0, 0]],
 }
 
+_LAYOUT_FEATURES = {
+    "image_ids": ["6ea00afa-ba27-382a-8952-51f8e6ce16b7"],
+    "width": [1000],
+    "height": [1000],
+    "ann_ids": [
+        [
+            "[CLS]",
+            "3a696daf-15d5-3b88-be63-02912ef35cfb",
+            "37d79fd7-ab87-30fe-b460-9b6e62e901b9",
+            "5d40236e-430c-3d56-a8a3-fe9e46b872ac",
+            "f8227d59-ea7f-342a-97fa-23df1f189762",
+            "[SEP]",
+        ]
+    ],
+    "input_ids": [[101, 7592, 2088, 9061, 2088, 102]],
+    "token_type_ids": [[0, 0, 0, 0, 0, 0]],
+    "attention_mask": [[1, 1, 1, 1, 1, 1]],
+    "bbox": [
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [183.0, 412.0, 217.0, 450.0],
+            [233.0, 405.0, 300.0, 450.0],
+            [166.0, 800.0, 217.0, 850.0],
+            [291.0, 800.0, 342.0, 850.0],
+            [1000.0, 1000.0, 1000.0, 1000.0],
+        ]
+    ],
+    "tokens": [["[CLS]", "hello", "world", "bye", "world", "[SEP]"]],
+}
+
 
 def get_layoutlm_input() -> JsonDict:
     """
     layout lm model input from tokenizer
     """
     return _LAYOUT_INPUT
+
+
+def get_layoutlm_features() -> JsonDict:
+    """
+    layoutlm features
+    """
+    return _LAYOUT_FEATURES
 
 
 def get_token_class_result() -> List[TokenClassResult]:
@@ -1480,3 +1517,10 @@ def get_token_class_result() -> List[TokenClassResult]:
             uuids, input_ids[0], token_class_predictions, tokens, class_name, semantic_name, bio_tag  # type: ignore
         )
     ]
+
+
+def get_sequence_class_result() -> SequenceClassResult:
+    """
+    sequence class result
+    """
+    return SequenceClassResult(class_name="FOO", class_id=1)

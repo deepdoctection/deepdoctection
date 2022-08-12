@@ -22,11 +22,12 @@ Module for the base class for building pipelines
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, List, Mapping, Optional, Union, DefaultDict, Set
+from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Set, Union
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..extern.base import LMTokenClassifier, ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
 from .anngen import DatapointManager
@@ -163,21 +164,19 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LMTokenClassifier,
-        mapping_to_lm_input_func: Callable[..., Callable[[Image], Dict[str, Any]]],
+        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
     ):
         """
-        :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
-        :param language_model: Language model for token classification
+        :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
+        :param mapping_to_lm_input_func: Function mapping image to layout language model features
         """
 
         self.tokenizer = tokenizer
-        self.language_model = language_model
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
         super().__init__(None)
 
     def clone(self) -> "LanguageModelPipelineComponent":
-        return self.__class__(copy(self.tokenizer), copy(self.language_model), copy(self.mapping_to_lm_input_func))
+        return self.__class__(copy(self.tokenizer), copy(self.mapping_to_lm_input_func))
 
 
 class Pipeline(ABC):
@@ -258,11 +257,11 @@ class Pipeline(ABC):
         """
         Collects meta annotations from all pipeline components and summarizes the returned results
 
-        :return: Meta annotations with informations about image annotations (list), sub categories (dict with category
+        :return: Meta annotations with information about image annotations (list), sub categories (dict with category
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        pipeline_populations: Dict[str,Union[List[str],DefaultDict[str,Set[str]]]] = {
+        pipeline_populations: Dict[str, Union[List[str], DefaultDict[str, Set[str]]]] = {
             "image_annotations": [],
             "sub_categories": defaultdict(set),
             "relationships": defaultdict(set),

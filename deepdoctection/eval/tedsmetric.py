@@ -18,7 +18,7 @@ Tree distance similarity metric taken from https://github.com/ibm-aur-nlp/PubTab
 
 import statistics
 from collections import defaultdict, deque
-from typing import List, Optional, Tuple, Any
+from typing import Any, List, Optional, Tuple
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datasets.base import DatasetCategories
@@ -50,7 +50,7 @@ class TableTree(Tree):
     TableTree is derived class from :class:`APTED.helpers.Tree`.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=W0231
         self,
         *children: Any,
         tag: str,
@@ -118,9 +118,9 @@ class TEDS:
         if node.tag != "td" and node.tail is not None:
             self.__tokens__ += list(node.tail)
 
-    def load_html_tree(self, node: TableTree, parent: Optional[TableTree] =None) -> Optional[TableTree]:
+    def load_html_tree(self, node: TableTree, parent: Optional[TableTree] = None) -> Optional[TableTree]:
         """Converts HTML tree to the format required by apted"""
-        global __tokens__   # pylint: disable = W0602
+        global __tokens__  # pylint: disable = W0602
         if node.tag == "td":
             if self.structure_only:
                 cell = []
@@ -128,9 +128,12 @@ class TEDS:
                 self.__tokens__ = []
                 self.tokenize(node)
                 cell = self.__tokens__[1:-1].copy()
-            new_node = TableTree(*deque(),
-                tag=node.tag, colspan=int(node.attrib.get("colspan", "1")),
-                                 rowspan=int(node.attrib.get("rowspan", "1")), content=cell
+            new_node = TableTree(
+                *deque(),
+                tag=node.tag,
+                colspan=int(node.attrib.get("colspan", "1")),
+                rowspan=int(node.attrib.get("rowspan", "1")),
+                content=cell,
             )
         else:
             new_node = TableTree(*deque(), tag=node.tag, rowspan=None, colspan=None, content=None)
@@ -143,7 +146,7 @@ class TEDS:
             return new_node
         return None
 
-    def evaluate(self, inputs: Tuple[str,str]) -> float:
+    def evaluate(self, inputs: Tuple[str, str]) -> float:
         """Computes TEDS score between the prediction and the ground truth of a
         given sample
         """
@@ -171,7 +174,7 @@ class TEDS:
         return 0.0
 
 
-def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: bool) -> Tuple[float,int]:
+def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: bool) -> Tuple[float, int]:
     """
     Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
     approach to measure similarity of tables by means of their html representation has been adovacated in
@@ -182,7 +185,7 @@ def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: boo
 
     input_list = list(zip(gt_list, predict_list))
     df = DataFromList(input_list)
-    if len(input_list)>=2:
+    if len(input_list) >= 2:
         df = MultiThreadMapData(df, 2, teds.evaluate, strict=True)
     else:
         df = MapData(df, teds.evaluate)
@@ -202,7 +205,7 @@ class TedsMetric(MetricBase):
     Metric induced by :func:`teds`
     """
 
-    metric = teds_metric # type: ignore
+    metric = teds_metric  # type: ignore
     mapper = to_page
     structure_only = False
 
@@ -240,7 +243,7 @@ class TedsMetric(MetricBase):
     ) -> List[JsonDict]:
         html_gt_list, html_pr_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
-        score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only) # type: ignore
+        score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only)  # type: ignore
         return [{"teds_score": score, "num_samples": num_samples}]
 
     @classmethod

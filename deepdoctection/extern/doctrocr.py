@@ -22,7 +22,16 @@ Deepdoctection wrappers for DocTr OCR text line detection and text recognition m
 from typing import List, Tuple
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import doctr_available, get_doctr_requirement, get_tf_addons_requirements, tf_addons_available
+from ..utils.file_utils import (
+    doctr_available,
+    get_doctr_requirement,
+    get_pytorch_requirement,
+    get_tensorflow_requirement,
+    get_tf_addons_requirements,
+    pytorch_available,
+    tf_addons_available,
+    tf_available,
+)
 from ..utils.settings import names
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
@@ -86,7 +95,7 @@ class DoctrTextlineDetector(ObjectDetector):
                  det = DoctrTextlineDetector()
                  layout = ImageLayoutService(det,to_image=True, crop_image=True)
                  rec = DoctrTextRecognizer()
-                 text = TextExtractionService(rec,extract_from_roi="LINE")
+                 text = TextExtractionService(rec,extract_from_roi="WORD")
                  analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
                  df = analyzer.analyze(path = path)
 
@@ -111,7 +120,11 @@ class DoctrTextlineDetector(ObjectDetector):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_doctr_requirement(), get_tf_addons_requirements()]
+        if tf_available():
+            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
+        if pytorch_available():
+            return [get_pytorch_requirement(), get_doctr_requirement()]
+        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
     def clone(self) -> PredictorBase:
         return self.__class__()
@@ -163,7 +176,11 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_doctr_requirement(), get_tf_addons_requirements()]
+        if tf_available():
+            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
+        if pytorch_available():
+            return [get_pytorch_requirement(), get_doctr_requirement()]
+        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
     def clone(self) -> PredictorBase:
         return self.__class__()

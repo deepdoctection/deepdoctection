@@ -164,7 +164,7 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
         else:
-            assert isinstance(self.predictor,(ObjectDetector, PdfMiner))
+            assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
             sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
         return dict(
             [

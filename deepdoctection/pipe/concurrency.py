@@ -30,7 +30,7 @@ import tqdm  # type: ignore
 from ..dataflow import DataFlow
 from ..datapoint.image import Image
 from ..utils.tqdm import get_tqdm
-from .base import PipelineComponent, PredictorPipelineComponent
+from .base import LanguageModelPipelineComponent, PipelineComponent, PredictorPipelineComponent
 
 if TYPE_CHECKING:
     QueueType = queue.Queue[Image]  # pylint: disable=E1136
@@ -71,7 +71,7 @@ class MultiThreadPipelineComponent:
 
     def __init__(
         self,
-        pipeline_components: Sequence[PredictorPipelineComponent],
+        pipeline_components: Sequence[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]],
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
