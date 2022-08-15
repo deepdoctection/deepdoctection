@@ -57,6 +57,7 @@ _DEPS = [
     "types-PyYAML",
     "types-termcolor==1.1.3",
     "types-tabulate",
+    "pyzmq>=16",
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
     # additional requirements to run eval and datasets (again without considering DL models)
     "lxml",
@@ -116,6 +117,7 @@ dist_deps = deps_list(
     "packaging",
     "pypdf2",
     "pyyaml",
+    "pyzmq",
     "types-PyYAML",
     "types-termcolor",
     "types-tabulate",

@@ -29,7 +29,7 @@ from deepdoctection.datasets import DatasetCategories
 from deepdoctection.eval import CocoMetric, Evaluator
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.layout import ImageLayoutService
-from deepdoctection.utils import tensorpack_available, names
+from deepdoctection.utils import names, tensorpack_available
 
 from ..test_utils import set_num_gpu_to_one
 
