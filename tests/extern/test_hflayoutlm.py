@@ -44,7 +44,8 @@ def get_token_class_results(  # type: ignore
 
 
 def get_sequence_class_result(  # type: ignore
-        input_ids, attention_mask, token_type_ids, boxes, model) -> SequenceClassResult:    # pylint: disable=W0613
+    input_ids, attention_mask, token_type_ids, boxes, model  # pylint: disable=W0613
+) -> SequenceClassResult:
     """
     sequence class result
     """
@@ -147,7 +148,7 @@ class TestHFLayoutLmTokenClassifier:
         assert class_names == token_class_names
 
 
-class TestHFLayoutLmSequenceClassifier:   # pylint: disable=R0903
+class TestHFLayoutLmSequenceClassifier:  # pylint: disable=R0903
     """
     Test HFLayoutLmSequenceClassifier
     """

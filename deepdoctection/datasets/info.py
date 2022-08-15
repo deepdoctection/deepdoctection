@@ -233,7 +233,13 @@ class DatasetCategories:
             for cat in categories  # pylint: disable=E1133
         ]
         self._cat_to_sub_cat = cat_to_sub_cat
-        self._categories_update = list(chain(*cats_or_sub_cats))
+        _categories_update_list = list(chain(*cats_or_sub_cats))
+
+        # we must keep the order of _categories_update_list if the elements are unique
+        if len(set(_categories_update_list))!= len(_categories_update_list):
+            self._categories_update = list(set(_categories_update_list))
+        else:
+            self._categories_update = _categories_update_list
 
     @call_only_once
     def filter_categories(self, categories: Union[str, List[str]]) -> None:
