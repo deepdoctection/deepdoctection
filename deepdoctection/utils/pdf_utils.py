@@ -107,12 +107,15 @@ class PDFStreamer:
     A class for streaming pdf documents as bytes objects. Build as a generator, it is possible to load the document
     iteratively into memory. Uses py2pdf FileReader and FileWriter.
 
-    Example:
-         df = dataflow.DataFromIterable.PDFStreamer(path=path)
-         df.reset_state()
+    **Example:**
 
-         for page in df:
-            ... # do whatever you like
+         .. code-block:: python
+
+             df = dataflow.DataFromIterable.PDFStreamer(path=path)
+             df.reset_state()
+
+             for page in df:
+                ... # do whatever you like
 
 
     """

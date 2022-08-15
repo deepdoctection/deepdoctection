@@ -200,16 +200,12 @@ class Evaluator:  # pylint: disable=R0903
             df_pr = MapData(df_pr, maybe_remove_image_from_category(anns_to_keep))
             df_pr = MapData(
                 df_pr,
-                remove_cats(
-                    sub_categories=sub_cats_to_remove, relationships=relationships_to_remove
-                ),
+                remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove),
             )
 
         elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
             summary_sub_cats_to_remove = meta_anns["summaries"]
-            df_pr = MapData(
-                df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove)
-            )
+            df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
         else:
             raise NotImplementedError

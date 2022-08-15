@@ -158,9 +158,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary(
-                    {names.C.DOC: self.categories.get_categories(as_dict=False, filtered=True)}
-                ),
+                filter_summary({names.C.DOC: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
         return df

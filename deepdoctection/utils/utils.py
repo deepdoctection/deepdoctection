@@ -18,11 +18,14 @@
 """
 Utility functions, only related to builtin objects
 """
-
 import functools
 import inspect
+import os
 from collections.abc import MutableMapping
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Set, Union
+
+import numpy as np
 
 
 def delete_keys_from_dict(
@@ -125,3 +128,15 @@ def call_only_once(func: Callable[..., Any]) -> Callable[..., Any]:
         return func(*args, **kwargs)
 
     return wrapper
+
+
+# taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/utils.py
+def get_rng(obj: Any = None) -> np.random.RandomState:
+    """
+    Get a good RNG seeded with time, pid and the object.
+
+    :param obj: some object to use to generate random seed.
+    :return: np.random.RandomState: the RNG.
+    """
+    seed = (id(obj) + os.getpid() + int(datetime.now().strftime("%Y%m%d%H%M%S%f"))) % 4294967295
+    return np.random.RandomState(seed)
