@@ -173,9 +173,7 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     expected_output = {names.C.RS: [1, 1, 1, 1, 0]}
 
     # Act
-    output, _ = image_to_cat_id(sub_categories=sub_category_names)(   # pylint: disable = E1102
-        dp_image_fully_segmented
-    )
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.RS] == expected_output[names.C.RS]
@@ -196,9 +194,7 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     }
 
     # Act
-    output, _ = image_to_cat_id(sub_categories=sub_category_names)(  # pylint: disable = E1102
-        dp_image_fully_segmented
-    )
+    output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
     assert output[names.C.RN] == expected_output[names.C.RN]
