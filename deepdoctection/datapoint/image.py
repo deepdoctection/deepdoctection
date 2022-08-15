@@ -93,7 +93,7 @@ class Image:
             else:
                 self.image_id = get_uuid(external_id)
         else:
-            self.image_id = get_uuid(self.location, self.file_name)
+            self.image_id = get_uuid(str(self.location), self.file_name)
 
     @property
     def image_id(self) -> str:

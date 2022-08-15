@@ -31,6 +31,7 @@ If not sure use
     print(dataset_instance.dataflow.get_workdir())
 """
 
+from .doclaynet import *
 from .fintabnet import *
 from .funsd import *
 from .iiitar13k import *
@@ -41,4 +42,15 @@ from .pubtabnet import *
 from .rvlcdip import *
 from .xfund import *
 
-__all__ = ["Publaynet", "Pubtabnet", "LayoutTest", "Fintabnet", "Xfund", "Funsd", "IIITar13K", "Pubtables1M", "Rvlcdip"]
+__all__ = [
+    "Publaynet",
+    "Pubtabnet",
+    "LayoutTest",
+    "Fintabnet",
+    "Xfund",
+    "Funsd",
+    "IIITar13K",
+    "Pubtables1M",
+    "Rvlcdip",
+    "DocLayNet",
+]
