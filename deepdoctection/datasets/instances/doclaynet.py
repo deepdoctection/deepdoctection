@@ -67,7 +67,7 @@ _TYPE = names.DS.TYPE.OBJ
 
 _LOCATION = "DocLayNet_core"
 
-_ANNOTATION_FILES: Mapping[str, str] = {"train": "train.json", "val": "val.json", "test": "test.json"}
+_ANNOTATION_FILES: Mapping[str, str] = {"train": "COCO/train.json", "val": "COCO/val.json", "test": "COCO/test.json"}
 _INIT_CATEGORIES = [
     names.C.CAP,
     names.C.FOOT,
@@ -139,7 +139,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
 
         # Load
         dataset_split = self.annotation_files[split]
-        path = self.get_workdir() / "COCO" / dataset_split  # type: ignore
+        path = self.get_workdir() / dataset_split  # type: ignore
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
@@ -221,7 +221,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
 
         # Load
         dataset_split = self.annotation_files[split]
-        path = self.get_workdir() / "COCO" / dataset_split  # type: ignore
+        path = self.get_workdir() /  dataset_split  # type: ignore
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
