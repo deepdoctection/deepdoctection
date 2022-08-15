@@ -20,9 +20,9 @@ Module for mapping annotations in coco style structure
 """
 
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Mapping, Optional, Tuple
 
-from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
@@ -37,6 +37,8 @@ def coco_to_image(
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,
+    coarse_mapping: Optional[Mapping[int, int]] = None,
+    coarse_sub_cat_name: Optional[str] = None,
 ) -> Optional[Image]:
 
     """
@@ -49,8 +51,14 @@ def coco_to_image(
     :param filter_empty_image: Will return None, if datapoint has no annotations
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
                        will be added.
+    :param coarse_mapping: A mapping to map categories into broader categories. Note that the coarser categories must
+                           already be included in the original mapping.
+    :param coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping. If
     :return: Image
     """
+
+    if coarse_sub_cat_name and coarse_mapping is None:
+        raise ValueError("A coarse mapping must be provided when coarse_sub_cat_name have been passed")
 
     anns = dp.get("annotations", [])
     if not anns and filter_empty_image:
@@ -87,6 +95,13 @@ def coco_to_image(
                 external_id=ann["id"],
             )
             image.dump(annotation)
+
+            if coarse_sub_cat_name and coarse_mapping:
+                sub_cat = CategoryAnnotation(
+                    category_name=categories[str(coarse_mapping[ann["category_id"]])],
+                    category_id=str(coarse_mapping[ann["category_id"]]),
+                )
+                annotation.dump_sub_category(coarse_sub_cat_name, sub_cat)
 
     if mapping_context.context_error:
         return None
