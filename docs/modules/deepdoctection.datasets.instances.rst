@@ -2,6 +2,14 @@ deepdoctection.datasets.instances
 ===========================================
 
 
+deepdoctection.datasets.instances.doclaynet
+----------------------------------------------------
+
+.. automodule:: deepdoctection.datasets.instances.doclaynet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.datasets.instances.fintabnet
 ----------------------------------------------------
 
