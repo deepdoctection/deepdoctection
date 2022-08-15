@@ -51,7 +51,7 @@ _DEPS = [
     "numpy>=1.21",
     "opencv-python==4.5.4.60",
     "packaging>=20.0",
-    "pypdf2>=1.27.5",
+    "pypdf2>=1.27.5,<2.10.1",
     "python-prctl",
     "pyyaml==6.0",
     "types-PyYAML",
