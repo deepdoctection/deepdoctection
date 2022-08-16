@@ -1,0 +1,565 @@
+# -*- coding: utf-8 -*-
+# File: page.py
+
+# Copyright 2022 Dr. Janis Meyer. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import json
+from dataclasses import asdict, dataclass
+from itertools import chain
+from pathlib import Path
+from typing import List, Optional, Union
+
+import cv2
+import numpy as np
+
+from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.image import Image
+from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils.settings import names
+from ..utils.viz import draw_boxes, interactive_imshow
+from .convert import convert_b64_to_np_array, convert_np_array_to_b64
+
+
+def _bounding_box_in_abs_coords(
+    annotation: ImageAnnotation, image_id: str, image_width: float, image_height: float
+) -> List[float]:
+    if annotation.image:
+        bounding_box = annotation.image.get_embedding(image_id)
+    else:
+        bounding_box = annotation.bounding_box
+    if not bounding_box.absolute_coords:
+        bounding_box = bounding_box.transform(image_width, image_height, absolute_coords=True)
+    return bounding_box.to_list(mode="xyxy")
+
+
+@dataclass
+class Word:
+    """
+    Dataclass for storing word annotations
+
+    :attr:`uuid`: Unique identifier over all items
+
+    :attr:`text`: Text
+
+    :attr:`reading_order`: Index of reading order.
+
+    :attr:`token_class`: token classification
+
+    :attr:`tag`: tag
+    """
+
+    uuid: str
+    bounding_box: List[float]
+    text: str
+    reading_order: Optional[int]
+    token_class: Optional[str]
+    tag: Optional[str]
+
+    @classmethod
+    def from_dict(cls, **kwargs):
+        return cls(**kwargs)
+
+    @classmethod
+    def from_annotation(cls, annotation: ImageAnnotation, image_id: str, image_width: float, image_height: float):
+
+        text = ""
+        reading_order = None
+        token = None
+        tag = None
+
+        # generating bounding box in terms of full image size and with absolute coords
+        bounding_box = _bounding_box_in_abs_coords(annotation, image_id, image_width, image_height)
+
+        if names.C.CHARS in annotation.sub_categories:
+            text = annotation.get_sub_category(names.C.CHARS).value
+        if names.C.RO in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+        if names.C.SE in annotation.sub_categories:
+            token = annotation.get_sub_category(names.C.SE).category_name
+        if names.NER.TAG in annotation.sub_categories:
+            tag = annotation.get_sub_category(names.NER.TAG).category_name
+
+        return cls(annotation.annotation_id, bounding_box, text, reading_order, token, tag)
+
+
+def _word_list(annotation: ImageAnnotation, image: Image, text_container: str) -> List[Word]:
+    words = []
+    if annotation.category_name != text_container:
+        text_ids = annotation.get_relationship(names.C.CHILD)
+        word_anns = image.get_annotation(annotation_ids=text_ids, category_names=text_container)
+    else:
+        word_anns = [annotation]
+    for word_ann in word_anns:
+        words.append(Word.from_annotation(word_ann, image.image_id, image.width, image.height))
+    return words
+
+
+@dataclass
+class Layout:
+    """
+    Dataclass for storing simple layout items that contain text but dot not have any more structure.
+
+    :attr:`uuid`: Unique identifier over all items
+
+    :attr:`bounding_box`: bounding box in coord terms of the image
+
+    :attr:`layout_type`: The category/label name
+
+    :attr:` reading_order`: Index of reading order.
+
+    :attr:`words`: List of Words
+
+    :attr:`score`: The confidence score, if the layout from a prediction
+    """
+
+    uuid: str
+    layout_type: str
+    reading_order: Optional[int]
+    score: Optional[float]
+    bounding_box: List[float]
+    words: List[Word]
+
+    @classmethod
+    def from_dict(cls, **kwargs):
+        word_list = []
+        words = kwargs.pop("words")
+        for word_dict in words:
+            word_list.append(Word.from_dict(**word_dict))
+        kwargs["words"] = word_list
+        return cls(**kwargs)
+
+    @classmethod
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+
+        reading_order = None
+
+        # generating a list of words
+        words = _word_list(annotation, dp, text_container)
+
+        # generating bounding box in terms of full image size and with absolute coords
+        bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
+
+        if names.C.RO in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+
+        return cls(
+            annotation.annotation_id, annotation.category_name, reading_order, annotation.score, bounding_box, words
+        )
+
+    @property
+    def text(self):
+        self.words.sort(key=lambda x: x.reading_order)
+        return " ".join([word.text for word in self.words])
+
+
+@dataclass
+class Cell(Layout):
+    """
+    Dataclass that appear in combination with  :class:`Table`.
+
+    :attr:`row_number`: Row position of the cell
+
+    :attr:`col_number`: Column position of the cell
+
+    :attr:`row_span`: Row span position of the cell
+
+    :attr:`col_span`: Column span position of the cell
+    """
+
+    row_number: Optional[int]
+    col_number: Optional[int]
+    row_span: Optional[int]
+    col_span: Optional[int]
+
+    @classmethod
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+        reading_order = None
+        row_number = None
+        col_number = None
+        row_span = None
+        col_span = None
+
+        # generating a list of words
+        words = _word_list(annotation, dp, text_container)
+
+        # generating bounding box in terms of full image size and with absolute coords
+        bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
+
+        if names.C.RO in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+
+        if names.C.RN in annotation.sub_categories:
+            row_number = int(annotation.get_sub_category(names.C.RN).category_id)
+        if names.C.CN in annotation.sub_categories:
+            col_number = int(annotation.get_sub_category(names.C.CN).category_id)
+        if names.C.RS in annotation.sub_categories:
+            row_span = int(annotation.get_sub_category(names.C.RS).category_id)
+        if names.C.CS in annotation.sub_categories:
+            col_span = int(annotation.get_sub_category(names.C.CS).category_id)
+
+        return cls(
+            annotation.annotation_id,
+            annotation.category_name,
+            reading_order,
+            annotation.score,
+            bounding_box,
+            words,
+            row_number,
+            col_number,
+            row_span,
+            col_span,
+        )
+
+
+def _get_table_str(cells: List[Cell], number_rows: int, plain: bool = False) -> str:
+    output = ""
+    for row in range(1, number_rows + 1):
+        if not plain:
+            output += f"______________ row: {row} ______________\n"
+        cells_row = sorted(
+            list(filter(lambda x: x.row_number == row, cells)),  # pylint: disable=W0640
+            key=lambda x: x.col_number,
+        )
+
+        for cell in cells_row:
+            if not plain:
+                output += str(cell)
+            else:
+                output += " " + cell.text
+        if plain:
+            output += "\n"
+    return output
+
+
+@dataclass
+class Table(Layout):
+    """
+    Dataclass for tables. Tables have cells along rows and columns that, in turn, might contain text.
+
+    :attr:`cells`: List of cells
+
+    :attr:`table_segments`: List of items (i.e. rows or columns)
+
+    :attr:`number_rows`: Total number of rows
+
+    :attr:`number_cols`:  Total number of columns
+
+    :attr:`html`: HTML string representation of the table
+    """
+
+    cells: List[Cell]
+    table_segments: List[Layout]
+    number_rows: Optional[int]
+    number_cols: Optional[int]
+    html: str
+
+    @classmethod
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+        cells = []
+        html_list = []
+        reading_order = None
+        table_segments = []
+        number_rows = None
+        number_cols = None
+
+        # generating a list of words
+        words = _word_list(annotation, dp, text_container)
+
+        # generating bounding box in terms of full image size and with absolute coords
+        bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
+
+        if names.C.RO in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+
+        if names.C.HTAB in annotation.sub_categories:
+            html_list = annotation.get_sub_category(names.C.HTAB).value
+
+        # generating cells and html representation
+        all_relation_ids = annotation.get_relationship(names.C.CHILD)
+        cell_anns = dp.get_annotation(
+            annotation_ids=all_relation_ids, category_names=[names.C.CELL, names.C.HEAD, names.C.BODY]
+        )
+        for cell_ann in cell_anns:
+            cell = Cell.from_annotation(cell_ann, dp, text_container)
+            cells.append(cell)
+            try:
+                html_index = html_list.index(cell_ann.annotation_id)
+                html_list.pop(html_index)
+                html_list.insert(html_index, cell.text)
+            except ValueError:
+                pass
+
+        html_str = "".join(html_list)
+
+        # generating table segments (i.e. rows and columns)
+        table_segm_anns = dp.get_annotation(annotation_ids=all_relation_ids, category_names=[names.C.ROW, names.C.COL])
+
+        for table_segm_ann in table_segm_anns:
+            table_segments.append(Layout.from_annotation(table_segm_ann, dp, text_container))
+
+        if annotation.image is not None:
+            if annotation.image.summary is not None:
+                if (
+                    names.C.NR in annotation.image.summary.sub_categories
+                    and names.C.NC in annotation.image.summary.sub_categories
+                ):
+                    number_rows = int(annotation.image.summary.get_sub_category(names.C.NR).category_id)
+                    number_cols = int(annotation.image.summary.get_sub_category(names.C.NC).category_id)
+            else:
+                if cell_anns:
+                    number_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cell_anns])
+                    number_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cell_anns])
+
+        return cls(
+            annotation.annotation_id,
+            annotation.category_name,
+            reading_order,
+            annotation.score,
+            bounding_box,
+            words,
+            cells,
+            table_segments,
+            number_rows,
+            number_cols,
+            html_str,
+        )
+
+    @property
+    def text(self):
+        if self.number_rows:
+            return _get_table_str(self.cells, self.number_rows, True)
+        raise ValueError(
+            "Table text cannot be printed because not all information for table structure recognition are" " available"
+        )
+
+    @classmethod
+    def from_dict(cls, **kwargs):
+        cell_list = []
+        table_segment_list = []
+        cells = kwargs.pop("cells")
+        for cell_dict in cells:
+            cell_list.append(Cell.from_dict(**cell_dict))
+        table_segments = kwargs.pop("table_segments")
+        for table_segment_dict in table_segments:
+            table_segment_list.append(Layout.from_dict(**table_segment_dict))
+        kwargs["cells"] = cell_list
+        kwargs["table_segments"] = table_segment_list
+        return cls(**kwargs)
+
+    @property
+    def items(self):
+        return self.table_segments
+
+
+@dataclass
+class Page:
+
+    uuid: str
+    file_name: str
+    location: str
+    width: float
+    height: float
+    language: Optional[str]
+    document_type: Optional[str]
+    layouts: List[Layout]
+    image: Optional[str]
+
+    def as_dict(self) -> JsonDict:
+        """
+        Converts a Page object to a dictionary that can be saved as json object.
+
+        :return: Dictionary with json serializable values
+        """
+        return asdict(self)
+
+    def get_export(self, save_image: bool = False) -> JsonDict:
+        """
+        Exporting image as dictionary. Will optionally remove base64 encoded image from export
+
+        :return: Dict that e.g. can be saved to a file.
+        """
+        export_dict = self.as_dict()
+        if not save_image:
+            export_dict["image"] = None
+        return export_dict
+
+    def save(self, path: Optional[Pathlike] = None, save_image: bool = False):
+        if isinstance(path, str):
+            path = Path(path)
+        elif path is None:
+            path = Path(self.location)
+        suffix = path.suffix
+        path_json = path.as_posix().replace(suffix, ".json")
+        with open(path_json, "w") as file:
+            json.dump(self.get_export(save_image), file)
+
+    @classmethod
+    def from_image(
+        cls,
+        image: Image,
+        text_container: str,
+        floating_text_block_names: Optional[List[str]] = None,
+        text_block_names: Optional[List[str]] = None,
+        text_container_to_text_block: bool = False,
+    ):
+
+        image_str: Optional[str] = None
+        layouts = []
+        language = None
+        doc_class = None
+
+        if floating_text_block_names is None:
+            floating_text_block_names = []
+        if text_block_names is None:
+            text_block_names = []
+        assert isinstance(floating_text_block_names, list)
+        assert isinstance(text_block_names, list)
+
+        # page
+
+        if image.image is not None:
+            image_str = convert_np_array_to_b64(image.image)
+
+        # all types of layout items and text containers that are not mapped to a layout block
+        text_block_anns = image.get_annotation(category_names=text_block_names)
+        if text_container_to_text_block:
+            floating_text_block_names.append(text_container)
+            mapped_text_container = list(
+                chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns])
+            )
+            text_container_anns = image.get_annotation(category_names=text_container)
+            text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
+            text_block_anns.extend(text_container_anns)
+
+        for ann in text_block_anns:
+            if ann.category_name in {names.C.TAB}:
+                layouts.append(Table.from_annotation(ann, image, text_container))
+            else:
+                layouts.append(Layout.from_annotation(ann, image, text_container))
+
+        if image.summary:
+            if names.NLP.LANG.LANG in image.summary.sub_categories:
+                language = image.summary.get_sub_category(names.NLP.LANG.LANG).value
+            if names.C.DOC in image.summary.sub_categories:
+                doc_class = image.summary.get_sub_category(names.C.DOC).category_name
+
+        return cls(
+            image.image_id,
+            image.file_name,
+            image.location,
+            image.width,
+            image.height,
+            language,
+            doc_class,
+            layouts,
+            image_str,
+        )
+
+    @classmethod
+    def from_dict(cls, **kwargs) -> "Page":
+        layout_list = []
+        layouts = kwargs.pop("layouts")
+        for layout_dict in layouts:
+            if layout_dict["layout_type"] == names.C.TAB:
+                layout_list.append(Table.from_dict(**layout_dict))
+            else:
+                layout_list.append(Layout.from_dict(**layout_dict))
+        kwargs["layouts"] = layout_list
+        return cls(**kwargs)
+
+    def get_text(self) -> str:
+        """
+        Get text of all Layouts.
+
+        :return: Text string
+        """
+        text: str = ""
+        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
+        layouts_with_order.sort(key=lambda x: x.reading_order)
+        for layout in layouts_with_order:
+            text += "\n" + layout.text
+
+        return text
+
+    @property
+    def tables(self) -> List[Table]:
+        return list(filter(lambda x: isinstance(x, Table), self.layouts))
+
+    @property
+    def items(self) -> List[Layout]:
+        return list(filter(lambda x: x.layout_type not in [names.C.TAB], self.layouts))
+
+    def viz(
+        self,
+        show_tables: bool = True,
+        show_layouts: bool = True,
+        show_cells: bool = True,
+        show_table_structure: bool = True,
+        interactive: bool = False,
+    ) -> Optional[ImageType]:
+        """
+        Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
+
+        **Example:**
+
+            .. code-block:: python
+
+                from matplotlib import pyplot as plt
+
+                img = page.viz()
+                plt.imshow(img)
+
+        :param show_tables: Will display all tables boxes as well as cells, rows and columns
+        :param show_layouts: Will display all other layout components.
+        :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
+        :param show_table_structure: Will display rows and columns
+        :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
+                            can be displayed differently.
+        :return: If interactive will return nothing else a numpy array.
+        """
+
+        category_names_list: List[Union[str, None]] = []
+        box_stack = []
+
+        if show_layouts:
+            for item in self.items:
+                box_stack.append(item.bounding_box)
+                category_names_list.append(item.layout_type)
+
+        if show_tables:
+            for table in self.tables:
+                box_stack.append(table.bounding_box)
+                category_names_list.append(names.C.TAB)
+                if show_cells:
+                    for cell in table.cells:
+                        box_stack.append(cell.bounding_box)
+                        category_names_list.append(None)
+                if show_table_structure:
+                    for segment_item in table.table_segments:
+                        box_stack.append(segment_item.bounding_box)
+                        category_names_list.append(None)
+
+        if self.image is not None:
+            img = convert_b64_to_np_array(self.image)
+            if box_stack:
+                boxes = np.vstack(box_stack)
+                img = draw_boxes(img, boxes, category_names_list)
+            img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
+
+            if interactive:
+                interactive_imshow(img)
+                return None
+            return img
+        return None
