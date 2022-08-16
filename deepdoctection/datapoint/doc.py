@@ -31,11 +31,13 @@ import cv2
 import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict
+from ..utils.develop import deprecated
 from ..utils.settings import names
 from ..utils.viz import draw_boxes, interactive_imshow
 from .convert import convert_b64_to_np_array
 
 
+@deprecated("Use .page.Layout class instead", "2022-08-16")
 @dataclass
 class LayoutSegment:
     """
@@ -62,6 +64,7 @@ class LayoutSegment:
     score: Optional[float] = field(default_factory=float)
 
 
+@deprecated("Use .page.Cell class instead", "2022-08-16")
 @dataclass
 class Cell:
     """
@@ -106,6 +109,7 @@ class Cell:
         )
 
 
+@deprecated("Use .page.Layout class instead", "2022-08-16")
 @dataclass
 class TableSegment:
     """
@@ -144,6 +148,7 @@ def _get_table_str(cells: List[Cell], number_rows: int, plain: bool = False) -> 
     return output
 
 
+@deprecated("Use .page.Table class instead", "2022-08-16")
 @dataclass
 class Table:
     """
@@ -188,6 +193,7 @@ class Table:
         return _get_table_str(self.cells, self.number_rows, True)
 
 
+@deprecated("Use .page.Page class instead", "2022-08-16")
 @dataclass
 class Page:
     """
@@ -307,7 +313,5 @@ class Page:
         """
 
         page_dict = self.as_dict()
-        with open(  # pylint: disable=W1514
-            os.path.join(path, os.path.splitext(page_dict["file_name"])[0] + ".json"), "w"
-        ) as file:
+        with open(os.path.join(path, os.path.splitext(page_dict["file_name"])[0] + ".json"), "w") as file:
             json.dump(page_dict, file)

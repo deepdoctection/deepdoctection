@@ -26,6 +26,7 @@ from ..datapoint.convert import convert_np_array_to_b64
 from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.develop import deprecated
 from ..utils.settings import names
 
 __all__ = ["to_page", "page_dict_to_page"]
@@ -168,6 +169,7 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
     )
 
 
+@deprecated("Use datapoints.page.Page.from_image instead", "2022-08-16")
 def to_page(
     dp: Image,
     text_container: str,
@@ -229,6 +231,7 @@ def to_page(
     return page
 
 
+@deprecated("Use datapoints.page.Page.from_dict instead", "2022-08-16")
 def page_dict_to_page(page_dict: JsonDict) -> Page:
     """
     Converts a dictionary (from a page export) to the page data format.
