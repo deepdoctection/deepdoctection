@@ -36,5 +36,5 @@ After all, the point here is not to provide an optimal processing environment.
 from .annotation import *
 from .box import *
 from .convert import *
-from .doc import *
 from .image import Image
+from .page import *

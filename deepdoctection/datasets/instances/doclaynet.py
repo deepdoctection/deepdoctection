@@ -109,7 +109,7 @@ class DocLayNet(DatasetBase):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self)->"DocLayNetBuilder":
+    def _builder(self) -> "DocLayNetBuilder":
         return DocLayNetBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 
@@ -221,7 +221,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
 
         # Load
         dataset_split = self.annotation_files[split]
-        path = self.get_workdir() /  dataset_split  # type: ignore
+        path = self.get_workdir() / dataset_split  # type: ignore
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
