@@ -25,8 +25,7 @@ import os
 from dataflow.dataflow import DataFlow, MapData
 
 from ..dataflow.custom_serialize import SerializerJsonlines
-from ..datapoint.doc import Page
-from ..mapper.pagestruct import page_dict_to_page
+from ..datapoint.page import Page
 from ..utils.detection_types import Pathlike
 from ..utils.fs import is_file_extension
 
@@ -46,7 +45,7 @@ def load_page(path: Pathlike) -> Page:
     with open(path, "r", encoding="UTF-8") as file:
         page_dict = json.load(file)
 
-    return page_dict_to_page(page_dict)
+    return Page.from_dict(page_dict)
 
 
 def load_document(path: Pathlike) -> DataFlow:
@@ -58,5 +57,5 @@ def load_document(path: Pathlike) -> DataFlow:
     """
 
     df = SerializerJsonlines.load(path)
-    df = MapData(df, page_dict_to_page)
+    df = MapData(df, Page.from_dict)
     return df

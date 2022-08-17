@@ -24,11 +24,10 @@ from typing import List, Optional, Union
 import numpy as np
 
 from ..dataflow import DataFlow, MapData
-from ..datapoint.doc import Page
 from ..datapoint.image import Image
+from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
-from ..mapper.pagestruct import to_page
 from ..utils.detection_types import JsonDict
 from ..utils.settings import names
 from .base import PipelineComponent
@@ -192,7 +191,7 @@ class PageParsingService:
         :param dp: Image
         :return: Page
         """
-        return to_page(
+        return Page.from_image(
             dp,
             self._text_container,
             self._floating_text_block_names,
