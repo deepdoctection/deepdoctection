@@ -15,16 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Dataclasses Word, Layout, Tables etc. and Page as well as parsing methods.
+
+These data classes are intended for the consumer.
+"""
+
 import json
 from dataclasses import asdict, dataclass
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Union, no_type_check, Sequence
 
 import cv2
 import numpy as np
 
-from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
 from ..utils.settings import names
@@ -68,11 +74,23 @@ class Word:
     tag: Optional[str]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "Word":
+        """Generating instance from dict"""
         return cls(**kwargs)
 
     @classmethod
-    def from_annotation(cls, annotation: ImageAnnotation, image_id: str, image_width: float, image_height: float):
+    def from_annotation(cls, annotation: ImageAnnotation, image_id: str, image_width: float, image_height: float) \
+            -> "Word":
+        """
+        Generating an instance from an image annotation
+
+        :param annotation: Image annotation to generate an instance from
+        :param image_id: the top level image uuid
+        :param image_width: the top level image width
+        :param image_height: the top level image height
+        :return: A word instance
+        """
 
         text = ""
         reading_order = None
@@ -83,7 +101,9 @@ class Word:
         bounding_box = _bounding_box_in_abs_coords(annotation, image_id, image_width, image_height)
 
         if names.C.CHARS in annotation.sub_categories:
-            text = annotation.get_sub_category(names.C.CHARS).value
+            ann = annotation.get_sub_category(names.C.CHARS)
+            if isinstance(ann, ContainerAnnotation):
+                text = str(ann.value)
         if names.C.RO in annotation.sub_categories:
             reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
         if names.C.SE in annotation.sub_categories:
@@ -132,7 +152,9 @@ class Layout:
     words: List[Word]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "Layout":
+        """Generating instance from dict"""
         word_list = []
         words = kwargs.pop("words")
         for word_dict in words:
@@ -141,7 +163,15 @@ class Layout:
         return cls(**kwargs)
 
     @classmethod
-    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str) -> "Layout":
+        """
+        Generating an instance from an image annotation
+
+        :param annotation: Image annotation to generate an instance from
+        :param dp: The top level image
+        :param text_container: Text container to indicate in what image annotation the text can be found
+        :return: A layout instance
+        """
 
         reading_order = None
 
@@ -159,9 +189,11 @@ class Layout:
         )
 
     @property
-    def text(self):
-        self.words.sort(key=lambda x: x.reading_order)
-        return " ".join([word.text for word in self.words])
+    def text(self) -> str:
+        """Text contained in layout instance"""
+        words_with_reading_order = [word for word in self.words if word.reading_order is not None]
+        words_with_reading_order.sort(key=lambda x: x.reading_order)  # type: ignore
+        return " ".join([word.text for word in words_with_reading_order])
 
 
 @dataclass
@@ -184,7 +216,15 @@ class Cell(Layout):
     col_span: Optional[int]
 
     @classmethod
-    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str) -> "Cell":
+        """
+        Generating an instance from an image annotation
+
+        :param annotation: Image annotation to generate an instance from
+        :param dp: The top level image
+        :param text_container: Text container to indicate in what image annotation the text can be found
+        :return: A cell instance
+        """
         reading_order = None
         row_number = None
         col_number = None
@@ -230,7 +270,7 @@ def _get_table_str(cells: List[Cell], number_rows: int, plain: bool = False) -> 
             output += f"______________ row: {row} ______________\n"
         cells_row = sorted(
             list(filter(lambda x: x.row_number == row, cells)),  # pylint: disable=W0640
-            key=lambda x: x.col_number,
+            key=lambda x: x.col_number, # type: ignore
         )
 
         for cell in cells_row:
@@ -266,9 +306,17 @@ class Table(Layout):
     html: str
 
     @classmethod
-    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str):
+    def from_annotation(cls, annotation: ImageAnnotation, dp: Image, text_container: str) -> "Table":
+        """
+        Generating an instance from an image annotation
+
+        :param annotation: Image annotation to generate an instance from
+        :param dp: The top level image
+        :param text_container: Text container to indicate in what image annotation the text can be found
+        :return: A table instance
+        """
         cells = []
-        html_list = []
+        html_list: List[str] = []
         reading_order = None
         table_segments = []
         number_rows = None
@@ -284,7 +332,10 @@ class Table(Layout):
             reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
 
         if names.C.HTAB in annotation.sub_categories:
-            html_list = annotation.get_sub_category(names.C.HTAB).value
+            ann = annotation.get_sub_category(names.C.HTAB)
+            if isinstance(ann, ContainerAnnotation):
+                if isinstance(ann.value, list):
+                    html_list = ann.value
 
         # generating cells and html representation
         all_relation_ids = annotation.get_relationship(names.C.CHILD)
@@ -337,7 +388,8 @@ class Table(Layout):
         )
 
     @property
-    def text(self):
+    def text(self) -> str:
+        """Text contained in table instance"""
         if self.number_rows:
             return _get_table_str(self.cells, self.number_rows, True)
         raise ValueError(
@@ -345,7 +397,9 @@ class Table(Layout):
         )
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    @no_type_check
+    def from_dict(cls, **kwargs) -> "Table":
+        """Generating instance from dict"""
         cell_list = []
         table_segment_list = []
         cells = kwargs.pop("cells")
@@ -359,12 +413,35 @@ class Table(Layout):
         return cls(**kwargs)
 
     @property
-    def items(self):
+    def items(self) -> List[Layout]:
+        """table segments"""
         return self.table_segments
 
 
 @dataclass
 class Page:
+    """
+    Dataclass for top level document page. Can be used to convert an image into a page
+
+    :attr:`uuid`: Unique identifier over all items
+
+    :attr:`file_name`: file name. For document with several pages the file name is a concatenation of the document file
+                       name and a suffix page_xxx
+
+    :attr:`location`: full path to location of the document
+
+    :attr:`width`: pixel width of page
+
+    :attr:`height`: pixel height of page
+
+    :attr:`language`: language of text content. This can be derived from the :class:`LanguageDetectionService`
+
+    :attr:`document_type`: document type of the page. This can be derived from  :class:`LMSequenceClassifierService`
+
+    :attr:`layouts`: layout information of the page. Layouts can be determined from :class:`ImageLayoutService`
+
+    :attr:`image`: image as b64 encoded string
+    """
 
     uuid: str
     file_name: str
@@ -395,14 +472,20 @@ class Page:
             export_dict["image"] = None
         return export_dict
 
-    def save(self, path: Optional[Pathlike] = None, save_image: bool = False):
+    def save(self, path: Optional[Pathlike] = None, save_image: bool = False) -> None:
+        """
+        Save a page instance as .json
+
+        :param path: Path to save the .json file to
+        :param save_image: If True it will save the image as b64 encoded string
+        """
         if isinstance(path, str):
             path = Path(path)
         elif path is None:
             path = Path(self.location)
         suffix = path.suffix
         path_json = path.as_posix().replace(suffix, ".json")
-        with open(path_json, "w") as file:
+        with open(path_json, "w", encoding="UTF-8") as file:
             json.dump(self.get_export(save_image), file)
 
     @classmethod
@@ -413,10 +496,26 @@ class Page:
         floating_text_block_names: Optional[List[str]] = None,
         text_block_names: Optional[List[str]] = None,
         text_container_to_text_block: bool = False,
-    ):
+    ) -> "Page":
+        """
+        Generating an instance from an image
+
+        :param image: The top level image
+        :param text_container: Text container to indicate in what image annotation the text can be found
+        :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
+                                          the highest hierarchy of text blocks that will ordered to generate a sensible
+                                          output of text
+        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
+                                 text containers themselves).
+        :param text_container_to_text_block: Text containers are in general no text blocks and belong to a lower
+                                             hierarchy. However, if a text container is not assigned to a text block
+                                             you can add it to the text block ordering to ensure that the full text is
+                                             part of the subsequent sub process.
+        :return: A page instance
+        """
 
         image_str: Optional[str] = None
-        layouts = []
+        layouts: List[Layout] = []
         language = None
         doc_class = None
 
@@ -451,7 +550,9 @@ class Page:
 
         if image.summary:
             if names.NLP.LANG.LANG in image.summary.sub_categories:
-                language = image.summary.get_sub_category(names.NLP.LANG.LANG).value
+                cat_ann = image.summary.get_sub_category(names.NLP.LANG.LANG)
+                if isinstance(cat_ann, ContainerAnnotation):
+                    language = str(cat_ann.value)
             if names.C.DOC in image.summary.sub_categories:
                 doc_class = image.summary.get_sub_category(names.C.DOC).category_name
 
@@ -468,7 +569,9 @@ class Page:
         )
 
     @classmethod
+    @no_type_check
     def from_dict(cls, **kwargs) -> "Page":
+        """Generating instance from dict"""
         layout_list = []
         layouts = kwargs.pop("layouts")
         for layout_dict in layouts:
@@ -481,13 +584,13 @@ class Page:
 
     def get_text(self) -> str:
         """
-        Get text of all Layouts.
+        Get text of all layouts.
 
         :return: Text string
         """
         text: str = ""
         layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
-        layouts_with_order.sort(key=lambda x: x.reading_order)
+        layouts_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
         for layout in layouts_with_order:
             text += "\n" + layout.text
 
@@ -495,10 +598,12 @@ class Page:
 
     @property
     def tables(self) -> List[Table]:
-        return list(filter(lambda x: isinstance(x, Table), self.layouts))
+        """table from all layouts"""
+        return list(filter(lambda x: isinstance(x, Table), self.layouts))  # type:ignore
 
     @property
     def items(self) -> List[Layout]:
+        """All layouts with tables excluded"""
         return list(filter(lambda x: x.layout_type not in [names.C.TAB], self.layouts))
 
     def viz(

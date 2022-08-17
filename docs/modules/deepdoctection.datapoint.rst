@@ -29,18 +29,18 @@ deepdoctection.datapoint.convert
    :undoc-members:
    :show-inheritance:
 
-deepdoctection.datapoint.doc
------------------------------------------
-
-.. automodule:: deepdoctection.datapoint.doc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 deepdoctection.datapoint.image
 ---------------------------------------
 
 .. automodule:: deepdoctection.datapoint.image
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+deepdoctection.datapoint.page
+---------------------------------------
+
+.. automodule:: deepdoctection.datapoint.page
    :members:
    :undoc-members:
    :show-inheritance:
