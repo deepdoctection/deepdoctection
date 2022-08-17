@@ -468,18 +468,28 @@ class Image:
             )
             ann.image.dump(sub_image)
 
-    def get_export(self, save_image: bool = False) -> Dict[str, Any]:
+    def get_export(self, save_image: bool = False, highest_hierarchy_only: bool = False) -> Dict[str, Any]:
         """
         Exporting image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
         base64 encodings.
-
+        :param save_image: If True will save the image as b64 encoded string in output
+        :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
         :return: Dict that e.g. can be saved to a file.
         """
+        if highest_hierarchy_only:
+            self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()
-        if save_image and self.image:
+        if save_image and self.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image)
-
         return export_dict
+
+    def remove_image_from_lower_hierachy(self):
+        """Will remove all images from image annotations."""
+        for ann in self.annotations:
+            if ann.image is not None:
+                absolute_bounding_box = ann.image.get_embedding(self.image_id)
+                ann.bounding_box = absolute_bounding_box
+                ann.image = None
 
     @classmethod
     @no_type_check
