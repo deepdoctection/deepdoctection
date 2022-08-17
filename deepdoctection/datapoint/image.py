@@ -512,7 +512,8 @@ class Image:
             image_ann = ImageAnnotation.from_dict(**ann_dict)
             if "image" in ann_dict:
                 image_dict = ann_dict["image"]
-                image_ann.image = cls.from_dict(**image_dict)
+                if image_dict:
+                    image_ann.image = cls.from_dict(**image_dict)
             image.dump(image_ann)
         if summary_dict := kwargs.get("summary"):
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
