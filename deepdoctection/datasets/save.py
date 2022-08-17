@@ -22,10 +22,12 @@ Module for saving
 import json
 from pathlib import Path
 from typing import Optional
+from cv2 import imwrite
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..utils.detection_types import Pathlike
 from ..utils.fs import mkdir_p
+from ..datapoint.convert import convert_b64_to_np_array
 
 
 def dataflow_to_json(
@@ -35,6 +37,7 @@ def dataflow_to_json(
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,
     save_image: bool = False,
+    save_image_in_json: bool = True
 ) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
@@ -46,12 +49,16 @@ def dataflow_to_json(
                          dumped into a single jsonl file.
     :param file_name: file name, only needed for jsonl files
     :param max_datapoints: Will stop saving after dumping max_datapoint images.
-    :param save_image: Will save the image to the JSON object
+    :param save_image: Will save the image. It can be saved separately in a sub folder "image" or in the .json file.
+                       The choice can be customized by the next parameter.
+    :param save_image_in_json: Will save the image to the JSON object
     """
     if isinstance(path, str):
         path = Path(path)
     if single_files:
         mkdir_p(path)
+    if not save_image_in_json:
+        mkdir_p(path / "image")
 
     df = MapData(df, lambda dp: dp.get_export(save_image))
 
@@ -60,8 +67,15 @@ def dataflow_to_json(
             if idx == max_datapoints:
                 break
             target_file = path / (dp["file_name"].split(".")[0] + ".json")
+            if not save_image_in_json:
+                target_file_png = path / "image" / (dp["file_name"].split(".")[0] + ".png")
+                image = dp.pop("_image")
+                image = convert_b64_to_np_array(image)
+                imwrite(str(target_file_png), image)
+
             with open(target_file, "w", encoding="UTF-8") as file:
                 json.dump(dp, file)
+
     else:
         assert file_name, "if single_files is set to False must pass a valid file name for .jsonl file"
         SerializerJsonlines.save(df, path, file_name, max_datapoints)
