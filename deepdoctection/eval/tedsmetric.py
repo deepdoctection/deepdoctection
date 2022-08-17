@@ -22,7 +22,7 @@ from typing import Any, List, Optional, Tuple
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datasets.base import DatasetCategories
-from ..mapper.pagestruct import to_page
+from ..datapoint.page import Page
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import (
     Requirement,
@@ -206,7 +206,7 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric  # type: ignore
-    mapper = to_page
+    mapper = Page.from_image
     structure_only = False
 
     @classmethod

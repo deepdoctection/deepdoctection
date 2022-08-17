@@ -28,7 +28,6 @@ from .cocostruct import *
 from .maputils import *
 from .match import *
 from .misc import *
-from .pagestruct import *
 from .pascalstruct import *
 from .prodigystruct import *
 from .pubstruct import *
