@@ -37,7 +37,8 @@ def dataflow_to_json(
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,
     save_image: bool = False,
-    save_image_in_json: bool = True
+    save_image_in_json: bool = True,
+    highest_hierarchy_only: bool = False
 ) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
@@ -52,6 +53,7 @@ def dataflow_to_json(
     :param save_image: Will save the image. It can be saved separately in a sub folder "image" or in the .json file.
                        The choice can be customized by the next parameter.
     :param save_image_in_json: Will save the image to the JSON object
+    :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
     """
     if isinstance(path, str):
         path = Path(path)
@@ -60,7 +62,7 @@ def dataflow_to_json(
     if not save_image_in_json:
         mkdir_p(path / "image")
 
-    df = MapData(df, lambda dp: dp.get_export(save_image))
+    df = MapData(df, lambda dp: dp.get_export(save_image,highest_hierarchy_only))
 
     if single_files:
         for idx, dp in enumerate(df):
