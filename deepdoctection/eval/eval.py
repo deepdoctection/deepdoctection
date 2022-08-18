@@ -117,8 +117,10 @@ class Evaluator:  # pylint: disable=R0903
         else:
             self.pipe = component_or_pipeline
 
+        self.metric = metric
         if not isinstance(metric, MetricBase):
-            self.metric = metric()
+            self.metric = self.metric()
+
         self._sanity_checks()
 
     @overload

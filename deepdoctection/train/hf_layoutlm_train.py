@@ -18,7 +18,7 @@
 """
 Module for training Huggingface implementation of LayoutLm
 """
-
+import pprint
 import copy
 import json
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
@@ -46,6 +46,7 @@ from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.settings import names
 from ..utils.utils import string_to_dict
+from ..utils.logger import logger
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
@@ -88,7 +89,7 @@ class LayoutLMTrainer(Trainer):
         self,
         dataset_val: DatasetBase,
         pipeline_component: LanguageModelPipelineComponent,
-        metric: Type[MetricBase],
+        metric: Union[Type[MetricBase], MetricBase],
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
@@ -163,7 +164,7 @@ def train_hf_layoutlm(
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
-    metric: Optional[Type[MetricBase]] = None,
+    metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
@@ -230,32 +231,8 @@ def train_hf_layoutlm(
     if config_overwrite is None:
         config_overwrite = []
 
-    # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
-    # that are necessary for the tokenizer. We also define some default settings.
-    conf_dict = {
-        "output_dir": log_dir,
-        "remove_unused_columns": False,
-        "per_device_train_batch_size": 8,
-        "max_steps": 130,
-        "evaluation_strategy": "steps"
-        if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
-        else "no",
-        "eval_steps": 100,
-    }
-    if isinstance(dataset_train, str):
-        dataset_train = get_dataset(dataset_train)
-
-    for conf in config_overwrite:
-        key, val = conf.split("=", maxsplit=1)
-        conf_dict[key] = val
-
-    arguments = TrainingArguments(**conf_dict)
+    # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
-
-    model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
-
-    id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
-    id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
     dataset = DatasetAdapter(
         dataset_train,
         True,
@@ -264,6 +241,44 @@ def train_hf_layoutlm(
         ),
         **build_train_dict,
     )
+
+    number_samples = len(dataset)
+    # A setup of necessary configuration. Everything else will be equal to the default setting of the transformer
+    # library.
+    # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
+    # that are necessary for the tokenizer.
+    conf_dict = {"output_dir": log_dir, "remove_unused_columns": False, "per_device_train_batch_size": 8,
+                 "max_steps": number_samples, "evaluation_strategy": "steps" if (dataset_val is not None
+                                                                               and metric is not None
+                                                                       and pipeline_component_name is not None)
+                 else "no", "eval_steps": 100}
+
+    if isinstance(dataset_train, str):
+        dataset_train = get_dataset(dataset_train)
+
+    # We allow to overwrite the default setting by the user.
+    for conf in config_overwrite:
+        key, val = conf.split("=", maxsplit=1)
+        conf_dict[key] = val
+
+    # Will inform about dataloader warnings if max_steps exceeds length of dataset
+    if conf_dict["max_steps"] > number_samples:
+        logger.warning("After %s dataloader will log warning at every iteration about unexpected samples", number_samples)
+
+    arguments = TrainingArguments(**conf_dict)
+    logger.info("Config: ------------------------------------------\n %s", pprint.pformat(arguments.to_dict(),
+                                                                                         width=100,
+                                                                                         compact=True))
+
+    model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
+
+    id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
+    id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
+
+    logger.info("Will setup a head with the following classes\n %s",pprint.pformat(id2label,
+                                                                    width=100,
+                                                                    compact=True))
+
     config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
     data_collator = LayoutLMDataCollator(tokenizer_fast, return_tensors="pt")
