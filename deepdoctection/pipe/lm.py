@@ -18,6 +18,7 @@
 """
 Module for token classification pipeline
 """
+from copy import copy
 from typing import Any, Callable, List, Optional
 
 from ..datapoint.image import Image
@@ -97,6 +98,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 self.dp_manager.set_category_annotation(token.bio_tag, None, names.NER.TAG, token.uuid)
                 words_populated.append(token.uuid)
 
+    def clone(self) -> "LMTokenClassifierService":
+        return self.__class__(copy(self.tokenizer), self.language_model.clone(), copy(self.mapping_to_lm_input_func))
+
     def get_meta_annotation(self) -> JsonDict:
         return dict(
             [
@@ -162,6 +166,9 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.dp_manager.set_summary_annotation(
             names.C.DOC, lm_output.class_name, lm_output.class_id, None, lm_output.score
         )
+
+    def clone(self) -> "LMSequenceClassifierService":
+        return self.__class__(copy(self.tokenizer), self.language_model.clone(), copy(self.mapping_to_lm_input_func))
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

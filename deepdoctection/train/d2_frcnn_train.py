@@ -90,7 +90,8 @@ class D2Trainer(DefaultTrainer):
         return scores
 
     def setup_evaluator(
-        self, dataset_val: DatasetBase, pipeline_component: PredictorPipelineComponent, metric: Type[MetricBase]
+        self, dataset_val: DatasetBase, pipeline_component: PredictorPipelineComponent,
+            metric: Union[Type[MetricBase], MetricBase]
     ) -> None:
         """
         Setup of evaluator before starting training. During training, predictors will be replaced by current
@@ -122,7 +123,7 @@ def train_d2_faster_rcnn(
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
     metric_name: Optional[str] = None,
-    metric: Optional[Type[MetricBase]] = None,
+    metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
