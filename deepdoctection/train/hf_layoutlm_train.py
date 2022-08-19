@@ -52,6 +52,8 @@ _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
     "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification,
 }
+__ARCHITECTURES_TO_TOKENIZER = {"LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+                                "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {
     ("layoutlm", names.DS.TYPE.SEQ): LayoutLMForSequenceClassification,
     ("layoutlm", names.DS.TYPE.TOK): LayoutLMForTokenClassification,
@@ -138,19 +140,19 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> 
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
-    model_type = config_json["model_type"]
+    model_type = config_json.get("model_type")
 
     if architectures := config_json.get("architectures"):
         model_cls = _ARCHITECTURES_TO_MODEL_CLASS.get(architectures[0])
+        tokenizer_fast = __ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
     elif model_type:
         model_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type, dataset_type))
+        tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
     else:
         raise KeyError("model_type and architectures not available in configs")
 
     if not model_cls:
         raise ValueError("model not eligible to run with this framework")
-
-    tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
 
     return model_cls, tokenizer_fast
 
