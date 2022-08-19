@@ -327,8 +327,8 @@ fundamentally unable to detect the cells (otherwise the 0.5 IoU would be
 significantly worse), but that it is more difficult for the predictor to
 determine the exact size of the cell.
 
-How to continue (3)
-===================
+How to continue
+---------------
 
 In the last **Fine_Tune** notebook tutorial, we will discuss training a
 Tensorpack Predictor on a dataset.
