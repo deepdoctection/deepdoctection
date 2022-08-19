@@ -234,18 +234,11 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(box.to_list(mode="xyxy"))
 
         if (
-            names.C.SE in ann.sub_categories
-            and names.NER.TAG in ann.sub_categories
+            names.NER.TOK in ann.sub_categories
             and categories_dict_name_as_key is not None
             and dataset_type == names.DS.TYPE.TOK
         ):
-            semantic_label = ann.get_sub_category(names.C.SE).category_name
-            bio_tag = ann.get_sub_category(names.NER.TAG).category_name
-            if bio_tag == "O":
-                category_name = "O"
-            else:
-                category_name = bio_tag + "-" + semantic_label
-            all_labels.append(int(categories_dict_name_as_key[category_name]))
+            all_labels.append(int(ann.get_sub_category(names.NER.TOK).category_id))
 
     if dp.summary is not None and categories_dict_name_as_key is not None and dataset_type == names.DS.TYPE.SEQ:
         category_name = dp.summary.get_sub_category(names.C.DOC).category_name

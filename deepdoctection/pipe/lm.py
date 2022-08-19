@@ -77,12 +77,12 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
 
-        # turn to word level predictions
+        # turn to word level predictions and remove all special tokens
         lm_output = [
             token
             for token in lm_output
