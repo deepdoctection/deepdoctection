@@ -25,7 +25,7 @@ import json
 from dataclasses import asdict, dataclass
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional, Union, no_type_check, Sequence
+from typing import List, Optional, Union, no_type_check, Sequence, Dict, Tuple
 
 import cv2
 import numpy as np
@@ -194,6 +194,22 @@ class Layout:
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
         words_with_reading_order.sort(key=lambda x: x.reading_order)  # type: ignore
         return " ".join([word.text for word in words_with_reading_order])
+
+    @classmethod
+    def from_image(cls, dp: Image, text_container: str) -> "Layout":
+
+        word_anns = dp.get_annotation(category_names=text_container)
+        words = []
+        for word in word_anns:
+            words.append(Word.from_annotation(word, dp.image_id, dp.width, dp.height))
+
+        return cls(uuid=dp.image_id,
+                   layout_type=names.C.PAGE,
+                   reading_order= 0,
+                   score= None,
+                   bounding_box=[0, 0, dp.width, dp.height],
+                   words=words,
+                   )
 
 
 @dataclass
@@ -555,6 +571,9 @@ class Page:
                     language = str(cat_ann.value)
             if names.C.DOC in image.summary.sub_categories:
                 doc_class = image.summary.get_sub_category(names.C.DOC).category_name
+
+        if not text_block_anns and not text_container_to_text_block:
+            layouts.append(Layout.from_image(image,text_container))
 
         return cls(
             image.image_id,

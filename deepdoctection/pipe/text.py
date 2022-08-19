@@ -359,6 +359,7 @@ class TextOrderService(PipelineComponent):
         raw_reading_order_list = _reading_columns(dp, text_block_anns)
         for raw_reading_order in raw_reading_order_list:
             self.dp_manager.set_category_annotation(names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1])
+
         # next we select all blocks that might contain text. We sort all text within these blocks
         block_anns = dp.get_annotation(category_names=self._text_block_names)
         for text_block in block_anns:
@@ -367,6 +368,15 @@ class TextOrderService(PipelineComponent):
                 annotation_ids=text_container_ann_ids,
                 category_names=self._text_container,
             )
+            raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
+            for raw_reading_order in raw_reading_order_list:
+                self.dp_manager.set_category_annotation(
+                    names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1]
+                )
+
+        # this is the setting where we order words without having text blocks
+        if not block_anns:
+            text_container_anns = dp.get_annotation(category_names=self._text_container)
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
