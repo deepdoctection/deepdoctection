@@ -3,7 +3,7 @@ ________________________________________________________
 
 
 Tutorials offer a deeper introduction to **deep**\doctection and cover topics to enable experiments and further
-development. For a more application-related access, we refer to the notebooks that can found in the respective folder.
+development. For a more application-related access, we refer to the notebooks that can be found in the respective folder.
 
 
 .. toctree::
@@ -14,6 +14,7 @@ development. For a more application-related access, we refer to the notebooks th
   custom_pipeline_notebook
   datasets_and_eval_notebook
   fine_tune_notebook
+  using_layoutlm_for_sequence_classification
 
 .. toctree::
   :maxdepth: 1
