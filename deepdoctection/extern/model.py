@@ -703,8 +703,11 @@ class ModelDownloadManager:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
         use_auth_token = os.environ.get("HF_CREDENTIALS")
         f_path = cached_download(
-            url, cache_dir=cache_directory, force_filename=file_name, force_download=force_download,
-            use_auth_token=use_auth_token
+            url,
+            cache_dir=cache_directory,
+            force_filename=file_name,
+            force_download=force_download,
+            use_auth_token=use_auth_token,
         )
         stat_info = os.stat(f_path)
         size = stat_info.st_size

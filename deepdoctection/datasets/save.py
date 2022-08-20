@@ -22,12 +22,13 @@ Module for saving
 import json
 from pathlib import Path
 from typing import Optional
+
 from cv2 import imwrite
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
+from ..datapoint.convert import convert_b64_to_np_array
 from ..utils.detection_types import Pathlike
 from ..utils.fs import mkdir_p
-from ..datapoint.convert import convert_b64_to_np_array
 
 
 def dataflow_to_json(
@@ -38,7 +39,7 @@ def dataflow_to_json(
     max_datapoints: Optional[int] = None,
     save_image: bool = False,
     save_image_in_json: bool = True,
-    highest_hierarchy_only: bool = False
+    highest_hierarchy_only: bool = False,
 ) -> None:
     """
     Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
@@ -62,7 +63,7 @@ def dataflow_to_json(
     if not save_image_in_json:
         mkdir_p(path / "image")
 
-    df = MapData(df, lambda dp: dp.get_export(save_image,highest_hierarchy_only))
+    df = MapData(df, lambda dp: dp.get_export(save_image, highest_hierarchy_only))
 
     if single_files:
         for idx, dp in enumerate(df):

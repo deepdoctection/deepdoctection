@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
 
-from ..utils.utils import call_only_once
 from ..utils.detection_types import JsonDict
+from ..utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
@@ -166,11 +166,12 @@ class DatasetCategories:
         return list(copy(self._categories_update))
 
     def get_sub_categories(
-        self, categories: Optional[Union[str, List[str]]] = None,
-            sub_categories: Optional[Mapping[str,Union[str,Sequence[str]]]] = None,
-            keys: bool=True,
-            values_as_dict: bool = True,
-            name_as_key: bool = False
+        self,
+        categories: Optional[Union[str, List[str]]] = None,
+        sub_categories: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+        keys: bool = True,
+        values_as_dict: bool = True,
+        name_as_key: bool = False,
     ) -> JsonDict:
         """
         Returns a dict of list with a category name and their sub categories.
@@ -224,10 +225,13 @@ class DatasetCategories:
                         continue
                     if values_as_dict:
                         if not name_as_key:
-                            sub_cat_tmp[sub_cat_key] ={str(k):v for k,v in enumerate(self.init_sub_categories[cat][sub_cat_key],1)}
+                            sub_cat_tmp[sub_cat_key] = {
+                                str(k): v for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                            }
                         else:
-                            sub_cat_tmp[sub_cat_key] = {v: str(k) for k, v in
-                                                        enumerate(self.init_sub_categories[cat][sub_cat_key], 1)}
+                            sub_cat_tmp[sub_cat_key] = {
+                                v: str(k) for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                            }
                     else:
                         sub_cat_tmp[sub_cat_key] = self.init_sub_categories[cat][sub_cat_key]
                 sub_cat_values[cat] = sub_cat_tmp

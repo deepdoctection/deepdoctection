@@ -19,7 +19,13 @@
 Init module for train package
 """
 
-from ..utils.file_utils import detectron2_available, pytorch_available, tensorpack_available, tf_available, transformers_available
+from ..utils.file_utils import (
+    detectron2_available,
+    pytorch_available,
+    tensorpack_available,
+    tf_available,
+    transformers_available,
+)
 
 if tf_available() and tensorpack_available():
     from .tp_frcnn_train import train_faster_rcnn

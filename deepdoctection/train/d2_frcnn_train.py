@@ -90,8 +90,10 @@ class D2Trainer(DefaultTrainer):
         return scores
 
     def setup_evaluator(
-        self, dataset_val: DatasetBase, pipeline_component: PredictorPipelineComponent,
-            metric: Union[Type[MetricBase], MetricBase]
+        self,
+        dataset_val: DatasetBase,
+        pipeline_component: PredictorPipelineComponent,
+        metric: Union[Type[MetricBase], MetricBase],
     ) -> None:
         """
         Setup of evaluator before starting training. During training, predictors will be replaced by current

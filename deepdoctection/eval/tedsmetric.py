@@ -21,8 +21,8 @@ from collections import defaultdict, deque
 from typing import Any, List, Optional, Tuple
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
-from ..datasets.base import DatasetCategories
 from ..datapoint.page import Page
+from ..datasets.base import DatasetCategories
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import (
     Requirement,

@@ -109,4 +109,4 @@ class TestAccuracyMetric:
         output = accuracy_metric.result_list_to_dict(result)
 
         # Assert
-        assert output == {"key/ROW_NUMBER/num_samples/5": 1.0, "key/COLUMN_SPAN/num_samples/5": 1.0}
+        assert output == {"ROW_NUMBER/num_samples/5": 1.0, "COLUMN_SPAN/num_samples/5": 1.0}

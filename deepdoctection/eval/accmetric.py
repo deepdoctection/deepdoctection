@@ -42,9 +42,7 @@ if sklearn_available():
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(
-    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
-) -> float:
+def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None) -> float:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
