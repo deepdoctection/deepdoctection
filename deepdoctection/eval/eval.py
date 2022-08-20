@@ -211,7 +211,7 @@ class Evaluator:  # pylint: disable=R0903
 
         elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
             sub_cats_to_remove = meta_anns["sub_categories"]
-            df_pr = MapData(df_pr,remove_cats(sub_categories=sub_cats_to_remove))
+            df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
             raise NotImplementedError
 

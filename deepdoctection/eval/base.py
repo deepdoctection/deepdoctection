@@ -112,7 +112,7 @@ class MetricBase(ABC):
 
                 if str(val) != "":
                     if k != "val":
-                        if k!="key":
+                        if k != "key":
                             new_key += k + "/" + str(val) + "/"
                         else:
                             new_key += str(val) + "/"

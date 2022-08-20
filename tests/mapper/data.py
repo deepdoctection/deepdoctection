@@ -1780,6 +1780,15 @@ class DatapointXfund:
         "S-HEAD": "12",
         "S-QUESTION": "13",
     }
+    ner_token_to_id_mapping = {
+        names.NER.B_A: "1",
+        names.NER.B_H: "2",
+        names.NER.B_Q: "3",
+        names.NER.I_A: "4",
+        names.NER.I_H: "5",
+        names.NER.I_Q: "6",
+        names.NER.O: "7",
+    }
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
         "width": [1000],
@@ -1887,7 +1896,7 @@ class DatapointXfund:
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
         "dataset_type": names.DS.TYPE.TOK,
-        "labels": [10, 10, 2],
+        "labels": [6, 6, 1],
     }
 
     def get_category_names_mapping(self) -> Dict[str, str]:
@@ -1971,6 +1980,10 @@ class DatapointXfund:
     def get_categories_dict_names_as_key(self) -> Dict[str, str]:
         """categories dict names as key"""
         return self.categories_dict_name_as_key
+
+    def get_net_token_to_id_mapping(self) -> Dict[str, str]:
+        """token to id mapping"""
+        return self.ner_token_to_id_mapping
 
 
 @dataclass

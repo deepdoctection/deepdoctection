@@ -19,7 +19,7 @@
 Module for token classification pipeline
 """
 from copy import copy
-from typing import Any, Callable, List, Optional, Mapping, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
@@ -67,7 +67,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         tokenizer: Any,
         language_model: LMTokenClassifier,
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
-        default_token_classes: Optional[Mapping[str,Tuple[str,int]]] = None
+        default_token_classes: Optional[Mapping[str, Tuple[str, int]]] = None,
     ) -> None:
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
@@ -83,7 +83,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -102,23 +102,35 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             if token.uuid not in words_populated:
                 self.dp_manager.set_category_annotation(token.semantic_name, None, names.C.SE, token.uuid)
                 self.dp_manager.set_category_annotation(token.bio_tag, None, names.NER.TAG, token.uuid)
-                self.dp_manager.set_category_annotation(token.class_name,token.class_id,names.NER.TOK,token.uuid)
+                self.dp_manager.set_category_annotation(token.class_name, token.class_id, names.NER.TOK, token.uuid)
                 words_populated.append(token.uuid)
 
         if self.default_token_class is not None:
             word_anns = dp.get_annotation(names.C.WORD)
             for word in word_anns:
                 if names.C.SE not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(self.default_token_class[names.C.SE][0], None, names.C.SE, word.annotation_id)
-                if names.NER.TAG not in  word.sub_categories:
-                    self.dp_manager.set_category_annotation(self.default_token_class[names.NER.TAG][0], None, names.NER.TAG, word.annotation_id)
-                if names.NER.TOK not in  word.sub_categories:
-                    self.dp_manager.set_category_annotation(self.default_token_class[names.NER.TOK][0],
-                                                            self.default_token_class[names.NER.TOK][1], names.NER.TOK, word.annotation_id)
+                    self.dp_manager.set_category_annotation(
+                        self.default_token_class[names.C.SE][0], None, names.C.SE, word.annotation_id
+                    )
+                if names.NER.TAG not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(
+                        self.default_token_class[names.NER.TAG][0], None, names.NER.TAG, word.annotation_id
+                    )
+                if names.NER.TOK not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(
+                        self.default_token_class[names.NER.TOK][0],
+                        self.default_token_class[names.NER.TOK][1],
+                        names.NER.TOK,
+                        word.annotation_id,
+                    )
 
     def clone(self) -> "LMTokenClassifierService":
-        return self.__class__(copy(self.tokenizer), self.language_model.clone(), copy(self.mapping_to_lm_input_func),
-                              self.default_token_class)
+        return self.__class__(
+            copy(self.tokenizer),
+            self.language_model.clone(),
+            copy(self.mapping_to_lm_input_func),
+            self.default_token_class,
+        )
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

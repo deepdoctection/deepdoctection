@@ -75,9 +75,11 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                 categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
             elif self.dataset.dataset_info.type in (names.DS.TYPE.TOK,):
                 categories = self.dataset.dataflow.categories.get_sub_categories(
-                    categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]},
+                    categories=names.C.WORD,
+                    sub_categories={names.C.WORD: [names.NER.TOK]},
                     keys=False,
-                    values_as_dict=True)[names.C.WORD][names.NER.TOK]
+                    values_as_dict=True,
+                )[names.C.WORD][names.NER.TOK]
             else:
                 logger.info(
                     "dataset is of type %s. Cannot generate statistics for this type of dataset",
