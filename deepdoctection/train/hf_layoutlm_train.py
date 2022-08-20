@@ -235,11 +235,22 @@ def train_hf_layoutlm(
 
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
+    if dataset_type == names.DS.TYPE.SEQ:
+        categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
+    elif dataset_type == names.DS.TYPE.TOK:
+        categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(categories=names.C.WORD,
+                                                               sub_categories={names.C.WORD:[names.NER.TOK] },
+                                                               keys=False,
+                                                               values_as_dict=True,
+                                                               name_as_key=True)[names.C.WORD][names.NER.TOK]
+    else:
+        raise ValueError("Dataset type not supported for training")
+
     dataset = DatasetAdapter(
         dataset_train,
         True,
-        image_to_raw_layoutlm_features(
-            dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True), dataset_type
+        image_to_raw_layoutlm_features(categories_dict_name_as_key
+            , dataset_type
         ),
         **build_train_dict,
     )
@@ -274,7 +285,13 @@ def train_hf_layoutlm(
 
     model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
 
-    id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
+    if dataset_type == names.DS.TYPE.SEQ:
+        id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
+    else:
+        id_str_2label = dataset_train.dataflow.categories.get_sub_categories(categories=names.C.WORD,
+                                                               sub_categories={names.C.WORD:[names.NER.TOK] },
+                                                               keys=False,
+                                                               values_as_dict=True)[names.C.WORD][names.NER.TOK]
     id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
 
     logger.info("Will setup a head with the following classes\n %s",pprint.pformat(id2label,
@@ -288,12 +305,22 @@ def train_hf_layoutlm(
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         dd_model_cls = _DS_TYPE_TO_DD_LM_CLASS[dataset_type]
-        categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        if dataset_type == names.DS.TYPE.SEQ:
+            categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        else:
+            categories = dataset_train.dataflow.categories.get_sub_categories(categories=names.C.WORD,
+                                                                 sub_categories={names.C.WORD: [names.NER.TOK]},
+                                                                 keys=False)[names.C.WORD][names.NER.TOK]
         dd_model = dd_model_cls(
             path_config_json=path_config_json, path_weights=path_weights, categories=categories, device="cuda"
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
+        if dataset_type == names.DS.TYPE.SEQ:
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
+        else:
+            default_token_classes = {names.C.SE: (names.C.O,7),names.NER.TAG: (names.C.O,7),names.NER.TOK:(names.C.O,7)}
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features,
+                                                        default_token_classes)
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

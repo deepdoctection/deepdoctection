@@ -114,6 +114,8 @@ class MetricBase(ABC):
                     if k != "val":
                         if k!="key":
                             new_key += k + "/" + str(val) + "/"
+                        else:
+                            new_key += str(val) + "/"
                     else:
                         new_val = val
             output[new_key[:-1]] = new_val

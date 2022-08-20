@@ -74,13 +74,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             if self.dataset.dataset_info.type in (names.DS.TYPE.OBJ, names.DS.TYPE.SEQ):
                 categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
             elif self.dataset.dataset_info.type in (names.DS.TYPE.TOK,):
-                categories = {
-                    str(k): v
-                    for k, v in enumerate(
-                        self.dataset.dataflow.categories.init_sub_categories[names.C.WORD][names.C.SE], 1
-                    )
-                }
-                categories_name_as_key = {v: k for k, v in categories.items()}
+                categories = self.dataset.dataflow.categories.get_sub_categories(
+                    categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]},
+                    keys=False,
+                    values_as_dict=True)[names.C.WORD][names.NER.TOK]
             else:
                 logger.info(
                     "dataset is of type %s. Cannot generate statistics for this type of dataset",
@@ -118,9 +115,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
                     elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
                         anns = dp.get_annotation()
-                        cat_ids = [
-                            int(categories_name_as_key[ann.get_sub_category(names.C.SE).category_name]) for ann in anns
-                        ]
+                        cat_ids = [ann.get_sub_category(names.NER.TOK).category_id for ann in anns]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)

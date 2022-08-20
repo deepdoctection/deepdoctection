@@ -160,8 +160,11 @@ class XfundBuilder(DataFlowBaseBuilder):
             "answer": names.C.A,
             "header": names.C.HEAD,
         }
-        ner_token_to_id_mapping = {v: str(k) for k, v in
-                                   enumerate(self.categories.init_sub_categories[names.C.WORD][names.NER.TOK], 1)}
+        ner_token_to_id_mapping =self.categories.get_sub_categories(
+            categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]},
+                                           keys=False,
+                                           values_as_dict=True,
+                                           name_as_key=True)[names.C.WORD][names.NER.TOK]
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping,ner_token_to_id_mapping))  # pylint: disable=E1120
 
         if self.categories.is_cat_to_sub_cat():
