@@ -238,7 +238,7 @@ def image_to_raw_layoutlm_features(
             and categories_dict_name_as_key is not None
             and dataset_type == names.DS.TYPE.TOK
         ):
-            all_labels.append(int(ann.get_sub_category(names.NER.TOK).category_id))
+            all_labels.append(int(ann.get_sub_category(names.NER.TOK).category_id)-1)
 
     if dp.summary is not None and categories_dict_name_as_key is not None and dataset_type == names.DS.TYPE.SEQ:
         category_name = dp.summary.get_sub_category(names.C.DOC).category_name
