@@ -137,8 +137,10 @@ class XfundBuilder(DataFlowBaseBuilder):
 
         if language is None:
             languages = _LANGUAGES
-        else:
+        elif isinstance(language, str):
             languages = [language]
+        else:
+            raise TypeError("language requires to be a string")
 
         if not all(elem in _LANGUAGES for elem in languages):
             raise ValueError("Not all languages available")

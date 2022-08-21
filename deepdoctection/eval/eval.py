@@ -119,7 +119,7 @@ class Evaluator:  # pylint: disable=R0903
 
         self.metric = metric
         if not isinstance(metric, MetricBase):
-            self.metric = self.metric()
+            self.metric = self.metric()  # type: ignore
 
         self._sanity_checks()
 
