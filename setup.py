@@ -195,7 +195,7 @@ EXTRA_DEPS = {
     "pt": full_pt_deps,
     "source-pt": source_full_pt_deps,
     "source-all-pt": source_all_pt_deps,
-    "docs": docs_deps,
+    #"docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
     "hf": hf_spaces_deps,
