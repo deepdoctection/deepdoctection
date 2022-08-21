@@ -91,7 +91,7 @@ def predict_sequence_classes(
     score = torch.max(F.softmax(outputs.logits)).tolist()
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
-    return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))
+    return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))  # type: ignore
 
 
 class HFLayoutLmTokenClassifier(LMTokenClassifier):
@@ -236,7 +236,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             result.class_id += 1
         return token_results
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> "HFLayoutLmTokenClassifier":
         return self.__class__(
             self.path_config_json,
             self.path_weights,
@@ -335,7 +335,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> "HFLayoutLmSequenceClassifier":
         return self.__class__(self.path_config, self.path_weights, self.categories)
 
     def possible_categories(self) -> List[str]:

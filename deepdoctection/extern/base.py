@@ -269,6 +269,13 @@ class LMTokenClassifier(PredictorBase):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def clone(self) -> "LMTokenClassifier":
+        """
+        Clone an instance
+        """
+        raise NotImplementedError
+
 
 class LMSequenceClassifier(PredictorBase):
     """
@@ -288,6 +295,13 @@ class LMSequenceClassifier(PredictorBase):
         """
         Abstract method possible_categories. Must implement a method that returns a list of possible detectable
         categories for a sequence
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def clone(self) -> "LMSequenceClassifier":
+        """
+        Clone an instance
         """
         raise NotImplementedError
 

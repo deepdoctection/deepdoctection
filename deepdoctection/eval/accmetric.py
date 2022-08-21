@@ -232,7 +232,7 @@ class ConfusionMetric(AccuracyMetric):
     Metric induced by :func:`confusion`
     """
 
-    metric = confusion
+    metric = confusion # type: ignore # todo: fix typing issue as this will cause problem in Evaluator
 
     @classmethod
     def print_distance(cls, results: Sequence[JsonDict]) -> None:
