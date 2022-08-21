@@ -149,7 +149,7 @@ source_all_tf_deps = source_all_deps + additional_tf_deps
 # PyTorch dependencies
 additional_pt_deps = deps_list("transformers")
 source_additional_pt_deps = additional_pt_deps + deps_list(
-    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13"
 )
 # it does not make sense to define a non-full pt dependency, because everything is already available
 full_pt_deps = full_deps + additional_pt_deps
