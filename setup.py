@@ -185,6 +185,7 @@ dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.
+# when uploading to pypi first comment all source extra dependencies so that there are no dependencies to dataflow
 
 EXTRA_DEPS = {
     "tf": additional_tf_deps,
@@ -195,7 +196,7 @@ EXTRA_DEPS = {
     "pt": full_pt_deps,
     "source-pt": source_full_pt_deps,
     "source-all-pt": source_all_pt_deps,
-    #"docs": docs_deps,
+    "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
     "hf": hf_spaces_deps,
