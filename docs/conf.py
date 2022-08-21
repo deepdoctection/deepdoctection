@@ -38,7 +38,7 @@ MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','te
 
 
 # Pytorch
-MOCK_MODULES.extend(['torch','torch.cuda','torch.utils', 'torch.nn.functional'])
+MOCK_MODULES.extend(['torch','torch.cuda','torch.utils', 'torch.nn.functional','torch.nn'])
 
 # Detectron2
 MOCK_MODULES.extend(['detectron2',
