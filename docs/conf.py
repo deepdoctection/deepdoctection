@@ -52,7 +52,7 @@ MOCK_MODULES.extend(['detectron2',
                      'detectron2.engine'])
 
 # Transformers
-MOCK_MODULES.extend(['transformers'])
+MOCK_MODULES.extend(['transformers','transformers.trainer'])
 
 # DocTr
 MOCK_MODULES.extend(['doctr','doctr.models','doctr.models.detection','doctr.models.recognition',
