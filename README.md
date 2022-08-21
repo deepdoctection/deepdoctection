@@ -7,57 +7,80 @@
 </p>
 
 
-**deep**doctection is a Python package that enables document analysis pipelines to be built using deep learning models.
+**deep**doctection is a Python library that orchestrates document extraction tasks using deep learning models. It does 
+not implement models but enables you to build pipelines using highly acknowledged libraries for object detection, OCR 
+and selected NLP tasks and provides an integrated frameworks for fine-tuning, evaluating and running models. For more
+ specific text processing tasks use one of the many other great NLP libraries.
 
-Extracting information from documents is difficult. Documents often have a complex visual structure and the information 
-they contain is not tagged. **deep**doctection is a tool box that is intended to facilitate entry into this topic. 
+**deep**doctection focuses on applications and is made for those who want to solve real world problems related to 
+document extraction from PDFs or scans in various image formats.
 
-Parse your document by detecting layout structures like tables with full table semantics (cells, rows, columns), 
-get text in reading order with OCR, detect language and do many other things.
+# Overview
 
-The focus should be on application. **deep**doctection is made for data scientists who are tasked with supporting
-departments in process optimization or for analysts who have to investigate into large sets of documents.
+**deep**doctection provides model wrappers of supported libraries for various tasks to be integrated into 
+pipelines. Its core function does not depend on any specific deep learning library. Selected models for the following 
+ tasks are currently supported:       
 
-For further text processing tasks, use one of the many other great NLP libraries.
-
-You can find a demo on :hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) .
-
-![image info](./notebooks/pics/dd_rm_sample.png)
-
-## Characteristics
-
-1. Use an **off the shelf analyzer** for restructuring your **PDF** or **scanned documents**:
-         
-   - Layout recognition with deep neural networks from well renowned open source libraries (Cascade-RCNN from 
-     Tensorpack or Detectron2) trained on large public datasets. Tensorflow or PyTorch models available. 
-   - Table extraction with full table semantics (rows, columns, multi line cell spans), again with help of Cascade-RCNN
-   - OCR or text mining with  [Tesseract](https://github.com/tesseract-ocr/tesseract), 
-     [DocTr](https://github.com/mindee/doctr), [pdfplumber](https://github.com/jsvine/pdfplumber) or other
-   - Reading order
-   - Language detection with [fastText](https://github.com/facebookresearch/fastText)
-   - Parsed output available as JSON object for further NLP tasks, labeling or reviewing
-
-Off the shelf actually means off the shelf. The results will look okay, but useful outputs for downstream tasks will 
-only come out when models are adapted to actual documents you deal with. Therefore:
-
-2. **Fine-tune pre-trained DNN** on your own labeled dataset. Use generally acknowledged metrics for evaluating training
-    improvements. Training scripts available.
+ - Document layout analysis including table recognition in Tensorflow with [**Tensorpack**](https://github.com/tensorpack), 
+   or PyTorch with [**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2),
+ - OCR with support of [**Tesseract**](https://github.com/tesseract-ocr/tesseract), [**DocTr**](https://github.com/mindee/doctr)
+   (Tensorflow and PyTorch implementations available) and a wrapper to an API for a commercial solution, 
+ - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
+ - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
+ - [**new!**] Document and token classification with [LayoutLM](https://github.com/microsoft/unilm) provided by the 
+   [**Transformer**](https://github.com/huggingface/transformers) library. (Yes, you can use LayoutLM with any one of
+    the provided OCR-or pdfplumber tools straight away!)
+   
+**deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
+post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
+into contiguous text. You will get an output in JSON format that you can customize even further by yourself. 
+     
+Check the demo of a document layout analysis pipeline with OCR on 
+:hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) or have a look at the 
+[**introduction notebook**](./notebooks/Get_Started.ipynb) for an easy start.
 
 
-3. **Compose your document analyzer** by choosing a model and plug it into your own pipeline. For example, you can use
-    pdfplumber if you have native PDF documents. Or you can benchmark OCR results with AWS Textract (account needed and 
-    paid service).
+## Models    
 
+**deep**doctection or its support libraries provide pre-trained models that are in most of the cases available at the 
+[**Hugging Face Model Hub**](https://huggingface.co/deepdoctection) or that will be automatically downloaded once 
+requested. For instance, you can find pre-trained object detection models from the Tensorpack or Detectron2 framework
+ for coarse layout analysis, table cell detection and table recognition. 
 
-5. Wrap DNNs from open source projects into the **deep**doctections API and **enrich your pipeline easily with SOTA 
-   models**.
+## Datasets and training scripts
 
+Training is a substantial part to get pipelines ready on some specific domain, let it be document layout analysis, 
+document classification or NER. **deep**doctection provides scripts for models that are based on trainers
+developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
+datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
+formats like COCO and it has a dataset framework (akin to [**datasets](https://github.com/huggingface/datasets) so that
+ setting up training on a custom dataset becomes very easy. Check this  [**notebook**](./notebooks/Fine_Tune.ipynb) to
+  see, how you can easily train a model on a different domain.
+   
+## Evaluation
 
-6. All models are now available at the [**Hugging Face Model Hub**](https://huggingface.co/deepdoctection) .
-You can acquire more details in the respective model cards.
+**deep**doctection comes equipped with a framework that allows you evaluating prediction of a single or multiple 
+chained models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
+done.  
 
-Check [**this notebook**](./notebooks/Get_Started.ipynb) for an easy start, as  well as the full
-[**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#).
+## Inference
+
+Having setup a pipeline it takes you two lines of code to instantiate the pipeline, one line to specify the path to your
+document or page folder and after a for loop all pages will be processed through the pipeline. 
+
+This excerpt shows how to instantiate the built-in **deep**doctection analyzer as deployed on the Hugging Face space 
+and how to get parsed result from a PDF document page by page. 
+
+![image info](./notebooks/pics/dd_rm_sample_notebook.png)
+
+## Documentation
+
+There is an extensive [**documentation**](https://deepdoctection.readthedocs.io/en/latest/index.html#) available 
+containing tutorials, design concepts and the API. We want to present things as comprehensively and understandably 
+as possible. However, we are aware that there are still many areas where significant improvements can be made in terms 
+of clarity, grammar and correctness. We look forward to every hint and comment that increases the quality of the 
+documentation.
+
 
 ## Requirements
 
@@ -159,30 +182,17 @@ Again, for other installation options check
 
 ## Credits
 
-Many utilities, concepts and models are inspired or taken from [**Tensorpack**](https://github.com/tensorpack), 
-[**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2), 
-[**Transformers**](https://github.com/huggingface/transformers). 
-We heavily make use of [Dataflow](https://github.com/tensorpack/dataflow) for loading and streaming data.  
-
+We thank all libraries that provide high quality code and pre-trained models. Without them it would be impossible for a 
+single person to develop this framework.
 
 ## Problems
 
 We try hard to eliminate bugs. We also know that the code is not free of issues. We welcome all issues relevant to this
 repo and try to address them as quickly as possible.
 
-
-## Citing **deep**doctection
-
-If you use **deep**doctection in your research or in your project, please cite:
-
-```
-@misc{jmdeepdoctection,
-  title={deepdoctection},
-  author={Meyer, Dr. Janis and others},
-  howpublished={\url{https://github.com/deepdoctection/deepdoctection}},
-  year={2021}
-}
-```
+## If you like **deep**doctection ...
+ 
+ ...you can easily support the project by making it more visible. Leaving a star or a recommendation will help. 
 
 
 ## License
