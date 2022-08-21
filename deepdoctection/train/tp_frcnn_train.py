@@ -20,7 +20,7 @@ Module for training Tensorpack Mask R-CNN
 """
 
 import os
-from typing import Dict, List, Optional, Sequence, Type
+from typing import Dict, List, Optional, Sequence, Type, Union
 
 # pylint: disable=import-error
 from tensorpack.callbacks import (
@@ -188,7 +188,7 @@ def train_faster_rcnn(
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
     metric_name: Optional[str] = None,
-    metric: Optional[Type[MetricBase]] = None,
+    metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """

@@ -33,7 +33,11 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 @curry
 def xfund_to_image(
-    dp: JsonDict, load_image: bool, fake_score: bool, category_names_mapping: Mapping[str, str]
+    dp: JsonDict,
+    load_image: bool,
+    fake_score: bool,
+    category_names_mapping: Mapping[str, str],
+    ner_token_to_id_mapping: Mapping[str, str],
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from xfund or funsd dataset in to an Image structure
@@ -93,14 +97,29 @@ def xfund_to_image(
                 sub_cat_chars = ContainerAnnotation(category_name=names.C.CHARS, value=word["text"])
                 ann.dump_sub_category(names.C.CHARS, sub_cat_chars)
                 if sub_cat_semantic.category_name == names.C.O:
-                    sub_cat_semantic = CategoryAnnotation(category_name=names.NER.O)
-                    ann.dump_sub_category(names.NER.TAG, sub_cat_semantic)
+                    sub_cat_tag = CategoryAnnotation(category_name=names.NER.O)
+                    ann.dump_sub_category(names.NER.TAG, sub_cat_tag)
+                    # populating ner token to be used for training and evaluation
+                    sub_cat_ner_tok = CategoryAnnotation(
+                        category_name=names.NER.O, category_id=ner_token_to_id_mapping[names.NER.O]
+                    )
+                    ann.dump_sub_category(names.NER.TOK, sub_cat_ner_tok)
                 elif not idx:
-                    sub_cat_semantic = CategoryAnnotation(category_name=names.NER.B)
-                    ann.dump_sub_category(names.NER.TAG, sub_cat_semantic)
+                    sub_cat_tag = CategoryAnnotation(category_name=names.NER.B)
+                    ann.dump_sub_category(names.NER.TAG, sub_cat_tag)
+                    sub_cat_ner_tok = CategoryAnnotation(
+                        category_name=names.NER.B + "-" + sub_cat_semantic.category_name,
+                        category_id=ner_token_to_id_mapping[names.NER.B + "-" + sub_cat_semantic.category_name],
+                    )
+                    ann.dump_sub_category(names.NER.TOK, sub_cat_ner_tok)
                 else:
-                    sub_cat_semantic = CategoryAnnotation(category_name=names.NER.I)
-                    ann.dump_sub_category(names.NER.TAG, sub_cat_semantic)
+                    sub_cat_tag = CategoryAnnotation(category_name=names.NER.I)
+                    ann.dump_sub_category(names.NER.TAG, sub_cat_tag)
+                    sub_cat_ner_tok = CategoryAnnotation(
+                        category_name=names.NER.I + "-" + sub_cat_semantic.category_name,
+                        category_id=ner_token_to_id_mapping[names.NER.I + "-" + sub_cat_semantic.category_name],
+                    )
+                    ann.dump_sub_category(names.NER.TOK, sub_cat_ner_tok)
 
                 entity_id_to_ann_id[entity["id"]].append(ann.annotation_id)
                 ann_id_to_entity_id[ann.annotation_id] = entity["id"]

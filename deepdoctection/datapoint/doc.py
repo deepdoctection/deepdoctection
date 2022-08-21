@@ -313,6 +313,7 @@ class Page:
         """
 
         page_dict = self.as_dict()
-        with open(os.path.join(path, os.path.splitext(page_dict["file_name"])[0] + ".json"), "w",
-                  encoding="UTF-8") as file:
+        with open(
+            os.path.join(path, os.path.splitext(page_dict["file_name"])[0] + ".json"), "w", encoding="UTF-8"
+        ) as file:
             json.dump(page_dict, file)

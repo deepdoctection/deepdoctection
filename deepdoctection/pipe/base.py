@@ -175,8 +175,12 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
         super().__init__(None)
 
+    @abstractmethod
     def clone(self) -> "LanguageModelPipelineComponent":
-        return self.__class__(copy(self.tokenizer), copy(self.mapping_to_lm_input_func))
+        """
+        Clone an instance
+        """
+        raise NotImplementedError
 
 
 class Pipeline(ABC):

@@ -483,7 +483,7 @@ class Image:
             export_dict["_image"] = convert_np_array_to_b64(self.image)
         return export_dict
 
-    def remove_image_from_lower_hierachy(self):
+    def remove_image_from_lower_hierachy(self) -> None:
         """Will remove all images from image annotations."""
         for ann in self.annotations:
             if ann.image is not None:

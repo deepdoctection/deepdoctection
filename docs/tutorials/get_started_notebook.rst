@@ -295,7 +295,7 @@ Finally, you can save the full results to a JSON file.
     page.save(path)
 
 How to continue
-===============
+---------------
 
 In this notebook we have shown how to use the built-in analyzer for text
 extraction from image documents.

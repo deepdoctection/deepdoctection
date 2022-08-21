@@ -32,13 +32,17 @@ from .conftest import get_always_pubtabnet_white_image
 @patch(
     "deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_always_pubtabnet_white_image)
 )
-def test_xfund_to_image(datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str]) -> None:
+def test_xfund_to_image(
+    datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str], ner_token_to_id_mapping: JsonDict
+) -> None:
     """
     testing xfund_to_image is mapping correctly
     """
 
     # Act
-    xfund_to_image_func = xfund_to_image(False, False, xfund_category_names)  # pylint: disable=E1120
+    xfund_to_image_func = xfund_to_image(
+        False, False, xfund_category_names, ner_token_to_id_mapping
+    )  # pylint: disable=E1120
     img = xfund_to_image_func(datapoint_xfund)
 
     # Assert

@@ -237,6 +237,14 @@ def fixture_xfund_categories_dict_name_as_key() -> JsonDict:
     return DatapointXfund().get_categories_dict_names_as_key()
 
 
+@fixture(name="ner_token_to_id_mapping")
+def fixture_ner_token_to_id_mapping() -> JsonDict:
+    """
+    ner_token_to_id_mapping
+    """
+    return DatapointXfund().get_net_token_to_id_mapping()
+
+
 @fixture(name="datapoint_iiitar13kjson")
 def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
     """
