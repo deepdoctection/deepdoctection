@@ -57,7 +57,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         dataset: DatasetBase,
         category_names: Optional[Union[str, List[str]]],
         sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]],
-        metric: Type[MetricBase],
+        metric: Union[Type[MetricBase], MetricBase],
         pipeline_component: PredictorPipelineComponent,
         in_names: str,
         out_names: str,

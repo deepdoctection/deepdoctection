@@ -45,14 +45,19 @@ if transformers_available():
 @mark.requires_pt
 @patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
 def test_image_to_layoutlm(
-    datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str], layoutlm_input: JsonDict
+    datapoint_xfund: JsonDict,
+    xfund_category_names: Dict[str, str],
+    layoutlm_input: JsonDict,
+    ner_token_to_id_mapping: JsonDict,
 ) -> None:
     """
     testing image_to_layoutlm is mapping correctly
     """
 
     # Arrange
-    xfund_to_image_func = xfund_to_image(True, False, xfund_category_names)  # pylint: disable=E1120
+    xfund_to_image_func = xfund_to_image(
+        True, False, xfund_category_names, ner_token_to_id_mapping
+    )  # pylint: disable=E1120
     image = xfund_to_image_func(datapoint_xfund)
     tokenizer_output = {
         "input_ids": layoutlm_input["input_ids"],
@@ -86,13 +91,16 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     xfund_category_names: Dict[str, str],
     xfund_categories_dict_name_as_key: Dict[str, str],
     raw_layoutlm_features: JsonDict,
+    ner_token_to_id_mapping: JsonDict,
 ) -> None:
     """
     testing image_to_raw_layoutlm_features is mapping correctly for dataset type "TOKEN_CLASSIFICATION"
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names)(datapoint_xfund)  # pylint: disable=E1120
+    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(
+        datapoint_xfund
+    )  # pylint: disable=E1120
 
     # Act
     raw_features = image_to_raw_layoutlm_features(xfund_categories_dict_name_as_key, names.DS.TYPE.TOK)(image)
@@ -111,7 +119,10 @@ def test_image_to_raw_layoutlm_features_for_token_data(
 
 @patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
 def test_image_to_raw_layoutlm_features_for_inference(
-    datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str], raw_layoutlm_features: JsonDict
+    datapoint_xfund: JsonDict,
+    xfund_category_names: Dict[str, str],
+    raw_layoutlm_features: JsonDict,
+    ner_token_to_id_mapping: JsonDict,
 ) -> None:
     """
     testing image_to_raw_layoutlm_features is mapping correctly. Semantic entities and tags have been removed, so that
@@ -119,7 +130,9 @@ def test_image_to_raw_layoutlm_features_for_inference(
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names)(datapoint_xfund)  # pylint: disable=E1120
+    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(
+        datapoint_xfund
+    )  # pylint: disable=E1120
 
     assert image is not None
 

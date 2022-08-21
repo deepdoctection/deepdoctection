@@ -71,7 +71,21 @@ _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
 }
 _INIT_CATEGORIES = [names.C.WORD]
 _SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
-_SUB_CATEGORIES = {names.C.WORD: {names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD]}}
+_SUB_CATEGORIES = {
+    names.C.WORD: {
+        names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD],
+        names.NER.TAG: [names.NER.I, names.NER.O, names.NER.B],
+        names.NER.TOK: [
+            names.NER.B_A,
+            names.NER.B_H,
+            names.NER.B_Q,
+            names.NER.I_A,
+            names.NER.I_H,
+            names.NER.I_Q,
+            names.NER.O,
+        ],
+    }
+}
 
 _LANGUAGES = ["de", "es", "fr", "it", "ja", "pt", "zh"]
 
@@ -116,15 +130,17 @@ class XfundBuilder(DataFlowBaseBuilder):
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)
         max_datapoints = kwargs.get("max_datapoints")
-        language = str(kwargs.get("languages"))
+        language = kwargs.get("languages")
 
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
 
         if language is None:
             languages = _LANGUAGES
-        else:
+        elif isinstance(language, str):
             languages = [language]
+        else:
+            raise TypeError("language requires to be a string")
 
         if not all(elem in _LANGUAGES for elem in languages):
             raise ValueError("Not all languages available")
@@ -156,7 +172,16 @@ class XfundBuilder(DataFlowBaseBuilder):
             "answer": names.C.A,
             "header": names.C.HEAD,
         }
-        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping))  # pylint: disable=E1120
+        ner_token_to_id_mapping = self.categories.get_sub_categories(
+            categories=names.C.WORD,
+            sub_categories={names.C.WORD: [names.NER.TOK]},
+            keys=False,
+            values_as_dict=True,
+            name_as_key=True,
+        )[names.C.WORD][names.NER.TOK]
+        df = MapData(
+            df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping)
+        )  # pylint: disable=E1120
 
         if self.categories.is_cat_to_sub_cat():
             df = MapData(

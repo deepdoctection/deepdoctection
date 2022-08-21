@@ -18,9 +18,9 @@
 """
 Module for training Huggingface implementation of LayoutLm
 """
-
 import copy
 import json
+import pprint
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from torch.nn import Module
@@ -44,12 +44,17 @@ from ..extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenCla
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_features, image_to_raw_layoutlm_features
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
+from ..utils.logger import logger
 from ..utils.settings import names
 from ..utils.utils import string_to_dict
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
     "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification,
+}
+__ARCHITECTURES_TO_TOKENIZER = {
+    "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {
     ("layoutlm", names.DS.TYPE.SEQ): LayoutLMForSequenceClassification,
@@ -88,7 +93,7 @@ class LayoutLMTrainer(Trainer):
         self,
         dataset_val: DatasetBase,
         pipeline_component: LanguageModelPipelineComponent,
-        metric: Type[MetricBase],
+        metric: Union[Type[MetricBase], MetricBase],
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
@@ -137,19 +142,19 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> 
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
-    model_type = config_json["model_type"]
+    model_type = config_json.get("model_type")
 
     if architectures := config_json.get("architectures"):
         model_cls = _ARCHITECTURES_TO_MODEL_CLASS.get(architectures[0])
+        tokenizer_fast = __ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
     elif model_type:
         model_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type, dataset_type))
+        tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
     else:
         raise KeyError("model_type and architectures not available in configs")
 
     if not model_cls:
         raise ValueError("model not eligible to run with this framework")
-
-    tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
 
     return model_cls, tokenizer_fast
 
@@ -163,7 +168,7 @@ def train_hf_layoutlm(
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
-    metric: Optional[Type[MetricBase]] = None,
+    metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
@@ -230,40 +235,80 @@ def train_hf_layoutlm(
     if config_overwrite is None:
         config_overwrite = []
 
+    if isinstance(dataset_train, str):
+        dataset_train = get_dataset(dataset_train)
+
+
+    # We wrap our dataset into a torch dataset
+    dataset_type = dataset_train.dataset_info.type
+    if dataset_type == names.DS.TYPE.SEQ:
+        categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
+    elif dataset_type == names.DS.TYPE.TOK:
+        categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
+            categories=names.C.WORD,
+            sub_categories={names.C.WORD: [names.NER.TOK]},
+            keys=False,
+            values_as_dict=True,
+            name_as_key=True,
+        )[names.C.WORD][names.NER.TOK]
+    else:
+        raise ValueError("Dataset type not supported for training")
+
+    dataset = DatasetAdapter(
+        dataset_train,
+        True,
+        image_to_raw_layoutlm_features(categories_dict_name_as_key, dataset_type),
+        **build_train_dict,
+    )
+
+    number_samples = len(dataset)
+    # A setup of necessary configuration. Everything else will be equal to the default setting of the transformer
+    # library.
     # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
-    # that are necessary for the tokenizer. We also define some default settings.
+    # that are necessary for the tokenizer.
     conf_dict = {
         "output_dir": log_dir,
         "remove_unused_columns": False,
         "per_device_train_batch_size": 8,
-        "max_steps": 130,
+        "max_steps": number_samples,
         "evaluation_strategy": "steps"
         if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
         else "no",
         "eval_steps": 100,
     }
+
     if isinstance(dataset_train, str):
         dataset_train = get_dataset(dataset_train)
 
+    # We allow to overwrite the default setting by the user.
     for conf in config_overwrite:
         key, val = conf.split("=", maxsplit=1)
         conf_dict[key] = val
 
+    # Will inform about dataloader warnings if max_steps exceeds length of dataset
+    if conf_dict["max_steps"] > number_samples: # type: ignore
+        logger.warning(
+            "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
+        )
+
     arguments = TrainingArguments(**conf_dict)
-    dataset_type = dataset_train.dataset_info.type
+    logger.info(
+        "Config: ------------------------------------------\n %s",
+        pprint.pformat(arguments.to_dict(), width=100, compact=True),
+    )
 
     model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
 
-    id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
+    if dataset_type == names.DS.TYPE.SEQ:
+        id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
+    else:
+        id_str_2label = dataset_train.dataflow.categories.get_sub_categories(
+            categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]}, keys=False, values_as_dict=True
+        )[names.C.WORD][names.NER.TOK]
     id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
-    dataset = DatasetAdapter(
-        dataset_train,
-        True,
-        image_to_raw_layoutlm_features(
-            dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True), dataset_type
-        ),
-        **build_train_dict,
-    )
+
+    logger.info("Will setup a head with the following classes\n %s", pprint.pformat(id2label, width=100, compact=True))
+
     config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
     data_collator = LayoutLMDataCollator(tokenizer_fast, return_tensors="pt")
@@ -271,12 +316,27 @@ def train_hf_layoutlm(
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         dd_model_cls = _DS_TYPE_TO_DD_LM_CLASS[dataset_type]
-        categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        if dataset_type == names.DS.TYPE.SEQ:
+            categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        else:
+            categories = dataset_train.dataflow.categories.get_sub_categories(
+                categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]}, keys=False
+            )[names.C.WORD][names.NER.TOK]
         dd_model = dd_model_cls(
             path_config_json=path_config_json, path_weights=path_weights, categories=categories, device="cuda"
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
+        if dataset_type == names.DS.TYPE.SEQ:
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
+        else:
+            default_token_classes = {
+                names.C.SE: (names.C.O, 7),
+                names.NER.TAG: (names.C.O, 7),
+                names.NER.TOK: (names.C.O, 7),
+            }
+            pipeline_component = pipeline_component_cls(
+                tokenizer_fast, dd_model, image_to_layoutlm_features, default_token_classes
+            )
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

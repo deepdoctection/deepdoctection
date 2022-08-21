@@ -42,9 +42,7 @@ if sklearn_available():
 __all__ = ["AccuracyMetric", "ConfusionMetric"]
 
 
-def accuracy(
-    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
-) -> NDArray[float32]:
+def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None) -> float:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     :func:`sklearn.metrics.accuracy_score`
@@ -69,7 +67,7 @@ def accuracy(
         np_masks.astype(bool)
         np_label_gt = np_label_gt[np_masks]
         np_label_pr = np_label_pr[np_masks]
-    return np.array(accuracy_score(np_label_gt, np_label_pr), dtype=float32)
+    return accuracy_score(np_label_gt, np_label_pr)
 
 
 @metric_registry.register("accuracy")
@@ -184,7 +182,7 @@ class AccuracyMetric(MetricBase):
 
         if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
             logger.warning(
-                "Accuracy metric has not correctly been set up: No category, sub category or summary has been"
+                "Accuracy metric has not correctly been set up: No category, sub category or summary has been "
                 "defined, therefore it is undefined what to evaluate."
             )
 
@@ -234,7 +232,7 @@ class ConfusionMetric(AccuracyMetric):
     Metric induced by :func:`confusion`
     """
 
-    metric = confusion
+    metric = confusion # type: ignore # todo: fix typing issue as this will cause problem in Evaluator
 
     @classmethod
     def print_distance(cls, results: Sequence[JsonDict]) -> None:

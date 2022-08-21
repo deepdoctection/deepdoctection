@@ -117,8 +117,10 @@ class Evaluator:  # pylint: disable=R0903
         else:
             self.pipe = component_or_pipeline
 
+        self.metric = metric
         if not isinstance(metric, MetricBase):
-            self.metric = metric()
+            self.metric = self.metric()  # type: ignore
+
         self._sanity_checks()
 
     @overload
@@ -207,6 +209,9 @@ class Evaluator:  # pylint: disable=R0903
             summary_sub_cats_to_remove = meta_anns["summaries"]
             df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
+        elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
+            sub_cats_to_remove = meta_anns["sub_categories"]
+            df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
             raise NotImplementedError
 

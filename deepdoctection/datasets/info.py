@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
 
+from ..utils.detection_types import JsonDict
 from ..utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
@@ -165,12 +166,23 @@ class DatasetCategories:
         return list(copy(self._categories_update))
 
     def get_sub_categories(
-        self, categories: Optional[Union[str, List[str]]] = None
-    ) -> Dict[str, Union[str, List[str]]]:
+        self,
+        categories: Optional[Union[str, List[str]]] = None,
+        sub_categories: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+        keys: bool = True,
+        values_as_dict: bool = True,
+        name_as_key: bool = False,
+    ) -> JsonDict:
         """
         Returns a dict of list with a category name and their sub categories.
 
         :param categories: A single category or list of category names
+        :param sub_categories: A mapping of categories to sub category keys on which the result should be filtered. Only
+                               relevant, if `keys=False`
+        :param keys: Will only pass keys if set to `True`.
+        :param values_as_dict: Will generate a dict with indices and sub category value names if set to `True`.
+        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys. name_as_key set to
+                            "False" will swap keys and values.
         :return: Dict with all selected categories.
         """
         if isinstance(categories, str):
@@ -179,6 +191,8 @@ class DatasetCategories:
             categories = self.get_categories(as_dict=False, filtered=True)
             if categories is None:
                 categories = []
+        if sub_categories is None:
+            sub_categories = {}
 
         sub_cat: Dict[str, Union[str, List[str]]] = {}
         for cat in categories:  # pylint: disable=R1702
@@ -200,6 +214,28 @@ class DatasetCategories:
                                     sub_cat[cat] = list(copy(sub_cat_list))
             else:
                 sub_cat[cat] = list(sub_cat_dict.keys())
+        if not keys:
+            sub_cat_values = {}
+            for cat in sub_cat:
+                if cat not in sub_categories:
+                    continue
+                sub_cat_tmp: Dict[str,Union[Dict[str,str],Sequence[str]]] = {}
+                for sub_cat_key in sub_cat[cat]:
+                    if sub_cat_key not in sub_categories[cat]:
+                        continue
+                    if values_as_dict:
+                        if not name_as_key:
+                            sub_cat_tmp[sub_cat_key] = {
+                                str(k): v for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                            }
+                        else:
+                            sub_cat_tmp[sub_cat_key] = {
+                                v: str(k) for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                            }
+                    else:
+                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[cat][sub_cat_key]
+                sub_cat_values[cat] = sub_cat_tmp
+            return sub_cat_values
 
         return sub_cat
 

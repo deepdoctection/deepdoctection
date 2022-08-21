@@ -89,6 +89,15 @@ _SUB_CATEGORIES = {
     names.C.WORD: {
         names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD],
         names.NER.TAG: [names.NER.I, names.NER.O, names.NER.B],
+        names.NER.TOK: [
+            names.NER.B_A,
+            names.NER.B_H,
+            names.NER.B_Q,
+            names.NER.I_A,
+            names.NER.I_H,
+            names.NER.I_Q,
+            names.NER.O,
+        ],
     }
 }
 
@@ -152,7 +161,16 @@ class FunsdBuilder(DataFlowBaseBuilder):
             "answer": names.C.A,
             "header": names.C.HEAD,
         }
-        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping))  # pylint: disable=E1120
+        ner_token_to_id_mapping = self.categories.get_sub_categories(
+            categories=names.C.WORD,
+            sub_categories={names.C.WORD: [names.NER.TOK]},
+            keys=False,
+            values_as_dict=True,
+            name_as_key=True,
+        )[names.C.WORD][names.NER.TOK]
+        df = MapData(
+            df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping)
+        )  # pylint: disable=E1120
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
