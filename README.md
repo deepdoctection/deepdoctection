@@ -53,7 +53,7 @@ Training is a substantial part to get pipelines ready on some specific domain, l
 document classification or NER. **deep**doctection provides scripts for models that are based on trainers
 developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
 datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
-formats like COCO and it has a dataset framework (akin to [**datasets](https://github.com/huggingface/datasets) so that
+formats like COCO and it has a dataset framework (akin to [**datasets**](https://github.com/huggingface/datasets) so that
  setting up training on a custom dataset becomes very easy. Check this  [**notebook**](./notebooks/Fine_Tune.ipynb) to
   see, how you can easily train a model on a different domain.
    
