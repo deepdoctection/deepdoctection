@@ -26,7 +26,7 @@ import signal
 import sys
 import threading
 from contextlib import contextmanager
-from typing import Any, Optional
+from typing import Any, Optional, no_type_check
 
 from .logger import log_once
 
@@ -37,28 +37,26 @@ class StoppableThread(threading.Thread):
     A thread that has a 'stop' event.
     """
 
-    def __init__(self, evt: Optional[threading.Event] = None):
+    def __init__(self, evt: Optional[threading.Event] = None) -> None:
         """
-        Args:
-            evt(threading.Event): if None, will create one.
+        :param evt: if None, will create one.
         """
         super().__init__()
         if evt is None:
             evt = threading.Event()
         self._stop_evt = evt
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the thread"""
         self._stop_evt.set()
 
-    def stopped(self):
+    def stopped(self) -> bool:
         """
-        Returns:
-            bool: whether the thread is stopped or not
+        :param bool: whether the thread is stopped or not
         """
         return self._stop_evt.isSet()
 
-    def queue_put_stoppable(self, q: queue.Queue, obj: Any):
+    def queue_put_stoppable(self, q: queue.Queue[Any], obj: Any) -> None:
         """Put obj to queue, but will give up when the thread is stopped"""
         while not self.stopped():
             try:
@@ -67,7 +65,7 @@ class StoppableThread(threading.Thread):
             except queue.Full:
                 pass
 
-    def queue_get_stoppable(self, q: queue.Queue):
+    def queue_get_stoppable(self, q: queue.Queue[Any]) -> Any:
         """Take obj from queue, but will give up when the thread is stopped"""
         while not self.stopped():
             try:
@@ -77,11 +75,10 @@ class StoppableThread(threading.Thread):
 
 
 @contextmanager
-def mask_sigint():
+def mask_sigint() -> bool:
     """
-    Returns:
-        If called in main thread, returns a context where ``SIGINT`` is ignored, and yield True.
-        Otherwise, yield False.
+     :return: If called in main thread, returns a context where ``SIGINT`` is ignored, and yield True.
+              Otherwise, yield False.
     """
     if threading.current_thread() == threading.main_thread():
         sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -91,7 +88,7 @@ def mask_sigint():
         yield False
 
 
-def enable_death_signal(_warn=True):
+def enable_death_signal(_warn: bool =True) -> None:
     """
     Set the "death signal" of the current process, so that
     the current process will be cleaned with guarantee
@@ -112,17 +109,19 @@ def enable_death_signal(_warn=True):
             prctl, "set_pdeathsig"
         ), "prctl.set_pdeathsig does not exist! Note that you need to install 'python-prctl' instead of 'prctl'."
         # is SIGHUP a good choice?
-        prctl.set_pdeathsig(signal.SIGHUP)  # pylint: disable=E1101
+        prctl.set_pdeathsig(signal.SIGHUP)
 
 
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py
+
+@no_type_check
 def start_proc_mask_signal(proc):
     """
     Start process(es) with SIGINT ignored.
-    Args:
-        proc: (mp.Process or list)
-    Note:
-        The signal mask is only applied when called from main thread.
+
+    :param proc: (mp.Process or list)
+
+    The signal mask is only applied when called from main thread.
     """
     if not isinstance(proc, list):
         proc = [proc]

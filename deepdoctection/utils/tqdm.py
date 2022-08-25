@@ -19,14 +19,14 @@
 tqdm related functions. (Settings, options, etc.)
 """
 
-from typing import Optional, Union
+from typing import Optional, Union, Mapping
 
 from tqdm import tqdm  # type: ignore
 
 __all__ = ["get_tqdm", "get_tqdm_default_kwargs"]
 
 
-def get_tqdm_default_kwargs(**kwargs: Union[str, int, float]):
+def get_tqdm_default_kwargs(**kwargs: Union[Optional[str, int, float]]) -> Mapping[Union[str,float,bool,int]]:
     """
     Return default arguments to be used with tqdm.
 

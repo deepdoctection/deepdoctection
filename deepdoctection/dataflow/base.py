@@ -12,7 +12,7 @@ This file replaces relevant parts of the Dataflow package. Most of the code has 
 
 import threading
 from abc import ABC, abstractmethod
-
+from typing import Iterator, Any, no_type_check
 from ..utils.utils import get_rng
 
 
@@ -32,14 +32,15 @@ class DataFlowReentrantGuard:
     so that multiple instances of the iterator cannot co-exist.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._lock = threading.Lock()
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self._succ = self._lock.acquire(False)
         if not self._succ:
             raise threading.ThreadError("This DataFlow is not reentrant!")
 
+    @no_type_check
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._lock.release()
         return False
@@ -49,7 +50,7 @@ class DataFlow:
     """Base class for all DataFlow"""
 
     @abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         """
         * A dataflow is an iterable. The :meth:`__iter__` method should yield a list or dict each time.
           Note that dict is **partially** supported at the moment: certain dataflow does not support dict.
@@ -67,7 +68,7 @@ class DataFlow:
             list/dict: The datapoint, i.e. list/dict of components.
         """
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         * A dataflow can optionally implement :meth:`__len__`. If not implemented, it will
           throw :class:`NotImplementedError`.
@@ -96,7 +97,7 @@ class DataFlow:
         """
         raise NotImplementedError
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         """
         * The caller must guarantee that :meth:`reset_state` should be called **once and only once**
           by the **process that uses the dataflow** before :meth:`__iter__` is called.
@@ -126,7 +127,7 @@ class RNGDataFlow(DataFlow, ABC):  # pylint: disable=R0903
     correctly (with different seeds in each process) in `RNGDataFlow.reset_state()`.
     """
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         """Reset the RNG"""
         self.rng = get_rng(self)
 
@@ -136,17 +137,17 @@ class ProxyDataFlow(DataFlow):
     Every method is proxied to ``self.df`` unless overriden by a subclass.
     """
 
-    def __init__(self, df: DataFlow):
+    def __init__(self, df: DataFlow) -> None:
         """
         :param df: DataFlow to proxy.
         """
         self.df = df
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         self.df.reset_state()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.df.__len__()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         return self.df.__iter__()

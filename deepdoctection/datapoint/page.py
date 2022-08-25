@@ -25,7 +25,7 @@ import json
 from dataclasses import asdict, dataclass
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple, Union, no_type_check
+from typing import List, Optional, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -198,7 +198,8 @@ class Layout:
 
     @classmethod
     def from_image(cls, dp: Image, text_container: str) -> "Layout":
-
+        """Instantiating a Layout instance from an image dict. Use this factory method when you do
+        not have any layout annotation but want to generate a layout block that can store text."""
         word_anns = dp.get_annotation(category_names=text_container)
         words = []
         for word in word_anns:
