@@ -12,7 +12,7 @@ Some DataFlow classes for transforming and processing datapoints. Many classes h
 """
 import itertools
 from copy import copy
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Iterator
 
 import tqdm
 
@@ -24,7 +24,7 @@ from .base import DataFlow, ProxyDataFlow
 class TestDataSpeed(ProxyDataFlow):
     """Test the speed of a DataFlow"""
 
-    def __init__(self, df: DataFlow, size: int = 5000, warmup: int = 0):
+    def __init__(self, df: DataFlow, size: int = 5000, warmup: int = 0)-> None:
         """
         :param df: the DataFlow to test.
         :param size: number of datapoints to fetch.
@@ -35,16 +35,16 @@ class TestDataSpeed(ProxyDataFlow):
         self.warmup = int(warmup)
         self._reset_called = False
 
-    def reset_state(self):
+    def reset_state(self)->None:
         self._reset_called = True
         super().reset_state()
 
-    def __iter__(self):
+    def __iter__(self)-> Iterator[Any]:
         """Will run testing at the beginning, then produce data normally."""
         self.start()
         yield from self.df
 
-    def start(self):
+    def start(self) -> None:
         """
         Start testing with a progress bar.
         """
@@ -103,7 +103,7 @@ class MapData(ProxyDataFlow):
             ds = MapData(ds, lambda dp: [dp[0] * 255, dp[1]])
     """
 
-    def __init__(self, df: DataFlow, func: Callable[[Any], Any]):
+    def __init__(self, df: DataFlow, func: Callable[[Any], Any])-> None:
         """
         :param df: input DataFlow
         :param func: takes a datapoint and returns a new
@@ -112,7 +112,7 @@ class MapData(ProxyDataFlow):
         super().__init__(df)
         self.func = func
 
-    def __iter__(self):
+    def __iter__(self)-> Iterator[Any]:
         for dp in self.df:
             ret = self.func(copy(dp))  # shallow copy the list
             if ret is not None:
@@ -134,7 +134,7 @@ class MapDataComponent(MapData):  # pylint: disable=R0903
             ds = MapDataComponent(ds, lambda img: img * 255, 0)  # map the 0th component
     """
 
-    def __init__(self, df, func: Callable[[Any], Any], index: int = 0):
+    def __init__(self, df, func: Callable[[Any], Any], index: int = 0)->None:
         """
         Args:
         :param df: input DataFlow which produces either list or dict.
@@ -146,7 +146,7 @@ class MapDataComponent(MapData):  # pylint: disable=R0903
         self._func = func
         super().__init__(df, self._mapper)
 
-    def _mapper(self, dp: Any):
+    def _mapper(self, dp: Any)-> Any:
         ret = self._func(dp[self._index])
         if ret is None:
             return None
@@ -163,7 +163,7 @@ class RepeatedData(ProxyDataFlow):
     dp1, dp2, .... dpn, dp1, dp2, ....dpn
     """
 
-    def __init__(self, df: DataFlow, num: int):
+    def __init__(self, df: DataFlow, num: int)-> None:
         """
         :param df: input DataFlow
         :param num: number of times to repeat ds.
@@ -172,7 +172,7 @@ class RepeatedData(ProxyDataFlow):
         self.num = num
         super().__init__(df)
 
-    def __len__(self):
+    def __len__(self)->  int:
         """
         Raises:
             :class:`ValueError` when num == -1.
@@ -181,7 +181,7 @@ class RepeatedData(ProxyDataFlow):
             raise NotImplementedError("__len__() is unavailable for infinite dataflow")
         return len(self.df) * self.num
 
-    def __iter__(self):
+    def __iter__(self)-> Iterator[Any]:
         if self.num == -1:
             while True:
                 yield from self.df
@@ -197,20 +197,20 @@ class ConcatData(DataFlow):
     DataFlow is exhausted.
     """
 
-    def __init__(self, df_lists: List[DataFlow]):
+    def __init__(self, df_lists: List[DataFlow])-> None:
         """
         :param df_lists: a list of DataFlow.
         """
         self.df_lists = df_lists
 
-    def reset_state(self):
+    def reset_state(self)-> None:
         for df in self.df_lists:
             df.reset_state()
 
-    def __len__(self):
+    def __len__(self)->int:
         return sum(len(x) for x in self.df_lists)
 
-    def __iter__(self):
+    def __iter__(self)-> Iterator[Any]:
         for df in self.df_lists:
             yield from df
 
@@ -232,7 +232,7 @@ class JoinData(DataFlow):
         joined: {"a":c1, "b":c2, "c":c3}
     """
 
-    def __init__(self, df_lists: List[DataFlow]):
+    def __init__(self, df_lists: List[DataFlow])-> None:
         """
         Args:
             df_lists (list): a list of DataFlow.
@@ -250,17 +250,17 @@ class JoinData(DataFlow):
         except (NotImplementedError, AssertionError):
             logger.info("[JoinData] Size check failed for the list of dataflow to be joined!")
 
-    def reset_state(self):
+    def reset_state(self)-> None:
         for df in set(self.df_lists):
             df.reset_state()
 
-    def __len__(self):
+    def __len__(self)-> int:
         """
         Return the minimum size among all.
         """
         return min(len(k) for k in self.df_lists)
 
-    def __iter__(self):
+    def __iter__(self)->Iterator[Any]:
         itrs = [k.__iter__() for k in self.df_lists]
         try:
             while True:

@@ -25,6 +25,7 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
 import zmq
+from typing import no_type_check, Any, Iterator, Optional, Callable
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
 from ..utils.logger import logger
@@ -33,6 +34,7 @@ from .common import RepeatedData
 from .serialize import PickleSerializer
 
 
+@no_type_check
 def del_weakref(x):
     """delete weakref"""
     instance = x()
@@ -40,6 +42,7 @@ def del_weakref(x):
         instance.__del__()
 
 
+@no_type_check
 @contextmanager
 def _zmq_catch_error(name):
     try:
@@ -56,6 +59,7 @@ def _zmq_catch_error(name):
         raise ValueError from exc
 
 
+@no_type_check
 def _get_pipe_name(name):
     if sys.platform.startswith("linux"):
         # linux supports abstract sockets: http://api.zeromq.org/4-1:zmq-ipc
@@ -70,14 +74,14 @@ def _get_pipe_name(name):
 
 
 class _ParallelMapData(ProxyDataFlow, ABC):
-    def __init__(self, df, buffer_size, strict=False):
+    def __init__(self, df: DataFlow, buffer_size: int, strict: bool=False)-> None:
         super().__init__(df)
         assert buffer_size > 0, buffer_size
         self._buffer_size = buffer_size
         self._buffer_occupancy = 0  # actual #elements in buffer, only useful in strict mode
         self._strict = strict
 
-    def reset_state(self):
+    def reset_state(self)-> None:
         super().reset_state()
         if not self._strict:
             df = RepeatedData(self.df, -1)
@@ -85,19 +89,23 @@ class _ParallelMapData(ProxyDataFlow, ABC):
             df = self.df
         self._iter = df.__iter__()
 
+    @no_type_check
     @abstractmethod
     def _recv(self):
         raise NotImplementedError
 
+    @no_type_check
     @abstractmethod
-    def _send(self, dp):
+    def _send(self, dp: Any):
         raise NotImplementedError
 
+    @no_type_check
     def _recv_filter_none(self):
         ret = self._recv()
         assert ret is not None, f"[{type(self).__name__}] Map function cannot return None when strict mode is used."
         return ret
 
+    @no_type_check
     def _fill_buffer(self, cnt=None):
         if cnt is None:
             cnt = self._buffer_size - self._buffer_occupancy
@@ -112,7 +120,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
             ) from exce
         self._buffer_occupancy += cnt
 
-    def get_data_non_strict(self):
+    def get_data_non_strict(self) -> Any:
         """data non strict"""
         for dp in self._iter:
             self._send(dp)
@@ -120,7 +128,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
             if ret is not None:
                 yield ret
 
-    def get_data_strict(self):
+    def get_data_strict(self) -> Any:
         """data strict"""
         self._fill_buffer()
         for dp in self._iter:
@@ -136,7 +144,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
                 self._fill_buffer()
             yield dp
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         if self._strict:
             yield from self.get_data_strict()
         else:
@@ -167,6 +175,7 @@ class MultiThreadMapData(_ParallelMapData):
     """
 
     class _Worker(StoppableThread):
+        @no_type_check
         def __init__(self, inq, outq, evt, map_func):
             super(MultiThreadMapData._Worker, self).__init__(evt)
             self.inq = inq
@@ -174,6 +183,7 @@ class MultiThreadMapData(_ParallelMapData):
             self.func = map_func
             self.daemon = True
 
+        @no_type_check
         def run(self):
             try:
                 while True:
@@ -191,24 +201,24 @@ class MultiThreadMapData(_ParallelMapData):
             finally:
                 self.stop()
 
-    def __init__(self, ds, num_thread=None, map_func=None, *, buffer_size=200, strict=False):
+    def __init__(self, df: DataFlow, num_thread: Optional[int]=None, map_func: Optional[Callable[[Any],Any]]=None, *,
+                 buffer_size: int=200, strict: bool=False):
         """
-        Args:
-            ds (DataFlow): the dataflow to map
-            num_thread (int): number of threads to use
-            map_func (callable): datapoint -> datapoint | None. Return None to
-                discard/skip the datapoint.
-            buffer_size (int): number of datapoints in the buffer
-            strict (bool): use "strict mode", see notes above.
+        :param df: the dataflow to map
+        :param num_thread: number of threads to use
+        :param map_func: datapoint -> datapoint | None. Return None to
+                         discard/skip the datapoint.
+        :param buffer_size: number of datapoints in the buffer
+        :param strict: use "strict mode", see notes above.
         """
         if strict:
             # In strict mode, buffer size cannot be larger than the total number of datapoints
             try:
-                buffer_size = min(buffer_size, len(ds))
+                buffer_size = min(buffer_size, len(df))
             except Exception:  # pylint: disable=W0703  # df may not have a length
                 pass
 
-        super().__init__(ds, buffer_size, strict)
+        super().__init__(df, buffer_size, strict)
         assert num_thread > 0, num_thread
 
         self._strict = strict
@@ -217,7 +227,7 @@ class MultiThreadMapData(_ParallelMapData):
         self._threads = []
         self._evt = None
 
-    def reset_state(self):
+    def reset_state(self)-> None:
         super().reset_state()
         if self._threads:
             self._threads[0].stop()
@@ -239,17 +249,17 @@ class MultiThreadMapData(_ParallelMapData):
         # Call once at the beginning, to ensure inq+outq has a total of buffer_size elements
         self._fill_buffer()
 
-    def _recv(self):
+    def _recv(self) -> Any:
         return self._out_queue.get()
 
-    def _send(self, dp):
+    def _send(self, dp: Any) -> None:
         self._in_queue.put(dp)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         with self._guard:
             yield from super().__iter__()
 
-    def __del__(self):
+    def __del__(self)-> Any:
         if self._evt is not None:
             self._evt.set()
         for thr in self._threads:
@@ -265,7 +275,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
         self.context = None
         self.socket = None
 
-    def reset_state(self):
+    def reset_state(self)-> Any:
         """
         All forked dataflows should only be reset **once and only once** in spawned processes.
         Subclasses should call this method with super.
@@ -276,10 +286,10 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
         # __del__ not guaranteed to get called at exit
         atexit.register(del_weakref, weakref.ref(self))
 
-    def _start_processes(self):
+    def _start_processes(self) -> Any:
         start_proc_mask_signal(self._procs)
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
             if not self._reset_done:
                 return
@@ -294,6 +304,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
             pass
 
 
+@no_type_check
 def _bind_guard(sock, name):
     try:
         sock.bind(name)
@@ -324,6 +335,8 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
     """
 
     class _Worker(mp.Process):
+
+        @no_type_check
         def __init__(self, identity, map_func, pipename, hwm):
             super(MultiProcessMapData._Worker, self).__init__()
             self.identity = identity
@@ -331,6 +344,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
             self.pipename = pipename
             self.hwm = hwm
 
+        @no_type_check
         def run(self):
             enable_death_signal(_warn=self.identity == b"0")
             ctx = zmq.Context()
@@ -344,7 +358,8 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
                 dp = self.map_func(dp)
                 socket.send(PickleSerializer.dumps(dp), copy=False)
 
-    def __init__(self, ds, num_proc=None, map_func=None, *, buffer_size=200, strict=False):
+    def __init__(self, df: DataFlow, num_proc: Optional[int]=None, map_func: Callable[[Any],Any]=None, *,
+                 buffer_size: int=200, strict:bool=False)-> None:
         """
         :param ds: the dataflow to map
         :param num_proc: number of threads to use
@@ -356,11 +371,11 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         if strict:
             # In strict mode, buffer size cannot be larger than the total number of datapoints
             try:
-                buffer_size = min(buffer_size, len(ds))
+                buffer_size = min(buffer_size, len(df))
             except Exception:  # pylint: disable=W0703  # ds may not have a length
                 pass
 
-        _ParallelMapData.__init__(self, ds, buffer_size, strict)
+        _ParallelMapData.__init__(self, df, buffer_size, strict)
         _MultiProcessZMQDataFlow.__init__(self)
         assert num_proc > 0, num_proc
         self.num_proc = num_proc
@@ -368,10 +383,11 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         self._strict = strict
         self._procs = []
 
+    @no_type_check
     def _create_worker(self, idx, pipename, hwm):
         return MultiProcessMapData._Worker(idx, self.map_func, pipename, hwm)
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         _MultiProcessZMQDataFlow.reset_state(self)
         _ParallelMapData.reset_state(self)
         self._guard = DataFlowReentrantGuard()
@@ -387,17 +403,19 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         self._procs = [self._create_worker(self._proc_ids[k], pipename, worker_hwm) for k in range(self.num_proc)]
 
         self._start_processes()
-        self._fill_buffer()  # pre-fill the bufer
+        self._fill_buffer()  # pre-fill the buffer
 
-    def _send(self, dp):
+    @no_type_check
+    def _send(self, dp: Any):
         msg = [b"", PickleSerializer.dumps(dp)]
         self.socket.send_multipart(msg, copy=False)
 
+    @no_type_check
     def _recv(self):
         msg = self.socket.recv_multipart(copy=False)
         dp = PickleSerializer.loads(msg[1])
         return dp
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         with self._guard, _zmq_catch_error(type(self).__name__):
             yield from super().__iter__()

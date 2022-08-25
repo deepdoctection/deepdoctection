@@ -45,7 +45,7 @@ def load_page(path: Pathlike) -> Page:
     with open(path, "r", encoding="UTF-8") as file:
         page_dict = json.load(file)
 
-    return Page.from_dict(page_dict)
+    return Page.from_dict(**page_dict)
 
 
 def load_document(path: Pathlike) -> DataFlow:

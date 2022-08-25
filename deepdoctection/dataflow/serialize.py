@@ -12,7 +12,7 @@ Some DataFlow classes for serialization. Many classes have been taken from
 
 import pickle
 import copy
-from typing import Any, Iterable, List
+from typing import Any, List, Iterator, Collection, Tuple, Union, Optional
 
 import numpy as np
 
@@ -22,7 +22,7 @@ from .base import DataFlow, RNGDataFlow
 class DataFromList(RNGDataFlow):
     """Wrap a list of datapoints to a DataFlow"""
 
-    def __init__(self, lst: List[Any], shuffle: bool = True):
+    def __init__(self, lst: List[Any], shuffle: bool = True) -> None:
         """
         :param lst: input list. Each element is a datapoint.
         :param shuffle: shuffle data.
@@ -31,58 +31,65 @@ class DataFromList(RNGDataFlow):
         self.lst = lst
         self.shuffle = shuffle
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.lst)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         if not self.shuffle:
             yield from self.lst
         else:
             idxs = np.arange(len(self.lst))
-            self.rng.shuffle(idxs)
-            for k in idxs:
-                yield self.lst[k]
+            if self.rng is not None:
+                self.rng.shuffle(idxs)
+                for k in idxs:
+                    yield self.lst[k]
+            else:
+                raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
+                                   "call reset_state() before")
 
 
 class DataFromIterable(DataFlow):
     """Wrap an iterable of datapoints to a DataFlow"""
 
-    def __init__(self, iterable: Iterable[Any]):
+    def __init__(self, iterable: Collection[Any]) -> None:
         """
         Args:
             iterable: an iterable object
         """
         self._itr = iterable
+        self._len: Optional[int] = None
         try:
             self._len = len(iterable)
         except NotImplementedError:
-            self._len = None
+            pass
 
-    def __len__(self):
+    def __len__(self) -> int:
         if self._len is None:
             raise NotImplementedError
         return self._len
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         yield from self._itr
 
-    def reset_state(self):
+    def reset_state(self) -> None:
         pass
 
 
 class FakeData(RNGDataFlow):
     """Generate fake data of given shapes"""
 
-    def __init__(self, shapes, size=1000, random=True, dtype="float32", domain=(0, 1)):
+    def __init__(self, shapes: List[Union[List[Any],Tuple[Any]]], size: int=1000, random: bool=True,
+                 dtype: str ="float32",
+                 domain: Tuple[Union[float,int],Union[float,int]]=(0, 1)):
         """
-        Args:
-            shapes (list): a list of lists/tuples. Shapes of each component.
-            size (int): size of this DataFlow.
-            random (bool): whether to randomly generate data every iteration.
-                Note that merely generating the data could sometimes be time-consuming!
-            dtype (str or list): data type as string, or a list of data types.
-            domain (tuple or list): (min, max) tuple, or a list of such tuples
+        :param  shapes: a list of lists/tuples. Shapes of each component.
+        :param  size: size of this DataFlow.
+        :param  random: whether to randomly generate data every iteration.
+                        Note that merely generating the data could sometimes be time-consuming!
+        :param dtype: data type as string, or a list of data types.
+        :param domain: (min, max) tuple, or a list of such tuples
         """
+
         super().__init__()
         self.shapes = shapes
         self._size = int(size)
@@ -92,10 +99,13 @@ class FakeData(RNGDataFlow):
         assert len(self.dtype) == len(self.shapes)
         assert len(self.domain) == len(self.domain)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._size
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
+        if self.rng is None:
+            raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
+                               "call reset_state() before")
         if self.random:
             for _ in range(self._size):
                 val = []
@@ -119,18 +129,17 @@ class FakeData(RNGDataFlow):
 
 class PickleSerializer:
     """A Serializer to load and to dump objects"""
+
     @staticmethod
-    def dumps(obj):
+    def dumps(obj: Any) -> bytes:
         """
-        Returns:
-            bytes
+        :param obj: bytes
         """
         return pickle.dumps(obj, protocol=-1)
 
     @staticmethod
-    def loads(buf):
+    def loads(buf: Any) -> Any:
         """
-        Args:
-            bytes
+        :param buf: bytes
         """
         return pickle.loads(buf)
