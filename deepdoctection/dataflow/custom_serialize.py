@@ -25,7 +25,6 @@ import os
 from collections import defaultdict
 from typing import DefaultDict, Dict, List, Optional, Sequence, Union
 
-from dataflow.dataflow import DataFlow, JoinData, MapData
 from jsonlines import Reader, Writer
 
 from ..utils.context import timed_operation
@@ -34,8 +33,13 @@ from ..utils.fs import is_file_extension
 from ..utils.logger import logger
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
-from .common import FlattenData
+from .base import DataFlow
+from .common import FlattenData, JoinData, MapData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
+
+# from dataflow.dataflow import DataFlow, JoinData, MapData
+
+
 
 __all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles"]
 

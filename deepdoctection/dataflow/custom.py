@@ -16,33 +16,72 @@
 # limitations under the License.
 
 """
-Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...)
+Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...). Some ideas have been taken
+from
+
+- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
 """
 from typing import Any, Callable, Iterable, List, Optional
 
 import numpy as np
-from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
+from .base import DataFlowReentrantGuard, ProxyDataFlow, RNGDataFlow
+from .serialize import DataFromIterable, DataFromList
+
+# from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
+
+
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
 
 
-def _get_cache(self: CacheData) -> List[Any]:
+class CacheData(ProxyDataFlow, RNGDataFlow):
     """
-    get the cache of the whole dataflow as a list
-
-    :return: list of datapoints
+    Completely cache the first pass of a DataFlow in memory,
+    and produce from the cache thereafter.
+    NOTE: The user should not stop the iterator before it has reached the end.
+    Otherwise, the cache may be incomplete.
     """
-    self.reset_state()
-    with get_tqdm() as status_bar:
-        for _ in self:
-            status_bar.update()
-        return self.buffer
 
+    def __init__(self, df, shuffle=False):
+        """
+        Args:
+            df (DataFlow): input DataFlow.
+            shuffle (bool): whether to shuffle the cache before yielding from it.
+        """
+        self.shuffle = shuffle
+        self.buffer = []
+        self._guard: Optional[DataFlowReentrantGuard] = None
+        super().__init__(df)
 
-CacheData.get_cache = _get_cache
+    def reset_state(self):
+        super().reset_state()
+        self._guard = DataFlowReentrantGuard()
+
+    def __iter__(self):
+        with self._guard:
+            if self.buffer:
+                if self.shuffle:
+                    self.rng.shuffle(self.buffer)
+                yield from self.buffer
+            else:
+                for dp in self.df:
+                    yield dp
+                    self.buffer.append(dp)
+
+    def get_cache(self) -> List[Any]:
+        """
+        get the cache of the whole dataflow as a list
+
+        :return: list of datapoints
+        """
+        self.reset_state()
+        with get_tqdm() as status_bar:
+            for _ in self:
+                status_bar.update()
+            return self.buffer
 
 
 class CustomDataFromList(DataFromList):
@@ -123,6 +162,9 @@ class CustomDataFromList(DataFromList):
                         break
             else:
                 yield from lst_tmp
+
+    def reset_state(self):
+        pass
 
 
 class CustomDataFromIterable(DataFromIterable):
