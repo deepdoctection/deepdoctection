@@ -184,6 +184,7 @@ def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: boo
     teds = TEDS(structure_only=structure_only)
 
     input_list = list(zip(gt_list, predict_list))
+    df: DataFlow
     df = DataFromList(input_list)
     if len(input_list) >= 2:
         df = MultiThreadMapData(df, 2, teds.evaluate, strict=True)

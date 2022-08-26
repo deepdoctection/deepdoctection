@@ -12,7 +12,7 @@ Some DataFlow classes for transforming and processing datapoints. Many classes h
 """
 import itertools
 from copy import copy
-from typing import Any, Callable, List, Iterator
+from typing import Any, Callable, List, Iterator, Union
 
 import tqdm
 
@@ -52,7 +52,7 @@ class TestDataSpeed(ProxyDataFlow):
             self.df.reset_state()
         itr = self.df.__iter__()
         if self.warmup:
-            for _ in tqdm.trange(self.warmup, **get_tqdm_default_kwargs()):
+            for _ in tqdm.trange(self.warmup, **get_tqdm_default_kwargs()):  # type: ignore
                 next(itr)
         # add smoothing for speed benchmark
         with get_tqdm(total=self.test_size, leave=True, smoothing=0.2) as pbar:
@@ -134,9 +134,8 @@ class MapDataComponent(MapData):  # pylint: disable=R0903
             ds = MapDataComponent(ds, lambda img: img * 255, 0)  # map the 0th component
     """
 
-    def __init__(self, df, func: Callable[[Any], Any], index: int = 0)->None:
+    def __init__(self, df: DataFlow, func: Callable[[Any], Any], index: Union[int,str] = 0)->None:
         """
-        Args:
         :param df: input DataFlow which produces either list or dict.
             func (TYPE -> TYPE|None): takes ``dp[index]``, returns a new value for ``dp[index]``.
                 Return None to discard/skip this datapoint.
@@ -265,6 +264,7 @@ class JoinData(DataFlow):
         try:
             while True:
                 all_dps = [next(itr) for itr in itrs]
+                dp: Any
                 if isinstance(all_dps[0], (list, tuple)):
                     dp = list(itertools.chain(*all_dps))
                 else:

@@ -21,7 +21,7 @@ Testing the module dataflow.common
 
 from typing import List
 
-from deepdoctection.dataflow import CustomDataFromList, FlattenData
+from deepdoctection.dataflow import CustomDataFromList, FlattenData, DataFlow
 
 from ..test_utils import collect_datapoint_from_dataflow
 
@@ -32,6 +32,7 @@ def test_flatten_data(dataset_three_dim: List[List[float]], dataset_flatten: Lis
     """
 
     # Arrange
+    df: DataFlow
     df = CustomDataFromList(dataset_three_dim)
 
     # Act

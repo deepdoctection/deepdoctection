@@ -131,7 +131,8 @@ class CocoMetric(MetricBase):
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
 
-        dataflow_gt.reset_state(), dataflow_predictions.reset_state()  # pylint: disable=W0106
+        dataflow_gt.reset_state()
+        dataflow_predictions.reset_state()  # pylint: disable=W0106
 
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
             img_gt, ann_gt = cls.mapper(dp_gt)  # type: ignore

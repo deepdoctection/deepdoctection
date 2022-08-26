@@ -22,7 +22,7 @@ Module for the base class of datasets.
 import os
 import pprint
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Tuple
 
 import numpy as np
 
@@ -175,7 +175,7 @@ class MergeDataset(DatasetBase):
         :param datasets: An arbitrary number of datasets
         """
         self.datasets = datasets
-        self.dataflows: Optional[DataFlow] = None
+        self.dataflows: Optional[Tuple[DataFlow,...]] = None
         self.datapoint_list: Optional[List[Image]] = None
         super().__init__()
         self._dataset_info.type = datasets[0].dataset_info.type
@@ -198,7 +198,7 @@ class MergeDataset(DatasetBase):
             def __init__(self, *dataflow_builders: DataFlowBaseBuilder):
                 super().__init__("")
                 self.dataflow_builders = dataflow_builders
-                self.dataflows = None
+                self.dataflows: Optional[Tuple[DataFlow,...]] = None
 
             def build(self, **kwargs: Union[str, int]) -> DataFlow:
                 """

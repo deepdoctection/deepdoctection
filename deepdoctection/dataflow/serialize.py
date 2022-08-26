@@ -11,8 +11,8 @@ Some DataFlow classes for serialization. Many classes have been taken from
 """
 
 import pickle
-import copy
-from typing import Any, List, Iterator, Collection, Tuple, Union, Optional
+from copy import copy
+from typing import Any, List, Iterator, Collection, Tuple, Union, Optional, Iterable
 
 import numpy as np
 
@@ -51,7 +51,7 @@ class DataFromList(RNGDataFlow):
 class DataFromIterable(DataFlow):
     """Wrap an iterable of datapoints to a DataFlow"""
 
-    def __init__(self, iterable: Collection[Any]) -> None:
+    def __init__(self, iterable: Iterable[Any]) -> None:
         """
         Args:
             iterable: an iterable object
@@ -59,7 +59,7 @@ class DataFromIterable(DataFlow):
         self._itr = iterable
         self._len: Optional[int] = None
         try:
-            self._len = len(iterable)
+            self._len = len(iterable)  # type: ignore
         except NotImplementedError:
             pass
 
@@ -124,7 +124,7 @@ class FakeData(RNGDataFlow):
                 )
                 val.append(var.astype(self.dtype[idx]))
             for _ in range(self._size):
-                yield copy.copy(val)
+                yield copy(val)
 
 
 class PickleSerializer:
