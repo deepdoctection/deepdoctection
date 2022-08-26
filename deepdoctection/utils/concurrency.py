@@ -26,7 +26,7 @@ import signal
 import sys
 import threading
 from contextlib import contextmanager
-from typing import Any, Optional, no_type_check
+from typing import Any, Optional, no_type_check, Generator
 
 from .logger import log_once
 
@@ -75,8 +75,8 @@ class StoppableThread(threading.Thread):
 
 
 @contextmanager
-def mask_sigint() -> bool:
-    """
+def mask_sigint() -> Generator[Any,None,None]:
+    """[Any,None,None
      :return: If called in main thread, returns a context where ``SIGINT`` is ignored, and yield True.
               Otherwise, yield False.
     """
@@ -97,7 +97,7 @@ def enable_death_signal(_warn: bool =True) -> None:
     if platform.system() != "Linux":
         return
     try:
-        import prctl  #pylint: disable=C0415  # pip install python-prctl
+        import prctl  # type: ignore #pylint: disable=C0415  # pip install python-prctl
     except ImportError:
         if _warn:
             log_once(

@@ -85,6 +85,7 @@ class DoctectionPipe(Pipeline):
         file_type = kwargs.get("file_type", [".jpg", ".png", ".tif"])
 
         max_datapoints = kwargs.get("max_datapoints")
+        df: DataFlow
         assert isinstance(max_datapoints, (int, type(None)))
 
         if isinstance(path, (str, Path)):
@@ -94,7 +95,7 @@ class DoctectionPipe(Pipeline):
             df = DoctectionPipe.doc_to_dataflow(
                 path=doc_path, max_datapoints=int(max_datapoints) if max_datapoints is not None else None
             )
-        if dataset_dataflow is not None:
+        if dataset_dataflow is not None and isinstance(dataset_dataflow, DataFlow):
             df = dataset_dataflow
 
         def _proto_process(dp: Image) -> Image:

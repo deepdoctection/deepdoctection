@@ -130,6 +130,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         load_image = kwargs.get("load_image", False)
 
         # Load
+        df: DataFlow
         dataset_split = self.annotation_files[split]
         assert isinstance(dataset_split, str)
         path = self.get_workdir() / dataset_split

@@ -87,7 +87,8 @@ class AccuracyMetric(MetricBase):
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple[Any, Any]:
 
-        dataflow_gt.reset_state(), dataflow_predictions.reset_state()  # pylint: disable=W0106
+        dataflow_gt.reset_state()
+        dataflow_predictions.reset_state()  # pylint: disable=W0106
 
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:

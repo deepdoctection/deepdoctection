@@ -19,14 +19,14 @@
 tqdm related functions. (Settings, options, etc.)
 """
 
-from typing import Optional, Union, Mapping
+from typing import Optional, Union, Dict
 
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
 
 __all__ = ["get_tqdm", "get_tqdm_default_kwargs"]
 
 
-def get_tqdm_default_kwargs(**kwargs: Union[Optional[str, int, float]]) -> Mapping[Union[str,float,bool,int]]:
+def get_tqdm_default_kwargs(**kwargs: Optional[Union[str, int, float]]) -> Dict[str, Union[str,float,bool,int, None]]:
     """
     Return default arguments to be used with tqdm.
 
@@ -43,7 +43,7 @@ def get_tqdm_default_kwargs(**kwargs: Union[Optional[str, int, float]]) -> Mappi
     )
 
 
-def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int, float]) -> tqdm:
+def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int, float]) -> tqdm[str]:
     """
     Get tqdm progress bar with some default options to have consistent style.
 
@@ -54,4 +54,4 @@ def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int
     default_tqdm_setting = get_tqdm_default_kwargs(total=total)
     default_tqdm_setting.update(kwargs)
 
-    return tqdm(**default_tqdm_setting)
+    return tqdm(**default_tqdm_setting)  # type: ignore

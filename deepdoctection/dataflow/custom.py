@@ -21,7 +21,7 @@ from
 
 - https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
 """
-from typing import Any, Callable, Collection, List, Optional, Iterator
+from typing import Any, Callable, Collection, List, Optional, Iterator, Iterable
 
 import numpy as np
 
@@ -50,7 +50,7 @@ class CacheData(ProxyDataFlow, RNGDataFlow):
             shuffle (bool): whether to shuffle the cache before yielding from it.
         """
         self.shuffle = shuffle
-        self.buffer = []
+        self.buffer: List[Any] = []
         self._guard: Optional[DataFlowReentrantGuard] = None
         super().__init__(df)
 
@@ -177,7 +177,7 @@ class CustomDataFromIterable(DataFromIterable):
     Wrap an iterable of datapoints to a dataflow. Can stop iteration after max_datapoints.
     """
 
-    def __init__(self, iterable: Collection[Any], max_datapoints: Optional[int] = None):
+    def __init__(self, iterable: Iterable[Any], max_datapoints: Optional[int] = None):
         """
         :param iterable: An iterable object
         :param max_datapoints: The maximum number of datapoints to stream. If None it iterates through the whole

@@ -24,8 +24,8 @@ import weakref
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
-import zmq
-from typing import no_type_check, Any, Iterator, Optional, Callable
+import zmq  # type: ignore
+from typing import no_type_check, Any, Iterator, Optional, Callable, List
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
 from ..utils.logger import logger
@@ -86,7 +86,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
         if not self._strict:
             df = RepeatedData(self.df, -1)
         else:
-            df = self.df
+            df = self.df  # type: ignore
         self._iter = df.__iter__()
 
     @no_type_check
@@ -201,7 +201,7 @@ class MultiThreadMapData(_ParallelMapData):
             finally:
                 self.stop()
 
-    def __init__(self, df: DataFlow, num_thread: Optional[int]=None, map_func: Optional[Callable[[Any],Any]]=None, *,
+    def __init__(self, df: DataFlow, num_thread: int, map_func: Callable[[Any],Any], *,
                  buffer_size: int=200, strict: bool=False):
         """
         :param df: the dataflow to map
@@ -224,7 +224,7 @@ class MultiThreadMapData(_ParallelMapData):
         self._strict = strict
         self.num_thread = num_thread
         self.map_func = map_func
-        self._threads = []
+        self._threads: List[Any] = []
         self._evt = None
 
     def reset_state(self)-> None:
@@ -234,9 +234,9 @@ class MultiThreadMapData(_ParallelMapData):
             for thr in self._threads:
                 thr.join()
 
-        self._in_queue = queue.Queue()
-        self._out_queue = queue.Queue()
-        self._evt = threading.Event()
+        self._in_queue: queue.Queue[Any] = queue.Queue()
+        self._out_queue: queue.Queue[Any] = queue.Queue()
+        self._evt = threading.Event()  # type: ignore
         self._threads = [
             MultiThreadMapData._Worker(self._in_queue, self._out_queue, self._evt, self.map_func)
             for _ in range(self.num_thread)
@@ -268,10 +268,10 @@ class MultiThreadMapData(_ParallelMapData):
 
 
 class _MultiProcessZMQDataFlow(DataFlow, ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         assert os.name != "nt", "ZMQ IPC doesn't support windows!"
         self._reset_done = False
-        self._procs = []
+        self._procs: List[Any] = []
         self.context = None
         self.socket = None
 
@@ -289,6 +289,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
     def _start_processes(self) -> Any:
         start_proc_mask_signal(self._procs)
 
+    @no_type_check
     def __del__(self) -> None:
         try:
             if not self._reset_done:
@@ -358,7 +359,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
                 dp = self.map_func(dp)
                 socket.send(PickleSerializer.dumps(dp), copy=False)
 
-    def __init__(self, df: DataFlow, num_proc: Optional[int]=None, map_func: Callable[[Any],Any]=None, *,
+    def __init__(self, df: DataFlow, num_proc: int, map_func: Callable[[Any],Any], *,
                  buffer_size: int=200, strict:bool=False)-> None:
         """
         :param ds: the dataflow to map
@@ -393,8 +394,8 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         self._guard = DataFlowReentrantGuard()
 
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.DEALER)
-        self.socket.set_hwm(self._buffer_size * 2)
+        self.socket = self.context.socket(zmq.DEALER)  # type: ignore
+        self.socket.set_hwm(self._buffer_size * 2)  # type: ignore
         pipename = _get_pipe_name("dataflow-map")
         _bind_guard(self.socket, pipename)
 

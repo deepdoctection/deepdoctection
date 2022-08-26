@@ -138,6 +138,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
 
         # Load
+        df: DataFlow
         dataset_split = self.annotation_files[split]
         path = self.get_workdir() / dataset_split  # type: ignore
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)

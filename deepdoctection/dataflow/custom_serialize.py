@@ -126,7 +126,7 @@ class SerializerTabsepFiles:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoins: Optional[int] = None) -> CustomDataFromIterable:
+    def load(path: Pathlike, max_datapoins: Optional[int] = None) -> CustomDataFromList:
         """
         :param path: a path to a .txt file.
         :param max_datapoins: Will stop the iteration once max_datapoints have been streamed
@@ -135,8 +135,8 @@ class SerializerTabsepFiles:
         """
 
         with open(path, "r", encoding="UTF-8") as file:
-            iterator = file.readlines()
-        return CustomDataFromIterable(iterator, max_datapoints=max_datapoins)
+            file_list = file.readlines()
+        return CustomDataFromList(file_list, max_datapoints=max_datapoins)
 
     @staticmethod
     def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
@@ -195,6 +195,11 @@ class SerializerFiles:
         :param sort: If set to "True" it will sort all selected files by its string
         :return: dataflow to iterate from
         """
+        df: DataFlow
+        df1: DataFlow
+        df2: DataFlow
+        df3: DataFlow
+
         if shuffle:
             sort = False
         it1 = os.walk(path, topdown=False)
@@ -539,6 +544,7 @@ class SerializerPdfDoc:
 
         file_name = os.path.split(path)[1]
         prefix, suffix = os.path.splitext(file_name)
+        df: DataFlow
         df = CustomDataFromIterable(PDFStreamer(path=path), max_datapoints=max_datapoints)
         df = MapData(df, lambda dp: {"path": path, "file_name": prefix + f"_{dp[1]}" + suffix, "pdf_bytes": dp[0]})
         return df
