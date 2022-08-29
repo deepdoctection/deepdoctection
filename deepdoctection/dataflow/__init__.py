@@ -11,19 +11,6 @@ https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.html
 To make it easier to use, we re-import dataflow into the package of the same name.
 """
 
-#from dataflow.dataflow import (
-#    ConcatData,
-#    DataFlow,
-#    DataFromIterable,
-#    DataFromList,
-#    JoinData,
-#    MapData,
-#    MapDataComponent,
-#    MultiProcessMapData,
-#    MultiThreadMapData,
-#    ProxyDataFlow,
-#    RepeatedData,
-#)
 
 from .base import *
 from .common import *

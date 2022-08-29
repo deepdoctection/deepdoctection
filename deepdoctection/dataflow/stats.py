@@ -22,10 +22,10 @@ from typing import Any, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
-from dataflow.dataflow import DataFlow, ProxyDataFlow
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
+from .base import DataFlow, ProxyDataFlow
 
 
 class MeanFromDataFlow(ProxyDataFlow):
@@ -87,7 +87,7 @@ class MeanFromDataFlow(ProxyDataFlow):
         produce data normally.
         """
         self.start()
-        yield from self.ds
+        yield from self.df
 
     def start(self) -> npt.NDArray[Any]:
         """
@@ -95,14 +95,14 @@ class MeanFromDataFlow(ProxyDataFlow):
         """
 
         if not self._reset_called:
-            self.ds.reset_state()
-        itr = self.ds.__iter__()
+            self.df.reset_state()
+        itr = self.df.__iter__()
 
         logger.info("____________________ CALCULATING MEAN ____________________")
 
         len_df: Optional[int]
         try:
-            len_df = len(self.ds)
+            len_df = len(self.df)
         except NotImplementedError:
             len_df = None
         if len_df is not None and self.max_datapoints is not None:
@@ -213,7 +213,7 @@ class StdFromDataFlow(ProxyDataFlow):
         produce data normally.
         """
         self.start()
-        yield from self.ds
+        yield from self.df
 
     def start(self) -> npt.NDArray[Any]:
         """
@@ -222,12 +222,12 @@ class StdFromDataFlow(ProxyDataFlow):
         len_df: Optional[int]
 
         if not self._reset_called:
-            self.ds.reset_state()
-        itr = self.ds.__iter__()
+            self.df.reset_state()
+        itr = self.df.__iter__()
 
         logger.info("____________________ CALCULATING STANDARD DEVIATION ____________________")
         try:
-            len_df = len(self.ds)
+            len_df = len(self.df)
         except NotImplementedError:
             len_df = None
         if len_df is not None and self.max_datapoints is not None:

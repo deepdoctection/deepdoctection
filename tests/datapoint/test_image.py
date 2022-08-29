@@ -25,7 +25,7 @@ from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
-from deepdoctection.dataflow import MapData, SerializerJsonlines, DataFlow
+from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
 

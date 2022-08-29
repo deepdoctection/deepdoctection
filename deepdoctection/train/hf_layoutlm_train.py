@@ -238,7 +238,6 @@ def train_hf_layoutlm(
     if isinstance(dataset_train, str):
         dataset_train = get_dataset(dataset_train)
 
-
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
     if dataset_type == names.DS.TYPE.SEQ:
@@ -286,7 +285,7 @@ def train_hf_layoutlm(
         conf_dict[key] = val
 
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
-    if conf_dict["max_steps"] > number_samples: # type: ignore
+    if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
             "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
         )

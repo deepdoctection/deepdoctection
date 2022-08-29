@@ -21,21 +21,20 @@ from
 
 - https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
 """
-from typing import Any, Callable, Collection, List, Optional, Iterator, Iterable
+from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 import numpy as np
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
-from .base import DataFlowReentrantGuard, ProxyDataFlow, RNGDataFlow, DataFlow
+from ..utils.utils import get_rng
+from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
 from .serialize import DataFromIterable, DataFromList
-
-# from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
 
 
-class CacheData(ProxyDataFlow, RNGDataFlow):
+class CacheData(ProxyDataFlow):
     """
     Completely cache the first pass of a DataFlow in memory,
     and produce from the cache thereafter.
@@ -43,7 +42,7 @@ class CacheData(ProxyDataFlow, RNGDataFlow):
     Otherwise, the cache may be incomplete.
     """
 
-    def __init__(self, df: DataFlow, shuffle: bool =False) -> None:
+    def __init__(self, df: DataFlow, shuffle: bool = False) -> None:
         """
         Args:
             df (DataFlow): input DataFlow.
@@ -52,16 +51,20 @@ class CacheData(ProxyDataFlow, RNGDataFlow):
         self.shuffle = shuffle
         self.buffer: List[Any] = []
         self._guard: Optional[DataFlowReentrantGuard] = None
+        self.rng = get_rng(self)
         super().__init__(df)
 
     def reset_state(self) -> None:
         super().reset_state()
         self._guard = DataFlowReentrantGuard()
+        self.buffer = []
 
     def __iter__(self) -> Iterator[Any]:
-        if self._guard is None or self.rng is None:
-            raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
-                               "call reset_state() before")
+        if self._guard is None:
+            raise RuntimeError(
+                "Iteration has been started before method reset_state has been called. Please "
+                "call reset_state() before"
+            )
 
         with self._guard:
             if self.buffer:
@@ -139,8 +142,10 @@ class CustomDataFromList(DataFromList):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
-                               "call reset_state() before")
+            raise RuntimeError(
+                "Iteration has been started before method reset_state has been called. Please "
+                "call reset_state() before"
+            )
         if self.rebalance_func is not None:
             lst_tmp = self.rebalance_func(self.lst)
             logger.info("subset size after re-balancing: %s", len(lst_tmp))
@@ -167,9 +172,6 @@ class CustomDataFromList(DataFromList):
                         break
             else:
                 yield from lst_tmp
-
-    def reset_state(self) -> None:
-        pass
 
 
 class CustomDataFromIterable(DataFromIterable):

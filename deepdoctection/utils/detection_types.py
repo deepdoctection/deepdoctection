@@ -16,11 +16,14 @@
 # limitations under the License.
 
 """
-Typing for the whole package
+Typing sheet for the whole package
 """
 
+import queue
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
+
+import tqdm
 
 import numpy.typing as npt
 from numpy import uint8
@@ -46,11 +49,15 @@ DP = TypeVar("DP")
 S = TypeVar("S")
 T = TypeVar("T")
 
-
+# Some type hints that must be distinguished when runnning mypy and linters
 if TYPE_CHECKING:
+    QueueType = queue.Queue[Any]  # pylint: disable=E1136
+    TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
     BaseExceptionType = Type[BaseException]
 else:
     BaseExceptionType = bool
+    QueueType = queue.Queue
+    TqdmType = tqdm.tqdm
 
 JsonDict = Dict[str, Any]
 

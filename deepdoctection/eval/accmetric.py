@@ -88,7 +88,7 @@ class AccuracyMetric(MetricBase):
     ) -> Tuple[Any, Any]:
 
         dataflow_gt.reset_state()
-        dataflow_predictions.reset_state()  # pylint: disable=W0106
+        dataflow_predictions.reset_state()
 
         cls._category_sanity_checks(categories)
         if cls._cats is None and cls._sub_cats is None:
@@ -233,7 +233,7 @@ class ConfusionMetric(AccuracyMetric):
     Metric induced by :func:`confusion`
     """
 
-    metric = confusion # type: ignore # todo: fix typing issue as this will cause problem in Evaluator
+    metric = confusion  # type: ignore # todo: fix typing issue as this will cause problem in Evaluator
 
     @classmethod
     def print_distance(cls, results: Sequence[JsonDict]) -> None:

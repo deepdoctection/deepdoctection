@@ -12,7 +12,7 @@ Some DataFlow classes for serialization. Many classes have been taken from
 
 import pickle
 from copy import copy
-from typing import Any, List, Iterator, Collection, Tuple, Union, Optional, Iterable
+from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -44,8 +44,10 @@ class DataFromList(RNGDataFlow):
                 for k in idxs:
                     yield self.lst[k]
             else:
-                raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
-                                   "call reset_state() before")
+                raise RuntimeError(
+                    "Iteration has been started before method reset_state has been called. Please "
+                    "call reset_state() before"
+                )
 
 
 class DataFromIterable(DataFlow):
@@ -60,7 +62,7 @@ class DataFromIterable(DataFlow):
         self._len: Optional[int] = None
         try:
             self._len = len(iterable)  # type: ignore
-        except NotImplementedError:
+        except (NotImplementedError, TypeError):
             pass
 
     def __len__(self) -> int:
@@ -78,9 +80,14 @@ class DataFromIterable(DataFlow):
 class FakeData(RNGDataFlow):
     """Generate fake data of given shapes"""
 
-    def __init__(self, shapes: List[Union[List[Any],Tuple[Any]]], size: int=1000, random: bool=True,
-                 dtype: str ="float32",
-                 domain: Tuple[Union[float,int],Union[float,int]]=(0, 1)):
+    def __init__(
+        self,
+        shapes: List[Union[List[Any], Tuple[Any]]],
+        size: int = 1000,
+        random: bool = True,
+        dtype: str = "float32",
+        domain: Tuple[Union[float, int], Union[float, int]] = (0, 1),
+    ):
         """
         :param  shapes: a list of lists/tuples. Shapes of each component.
         :param  size: size of this DataFlow.
@@ -104,8 +111,10 @@ class FakeData(RNGDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise RuntimeError("Iteration has been started before method reset_state has been called. Please "
-                               "call reset_state() before")
+            raise RuntimeError(
+                "Iteration has been started before method reset_state has been called. Please "
+                "call reset_state() before"
+            )
         if self.random:
             for _ in range(self._size):
                 val = []
