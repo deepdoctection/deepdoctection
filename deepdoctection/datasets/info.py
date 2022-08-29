@@ -219,7 +219,7 @@ class DatasetCategories:
             for cat, value in sub_cat.items():
                 if cat not in sub_categories:
                     continue
-                sub_cat_tmp: Dict[str,Union[Dict[str,str],Sequence[str]]] = {}
+                sub_cat_tmp: Dict[str, Union[Dict[str, str], Sequence[str]]] = {}
                 for sub_cat_key in value:
                     if sub_cat_key not in sub_categories[cat]:
                         continue

@@ -12,7 +12,8 @@ This file replaces relevant parts of the Dataflow package. Most of the code has 
 
 import threading
 from abc import ABC, abstractmethod
-from typing import Iterator, Any, no_type_check
+from typing import Any, Iterator, no_type_check
+
 from ..utils.utils import get_rng
 
 
@@ -20,7 +21,7 @@ class DataFlowTerminated(BaseException):
     """
     An exception indicating that the DataFlow is unable to produce any more
     data, i.e. something wrong happened so that calling :meth:`get_data`
-    cannot give a valid iterator any more.
+    cannot give a valid iterator anymore.
     In most DataFlow this will never be raised.
     """
 

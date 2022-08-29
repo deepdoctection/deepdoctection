@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: test_serialize.py
+# File: test_custom_serialize.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #

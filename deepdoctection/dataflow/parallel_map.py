@@ -23,9 +23,9 @@ import uuid
 import weakref
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from typing import Any, Callable, Iterator, List, no_type_check
 
-import zmq  # type: ignore
-from typing import no_type_check, Any, Iterator, Optional, Callable, List
+import zmq
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
 from ..utils.logger import logger
@@ -74,14 +74,14 @@ def _get_pipe_name(name):
 
 
 class _ParallelMapData(ProxyDataFlow, ABC):
-    def __init__(self, df: DataFlow, buffer_size: int, strict: bool=False)-> None:
+    def __init__(self, df: DataFlow, buffer_size: int, strict: bool = False) -> None:
         super().__init__(df)
         assert buffer_size > 0, buffer_size
         self._buffer_size = buffer_size
         self._buffer_occupancy = 0  # actual #elements in buffer, only useful in strict mode
         self._strict = strict
 
-    def reset_state(self)-> None:
+    def reset_state(self) -> None:
         super().reset_state()
         if not self._strict:
             df = RepeatedData(self.df, -1)
@@ -201,8 +201,15 @@ class MultiThreadMapData(_ParallelMapData):
             finally:
                 self.stop()
 
-    def __init__(self, df: DataFlow, num_thread: int, map_func: Callable[[Any],Any], *,
-                 buffer_size: int=200, strict: bool=False):
+    def __init__(
+        self,
+        df: DataFlow,
+        num_thread: int,
+        map_func: Callable[[Any], Any],
+        *,
+        buffer_size: int = 200,
+        strict: bool = False,
+    ):
         """
         :param df: the dataflow to map
         :param num_thread: number of threads to use
@@ -227,7 +234,7 @@ class MultiThreadMapData(_ParallelMapData):
         self._threads: List[Any] = []
         self._evt = None
 
-    def reset_state(self)-> None:
+    def reset_state(self) -> None:
         super().reset_state()
         if self._threads:
             self._threads[0].stop()
@@ -259,7 +266,7 @@ class MultiThreadMapData(_ParallelMapData):
         with self._guard:
             yield from super().__iter__()
 
-    def __del__(self)-> Any:
+    def __del__(self) -> Any:
         if self._evt is not None:
             self._evt.set()
         for thr in self._threads:
@@ -275,7 +282,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
         self.context = None
         self.socket = None
 
-    def reset_state(self)-> Any:
+    def reset_state(self) -> Any:
         """
         All forked dataflows should only be reset **once and only once** in spawned processes.
         Subclasses should call this method with super.
@@ -336,7 +343,6 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
     """
 
     class _Worker(mp.Process):
-
         @no_type_check
         def __init__(self, identity, map_func, pipename, hwm):
             super(MultiProcessMapData._Worker, self).__init__()
@@ -359,8 +365,15 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
                 dp = self.map_func(dp)
                 socket.send(PickleSerializer.dumps(dp), copy=False)
 
-    def __init__(self, df: DataFlow, num_proc: int, map_func: Callable[[Any],Any], *,
-                 buffer_size: int=200, strict:bool=False)-> None:
+    def __init__(
+        self,
+        df: DataFlow,
+        num_proc: int,
+        map_func: Callable[[Any], Any],
+        *,
+        buffer_size: int = 200,
+        strict: bool = False,
+    ) -> None:
         """
         :param ds: the dataflow to map
         :param num_proc: number of threads to use
@@ -393,7 +406,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         _ParallelMapData.reset_state(self)
         self._guard = DataFlowReentrantGuard()
 
-        self.context = zmq.Context()
+        self.context = zmq.Context()  # type: ignore
         self.socket = self.context.socket(zmq.DEALER)  # type: ignore
         self.socket.set_hwm(self._buffer_size * 2)  # type: ignore
         pipename = _get_pipe_name("dataflow-map")
