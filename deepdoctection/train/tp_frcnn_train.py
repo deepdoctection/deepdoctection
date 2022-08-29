@@ -36,12 +36,16 @@ from tensorpack.callbacks import (
 )
 
 # todo: check how dataflow import is directly possible without having AssertionError
-from tensorpack.dataflow import DataFlow, DataFromList, MapData, MultiProcessMapData, imgaug
+from tensorpack.dataflow import imgaug
 from tensorpack.input_source import QueueInput
 from tensorpack.tfutils import SmartInit
 from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
 from tensorpack.utils import logger
 
+from ..dataflow.base import DataFlow
+from ..dataflow.common import MapData
+from ..dataflow.serialize import DataFromList
+from ..dataflow.parallel_map import MultiProcessMapData
 from ..datasets.base import DatasetBase
 from ..eval.base import MetricBase
 from ..eval.registry import metric_registry

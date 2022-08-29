@@ -39,7 +39,7 @@ def get_version():
 sys.path.insert(0, ROOT)
 
 # Taken from https://github.com/huggingface/transformers/blob/master/setup.py. Will list all dependencies, even those
-# that nee to be installed separately
+# that need to be installed separately
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
     "catalogue==2.0.7",
@@ -59,7 +59,6 @@ _DEPS = [
     "types-tabulate",
     "types-tqdm",
     "pyzmq>=16",
-    "dataflow @ git+https://github.com/tensorpack/dataflow.git",
     # additional requirements to run eval and datasets (again without considering DL models)
     "lxml",
     "lxml-stubs",
@@ -73,7 +72,8 @@ _DEPS = [
     # PyTorch related dependencies
     "transformers",
     # bug free commit of detectron2
-    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13",
+    #"detectron2 @ git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "boto3",
     "pdfplumber",
@@ -130,12 +130,12 @@ dist_deps = deps_list(
 #    dist_deps.extend(deps_list("python-prctl"))
 
 # source dependencies with dataflow
-source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
+source_deps = dist_deps
 
 # full dependencies for using evaluations and all datasets
 additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "scikit-learn", "distance", "apted")
 
-# remaining depencies to use all models
+# remaining dependencies to use all models
 remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
 
 full_deps = dist_deps + additional_deps
@@ -153,7 +153,7 @@ source_all_tf_deps = source_all_deps + additional_tf_deps
 # PyTorch dependencies
 additional_pt_deps = deps_list("transformers")
 source_additional_pt_deps = additional_pt_deps + deps_list(
-    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13"
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )
 # it does not make sense to define a non-full pt dependency, because everything is already available
 full_pt_deps = full_deps + additional_pt_deps
@@ -162,7 +162,6 @@ source_all_pt_deps = source_all_deps + source_additional_pt_deps
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list(
-    "dataflow @ git+https://github.com/tensorpack/dataflow.git",
     "tensorpack",
     "boto3",
     "transformers",
