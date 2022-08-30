@@ -32,7 +32,7 @@ import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.develop import deprecated
-from ..utils.settings import names
+from ..utils.settings import LayoutType
 from ..utils.viz import draw_boxes, interactive_imshow
 from .convert import convert_b64_to_np_array
 
@@ -271,7 +271,7 @@ class Page:
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bounding_box)
-                category_names_list.append(names.C.TAB)
+                category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
                         box_stack.append(cell.bounding_box)
