@@ -37,7 +37,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict
-from ...utils.settings import names
+from ...utils.settings import DatasetType, LayoutType, TokenClasses, BioTag, TokenClassWithTag, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -55,7 +55,7 @@ _LICENSE = (
 )
 _URL = "https://github.com/doc-analysis/XFUND/releases/tag/v1.0"
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val"}
-_TYPE = names.DS.TYPE.TOK
+_TYPE = DatasetType.token_classification
 _LOCATION = "xfund"
 _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     "train": [
@@ -69,20 +69,20 @@ _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     ],
     "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
 }
-_INIT_CATEGORIES = [names.C.WORD]
+_INIT_CATEGORIES = [LayoutType.word]
 _SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {
-    names.C.WORD: {
-        names.C.SE: [names.C.O, names.C.Q, names.C.A, names.C.HEAD],
-        names.NER.TAG: [names.NER.I, names.NER.O, names.NER.B],
-        names.NER.TOK: [
-            names.NER.B_A,
-            names.NER.B_H,
-            names.NER.B_Q,
-            names.NER.I_A,
-            names.NER.I_H,
-            names.NER.I_Q,
-            names.NER.O,
+    LayoutType.word: {
+        WordType.token_class: [TokenClasses.other,TokenClasses.question,TokenClasses.answer,TokenClasses.header],
+        WordType.tag: [BioTag.inside, BioTag.outside, BioTag.begin],
+        WordType.token_tag: [
+            TokenClassWithTag.b_answer,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.b_question,
+            TokenClassWithTag.i_answer,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.i_question,
+            TokenClasses.other,
         ],
     }
 }
@@ -167,18 +167,18 @@ class XfundBuilder(DataFlowBaseBuilder):
 
         df = MapData(df, replace_filename)
         category_names_mapping = {
-            "other": names.C.O,
-            "question": names.C.Q,
-            "answer": names.C.A,
-            "header": names.C.HEAD,
+            "other": TokenClasses.other,
+            "question": TokenClasses.question,
+            "answer": TokenClasses.answer,
+            "header": TokenClasses.header,
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
-            categories=names.C.WORD,
-            sub_categories={names.C.WORD: [names.NER.TOK]},
+            categories= LayoutType.word,
+            sub_categories={LayoutType.word: [WordType.token_tag]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,
-        )[names.C.WORD][names.NER.TOK]
+        )[LayoutType.word][WordType.token_tag]
         df = MapData(
             df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping)
         )  # pylint: disable=E1120

@@ -40,7 +40,7 @@ from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import names
+from ...utils.settings import DocumentType, DatasetType, PageType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -63,27 +63,27 @@ _LICENSE = (
 _URL = "https://www.cs.cmu.edu/~aharley/rvl-cdip/"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = names.DS.TYPE.SEQ
+_TYPE = DatasetType.sequence_classification
 _LOCATION = "rvl-cdip"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "labels/train.txt", "val": "labels/val.txt", "test": "labels/test.txt"}
 _INIT_CATEGORIES = [
-    names.C.LET,
-    names.C.FORM,
-    names.C.EM,
-    names.C.HW,
-    names.C.AD,
-    names.C.SR,
-    names.C.SP,
-    names.C.SPEC,
-    names.C.FF,
-    names.C.NA,
-    names.C.BU,
-    names.C.INV,
-    names.C.PRES,
-    names.C.QUEST,
-    names.C.RES,
-    names.C.MEM,
+    DocumentType.letter,
+    DocumentType.form,
+    DocumentType.email,
+    DocumentType.handwritten,
+    DocumentType.advertisment,
+    DocumentType.scientific_report,
+    DocumentType.scientific_publication,
+    DocumentType.specification,
+    DocumentType.file_folder,
+    DocumentType.news_article,
+    DocumentType.budget,
+    DocumentType.invoice,
+    DocumentType.presentation,
+    DocumentType.questionnaire,
+    DocumentType.resume,
+    DocumentType.memo,
 ]
 
 
@@ -145,7 +145,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             summary = SummaryAnnotation()
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                names.C.DOC, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
+                PageType.document_type, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
             )
             image.summary = summary
             if not load_img:
@@ -158,7 +158,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({names.C.DOC: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageType.document_type: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
         return df
