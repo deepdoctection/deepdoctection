@@ -39,7 +39,7 @@ def get_version():
 sys.path.insert(0, ROOT)
 
 # Taken from https://github.com/huggingface/transformers/blob/master/setup.py. Will list all dependencies, even those
-# that nee to be installed separately
+# that need to be installed separately
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
     "catalogue==2.0.7",
@@ -62,7 +62,6 @@ _DEPS = [
     "lxml",
     "lxml-stubs",
     "pycocotools>=2.0.2",
-    "scikit-learn",
     "distance",
     "apted",
     # Tensorflow related dependencies
