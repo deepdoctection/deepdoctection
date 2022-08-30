@@ -46,7 +46,7 @@ from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import lxml_available
-from ...utils.settings import names
+from ...utils.settings import LayoutType, DatasetType
 from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -73,7 +73,7 @@ _LICENSE = "NN"
 _URL = "http://cvit.iiit.ac.in/usodi/iiitar13k.php"
 
 _SPLITS: Mapping[str, str] = {"train": "training_images", "val": "validation_images", "test": "test_images"}
-_TYPE = names.DS.TYPE.OBJ
+_TYPE = DatasetType.object_detection
 _LOCATION = "iiitar13k"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "training_xml",
@@ -81,7 +81,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "test": "test_xml",
 }
 
-_INIT_CATEGORIES = [names.C.TAB, names.C.LOGO, names.C.FIG, names.C.SIGN]
+_INIT_CATEGORIES = [LayoutType.table,LayoutType.logo,LayoutType.figure,LayoutType.signature]
 
 
 @dataset_registry.register("iiitar13k")
@@ -169,11 +169,11 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 category_name_mapping={
-                    "natural_image": names.C.FIG,
-                    "figure": names.C.FIG,
-                    "logo": names.C.LOGO,
-                    "signature": names.C.SIGN,
-                    "table": names.C.TAB,
+                    "natural_image": LayoutType.figure,
+                    "figure": LayoutType.figure,
+                    "logo": LayoutType.logo,
+                    "signature": LayoutType.signature,
+                    "table": LayoutType.table,
                 },
             ),
         )

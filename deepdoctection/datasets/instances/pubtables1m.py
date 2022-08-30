@@ -45,7 +45,8 @@ from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import lxml_available
-from ...utils.settings import names
+#from ...utils.settings import names
+from ...utils.settings import DatasetType, LayoutType
 from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -71,7 +72,7 @@ _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
 _URL = "https://msropendata.com/datasets/505fcbe3-1383-42b1-913a-f651b8b712d3"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = names.DS.TYPE.OBJ
+_TYPE = DatasetType.object_detection
 _LOCATION = "PubTables1M-Detection-PASCAL-VOC"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "train",
@@ -79,7 +80,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "test": "test",
 }
 
-_INIT_CATEGORIES = [names.C.TAB]
+_INIT_CATEGORIES = [LayoutType.table]
 
 
 @dataset_registry.register("pubtables1m")
@@ -168,7 +169,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={"table": names.C.TAB},
+                category_name_mapping={"table": LayoutType.table},
             ),
         )
 
