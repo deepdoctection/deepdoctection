@@ -89,7 +89,7 @@ _SUB_CATEGORIES = {
     LayoutType.page_footer: {"publaynet": [LayoutType.text]},
     LayoutType.page_header: {"publaynet": [LayoutType.title]},
     LayoutType.figure: {"publaynet": [LayoutType.figure]},
-    LayoutType.section_heade: {"publaynet": [LayoutType.title]},
+    LayoutType.section_header: {"publaynet": [LayoutType.title]},
     LayoutType.table: {"publaynet": [LayoutType.table]},
     LayoutType.text: {"publaynet": [LayoutType.text]},
     LayoutType.title: {"publaynet": [LayoutType.title]},

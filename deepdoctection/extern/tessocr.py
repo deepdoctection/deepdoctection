@@ -32,7 +32,7 @@ from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import TesseractNotFound, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
-from ..utils.settings import names
+from ..utils.settings import LayoutType
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
@@ -177,7 +177,7 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
                 DetectionResult(
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
-                    class_name=names.C.LINE,
+                    class_name=LayoutType.line,
                     text=" ".join([detect_result.text for detect_result in block_group if detect_result.text]),
                 )
             )
@@ -222,7 +222,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
                 block=str(caption[6]),
                 line=str(caption[7]),
                 class_id=1,
-                class_name=names.C.WORD,
+                class_name=LayoutType.word,
             )
             all_results.append(word)
     if text_lines:
@@ -313,5 +313,5 @@ class TesseractOcrDetector(ObjectDetector):
 
     def possible_categories(self) -> List[str]:
         if self.config.LINES:
-            return [names.C.WORD, names.C.LINE]
-        return [names.C.WORD]
+            return [LayoutType.word,LayoutType.line]
+        return [LayoutType.word]
