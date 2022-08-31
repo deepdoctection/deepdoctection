@@ -29,7 +29,7 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import Requirement, get_sklearn_requirement
+from ..utils.file_utils import Requirement
 from ..utils.logger import logger
 from .base import MetricBase
 from .registry import metric_registry
@@ -300,7 +300,7 @@ class ClassificationMetric(MetricBase):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_sklearn_requirement()]
+        return []
 
     @property
     def sub_cats(self) -> Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]]:
