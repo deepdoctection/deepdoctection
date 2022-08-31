@@ -30,6 +30,13 @@ class ObjectTypes(Enum):
     def __repr__(self):
         return '<%s.%s>' % (self.__class__.__name__, self.name)
 
+    @classmethod
+    def from_value(cls, value: str):
+        for member in cls.__members__.values():
+            if member.value == value:
+                return member
+        raise ValueError("value %s does not have corresponding member", value)
+
 
 class PageType(ObjectTypes):
     document_type = "DOCUMENT_TYPE"  # was previously: "DOC_CLASS"
@@ -154,7 +161,7 @@ class Languages(ObjectTypes):
     dutch = "dut"
     hebrew = "heb"
     chinese = "chi"
-    Hhungarian = "hun"
+    hungarian = "hun"
     arabic = "ara"
     catalan = "cat"
     finnish = "fin"

@@ -29,8 +29,9 @@ from ..utils.file_utils import (
     pytorch_available,
     transformers_available,
 )
-from ..utils.settings import names
-from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
+
+from ..utils.settings import BioTag, TokenClasses
+from .base import LMSequenceClassifier, LMTokenClassifier, PredictorBase, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
@@ -224,15 +225,15 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
     @staticmethod
     def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]) -> Dict[str, str]:
         categories_list = [
-            x + "-" + y for x in categories_bio if x != names.NER.O for y in categories_semantics if y != names.C.O
-        ] + [names.NER.O]
+            x + "-" + y for x in categories_bio if x != BioTag.outside for y in categories_semantics if y != TokenClasses.other
+        ] + [BioTag.outside]
         return {str(k): v for k, v in enumerate(categories_list, 1)}
 
     def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
         for result in token_results:
             result.class_name = self.categories[str(result.class_id + 1)]
-            result.semantic_name = result.class_name.split("-")[1] if "-" in result.class_name else names.C.O
-            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else names.NER.O
+            result.semantic_name = result.class_name.split("-")[1] if "-" in result.class_name else TokenClasses.other
+            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else BioTag.outside
             result.class_id += 1
         return token_results
 
