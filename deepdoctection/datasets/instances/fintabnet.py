@@ -92,7 +92,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
 _INIT_CATEGORIES = [LayoutType.table,LayoutType.cell,TableType.item]
 _SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {
-    LayoutType.cellL: {
+    LayoutType.cell: {
         CellType.header: [CellType.header, CellType.body],
         CellType.row_number: [],
         CellType.column_number: [],

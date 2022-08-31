@@ -27,7 +27,7 @@ from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
-from ..utils.settings import names
+from ..utils.settings import Relationships, CellType , WordType, LayoutType, TableType
 
 __all__ = ["to_page", "page_dict_to_page"]
 
@@ -50,10 +50,10 @@ def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
 
 
 def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tuple[Cell, str]:
-    text_ids = annotation.get_relationship(names.C.CHILD)
+    text_ids = annotation.get_relationship(Relationships.child)
     text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
-    text_anns.sort(key=lambda x: int(x.get_sub_category(names.C.RO).category_id))
-    text = " ".join([text.get_sub_category(names.C.CHARS).value for text in text_anns])  # type: ignore
+    text_anns.sort(key=lambda x: int(x.get_sub_category(Relationships.reading_order).category_id))
+    text = " ".join([text.get_sub_category(WordType.characters).value for text in text_anns])  # type: ignore
 
     if annotation.image is not None:
         bounding_box = annotation.image.get_embedding(dp.image_id)
@@ -68,10 +68,10 @@ def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tup
             annotation.annotation_id,
             bounding_box.to_list(mode="xyxy"),
             text,
-            int(annotation.get_sub_category(names.C.RN).category_id),
-            int(annotation.get_sub_category(names.C.CN).category_id),
-            int(annotation.get_sub_category(names.C.RS).category_id),
-            int(annotation.get_sub_category(names.C.CS).category_id),
+            int(annotation.get_sub_category(CellType.row_number).category_id),
+            int(annotation.get_sub_category(CellType.column_number).category_id),
+            int(annotation.get_sub_category(CellType.row_span).category_id),
+            int(annotation.get_sub_category(CellType.column_span).category_id),
             annotation.score,
         ),
         text,
@@ -79,26 +79,26 @@ def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tup
 
 
 def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Table:
-    cell_ids = annotation.get_relationship(names.C.CHILD)
-    cell_anns = dp.get_annotation(annotation_ids=cell_ids, category_names=[names.C.CELL, names.C.HEAD, names.C.BODY])
+    cell_ids = annotation.get_relationship(Relationships.child)
+    cell_anns = dp.get_annotation(annotation_ids=cell_ids, category_names=[LayoutType.cell, CellType.header, CellType.body])
     cells = []
     number_rows = -1
     number_cols = -1
     html_list: List[str] = []
-    if names.C.HTAB in annotation.sub_categories:
-        html_list = annotation.get_sub_category(names.C.HTAB).value  # type: ignore
+    if TableType.html in annotation.sub_categories:
+        html_list = annotation.get_sub_category(TableType.html).value  # type: ignore
     if annotation.image is not None:
         if annotation.image.summary is not None:
             if (
-                names.C.NR in annotation.image.summary.sub_categories
-                and names.C.NC in annotation.image.summary.sub_categories
+                TableType.number_of_rows in annotation.image.summary.sub_categories
+                and TableType.number_of_columns in annotation.image.summary.sub_categories
             ):
-                number_rows = int(annotation.image.summary.get_sub_category(names.C.NR).category_id)
-                number_cols = int(annotation.image.summary.get_sub_category(names.C.NC).category_id)
+                number_rows = int(annotation.image.summary.get_sub_category(TableType.number_of_rows).category_id)
+                number_cols = int(annotation.image.summary.get_sub_category(TableType.number_of_columns).category_id)
         else:
             if cell_anns:
-                number_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cell_anns])
-                number_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cell_anns])
+                number_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cell_anns])
+                number_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns])
 
     # cell
     for cell_ann in cell_anns:
@@ -113,8 +113,8 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
     html = "".join(html_list)
 
     # table segments
-    table_segm_ids = annotation.get_relationship(names.C.CHILD)
-    table_segm_anns = dp.get_annotation(annotation_ids=table_segm_ids, category_names=[names.C.ROW, names.C.COL])
+    table_segm_ids = annotation.get_relationship(Relationships.child)
+    table_segm_anns = dp.get_annotation(annotation_ids=table_segm_ids, category_names=[LayoutType.row, LayoutType.column])
     table_segm = []
     for table_segm_ann in table_segm_anns:
 
@@ -143,14 +143,14 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
 def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: str) -> LayoutSegment:
 
     if annotation.category_name != text_container:
-        text_ids = annotation.get_relationship(names.C.CHILD)
+        text_ids = annotation.get_relationship(Relationships.child)
         text_anns = dp.get_annotation(annotation_ids=text_ids, category_names=text_container)
     else:
         text_anns = [annotation]
-    text_anns.sort(key=lambda x: int(x.get_sub_category(names.C.RO).category_id))
-    text = " ".join([text.get_sub_category(names.C.CHARS).value for text in text_anns])  # type: ignore
-    if names.C.RO in annotation.sub_categories:
-        reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+    text_anns.sort(key=lambda x: int(x.get_sub_category(Relationships.reading_order).category_id))
+    text = " ".join([text.get_sub_category(WordType.characters).value for text in text_anns])  # type: ignore
+    if Relationships.reading_order in annotation.sub_categories:
+        reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
     else:
         reading_order = -1
     if annotation.image is not None:
@@ -212,7 +212,7 @@ def to_page(
     if text_container_to_text_block:
         floating_text_block_names.append(text_container)
         mapped_text_container = list(
-            chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns])
+            chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
         )
         text_container_anns = dp.get_annotation(category_names=text_container)
         text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
@@ -223,7 +223,7 @@ def to_page(
             page.items.append(_to_layout_segment(dp, ann, text_container))
 
         # table item
-        elif ann.category_name in [names.C.TAB]:
+        elif ann.category_name in [LayoutType.table]:
             page.tables.append(_to_table(dp, ann, text_container))
         else:
             pass
