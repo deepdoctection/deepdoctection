@@ -24,7 +24,7 @@ from typing import Dict, List, Tuple
 from ..utils.context import save_tmp_file
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import get_pdfplumber_requirement, pdfplumber_available
-from ..utils.settings import names
+from ..utils.settings import LayoutType
 from .base import DetectionResult, PdfMiner
 
 if pdfplumber_available():
@@ -36,7 +36,7 @@ def _to_detect_result(word: Dict[str, str]) -> DetectionResult:
         box=[float(word["x0"]), float(word["top"]), float(word["x1"]), float(word["bottom"])],
         class_id=1,
         text=word["text"],
-        class_name=names.C.WORD,
+        class_name=LayoutType.word,
     )
 
 
@@ -108,4 +108,4 @@ class PdfPlumberTextDetector(PdfMiner):
         return self._page.bbox[2], self._page.bbox[3]
 
     def possible_categories(self) -> List[str]:
-        return [names.C.WORD]
+        return [LayoutType.word]

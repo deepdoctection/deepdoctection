@@ -32,7 +32,7 @@ from ..utils.file_utils import (
     tf_addons_available,
     tf_available,
 )
-from ..utils.settings import names
+from ..utils.settings import LayoutType
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
 if doctr_available() and tf_addons_available():
@@ -52,7 +52,7 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor")
     """
     raw_output = predictor([np_img])
     detection_results = [
-        DetectionResult(box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=names.C.WORD)
+        DetectionResult(box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word)
         for box in raw_output[0]
     ]
     return detection_results
@@ -130,7 +130,7 @@ class DoctrTextlineDetector(ObjectDetector):
         return self.__class__()
 
     def possible_categories(self) -> List[str]:
-        return [names.C.WORD]
+        return [LayoutType.word]
 
 
 class DoctrTextRecognizer(TextRecognizer):

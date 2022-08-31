@@ -24,7 +24,8 @@ from typing import List
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
-from ..utils.settings import names
+#from ..utils.settings import names
+from ..utils.settings import LayoutType
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if boto3_available():
@@ -48,7 +49,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     score=block["Confidence"] / 100,
                     text=block["Text"],
                     class_id=1 if block["BlockType"] == "WORD" else 2,
-                    class_name=names.C.WORD if block["BlockType"] == "WORD" else names.C.LINE,
+                    class_name=LayoutType.word if block["BlockType"] == "WORD" else LayoutType.line,
                 )
                 all_results.append(word)
 
@@ -127,5 +128,5 @@ class TextractOcrDetector(ObjectDetector):
 
     def possible_categories(self) -> List[str]:
         if self.text_lines:
-            return [names.C.WORD, names.C.LINE]
-        return [names.C.WORD]
+            return [ LayoutType.word, LayoutType.line]
+        return [LayoutType.word]
