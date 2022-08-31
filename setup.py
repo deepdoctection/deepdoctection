@@ -128,7 +128,7 @@ dist_deps = deps_list(
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "scikit-learn", "distance", "apted")
+additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "distance", "apted")
 
 # remaining depencies to use all models
 remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
@@ -164,8 +164,7 @@ docs_deps = deps_list(
     "pdfplumber",
     "lxml",
     "lxml-stubs",
-    "pycocotools",
-    "scikit-learn",
+    "pycocotools"
 )
 
 if "python-prctl" in docs_deps:
