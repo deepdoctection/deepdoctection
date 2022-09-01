@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 import numpy as np
 from numpy import float32, int32
 from numpy.typing import NDArray
+from collections import Counter
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -181,7 +182,6 @@ def f1_score(
     return np.average(f_1)
 
 
-@metric_registry.register("accuracy")
 class ClassificationMetric(MetricBase):
     """
     Metric induced by :func:`accuracy`
@@ -317,6 +317,7 @@ class AccuracyMetric(ClassificationMetric):
     Metric induced by :func:`accuracy`
     """
 
+    name = "Accuracy"
     metric = accuracy
 
 
@@ -326,6 +327,7 @@ class ConfusionMetric(ClassificationMetric):
     Metric induced by :func:`confusion`
     """
 
+    name = "Confusion"
     metric = confusion
 
     @classmethod
@@ -338,10 +340,11 @@ class ConfusionMetric(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             confusion_matrix = cls.metric(labels_gt[key], labels_pr[key])
+            number_labels = Counter(labels_gt[key])
             for row_number, row in enumerate(confusion_matrix,1):
                 for col_number, val in enumerate(row,1):
                     results.append({"key": key, "category_id_gt": row_number, "category_id_pr": col_number,
-                                    "val": float(val), "num_samples_gt": np.count_nonzero(labels_gt[key]==row_number-1)})
+                                    "val": float(val), "num_samples_gt": number_labels[row_number]})
         return results
 
 
@@ -351,6 +354,7 @@ class PrecisionMetric(ClassificationMetric):
     Metric induced by :func:`precision`. Will calculate the precision per category
     """
 
+    name = "Precision"
     metric = precision
 
     @classmethod
@@ -363,8 +367,9 @@ class PrecisionMetric(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key])
+            number_labels = Counter(labels_gt[key])
             for label_id, val in enumerate(score,1):
-                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": np.count_nonzero(labels_gt[key]==label_id-1)})
+                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]})
         return results
 
 
@@ -374,6 +379,7 @@ class RecallMetric(PrecisionMetric):
     Metric induced by :func:`recall`. Will calculate the recall per category
     """
 
+    name = "Recall"
     metric = recall
 
 
@@ -383,6 +389,7 @@ class F1Metric(PrecisionMetric):
     Metric induced by :func:`f1_score`. Will calculate the f1 per category
     """
 
+    name = "F1"
     metric = f1_score
 
 
@@ -392,6 +399,7 @@ class PrecisionMetricMicro(ClassificationMetric):
     Metric induced by :func:`precision`. Will calculate the micro average precision
     """
 
+    name = "Micro Precision "
     metric = precision
 
     @classmethod
@@ -404,8 +412,9 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
+            number_labels = Counter(labels_gt[key])
             for label_id, val in enumerate(score, 1):
-                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": np.count_nonzero(labels_gt[key]==label_id-1)})
+                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]})
         return results
 
 
@@ -415,6 +424,7 @@ class RecallMetricMicro(PrecisionMetricMicro):
     Metric induced by :func:`recall`. Will calculate the micro average recall
     """
 
+    name = "Micro Recall"
     metric = recall
 
 
@@ -424,4 +434,5 @@ class F1MetricMicro(PrecisionMetricMicro):
     Metric induced by :func:`f1_score`. Will calculate the micro average f1
     """
 
+    name = "Micro F1"
     metric = f1_score
