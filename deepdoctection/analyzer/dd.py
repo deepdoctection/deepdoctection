@@ -65,7 +65,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     If TF is available, use TF unless a GPU is not available, in which case choose PT. If CUDA is not available and PT
     is not installed raise ImportError.
     """
-    if tf_available():
+    if tf_available() and tensorpack_available():
         if get_num_gpu() >= 1:
             return "tf", "cuda"
         if pytorch_available():
