@@ -107,6 +107,7 @@ class DoctrTextlineDetector(ObjectDetector):
 
     def __init__(self) -> None:
         self.doctr_predictor = detection_predictor(pretrained=True)
+        self.categories = {"1": names.C.WORD}
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -128,9 +129,6 @@ class DoctrTextlineDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
-
-    def possible_categories(self) -> List[str]:
-        return [names.C.WORD]
 
 
 class DoctrTextRecognizer(TextRecognizer):

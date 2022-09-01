@@ -107,6 +107,10 @@ class TextractOcrDetector(ObjectDetector):
         """
         self.text_lines = text_lines
         self.client = boto3.client("textract")
+        if self.text_lines:
+            self.categories = {"1": names.C.WORD, "2": names.C.LINE}
+        else:
+            self.categories = {"1": names.C.WORD}
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -124,8 +128,3 @@ class TextractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
-
-    def possible_categories(self) -> List[str]:
-        if self.text_lines:
-            return [names.C.WORD, names.C.LINE]
-        return [names.C.WORD]

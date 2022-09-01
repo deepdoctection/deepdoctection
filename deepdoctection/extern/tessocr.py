@@ -289,6 +289,11 @@ class TesseractOcrDetector(ObjectDetector):
         self.config_overwrite = config_overwrite
         self.config = hyper_param_config
 
+        if self.config.LINES:
+            self.categories = {"1": names.C.WORD, "2": names.C.LINE}
+        else:
+            self.categories = {"1": names.C.WORD}
+
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
         Transfer of a numpy array and call of pytesseract. Return of the detection results.
@@ -310,8 +315,3 @@ class TesseractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.config_overwrite)
-
-    def possible_categories(self) -> List[str]:
-        if self.config.LINES:
-            return [names.C.WORD, names.C.LINE]
-        return [names.C.WORD]
