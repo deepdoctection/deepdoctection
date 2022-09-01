@@ -24,13 +24,13 @@ from pytest import mark
 from deepdoctection.dataflow import DataFromList
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datasets.info import DatasetCategories
-from deepdoctection.eval.accmetric import AccuracyMetric
+from deepdoctection.eval.accmetric import AccuracyMetric, ConfusionMetric, PrecisionMetric, RecallMetric, F1Metric, PrecisionMetricMicro, RecallMetricMicro, F1MetricMicro
 from deepdoctection.utils.settings import names
 
 
 class TestAccuracyMetric:
     """
-    Test AccMetric returns correct when evaluating gt against itself
+    Test AccMetric returns correct values when evaluating gt against itself
     """
 
     @staticmethod
@@ -39,7 +39,7 @@ class TestAccuracyMetric:
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
         """
-        when testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
         """
 
         # Arrange
@@ -67,7 +67,7 @@ class TestAccuracyMetric:
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
         """
-        when testing datapoint against itself for sub categories, evaluation returns full score (trivial test)
+        When testing datapoint against itself for sub categories, evaluation returns full score (trivial test)
         """
 
         # Arrange
@@ -94,7 +94,7 @@ class TestAccuracyMetric:
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
         """
-        when testing datapoint against itself for sub categories, evaluation returns full score (trivial test)
+        When testing datapoint against itself for sub categories, evaluation returns full score (trivial test)
         """
 
         # Arrange
@@ -110,3 +110,224 @@ class TestAccuracyMetric:
 
         # Assert
         assert output == {"ROW_NUMBER/num_samples/5": 1.0, "COLUMN_SPAN/num_samples/5": 1.0}
+
+
+class TestConfusionMetric:
+    """
+    Test ConfusionMetric returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_confusion_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = ConfusionMetric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 98
+        assert output[3] == {"key": names.C.TAB, "category_id_gt": 2, "category_id_pr": 2, "val": 1.0,
+                             "num_samples_gt": 1}
+        assert output[12] == {"key": names.C.CELL, "category_id_gt": 3, "category_id_pr": 3, "val": 5.0,
+                              "num_samples_gt": 5}
+        assert output[48] == {"key": names.C.ROW, "category_id_gt": 6, "category_id_pr": 6, "val": 2.0,
+                              "num_samples_gt": 2}
+        assert output[97] == {"key": names.C.COL, "category_id_gt": 7, "category_id_pr": 7, "val": 2.0,
+                              "num_samples_gt": 2}
+
+
+class TestPrecisionMetric:
+    """
+    Test PrecisionMetric returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_precision_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = PrecisionMetric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 18
+        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": names.C.ROW, "category_id": 6,  "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+
+
+class TestRecallMetric:
+    """
+    Test RecallMetric returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_recall_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = RecallMetric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 18
+        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": names.C.ROW, "category_id": 6,  "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+
+
+class TestF1Metric:
+    """
+    Test F1Metric returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_f1_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = F1Metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 18
+        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": names.C.ROW, "category_id": 6,  "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+
+
+class TestPrecisionMetricMicro:
+    """
+    Test PrecisionMetricMicro returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_precision_micro_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = PrecisionMetricMicro.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 4
+        assert output[0] == {"key": names.C.TAB,  "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": names.C.CELL,  "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": names.C.ROW,   "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": names.C.COL,  "val": 1.0, "num_samples": 2}
+
+
+class TestRecallMetricMicro:
+    """
+    Test RecallMetricMicro returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_recall_micro_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = RecallMetricMicro.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 4
+        assert output[0] == {"key": names.C.TAB,  "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": names.C.CELL,  "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": names.C.ROW,   "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": names.C.COL,  "val": 1.0, "num_samples": 2}
+
+
+class TestF1MetricMicro:
+    """
+    Test F1MetricMicro returns correct values when evaluating gt against itself
+    """
+
+    @staticmethod
+    @mark.full
+    def test_f1_micro_metric_returns_correct_distance(
+            dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
+    ) -> None:
+        """
+        When testing datapoint against itself for categories, evaluation returns full score (trivial test)
+        """
+
+        # Arrange
+        dp_list = [dp_image_fully_segmented]
+        dataflow_gt = DataFromList(dp_list)
+        dataflow_pr = DataFromList(dp_list)
+
+        # Act
+        output = F1MetricMicro.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
+
+        # Assert
+        assert isinstance(output, list)
+        assert len(output) == 4
+        assert output[0] == {"key": names.C.TAB,  "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": names.C.CELL,  "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": names.C.ROW,   "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": names.C.COL,  "val": 1.0, "num_samples": 2}
