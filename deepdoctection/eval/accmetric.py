@@ -52,7 +52,7 @@ def _mask_some_gt_and_pr_labels(np_label_gt: NDArray[int32], np_label_pr: NDArra
 
 
 def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]):
-    number_classes = len(np.unique(np_label_gt))
+    number_classes = max(len(np.unique(np_label_gt)),np.amax(np_label_gt))
     confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)
     for i, gt_val in enumerate(np_label_gt):
         confusion_matrix[gt_val - 1][np_label_pr[i] - 1] += 1
@@ -176,7 +176,7 @@ def f1_score(
 
     np_precision = precision(label_gt, label_predictions, masks, micro)
     np_recall = recall(label_gt, label_predictions, masks, micro)
-    f_1 = np_precision * np_recall / (np_precision + np_recall)
+    f_1 = 2*np_precision * np_recall / (np_precision + np_recall)
     if per_label:
         return f_1
     return np.average(f_1)
@@ -412,9 +412,7 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            number_labels = Counter(labels_gt[key])
-            for label_id, val in enumerate(score, 1):
-                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]})
+            results.append({"key": key,  "val": float(score), "num_samples": len(labels_gt[key])})
         return results
 
 

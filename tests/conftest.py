@@ -90,7 +90,7 @@ def fixture_categories() -> Dict[str, str]:
 
 
 @fixture(name="dataset_categories")
-def fixture_dataset_categories_categories() -> DatasetCategories:
+def fixture_dataset_categories() -> DatasetCategories:
     """
     fixture categories
     """
