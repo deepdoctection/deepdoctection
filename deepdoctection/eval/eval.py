@@ -24,6 +24,8 @@ __all__ = ["Evaluator"]
 
 from copy import deepcopy
 from typing import Dict, List, Literal, Optional, Type, Union, overload
+from tabulate import tabulate
+from termcolor import colored
 
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
@@ -156,6 +158,11 @@ class Evaluator:  # pylint: disable=R0903
 
         logger.info("Starting evaluation...")
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
+
+        logger.info(colored(tabulate([x.values() for x in result],result[0].keys(),
+                                     tablefmt="pipe",
+                                     stralign="center",
+                                     numalign="left"), "cyan"))
 
         if output_as_dict:
             return self.metric.result_list_to_dict(result)
