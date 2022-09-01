@@ -23,7 +23,6 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 import numpy as np
 from numpy import float32, int32
 from numpy.typing import NDArray
-from functools import lru_cache
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -51,7 +50,6 @@ def _mask_some_gt_and_pr_labels(np_label_gt: NDArray[int32], np_label_pr: NDArra
     return np_label_gt, np_label_pr
 
 
-@lru_cache
 def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]):
     number_classes = len(np.unique(np_label_gt))
     confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)
@@ -343,7 +341,7 @@ class ConfusionMetric(ClassificationMetric):
             for row_number, row in enumerate(confusion_matrix,1):
                 for col_number, val in enumerate(row,1):
                     results.append({"key": key, "category_id_gt": row_number, "category_id_pr": col_number,
-                                    "val": val, "num_samples": len(labels_gt[key])})
+                                    "val": float(val), "num_samples_gt": np.count_nonzero(labels_gt[key]==row_number-1)})
         return results
 
 
@@ -366,7 +364,7 @@ class PrecisionMetric(ClassificationMetric):
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key])
             for label_id, val in enumerate(score,1):
-                results.append({"key": key, "category_id": label_id, "val": val, "num_samples": len(labels_gt[key])})
+                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": np.count_nonzero(labels_gt[key]==label_id-1)})
         return results
 
 
@@ -406,8 +404,8 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            for label_id, val in enumerate(score,1):
-                results.append({"key": key, "category_id": label_id, "val": val, "num_samples": len(labels_gt[key])})
+            for label_id, val in enumerate(score, 1):
+                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": np.count_nonzero(labels_gt[key]==label_id-1)})
         return results
 
 
