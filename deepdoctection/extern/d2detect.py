@@ -20,7 +20,7 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Mapping
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -129,7 +129,7 @@ class D2FrcnnDetector(ObjectDetector):
         self,
         path_yaml: str,
         path_weights: str,
-        categories: Dict[str, str],
+        categories: Mapping[str, str],
         config_overwrite: Optional[List[str]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
@@ -145,7 +145,7 @@ class D2FrcnnDetector(ObjectDetector):
         :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
                            dummy 'BG' category. Note, that this convention is different from the builtin D2 framework,
                            where models in the model zoo are trained with 'BG' class having the highest index.
-        :param config_overwrite:  Overwrite some hyper parameters defined by the yaml file with some new values. E.g.
+        :param config_overwrite:  Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
         :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
         """
@@ -232,7 +232,7 @@ class D2FrcnnDetector(ObjectDetector):
         return [get_pytorch_requirement(), get_detectron2_requirement()]
 
     @classmethod
-    def _map_to_d2_categories(cls, categories: Dict[str, str]) -> Dict[str, str]:
+    def _map_to_d2_categories(cls, categories: Mapping[str, str]) -> Dict[str, str]:
         return {str(int(k) - 1): v for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:

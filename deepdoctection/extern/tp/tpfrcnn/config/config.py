@@ -225,7 +225,7 @@ Train configs
 """
 
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Mapping
 
 import numpy as np
 from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401
@@ -242,7 +242,7 @@ from .....utils.metacfg import AttrDict
 __all__ = ["train_frcnn_config", "model_frcnn_config"]
 
 
-def model_frcnn_config(config: AttrDict, categories: Dict[str, str], print_summary: bool = True) -> None:
+def model_frcnn_config(config: AttrDict, categories: Mapping[str, str], print_summary: bool = True) -> None:
     """
     Sanity checks for Tensorpack Faster-RCNN config settings, where the focus lies on the model for predicting.
     It will update the config instance.
@@ -253,7 +253,8 @@ def model_frcnn_config(config: AttrDict, categories: Dict[str, str], print_summa
     """
 
     config.freeze(False)
-    categories = categories.copy()
+
+    categories = {str(key): categories[val] for key, val in enumerate(categories, 1)}
     categories[0] = "BG"
     config.DATA.CLASS_NAMES = list(categories.values())
     config.DATA.CLASS_DICT = categories

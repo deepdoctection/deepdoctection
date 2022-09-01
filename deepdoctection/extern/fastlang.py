@@ -19,7 +19,7 @@
 Deepdoctection wrappers for fasttext language detection models
 """
 
-from typing import Dict, List
+from typing import Dict, List, Mapping
 
 from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
 from .base import DetectionResult, LanguageDetector, PredictorBase
@@ -52,7 +52,7 @@ class FasttextLangDetector(LanguageDetector):
 
     """
 
-    def __init__(self, path_weights: str, categories: Dict[str, str]):
+    def __init__(self, path_weights: str, categories: Mapping[str, str]):
         """
         :param path_weights: path to model weights
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
@@ -74,6 +74,3 @@ class FasttextLangDetector(LanguageDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_weights, self.categories)
-
-    def possible_languages(self) -> List[str]:
-        return list(self.categories.values())

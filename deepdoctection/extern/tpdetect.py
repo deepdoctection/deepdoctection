@@ -20,7 +20,7 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union, Mapping
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
@@ -61,7 +61,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         self,
         path_yaml: str,
         path_weights: str,
-        categories: Dict[str, str],
+        categories: Mapping[str, str],
         config_overwrite: Optional[List[str]] = None,
         ignore_mismatch: bool = False,
     ):
@@ -93,7 +93,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     @staticmethod
     def set_model(
-        path_yaml: str, categories: Dict[str, str], config_overwrite: Union[List[str], None]
+        path_yaml: str, categories: Mapping[str, str], config_overwrite: Union[List[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel
@@ -150,6 +150,3 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         return self.__class__(
             self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
         )
-
-    def possible_categories(self) -> List[str]:
-        return list(self.categories.values())

@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and Doctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, Mapping
 
 from ..utils.detection_types import ImageType, Requirement
 
@@ -112,6 +112,8 @@ class ObjectDetector(PredictorBase):
     and implement the :meth:`predict`.
     """
 
+    categories: Mapping[str, str]
+
     @abstractmethod
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -126,13 +128,12 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
-    @abstractmethod
     def possible_categories(self) -> List[str]:
         """
         Abstract method possible_categories. Must implement a method that returns a list of possible detectable
         categories
         """
-        raise NotImplementedError
+        return list(self.categories.values())
 
 
 class PdfMiner(PredictorBase):
@@ -141,10 +142,9 @@ class PdfMiner(PredictorBase):
     Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._pdf_bytes: Optional[bytes] = None
-        self._page: Any = None
+    categories: Mapping[str, str]
+    _pdf_bytes: Optional[bytes] = None
+    _page: Any = None
 
     @abstractmethod
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
@@ -170,13 +170,11 @@ class PdfMiner(PredictorBase):
         """
         return False
 
-    @abstractmethod
     def possible_categories(self) -> List[str]:
         """
-        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
-        categories
+        Returns a list of possible detectable categories
         """
-        raise NotImplementedError
+        return list(self.categories.values())
 
 
 class TextRecognizer(PredictorBase):
@@ -254,6 +252,8 @@ class LMTokenClassifier(PredictorBase):
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
     """
 
+    categories: Mapping[str, str]
+
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
         """
@@ -261,13 +261,11 @@ class LMTokenClassifier(PredictorBase):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def possible_tokens(self) -> List[str]:
         """
-        Abstract method possible_tokens. Must implement a method that returns a list of possible detectable
-        tokens
+        Returns a list of possible detectable tokens
         """
-        raise NotImplementedError
+        return list(self.categories.values())
 
     @abstractmethod
     def clone(self) -> "LMTokenClassifier":
@@ -283,6 +281,8 @@ class LMSequenceClassifier(PredictorBase):
     Deepdoctection predictors, wrap them into a class derived from this class.
     """
 
+    categories: Mapping[str, str]
+
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
         """
@@ -290,13 +290,11 @@ class LMSequenceClassifier(PredictorBase):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def possible_categories(self) -> List[str]:
         """
-        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
-        categories for a sequence
+        Returns a list of possible detectable categories for a sequence
         """
-        raise NotImplementedError
+        return list(self.categories.values())
 
     @abstractmethod
     def clone(self) -> "LMSequenceClassifier":
@@ -312,6 +310,8 @@ class LanguageDetector(PredictorBase):
     ISO-639 code for the detected language.
     """
 
+    categories: Mapping[str,str]
+
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:
         """
@@ -319,10 +319,8 @@ class LanguageDetector(PredictorBase):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def possible_languages(self) -> List[str]:
         """
-        Abstract method possible_languages. Must implement a method that returns a list of possible detectable
-        languages
+        Returns a list of possible detectable languages
         """
-        raise NotImplementedError
+        return list(self.categories.values())
