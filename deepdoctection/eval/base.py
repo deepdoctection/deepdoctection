@@ -43,6 +43,7 @@ class MetricBase(ABC):
     executed and the results should be saved in separate lists.
     """
 
+    name : str
     metric: Callable[[Any, Any], Optional[Any]]
     mapper: Callable[[Any, Any], Optional[Any]]
 
