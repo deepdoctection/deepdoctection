@@ -67,7 +67,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         tokenizer: Any,
         language_model: LMTokenClassifier,
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
-        default_token_classes: Optional[Mapping[str, Tuple[str, int]]] = None,
+        use_other_as_default_category: bool = False,
     ) -> None:
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
@@ -75,11 +75,10 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         :param mapping_to_lm_input_func: Function mapping image to layout language model features
         """
         self.language_model = language_model
-        if default_token_classes is not None:
-            assert names.C.SE in default_token_classes
-            assert names.NER.TAG in default_token_classes
-            assert names.NER.TOK in default_token_classes
-        self.default_token_class = default_token_classes
+        self.use_other_as_default_category = use_other_as_default_category
+        if self.use_other_as_default_category:
+            categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
+            self.other_name_as_key = {names.NER.O: categories_name_as_key[names.NER.O]}
         super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
@@ -105,21 +104,21 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 self.dp_manager.set_category_annotation(token.class_name, token.class_id, names.NER.TOK, token.uuid)
                 words_populated.append(token.uuid)
 
-        if self.default_token_class is not None:
+        if self.use_other_as_default_category:
             word_anns = dp.get_annotation(names.C.WORD)
             for word in word_anns:
                 if names.C.SE not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        self.default_token_class[names.C.SE][0], None, names.C.SE, word.annotation_id
+                        names.C.O, None, names.C.SE, word.annotation_id
                     )
                 if names.NER.TAG not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        self.default_token_class[names.NER.TAG][0], None, names.NER.TAG, word.annotation_id
+                        names.NER.O, None, names.NER.TAG, word.annotation_id
                     )
                 if names.NER.TOK not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        self.default_token_class[names.NER.TOK][0],
-                        self.default_token_class[names.NER.TOK][1],
+                        names.NER.O,
+                        self.other_name_as_key[names.NER.O],
                         names.NER.TOK,
                         word.annotation_id,
                     )
@@ -129,7 +128,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             copy(self.tokenizer),
             self.language_model.clone(),
             copy(self.mapping_to_lm_input_func),
-            self.default_token_class,
+            self.use_other_as_default_category,
         )
 
     def get_meta_annotation(self) -> JsonDict:

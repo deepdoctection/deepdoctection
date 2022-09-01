@@ -238,7 +238,6 @@ def train_hf_layoutlm(
     if isinstance(dataset_train, str):
         dataset_train = get_dataset(dataset_train)
 
-
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
     if dataset_type == names.DS.TYPE.SEQ:
@@ -283,6 +282,13 @@ def train_hf_layoutlm(
     # We allow to overwrite the default setting by the user.
     for conf in config_overwrite:
         key, val = conf.split("=", maxsplit=1)
+        try:
+            val = int(val)
+        except ValueError:
+            try:
+                val = float(val)
+            except ValueError:
+                pass
         conf_dict[key] = val
 
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
@@ -329,13 +335,8 @@ def train_hf_layoutlm(
         if dataset_type == names.DS.TYPE.SEQ:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
         else:
-            default_token_classes = {
-                names.C.SE: (names.C.O, 7),
-                names.NER.TAG: (names.C.O, 7),
-                names.NER.TOK: (names.C.O, 7),
-            }
             pipeline_component = pipeline_component_cls(
-                tokenizer_fast, dd_model, image_to_layoutlm_features, default_token_classes
+                tokenizer_fast, dd_model, image_to_layoutlm_features, True
             )
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
