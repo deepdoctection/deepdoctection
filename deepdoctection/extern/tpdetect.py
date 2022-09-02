@@ -20,7 +20,7 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import List, Optional, Union, Mapping
+from typing import List, Mapping, Optional, Union
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available

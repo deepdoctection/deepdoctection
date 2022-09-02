@@ -19,7 +19,7 @@
 Module for token classification pipeline
 """
 from copy import copy
-from typing import Any, Callable, List, Mapping, Optional, Tuple
+from typing import Any, Callable, List, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
@@ -108,13 +108,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             word_anns = dp.get_annotation(names.C.WORD)
             for word in word_anns:
                 if names.C.SE not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(
-                        names.C.O, None, names.C.SE, word.annotation_id
-                    )
+                    self.dp_manager.set_category_annotation(names.C.O, None, names.C.SE, word.annotation_id)
                 if names.NER.TAG not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(
-                        names.NER.O, None, names.NER.TAG, word.annotation_id
-                    )
+                    self.dp_manager.set_category_annotation(names.NER.O, None, names.NER.TAG, word.annotation_id)
                 if names.NER.TOK not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
                         names.NER.O,

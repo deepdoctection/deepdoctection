@@ -148,7 +148,7 @@ class TestHFLayoutLmTokenClassifier:
         assert class_names == token_class_names
 
 
-class TestHFLayoutLmSequenceClassifier:  # pylint: disable=R0903
+class TestHFLayoutLmSequenceClassifier:
     """
     Test HFLayoutLmSequenceClassifier
     """

@@ -67,7 +67,7 @@ from ..utils.utils import string_to_dict
 __all__ = ["train_faster_rcnn"]
 
 
-class LoadAugmentAddAnchors:  # pylint: disable=R0903
+class LoadAugmentAddAnchors:
     """
     A helper class for default mapping func: load_augment_add_anchors.
     """

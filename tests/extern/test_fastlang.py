@@ -35,7 +35,7 @@ def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str], npt.NDArr
     return (("__label__it",), np.array([0.99414486]))
 
 
-class TestFasttextLangDetector:  # pylint: disable = R0903
+class TestFasttextLangDetector:
     """
     Test FasttextLangDetector
     """

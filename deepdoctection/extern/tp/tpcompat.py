@@ -34,7 +34,7 @@ from deepdoctection.utils.metacfg import AttrDict
 # pylint: enable=import-error
 
 
-class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore  # pylint: disable=R0903
+class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore
     """
     A wrapper for Tensorpack ModelDesc for bridging the gap between Tensorpack and DD API. Only for storing a
     configuration of hyperparameters and maybe training settings.

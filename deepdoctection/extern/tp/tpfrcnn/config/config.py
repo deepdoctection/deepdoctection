@@ -225,7 +225,7 @@ Train configs
 """
 
 import os
-from typing import Dict, List, Tuple, Mapping
+from typing import List, Mapping, Tuple
 
 import numpy as np
 from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401

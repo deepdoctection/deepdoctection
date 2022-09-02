@@ -20,7 +20,7 @@ if cocotools_available():
     import pycocotools.mask as coco_mask
 
 
-class CustomResize(ImageAugmentor):  # pylint: disable=R0903
+class CustomResize(ImageAugmentor):
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size.
     """
