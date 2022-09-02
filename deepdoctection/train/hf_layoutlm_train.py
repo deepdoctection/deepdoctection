@@ -283,10 +283,10 @@ def train_hf_layoutlm(
     for conf in config_overwrite:
         key, val = conf.split("=", maxsplit=1)
         try:
-            val = int(val)
+            val = int(val)  # type: ignore
         except ValueError:
             try:
-                val = float(val)
+                val = float(val)  # type: ignore
             except ValueError:
                 pass
         conf_dict[key] = val

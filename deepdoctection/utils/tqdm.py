@@ -19,23 +19,24 @@
 tqdm related functions. (Settings, options, etc.)
 """
 
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
+
+from .detection_types import TqdmType
 
 __all__ = ["get_tqdm"]
 
 
-def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int]) -> tqdm:
+def get_tqdm_default_kwargs(
+    **kwargs: Optional[Union[str, int, float]]
+) -> Dict[str, Union[str, float, bool, int, None]]:
     """
-    Get tqdm progress bar with some default options to have consistent style.
-
-    :param total:  The number of expected iterations.
-    :return: A tqdm instance
+    Return default arguments to be used with tqdm.
+    :param kwargs: extra arguments to be used.
     """
-
-    default_tqdm_setting = dict(
-        total=total,
+    return dict(
+        total=kwargs.get("total"),
         leave=True,
         smoothing=0.5,
         dynamic_ncols=True,
@@ -43,6 +44,16 @@ def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int
         bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt}[{elapsed}<{remaining},{rate_noinv_fmt}]",
         mininterval=5,
     )
+
+
+def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int, float]) -> TqdmType:
+    """
+    Get tqdm progress bar with some default options to have consistent style.
+    :param total:  The number of expected iterations.
+    :return: A tqdm instance
+    """
+
+    default_tqdm_setting = get_tqdm_default_kwargs(total=total)
     default_tqdm_setting.update(kwargs)
 
-    return tqdm(**default_tqdm_setting)
+    return tqdm(**default_tqdm_setting)  # type: ignore
