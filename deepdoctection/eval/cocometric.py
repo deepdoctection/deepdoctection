@@ -117,6 +117,7 @@ class CocoMetric(MetricBase):
     Metric induced by :class:`pycocotools.cocoeval.COCOeval`.
     """
 
+    name = "mAP and mAR"
     metric = COCOeval if cocotools_available() else None
     mapper = image_to_coco  # type: ignore
     _f1_score = None
