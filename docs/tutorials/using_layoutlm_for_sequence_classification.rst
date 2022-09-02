@@ -7,9 +7,9 @@ task such as sequence or token classification. In contrast to other
 language models even the simplest version heavily relies not only on the
 word/token itself but also on the positional information of words in the
 document. For scans this requires to perform OCR as a pre-processing
-steps making the task for training or experimenting with different OCR
-tools, but also for evaluating as well as putting the whole framework
-into production a lot more challenging.
+step making the task for training or experimenting with different OCR
+tools, but also for evaluating and putting the whole framework into
+production a lot more challenging.
 
 In this notebook we are going to show how to train and evaluate a
 document classifier using LayoutLM and how to run predictions with the
@@ -18,32 +18,33 @@ model. We divide the task into the following steps:
 -  First generate a sub-dataset from the very large and popular
    `RVL-CDIP <https://huggingface.co/datasets/rvl_cdip>`__ dataset. In
    order to make the dataset ready for training we need to generate
-   features. That means we OCR the selected documents and generate .json
-   files with bounding boxes and detected words. The dataset has a
+   features. That means that we OCR the selected documents and generate
+   .json files with bounding boxes and detected words. The dataset has a
    document type label for each scan. We use the label as ground truth
    for training the classifier.
 
 -  We build a **deepdoctection** dataset for the sub-dataset. We wrap
-   the dataset into a special class to create training, eval and test
+   the dataset into a special class to create a training, eval and test
    split.
 
 -  We download pre-trained base models from the Huggingface hub.
 
 -  Next we setup the environment for running the training script. We
    choose a metric and define the evaluation setup. Then we run the
-   training script. The train script itself uses the default trainer
-   from the transformer library with standard configuration.
+   training script. The script itself uses the default trainer from the
+   transformer library with standard configuration.
 
--  After training has finished we run a evaluation on the test split.
+-  After training has finished we run an evaluation on the test split.
 
 -  At the last step we show how to build a **deepdoctection** pipeline
-   with an OCR model and how to use trained model in practise.
+   with an OCR model and how to use the trained model in practise.
 
 This notebook is not intended as an introduction into the
 **deepdoctection**. We are therefore sparse with explanation and assume
 that the user will look into the
 `documentation <https://deepdoctection.readthedocs.io/en/latest/>`__ for
-further information regarding functions, classes and methods.
+further information regarding functions, classes and methods. You will
+need to install the PyTorch setting.
 
 .. code:: ipython3
 
@@ -72,8 +73,8 @@ the OCR task into two parts: text line detection and text recognition.
 Next, we use the RVL-CDIP dataset from the **deepdoctection** library.
 This step requires the full dataset to be downloaded. The full dataset
 has more than 300k samples with 16 different labels. We choose three
-labels “FORM”,“INVOICE” and “BUDGET” and select around 1000 samples from
-each label.
+labels FORM, INVOICE and BUDGET and select around 1000 samples for each
+label.
 
 .. code:: ipython3
 
@@ -170,11 +171,11 @@ we register the dataset.
 Downloading the base LayoutLM base model
 ----------------------------------------
 
-For convenience we already registered the models that have to be chosen
-and which are available at Huggingface hub. We use
-``layoutlm-base-uncased``. This model does not have any head yet and the
-top head will be specified by the task as well as by the number of
-labels within the training script just before the training starts.
+The ``ModelDownloadManager`` already has an entry for selecting and
+downloading LayoutLM base model. We use ``layoutlm-base-uncased``. This
+model does not have any head yet and the top head will be specified by
+the task as well as by the number of labels within the training script
+just before the training starts.
 
 .. code:: ipython3
 
@@ -194,8 +195,8 @@ arefact. We don’t want to deviate from this path here either.
     path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
     path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
 
-Gerating a split
-----------------
+Generating a split
+------------------
 
 Using the ``MergeDataset`` class we can load the dataset into memory and
 split it into a train, val and test set (similar to scikit-learns
@@ -242,7 +243,7 @@ We invoke ``train_hf_layoutlm`` to start fine-tuning the LayoutLM model
 for classification. We must tell the metric what attribute we want to
 evaluate, hence the reason for calling ``set_categories``.
 
-We run the training scripts more or less we default arguments as
+We run the training scripts more or less with default arguments as
 specified by the Transformers ``Trainer``. Arguments can be changed by
 passing a list of strings ``argument=value`` for ``config_overwrite``.
 We choose ``max_steps`` of the training to be equal the size of the
@@ -271,26 +272,25 @@ constraints.
 Tensorboard
 -----------
 
-Logging does not look very neat on the display of jupyter. You can start
-tensorboard tensorboard from a terminal
+Logging does not look very neat on the jupyter notebook display. You can
+start tensorboard from a terminal
 
 .. code:: sh
 
    tensorboard --logdir /path/to/traindir
 
 to get an overview of current learning rate, epoch, train loss and
-accuracy for the validation set
+accuracy for the validation set.
 
 Running evaluation on the test set
 ----------------------------------
 
 Configuration files and checkpoints are being saved in sub folders of
-``traindir``. We use them to run a final evaluation on the test split we
-haven’t used yet.
+``traindir``. We use them to run a final evaluation on the test split.
 
 The training script already selects a tokenizer that is needed to
 convert the raw features, i.e. words into tokens. It also chooses the
-mapping framework that converts datapoints of internal
+mapping framework that converts datapoints of the internal
 **deepdoctection** image format into layoutlm features. The Evaluator
 however, has been designed to run evaluation on various tasks. Hence it
 needs a pipeline component. The pipeline component for language model
@@ -300,7 +300,8 @@ the intrinsic **deepdoctection** data model as well as the right
 tokenizer.
 
 We only use Huggingface’s fast tokenizer as it contains helpful
-additional outputs to generate LayoutLM inputs.
+additional outputs to generate LayoutLM inputs. Choosing the
+conventional tokenizer will break the code.
 
 .. code:: ipython3
 
@@ -331,8 +332,8 @@ We get an accuracy score of 0.89 on the test set.
 
    [{'key': 'DOC_CLASS', 'val': 0.8851351351351351, 'num_samples': 148}]
 
-Building a pipeline to for production
--------------------------------------
+Building a pipeline for production
+----------------------------------
 
 In the final step we setup a complete pipeline for running the LayoutLM
 model. We use the same OCR framework as above and plug the
@@ -395,6 +396,15 @@ just demonstrate how it works.
     [32m[0819 10:07.00 @context.py:131][0m [32mINF[0m LMSequenceClassifierService finished, 0.0321 sec.
 
 
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x7ff6902b8ca0>
+
+
+
+
 .. image:: ./pics/output_26_2.png
 
 
@@ -429,6 +439,15 @@ just demonstrate how it works.
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(dp.viz())
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x7ff62e516a60>
+
+
 
 
 .. image:: ./pics/output_29_1.png
