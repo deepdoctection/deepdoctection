@@ -161,7 +161,7 @@ class Evaluator:
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
 
         table = tabulate(
-            [x.values() for x in result], result[0].keys(), tablefmt="pipe", stralign="center", numalign="left"
+            [x.values() for x in result], list(result[0].keys()), tablefmt="pipe", stralign="center", numalign="left"
         )
         logger.info("%s results:\n %s", self.metric.name, colored(table, "cyan"))
 

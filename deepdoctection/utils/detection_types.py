@@ -19,8 +19,11 @@
 Typing for the whole package
 """
 
+import queue
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
+
+import tqdm
 
 import numpy.typing as npt
 from numpy import uint8
@@ -49,8 +52,12 @@ T = TypeVar("T")
 
 if TYPE_CHECKING:
     BaseExceptionType = Type[BaseException]
+    QueueType = queue.Queue[Any]  # pylint: disable=E1136
+    TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
 else:
     BaseExceptionType = bool
+    QueueType = queue.Queue
+    TqdmType = tqdm.tqdm
 
 JsonDict = Dict[str, Any]
 

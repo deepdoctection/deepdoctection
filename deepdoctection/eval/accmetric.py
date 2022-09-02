@@ -20,6 +20,8 @@ Module for Accuracy metric
 """
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Counter as TypeCounter
+
 
 import numpy as np
 from numpy import float32, int32
@@ -59,7 +61,7 @@ def _mask_some_gt_and_pr_labels(
     return np_label_gt, np_label_pr
 
 
-def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]):
+def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]) -> NDArray[int32]:
     number_classes = max(len(np.unique(np_label_gt)), np.amax(np_label_gt))
     confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)
     for i, gt_val in enumerate(np_label_gt):
@@ -93,7 +95,7 @@ def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: O
 
 def confusion(
     label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
-) -> NDArray[float32]:
+) -> NDArray[int32]:
     """
     Calculates the accuracy matrix given the predictions and labels. Ignores masked indices.
 
@@ -196,7 +198,7 @@ def f1_score(
     f_1 = 2 * np_precision * np_recall / (np_precision + np_recall)
     if per_label:
         return f_1
-    return np.average(f_1)
+    return np.average(f_1)  # type: ignore
 
 
 class ClassificationMetric(MetricBase):
@@ -357,7 +359,7 @@ class ConfusionMetric(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             confusion_matrix = cls.metric(labels_gt[key], labels_pr[key])
-            number_labels = Counter(labels_gt[key])
+            number_labels: TypeCounter[int] = Counter(labels_gt[key])
             for row_number, row in enumerate(confusion_matrix, 1):
                 for col_number, val in enumerate(row, 1):
                     results.append(
@@ -391,7 +393,7 @@ class PrecisionMetric(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key])
-            number_labels = Counter(labels_gt[key])
+            number_labels: TypeCounter[int] = Counter(labels_gt[key])
             for label_id, val in enumerate(score, 1):
                 results.append(
                     {"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]}
