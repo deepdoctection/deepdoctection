@@ -292,7 +292,7 @@ def train_hf_layoutlm(
         conf_dict[key] = val
 
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
-    if conf_dict["max_steps"] > number_samples: # type: ignore
+    if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
             "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
         )
@@ -335,9 +335,7 @@ def train_hf_layoutlm(
         if dataset_type == names.DS.TYPE.SEQ:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
         else:
-            pipeline_component = pipeline_component_cls(
-                tokenizer_fast, dd_model, image_to_layoutlm_features, True
-            )
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features, True)
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

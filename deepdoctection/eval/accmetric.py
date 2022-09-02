@@ -18,12 +18,12 @@
 """
 Module for Accuracy metric
 """
+from collections import Counter
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy import float32, int32
 from numpy.typing import NDArray
-from collections import Counter
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -34,13 +34,21 @@ from ..utils.logger import logger
 from .base import MetricBase
 from .registry import metric_registry
 
+__all__ = [
+    "AccuracyMetric",
+    "ConfusionMetric",
+    "PrecisionMetric",
+    "RecallMetric",
+    "F1Metric",
+    "PrecisionMetricMicro",
+    "RecallMetricMicro",
+    "F1MetricMicro",
+]
 
-__all__ = ["AccuracyMetric", "ConfusionMetric", "PrecisionMetric", "RecallMetric", "F1Metric", "PrecisionMetricMicro",
-           "RecallMetricMicro", "F1MetricMicro"]
 
-
-def _mask_some_gt_and_pr_labels(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32], masks: Sequence[int]) -> \
-        Tuple[NDArray[int32],NDArray[int32]]:
+def _mask_some_gt_and_pr_labels(
+    np_label_gt: NDArray[int32], np_label_pr: NDArray[int32], masks: Sequence[int]
+) -> Tuple[NDArray[int32], NDArray[int32]]:
     assert len(np_label_gt) == len(
         masks
     ), f"length of label_gt ({len(np_label_gt)}) and masks ({len(masks)}) must be equal"
@@ -52,7 +60,7 @@ def _mask_some_gt_and_pr_labels(np_label_gt: NDArray[int32], np_label_pr: NDArra
 
 
 def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]):
-    number_classes = max(len(np.unique(np_label_gt)),np.amax(np_label_gt))
+    number_classes = max(len(np.unique(np_label_gt)), np.amax(np_label_gt))
     confusion_matrix = np.zeros((number_classes, number_classes), dtype=np.int32)
     for i, gt_val in enumerate(np_label_gt):
         confusion_matrix[gt_val - 1][np_label_pr[i] - 1] += 1
@@ -105,7 +113,10 @@ def confusion(
 
 
 def precision(
-    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None, micro: bool = False
+    label_gt: Sequence[int],
+    label_predictions: Sequence[int],
+    masks: Optional[Sequence[int]] = None,
+    micro: bool = False,
 ) -> NDArray[float32]:
     """
     Calculates the precision for a multi classification problem using a confusion matrix. The output will
@@ -126,13 +137,16 @@ def precision(
 
     if micro:
         all_outputs = confusion_matrix.sum()
-        return np.nan_to_num(true_positive.sum()/all_outputs)
+        return np.nan_to_num(true_positive.sum() / all_outputs)
     output_per_label = confusion_matrix.sum(axis=0)
-    return np.nan_to_num(true_positive/output_per_label,nan=1.)
+    return np.nan_to_num(true_positive / output_per_label, nan=1.0)
 
 
 def recall(
-    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None, micro: bool = False
+    label_gt: Sequence[int],
+    label_predictions: Sequence[int],
+    masks: Optional[Sequence[int]] = None,
+    micro: bool = False,
 ) -> NDArray[float32]:
     """
     Calculates the recall for a multi classification problem using a confusion matrix. The output will
@@ -153,14 +167,17 @@ def recall(
 
     if micro:
         all_outputs = confusion_matrix.sum()
-        return np.nan_to_num(true_positive.sum()/all_outputs)
+        return np.nan_to_num(true_positive.sum() / all_outputs)
     number_gt_per_label = confusion_matrix.sum(axis=1)
-    return np.nan_to_num(true_positive/ number_gt_per_label,nan=1.)
+    return np.nan_to_num(true_positive / number_gt_per_label, nan=1.0)
 
 
 def f1_score(
-    label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None, micro: bool = False,
-    per_label: bool = True
+    label_gt: Sequence[int],
+    label_predictions: Sequence[int],
+    masks: Optional[Sequence[int]] = None,
+    micro: bool = False,
+    per_label: bool = True,
 ) -> NDArray[float32]:
     """
     Calculates the recall for a multi classification problem using a confusion matrix. The output will
@@ -176,7 +193,7 @@ def f1_score(
 
     np_precision = precision(label_gt, label_predictions, masks, micro)
     np_recall = recall(label_gt, label_predictions, masks, micro)
-    f_1 = 2*np_precision * np_recall / (np_precision + np_recall)
+    f_1 = 2 * np_precision * np_recall / (np_precision + np_recall)
     if per_label:
         return f_1
     return np.average(f_1)
@@ -341,10 +358,17 @@ class ConfusionMetric(ClassificationMetric):
         for key in labels_gt:  # pylint: disable=C0206
             confusion_matrix = cls.metric(labels_gt[key], labels_pr[key])
             number_labels = Counter(labels_gt[key])
-            for row_number, row in enumerate(confusion_matrix,1):
-                for col_number, val in enumerate(row,1):
-                    results.append({"key": key, "category_id_gt": row_number, "category_id_pr": col_number,
-                                    "val": float(val), "num_samples_gt": number_labels[row_number]})
+            for row_number, row in enumerate(confusion_matrix, 1):
+                for col_number, val in enumerate(row, 1):
+                    results.append(
+                        {
+                            "key": key,
+                            "category_id_gt": row_number,
+                            "category_id_pr": col_number,
+                            "val": float(val),
+                            "num_samples_gt": number_labels[row_number],
+                        }
+                    )
         return results
 
 
@@ -368,8 +392,10 @@ class PrecisionMetric(ClassificationMetric):
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key])
             number_labels = Counter(labels_gt[key])
-            for label_id, val in enumerate(score,1):
-                results.append({"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]})
+            for label_id, val in enumerate(score, 1):
+                results.append(
+                    {"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]}
+                )
         return results
 
 
@@ -412,7 +438,7 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            results.append({"key": key,  "val": float(score), "num_samples": len(labels_gt[key])})
+            results.append({"key": key, "val": float(score), "num_samples": len(labels_gt[key])})
         return results
 
 

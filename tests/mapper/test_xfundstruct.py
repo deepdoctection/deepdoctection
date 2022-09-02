@@ -42,7 +42,7 @@ def test_xfund_to_image(
     # Act
     xfund_to_image_func = xfund_to_image(
         False, False, xfund_category_names, ner_token_to_id_mapping
-    )  # pylint: disable=E1120
+    )
     img = xfund_to_image_func(datapoint_xfund)
 
     # Assert

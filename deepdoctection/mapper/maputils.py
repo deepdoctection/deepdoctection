@@ -72,7 +72,7 @@ class MappingContextManager:
         return None
 
 
-class DefaultMapper:  # pylint: disable=R0903
+class DefaultMapper:
     """
     A class that wraps a function and places some pre-defined values starting from the second argument  once the
     function is invoked.

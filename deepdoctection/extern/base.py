@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and Doctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple, Union, Mapping
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, Requirement
 
@@ -310,7 +310,7 @@ class LanguageDetector(PredictorBase):
     ISO-639 code for the detected language.
     """
 
-    categories: Mapping[str,str]
+    categories: Mapping[str, str]
 
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:

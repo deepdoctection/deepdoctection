@@ -19,7 +19,7 @@
 Deepdoctection wrappers for fasttext language detection models
 """
 
-from typing import Dict, List, Mapping
+from typing import List, Mapping
 
 from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
 from .base import DetectionResult, LanguageDetector, PredictorBase

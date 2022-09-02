@@ -27,7 +27,7 @@ from deepdoctection.extern.texocr import TextractOcrDetector
 from deepdoctection.utils.detection_types import ImageType, JsonDict
 
 
-class TestTextractOcrDetector:  # pylint: disable=R0903
+class TestTextractOcrDetector:
     """
     Test TextractOcrDetector
     """

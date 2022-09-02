@@ -192,7 +192,7 @@ class TestTextExtractionServiceWithSubImage:
         assert isinstance(st_text_ann, ImageAnnotation)
 
 
-class TestTextOrderService:  # pylint: disable=R0903
+class TestTextOrderService:
     """
     Test TextOrderService
     """

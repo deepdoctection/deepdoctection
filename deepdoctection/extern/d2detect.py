@@ -20,7 +20,7 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
-from typing import Dict, List, Literal, Optional, Mapping
+from typing import Dict, List, Literal, Mapping, Optional
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (

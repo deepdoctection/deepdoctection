@@ -30,7 +30,7 @@ from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
 
-class DetectResultGenerator:  # pylint: disable=R0903
+class DetectResultGenerator:
     """
     Use: class: `DetectResultGenerator` to refine raw detection results.
 

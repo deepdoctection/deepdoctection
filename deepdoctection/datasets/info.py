@@ -181,8 +181,8 @@ class DatasetCategories:
                                relevant, if `keys=False`
         :param keys: Will only pass keys if set to `True`.
         :param values_as_dict: Will generate a dict with indices and sub category value names if set to `True`.
-        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys. name_as_key set to
-                            "False" will swap keys and values.
+        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys.
+                            name_as_key set to `False` will swap keys and values.
         :return: Dict with all selected categories.
         """
         if isinstance(categories, str):
@@ -216,11 +216,11 @@ class DatasetCategories:
                 sub_cat[cat] = list(sub_cat_dict.keys())
         if not keys:
             sub_cat_values = {}
-            for cat in sub_cat:
+            for cat, val in sub_cat.items():
                 if cat not in sub_categories:
                     continue
-                sub_cat_tmp: Dict[str,Union[Dict[str,str],Sequence[str]]] = {}
-                for sub_cat_key in sub_cat[cat]:
+                sub_cat_tmp: Dict[str, Union[Dict[str, str], Sequence[str]]] = {}
+                for sub_cat_key in val:
                     if sub_cat_key not in sub_categories[cat]:
                         continue
                     if values_as_dict:

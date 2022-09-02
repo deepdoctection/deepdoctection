@@ -181,7 +181,7 @@ class XfundBuilder(DataFlowBaseBuilder):
         )[names.C.WORD][names.NER.TOK]
         df = MapData(
             df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping)
-        )  # pylint: disable=E1120
+        )
 
         if self.categories.is_cat_to_sub_cat():
             df = MapData(

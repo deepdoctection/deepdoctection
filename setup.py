@@ -164,7 +164,7 @@ docs_deps = deps_list(
     "pdfplumber",
     "lxml",
     "lxml-stubs",
-    "pycocotools"
+    "pycocotools",
 )
 
 if "python-prctl" in docs_deps:

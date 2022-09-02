@@ -30,7 +30,7 @@ from ..utils.file_utils import (
     transformers_available,
 )
 from ..utils.settings import names
-from .base import LMSequenceClassifier, LMTokenClassifier, PredictorBase, SequenceClassResult, TokenClassResult
+from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
