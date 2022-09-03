@@ -19,14 +19,15 @@
 Module for Accuracy metric
 """
 from collections import Counter
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any
 from typing import Counter as TypeCounter
-from tabulate import tabulate
-from termcolor import colored
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy import float32, int32
 from numpy.typing import NDArray
+from tabulate import tabulate
+from termcolor import colored
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -332,12 +333,16 @@ class ClassificationMetric(MetricBase):
         """summary sub categories"""
         return self._summary_sub_cats
 
-    def print_result(self) -> None:
+    @classmethod
+    def print_result(cls) -> None:
         table = tabulate(
-            [x.values() for x in self._results], list(self._results[0].keys()), tablefmt="pipe", stralign="center",
-            numalign="left"
+            [x.values() for x in cls._results],
+            list(cls._results[0].keys()),
+            tablefmt="pipe",
+            stralign="center",
+            numalign="left",
         )
-        logger.info("%s results:\n %s", self.name, colored(table, "cyan"))
+        logger.info("%s results:\n %s", cls.name, colored(table, "cyan"))
 
 
 @metric_registry.register("accuracy")
@@ -384,17 +389,18 @@ class ConfusionMetric(ClassificationMetric):
         cls._results = results
         return results
 
-    def print_result(self) -> None:
+    @classmethod
+    def print_result(cls) -> None:
         data = {}
-        for entry in self._results:
+        for entry in cls._results:
             if entry["category_id_gt"] not in data:
                 data[entry["category_id_gt"]] = [entry["category_id_gt"], entry["val"]]
             else:
                 data[entry["category_id_gt"]].append(entry["val"])
 
-        header =  ["predictions -> \n  ground truth |\n              v"] + list(data.keys())
+        header = ["predictions -> \n  ground truth |\n              v"] + list(data.keys())
         table = tabulate([data[k] for k, _ in enumerate(data, 1)], headers=header, tablefmt="pipe")
-        logger.info(f"Confusion matrix: \n" + colored(table, "cyan"))
+        logger.info("Confusion matrix: \n %s", colored(table, "cyan"))
 
 
 @metric_registry.register("precision")

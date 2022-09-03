@@ -199,7 +199,7 @@ class Layout:
     @classmethod
     def from_image(cls, dp: Image, text_container: str) -> "Layout":
         """Generating a Layout object from :class:`Image`. The purpose is to create an object that can store words
-           if no Layout information are available."""
+        if no Layout information are available."""
 
         word_anns = dp.get_annotation(category_names=text_container)
         words = []
@@ -687,14 +687,14 @@ class Page:
                 all_words.extend(layout.words)
             for word in all_words:
                 box_stack.append(word.bounding_box)
-                category_names_list.append(word.tag + "-" + word.token_class)
+                category_names_list.append(str(word.tag) + "-" + str(word.token_class))
 
         if self.image is not None:
             img = convert_b64_to_np_array(self.image)
             if box_stack:
                 boxes = np.vstack(box_stack)
                 if show_words:
-                    img = draw_boxes(img, boxes, category_names_list, font_scale=0.4,rectangle_thickness=1)
+                    img = draw_boxes(img, boxes, category_names_list, font_scale=0.4, rectangle_thickness=1)
                 else:
                     img = draw_boxes(img, boxes, category_names_list)
             img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
