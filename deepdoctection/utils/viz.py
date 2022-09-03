@@ -225,7 +225,7 @@ def draw_boxes(
     category_names_list: Optional[List[Optional[str]]] = None,
     color: Optional[Tuple[int, int, int]] = None,
     font_scale: float = 1.0,
-    rectangle_thickness: int = 4
+    rectangle_thickness: int = 4,
 ) -> ImageType:
     """
     Dray bounding boxes with category names into image.
@@ -265,8 +265,9 @@ def draw_boxes(
                 np_image = draw_text(
                     np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
                 )
-            cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color,
-                          thickness=rectangle_thickness)
+            cv2.rectangle(
+                np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color, thickness=rectangle_thickness
+            )
     return np_image
 
 

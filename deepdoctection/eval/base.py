@@ -124,7 +124,6 @@ class MetricBase(ABC):
 
         return output
 
-    def print_result(self) -> None:
+    @classmethod
+    def print_result(cls) -> None:
         """Print metric result. Overwrite this method if you want a specific output"""
-        pass
-

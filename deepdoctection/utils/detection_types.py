@@ -23,9 +23,8 @@ import queue
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
-import tqdm
-
 import numpy.typing as npt
+import tqdm
 from numpy import uint8
 
 
