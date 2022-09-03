@@ -46,6 +46,7 @@ class MetricBase(ABC):
     name: str
     metric: Callable[[Any, Any], Optional[Any]]
     mapper: Callable[[Any, Any], Optional[Any]]
+    _results: List[JsonDict]
 
     def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
         requirements = cls.get_requirements()
@@ -122,3 +123,8 @@ class MetricBase(ABC):
             output[new_key[:-1]] = new_val
 
         return output
+
+    def print_result(self) -> None:
+        """Print metric result. Overwrite this method if you want a specific output"""
+        pass
+

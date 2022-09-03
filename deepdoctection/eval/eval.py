@@ -25,9 +25,6 @@ __all__ = ["Evaluator"]
 from copy import deepcopy
 from typing import Dict, List, Literal, Optional, Type, Union, overload
 
-from tabulate import tabulate
-from termcolor import colored
-
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
@@ -159,11 +156,7 @@ class Evaluator:
 
         logger.info("Starting evaluation...")
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
-
-        table = tabulate(
-            [x.values() for x in result], list(result[0].keys()), tablefmt="pipe", stralign="center", numalign="left"
-        )
-        logger.info("%s results:\n %s", self.metric.name, colored(table, "cyan"))
+        self.metric.print_result()
 
         if output_as_dict:
             return self.metric.result_list_to_dict(result)
