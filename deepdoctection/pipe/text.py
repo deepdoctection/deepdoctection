@@ -27,7 +27,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import names
+from ..utils.settings import WordType, LayoutType, Relationships
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -107,20 +107,20 @@ class TextExtractionService(PredictorPipelineComponent):
                     )
                 if detect_ann_id is not None:
                     self.dp_manager.set_container_annotation(
-                        names.C.CHARS,
+                        WordType.characters,
                         None,
-                        names.C.CHARS,
+                        WordType.characters,
                         detect_ann_id,
                         detect_result.text if detect_result.text is not None else "",
                         detect_result.score,
                     )
                     if detect_result.block:
                         self.dp_manager.set_category_annotation(
-                            names.C.BLOCK, detect_result.block, names.C.BLOCK, detect_ann_id
+                            WordType.block, detect_result.block, WordType.block, detect_ann_id
                         )
                     if detect_result.line:
                         self.dp_manager.set_category_annotation(
-                            names.C.TLINE, detect_result.line, names.C.TLINE, detect_ann_id
+                            WordType.text_line, detect_result.line, WordType.text_line, detect_ann_id
                         )
 
     def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
@@ -162,10 +162,10 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_meta_annotation(self) -> JsonDict:
         if self.extract_from_category:
-            sub_cat_dict = {category: {names.C.CHARS} for category in self.extract_from_category}
+            sub_cat_dict = {category: {WordType.characters} for category in self.extract_from_category}
         else:
             assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
-            sub_cat_dict = {category: {names.C.CHARS} for category in self.predictor.possible_categories()}
+            sub_cat_dict = {category: {WordType.characters} for category in self.predictor.possible_categories()}
         return dict(
             [
                 (
@@ -351,19 +351,19 @@ class TextOrderService(PipelineComponent):
 
         # maybe add all text containers that are not mapped to a text block
         if self._text_containers_to_text_block:
-            text_ann_ids = list(chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns]))
+            text_ann_ids = list(chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns]))
             text_container_anns = dp.get_annotation(category_names=self._text_container)
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
             text_block_anns.extend(text_container_anns)
 
         raw_reading_order_list = _reading_columns(dp, text_block_anns)
         for raw_reading_order in raw_reading_order_list:
-            self.dp_manager.set_category_annotation(names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1])
+            self.dp_manager.set_category_annotation(Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1])
 
         # next we select all blocks that might contain text. We sort all text within these blocks
         block_anns = dp.get_annotation(category_names=self._text_block_names)
         for text_block in block_anns:
-            text_container_ann_ids = text_block.get_relationship(names.C.CHILD)
+            text_container_ann_ids = text_block.get_relationship(Relationships.child)
             text_container_anns = dp.get_annotation(
                 annotation_ids=text_container_ann_ids,
                 category_names=self._text_container,
@@ -371,7 +371,7 @@ class TextOrderService(PipelineComponent):
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
-                    names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1]
+                    Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
                 )
 
         # this is the setting where we order words without having text blocks
@@ -380,7 +380,7 @@ class TextOrderService(PipelineComponent):
             raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
-                    names.C.RO, raw_reading_order[0], names.C.RO, raw_reading_order[1]
+                    Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
                 )
 
     def clone(self) -> PipelineComponent:
@@ -392,8 +392,8 @@ class TextOrderService(PipelineComponent):
         )
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [names.C.WORD, names.C.LINE], (
-            f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+        assert self._text_container in [LayoutType.word, LayoutType.line], (
+            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
         )
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names
@@ -408,24 +408,24 @@ class TextOrderService(PipelineComponent):
                 "text_containers_to_text_block is set to False. This setting will return no reading order!"
             )
         if (
-            self._text_container == names.C.WORD
+            self._text_container == LayoutType.word
             and self._text_containers_to_text_block
             and not self._floating_text_block_names
         ):
             logger.info(
                 "Choosing %s text_container while choosing no text_blocks will give no sensible "
                 "results. Choose %s text_container if you do not have text_blocks available.",
-                names.C.WORD,
-                names.C.LINE,
+                LayoutType.word,
+                LayoutType.line,
             )
 
     def get_meta_annotation(self) -> JsonDict:
         anns_with_reading_order = list(deepcopy(self._floating_text_block_names))
-        anns_with_reading_order.extend([names.C.WORD, names.C.LINE])
+        anns_with_reading_order.extend([LayoutType.word, LayoutType.line])
         return dict(
             [
                 ("image_annotations", []),
-                ("sub_categories", {category: {names.C.RO} for category in anns_with_reading_order}),
+                ("sub_categories", {category: {Relationships.reading_order} for category in anns_with_reading_order}),
                 ("relationships", {}),
                 ("summaries", []),
             ]
