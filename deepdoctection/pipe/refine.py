@@ -32,7 +32,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import LayoutType, CellType, TableType,Relationships
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -51,15 +51,15 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
     :return: Image
     """
 
-    cell_ann_ids = table.get_relationship(names.C.CHILD)
-    cells = dp.get_annotation(category_names=[names.C.CELL, names.C.HEAD, names.C.BODY], annotation_ids=cell_ann_ids)
+    cell_ann_ids = table.get_relationship(Relationships.child)
+    cells = dp.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body], annotation_ids=cell_ann_ids)
     tile_to_cells = []
 
     for cell in cells:
-        row_number = int(cell.get_sub_category(names.C.RN).category_id)
-        col_number = int(cell.get_sub_category(names.C.CN).category_id)
-        rs = int(cell.get_sub_category(names.C.RS).category_id)
-        cs = int(cell.get_sub_category(names.C.CS).category_id)
+        row_number = int(cell.get_sub_category(CellType.row_number).category_id)
+        col_number = int(cell.get_sub_category(CellType.column_number).category_id)
+        rs = int(cell.get_sub_category(CellType.row_span).category_id)
+        cs = int(cell.get_sub_category(CellType.column_span).category_id)
         for k in range(rs):
             for l in range(cs):
                 assert cell.annotation_id is not None
@@ -300,28 +300,28 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     """
     assert table.image is not None
     table_image = table.image
-    cells = table_image.get_annotation(category_names=[names.C.CELL, names.C.CELL, names.C.BODY])
-    number_of_rows = int(table_image.summary.get_sub_category(names.C.NR).category_id)
-    number_of_cols = int(table_image.summary.get_sub_category(names.C.NC).category_id)
+    cells = table_image.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body])
+    number_of_rows = int(table_image.summary.get_sub_category(TableType.number_of_rows).category_id)
+    number_of_cols = int(table_image.summary.get_sub_category(TableType.number_of_columns).category_id)
     table_list = []
     cells_ann_list = []
     for row_number in range(1, number_of_rows + 1):
         cells_of_row = list(
             sorted(
                 filter(
-                    lambda cell: cell.get_sub_category(names.C.RN).category_id
+                    lambda cell: cell.get_sub_category(CellType.row_number).category_id
                     == str(row_number),  # pylint: disable=W0640
                     cells,
                 ),
-                key=lambda cell: cell.get_sub_category(names.C.CN).category_id,
+                key=lambda cell: cell.get_sub_category(CellType.column_number).category_id,
             )
         )
         row_list = [
             (
-                int(cell.get_sub_category(names.C.RN).category_id),
-                int(cell.get_sub_category(names.C.CN).category_id),
-                int(cell.get_sub_category(names.C.RS).category_id),
-                int(cell.get_sub_category(names.C.CS).category_id),
+                int(cell.get_sub_category(CellType.row_number).category_id),
+                int(cell.get_sub_category(CellType.column_number).category_id),
+                int(cell.get_sub_category(CellType.row_span).category_id),
+                int(cell.get_sub_category(CellType.column_span).category_id),
             )
             for cell in cells_of_row
         ]
@@ -386,8 +386,8 @@ class TableSegmentationRefinementService(PipelineComponent):
     """
 
     def __init__(self) -> None:
-        self._table_name = names.C.TAB
-        self._cell_names = [names.C.HEAD, names.C.BODY, names.C.CELL]
+        self._table_name = LayoutType.table
+        self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
         super().__init__(None)
 
     def serve(self, dp: Image) -> None:
@@ -413,33 +413,33 @@ class TableSegmentationRefinementService(PipelineComponent):
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:
                         row_number, col_number, row_span, col_span = _tiling_to_cell_position(tiling)
-                        self.dp_manager.set_category_annotation(names.C.RN, row_number, names.C.RN, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(names.C.CN, col_number, names.C.CN, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(names.C.RS, row_span, names.C.RS, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(names.C.CS, col_span, names.C.CS, new_cell_ann_id)
+                        self.dp_manager.set_category_annotation(CellType.row_number, row_number, CellType.row_number, new_cell_ann_id)
+                        self.dp_manager.set_category_annotation(CellType.column_number, col_number, CellType.column_number, new_cell_ann_id)
+                        self.dp_manager.set_category_annotation(CellType.row_span, row_span, CellType.row_span, new_cell_ann_id)
+                        self.dp_manager.set_category_annotation(CellType.column_span, col_span, CellType.column_span, new_cell_ann_id)
                         for cell in cells:
                             cell.deactivate()
 
             cells = table.image.get_annotation(category_names=self._cell_names)
-            number_of_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cells])
-            number_of_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cells])
-            max_row_span = max([int(cell.get_sub_category(names.C.RS).category_id) for cell in cells])
-            max_col_span = max([int(cell.get_sub_category(names.C.CS).category_id) for cell in cells])
+            number_of_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells])
+            number_of_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells])
+            max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
+            max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
-                names.C.NR, names.C.NR, number_of_rows, annotation_id=table.annotation_id
+                TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                names.C.NC, names.C.NC, number_of_cols, annotation_id=table.annotation_id
+                TableType.number_of_columns, TableType.number_of_columns, number_of_cols, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                names.C.NRS, names.C.NRS, max_row_span, annotation_id=table.annotation_id
+                TableType.max_row_span, TableType.max_row_span, max_row_span, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                names.C.NCS, names.C.NCS, max_col_span, annotation_id=table.annotation_id
+                TableType.max_col_span, TableType.max_col_span, max_col_span, annotation_id=table.annotation_id
             )
             html = generate_html_string(table)
-            self.dp_manager.set_container_annotation(names.C.HTAB, -1, names.C.HTAB, table.annotation_id, html)
+            self.dp_manager.set_container_annotation(TableType.html, -1, TableType.html, table.annotation_id, html)
 
     def clone(self) -> PipelineComponent:
         return self.__class__()
@@ -450,7 +450,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                 ("image_annotations", []),
                 (
                     "sub_categories",
-                    {names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS}, names.C.TAB: {names.C.HTAB}},
+                    {LayoutType.cell: {CellType.row_number, CellType.column_number, CellType.row_span, CellType.column_span}, LayoutType.table: {TableType.html}},
                 ),
                 ("relationships", {}),
                 ("summaries", []),

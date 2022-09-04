@@ -29,7 +29,7 @@ from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import Relationships, LayoutType
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -125,7 +125,7 @@ class MatchingService(PipelineComponent):
             matched_child_anns = np.take(child_anns, child_index)  # type: ignore
             matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(names.C.CHILD, matched_child_anns[idx].annotation_id)
+                parent.dump_relationship(Relationships.child, matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
@@ -136,7 +136,7 @@ class MatchingService(PipelineComponent):
             [
                 ("image_annotations", []),
                 ("sub_categories", {}),
-                ("relationships", {parent: {names.C.CHILD} for parent in self.parent_categories}),
+                ("relationships", {parent: {Relationships.child} for parent in self.parent_categories}),
                 ("summaries", []),
             ]
         )
@@ -209,8 +209,8 @@ class PageParsingService:
         return MapData(df, self.pass_datapoint)
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [names.C.WORD, names.C.LINE], (
-            f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+        assert self._text_container in [LayoutType.word, LayoutType.line], (
+            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
         )
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names
