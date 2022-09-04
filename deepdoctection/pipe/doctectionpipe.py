@@ -31,7 +31,7 @@ from ..mapper.misc import to_image
 from ..utils.detection_types import Pathlike
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import logger
-from ..utils.settings import names
+from ..utils.settings import LayoutType
 from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
 
@@ -54,9 +54,9 @@ class DoctectionPipe(Pipeline):
             self.page_parser = pipeline_component_list.pop()
         else:
             self.page_parser = PageParsingService(
-                text_container=names.C.WORD,
-                floating_text_block_names=[names.C.TEXT, names.C.TITLE, names.C.LIST],
-                text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.TAB],
+                text_container=LayoutType.word,
+                floating_text_block_names=[LayoutType.text, LayoutType.title, LayoutType.list],
+                text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
             )
         assert all(
             isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list

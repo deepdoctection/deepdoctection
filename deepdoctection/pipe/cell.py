@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Union
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import Relationships
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -208,7 +208,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 ("image_annotations", self.predictor.possible_categories()),
                 ("sub_categories", {}),
                 # implicit setup of relations by using set_image_annotation with explicit annotation_id
-                ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
+                ("relationships", {parent: {Relationships.child} for parent in self.sub_image_name}),
                 ("summaries", []),
             ]
         )
