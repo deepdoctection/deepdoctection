@@ -27,7 +27,7 @@ from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import names
+from ..utils.settings import Relationships
 
 
 class DatapointManager:
@@ -152,7 +152,7 @@ class DatapointManager:
                 assert ann.image
                 ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)
                 ann.image.set_embedding(self.datapoint.image_id, ann_global_box)
-                parent_ann.dump_relationship(names.C.CHILD, ann.annotation_id)
+                parent_ann.dump_relationship(Relationships.child, ann.annotation_id)
 
             self.datapoint.dump(ann)
             self._cache_anns[ann.annotation_id] = ann

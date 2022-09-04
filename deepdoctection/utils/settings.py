@@ -113,6 +113,7 @@ class WordType(ObjectTypes):
     token_class = "TOKEN_CLASS"  # was previously: "SEMANTIC_ENTITY"
     tag = "BIO_TAG"  # was previously: "NER_TAG"
     token_tag = "TOKEN_TAG"  # was previously: "NER_TOKEN"
+    text_line = "TEXT_LINE"
 
 
 class TokenClasses(ObjectTypes):
