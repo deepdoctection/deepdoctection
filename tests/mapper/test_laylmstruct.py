@@ -55,9 +55,7 @@ def test_image_to_layoutlm(
     """
 
     # Arrange
-    xfund_to_image_func = xfund_to_image(
-        True, False, xfund_category_names, ner_token_to_id_mapping
-    )  # pylint: disable=E1120
+    xfund_to_image_func = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)
     image = xfund_to_image_func(datapoint_xfund)
     tokenizer_output = {
         "input_ids": layoutlm_input["input_ids"],
@@ -98,9 +96,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(
-        datapoint_xfund
-    )  # pylint: disable=E1120
+    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
 
     # Act
     raw_features = image_to_raw_layoutlm_features(xfund_categories_dict_name_as_key, names.DS.TYPE.TOK)(image)
@@ -130,9 +126,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(
-        datapoint_xfund
-    )  # pylint: disable=E1120
+    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
 
     assert image is not None
 

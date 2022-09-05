@@ -30,7 +30,7 @@ from ..utils.file_utils import (
     transformers_available,
 )
 from ..utils.settings import names
-from .base import LMSequenceClassifier, LMTokenClassifier, PredictorBase, SequenceClassResult, TokenClassResult
+from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
@@ -245,9 +245,6 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             self.categories,
         )
 
-    def possible_tokens(self) -> List[str]:
-        return list(self.categories.values())
-
 
 class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
     """
@@ -286,7 +283,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories: Dict[str, str],
+        categories: Mapping[str, str],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         self.path_config = path_config_json
@@ -337,6 +334,3 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
     def clone(self) -> "HFLayoutLmSequenceClassifier":
         return self.__class__(self.path_config, self.path_weights, self.categories)
-
-    def possible_categories(self) -> List[str]:
-        return list(self.categories.values())

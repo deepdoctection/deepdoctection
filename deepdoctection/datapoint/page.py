@@ -25,7 +25,7 @@ import json
 from dataclasses import asdict, dataclass
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple, Union, no_type_check
+from typing import List, Optional, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -198,6 +198,8 @@ class Layout:
 
     @classmethod
     def from_image(cls, dp: Image, text_container: str) -> "Layout":
+        """Generating a Layout object from :class:`Image`. The purpose is to create an object that can store words
+        if no Layout information are available."""
 
         word_anns = dp.get_annotation(category_names=text_container)
         words = []
@@ -633,6 +635,7 @@ class Page:
         show_layouts: bool = True,
         show_cells: bool = True,
         show_table_structure: bool = True,
+        show_words: bool = False,
         interactive: bool = False,
     ) -> Optional[ImageType]:
         """
@@ -651,6 +654,7 @@ class Page:
         :param show_layouts: Will display all other layout components.
         :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
         :param show_table_structure: Will display rows and columns
+        :param show_words: Will display bounding boxes around words labeled with token class and bio tag (experimental)
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
         :return: If interactive will return nothing else a numpy array.
@@ -677,11 +681,22 @@ class Page:
                         box_stack.append(segment_item.bounding_box)
                         category_names_list.append(None)
 
+        if show_words:
+            all_words = []
+            for layout in self.layouts:
+                all_words.extend(layout.words)
+            for word in all_words:
+                box_stack.append(word.bounding_box)
+                category_names_list.append(str(word.tag) + "-" + str(word.token_class))
+
         if self.image is not None:
             img = convert_b64_to_np_array(self.image)
             if box_stack:
                 boxes = np.vstack(box_stack)
-                img = draw_boxes(img, boxes, category_names_list)
+                if show_words:
+                    img = draw_boxes(img, boxes, category_names_list, font_scale=0.4, rectangle_thickness=1)
+                else:
+                    img = draw_boxes(img, boxes, category_names_list)
             img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
 
             if interactive:

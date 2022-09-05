@@ -39,7 +39,7 @@ def get_version():
 sys.path.insert(0, ROOT)
 
 # Taken from https://github.com/huggingface/transformers/blob/master/setup.py. Will list all dependencies, even those
-# that nee to be installed separately
+# that need to be installed separately
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
     "catalogue==2.0.7",
@@ -57,12 +57,12 @@ _DEPS = [
     "types-PyYAML",
     "types-termcolor==1.1.3",
     "types-tabulate",
+    "types-tqdm",
     "dataflow @ git+https://github.com/tensorpack/dataflow.git",
     # additional requirements to run eval and datasets (again without considering DL models)
     "lxml",
     "lxml-stubs",
     "pycocotools>=2.0.2",
-    "scikit-learn",
     "distance",
     "apted",
     # Tensorflow related dependencies
@@ -129,7 +129,7 @@ dist_deps = deps_list(
 source_deps = dist_deps + deps_list("dataflow @ git+https://github.com/tensorpack/dataflow.git")
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "scikit-learn", "distance", "apted")
+additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "distance", "apted")
 
 # remaining depencies to use all models
 remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
@@ -166,7 +166,6 @@ docs_deps = deps_list(
     "lxml",
     "lxml-stubs",
     "pycocotools",
-    "scikit-learn",
 )
 
 if "python-prctl" in docs_deps:

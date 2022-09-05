@@ -212,7 +212,7 @@ def fixture_category_ann() -> CatAnn:
     return CatAnn()
 
 
-class TestPdfPage:  # pylint: disable=R0903
+class TestPdfPage:
     """
     Pdf as bytes, dummy location and file name for testing
     """

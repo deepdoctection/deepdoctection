@@ -26,7 +26,7 @@ import pytest
 from deepdoctection.mapper import DefaultMapper, LabelSummarizer
 
 
-class TestDefaultMapper:  # pylint: disable=R0903
+class TestDefaultMapper:
     """
     Testing Class methods of DefaultMapper
     """
@@ -48,7 +48,7 @@ class TestDefaultMapper:  # pylint: disable=R0903
         test_mapper.func.assert_called_with("input", "foo", "bak", baz="foo_bak")  # type: ignore
 
 
-class TestLabelSummarizer:  # pylint: disable=R0903
+class TestLabelSummarizer:
     """
     Testing Class methods of LabelSummarizer
     """

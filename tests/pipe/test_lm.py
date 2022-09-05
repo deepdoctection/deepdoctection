@@ -137,7 +137,7 @@ class TestLMTokenClassifierService:
         assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
 
 
-class TestLMSequenceClassifierService:  # pylint: disable=R0903
+class TestLMSequenceClassifierService:
     """
     Test LMSequenceClassifierService
     """

@@ -181,8 +181,8 @@ class DatasetCategories:
                                relevant, if `keys=False`
         :param keys: Will only pass keys if set to `True`.
         :param values_as_dict: Will generate a dict with indices and sub category value names if set to `True`.
-        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys. name_as_key set to
-                            "False" will swap keys and values.
+        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys.
+                            name_as_key set to `False` will swap keys and values.
         :return: Dict with all selected categories.
         """
         if isinstance(categories, str):
@@ -216,25 +216,25 @@ class DatasetCategories:
                 sub_cat[cat] = list(sub_cat_dict.keys())
         if not keys:
             sub_cat_values = {}
-            for cat in sub_cat:
-                if cat not in sub_categories:
+            for category, value in sub_cat.items():
+                if category not in sub_categories:
                     continue
-                sub_cat_tmp: Dict[str,Union[Dict[str,str],Sequence[str]]] = {}
-                for sub_cat_key in sub_cat[cat]:
-                    if sub_cat_key not in sub_categories[cat]:
+                sub_cat_tmp: Dict[str, Union[Dict[str, str], Sequence[str]]] = {}
+                for sub_cat_key in value:
+                    if sub_cat_key not in sub_categories[category]:
                         continue
                     if values_as_dict:
                         if not name_as_key:
                             sub_cat_tmp[sub_cat_key] = {
-                                str(k): v for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                                str(k): v for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
                             }
                         else:
                             sub_cat_tmp[sub_cat_key] = {
-                                v: str(k) for k, v in enumerate(self.init_sub_categories[cat][sub_cat_key], 1)
+                                v: str(k) for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
                             }
                     else:
-                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[cat][sub_cat_key]
-                sub_cat_values[cat] = sub_cat_tmp
+                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][sub_cat_key]
+                sub_cat_values[category] = sub_cat_tmp
             return sub_cat_values
 
         return sub_cat

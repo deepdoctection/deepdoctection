@@ -187,7 +187,7 @@ def random_color(rgb: bool = True, maximum: int = 255) -> Tuple[int, int, int]:
 
 
 def draw_text(
-    np_image: ImageType, pos: Tuple[int, int], text: str, color: Tuple[int, int, int], font_scale: float = 0.4
+    np_image: ImageType, pos: Tuple[int, int], text: str, color: Tuple[int, int, int], font_scale: float = 1.0
 ) -> ImageType:
     """
     Draw text on an image.
@@ -215,7 +215,7 @@ def draw_text(
     cv2.rectangle(np_image, back_top_left, back_bottom_right, color, -1)
     # Show text.
     text_bottomleft = x_0, y_0 - int(0.25 * text_h)
-    cv2.putText(np_image, text, text_bottomleft, font, font_scale, (222, 222, 222), thickness=2, lineType=cv2.LINE_AA)
+    cv2.putText(np_image, text, text_bottomleft, font, font_scale, (0, 0, 0), thickness=1, lineType=cv2.LINE_AA)
     return np_image
 
 
@@ -224,6 +224,8 @@ def draw_boxes(
     boxes: npt.NDArray[float32],
     category_names_list: Optional[List[Optional[str]]] = None,
     color: Optional[Tuple[int, int, int]] = None,
+    font_scale: float = 1.0,
+    rectangle_thickness: int = 4,
 ) -> ImageType:
     """
     Dray bounding boxes with category names into image.
@@ -232,6 +234,8 @@ def draw_boxes(
     :param boxes: A numpy array of shape Nx4 where each row is [x1, y1, x2, y2].
     :param category_names_list: List of N category names.
     :param color: A 3-tuple BGR color (in range [0, 255])
+    :param font_scale: Font scale of text box
+    :param rectangle_thickness: Thickness of bounding box
     :return: A new image np.ndarray
     """
 
@@ -259,9 +263,11 @@ def draw_boxes(
             choose_color = random_color() if color is None else color
             if category_names_list[i] is not None:
                 np_image = draw_text(
-                    np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=1.0
+                    np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
                 )
-            cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color, thickness=4)
+            cv2.rectangle(
+                np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color, thickness=rectangle_thickness
+            )
     return np_image
 
 
