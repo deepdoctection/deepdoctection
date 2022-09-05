@@ -16,6 +16,7 @@ from .pdf_utils import *
 from .settings import *
 from .systools import *
 from .tqdm import *
+from .transform import *
 from .utils import *
 from .viz import *
 
@@ -58,5 +59,6 @@ __all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
 __all__.extend(pdf_utils.__all__)  # type: ignore
 __all__.extend(systools.__all__)  # type: ignore
 __all__.extend(["get_tqdm"])
+__all__.extend(transform.__all__) # type: ignore
 __all__.extend(viz.__all__)  # type: ignore
 # pylint: enable=undefined-variable

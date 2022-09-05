@@ -22,12 +22,18 @@ https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/tran
 """
 
 from abc import ABC, abstractmethod
+from typing import Union
+
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
+
 import cv2
 
-from ..utils.detection_types import ImageType
+from .detection_types import ImageType
+
+
+__all__ = ["ResizeTransform", "InferenceResize"]
 
 
 class BaseTransform(ABC):
@@ -77,3 +83,41 @@ class ResizeTransform(BaseTransform):
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords
+
+
+class InferenceResize:  # pylint: disable=R0903
+    """
+    Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size. This is
+    the inference version of :class:`extern.tp.frcnn.common.CustomResize` .
+    """
+
+    def __init__(self, short_edge_length: int, max_size: int, interp: int = cv2.INTER_LINEAR) -> None:
+        """
+        :param short_edge_length ([int, int]): a [min, max] interval from which to sample the shortest edge length.
+        :param max_size (int): maximum allowed longest edge length.
+        """
+        self.short_edge_length = short_edge_length
+        self.max_size = max_size
+        self.interp = interp
+
+    def get_transform(self, img: ImageType) -> ResizeTransform:
+        """
+        get transform
+        """
+        h, w = img.shape[:2]
+        new_w: Union[int, float]
+        new_h: Union[int, float]
+
+        scale = self.short_edge_length * 1.0 / min(h, w)
+
+        if h < w:
+            new_h, new_w = self.short_edge_length, scale * w
+        else:
+            new_h, new_w = scale * h, self.short_edge_length
+        if max(new_h, new_w) > self.max_size:
+            scale = self.max_size * 1.0 / max(new_h, new_w)
+            new_h = new_h * scale
+            new_w = new_w * scale
+        new_w = int(new_w + 0.5)
+        new_h = int(new_h + 0.5)
+        return ResizeTransform(h, w, new_h, new_w, self.interp)
