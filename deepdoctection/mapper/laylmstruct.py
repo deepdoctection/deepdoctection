@@ -33,8 +33,9 @@ from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import names
+from ..utils.transform import ResizeTransform
 from .maputils import curry
-from .transform import ResizeTransform
+
 
 if pytorch_available():
     import torch
