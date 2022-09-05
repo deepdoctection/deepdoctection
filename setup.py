@@ -72,7 +72,6 @@ _DEPS = [
     # PyTorch related dependencies
     "transformers",
     # bug free commit of detectron2
-    #"detectron2 @ git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "boto3",
