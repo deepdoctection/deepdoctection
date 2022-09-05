@@ -22,8 +22,8 @@ Module for tools around processing documents with Pipelines.
 import json
 import os
 
-from dataflow.dataflow import DataFlow, MapData
-
+from ..dataflow.base import DataFlow
+from ..dataflow.common import  MapData
 from ..dataflow.custom_serialize import SerializerJsonlines
 from ..datapoint.page import Page
 from ..utils.detection_types import Pathlike
