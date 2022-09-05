@@ -1060,7 +1060,7 @@ class DatapointImage:
         return self.image
 
 
-class DatapointPageDict:  # pylint: disable=R0903
+class DatapointPageDict:
     """
     Page object as dict
     """

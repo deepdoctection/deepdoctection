@@ -23,7 +23,7 @@ development. For a more application-related access, we refer to the notebooks th
   architecture
   layout_parsing_structure
   datasets
-  pipelines
+  layoutlm_for_token_classification
 
 .. toctree::
   :maxdepth: 1

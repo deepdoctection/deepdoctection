@@ -37,7 +37,7 @@ from ..utils.settings import names
 from .base import MetricBase
 
 
-class Evaluator:  # pylint: disable=R0903
+class Evaluator:
     """
     The API for evaluating pipeline components or pipelines on a given dataset. For a given model, a given dataset and
     a given metric, this class will stream the dataset, call the predictor(s) and will evaluate the predictions against
@@ -156,6 +156,7 @@ class Evaluator:  # pylint: disable=R0903
 
         logger.info("Starting evaluation...")
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
+        self.metric.print_result()
 
         if output_as_dict:
             return self.metric.result_list_to_dict(result)

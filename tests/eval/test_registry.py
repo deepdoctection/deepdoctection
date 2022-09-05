@@ -36,9 +36,9 @@ def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     if apted_available():
         # cannot register when apted not installed
-        assert len(metric_registry.get_all()) == 4
+        assert len(metric_registry.get_all()) == 10
     else:
-        assert len(metric_registry.get_all()) == 3
+        assert len(metric_registry.get_all()) == 9
 
 
 def test_metric_registry_registered_new_metric() -> None:

@@ -399,15 +399,6 @@ class TextOrderService(PipelineComponent):
             self._text_block_names
         ), "floating_text_block_names must be a subset of text_block_names"
         if (
-            not self._floating_text_block_names
-            and not self._text_block_names
-            and not self._text_containers_to_text_block
-        ):
-            logger.info(
-                "floating_text_block_names and text_block_names are set to None and "
-                "text_containers_to_text_block is set to False. This setting will return no reading order!"
-            )
-        if (
             self._text_container == names.C.WORD
             and self._text_containers_to_text_block
             and not self._floating_text_block_names

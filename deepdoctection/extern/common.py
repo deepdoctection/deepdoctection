@@ -27,7 +27,7 @@ from dataflow.dataflow.imgaug import ResizeTransform
 from ..utils.detection_types import ImageType
 
 
-class InferenceResize:  # pylint: disable=R0903
+class InferenceResize:
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size. This is
     the inference version of :class:`extern.tp.frcnn.common.CustomResize` .

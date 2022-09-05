@@ -52,7 +52,7 @@ def get_mock_text_line_results(  # type: ignore
     ]
 
 
-class TestDoctrTextlineDetector:  # pylint: disable=R0903
+class TestDoctrTextlineDetector:
     """
     Test DoctrTextlineDetector
     """
@@ -76,7 +76,7 @@ class TestDoctrTextlineDetector:  # pylint: disable=R0903
         assert len(results) == 2
 
 
-class TestDoctrTextRecognizer:  # pylint: disable=R0903
+class TestDoctrTextRecognizer:
     """
     Test DoctrTextRecognizer
     """

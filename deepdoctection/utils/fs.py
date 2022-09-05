@@ -193,7 +193,7 @@ def load_bytes_from_pdf_file(path: Pathlike) -> bytes:
     return buffer.getvalue()
 
 
-class LoadImageFunc(Protocol):  # pylint: disable = R0903
+class LoadImageFunc(Protocol):
     """
     Protocol for typing load_image_from_file
     """

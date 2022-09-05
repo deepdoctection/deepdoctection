@@ -76,7 +76,7 @@ class TestSerializerJsonlines:
         os.remove(test_file)
 
 
-class TestSerializerFiles:  # pylint: disable=R0903
+class TestSerializerFiles:
     """
     Testing SerializerFiles loading function
     """
@@ -95,7 +95,7 @@ class TestSerializerFiles:  # pylint: disable=R0903
         assert len(output) == 4
 
 
-class TestSerializerTabsepFiles:  # pylint: disable=R0903
+class TestSerializerTabsepFiles:
     """
     Testing SerializerTabsepFiles loading function
     """
@@ -114,7 +114,7 @@ class TestSerializerTabsepFiles:  # pylint: disable=R0903
         assert len(output) == 5
 
 
-class TestSerializerCoco:  # pylint: disable=R0903
+class TestSerializerCoco:
     """
     Testing SerializerCoco loading function
     """
@@ -143,7 +143,7 @@ class TestSerializerCoco:  # pylint: disable=R0903
         assert len(output) == 5
 
 
-class TestSerializerPdfDoc:  # pylint: disable=R0903
+class TestSerializerPdfDoc:
     """
     Testing SerializerPdfDoc loading function
     """

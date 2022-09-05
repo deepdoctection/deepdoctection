@@ -23,19 +23,15 @@ import itertools
 import queue
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from typing import TYPE_CHECKING, Callable, List, Optional, Sequence, Union
+from typing import Callable, List, Optional, Sequence, Union
 
-import tqdm  # type: ignore
+import tqdm
 
 from ..dataflow import DataFlow
 from ..datapoint.image import Image
+from ..utils.detection_types import QueueType, TqdmType
 from ..utils.tqdm import get_tqdm
 from .base import LanguageModelPipelineComponent, PipelineComponent, PredictorPipelineComponent
-
-if TYPE_CHECKING:
-    QueueType = queue.Queue[Image]  # pylint: disable=E1136
-else:
-    QueueType = queue.Queue
 
 
 class MultiThreadPipelineComponent:
@@ -132,7 +128,7 @@ class MultiThreadPipelineComponent:
     def _thread_predict_on_queue(
         input_queue: QueueType,
         component: PipelineComponent,
-        tqdm_bar: Optional[tqdm.tqdm] = None,
+        tqdm_bar: Optional[TqdmType] = None,
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
     ) -> List[Image]:
