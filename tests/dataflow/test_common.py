@@ -42,19 +42,6 @@ from deepdoctection.dataflow import (
 from ..test_utils import collect_datapoint_from_dataflow
 
 
-def test_data_speed() -> None:
-    """Test TestDataSpeed"""
-
-    # Arrange
-    df: DataFlow
-    df = FakeData(shapes=[[4, 7, 2]], domain=(0, 1), size=2)
-
-    try:
-        TestDataSpeed(df=df).start()
-    except Exception as excep:  # pylint: disable=W0703
-        fail(str(excep))
-
-
 def test_flatten_data(dataset_three_dim: List[List[float]], dataset_flatten: List[List[List[float]]]) -> None:
     """
     Test the flattening of a dataflow
