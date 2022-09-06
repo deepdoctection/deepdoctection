@@ -60,13 +60,13 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
 
     
     You are using a model of type layoutlm to instantiate a model of type . This is not supported for all configurations of models and can yield errors.
-    Some weights of the model checkpoint at /home/janis/.cache/deepdoctection/weights/microsoft/layoutlm-base-uncased/pytorch_model.bin were not used when initializing LayoutLMForTokenClassification: ['cls.predictions.decoder.bias', 'cls.predictions.transform.LayerNorm.bias', 'cls.predictions.decoder.weight', 'cls.predictions.transform.LayerNorm.weight', 'cls.predictions.transform.dense.weight', 'cls.predictions.transform.dense.bias', 'cls.predictions.bias']
+    Some weights of the model checkpoint at /path/to/.cache/deepdoctection/weights/microsoft/layoutlm-base-uncased/pytorch_model.bin were not used when initializing LayoutLMForTokenClassification: ['cls.predictions.decoder.bias', 'cls.predictions.transform.LayerNorm.bias', 'cls.predictions.decoder.weight', 'cls.predictions.transform.LayerNorm.weight', 'cls.predictions.transform.dense.weight', 'cls.predictions.transform.dense.bias', 'cls.predictions.bias']
     - This IS expected if you are initializing LayoutLMForTokenClassification from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
     - This IS NOT expected if you are initializing LayoutLMForTokenClassification from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
-    Some weights of LayoutLMForTokenClassification were not initialized from the model checkpoint at /home/janis/.cache/deepdoctection/weights/microsoft/layoutlm-base-uncased/pytorch_model.bin and are newly initialized: ['classifier.weight', 'classifier.bias']
+    Some weights of LayoutLMForTokenClassification were not initialized from the model checkpoint at /path/to/.cache/deepdoctection/weights/microsoft/layoutlm-base-uncased/pytorch_model.bin and are newly initialized: ['classifier.weight', 'classifier.bias']
     You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
     max_steps is given, it will override any value given in num_train_epochs
-    loading configuration file /home/janis/.cache/deepdoctection/configs/microsoft/layoutlm-base-uncased/config.json
+    loading configuration file /path/to/.cache/deepdoctection/configs/microsoft/layoutlm-base-uncased/config.json
     You are using a model of type layoutlm to instantiate a model of type . This is not supported for all configurations of models and can yield errors.
     Model config PretrainedConfig {
       "_name_or_path": "microsoft/layoutlm-base-uncased",
@@ -103,9 +103,9 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     | NER_TOKEN | 6             | 0.766207 | 1594          |
     | NER_TOKEN | 7             | 0.769401 | 2558          |
 
-    Saving model checkpoint to /home/janis/Tests/Token_classification/checkpoint-100
-    Configuration saved in /home/janis/Tests/Token_classification/checkpoint-100/config.json
-    Model weights saved in /home/janis/Tests/Token_classification/checkpoint-100/pytorch_model.bin
+    Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-100
+    Configuration saved in /path/to/Tests/Token_classification/checkpoint-100/config.json
+    Model weights saved in /path/to/Tests/Token_classification/checkpoint-100/pytorch_model.bin
 
     [32m[0903 14:38.00 @accmetric.py:340] F1 results:
     |    key    | category_id   | val      | num_samples   |
@@ -121,9 +121,9 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
 
 .. parsed-literal::
 
-    Saving model checkpoint to /home/janis/Tests/Token_classification/checkpoint-200
-    Configuration saved in /home/janis/Tests/Token_classification/checkpoint-200/config.json
-    Model weights saved in /home/janis/Tests/Token_classification/checkpoint-200/pytorch_model.bin
+    Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-200
+    Configuration saved in /path/to/Tests/Token_classification/checkpoint-200/config.json
+    Model weights saved in /path/to/Tests/Token_classification/checkpoint-200/pytorch_model.bin
 
 
     [0903 14:38.32 @accmetric.py:340] F1 results:
@@ -140,9 +140,9 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
 
 .. parsed-literal::
 
-    Saving model checkpoint to /home/janis/Tests/Token_classification/checkpoint-300
-    Configuration saved in /home/janis/Tests/Token_classification/checkpoint-300/config.json
-    Model weights saved in /home/janis/Tests/Token_classification/checkpoint-300/pytorch_model.bin
+    Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-300
+    Configuration saved in /path/to/Tests/Token_classification/checkpoint-300/config.json
+    Model weights saved in /path/to/Tests/Token_classification/checkpoint-300/pytorch_model.bin
 
 
 
@@ -208,8 +208,8 @@ Building a production pipeline
 .. code:: ipython3
 
     def get_layoutlm_pipeline():
-        path_config_json = "/home/janis/Tests/Token_classification/checkpoint-300/config.json"
-        path_weights = "/home/janis/Tests/Token_classification/checkpoint-300/pytorch_model.bin"
+        path_config_json = "/path/to/Tests/Token_classification/checkpoint-300/config.json"
+        path_weights = "/path/to/Tests/Token_classification/checkpoint-300/pytorch_model.bin"
         text_line_predictor = dd.DoctrTextlineDetector()
         layout_component = dd.ImageLayoutService(text_line_predictor, to_image=True, crop_image=True)
         text_recognizer = dd.DoctrTextRecognizer()
@@ -239,7 +239,7 @@ Building a production pipeline
 
 .. code:: ipython3
 
-    path = "/home/janis/.cache/deepdoctection/datasets/rvlcdip/image"
+    path = "/path/to/.cache/deepdoctection/datasets/rvlcdip/image"
     
     layoutlm_pipeline = get_layoutlm_pipeline()
     df = layoutlm_pipeline.analyze(path= path)
