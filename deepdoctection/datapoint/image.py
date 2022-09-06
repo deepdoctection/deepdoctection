@@ -479,6 +479,7 @@ class Image:
         if highest_hierarchy_only:
             self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()
+        export_dict["location"] = str(export_dict["location"])
         if save_image and self.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image)
         return export_dict
