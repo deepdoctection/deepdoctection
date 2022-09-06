@@ -72,7 +72,6 @@ _DEPS = [
     "tensorpack",
     # PyTorch related dependencies
     "transformers",
-    # bug free commit of detectron2
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "boto3",
@@ -131,23 +130,36 @@ dist_deps = deps_list(
 # if sys.platform == "linux":
 #    dist_deps.extend(deps_list("python-prctl"))
 
-# source dependencies with dataflow
-source_deps = dist_deps
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "distance", "apted")
+additional_deps = deps_list(
+    "lxml",
+    "lxml-stubs",
+    "pycocotools",
+    "distance",
+    "apted"
+)
 
 # remaining dependencies to use all models
-remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
+remaining_deps = deps_list(
+    "boto3",
+    "pdfplumber",
+    "tensorflow-addons",
+    "python-doctr",
+    "fasttext"
+)
 
 full_deps = dist_deps + additional_deps
-source_full_deps = source_deps + additional_deps
-source_all_deps = source_deps + additional_deps + remaining_deps
+source_full_deps = dist_deps + additional_deps
+source_all_deps = dist_deps + additional_deps + remaining_deps
 
 # Tensorflow dependencies
-additional_tf_deps = deps_list("tensorpack", "protobuf")
+additional_tf_deps = deps_list(
+    "tensorpack",
+    "protobuf"
+)
 
-source_tf_deps = source_deps + additional_tf_deps
+source_tf_deps = dist_deps + additional_tf_deps
 full_tf_deps = full_deps + additional_tf_deps
 source_full_tf_deps = source_full_deps + additional_tf_deps
 source_all_tf_deps = source_all_deps + additional_tf_deps
@@ -157,6 +169,7 @@ additional_pt_deps = deps_list("transformers")
 source_additional_pt_deps = additional_pt_deps + deps_list(
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )
+
 # it does not make sense to define a non-full pt dependency, because everything is already available
 full_pt_deps = full_deps + additional_pt_deps
 source_full_pt_deps = source_full_deps + source_additional_pt_deps
@@ -182,10 +195,19 @@ if "python-prctl" in hf_spaces_deps:
     hf_spaces_deps.remove("python-prctl")
 
 # test dependencies
-test_deps = deps_list("pytest", "pytest-cov")
+test_deps = deps_list(
+    "pytest",
+    "pytest-cov"
+)
 
 # dev dependencies
-dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
+dev_deps = deps_list(
+    "click",
+    "black",
+    "isort",
+    "pylint",
+    "mypy"
+)
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.
