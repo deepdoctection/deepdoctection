@@ -147,6 +147,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             load_image = True
 
         # Load
+        df: DataFlow
         dataset_split = self.annotation_files["all"]
         assert isinstance(dataset_split, str)
         path = self.get_workdir() / dataset_split
