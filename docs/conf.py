@@ -71,9 +71,6 @@ for mod_name in MAGIC_MOCK_MODULES:
 
 ON_RTD = (os.environ.get('READTHEDOCS') == 'True')
 
-# Todo: Replace that HACK so that sphinx can find the package
-import dataflow.dataflow
-
 if ON_RTD:
     sys.path.insert(0, os.path.abspath('../'))
 else:
