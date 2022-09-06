@@ -18,7 +18,7 @@
 """
 Testing the module dataflow.custom
 """
-from typing import Any, List
+from typing import Any, List, Union
 
 from deepdoctection.dataflow import CacheData, CustomDataFromList
 
@@ -28,6 +28,7 @@ def test_dataflow_cached_in_list(datapoint_list: List[Any]) -> None:
     Testing CacheData get_cache method.
     """
     # Arrange
+    df: Union[CustomDataFromList,CacheData]
     df = CustomDataFromList(datapoint_list)
 
     # Act
@@ -44,6 +45,7 @@ def test_dataflow_from_list_with_max_datapoint(datapoint_list: List[Any]) -> Non
     Testing CustomDataFromList max_datapoint argument
     """
     # Act
+    df: Union[CustomDataFromList,CacheData]
     df = CustomDataFromList(datapoint_list, max_datapoints=3)
     df = CacheData(df)
     df.reset_state()

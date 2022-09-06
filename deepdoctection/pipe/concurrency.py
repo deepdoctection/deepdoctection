@@ -31,6 +31,7 @@ from ..dataflow import DataFlow
 from ..datapoint.image import Image
 from ..utils.detection_types import QueueType, TqdmType
 from ..utils.tqdm import get_tqdm
+from ..utils.detection_types import QueueType, TqdmType
 from .base import LanguageModelPipelineComponent, PipelineComponent, PredictorPipelineComponent
 
 

@@ -25,7 +25,6 @@ from typing import Any, Callable, Dict, List, Literal, Mapping, NewType, Optiona
 
 import numpy as np
 from cv2 import INTER_LINEAR
-from dataflow.dataflow.imgaug.transform import ResizeTransform
 
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
@@ -34,7 +33,9 @@ from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import names
+from ..utils.transform import ResizeTransform
 from .maputils import curry
+
 
 if pytorch_available():
     import torch

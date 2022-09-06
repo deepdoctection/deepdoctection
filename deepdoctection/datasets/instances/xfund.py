@@ -146,6 +146,7 @@ class XfundBuilder(DataFlowBaseBuilder):
             raise ValueError("Not all languages available")
 
         # Load
+        df: DataFlow
         path_ann_files = [
             os.path.join(self.get_workdir(), ann_file)
             for ann_file in self.annotation_files[split]

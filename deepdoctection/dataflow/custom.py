@@ -16,33 +16,77 @@
 # limitations under the License.
 
 """
-Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...)
+Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...). Some ideas have been taken
+from
+
+- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
 """
-from typing import Any, Callable, Iterable, List, Optional
+from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 import numpy as np
-from dataflow import CacheData, DataFromIterable, DataFromList  # type: ignore
 
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
+from ..utils.utils import get_rng
+from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
+from .serialize import DataFromIterable, DataFromList
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
 
 
-def _get_cache(self: CacheData) -> List[Any]:
+class CacheData(ProxyDataFlow):
     """
-    get the cache of the whole dataflow as a list
-
-    :return: list of datapoints
+    Completely cache the first pass of a DataFlow in memory,
+    and produce from the cache thereafter.
+    NOTE: The user should not stop the iterator before it has reached the end.
+    Otherwise, the cache may be incomplete.
     """
-    self.reset_state()
-    with get_tqdm() as status_bar:
-        for _ in self:
-            status_bar.update()
-        return self.buffer
 
+    def __init__(self, df: DataFlow, shuffle: bool = False) -> None:
+        """
+        Args:
+            df (DataFlow): input DataFlow.
+            shuffle (bool): whether to shuffle the cache before yielding from it.
+        """
+        self.shuffle = shuffle
+        self.buffer: List[Any] = []
+        self._guard: Optional[DataFlowReentrantGuard] = None
+        self.rng = get_rng(self)
+        super().__init__(df)
 
-CacheData.get_cache = _get_cache
+    def reset_state(self) -> None:
+        super().reset_state()
+        self._guard = DataFlowReentrantGuard()
+        self.buffer = []
+
+    def __iter__(self) -> Iterator[Any]:
+        if self._guard is None:
+            raise RuntimeError(
+                "Iteration has been started before method reset_state has been called. Please "
+                "call reset_state() before"
+            )
+
+        with self._guard:
+            if self.buffer:
+                if self.shuffle:
+                    self.rng.shuffle(self.buffer)
+                yield from self.buffer
+            else:
+                for dp in self.df:
+                    yield dp
+                    self.buffer.append(dp)
+
+    def get_cache(self) -> List[Any]:
+        """
+        get the cache of the whole dataflow as a list
+
+        :return: list of datapoints
+        """
+        self.reset_state()
+        with get_tqdm() as status_bar:
+            for _ in self:
+                status_bar.update()
+            return self.buffer
 
 
 class CustomDataFromList(DataFromList):
@@ -96,7 +140,12 @@ class CustomDataFromList(DataFromList):
             return min(self.max_datapoints, len(self.lst))
         return len(self.lst)
 
-    def __iter__(self) -> Any:
+    def __iter__(self) -> Iterator[Any]:
+        if self.rng is None:
+            raise RuntimeError(
+                "Iteration has been started before method reset_state has been called. Please "
+                "call reset_state() before"
+            )
         if self.rebalance_func is not None:
             lst_tmp = self.rebalance_func(self.lst)
             logger.info("subset size after re-balancing: %s", len(lst_tmp))

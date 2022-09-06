@@ -174,6 +174,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             logger.info("Logic will currently display only ONE table per page, even if there are more !!")
 
         # Load
+        df: DataFlow
         dataset_split = self.annotation_files[split]
         assert isinstance(dataset_split, str)
         path = self.get_workdir() / dataset_split

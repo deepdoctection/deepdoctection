@@ -4,7 +4,7 @@ name: CI
 
 on:
   push:
-    branches: [ master, metrics]
+    branches: [ master]
   pull_request:
     branches: [ master ]
 

@@ -23,8 +23,7 @@ import os
 from pathlib import Path
 from typing import Any, Iterable, Iterator, List, Optional, Union
 
-from dataflow import DataFlow  # type: ignore
-
+from deepdoctection.dataflow import DataFlow
 from deepdoctection.datapoint import Annotation
 from deepdoctection.utils.systools import get_package_path
 
