@@ -23,7 +23,6 @@ from typing import List, no_type_check
 
 import numpy as np
 from numpy.testing import assert_array_equal
-from pytest import fail
 
 from deepdoctection.dataflow import (
     ConcatData,
@@ -36,7 +35,6 @@ from deepdoctection.dataflow import (
     MapData,
     MapDataComponent,
     RepeatedData,
-    TestDataSpeed,
 )
 
 from ..test_utils import collect_datapoint_from_dataflow
