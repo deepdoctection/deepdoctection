@@ -253,7 +253,7 @@ def train_faster_rcnn(
     # This is what's commonly referred to as "epochs"
 
     try:
-        size = train_dataflow.size()
+        size = len(train_dataflow)
         total_passes = config.TRAIN.LR_SCHEDULE[-1] * 8 / size
         logger.info("Total passes of the training set is: %i", total_passes)
 
