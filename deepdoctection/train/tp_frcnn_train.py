@@ -36,7 +36,7 @@ from tensorpack.callbacks import (
 )
 
 # todo: check how dataflow import is directly possible without having AssertionError
-from tensorpack.dataflow import imgaug
+from tensorpack.dataflow import imgaug, ProxyDataFlow
 from tensorpack.input_source import QueueInput
 from tensorpack.tfutils import SmartInit
 from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
@@ -179,7 +179,7 @@ def get_train_dataflow(
         )
     else:
         df = MapData(df, load_augment_anchors)
-    return df
+    return ProxyDataFlow(df)
 
 
 def train_faster_rcnn(
