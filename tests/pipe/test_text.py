@@ -27,7 +27,7 @@ from pytest import raises
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deepdoctection.pipe.text import TextExtractionService, TextOrderService
-from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import LayoutType, CellType, Relationships
 
 
 class TestTextExtractionService:
@@ -55,7 +55,7 @@ class TestTextExtractionService:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_fully_segmented_fully_tiled)
-        anns = dp.get_annotation(category_names=names.C.WORD)
+        anns = dp.get_annotation(category_names=LayoutType.word)
 
         # Assert
         first_text_ann = anns[0]
@@ -91,7 +91,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_fully_segmented_fully_tiled)
-        anns = dp.get_annotation(category_names=names.C.WORD)
+        anns = dp.get_annotation(category_names=LayoutType.word)
 
         # Assert
         first_text_ann = anns[0]
@@ -110,7 +110,7 @@ def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> 
 
     # Act and Assert
     with raises(AssertionError):
-        TextExtractionService(text_extract_detector, extract_from_roi=names.C.TAB)
+        TextExtractionService(text_extract_detector, extract_from_roi=LayoutType.table)
 
 
 class TestTextExtractionServiceWithSubImage:
@@ -125,7 +125,7 @@ class TestTextExtractionServiceWithSubImage:
         """
 
         self._text_extract_detector = MagicMock(spec=ObjectDetector, accepts_batch=False)
-        self.text_extraction_service = TextExtractionService(self._text_extract_detector, extract_from_roi=names.C.TAB)
+        self.text_extraction_service = TextExtractionService(self._text_extract_detector, extract_from_roi=LayoutType.table)
 
     def test_integration_pipeline_component(
         self,
@@ -142,8 +142,8 @@ class TestTextExtractionServiceWithSubImage:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_with_layout_anns)
-        word_anns = dp.get_annotation(category_names=names.C.WORD)
-        table_anns = dp.get_annotation(category_names=names.C.TAB)
+        word_anns = dp.get_annotation(category_names=LayoutType.word)
+        table_anns = dp.get_annotation(category_names=LayoutType.table)
 
         assert len(word_anns) == 4
         assert len(table_anns) == 2
@@ -205,9 +205,9 @@ class TestTextOrderService:
 
         # Arrange
         text_order_service = TextOrderService(
-            text_container=names.C.WORD,
-            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+            text_container=LayoutType.word,
+            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
+            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
         )
         dp_image = dp_image_with_layout_and_word_annotations
 
@@ -215,22 +215,22 @@ class TestTextOrderService:
         text_order_service.pass_datapoint(dp_image)
 
         # Assert
-        layout_anns = dp_image.get_annotation(category_names=[names.C.TITLE, names.C.TEXT])
-        word_anns = dp_image.get_annotation(category_names=names.C.WORD)
+        layout_anns = dp_image.get_annotation(category_names=[LayoutType.title, LayoutType.text])
+        word_anns = dp_image.get_annotation(category_names=LayoutType.word)
 
         # only need to check on layout_anns and word_anns, if sub cats have been added
         # and numbers are correctly assigned
 
-        sub_cat = layout_anns[0].get_sub_category(names.C.RO)
+        sub_cat = layout_anns[0].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "1"
-        sub_cat = layout_anns[1].get_sub_category(names.C.RO)
+        sub_cat = layout_anns[1].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "2"
 
-        sub_cat = word_anns[0].get_sub_category(names.C.RO)
+        sub_cat = word_anns[0].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "1"
-        sub_cat = word_anns[1].get_sub_category(names.C.RO)
+        sub_cat = word_anns[1].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "2"
-        sub_cat = word_anns[2].get_sub_category(names.C.RO)
+        sub_cat = word_anns[2].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "1"
-        sub_cat = word_anns[3].get_sub_category(names.C.RO)
+        sub_cat = word_anns[3].get_sub_category(Relationships.reading_order)
         assert sub_cat.category_id == "2"

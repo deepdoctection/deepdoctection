@@ -31,8 +31,8 @@ from deepdoctection.pipe.refine import (
     generate_rectangle_tiling,
     rectangle_cells,
 )
-from deepdoctection.utils.settings import names
-
+#from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import TableType, CellType, LayoutType
 
 @mark.parametrize(
     "tiles_to_cells,expected_rectangle_cells_list",
@@ -273,23 +273,23 @@ class TestTableSegmentationRefinementService:
         dp = self.table_segmentation_refinement_service.pass_datapoint(dp)
 
         # Assert
-        table = dp.get_annotation(category_names=names.C.TAB)[0]
+        table = dp.get_annotation(category_names=LayoutType.table)[0]
         assert table.image is not None
         summary = table.image.summary
         summaries_table = [
-            summary.get_sub_category(names.C.NR).category_id,
-            summary.get_sub_category(names.C.NC).category_id,
-            summary.get_sub_category(names.C.NRS).category_id,
-            summary.get_sub_category(names.C.NCS).category_id,
+            summary.get_sub_category(TableType.number_of_rows).category_id,
+            summary.get_sub_category(TableType.number_of_columns).category_id,
+            summary.get_sub_category(TableType.max_row_span).category_id,
+            summary.get_sub_category(TableType.max_col_span).category_id,
         ]
-        summary_html = table.get_sub_category(names.C.HTAB)
+        summary_html = table.get_sub_category(TableType.html)
         cells = dp.get_annotation(
             category_names=self.table_segmentation_refinement_service._cell_names  # pylint: disable=W0212
         )
-        row_numbers = {cell.get_sub_category(names.C.RN).category_id for cell in cells}
-        col_numbers = {cell.get_sub_category(names.C.CN).category_id for cell in cells}
-        row_spans = {cell.get_sub_category(names.C.RS).category_id for cell in cells}
-        col_spans = {cell.get_sub_category(names.C.CS).category_id for cell in cells}
+        row_numbers = {cell.get_sub_category(CellType.row_number).category_id for cell in cells}
+        col_numbers = {cell.get_sub_category(CellType.column_number).category_id for cell in cells}
+        row_spans = {cell.get_sub_category(CellType.row_span).category_id for cell in cells}
+        col_spans = {cell.get_sub_category(CellType.column_span).category_id for cell in cells}
 
         assert len(cells) == 4
         assert row_numbers == {"1", "2"}

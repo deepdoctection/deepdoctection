@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",
@@ -1764,7 +1764,10 @@ class DatapointXfund:
 
     dp = _SAMPLE_XFUND["documents"][0]
 
-    category_names_mapping = {"other": names.C.O, "question": names.C.Q, "answer": names.C.A, "header": names.C.HEAD}
+    category_names_mapping = {"other": TokenClasses.other,
+                              "question": TokenClasses.question,
+                              "answer": TokenClasses.answer,
+                              "header": TokenClasses.header}
     categories_dict_name_as_key = {
         "B-ANSWER": "1",
         "B-HEAD": "2",
@@ -1781,13 +1784,13 @@ class DatapointXfund:
         "S-QUESTION": "13",
     }
     ner_token_to_id_mapping = {
-        names.NER.B_A: "1",
-        names.NER.B_H: "2",
-        names.NER.B_Q: "3",
-        names.NER.I_A: "4",
-        names.NER.I_H: "5",
-        names.NER.I_Q: "6",
-        names.NER.O: "7",
+        TokenClassWithTag.b_answer: "1",
+        TokenClassWithTag.b_header: "2",
+        TokenClassWithTag.b_question: "3",
+        TokenClassWithTag.i_answer: "4",
+        TokenClassWithTag.i_header: "5",
+        TokenClassWithTag.i_question: "6",
+        TokenClasses.other: "7",
     }
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
@@ -1895,7 +1898,7 @@ class DatapointXfund:
         ],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
-        "dataset_type": names.DS.TYPE.TOK,
+        "dataset_type": DatasetType.token_classification,
         "labels": [6, 6, 1],
     }
 
@@ -2015,13 +2018,13 @@ class IIITar13KJson:
         ],
     }
 
-    categories_name_as_keys = {names.C.TAB: "1", names.C.LOGO: "2", names.C.FIG: "3", names.C.SIGN: "4"}
+    categories_name_as_keys = {LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"}
     category_names_mapping = {
-        "natural_image": names.C.FIG,
-        "figure": names.C.FIG,
-        "logo": names.C.LOGO,
-        "signature": names.C.SIGN,
-        "table": names.C.TAB,
+        "natural_image": LayoutType.figure,
+        "figure": LayoutType.figure,
+        "logo": LayoutType.logo,
+        "signature": LayoutType.signature,
+        "table": LayoutType.table,
     }
 
     first_ann_box = Box(ulx=127, uly=202, w=1006 - 127, h=580 - 202)
@@ -2061,7 +2064,7 @@ class IIITar13KJson:
         """
         first annotation category name
         """
-        return names.C.TAB
+        return LayoutType.table
 
     def get_categories_name_as_keys(self) -> Dict[str, str]:
         """

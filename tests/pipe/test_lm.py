@@ -31,7 +31,8 @@ from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layout
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
-from deepdoctection.utils.settings import names
+#from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import WordType, PageType
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
@@ -82,20 +83,20 @@ class TestLMTokenClassifierService:
 
         # Assert
         words = dp.get_annotation(annotation_ids="3a696daf-15d5-3b88-be63-02912ef35cfb")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "B"
 
         words = dp.get_annotation(annotation_ids="37d79fd7-ab87-30fe-b460-9b6e62e901b9")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "B"
 
         words = dp.get_annotation(annotation_ids="5d40236e-430c-3d56-a8a3-fe9e46b872ac")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "I"
 
         words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "I"
 
     @staticmethod
     @mark.requires_pt
@@ -121,20 +122,20 @@ class TestLMTokenClassifierService:
 
         # Assert
         words = dp.get_annotation(annotation_ids="3a696daf-15d5-3b88-be63-02912ef35cfb")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "B"
 
         words = dp.get_annotation(annotation_ids="37d79fd7-ab87-30fe-b460-9b6e62e901b9")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "B"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "B"
 
         words = dp.get_annotation(annotation_ids="5d40236e-430c-3d56-a8a3-fe9e46b872ac")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "I"
 
         words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
-        assert words[0].get_sub_category(names.C.SE).category_name == "FOO"
-        assert words[0].get_sub_category(names.NER.TAG).category_name == "I"
+        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
+        assert words[0].get_sub_category(WordType.tag).category_name == "I"
 
 
 class TestLMSequenceClassifierService:
@@ -166,4 +167,4 @@ class TestLMSequenceClassifierService:
         assert dp.summary is not None
 
         # Assert
-        assert dp.summary.get_sub_category(names.C.DOC).category_name == "FOO"
+        assert dp.summary.get_sub_category(PageType.document_type).category_name == "FOO"
