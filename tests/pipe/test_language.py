@@ -25,8 +25,7 @@ from deepdoctection.datapoint import ContainerAnnotation, Image
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.language import LanguageDetectionService
 from deepdoctection.pipe.text import TextOrderService
-from deepdoctection.utils import names
-
+from deepdoctection.utils import LayoutType, CellType, PageType
 
 class TestLanguageDetectionService:
     """
@@ -40,15 +39,15 @@ class TestLanguageDetectionService:
 
         self._language_detector = MagicMock()
         self._text_order_service = TextOrderService(
-            text_container=names.C.WORD,
-            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+            text_container=LayoutType.word,
+            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
+            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
         )
         self.language_detection_service = LanguageDetectionService(
             self._language_detector,
-            text_container=names.C.WORD,
-            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+            text_container=LayoutType.word,
+            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
+            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
         )
 
     def test_pass_datapoint(
@@ -67,7 +66,7 @@ class TestLanguageDetectionService:
 
         # Assert
         assert dp.summary is not None
-        assert dp.summary.get_sub_category(names.NLP.LANG.LANG).category_name == "LANGUAGE"
-        container_ann = dp.summary.get_sub_category(names.NLP.LANG.LANG)
+        assert dp.summary.get_sub_category(PageType.language).category_name == "LANGUAGE"
+        container_ann = dp.summary.get_sub_category(PageType.language)
         assert isinstance(container_ann, ContainerAnnotation)
         assert container_ann.value == "eng"
