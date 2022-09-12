@@ -27,8 +27,7 @@ from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.base import ObjectDetector
 from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
-from deepdoctection.utils.settings import names
-
+from deepdoctection.utils.settings import LayoutType
 
 def test_detect_result_generator(
     dataset_categories: DatasetCategories, dp_image: Image, layout_detect_results: List[DetectionResult]
@@ -64,7 +63,7 @@ class TestSubImageLayoutService:
         """
 
         self._cell_detector = MagicMock(spec=ObjectDetector)
-        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, names.C.TAB)
+        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
 
     def test_pass_datapoint(
         self,
@@ -81,7 +80,7 @@ class TestSubImageLayoutService:
 
         # Act
         dp = self.sub_image_layout_service.pass_datapoint(dp_image_with_layout_anns)
-        anns = dp.get_annotation(category_names=names.C.TAB)
+        anns = dp.get_annotation(category_names=LayoutType.table)
 
         # Assert
         assert len(anns) == 2

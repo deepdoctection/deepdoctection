@@ -45,7 +45,7 @@ from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import logger
-from ...utils.settings import names
+from ...utils.settings import DatasetType, LayoutType, CellType, TableType
 from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -82,26 +82,26 @@ _URL = (
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = names.DS.TYPE.OBJ
+_TYPE = DatasetType.object_detection
 _LOCATION = "fintabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
-_INIT_CATEGORIES = [names.C.TAB, names.C.CELL, names.C.ITEM]
+_INIT_CATEGORIES = [LayoutType.table,LayoutType.cell,TableType.item]
 _SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
 _SUB_CATEGORIES = {
-    names.C.CELL: {
-        names.C.HEAD: [names.C.HEAD, names.C.BODY],
-        names.C.RN: [],
-        names.C.CN: [],
-        names.C.RS: [],
-        names.C.CS: [],
+    LayoutType.cell: {
+        CellType.header: [CellType.header, CellType.body],
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
     },
-    names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
-    names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
-    names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
+    TableType.item: {TableType.item: [LayoutType.row,LayoutType.column]},
+    CellType.header: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},
+    CellType.body: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},
 }
 
 
@@ -220,25 +220,25 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 df,
                 _crop_and_add_image(  # pylint: disable=E1120
                     category_names=[
-                        names.C.TAB,
-                        names.C.CELL,
-                        names.C.HEAD,
-                        names.C.BODY,
-                        names.C.ITEM,
-                        names.C.ROW,
-                        names.C.COL,
+                        LayoutType.table,
+                        LayoutType.cell,
+                        CellType.header,
+                        CellType.body,
+                        TableType.item,
+                        LayoutType.row,
+                        LayoutType.column,
                     ]
                 ),
             )
             df = MapData(
                 df,
                 maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                    category_names_sub_image=names.C.TAB,
-                    category_names=[names.C.CELL, names.C.HEAD, names.C.BODY, names.C.ITEM, names.C.ROW, names.C.COL],
+                    category_names_sub_image=LayoutType.table,
+                    category_names=[LayoutType.cell, CellType.header, CellType.body, TableType.item, LayoutType.row, LayoutType.column],
                     add_summary=True,
                 ),
             )
-            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=names.C.TAB)])
+            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=LayoutType.table)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 

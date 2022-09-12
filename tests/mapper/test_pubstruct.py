@@ -26,7 +26,8 @@ from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.mapper import pub_to_image
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import names
+#from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import LayoutType, CellType, TableType
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
@@ -49,7 +50,7 @@ def test_pub_to_image(
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     datapoint = pubtabnet_results
     assert dp is not None
-    test_anns = dp.get_annotation(category_names=names.C.CELL)
+    test_anns = dp.get_annotation(category_names=LayoutType.cell)
 
     # Assert
     assert isinstance(test_anns, list) and len(test_anns) >= 1
@@ -67,25 +68,25 @@ def test_pub_to_image(
     assert isclose(first_ann.bounding_box.uly, datapoint.get_first_ann_box().uly, rel_tol=1e-15)
     assert isclose(first_ann.bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)
     assert isclose(first_ann.bounding_box.height, datapoint.get_first_ann_box().h, rel_tol=1e-15)
-    assert first_ann.get_sub_category(names.C.HEAD).category_name == datapoint.get_first_ann_sub_category_header_name()
-    assert first_ann.get_sub_category(names.C.RN).category_id == datapoint.get_first_ann_sub_category_row_number_id()
-    assert first_ann.get_sub_category(names.C.CN).category_id == datapoint.get_first_ann_sub_category_col_number_id()
-    assert first_ann.get_sub_category(names.C.RS).category_id == datapoint.get_first_ann_sub_category_row_span_id()
-    assert first_ann.get_sub_category(names.C.CS).category_id == datapoint.get_first_ann_sub_category_col_span_id()
+    assert first_ann.get_sub_category(CellType.header).category_name == datapoint.get_first_ann_sub_category_header_name()
+    assert first_ann.get_sub_category(CellType.row_number).category_id == datapoint.get_first_ann_sub_category_row_number_id()
+    assert first_ann.get_sub_category(CellType.column_number).category_id == datapoint.get_first_ann_sub_category_col_number_id()
+    assert first_ann.get_sub_category(CellType.row_span).category_id == datapoint.get_first_ann_sub_category_row_span_id()
+    assert first_ann.get_sub_category(CellType.column_span).category_id == datapoint.get_first_ann_sub_category_col_span_id()
 
     assert last_ann.category_name == datapoint.get_last_ann_category_name()
-    assert last_ann.get_sub_category(names.C.HEAD).category_name == datapoint.get_last_ann_sub_category_header_name()
-    assert last_ann.get_sub_category(names.C.RN).category_id == datapoint.get_last_ann_sub_category_row_number_id()
-    assert last_ann.get_sub_category(names.C.CN).category_id == datapoint.get_last_ann_sub_category_col_number_id()
-    assert last_ann.get_sub_category(names.C.RS).category_id == datapoint.get_last_ann_sub_category_row_span_id()
-    assert last_ann.get_sub_category(names.C.CS).category_id == datapoint.get_last_ann_sub_category_col_span_id()
+    assert last_ann.get_sub_category(CellType.header).category_name == datapoint.get_last_ann_sub_category_header_name()
+    assert last_ann.get_sub_category(CellType.row_number).category_id == datapoint.get_last_ann_sub_category_row_number_id()
+    assert last_ann.get_sub_category(CellType.column_number).category_id == datapoint.get_last_ann_sub_category_col_number_id()
+    assert last_ann.get_sub_category(CellType.row_span).category_id == datapoint.get_last_ann_sub_category_row_span_id()
+    assert last_ann.get_sub_category(CellType.column_span).category_id == datapoint.get_last_ann_sub_category_col_span_id()
 
     summary_ann = dp.summary
     assert isinstance(summary_ann, SummaryAnnotation)
-    assert summary_ann.get_sub_category(names.C.NR).category_id == datapoint.get_summary_ann_sub_category_rows_id()
-    assert summary_ann.get_sub_category(names.C.NC).category_id == datapoint.get_summary_ann_sub_category_col_id()
-    assert summary_ann.get_sub_category(names.C.NRS).category_id == datapoint.get_summary_ann_sub_category_row_span_id()
-    assert summary_ann.get_sub_category(names.C.NCS).category_id == datapoint.get_summary_ann_sub_category_col_span_id()
+    assert summary_ann.get_sub_category(TableType.number_of_rows).category_id == datapoint.get_summary_ann_sub_category_rows_id()
+    assert summary_ann.get_sub_category(TableType.number_of_columns).category_id == datapoint.get_summary_ann_sub_category_col_id()
+    assert summary_ann.get_sub_category(TableType.max_row_span).category_id == datapoint.get_summary_ann_sub_category_row_span_id()
+    assert summary_ann.get_sub_category(TableType.max_col_span).category_id == datapoint.get_summary_ann_sub_category_col_span_id()
 
 
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
@@ -102,13 +103,13 @@ def test_pub_to_image_when_items_are_added(
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
 
-    test_anns = dp.get_annotation(category_names=names.C.ITEM)
+    test_anns = dp.get_annotation(category_names=TableType.item)
     summary_ann = dp.summary
     assert isinstance(summary_ann, SummaryAnnotation)
     assert isinstance(test_anns, list)
 
-    assert len(test_anns) == int(summary_ann.get_sub_category(names.C.NR).category_id) + int(
-        summary_ann.get_sub_category(names.C.NC).category_id
+    assert len(test_anns) == int(summary_ann.get_sub_category(TableType.number_of_rows).category_id) + int(
+        summary_ann.get_sub_category(TableType.number_of_columns).category_id
     )
 
 
@@ -124,7 +125,7 @@ def test_pub_to_image_when_dd_pipe_like(
     pub_to_image_mapper = pub_to_image(categories_name_as_key_pubtabnet, True, True, True, True, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
-    table_list = dp.get_annotation(category_names=names.C.TAB)
+    table_list = dp.get_annotation(category_names=LayoutType.table)
     assert len(table_list) == 1
     table = table_list[0]
     assert table.image is not None

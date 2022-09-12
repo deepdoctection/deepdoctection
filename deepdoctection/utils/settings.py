@@ -21,8 +21,194 @@ Module for funcs and constants that maintain general settings
 
 import os
 from pathlib import Path
+from enum import Enum
 
 from ..utils.metacfg import AttrDict
+
+
+class ObjectTypes(Enum):
+    def __repr__(self):
+        return '<%s.%s>' % (self.__class__.__name__, self.name)
+
+    @classmethod
+    def from_value(cls, value: str):
+        for member in cls.__members__.values():
+            if member.value == value:
+                return member
+        raise ValueError("value %s does not have corresponding member", value)
+
+
+class PageType(ObjectTypes):
+    document_type = "DOCUMENT_TYPE"  # was previously: "DOC_CLASS"
+    language = "LANGUAGE"
+
+
+class DocumentType(ObjectTypes):
+    letter = "LETTER"
+    form = "FORM"
+    email = "EMAIL"
+    handwritten = "HANDWRITTEN"
+    advertisment = "ADVERTISMENT"
+    scientific_report = "SCIENTIFIC REPORT"
+    scientific_publication = "SCIENTIFIC PUBLICATION"
+    specification = "SPECIFICATION"
+    file_folder = "FILE FOLDER"
+    news_article = "NEWS ARTICLE"
+    budget = "BUDGET"
+    invoice = "INVOICE"
+    presentation = "PRESENTATION"
+    questionnaire = "QUESTIONNAIRE"
+    resume = "RESUME"
+    memo = "MEMO"
+    financial_report = "FINANCIAL_REPORT"
+    laws_and_regulations = "LAWS_AND_REGULATIONS"
+    government_tenders = "GOVERNMENT_TENDERS"
+    manuals = "MANUALS"
+    patents = "PATENTS"
+
+
+class LayoutType(ObjectTypes):
+    table = "TABLE"
+    figure = "FIGURE"
+    list = "LIST"
+    text = "TEXT"
+    title = "TITLE"
+    logo = "LOGO"
+    signature = "SIGNATURE"
+    caption = "CAPTION"
+    footnote = "FOOTNOTE"
+    formula = "FORMULA"
+    page_footer = "PAGE-FOOTER"
+    page_header = "PAGE-HEADER"
+    section_header = "SECTION_HEADER"
+    page = "PAGE"
+    cell = "CELL"
+    row = "ROW"
+    column = "COLUMN"
+    word = "WORD"
+    line = "LINE"
+
+
+class TableType(ObjectTypes):
+    item = "ITEM"
+    number_of_rows = "NUMBER_OF_ROWS"
+    number_of_columns = "NUMBER_OF_COLUMNS"
+    max_row_span = "MAX_ROW_SPAN"
+    max_col_span = "MAX_COL_SPAN"
+    html = "HTML"
+
+
+class CellType(ObjectTypes):
+    header = "HEADER"
+    body = "BODY"
+    row_number = "ROW_NUMBER"
+    column_number = "COLUMN_NUMBER"
+    row_span = "ROW_SPAN"
+    column_span = "COLUMN_SPAN"
+
+
+class WordType(ObjectTypes):
+    characters = "CHARACTERS"
+    block = "BLOCK"
+    token_class = "TOKEN_CLASS"  # was previously: "SEMANTIC_ENTITY"
+    tag = "BIO_TAG"  # was previously: "NER_TAG"
+    token_tag = "TOKEN_TAG"  # was previously: "NER_TOKEN"
+    text_line = "TEXT_LINE"
+
+
+class TokenClasses(ObjectTypes):
+    header = "HEADER"
+    question = "QUESTION"
+    answer = "ANSWER"
+    other = "OTHER"
+
+
+class BioTag(ObjectTypes):
+    begin = "B"
+    inside = "I"
+    outside = "O"
+
+
+class TokenClassWithTag(ObjectTypes):
+    b_answer = "B-ANSWER"
+    b_header = "B-HEAD"
+    b_question = "B-QUESTION"
+    i_answer = "I-ANSWER"
+    i_header = "I-HEAD"
+    i_question = "I-QUESTION"
+
+
+class Relationships(ObjectTypes):
+    child = "CHILD"
+    reading_order = "READING_ORDER"
+    semantic_entity_link = "SEMANTIC_ENTITY_LINK"
+
+
+class Languages(ObjectTypes):
+    english = "eng"
+    russian = "rus"
+    german = "deu"
+    french = "fre"
+    italian = "ita"
+    japanese = "jpn"
+    spanish = "spa"
+    cebuano = "ceb"
+    turkish = "tur"
+    portuguese = "por"
+    ukrainian = "ukr"
+    esperanto = "epo"
+    polish = "pol"
+    swedish = "swe"
+    dutch = "dut"
+    hebrew = "heb"
+    chinese = "chi"
+    hungarian = "hun"
+    arabic = "ara"
+    catalan = "cat"
+    finnish = "fin"
+    czech = "cze"
+    persian = "per"
+    serbian = "srp"
+    greek = "gre"
+    vietnamese = "vie"
+    bulgarian = "bul"
+    korean = "kor"
+    norwegian = "nor"
+    macedonian = "mac"
+    romanian = "rum"
+    indonesian = "ind"
+    thai = "tha"
+    armenian = "arm"
+    danish = "dan"
+    tamil = "tam"
+    hindi = "hin"
+    croatian = "hrv"
+    belarusian = "bel"
+    georgian = "geo"
+    telugu = "tel"
+    kazakh = "kaz"
+    waray = "war"
+    lithuanian = "lit"
+    scottish = "glg"
+    slovak = "slo"
+    benin = "ben"
+    basque = "baq"
+    slovenian = "slv"
+    malayalam = "mal"
+    marathi = "mar"
+    estonian = "est"
+    azerbaijani = "aze"
+    albanian = "alb"
+    latin = "lat"
+    bosnian = "bos"
+    norwegian_nynorsk = "nno"
+    urdu = "urd"
+
+class DatasetType(ObjectTypes):
+    object_detection = "OBJECT_DETECTION"
+    sequence_classification = "SEQUENCE_CLASSIFICATION"
+    token_classification = "TOKEN_CLASSIFICATION"
+
 
 # naming convention for all categories and NER tags
 names = AttrDict()
