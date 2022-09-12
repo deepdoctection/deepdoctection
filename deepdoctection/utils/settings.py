@@ -20,8 +20,11 @@ Module for funcs and constants that maintain general settings
 """
 
 import os
+from typing import Union
 from pathlib import Path
 from enum import Enum
+
+import catalogue  # type: ignore
 
 from ..utils.metacfg import AttrDict
 
@@ -38,11 +41,16 @@ class ObjectTypes(Enum):
         raise ValueError("value %s does not have corresponding member", value)
 
 
+object_types_registry = catalogue.create("deepdoctection", "settings", entry_points=True)
+
+
+@object_types_registry.register("PageType")
 class PageType(ObjectTypes):
     document_type = "DOCUMENT_TYPE"  # was previously: "DOC_CLASS"
     language = "LANGUAGE"
 
 
+@object_types_registry.register("DocumentType")
 class DocumentType(ObjectTypes):
     letter = "LETTER"
     form = "FORM"
@@ -67,6 +75,7 @@ class DocumentType(ObjectTypes):
     patents = "PATENTS"
 
 
+@object_types_registry.register("LayoutType")
 class LayoutType(ObjectTypes):
     table = "TABLE"
     figure = "FIGURE"
@@ -89,6 +98,7 @@ class LayoutType(ObjectTypes):
     line = "LINE"
 
 
+@object_types_registry.register("TableType")
 class TableType(ObjectTypes):
     item = "ITEM"
     number_of_rows = "NUMBER_OF_ROWS"
@@ -98,6 +108,7 @@ class TableType(ObjectTypes):
     html = "HTML"
 
 
+@object_types_registry.register("CellType")
 class CellType(ObjectTypes):
     header = "HEADER"
     body = "BODY"
@@ -107,6 +118,7 @@ class CellType(ObjectTypes):
     column_span = "COLUMN_SPAN"
 
 
+@object_types_registry.register("WordType")
 class WordType(ObjectTypes):
     characters = "CHARACTERS"
     block = "BLOCK"
@@ -116,6 +128,7 @@ class WordType(ObjectTypes):
     text_line = "TEXT_LINE"
 
 
+@object_types_registry.register("TokenClasses")
 class TokenClasses(ObjectTypes):
     header = "HEADER"
     question = "QUESTION"
@@ -123,12 +136,14 @@ class TokenClasses(ObjectTypes):
     other = "OTHER"
 
 
+@object_types_registry.register("BioTag")
 class BioTag(ObjectTypes):
     begin = "B"
     inside = "I"
     outside = "O"
 
 
+@object_types_registry.register("TokenClassWithTag")
 class TokenClassWithTag(ObjectTypes):
     b_answer = "B-ANSWER"
     b_header = "B-HEAD"
@@ -138,12 +153,14 @@ class TokenClassWithTag(ObjectTypes):
     i_question = "I-QUESTION"
 
 
+@object_types_registry.register("Relationships")
 class Relationships(ObjectTypes):
     child = "CHILD"
     reading_order = "READING_ORDER"
     semantic_entity_link = "SEMANTIC_ENTITY_LINK"
 
 
+@object_types_registry.register("Languages")
 class Languages(ObjectTypes):
     english = "eng"
     russian = "rus"
@@ -205,16 +222,29 @@ class Languages(ObjectTypes):
     urdu = "urd"
 
 
+@object_types_registry.register("DatasetType")
 class DatasetType(ObjectTypes):
     object_detection = "OBJECT_DETECTION"
     sequence_classification = "SEQUENCE_CLASSIFICATION"
     token_classification = "TOKEN_CLASSIFICATION"
 
 
-# naming convention for all categories and NER tags
-names = AttrDict()
+_ALL_TYPES_DICT = {}
+_ALL_TYPES = list(object_types_registry.get_all().values())
+for ob in _ALL_TYPES:
+    _ALL_TYPES_DICT.update({e.value: e for e in ob})
 
-_N = names
+
+def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
+    if isinstance(obj_type, ObjectTypes):
+        return obj_type
+    return _ALL_TYPES_DICT[obj_type]
+
+
+# naming convention for all categories and NER tags
+#names = AttrDict()
+
+_N = AttrDict() #names
 
 _N.C.TAB = "TABLE"
 _N.C.FIG = "FIGURE"
