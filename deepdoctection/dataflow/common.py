@@ -119,7 +119,7 @@ class MapData(ProxyDataFlow):
                 yield ret
 
 
-class MapDataComponent(MapData):  # pylint: disable=R0903
+class MapDataComponent(MapData):
     """
     Apply a mapper/filter on a datapoint component.
     Note:

@@ -23,7 +23,7 @@ import json
 import os
 
 from ..dataflow.base import DataFlow
-from ..dataflow.common import  MapData
+from ..dataflow.common import MapData
 from ..dataflow.custom_serialize import SerializerJsonlines
 from ..datapoint.page import Page
 from ..utils.detection_types import Pathlike
@@ -55,7 +55,7 @@ def load_document(path: Pathlike) -> DataFlow:
     :param path: Path to a .jsonl file
     :return: DataFlow
     """
-
+    df: DataFlow
     df = SerializerJsonlines.load(path)
     df = MapData(df, Page.from_dict)
     return df

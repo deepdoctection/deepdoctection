@@ -23,8 +23,6 @@ import queue
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
 
-import tqdm
-
 import numpy.typing as npt
 import tqdm
 from numpy import uint8
@@ -55,8 +53,6 @@ if TYPE_CHECKING:
     QueueType = queue.Queue[Any]  # pylint: disable=E1136
     TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
     BaseExceptionType = Type[BaseException]
-    QueueType = queue.Queue[Any]  # pylint: disable=E1136
-    TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
 else:
     BaseExceptionType = bool
     QueueType = queue.Queue

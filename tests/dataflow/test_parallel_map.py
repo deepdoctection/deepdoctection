@@ -19,6 +19,7 @@
 Testing module dataflow.parallel_map
 """
 from typing import no_type_check
+
 import numpy as np
 
 from deepdoctection.dataflow import DataFlow, FakeData, MultiThreadMapData
@@ -28,6 +29,7 @@ from ..test_utils import collect_datapoint_from_dataflow
 
 @no_type_check
 def map_to_one(dp):
+    """map to one"""
     return np.ones(dp[0].shape)
 
 
@@ -37,10 +39,6 @@ def test_multithread_map_data_non_strict() -> None:
     # Arrange
     df: DataFlow
     df = FakeData(shapes=[[4, 7, 3]], domain=(0, 1), size=10)
-
-    @no_type_check
-    def map_to_one(dp):
-        return np.ones(dp[0].shape)
 
     # Act
     df = MultiThreadMapData(df, num_thread=4, map_func=map_to_one, buffer_size=10)
@@ -57,14 +55,9 @@ def test_multithread_map_data_strict() -> None:
     df: DataFlow
     df = FakeData(shapes=[[4, 7, 3]], domain=(0, 1), size=10)
 
-    @no_type_check
-    def map_to_one(dp):
-        return np.ones(dp[0].shape)
-
     # Act
     df = MultiThreadMapData(df, num_thread=4, map_func=map_to_one, buffer_size=11, strict=True)
     output = collect_datapoint_from_dataflow(df, max_datapoints=20)
 
     # Assert
     assert len(output) == 10
-

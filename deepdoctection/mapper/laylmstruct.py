@@ -36,7 +36,6 @@ from ..utils.settings import names
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
-
 if pytorch_available():
     import torch
 
@@ -66,7 +65,7 @@ of PyTorch/TensorFlow tensors or NumPy arrays.
 
 DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])  # type: ignore
 
-_CLS_BOX = [0.0, 0.0, 0.0, 0.0]
+_CLS_BOX = [0.0, 0.0, 1000.0, 1000.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 
 
@@ -287,6 +286,10 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
+    if "images" in features:
+        features["images"] = [
+            torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
+        ]
     return features
 
 
@@ -346,6 +349,7 @@ def raw_features_to_layoutlm_features(
     )
 
     image_ids = []
+    images = []
     widths = []
     heights = []
 
@@ -360,6 +364,8 @@ def raw_features_to_layoutlm_features(
             # we might get more batches when we allow to get returned overflowing tokens
             batch_index_orig = tokenized_inputs["overflow_to_sample_mapping"][batch_index]
 
+        if "image" in raw_features[batch_index_orig]:
+            images.append(raw_features[batch_index_orig]["image"])
         image_ids.append(raw_features[batch_index_orig]["image_id"])
         widths.append(raw_features[batch_index_orig]["width"])
         heights.append(raw_features[batch_index_orig]["height"])
@@ -415,6 +421,10 @@ def raw_features_to_layoutlm_features(
         "bbox": token_boxes,
         "tokens": tokens,
     }
+
+    # will only add the image to features if it has been passed as raw feature
+    if images:
+        input_dict["images"] = images
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
