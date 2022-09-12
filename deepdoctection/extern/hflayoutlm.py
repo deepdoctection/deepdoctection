@@ -50,6 +50,7 @@ def predict_token_classes(
     boxes: "Tensor",
     tokens: List[str],
     model: "LayoutLMForTokenClassification",
+    images: Optional[List["Tensor"]] = None,
 ) -> List[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token
@@ -59,9 +60,15 @@ def predict_token_classes(
     :param boxes: Torch tensor of bounding boxes of type 'xyxy'
     :param tokens: List of original tokens taken from LayoutLMTokenizer
     :param model: layoutlm model for token classification
+    :param images: A list of torch image tensors or None
     :return: A list of TokenClassResults
     """
-    outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    if images is None:
+        outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    else:
+        outputs = model(
+            input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids, images=images
+        )
     score = torch.max(F.softmax(outputs.logits.squeeze(), dim=1), dim=1)
     token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
     input_ids_list = input_ids.squeeze().tolist()
@@ -152,7 +159,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             assert categories_semantics is not None
             assert categories_bio is not None
 
-        self.path_config_json = path_config_json
+        self.path_config = path_config_json
         self.path_weights = path_weights
         self.categories_semantics = categories_semantics
         self.categories_bio = categories_bio
@@ -161,7 +168,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         else:
             self.categories = self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
 
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)
         self.model = LayoutLMForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
         )
@@ -210,13 +217,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         boxes = boxes.to(self.device)
 
         results = predict_token_classes(
-            ann_ids[0],
-            input_ids,
-            attention_mask,
-            token_type_ids,
-            boxes,
-            tokens[0],
-            self.model,
+            ann_ids[0], input_ids, attention_mask, token_type_ids, boxes, tokens[0], self.model, None
         )
 
         return self._map_category_names(results)
@@ -238,7 +239,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def clone(self) -> "HFLayoutLmTokenClassifier":
         return self.__class__(
-            self.path_config_json,
+            self.path_config,
             self.path_weights,
             self.categories_semantics,
             self.categories_bio,

@@ -64,7 +64,7 @@ def dataflow_to_json(
         mkdir_p(path / "image")
 
     df = MapData(df, lambda dp: dp.get_export(save_image, highest_hierarchy_only))
-
+    df.reset_state()
     if single_files:
         for idx, dp in enumerate(df):
             if idx == max_datapoints:

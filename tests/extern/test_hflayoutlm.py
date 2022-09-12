@@ -35,7 +35,7 @@ if pytorch_available():
 
 
 def get_token_class_results(  # type: ignore
-    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model  # pylint: disable=W0613
+    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model, images  # pylint: disable=W0613
 ) -> List[TokenClassResult]:
     """
     token class result list

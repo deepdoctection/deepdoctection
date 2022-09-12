@@ -27,6 +27,7 @@ from .detection_types import TqdmType
 
 __all__ = ["get_tqdm", "get_tqdm_default_kwargs"]
 
+
 def get_tqdm_default_kwargs(
     **kwargs: Optional[Union[str, int, float]]
 ) -> Dict[str, Union[str, float, bool, int, None]]:
