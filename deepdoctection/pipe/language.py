@@ -25,7 +25,6 @@ from ..datapoint.page import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
-from ..utils.settings import names
 from ..utils.settings import LayoutType, PageType
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
