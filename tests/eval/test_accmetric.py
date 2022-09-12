@@ -34,8 +34,8 @@ from deepdoctection.eval.accmetric import (
     RecallMetric,
     RecallMetricMicro,
 )
-from deepdoctection.utils.settings import names
-
+#from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import CellType
 
 class TestAccuracyMetric:
     """
@@ -61,10 +61,10 @@ class TestAccuracyMetric:
 
         # Assert
         assert isinstance(output, list)
-        assert output[0] == {"key": names.C.TAB, "val": 1.0, "num_samples": 1}
-        assert output[1] == {"key": names.C.CELL, "val": 1.0, "num_samples": 5}
-        assert output[2] == {"key": names.C.ROW, "val": 1.0, "num_samples": 2}
-        assert output[3] == {"key": names.C.COL, "val": 1.0, "num_samples": 2}
+        assert output[0] == {"key": "TABLE", "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": "CELL", "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": "ROW", "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": "COLUMN", "val": 1.0, "num_samples": 2}
 
         # Clean-up
         AccuracyMetric._cats = None  # pylint: disable=W0212
@@ -84,14 +84,14 @@ class TestAccuracyMetric:
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
         accuracy_metric = AccuracyMetric()
-        accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
+        accuracy_metric.set_categories(sub_category_names={"CELL": [CellType.row_number, CellType.column_span]})
 
         # Arrange
         output = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
         # Assert
         assert len(output) == 2
-        assert output[0] == {"key": names.C.RN, "val": 1.0, "num_samples": 5}
-        assert output[1] == {"key": names.C.CS, "val": 1.0, "num_samples": 5}
+        assert output[0] == {"key": "ROW_NUMBER", "val": 1.0, "num_samples": 5}
+        assert output[1] == {"key": "COLUMN_SPAN", "val": 1.0, "num_samples": 5}
 
         # Clean-up
         AccuracyMetric._cats = None  # pylint: disable=W0212
@@ -111,7 +111,7 @@ class TestAccuracyMetric:
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
         accuracy_metric = AccuracyMetric()
-        accuracy_metric.set_categories(sub_category_names={names.C.CELL: [names.C.RN, names.C.CS]})
+        accuracy_metric.set_categories(sub_category_names={"CELL": ["ROW_NUMBER", "COLUMN_SPAN"]})
 
         # Arrange
         result = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
@@ -147,28 +147,28 @@ class TestConfusionMetric:
         assert isinstance(output, list)
         assert len(output) == 98
         assert output[3] == {
-            "key": names.C.TAB,
+            "key": "TABLE",
             "category_id_gt": 2,
             "category_id_pr": 2,
             "val": 1.0,
             "num_samples_gt": 1,
         }
         assert output[12] == {
-            "key": names.C.CELL,
+            "key": "CELL",
             "category_id_gt": 3,
             "category_id_pr": 3,
             "val": 5.0,
             "num_samples_gt": 5,
         }
         assert output[48] == {
-            "key": names.C.ROW,
+            "key": "ROW",
             "category_id_gt": 6,
             "category_id_pr": 6,
             "val": 2.0,
             "num_samples_gt": 2,
         }
         assert output[97] == {
-            "key": names.C.COL,
+            "key": "COLUMN",
             "category_id_gt": 7,
             "category_id_pr": 7,
             "val": 2.0,
@@ -201,10 +201,10 @@ class TestPrecisionMetric:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 18
-        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
-        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
-        assert output[10] == {"key": names.C.ROW, "category_id": 6, "val": 1.0, "num_samples": 2}
-        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+        assert output[1] == {"key": "TABLE", "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": "CELL", "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": "ROW", "category_id": 6, "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": "COLUMN", "category_id": 7, "val": 1.0, "num_samples": 2}
 
 
 class TestRecallMetric:
@@ -232,10 +232,10 @@ class TestRecallMetric:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 18
-        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
-        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
-        assert output[10] == {"key": names.C.ROW, "category_id": 6, "val": 1.0, "num_samples": 2}
-        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+        assert output[1] == {"key": "TABLE", "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": "CELL", "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": "ROW", "category_id": 6, "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": "COLUMN", "category_id": 7, "val": 1.0, "num_samples": 2}
 
 
 class TestF1Metric:
@@ -263,10 +263,10 @@ class TestF1Metric:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 18
-        assert output[1] == {"key": names.C.TAB, "category_id": 2, "val": 1.0, "num_samples": 1}
-        assert output[4] == {"key": names.C.CELL, "category_id": 3, "val": 1.0, "num_samples": 5}
-        assert output[10] == {"key": names.C.ROW, "category_id": 6, "val": 1.0, "num_samples": 2}
-        assert output[17] == {"key": names.C.COL, "category_id": 7, "val": 1.0, "num_samples": 2}
+        assert output[1] == {"key": "TABLE", "category_id": 2, "val": 1.0, "num_samples": 1}
+        assert output[4] == {"key": "CELL", "category_id": 3, "val": 1.0, "num_samples": 5}
+        assert output[10] == {"key": "ROW", "category_id": 6, "val": 1.0, "num_samples": 2}
+        assert output[17] == {"key": "COLUMN", "category_id": 7, "val": 1.0, "num_samples": 2}
 
 
 class TestPrecisionMetricMicro:
@@ -294,10 +294,10 @@ class TestPrecisionMetricMicro:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 4
-        assert output[0] == {"key": names.C.TAB, "val": 1.0, "num_samples": 1}
-        assert output[1] == {"key": names.C.CELL, "val": 1.0, "num_samples": 5}
-        assert output[2] == {"key": names.C.ROW, "val": 1.0, "num_samples": 2}
-        assert output[3] == {"key": names.C.COL, "val": 1.0, "num_samples": 2}
+        assert output[0] == {"key": "TABLE", "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": "CELL", "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": "ROW", "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": "COLUMN", "val": 1.0, "num_samples": 2}
 
 
 class TestRecallMetricMicro:
@@ -325,10 +325,10 @@ class TestRecallMetricMicro:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 4
-        assert output[0] == {"key": names.C.TAB, "val": 1.0, "num_samples": 1}
-        assert output[1] == {"key": names.C.CELL, "val": 1.0, "num_samples": 5}
-        assert output[2] == {"key": names.C.ROW, "val": 1.0, "num_samples": 2}
-        assert output[3] == {"key": names.C.COL, "val": 1.0, "num_samples": 2}
+        assert output[0] == {"key": "TABLE", "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": "CELL", "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": "ROW", "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": "COLUMN", "val": 1.0, "num_samples": 2}
 
 
 class TestF1MetricMicro:
@@ -356,7 +356,7 @@ class TestF1MetricMicro:
         # Assert
         assert isinstance(output, list)
         assert len(output) == 4
-        assert output[0] == {"key": names.C.TAB, "val": 1.0, "num_samples": 1}
-        assert output[1] == {"key": names.C.CELL, "val": 1.0, "num_samples": 5}
-        assert output[2] == {"key": names.C.ROW, "val": 1.0, "num_samples": 2}
-        assert output[3] == {"key": names.C.COL, "val": 1.0, "num_samples": 2}
+        assert output[0] == {"key": "TABLE", "val": 1.0, "num_samples": 1}
+        assert output[1] == {"key": "CELL", "val": 1.0, "num_samples": 5}
+        assert output[2] == {"key": "ROW", "val": 1.0, "num_samples": 2}
+        assert output[3] == {"key": "COLUMN", "val": 1.0, "num_samples": 2}

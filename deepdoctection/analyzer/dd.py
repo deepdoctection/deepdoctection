@@ -37,7 +37,7 @@ from ..utils.file_utils import pytorch_available, tensorpack_available, tf_avail
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import names
+from ..utils.settings import LayoutType, CellType
 from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
@@ -155,10 +155,10 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             assert categories_item is not None
             d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=cfg.DEVICE)
 
-        cell = SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
+        cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, True)
         pipe_component_list.append(cell)
 
-        item = SubImageLayoutService(d_item, names.C.TAB, {1: 7, 2: 8}, True)
+        item = SubImageLayoutService(d_item, LayoutType.table, {1: 7, 2: 8}, True)
         pipe_component_list.append(item)
 
         table_segmentation = TableSegmentationService(
@@ -191,7 +191,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=names.C.WORD,
+            child_categories=LayoutType.word,
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.IOU_THRESHOLD
             if cfg.WORD_MATCHING.RULE in ["iou"]
@@ -200,9 +200,9 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(match)
 
         order = TextOrderService(
-            text_container=names.C.WORD,
-            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+            text_container=LayoutType.word,
+            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
+            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
         )
         pipe_component_list.append(order)
 
