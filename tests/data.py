@@ -26,7 +26,7 @@ import numpy as np
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType
 
 
 @dataclass
@@ -36,36 +36,36 @@ class Annotations:
     """
 
     layout_detect_results = [
-        DetectionResult(box=[100.0, 160.0, 200.0, 260.0], score=0.63, class_id=2, class_name=names.C.TITLE),
-        DetectionResult(box=[120.0, 120.0, 140.0, 120.0], score=0.03, class_id=5, class_name=names.C.FIG),
-        DetectionResult(box=[50.0, 50.0, 150.0, 200.0], score=0.97, class_id=4, class_name=names.C.TAB),
-        DetectionResult(box=[100.0, 320.0, 150.0, 350.0], score=0.53, class_id=1, class_name=names.C.TEXT),
-        DetectionResult(box=[200.0, 50.0, 250.0, 200.0], score=0.83, class_id=4, class_name=names.C.TAB),
+        DetectionResult(box=[100.0, 160.0, 200.0, 260.0], score=0.63, class_id=2, class_name=LayoutType.title),
+        DetectionResult(box=[120.0, 120.0, 140.0, 120.0], score=0.03, class_id=5, class_name=LayoutType.figure),
+        DetectionResult(box=[50.0, 50.0, 150.0, 200.0], score=0.97, class_id=4, class_name=LayoutType.table),
+        DetectionResult(box=[100.0, 320.0, 150.0, 350.0], score=0.53, class_id=1, class_name=LayoutType.text),
+        DetectionResult(box=[200.0, 50.0, 250.0, 200.0], score=0.83, class_id=4, class_name=LayoutType.table),
     ]
 
     layout_anns = [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=160.0, lrx=200.0, lry=260.0, absolute_coords=True),
             score=0.63,
-            category_name=names.C.TITLE,
+            category_name=LayoutType.title,
             category_id="2",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=50.0, uly=50.0, lrx=150.0, lry=200.0, absolute_coords=True),
             score=0.97,
-            category_name=names.C.TAB,
+            category_name=LayoutType.table,
             category_id="4",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=320.0, lrx=150.0, lry=350.0, absolute_coords=True),
             score=0.53,
-            category_name=names.C.TEXT,
+            category_name=LayoutType.text,
             category_id="1",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=200.0, uly=50.0, lrx=250.0, lry=200.0, absolute_coords=True),
             score=0.83,
-            category_name=names.C.TAB,
+            category_name=LayoutType.table,
             category_id="4",
         ),
     ]
@@ -74,23 +74,23 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=160.0, lrx=200.0, lry=260.0, absolute_coords=True),
             score=0.9,
-            category_name=names.C.TITLE,
+            category_name=LayoutType.title,
             category_id="2",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=300.0, lrx=250.0, lry=350.0, absolute_coords=True),
             score=0.8,
-            category_name=names.C.TEXT,
+            category_name=LayoutType.text,
             category_id="1",
         ),
     ]
 
     cell_detect_results = [
         [
-            DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=names.C.HEAD),
-            DetectionResult(box=[40.0, 40.0, 50.0, 50.0], score=0.53, class_id=2, class_name=names.C.BODY),
+            DetectionResult(box=[20.0, 20.0, 25.0, 30.0], score=0.8, class_id=1, class_name=CellType.header),
+            DetectionResult(box=[40.0, 40.0, 50.0, 50.0], score=0.53, class_id=2, class_name=CellType.body),
         ],
-        [DetectionResult(box=[15.0, 20.0, 20.0, 30.0], score=0.4, class_id=1, class_name=names.C.BODY)],
+        [DetectionResult(box=[15.0, 20.0, 20.0, 30.0], score=0.4, class_id=1, class_name=CellType.body)],
     ]
 
     cell_layout_anns = [
@@ -98,13 +98,13 @@ class Annotations:
             ImageAnnotation(
                 bounding_box=BoundingBox(ulx=20.0, uly=20.0, lrx=25.0, lry=30.0, absolute_coords=True),
                 category_id="1",
-                category_name=names.C.HEAD,
+                category_name=CellType.header,
                 score=0.8,
             ),
             ImageAnnotation(
                 bounding_box=BoundingBox(ulx=40.0, uly=40.0, lrx=50.0, lry=50.0, absolute_coords=True),
                 category_id="2",
-                category_name=names.C.BODY,
+                category_name=CellType.body,
                 score=0.53,
             ),
         ],
@@ -112,7 +112,7 @@ class Annotations:
             ImageAnnotation(
                 bounding_box=BoundingBox(ulx=15.0, uly=20.0, lrx=20.0, lry=30.0, absolute_coords=True),
                 category_id="1",
-                category_name=names.C.BODY,
+                category_name=CellType.body,
                 score=0.4,
             )
         ],
@@ -130,7 +130,7 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=100.0, lrx=200.0, lry=400.0, absolute_coords=True),
             score=0.97,
-            category_name=names.C.TAB,
+            category_name=LayoutType.table,
             category_id="2",
         )
     ]
@@ -139,31 +139,31 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=100.0, lrx=20.0, lry=150.0, absolute_coords=True),
             score=0.8,
-            category_name=names.C.CELL,
+            category_name=LayoutType.cell,
             category_id="3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=200.0, lrx=20.0, lry=250.0, absolute_coords=True),
             score=0.7,
-            category_name=names.C.CELL,
+            category_name=LayoutType.cell,
             category_id="3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=100.0, lrx=50.0, lry=150.0, absolute_coords=True),
             score=0.6,
-            category_name=names.C.CELL,
+            category_name=LayoutType.cell,
             category_id="3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=200.0, lrx=50.0, lry=250.0, absolute_coords=True),
             score=0.5,
-            category_name=names.C.CELL,
+            category_name=LayoutType.cell,
             category_id="3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=80.0, uly=260.0, lrx=90.0, lry=280.0, absolute_coords=True),
             score=0.4,
-            category_name=names.C.CELL,
+            category_name=LayoutType.cell,
             category_id="3",
         ),
     ]
@@ -172,13 +172,13 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=100.0, lrx=60.0, lry=150.0, absolute_coords=True),
             score=0.8,
-            category_name=names.C.ROW,
+            category_name=LayoutType.row,
             category_id="6",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=200.0, lrx=70.0, lry=240.0, absolute_coords=True),
             score=0.7,
-            category_name=names.C.ROW,
+            category_name=LayoutType.row,
             category_id="6",
         ),
     ]
@@ -192,13 +192,13 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=50.0, lrx=20.0, lry=250.0, absolute_coords=True),
             score=0.3,
-            category_name=names.C.COL,
+            category_name=LayoutType.column,
             category_id="7",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=20.0, lrx=50.0, lry=240.0, absolute_coords=True),
             score=0.2,
-            category_name=names.C.COL,
+            category_name=LayoutType.column,
             category_id="7",
         ),
     ]
@@ -209,90 +209,90 @@ class Annotations:
     ]
 
     row_sub_cats = [
-        CategoryAnnotation(category_name=names.C.RN, category_id="1"),
-        CategoryAnnotation(category_name=names.C.RN, category_id="2"),
+        CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
+        CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
     ]
 
     col_sub_cats = [
-        CategoryAnnotation(category_name=names.C.CN, category_id="1"),
-        CategoryAnnotation(category_name=names.C.CN, category_id="2"),
+        CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
+        CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
     ]
 
     cell_sub_cats = [
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="0"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="0"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="0"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="0"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="0"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="0"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="0"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="0"),
         ),
     ]
 
     cell_sub_cats_when_table_fully_tiled = [
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
         (
-            CategoryAnnotation(category_name=names.C.RN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.CN, category_id="2"),
-            CategoryAnnotation(category_name=names.C.RS, category_id="1"),
-            CategoryAnnotation(category_name=names.C.CS, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
         ),
     ]
 
     summary_sub_cat_when_table_fully_tiled = (
-        CategoryAnnotation(category_name=names.C.NR, category_id="2"),
-        CategoryAnnotation(category_name=names.C.NC, category_id="2"),
-        CategoryAnnotation(category_name=names.C.NRS, category_id="1"),
-        CategoryAnnotation(category_name=names.C.NCS, category_id="1"),
+        CategoryAnnotation(category_name=TableType.number_of_rows, category_id="2"),
+        CategoryAnnotation(category_name=TableType.number_of_columns, category_id="2"),
+        CategoryAnnotation(category_name=TableType.max_row_span, category_id="1"),
+        CategoryAnnotation(category_name=TableType.max_col_span, category_id="1"),
     )
 
     summary_htab_sub_cat = ContainerAnnotation(
-        category_name=names.C.HTAB, value="<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
+        category_name=TableType.html, value="<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>"
     )
 
     word_results_list = [
@@ -303,7 +303,7 @@ class Annotations:
             block="1",
             line="2",
             class_id=1,
-            class_name=names.C.WORD,
+            class_name=LayoutType.word,
         ),
         DetectionResult(
             box=[30.0, 20.0, 38.0, 25.0],
@@ -312,19 +312,19 @@ class Annotations:
             block="4",
             line="5",
             class_id=1,
-            class_name=names.C.WORD,
+            class_name=LayoutType.word,
         ),
     ]
 
     word_layout_ann = [
         ImageAnnotation(
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             bounding_box=BoundingBox(absolute_coords=True, ulx=10.0, uly=10.0, width=14.0, height=13.0),
             score=0.8,
             category_id="1",
         ),
         ImageAnnotation(
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             bounding_box=BoundingBox(absolute_coords=True, ulx=30.0, uly=20.0, width=8.0, height=5.0),
             score=0.2,
             category_id="1",
@@ -335,13 +335,13 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=112.0, uly=210.0, lrx=119.0, lry=220.0, absolute_coords=True),
             score=0.9,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=145.0, uly=210.0, lrx=155.0, lry=220.0, absolute_coords=True),
             score=0.95,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
     ]
@@ -350,62 +350,62 @@ class Annotations:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=110.0, uly=165.0, lrx=130.0, lry=180.0, absolute_coords=True),
             score=0.9,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=140.0, uly=162.0, lrx=180.0, lry=180.0, absolute_coords=True),
             score=0.8,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=320.0, lrx=130.0, lry=340.0, absolute_coords=True),
             score=0.7,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=175.0, uly=320.0, lrx=205.0, lry=340.0, absolute_coords=True),
             score=0.6,
-            category_name=names.C.WORD,
+            category_name=LayoutType.word,
             category_id="8",
         ),
     ]
 
     word_sub_cats = [
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="foo"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
+            ContainerAnnotation(category_name=WordType.characters, value="foo"),
+            CategoryAnnotation(category_name=WordType.block, category_id="1"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="2"),
         ],
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="bak"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="4"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="5"),
+            ContainerAnnotation(category_name=WordType.characters, value="bak"),
+            CategoryAnnotation(category_name=WordType.block, category_id="4"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="5"),
         ],
     ]
 
     word_sub_cats_for_ordering = [
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="hello"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="1"),
+            ContainerAnnotation(category_name=WordType.characters, value="hello"),
+            CategoryAnnotation(category_name=WordType.block, category_id="1"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="1"),
         ],
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="world"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="1"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
+            ContainerAnnotation(category_name=WordType.characters, value="world"),
+            CategoryAnnotation(category_name=WordType.block, category_id="1"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="2"),
         ],
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="bye"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="2"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
+            ContainerAnnotation(category_name=WordType.characters, value="bye"),
+            CategoryAnnotation(category_name=WordType.block, category_id="2"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="2"),
         ],
         [
-            ContainerAnnotation(category_name=names.C.CHARS, value="world"),
-            CategoryAnnotation(category_name=names.C.BLOCK, category_id="2"),
-            CategoryAnnotation(category_name=names.C.TLINE, category_id="2"),
+            ContainerAnnotation(category_name=WordType.characters, value="world"),
+            CategoryAnnotation(category_name=WordType.block, category_id="2"),
+            CategoryAnnotation(category_name=WordType.text_line, category_id="2"),
         ],
     ]
 

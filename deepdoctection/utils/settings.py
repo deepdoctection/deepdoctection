@@ -204,6 +204,7 @@ class Languages(ObjectTypes):
     norwegian_nynorsk = "nno"
     urdu = "urd"
 
+
 class DatasetType(ObjectTypes):
     object_detection = "OBJECT_DETECTION"
     sequence_classification = "SEQUENCE_CLASSIFICATION"
