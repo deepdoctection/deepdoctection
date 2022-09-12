@@ -52,7 +52,7 @@ _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
     "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification,
 }
-__ARCHITECTURES_TO_TOKENIZER = {
+_ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
@@ -146,7 +146,7 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> 
 
     if architectures := config_json.get("architectures"):
         model_cls = _ARCHITECTURES_TO_MODEL_CLASS.get(architectures[0])
-        tokenizer_fast = __ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
+        tokenizer_fast = _ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
     elif model_type:
         model_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type, dataset_type))
         tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
@@ -305,13 +305,7 @@ def train_hf_layoutlm(
 
     model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
 
-    if dataset_type == names.DS.TYPE.SEQ:
-        id_str_2label = dataset_train.dataflow.categories.get_categories(as_dict=True)
-    else:
-        id_str_2label = dataset_train.dataflow.categories.get_sub_categories(
-            categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]}, keys=False, values_as_dict=True
-        )[names.C.WORD][names.NER.TOK]
-    id2label = {int(k) - 1: v for k, v in id_str_2label.items()}
+    id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
 
     logger.info("Will setup a head with the following classes\n %s", pprint.pformat(id2label, width=100, compact=True))
 
@@ -325,7 +319,7 @@ def train_hf_layoutlm(
         if dataset_type == names.DS.TYPE.SEQ:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
-            categories = dataset_train.dataflow.categories.get_sub_categories(
+            categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
                 categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]}, keys=False
             )[names.C.WORD][names.NER.TOK]
         dd_model = dd_model_cls(

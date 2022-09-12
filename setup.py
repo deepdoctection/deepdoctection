@@ -132,32 +132,17 @@ dist_deps = deps_list(
 
 
 # full dependencies for using evaluations and all datasets
-additional_deps = deps_list(
-    "lxml",
-    "lxml-stubs",
-    "pycocotools",
-    "distance",
-    "apted"
-)
+additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "distance", "apted")
 
 # remaining dependencies to use all models
-remaining_deps = deps_list(
-    "boto3",
-    "pdfplumber",
-    "tensorflow-addons",
-    "python-doctr",
-    "fasttext"
-)
+remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
 
 full_deps = dist_deps + additional_deps
 source_full_deps = dist_deps + additional_deps
 source_all_deps = dist_deps + additional_deps + remaining_deps
 
 # Tensorflow dependencies
-additional_tf_deps = deps_list(
-    "tensorpack",
-    "protobuf"
-)
+additional_tf_deps = deps_list("tensorpack", "protobuf")
 
 source_tf_deps = dist_deps + additional_tf_deps
 full_tf_deps = full_deps + additional_tf_deps
@@ -195,19 +180,10 @@ if "python-prctl" in hf_spaces_deps:
     hf_spaces_deps.remove("python-prctl")
 
 # test dependencies
-test_deps = deps_list(
-    "pytest",
-    "pytest-cov"
-)
+test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list(
-    "click",
-    "black",
-    "isort",
-    "pylint",
-    "mypy"
-)
+dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.

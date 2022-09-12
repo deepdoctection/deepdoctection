@@ -84,7 +84,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
         "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>",
         "<table><tr><td></td><td rowspan=2></td></tr><tr><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td>"
         "</td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td>"
-        "<td></td></tr></table>"
+        "<td></td></tr></table>",
     }
     assert page.height == 2339
     assert page.width == 1654
