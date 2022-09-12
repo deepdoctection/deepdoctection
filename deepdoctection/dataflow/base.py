@@ -119,7 +119,7 @@ class DataFlow:
         raise NotImplementedError
 
 
-class RNGDataFlow(DataFlow, ABC):  # pylint: disable=R0903
+class RNGDataFlow(DataFlow, ABC):
     """A DataFlow with RNG"""
 
     rng = None

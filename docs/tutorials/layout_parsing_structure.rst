@@ -23,7 +23,7 @@ diagram.
 
     import os
     
-    from deepdoctection.utils import names,  get_configs_dir_path
+    from deepdoctection.utils import get_configs_dir_path
     from deepdoctection.extern import TPFrcnnDetector, TextractOcrDetector
     from deepdoctection.pipe import ImageLayoutService, TextExtractionService
     
@@ -32,7 +32,7 @@ diagram.
 .. code:: ipython3
 
     # setting up layout detector and layout service
-    categories_layout = {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.LIST, "4": names.C.TAB, "5": names.C.FIG}
+    categories_layout = {"1": "TEXT", "2": "TITLE", "3": "LIST", "4": "TABLE", "5": "FIGURE"}
     
     layout_config_path = os.path.join(get_configs_dir_path(), "dd/tp/conf_frcnn_layout.yaml")
     
@@ -59,11 +59,11 @@ service also returns the WORD results, but these are not used further.
     from deepdoctection.pipe import MatchingService
     
     match = MatchingService(
-            parent_categories=[names.C.TEXT,
-                               names.C.TITLE,
-                               names.C.LIST,
-                               names.C.TAB],
-            child_categories=names.C.LINE,
+            parent_categories=["TEXT",
+                               "TITLE",
+                               "LIST",
+                               "TABLE"],
+            child_categories="LINE",
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.IOU_THRESHOLD
             if cfg.WORD_MATCHING.RULE in ["iou"]
@@ -99,15 +99,15 @@ containers as text blocks and include them in the order according to
 
     from deepdoctection.pipe import TextOrderService
     
-    text_order = TextOrderService(text_container=names.C.LINE,
-                                  floating_text_block_names=[names.C.TEXT,
-                                                             names.C.TITLE,
-                                                             names.C.LIST,
-                                                             names.C.TAB],
-                                  text_block_names=[names.C.TEXT,
-                                                    names.C.TITLE,
-                                                    names.C.LIST,
-                                                    names.C.TAB],
+    text_order = TextOrderService(text_container="LINE",
+                                  floating_text_block_names=["TEXT",
+                                                             "TITLE",
+                                                             "LIST",
+                                                             "TABLE"],
+                                  text_block_names=["TEXT",
+                                                    "TITLE",
+                                                    "LIST",
+                                                    "TABLE"],
                                   text_containers_to_text_block=True)
     pipe_comp.append(text_order)
 
@@ -122,15 +122,15 @@ TextOrderService.
 
     from deepdoctection.pipe import PageParsingService
     
-    page_parsing = PageParsingService(text_container=names.C.LINE,
-                                      floating_text_block_names=[names.C.TEXT,
-                                                                 names.C.TITLE,
-                                                                 names.C.LIST,
-                                                                 names.C.TAB],
-                                      text_block_names=[names.C.TEXT,
-                                                        names.C.TITLE,
-                                                        names.C.LIST,
-                                                        names.C.TAB],
+    page_parsing = PageParsingService(text_container="LINE",
+                                      floating_text_block_names=["TEXT",
+                                                                 "TITLE",
+                                                                 "LIST",
+                                                                 "TABLE"],
+                                      text_block_names=["TEXT",
+                                                        "TITLE",
+                                                        "LIST",
+                                                        "TABLE"],
                                       text_containers_to_text_block=True)
     pipe_comp.append(page_parsing)
 

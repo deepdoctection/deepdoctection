@@ -24,14 +24,12 @@ https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/tran
 from abc import ABC, abstractmethod
 from typing import Union
 
+import cv2
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-import cv2
-
 from .detection_types import ImageType
-
 
 __all__ = ["ResizeTransform", "InferenceResize"]
 
@@ -48,6 +46,7 @@ class BaseTransform(ABC):
 
     @abstractmethod
     def apply_image(self, img: ImageType) -> ImageType:
+        """The transformation that should be applied to the image"""
         raise NotImplementedError
 
 
@@ -55,7 +54,11 @@ class ResizeTransform(BaseTransform):
     """
     Resize the image.
     """
-    def __init__(self, h: int, w: int, new_h: int, new_w: int, interp):
+
+    def __init__(
+        self, h: Union[int, float], w: Union[int, float], new_h: Union[int, float], new_w: Union[int, float],
+            interp: str
+    ):
         """
         :param h: height
         :param w: width
@@ -72,26 +75,25 @@ class ResizeTransform(BaseTransform):
 
     def apply_image(self, img: ImageType) -> ImageType:
         assert img.shape[:2] == (self.h, self.w)
-        ret = cv2.resize(
-            img, (self.new_w, self.new_h),
-            interpolation=self.interp)
+        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Transformation that should be applied to coordinates"""
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords
 
 
-class InferenceResize:  # pylint: disable=R0903
+class InferenceResize:
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size. This is
     the inference version of :class:`extern.tp.frcnn.common.CustomResize` .
     """
 
-    def __init__(self, short_edge_length: int, max_size: int, interp: int = cv2.INTER_LINEAR) -> None:
+    def __init__(self, short_edge_length: int, max_size: int, interp: str = cv2.INTER_LINEAR) -> None:
         """
         :param short_edge_length ([int, int]): a [min, max] interval from which to sample the shortest edge length.
         :param max_size (int): maximum allowed longest edge length.

@@ -277,9 +277,9 @@ class ModelCatalog:
         "microsoft/layoutlm-large-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlm-large-uncased/pytorch_model.bin",
             description="LayoutLM is a simple but effective pre-training method of text and layout for document image"
-                        " understanding and information extraction tasks, such as form understanding and receipt"
-                        " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
-                        "contain any head and has to be fine tuned on a downstream task. This is model has been trained"
+            " understanding and information extraction tasks, such as form understanding and receipt"
+            " understanding. LayoutLM archived the SOTA results on multiple datasets. This model does not"
+            "contain any head and has to be fine tuned on a downstream task. This is model has been trained"
             " on 11M documents for 2 epochs.  Configuration: 24-layer, 1024-hidden, 16-heads, 343M parameters",
             size=[1361845448],
             tp_model=False,
