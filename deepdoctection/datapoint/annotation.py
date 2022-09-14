@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
+from ..utils.settings import TypeOrStr, ObjectTypes, get_type, DefaultType, SummaryType
 from ..utils.identifier import get_uuid, is_uuid_like
 from .box import BoundingBox
 from .convert import as_dict
@@ -201,7 +202,7 @@ class CategoryAnnotation(Annotation):
     :meth:`dump_relationship` instead.
     """
 
-    category_name: str = field(default="")
+    _category_name: ObjectTypes = field(default=DefaultType.default_type)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
     sub_categories: Dict[str, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
@@ -211,6 +212,20 @@ class CategoryAnnotation(Annotation):
         self.category_id = str(self.category_id)
         assert self.category_name
         super().__post_init__()
+
+    @property
+    def category_name(self) -> ObjectTypes:
+        """
+        category_name
+        """
+        return self._category_name
+
+    @category_name.setter
+    def category_name(self, input_name: TypeOrStr) -> None:
+        """
+        category_name
+        """
+        self._category_name = get_type(input_name)
 
     def dump_sub_category(
         self, sub_category_name: str, annotation: "CategoryAnnotation", *container_id_context: Optional[str]

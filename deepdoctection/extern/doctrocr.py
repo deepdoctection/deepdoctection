@@ -32,7 +32,7 @@ from ..utils.file_utils import (
     tf_addons_available,
     tf_available,
 )
-from ..utils.settings import LayoutType
+from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
 if doctr_available() and tf_addons_available():
@@ -130,7 +130,7 @@ class DoctrTextlineDetector(ObjectDetector):
     def clone(self) -> PredictorBase:
         return self.__class__()
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
 
 
