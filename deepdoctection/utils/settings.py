@@ -30,24 +30,36 @@ from ..utils.metacfg import AttrDict
 
 
 class ObjectTypes(Enum):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<%s.%s>' % (self.__class__.__name__, self.name)
 
     @classmethod
-    def from_value(cls, value: str):
+    def from_value(cls, value: str) -> "ObjectTypes":
         for member in cls.__members__.values():
             if member.value == value:
                 return member
         raise ValueError("value %s does not have corresponding member", value)
 
 
+TypeOrStr = Union[ObjectTypes,str]
+
 object_types_registry = catalogue.create("deepdoctection", "settings", entry_points=True)
+
+
+@object_types_registry.register("DefaultType")
+class DefaultType(ObjectTypes):
+    default_type = "DEFAULT_TYPE"
 
 
 @object_types_registry.register("PageType")
 class PageType(ObjectTypes):
     document_type = "DOCUMENT_TYPE"  # was previously: "DOC_CLASS"
     language = "LANGUAGE"
+
+
+@object_types_registry.register("SummaryType")
+class SummaryType(ObjectTypes):
+    summary = "SUMMARY"
 
 
 @object_types_registry.register("DocumentType")

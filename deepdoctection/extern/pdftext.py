@@ -24,7 +24,7 @@ from typing import Dict, List, Tuple
 from ..utils.context import save_tmp_file
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import get_pdfplumber_requirement, pdfplumber_available
-from ..utils.settings import LayoutType
+from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, PdfMiner
 
 if pdfplumber_available():
@@ -110,5 +110,5 @@ class PdfPlumberTextDetector(PdfMiner):
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
