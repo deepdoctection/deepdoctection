@@ -20,7 +20,7 @@ Module for funcs and constants that maintain general settings
 """
 
 import os
-from typing import Union
+from typing import Union, Tuple
 from pathlib import Path
 from enum import Enum
 
@@ -165,6 +165,25 @@ class TokenClassWithTag(ObjectTypes):
     i_question = "I-QUESTION"
 
 
+_TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin):TokenClassWithTag.b_header,
+                                        (TokenClasses.header,BioTag.inside): TokenClassWithTag.i_header,
+                                        (TokenClasses.answer, BioTag.begin): TokenClassWithTag.b_answer,
+                                        (TokenClasses.answer, BioTag.inside): TokenClassWithTag.i_answer,
+                                        (TokenClasses.question, BioTag.begin): TokenClassWithTag.b_question,
+                                        (TokenClasses.question, BioTag.inside): TokenClassWithTag.i_question,
+                                        (TokenClasses.other,BioTag.outside): BioTag.outside
+                                        }
+
+
+def token_class_tag_to_token_class_with_tag(token: TokenClasses,
+                                            tag: BioTag) -> TokenClassWithTag:
+    return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token,tag)]
+
+
+def token_class_with_tag_to_token_class_and_tag(token_class_with_tag: TokenClassWithTag) -> Tuple[TokenClasses, BioTag]:
+    return {val: key for key,val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}[token_class_with_tag]
+
+
 @object_types_registry.register("Relationships")
 class Relationships(ObjectTypes):
     child = "CHILD"
@@ -232,6 +251,7 @@ class Languages(ObjectTypes):
     bosnian = "bos"
     norwegian_nynorsk = "nno"
     urdu = "urd"
+    not_defined = "nn"
 
 
 @object_types_registry.register("DatasetType")

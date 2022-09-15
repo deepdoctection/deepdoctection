@@ -18,7 +18,7 @@
 """
 Some data samples in a separate module
 """
-
+from deepdoctection.utils.settings import LayoutType
 from deepdoctection.extern.base import DetectionResult
 
 PDF_BYTES = (
@@ -73,7 +73,7 @@ WORD_RESULTS = [
         block="1",
         line="2",
         class_id=1,
-        class_name="WORD",
+        class_name=LayoutType.word,
     ),
     DetectionResult(
         box=[30.0, 10.0, 38.0, 24.0],
@@ -82,6 +82,6 @@ WORD_RESULTS = [
         block="1",
         line="2",
         class_id=1,
-        class_name="WORD",
+        class_name=LayoutType.word,
     ),
 ]

@@ -271,7 +271,7 @@ class Page:
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bounding_box)
-                category_names_list.append(LayoutType.table)
+                category_names_list.append(LayoutType.table.value)
                 if show_cells:
                     for cell in table.cells:
                         box_stack.append(cell.bounding_box)

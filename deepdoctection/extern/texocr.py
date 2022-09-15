@@ -24,7 +24,7 @@ from typing import List
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
-from ..utils.settings import LayoutType
+from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if boto3_available():
@@ -129,7 +129,7 @@ class TextractOcrDetector(ObjectDetector):
     def clone(self) -> PredictorBase:
         return self.__class__()
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         if self.text_lines:
             return [ LayoutType.word, LayoutType.line]
         return [LayoutType.word]
