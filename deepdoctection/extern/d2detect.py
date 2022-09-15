@@ -30,6 +30,7 @@ from ..utils.file_utils import (
     pytorch_available,
 )
 from ..utils.transform import InferenceResize
+from ..utils.settings import ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .pt.ptutils import set_torch_auto_device
 
@@ -129,7 +130,7 @@ class D2FrcnnDetector(ObjectDetector):
         self,
         path_yaml: str,
         path_weights: str,
-        categories: Mapping[str, str],
+        categories: Mapping[str, ObjectTypes],
         config_overwrite: Optional[List[str]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
@@ -232,11 +233,11 @@ class D2FrcnnDetector(ObjectDetector):
         return [get_pytorch_requirement(), get_detectron2_requirement()]
 
     @classmethod
-    def _map_to_d2_categories(cls, categories: Mapping[str, str]) -> Dict[str, str]:
+    def _map_to_d2_categories(cls, categories: Mapping[str, ObjectTypes]) -> Dict[str, ObjectTypes]:
         return {str(int(k) - 1): v for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())

@@ -202,7 +202,8 @@ class CategoryAnnotation(Annotation):
     :meth:`dump_relationship` instead.
     """
 
-    _category_name: ObjectTypes = field(default=DefaultType.default_type)
+    #category_name: ObjectTypes = field(default=DefaultType.default_type)
+    _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
     sub_categories: Dict[str, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
@@ -378,13 +379,13 @@ class SummaryAnnotation(CategoryAnnotation):
     """
 
     def __post_init__(self) -> None:
-        self.category_name = "SUMMARY"
+        self._category_name = SummaryType.summary
         super().__post_init__()
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
         summary_ann = _ann_from_dict(cls, **kwargs)
-        summary_ann.category_name = "SUMMARY"
+        summary_ann.category_name = SummaryType.summary
         return summary_ann
 
 
