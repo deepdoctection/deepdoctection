@@ -178,7 +178,7 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
                     class_name=LayoutType.line,
-                    text=" ".join([detect_result.text for detect_result in block_group if detect_result.text]),
+                    text=" ".join([detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]),
                 )
             )
     if line_detect_result:

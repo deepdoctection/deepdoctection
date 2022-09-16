@@ -27,7 +27,7 @@ from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import Relationships
+from ..utils.settings import Relationships, ObjectTypes
 
 
 class DatapointManager:
@@ -166,9 +166,9 @@ class DatapointManager:
 
     def set_category_annotation(
         self,
-        category_name: str,
+        category_name: ObjectTypes,
         category_id: Optional[Union[str, int]],
-        sub_cat_key: str,
+        sub_cat_key: ObjectTypes,
         annotation_id: str,
         score: Optional[float] = None,
     ) -> str:
@@ -189,9 +189,9 @@ class DatapointManager:
 
     def set_container_annotation(
         self,
-        category_name: str,
+        category_name: ObjectTypes,
         category_id: Optional[Union[str, int]],
-        sub_cat_key: str,
+        sub_cat_key: ObjectTypes,
         annotation_id: str,
         value: Union[str, List[str]],
         score: Optional[float] = None,
@@ -216,8 +216,8 @@ class DatapointManager:
 
     def set_summary_annotation(
         self,
-        summary_key: str,
-        summary_name: str,
+        summary_key: ObjectTypes,
+        summary_name: ObjectTypes,
         summary_number: int,
         summary_value: Optional[str] = None,
         summary_score: Optional[float] = None,

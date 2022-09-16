@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import LayoutType, WordType, PageType,DatasetType
+from ..utils.settings import LayoutType, WordType, PageType,DatasetType, token_class_tag_to_token_class_with_tag, BioTag, ObjectTypes
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
@@ -74,7 +74,7 @@ _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 def image_to_layoutlm(
     dp: Image,
     tokenizer: "PreTrainedTokenizer",
-    categories_dict_name_as_key: Optional[Dict[str, str]] = None,
+    categories_dict_name_as_key: Optional[Dict[ObjectTypes, str]] = None,
     input_width: int = 1000,
     input_height: int = 1000,
 ) -> LayoutLMFeatures:
@@ -130,10 +130,12 @@ def image_to_layoutlm(
         ):
             semantic_label = ann.get_sub_category(WordType.token_class).category_name
             bio_tag = ann.get_sub_category(WordType.tag).category_name
-            if bio_tag == "O":
-                category_name = "O"
+            category_name: Union[ObjectTypes,BioTag]
+            if bio_tag is BioTag.outside:
+                category_name = BioTag.outside
             else:
-                category_name = bio_tag + "-" + semantic_label
+                #category_name = bio_tag + "-" + semantic_label
+                category_name = token_class_tag_to_token_class_with_tag(semantic_label,bio_tag)
             output["label"] = int(categories_dict_name_as_key[category_name])
 
         if dp.summary is not None and categories_dict_name_as_key is not None:
@@ -212,7 +214,7 @@ def image_to_raw_layoutlm_features(
     all_ann_ids = []
     all_words = []
     all_boxes = []
-    all_labels = []
+    all_labels: List[int] = []
 
     anns = dp.get_annotation_iter(category_names=LayoutType.word)
 

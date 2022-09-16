@@ -27,6 +27,7 @@ from numpy import uint8
 
 from ..utils.detection_types import ImageType
 from ..utils.identifier import get_uuid, is_uuid_like
+from ..utils.settings import ObjectTypes, get_type
 from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
@@ -298,7 +299,7 @@ class Image:
 
     def get_annotation(
         self,
-        category_names: Optional[Union[str, Sequence[str]]] = None,
+        category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
         annotation_types: Optional[Union[str, Sequence[str]]] = None,
     ) -> List[ImageAnnotation]:
@@ -315,7 +316,9 @@ class Image:
         :return: A (possibly empty) list of Annotations
         """
 
-        cat_names = [category_names] if isinstance(category_names, str) else category_names
+        cat_names = [category_names] if isinstance(category_names, str) or isinstance(category_names, ObjectTypes) else category_names
+        if cat_names is not None:
+            cat_names = [get_type(cat_name) for cat_name in cat_names]
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         ann_types = [annotation_types] if isinstance(annotation_types, str) else annotation_types
 
@@ -335,9 +338,9 @@ class Image:
 
     def get_annotation_iter(
         self,
-        category_names: Optional[Union[str, List[str]]] = None,
-        annotation_ids: Optional[Union[str, List[str]]] = None,
-        annotation_types: Optional[Union[str, List[str]]] = None,
+        category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        annotation_types: Optional[Union[str, Sequence[str]]] = None,
     ) -> Iterable[ImageAnnotation]:
         """
         Get annotation as an iterator. Same as :meth:`get_annotation` but returns an iterator instead of a list.
