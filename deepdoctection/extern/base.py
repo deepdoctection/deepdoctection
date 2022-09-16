@@ -226,9 +226,9 @@ class TokenClassResult:
     token_id: int
     token: str
     class_id: int
-    class_name: Union[DefaultType, TokenClassWithTag] = DefaultType.default_type
-    semantic_name: Union[DefaultType, TokenClasses] = DefaultType.default_type
-    bio_tag: Union[DefaultType, BioTag] = DefaultType.default_type
+    class_name: ObjectTypes= DefaultType.default_type
+    semantic_name: ObjectTypes = DefaultType.default_type
+    bio_tag: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None
 
 

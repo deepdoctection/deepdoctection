@@ -44,7 +44,7 @@ def _to_table_segment(dp: Image, annotation: ImageAnnotation) -> TableSegment:
     return TableSegment(
         annotation.annotation_id,
         bounding_box.to_list(mode="xyxy"),
-        annotation.category_name,
+        annotation.category_name.value,  # type: ignore
         annotation.score,
     )
 
@@ -162,7 +162,7 @@ def _to_layout_segment(dp: Image, annotation: ImageAnnotation, text_container: s
     return LayoutSegment(
         annotation.annotation_id,
         bounding_box.to_list(mode="xyxy"),
-        annotation.category_name,
+        annotation.category_name.value,  # type: ignore
         reading_order,
         text,
         annotation.score,
@@ -219,7 +219,7 @@ def to_page(
         text_block_anns.extend(text_container_anns)
 
     for ann in text_block_anns:
-        if ann.category_name in floating_text_block_names:
+        if ann.category_name.value in floating_text_block_names:  # type: ignore
             page.items.append(_to_layout_segment(dp, ann, text_container))
 
         # table item

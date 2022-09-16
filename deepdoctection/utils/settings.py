@@ -20,7 +20,7 @@ Module for funcs and constants that maintain general settings
 """
 
 import os
-from typing import Union, Tuple
+from typing import Union, Tuple, Any, Dict
 from pathlib import Path
 from enum import Enum
 
@@ -29,7 +29,8 @@ import catalogue  # type: ignore
 from ..utils.metacfg import AttrDict
 
 
-class ObjectTypes(Enum):
+class ObjectTypes(str, Enum):
+
     def __repr__(self) -> str:
         return '<%s.%s>' % (self.__class__.__name__, self.name)
 
@@ -165,7 +166,7 @@ class TokenClassWithTag(ObjectTypes):
     i_question = "I-QUESTION"
 
 
-_TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin):TokenClassWithTag.b_header,
+_TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin): TokenClassWithTag.b_header,
                                         (TokenClasses.header,BioTag.inside): TokenClassWithTag.i_header,
                                         (TokenClasses.answer, BioTag.begin): TokenClassWithTag.b_answer,
                                         (TokenClasses.answer, BioTag.inside): TokenClassWithTag.i_answer,
@@ -175,12 +176,14 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin):Token
                                         }
 
 
-def token_class_tag_to_token_class_with_tag(token: TokenClasses,
-                                            tag: BioTag) -> TokenClassWithTag:
-    return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token,tag)]
+def token_class_tag_to_token_class_with_tag(token: ObjectTypes,
+                                            tag: ObjectTypes) -> ObjectTypes:
+    if isinstance(token, TokenClasses) and isinstance(tag, BioTag):
+        return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token,tag)]
+    raise TypeError("Token must be of type TokenClasses and tag must be of type BioTag")
 
 
-def token_class_with_tag_to_token_class_and_tag(token_class_with_tag: TokenClassWithTag) -> Tuple[TokenClasses, BioTag]:
+def token_class_with_tag_to_token_class_and_tag(token_class_with_tag: ObjectTypes) -> Tuple[ObjectTypes, ObjectTypes]:
     return {val: key for key,val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}[token_class_with_tag]
 
 
