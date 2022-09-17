@@ -28,6 +28,7 @@ from pytest import mark, raises
 from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
+from deepdoctection.utils.settings import get_type
 
 from ..test_utils import anns_to_ids, collect_datapoint_from_dataflow, get_test_path
 from .conftest import TestPdfPage, WhiteImage
@@ -164,7 +165,7 @@ class TestImage:
         sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
 
         # Act
-        cat.dump_sub_category("BAK", sub_cat_1, test_image.image_id)
+        cat.dump_sub_category(get_type("BAK"), sub_cat_1, test_image.image_id)
         test_image.dump(cat)
 
         # Assert

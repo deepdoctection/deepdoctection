@@ -27,7 +27,7 @@ from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotatio
 from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
 from deepdoctection.utils.detection_types import JsonDict
 #from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import LayoutType, TableType, CellType
+from deepdoctection.utils.settings import LayoutType, TableType, CellType, get_type
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
@@ -278,7 +278,7 @@ def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
     # Arrange
     sub_category_ann = CategoryAnnotation(category_name="TEST")
     summary = SummaryAnnotation()
-    summary.dump_sub_category("TEST_SUMMARY", sub_category_ann)
+    summary.dump_sub_category(get_type("TEST_SUMMARY"), sub_category_ann)
     dp_image_fully_segmented.summary = summary
 
     # Act
@@ -288,4 +288,4 @@ def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
 
     # Assert
     with pytest.raises(Exception):
-        dp.summary.get_sub_category("TEST_SUMMARY")
+        dp.summary.get_sub_category(get_type("TEST_SUMMARY"))

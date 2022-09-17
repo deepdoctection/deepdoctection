@@ -139,8 +139,8 @@ def image_to_layoutlm(
             output["label"] = int(categories_dict_name_as_key[category_name])
 
         if dp.summary is not None and categories_dict_name_as_key is not None:
-            category_name = dp.summary.get_sub_category(PageType.document_type).category_name
-            output["label"] = int(categories_dict_name_as_key[category_name])
+            summary_cat_name = dp.summary.get_sub_category(PageType.document_type).category_name
+            output["label"] = int(categories_dict_name_as_key[summary_cat_name])
 
     all_boxes = [_CLS_BOX] + all_boxes + [_SEP_BOX]
     all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]

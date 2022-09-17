@@ -78,7 +78,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         self.use_other_as_default_category = use_other_as_default_category
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
-            self.other_name_as_key = {TokenClasses.other: categories_name_as_key[TokenClasses.other]}
+            self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
         super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
@@ -99,7 +99,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         words_populated: List[str] = []
         for token in lm_output:
             if token.uuid not in words_populated:
-                self.dp_manager.set_category_annotation(token.semantic_name, None, WordType.token_classn, token.uuid)
+                self.dp_manager.set_category_annotation(token.semantic_name, None, WordType.token_class, token.uuid)
                 self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.tag, token.uuid)
                 self.dp_manager.set_category_annotation(token.class_name, token.class_id, WordType.token_tag, token.uuid)
                 words_populated.append(token.uuid)
@@ -107,14 +107,14 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         if self.use_other_as_default_category:
             word_anns = dp.get_annotation(LayoutType.word)
             for word in word_anns:
-                if WordType.semantic_name not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(TokenClasses.other, None, WordType.semantic_name, word.annotation_id)
+                if WordType.token_class not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(TokenClasses.other, None, WordType.token_class, word.annotation_id)
                 if WordType.tag not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(BioTag.other, None, WordType.tag, word.annotation_id)
+                    self.dp_manager.set_category_annotation(BioTag.outside, None, WordType.tag, word.annotation_id)
                 if WordType.token_tag not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        BioTag.other,
-                        self.other_name_as_key[BioTag.other],
+                        BioTag.outside,
+                        self.other_name_as_key[BioTag.outside],
                         WordType.token_tag,
                         word.annotation_id,
                     )

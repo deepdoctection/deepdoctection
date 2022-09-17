@@ -27,6 +27,7 @@ from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
+from deepdoctection.utils.settings import get_type
 
 from ..mapper.data import DatapointXfund
 
@@ -95,10 +96,10 @@ class TestHFLayoutLmTokenClassifier:
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert model.categories == {"1": "B-FOO", "2": "I-FOO", "3": "O"}
+        assert model.categories == {"1": get_type("B-FOO"), "2": get_type("I-FOO"), "3": get_type("O")}
 
         # Arrange
-        categories_explicit = {"1": "FOO", "2": "BAK", "3": "O"}
+        categories_explicit = {"1": get_type("FOO"), "2": get_type("BAK"), "3": get_type("O")}
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
@@ -168,7 +169,7 @@ class TestHFLayoutLmSequenceClassifier:
         """
 
         # Arrange
-        categories = {"1": "FOO", "2": "BAK"}
+        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 

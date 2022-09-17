@@ -24,6 +24,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import CategoryAnnotation
 from deepdoctection.utils import get_uuid
+from deepdoctection.utils.settings import get_type
 
 from .conftest import CatAnn
 
@@ -66,11 +67,11 @@ class TestCategoryAnnotation:
         sub_cat_2 = CategoryAnnotation(category_name="BAZ", category_id="3")
 
         # Act
-        cat.dump_sub_category("bak", sub_cat_1)
-        cat.dump_sub_category("baz", sub_cat_2, "c822f8c3-1148-30c4-90eb-cb4896b1ebe5")
+        cat.dump_sub_category(get_type("bak"), sub_cat_1)
+        cat.dump_sub_category(get_type("baz"), sub_cat_2, "c822f8c3-1148-30c4-90eb-cb4896b1ebe5")
 
-        export_sub_cat_1 = cat.get_sub_category("bak")
-        export_sub_cat_2 = cat.get_sub_category("baz")
+        export_sub_cat_1 = cat.get_sub_category(get_type("bak"))
+        export_sub_cat_2 = cat.get_sub_category(get_type("baz"))
 
         # Assert
         if export_sub_cat_1 is not None and export_sub_cat_2 is not None:
@@ -92,9 +93,9 @@ class TestCategoryAnnotation:
             category_name="FOOBAK", category_id="2", external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         # Act
-        cat.dump_sub_category("bak", sub_cat_1)
+        cat.dump_sub_category(get_type("bak"), sub_cat_1)
 
-        export_sub_cat_1 = cat.get_sub_category("bak")
+        export_sub_cat_1 = cat.get_sub_category(get_type("bak"))
 
         # Assert
         if export_sub_cat_1 is not None:
@@ -109,11 +110,11 @@ class TestCategoryAnnotation:
         # Arrange
         cat = CategoryAnnotation(category_name="FOO", category_id="1")
         sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
-        cat.dump_sub_category("bak", sub_cat_1)
+        cat.dump_sub_category(get_type("bak"), sub_cat_1)
 
         # Act
-        cat.remove_sub_category("bak")
+        cat.remove_sub_category(get_type("bak"))
 
         # Assert
         with pytest.raises(Exception):
-            cat.get_sub_category("bak")
+            cat.get_sub_category(get_type("bak"))

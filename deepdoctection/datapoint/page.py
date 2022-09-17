@@ -261,14 +261,14 @@ class Cell(Layout):
         if Relationships.reading_order in annotation.sub_categories:
             reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
 
-        if Cell.row_number in annotation.sub_categories:
-            row_number = int(annotation.get_sub_category(Cell.row_number).category_id)
-        if Cell.col_number in annotation.sub_categories:
-            col_number = int(annotation.get_sub_category(Cell.col_numbe).category_id)
-        if Cell.row_span in annotation.sub_categories:
-            row_span = int(annotation.get_sub_category(Cell.row_span).category_id)
-        if Cell.column_span in annotation.sub_categories:
-            col_span = int(annotation.get_sub_category(Cell.column_span).category_id)
+        if CellType.row_number in annotation.sub_categories:
+            row_number = int(annotation.get_sub_category(CellType.row_number).category_id)
+        if CellType.column_number in annotation.sub_categories:
+            col_number = int(annotation.get_sub_category(CellType.column_number).category_id)
+        if CellType.row_span in annotation.sub_categories:
+            row_span = int(annotation.get_sub_category(CellType.row_span).category_id)
+        if CellType.column_span in annotation.sub_categories:
+            col_span = int(annotation.get_sub_category(CellType.column_span).category_id)
 
         return cls(
             annotation.annotation_id,

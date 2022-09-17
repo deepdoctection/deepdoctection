@@ -26,7 +26,7 @@ import numpy as np
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType
+from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType, get_type
 
 
 @dataclass
@@ -1523,4 +1523,4 @@ def get_sequence_class_result() -> SequenceClassResult:
     """
     sequence class result
     """
-    return SequenceClassResult(class_name="FOO", class_id=1)
+    return SequenceClassResult(class_name=get_type("FOO"), class_id=1)

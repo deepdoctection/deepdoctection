@@ -27,7 +27,7 @@ from typing import Mapping, Optional
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
-from ..utils.settings import LayoutType, WordType, TokenClasses, BioTag, Relationships, TokenClassWithTag
+from ..utils.settings import LayoutType, WordType, TokenClasses, BioTag, Relationships, TokenClassWithTag, token_class_tag_to_token_class_with_tag, get_type
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 
@@ -110,16 +110,20 @@ def xfund_to_image(
                     sub_cat_tag = CategoryAnnotation(category_name=BioTag.begin)
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     sub_cat_ner_tok = CategoryAnnotation(
-                        category_name=TokenClassWithTag.from_value(BioTag.begin + "-" + sub_cat_semantic.category_name.value),
-                        category_id=ner_token_to_id_mapping[TokenClassWithTag.from_value(BioTag.begin + "-" + sub_cat_semantic.category_name)],
+                        category_name=token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),BioTag.begin),
+                        #category_name=TokenClassWithTag.from_value(BioTag.begin + "-" + sub_cat_semantic.category_name.value),
+                        category_id=ner_token_to_id_mapping[token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),BioTag.begin)],
                     )
                     ann.dump_sub_category(WordType.token_tag, sub_cat_ner_tok)
                 else:
                     sub_cat_tag = CategoryAnnotation(category_name=BioTag.inside)
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     sub_cat_ner_tok = CategoryAnnotation(
-                        category_name=TokenClassWithTag.from_value(BioTag.inside + "-" + sub_cat_semantic.category_name),
-                        category_id=ner_token_to_id_mapping[TokenClassWithTag.from_value(BioTag.inside + "-" + sub_cat_semantic.category_name)],
+                        category_name=token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),
+                                                                              BioTag.inside),
+                        #category_name=TokenClassWithTag.from_value(BioTag.inside + "-" + sub_cat_semantic.category_name),
+                        category_id=ner_token_to_id_mapping[token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),
+                                                                              BioTag.inside)],
                     )
                     ann.dump_sub_category(WordType.token_tag, sub_cat_ner_tok)
 

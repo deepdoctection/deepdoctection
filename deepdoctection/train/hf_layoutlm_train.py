@@ -21,7 +21,7 @@ Module for training Huggingface implementation of LayoutLm
 import copy
 import json
 import pprint
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union, Mapping
 
 from torch.nn import Module
 from torch.utils.data import Dataset
@@ -45,7 +45,7 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_feature
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import logger
-from ..utils.settings import DatasetType, LayoutType, WordType
+from ..utils.settings import DatasetType, LayoutType, WordType, ObjectTypes
 from ..utils.utils import string_to_dict
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
@@ -56,7 +56,7 @@ _ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
-_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {
+_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[(str,ObjectTypes), Any] = {
     ("layoutlm", DatasetType.sequence_classification): LayoutLMForSequenceClassification,
     ("layoutlm", DatasetType.token_classification): LayoutLMForTokenClassification,
 }
@@ -138,7 +138,7 @@ class LayoutLMTrainer(Trainer):
         return scores
 
 
-def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> Tuple[Any, Any]:
+def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: ObjectTypes) -> Tuple[Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
