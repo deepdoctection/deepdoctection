@@ -37,7 +37,7 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.logger import log_once, logger
-from ...utils.settings import LayoutType, CellType, DatasetType, TableType, WordType
+from ...utils.settings import LayoutType, CellType, DatasetType, TableType, WordType, ObjectTypes
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -74,7 +74,7 @@ _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
 _INIT_CATEGORIES = [LayoutType.cell,TableType.item,LayoutType.table,LayoutType.word]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
     TableType.item: {"row_col": [LayoutType.row,LayoutType.column]},
     LayoutType.cell: {
