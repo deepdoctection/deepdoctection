@@ -21,7 +21,7 @@ Module for globally accessible fixtures
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Mapping, Sequence
 
 import numpy as np
 from pytest import fixture
@@ -37,7 +37,7 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, Relationships, WordType
+from deepdoctection.utils.settings import LayoutType, CellType, Relationships, WordType, ObjectTypes
 from deepdoctection.utils.systools import get_package_path
 
 from .data import (
@@ -95,7 +95,7 @@ def fixture_dataset_categories() -> DatasetCategories:
     fixture categories
     """
     _categories = [LayoutType.table, LayoutType.cell, LayoutType.row, LayoutType.column]
-    _sub_categories: JsonDict = {
+    _sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
         LayoutType.row: {CellType.row_number: []},
         LayoutType.column: {CellType.column_number: []},
         LayoutType.cell: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},

@@ -31,7 +31,7 @@ from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.logger import log_once, logger
 
-from ..utils.settings import DatasetType, LayoutType, WordType, PageType
+from ..utils.settings import DatasetType, LayoutType, WordType, PageType, ObjectTypes
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
@@ -70,7 +70,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info("Yielding dataflow into memory and create torch dataset")
-            categories: Dict[str, str] = {}
+            categories: Dict[str, ObjectTypes] = {}
             _data_statistics = True
             if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
                 categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)

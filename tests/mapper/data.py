@@ -20,7 +20,7 @@ Some datapoint samples in a separate module
 """
 
 from collections import namedtuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Union, Mapping
 
 import numpy as np
@@ -972,7 +972,7 @@ class DatapointImage:
                 "score": 0.99,
             },
         ]
-        self.categories = DatasetCategories(init_categories=["FOO", "BAK"])
+        self.categories = DatasetCategories(init_categories=[get_type("FOO"), get_type("BAK")])
         self.tp_frcnn_training: JsonDict = {
             "image": _img_np,
             "gt_boxes": np.asarray([[2.6, 3.7, 4.6, 5.7], [16.6, 26.6, 30.6, 30.6]]).astype("float32"),
@@ -1984,7 +1984,7 @@ class DatapointXfund:
         """categories dict names as key"""
         return self.categories_dict_name_as_key
 
-    def get_net_token_to_id_mapping(self) -> Dict[str, str]:
+    def get_net_token_to_id_mapping(self) -> Dict[ObjectTypes, str]:
         """token to id mapping"""
         return self.ner_token_to_id_mapping
 
@@ -2018,7 +2018,7 @@ class IIITar13KJson:
         ],
     }
 
-    categories_name_as_keys = {LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"}
+    categories_name_as_keys: Dict[ObjectTypes,str] = field(default_factory={LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"})
     category_names_mapping = {
         "natural_image": LayoutType.figure,
         "figure": LayoutType.figure,

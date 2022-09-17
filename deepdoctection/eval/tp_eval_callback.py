@@ -20,7 +20,7 @@ Module for EvalCallback in Tensorpack
 """
 
 from itertools import count
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Type, Union, Sequence, Mapping
 
 from ..datasets import DatasetBase
 from ..extern.tpdetect import TPFrcnnDetector
@@ -28,6 +28,7 @@ from ..pipe.base import PredictorPipelineComponent
 from ..utils.file_utils import tensorpack_available
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict
+from ..utils.settings import ObjectTypes
 from .base import MetricBase
 from .eval import Evaluator
 
@@ -55,8 +56,8 @@ class EvalCallback(Callback):  # pylint: disable=R0903
     def __init__(
         self,
         dataset: DatasetBase,
-        category_names: Optional[Union[str, List[str]]],
-        sub_categories: Optional[Union[Dict[str, str], Dict[str, List[str]]]],
+        category_names: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]],
+        sub_categories: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]],
         metric: Union[Type[MetricBase], MetricBase],
         pipeline_component: PredictorPipelineComponent,
         in_names: str,

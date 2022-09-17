@@ -22,9 +22,8 @@ Module for storing dataset info (e.g. general meta data or categories)
 from copy import copy
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload, Any
 
-from ..utils.detection_types import JsonDict
 from ..utils.utils import call_only_once
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type, DefaultType
 
@@ -32,12 +31,12 @@ __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = 1) -> Dict[ObjectTypes, str]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> Dict[ObjectTypes, str]:
     ...
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = 1) -> Dict[str, ObjectTypes]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> Dict[str, ObjectTypes]:
     ...
 
 
@@ -140,19 +139,19 @@ class DatasetCategories:
 
     @overload
     def get_categories(
-        self, as_dict: Literal[True] = ..., name_as_key: Literal[False] = ..., init: bool = False, filtered: bool = False
+        self, as_dict: Literal[True]= ..., name_as_key: Literal[False] =..., init: bool = False, filtered: bool = False
     ) -> Dict[str, ObjectTypes]:
         ...
 
     @overload
     def get_categories(
-        self, as_dict: Literal[False], name_as_key: Literal[False] = ..., init: bool = False, filtered: bool = False
+        self, as_dict: Literal[False], name_as_key: Literal[False]=..., init: bool = False, filtered: bool = False
     ) -> List[ObjectTypes]:
         ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes], List[str]]:
+    ) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes], List[ObjectTypes]]:
         """
         Get categories of a dataset. The returned value also respects modifications of the inventory like filtered
         categories of replaced categories with sub categories. However, you must correctly pass arguments to return the
@@ -190,7 +189,7 @@ class DatasetCategories:
         keys: bool = True,
         values_as_dict: bool = True,
         name_as_key: bool = False,
-    ) -> JsonDict:
+    ) -> Dict[ObjectTypes, Any]:
         """
         Returns a dict of list with a category name and their sub categories.
 
@@ -204,18 +203,18 @@ class DatasetCategories:
         :return: Dict with all selected categories.
         """
         if isinstance(categories, str) or isinstance(categories, ObjectTypes):
-            categories = [get_type(categories)]
+            _categories = [get_type(categories)]
         elif isinstance(categories, list):
-            categories = [get_type(category) for category in categories]
-        if categories is None:
-            categories = self.get_categories(as_dict=False, filtered=True)
-            if categories is None:
-                categories = []
+            _categories = [get_type(category) for category in categories]
+        else:
+            _categories = self.get_categories(as_dict=False, filtered=True)
+            if _categories is None:
+                _categories = []
         if sub_categories is None:
             sub_categories = {}
 
         sub_cat: Dict[ObjectTypes, Union[ObjectTypes, List[ObjectTypes]]] = {}
-        for cat in categories:  # pylint: disable=R1702
+        for cat in _categories:  # pylint: disable=R1702
             assert cat in self.get_categories(  # pylint: disable=E1135
                 as_dict=False, filtered=True
             ), f"{cat} not in categories, maybe has been replaced with sub category"
@@ -246,14 +245,14 @@ class DatasetCategories:
                     if values_as_dict:
                         if not name_as_key:
                             sub_cat_tmp[sub_cat_key] = {
-                                str(k): v for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
+                                str(k): v for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                         else:
                             sub_cat_tmp[sub_cat_key] = {
-                                v: str(k) for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
+                                v: str(k) for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                     else:
-                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][sub_cat_key]
+                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][get_type(sub_cat_key)]
                 sub_cat_values[category] = sub_cat_tmp
             return sub_cat_values
 

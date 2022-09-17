@@ -42,7 +42,7 @@ from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.fs import load_json
-from ...utils.settings import DatasetType, LayoutType, TokenClasses, BioTag, TokenClassWithTag, WordType
+from ...utils.settings import DatasetType, LayoutType, TokenClasses, BioTag, TokenClassWithTag, WordType, ObjectTypes
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -84,7 +84,7 @@ _LOCATION = "funsd"
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "annotations", "test": "annotations"}
 
 _INIT_CATEGORIES = [LayoutType.word]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.word: {
         WordType.token_class: [TokenClasses.other,TokenClasses.question,TokenClasses.answer,TokenClasses.header],

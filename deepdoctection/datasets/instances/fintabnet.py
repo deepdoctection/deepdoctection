@@ -45,7 +45,7 @@ from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import logger
-from ...utils.settings import DatasetType, LayoutType, CellType, TableType
+from ...utils.settings import DatasetType, LayoutType, CellType, TableType, ObjectTypes
 from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -90,7 +90,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
 _INIT_CATEGORIES = [LayoutType.table,LayoutType.cell,TableType.item]
-_SUB_CATEGORIES: Mapping[str, Mapping[str, Sequence[str]]]
+_SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.cell: {
         CellType.header: [CellType.header, CellType.body],

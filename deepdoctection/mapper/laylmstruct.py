@@ -135,12 +135,12 @@ def image_to_layoutlm(
                 category_name = BioTag.outside
             else:
                 #category_name = bio_tag + "-" + semantic_label
-                category_name = token_class_tag_to_token_class_with_tag(semantic_label,bio_tag)
+                category_name = token_class_tag_to_token_class_with_tag(semantic_label,bio_tag)  # type: ignore
             output["label"] = int(categories_dict_name_as_key[category_name])
 
         if dp.summary is not None and categories_dict_name_as_key is not None:
             summary_cat_name = dp.summary.get_sub_category(PageType.document_type).category_name
-            output["label"] = int(categories_dict_name_as_key[summary_cat_name])
+            output["label"] = int(categories_dict_name_as_key[summary_cat_name])  # type: ignore
 
     all_boxes = [_CLS_BOX] + all_boxes + [_SEP_BOX]
     all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
