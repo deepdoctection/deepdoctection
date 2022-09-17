@@ -26,6 +26,7 @@ from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.settings import ObjectTypes
 from ..utils.fs import load_image_from_file
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
@@ -38,7 +39,7 @@ def coco_to_image(
     filter_empty_image: bool,
     fake_score: bool,
     coarse_mapping: Optional[Mapping[int, int]] = None,
-    coarse_sub_cat_name: Optional[str] = None,
+    coarse_sub_cat_name: Optional[ObjectTypes] = None,
 ) -> Optional[Image]:
 
     """
@@ -53,7 +54,7 @@ def coco_to_image(
                        will be added.
     :param coarse_mapping: A mapping to map categories into broader categories. Note that the coarser categories must
                            already be included in the original mapping.
-    :param coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping. If
+    :param coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping.
     :return: Image
     """
 

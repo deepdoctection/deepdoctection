@@ -25,6 +25,7 @@ from typing import List, Mapping, Optional, Union
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
 from ..utils.metacfg import set_config_by_yaml
+from ..utils.settings import ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if tensorpack_available():
@@ -61,7 +62,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         self,
         path_yaml: str,
         path_weights: str,
-        categories: Mapping[str, str],
+        categories: Mapping[str, ObjectTypes],
         config_overwrite: Optional[List[str]] = None,
         ignore_mismatch: bool = False,
     ):

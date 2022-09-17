@@ -32,7 +32,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, CellType, TableType,Relationships
+from ..utils.settings import LayoutType, CellType, TableType,Relationships, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -408,7 +408,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                         box=merged_box.to_list(mode="xyxy"),
                         score=-1.0,
                         class_id=int(cells[0].category_id),
-                        class_name=cells[0].category_name,
+                        class_name=get_type(cells[0].category_name),
                     )
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:

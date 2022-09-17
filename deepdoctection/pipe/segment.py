@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 
 import numpy as np
 
@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, CellType, Relationships, TableType
+from ..utils.settings import LayoutType, CellType, Relationships, ObjectTypes
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -254,8 +254,8 @@ def _default_segment_table(cells: List[ImageAnnotation]) -> List[SegmentationRes
 def segment_table(
     dp: Image,
     table: ImageAnnotation,
-    item_names: Union[str, List[str]],
-    cell_names: Union[str, List[str]],
+    item_names: Union[ObjectTypes, Sequence[ObjectTypes]],
+    cell_names: Union[ObjectTypes, Sequence[ObjectTypes]],
     segment_rule: str,
     threshold_rows: float,
     threshold_cols: float,
@@ -476,7 +476,7 @@ class TableSegmentationService(PipelineComponent):
                     {
                         LayoutType.cell: {CellType.row_number, CellType.column_number, CellType.row_span, CellType.column_span},
                         LayoutType.row: {CellType.row_number},
-                        LayoutType.column: {CellType.column_name},
+                        LayoutType.column: {CellType.column_number},
                     },
                 ),
                 ("relationships", {}),

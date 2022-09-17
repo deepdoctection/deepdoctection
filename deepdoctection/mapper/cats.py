@@ -46,10 +46,10 @@ def cat_to_sub_cat(
 
     if cat_to_sub_cat_dict is None:
         return dp
-    cat_to_sub_cat_dict = {get_type(key) : get_type(value) for key, value in cat_to_sub_cat_dict.items()}
+    cat_to_sub_cat_dict_obj_type = {get_type(key) : get_type(value) for key, value in cat_to_sub_cat_dict.items()}
     categories_dict = categories_dict_names_as_key
-    for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict.keys())):
-        sub_cat_type = cat_to_sub_cat_dict.get(ann.category_name, "")
+    for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict_obj_type.keys())):
+        sub_cat_type = cat_to_sub_cat_dict_obj_type[get_type(ann.category_name)]
         sub_cat = ann.get_sub_category(sub_cat_type)
         if sub_cat:
             ann.category_name = sub_cat.category_name

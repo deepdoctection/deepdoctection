@@ -19,12 +19,13 @@
 """
 Fixtures for mapper package testing
 """
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Mapping
 
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
 from deepdoctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.utils.settings import ObjectTypes
 
 from .data import (
     DatapointCoco,
@@ -205,7 +206,7 @@ def fixture_datapoint_xfund() -> Dict[str, Any]:
 
 
 @fixture(name="xfund_category_names")
-def fixture_xfund_category_names() -> Dict[str, str]:
+def fixture_xfund_category_names() -> Mapping[str, ObjectTypes]:
     """
     Xfund category names mapping
     """
@@ -230,7 +231,7 @@ def fixture_raw_layoutlm_featurest() -> JsonDict:
 
 
 @fixture(name="xfund_categories_dict_name_as_key")
-def fixture_xfund_categories_dict_name_as_key() -> JsonDict:
+def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes,str]:
     """
     categories_dict_name_as_key
     """
@@ -255,7 +256,7 @@ def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
 
 
 @fixture(name="iiitar13k_categories_name_as_keys")
-def fixture_iiitar13k_categories_name_as_keys() -> Dict[str, str]:
+def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, str]:
     """
     iiitar13k category names dict
     """
@@ -264,7 +265,7 @@ def fixture_iiitar13k_categories_name_as_keys() -> Dict[str, str]:
 
 
 @fixture(name="iiitar13k_category_names_mapping")
-def fixture_xfund_category_names_mapping() -> Dict[str, str]:
+def fixture_xfund_category_names_mapping() -> Mapping[str, ObjectTypes]:
     """
     iiitar13k category names mapping
     """

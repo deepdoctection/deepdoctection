@@ -94,7 +94,7 @@ class LayoutType(ObjectTypes):
     figure = "FIGURE"
     list = "LIST"
     text = "TEXT"
-    title = "TITLE"
+    title = "TITLE"  # type: ignore
     logo = "LOGO"
     signature = "SIGNATURE"
     caption = "CAPTION"
@@ -161,9 +161,15 @@ class TokenClassWithTag(ObjectTypes):
     b_answer = "B-ANSWER"
     b_header = "B-HEAD"
     b_question = "B-QUESTION"
+    e_answer = "E-ANSWER"
+    e_header = "E_HEAD"
+    e_question = "E_QUESTION"
     i_answer = "I-ANSWER"
     i_header = "I-HEAD"
     i_question = "I-QUESTION"
+    s_answer = "S-ANSWER"
+    s_header = "S-HEADER"
+    s_question = "S-QUESTION"
 
 
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin): TokenClassWithTag.b_header,
@@ -262,6 +268,7 @@ class DatasetType(ObjectTypes):
     object_detection = "OBJECT_DETECTION"
     sequence_classification = "SEQUENCE_CLASSIFICATION"
     token_classification = "TOKEN_CLASSIFICATION"
+    publaynet = "PUBLAYNET"
 
 
 _ALL_TYPES_DICT = {}

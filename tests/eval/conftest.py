@@ -28,6 +28,7 @@ from pytest import fixture
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.utils.settings import get_type
 
 
 @fixture(name="datapoint_image")
@@ -89,7 +90,7 @@ def fixture_categories() -> DatasetCategories:
     """
     categories
     """
-    return DatasetCategories(init_categories=["ROW", "COLUMN"])
+    return DatasetCategories(init_categories=[get_type("ROW"), get_type("COLUMN")])
 
 
 @fixture(name="detection_results")
@@ -98,9 +99,9 @@ def fixture_detection_results() -> List[DetectionResult]:
     detection results
     """
     detect_results_list = [
-        DetectionResult(box=[15.0, 100.0, 60.0, 150.0], score=0.9, class_id=1, class_name="ROW"),
-        DetectionResult(box=[15.0, 200.0, 70.0, 240.0], score=0.8, class_id=1, class_name="ROW"),
-        DetectionResult(box=[10.0, 50.0, 20.0, 250.0], score=0.7, class_id=2, class_name="COLUMN"),
+        DetectionResult(box=[15.0, 100.0, 60.0, 150.0], score=0.9, class_id=1, class_name=get_type("ROW")),
+        DetectionResult(box=[15.0, 200.0, 70.0, 240.0], score=0.8, class_id=1, class_name=get_type("ROW")),
+        DetectionResult(box=[10.0, 50.0, 20.0, 250.0], score=0.7, class_id=2, class_name=get_type("COLUMN")),
     ]
 
     return detect_results_list

@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Union
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
-from ..utils.settings import Relationships
+from ..utils.settings import Relationships, ObjectTypes
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -41,7 +41,7 @@ class DetectResultGenerator:
     """
 
     def __init__(
-        self, categories: Dict[str, str], image_width: float, image_height: float, group_categories: List[List[str]]
+        self, categories: Dict[str, ObjectTypes], image_width: float, image_height: float, group_categories: List[List[str]]
     ) -> None:
         """
         :param categories: The dict of all possible detection categories

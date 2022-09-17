@@ -82,17 +82,17 @@ _INIT_CATEGORIES = [
     LayoutType.title,
 ]
 _SUB_CATEGORIES = {
-    LayoutType.caption: {"publaynet": [LayoutType.text]},
-    LayoutType.footnote: {"publaynet": [LayoutType.text]},
-    LayoutType.formula: {"publaynet": [LayoutType.text]},
-    LayoutType.list: {"publaynet": [LayoutType.list]},
-    LayoutType.page_footer: {"publaynet": [LayoutType.text]},
-    LayoutType.page_header: {"publaynet": [LayoutType.title]},
-    LayoutType.figure: {"publaynet": [LayoutType.figure]},
-    LayoutType.section_header: {"publaynet": [LayoutType.title]},
-    LayoutType.table: {"publaynet": [LayoutType.table]},
-    LayoutType.text: {"publaynet": [LayoutType.text]},
-    LayoutType.title: {"publaynet": [LayoutType.title]},
+    LayoutType.caption: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.footnote: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.formula: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.list: {DatasetType.publaynet: [LayoutType.list]},
+    LayoutType.page_footer: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.page_header: {DatasetType.publaynet: [LayoutType.title]},
+    LayoutType.figure: {DatasetType.publaynet: [LayoutType.figure]},
+    LayoutType.section_header: {DatasetType.publaynet: [LayoutType.title]},
+    LayoutType.table: {DatasetType.publaynet: [LayoutType.table]},
+    LayoutType.text: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.title: {DatasetType.publaynet: [LayoutType.title]},
 }
 
 
@@ -153,7 +153,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 coarse_mapping={1: 10, 2: 10, 3: 10, 4: 4, 5: 10, 6: 11, 7: 7, 8: 11, 9: 9, 10: 10, 11: 11},
-                coarse_sub_cat_name="publaynet",
+                coarse_sub_cat_name=DatasetType.publaynet,
             ),
         )
 

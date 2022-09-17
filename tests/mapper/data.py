@@ -21,7 +21,7 @@ Some datapoint samples in a separate module
 
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Mapping
 
 import numpy as np
 
@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType
+from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType, get_type, ObjectTypes
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",
@@ -1056,7 +1056,7 @@ class DatapointImage:
         Image with summary "BAK" and CategoryAnnotation "FOO"
         """
         self.image.summary = SummaryAnnotation()
-        self.image.summary.dump_sub_category("BAK", CategoryAnnotation(category_name="FOO", category_id="1"))
+        self.image.summary.dump_sub_category(get_type("BAK"), CategoryAnnotation(category_name="FOO", category_id="1"))
         return self.image
 
 
@@ -1769,19 +1769,19 @@ class DatapointXfund:
                               "answer": TokenClasses.answer,
                               "header": TokenClasses.header}
     categories_dict_name_as_key = {
-        "B-ANSWER": "1",
-        "B-HEAD": "2",
-        "B-QUESTION": "3",
-        "E-ANSWER": "4",
-        "E-HEAD": "5",
-        "E-QUESTION": "6",
-        "I-ANSWER": "7",
-        "I-HEAD": "8",
-        "I-QUESTION": "9",
-        "O": "10",
-        "S-ANSWER": "11",
-        "S-HEAD": "12",
-        "S-QUESTION": "13",
+        get_type("B-ANSWER"): "1",
+        get_type("B-HEAD"): "2",
+        get_type("B-QUESTION"): "3",
+        get_type("E-ANSWER"): "4",
+        get_type("E-HEAD"): "5",
+        get_type("E-QUESTION"): "6",
+        get_type("I-ANSWER"): "7",
+        get_type("I-HEAD"): "8",
+        get_type("I-QUESTION"): "9",
+        get_type("O"): "10",
+        get_type("S-ANSWER"): "11",
+        get_type("S-HEAD"): "12",
+        get_type("S-QUESTION"): "13",
     }
     ner_token_to_id_mapping = {
         TokenClassWithTag.b_answer: "1",
@@ -1902,7 +1902,7 @@ class DatapointXfund:
         "labels": [6, 6, 1],
     }
 
-    def get_category_names_mapping(self) -> Dict[str, str]:
+    def get_category_names_mapping(self) -> Mapping[str, ObjectTypes]:
         """
         category_names_mapping
         """
@@ -1980,7 +1980,7 @@ class DatapointXfund:
             "I-FOO",
         ]
 
-    def get_categories_dict_names_as_key(self) -> Dict[str, str]:
+    def get_categories_dict_names_as_key(self) -> Dict[ObjectTypes, str]:
         """categories dict names as key"""
         return self.categories_dict_name_as_key
 
@@ -2029,7 +2029,7 @@ class IIITar13KJson:
 
     first_ann_box = Box(ulx=127, uly=202, w=1006 - 127, h=580 - 202)
 
-    def get_category_names_mapping(self) -> Dict[str, str]:
+    def get_category_names_mapping(self) -> Mapping[str, ObjectTypes]:
         """
         category_names_mapping
         """
@@ -2066,7 +2066,7 @@ class IIITar13KJson:
         """
         return LayoutType.table
 
-    def get_categories_name_as_keys(self) -> Dict[str, str]:
+    def get_categories_name_as_keys(self) -> Mapping[ObjectTypes, str]:
         """
         categories name as keys
         """
