@@ -76,7 +76,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 _INIT_CATEGORIES = [LayoutType.cell,TableType.item,LayoutType.table,LayoutType.word]
 _SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    TableType.item: {"row_col": [LayoutType.row,LayoutType.column]},
+    TableType.item: {TableType.item: [LayoutType.row,LayoutType.column]},
     LayoutType.cell: {
         CellType.header: [CellType.header,CellType.body],
         CellType.row_number: [],

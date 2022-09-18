@@ -1770,17 +1770,17 @@ class DatapointXfund:
                               "header": TokenClasses.header}
     categories_dict_name_as_key = {
         get_type("B-ANSWER"): "1",
-        get_type("B-HEAD"): "2",
+        get_type("B-HEADER"): "2",
         get_type("B-QUESTION"): "3",
         get_type("E-ANSWER"): "4",
-        get_type("E-HEAD"): "5",
+        get_type("E-HEADER"): "5",
         get_type("E-QUESTION"): "6",
         get_type("I-ANSWER"): "7",
-        get_type("I-HEAD"): "8",
+        get_type("I-HEADER"): "8",
         get_type("I-QUESTION"): "9",
         get_type("O"): "10",
         get_type("S-ANSWER"): "11",
-        get_type("S-HEAD"): "12",
+        get_type("S-HEADER"): "12",
         get_type("S-QUESTION"): "13",
     }
     ner_token_to_id_mapping = {
@@ -2018,7 +2018,7 @@ class IIITar13KJson:
         ],
     }
 
-    categories_name_as_keys: Dict[ObjectTypes,str] = field(default_factory={LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"})
+    categories_name_as_keys= {LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"}
     category_names_mapping = {
         "natural_image": LayoutType.figure,
         "figure": LayoutType.figure,
@@ -2070,4 +2070,4 @@ class IIITar13KJson:
         """
         categories name as keys
         """
-        return self.categories_name_as_keys
+        return self.categories_name_as_keys  # type: ignore

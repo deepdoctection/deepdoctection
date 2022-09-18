@@ -239,7 +239,7 @@ def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes,str]:
 
 
 @fixture(name="ner_token_to_id_mapping")
-def fixture_ner_token_to_id_mapping() -> JsonDict:
+def fixture_ner_token_to_id_mapping() -> Mapping[ObjectTypes, str]:
     """
     ner_token_to_id_mapping
     """

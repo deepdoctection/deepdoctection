@@ -20,7 +20,7 @@ Module for cell detection pipeline component
 """
 
 from collections import Counter, defaultdict
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Mapping
 
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
@@ -41,7 +41,7 @@ class DetectResultGenerator:
     """
 
     def __init__(
-        self, categories: Dict[str, ObjectTypes], image_width: float, image_height: float, group_categories: List[List[str]]
+        self, categories: Mapping[str, ObjectTypes], image_width: float, image_height: float, group_categories: List[List[str]]
     ) -> None:
         """
         :param categories: The dict of all possible detection categories

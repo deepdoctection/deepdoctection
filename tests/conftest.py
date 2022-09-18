@@ -37,7 +37,7 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, Relationships, WordType, ObjectTypes
+from deepdoctection.utils.settings import LayoutType, CellType, Relationships, WordType, ObjectTypes, object_types_registry, update_all_types_dict
 from deepdoctection.utils.systools import get_package_path
 
 from .data import (
@@ -466,3 +466,39 @@ def fixture_text_lines() -> List[Tuple[str, ImageType]]:
 def fixture_language_detect_result() -> DetectionResult:
     """fixture language_detect_result"""
     return DetectionResult(text="eng", score=0.9876)
+
+
+def pytest_sessionstart():
+
+    @object_types_registry.register("TestType")
+    class TestType(ObjectTypes):
+        foo = "foo"
+        FOO = "FOO"
+        bak = "bak"
+        BAK = "BAK"
+        BAK_1 = "BAK_1"
+        BAK_11 = "BAK_11"
+        BAK_12 = "BAK_12"
+        BAK_21 = "BAK_21"
+        BAK_22 = "BAK_22"
+        cat = "cat"
+        FOO_1 = "FOO_1"
+        FOO_2 = "FOO_2"
+        FOO_3 = "FOO_3"
+        FOOBAK = "FOOBAK"
+        TEST_SUMMARY = "TEST_SUMMARY"
+        baz = "baz"
+        BAZ = "BAZ"
+        b_foo = "B-FOO"
+        i_foo = "I-FOO"
+        o = "O"
+        sub = "sub"
+        sub_2 = "sub_2"
+        one = "1"
+        two = "2"
+        three = "3"
+        four = "4"
+        five = "5"
+
+    update_all_types_dict()
+
