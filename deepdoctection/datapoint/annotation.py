@@ -215,7 +215,8 @@ class CategoryAnnotation(Annotation):
 
     @category_name.setter
     def category_name(self, category_name: TypeOrStr) -> None:
-        self._category_name = get_type(category_name)
+        if not isinstance(category_name, property):
+            self._category_name = get_type(category_name)
 
     def __post_init__(self) -> None:
         self.category_id = str(self.category_id)

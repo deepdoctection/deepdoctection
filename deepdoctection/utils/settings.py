@@ -159,13 +159,13 @@ class BioTag(ObjectTypes):
 @object_types_registry.register("TokenClassWithTag")
 class TokenClassWithTag(ObjectTypes):
     b_answer = "B-ANSWER"
-    b_header = "B-HEAD"
+    b_header = "B-HEADER"
     b_question = "B-QUESTION"
     e_answer = "E-ANSWER"
-    e_header = "E_HEAD"
-    e_question = "E_QUESTION"
+    e_header = "E-HEADER"
+    e_question = "E-QUESTION"
     i_answer = "I-ANSWER"
-    i_header = "I-HEAD"
+    i_header = "I-HEADER"
     i_question = "I-QUESTION"
     s_answer = "S-ANSWER"
     s_header = "S-HEADER"
@@ -272,9 +272,16 @@ class DatasetType(ObjectTypes):
 
 
 _ALL_TYPES_DICT = {}
-_ALL_TYPES = list(object_types_registry.get_all().values())
+_ALL_TYPES = set(object_types_registry.get_all().values())
 for ob in _ALL_TYPES:
     _ALL_TYPES_DICT.update({e.value: e for e in ob})
+
+
+def update_all_types_dict():
+    maybe_new_types =  set(object_types_registry.get_all().values())
+    difference = maybe_new_types - _ALL_TYPES
+    for ob in difference:
+        _ALL_TYPES_DICT.update({e.value: e for e in ob})
 
 
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:

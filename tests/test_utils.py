@@ -26,7 +26,6 @@ from typing import Any, Iterable, Iterator, List, Optional, Union
 from deepdoctection.dataflow import DataFlow
 from deepdoctection.datapoint import Annotation
 from deepdoctection.utils.systools import get_package_path
-from deepdoctection.utils.settings import object_types_registry, ObjectTypes
 
 
 def get_test_path() -> Path:
@@ -84,34 +83,6 @@ def set_num_gpu_to_one() -> int:
     return 1
 
 
-@object_types_registry.register("TestType")
-class TestType(ObjectTypes):
-    foo = "foo"
-    FOO = "FOO"
-    bak = "bak"
-    BAK = "BAK"
-    BAK_1 = "BAK_1"
-    BAK_11 = "BAK_11"
-    BAK_12 = "BAK_12"
-    BAK_21 = "BAK_21"
-    BAK_22 = "BAK_22"
-    cat = "cat"
-    FOO_1 = "FOO_1"
-    FOO_2 = "FOO_2"
-    FOO_3 = "FOO_3"
-    FOOBAK = "FOOBAK"
-    TEST_SUMMARY = "TEST_SUMMARY"
-    baz = "baz"
-    BAZ = "BAZ"
-    b_foo = "B-FOO"
-    i_foo = "I-FOO"
-    o = "O"
-    sub = "sub"
-    sub_2 = "sub_2"
-    one = "1"
-    two = "2"
-    three = "3"
-    four = "4"
-    five = "5"
+
 
 

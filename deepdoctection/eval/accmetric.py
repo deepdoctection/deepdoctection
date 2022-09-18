@@ -301,10 +301,10 @@ class ClassificationMetric(MetricBase):
                     _sub_cats[get_type(key)] = [get_type(item) for item in sub_category_names[key]]
             else:
                 for key, value in sub_category_names.items():
-                    _sub_cats[get_type(key)] = get_type(sub_category_names[key])
+                    _sub_cats[get_type(key)] = get_type(sub_category_names[key])  # type: ignore
             cls._sub_cats = _sub_cats
         if summary_sub_category_names is not None:
-            cls._summary_sub_cats = [get_type(category_names)] if isinstance(summary_sub_category_names, str) else [get_type(category) for
+            cls._summary_sub_cats = [get_type(category_names)] if isinstance(summary_sub_category_names, str) else [get_type(category) for  # type: ignore
                                                                                             category in summary_sub_category_names]
 
     @classmethod
@@ -334,12 +334,12 @@ class ClassificationMetric(MetricBase):
         return []
 
     @property
-    def sub_cats(self) -> Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]]:
+    def sub_cats(self) -> Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]]:
         """sub cats"""
         return self._sub_cats
 
     @property
-    def summary_sub_cats(self) -> Optional[Sequence[str]]:
+    def summary_sub_cats(self) -> Optional[Sequence[ObjectTypes]]:
         """summary sub categories"""
         return self._summary_sub_cats
 

@@ -94,7 +94,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     @staticmethod
     def set_model(
-        path_yaml: str, categories: Mapping[str, str], config_overwrite: Union[List[str], None]
+        path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel

@@ -56,12 +56,12 @@ _ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
-_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[(str,ObjectTypes), Any] = {
+_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str,ObjectTypes], Any] = {
     ("layoutlm", DatasetType.sequence_classification): LayoutLMForSequenceClassification,
     ("layoutlm", DatasetType.token_classification): LayoutLMForTokenClassification,
 }
 _MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
-_DS_TYPE_TO_DD_LM_CLASS = {
+_DS_TYPE_TO_DD_LM_CLASS: Mapping[ObjectTypes, Any] = {
     DatasetType.token_classification: HFLayoutLmTokenClassifier,
     DatasetType.sequence_classification: HFLayoutLmSequenceClassifier,
 }

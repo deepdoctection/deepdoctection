@@ -27,7 +27,7 @@ Module for DocLayNet dataset. Place the dataset as follows
 """
 
 import os
-from typing import Mapping, Union
+from typing import Mapping, Union, Sequence
 
 from ...dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
 from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
@@ -37,7 +37,7 @@ from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.detection_types import JsonDict
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, LayoutType, PageType
+from ...utils.settings import DatasetType, DocumentType, LayoutType, PageType, ObjectTypes
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -81,7 +81,7 @@ _INIT_CATEGORIES = [
     LayoutType.text,
     LayoutType.title,
 ]
-_SUB_CATEGORIES = {
+_SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
     LayoutType.caption: {DatasetType.publaynet: [LayoutType.text]},
     LayoutType.footnote: {DatasetType.publaynet: [LayoutType.text]},
     LayoutType.formula: {DatasetType.publaynet: [LayoutType.text]},

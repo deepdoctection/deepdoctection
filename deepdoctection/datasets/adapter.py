@@ -20,7 +20,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 """
 
 
-from typing import Any, Callable, Dict, Iterator, Optional, Union
+from typing import Any, Callable, Dict, Iterator, Optional, Union, Mapping
 
 from torch.utils.data import IterableDataset
 
@@ -70,10 +70,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info("Yielding dataflow into memory and create torch dataset")
-            categories: Dict[str, ObjectTypes] = {}
+            categories: Mapping[str, ObjectTypes] = {}
             _data_statistics = True
             if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
-                categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
+                categories = self.dataset.dataflow.categories.get_categories(filtered=True)
             elif self.dataset.dataset_info.type in (DatasetType.token_classification,):
                 categories = self.dataset.dataflow.categories.get_sub_categories(
                     categories=LayoutType.word,
