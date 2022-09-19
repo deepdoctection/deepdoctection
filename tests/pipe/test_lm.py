@@ -31,7 +31,7 @@ from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layout
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
-from deepdoctection.utils.settings import WordType, PageType, TokenClasses, BioTag
+from deepdoctection.utils.settings import BioTag, PageType, TokenClasses, WordType
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast

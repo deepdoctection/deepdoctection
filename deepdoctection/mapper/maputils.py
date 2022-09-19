@@ -21,7 +21,7 @@ Utility functions related to mapping tasks
 import functools
 import itertools
 from types import TracebackType
-from typing import Any, Callable, Dict, Optional, Sequence, Union, Mapping
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from tabulate import tabulate
@@ -194,7 +194,9 @@ class LabelSummarizer:
         if dd_logic:
             data = list(itertools.chain(*[[self.categories[str(i)].value, v] for i, v in enumerate(self.summary, 1)]))
         else:
-            data = list(itertools.chain(*[[self.categories[str(i + 1)].value, v] for i, v in enumerate(self.summary[:-1])]))
+            data = list(
+                itertools.chain(*[[self.categories[str(i + 1)].value, v] for i, v in enumerate(self.summary[:-1])])
+            )
         num_columns = min(6, len(data))
         total_img_anns = sum(data[1::2])
         data.extend([None] * ((num_columns - len(data) % num_columns) % num_columns))

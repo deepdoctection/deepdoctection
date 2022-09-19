@@ -32,7 +32,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, CellType, TableType,Relationships, get_type
+from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -52,7 +52,9 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
     """
 
     cell_ann_ids = table.get_relationship(Relationships.child)
-    cells = dp.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body], annotation_ids=cell_ann_ids)
+    cells = dp.get_annotation(
+        category_names=[LayoutType.cell, CellType.header, CellType.body], annotation_ids=cell_ann_ids
+    )
     tile_to_cells = []
 
     for cell in cells:
@@ -413,10 +415,18 @@ class TableSegmentationRefinementService(PipelineComponent):
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:
                         row_number, col_number, row_span, col_span = _tiling_to_cell_position(tiling)
-                        self.dp_manager.set_category_annotation(CellType.row_number, row_number, CellType.row_number, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(CellType.column_number, col_number, CellType.column_number, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(CellType.row_span, row_span, CellType.row_span, new_cell_ann_id)
-                        self.dp_manager.set_category_annotation(CellType.column_span, col_span, CellType.column_span, new_cell_ann_id)
+                        self.dp_manager.set_category_annotation(
+                            CellType.row_number, row_number, CellType.row_number, new_cell_ann_id
+                        )
+                        self.dp_manager.set_category_annotation(
+                            CellType.column_number, col_number, CellType.column_number, new_cell_ann_id
+                        )
+                        self.dp_manager.set_category_annotation(
+                            CellType.row_span, row_span, CellType.row_span, new_cell_ann_id
+                        )
+                        self.dp_manager.set_category_annotation(
+                            CellType.column_span, col_span, CellType.column_span, new_cell_ann_id
+                        )
                         for cell in cells:
                             cell.deactivate()
 
@@ -430,7 +440,10 @@ class TableSegmentationRefinementService(PipelineComponent):
                 TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.number_of_columns, TableType.number_of_columns, number_of_cols, annotation_id=table.annotation_id
+                TableType.number_of_columns,
+                TableType.number_of_columns,
+                number_of_cols,
+                annotation_id=table.annotation_id,
             )
             self.dp_manager.set_summary_annotation(
                 TableType.max_row_span, TableType.max_row_span, max_row_span, annotation_id=table.annotation_id
@@ -450,7 +463,15 @@ class TableSegmentationRefinementService(PipelineComponent):
                 ("image_annotations", []),
                 (
                     "sub_categories",
-                    {LayoutType.cell: {CellType.row_number, CellType.column_number, CellType.row_span, CellType.column_span}, LayoutType.table: {TableType.html}},
+                    {
+                        LayoutType.cell: {
+                            CellType.row_number,
+                            CellType.column_number,
+                            CellType.row_span,
+                            CellType.column_span,
+                        },
+                        LayoutType.table: {TableType.html},
+                    },
                 ),
                 ("relationships", {}),
                 ("summaries", []),

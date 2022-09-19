@@ -31,8 +31,10 @@ from deepdoctection.pipe.refine import (
     generate_rectangle_tiling,
     rectangle_cells,
 )
-#from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import TableType, CellType, LayoutType
+
+# from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import CellType, LayoutType, TableType
+
 
 @mark.parametrize(
     "tiles_to_cells,expected_rectangle_cells_list",

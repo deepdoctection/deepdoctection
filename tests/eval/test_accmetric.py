@@ -34,8 +34,10 @@ from deepdoctection.eval.accmetric import (
     RecallMetric,
     RecallMetricMicro,
 )
-#from deepdoctection.utils.settings import names
+
+# from deepdoctection.utils.settings import names
 from deepdoctection.utils.settings import CellType
+
 
 class TestAccuracyMetric:
     """

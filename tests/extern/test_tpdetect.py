@@ -26,8 +26,8 @@ from pytest import mark, raises
 
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.utils.detection_types import ImageType
-from deepdoctection.utils.settings import ObjectTypes
 from deepdoctection.utils.file_utils import tf_available
+from deepdoctection.utils.settings import ObjectTypes
 
 if tf_available():
     from deepdoctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
@@ -73,7 +73,9 @@ class TestTPFrcnnDetector:
     @staticmethod
     @mark.requires_tf
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
-    def test_tp_frcnn_does_not_build_when_no_gpu(path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]) -> None:
+    def test_tp_frcnn_does_not_build_when_no_gpu(
+        path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]
+    ) -> None:
         """
         TP FRCNN needs one GPU for predicting. Construction fails, when no GPU is found
         """

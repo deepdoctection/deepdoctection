@@ -22,31 +22,34 @@ Module for storing dataset info (e.g. general meta data or categories)
 from copy import copy
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload, Any
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
 
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type, DefaultType
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int =...) -> Dict[ObjectTypes, str]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> Dict[ObjectTypes, str]:
     ...
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with:int=...) -> Dict[str, ObjectTypes]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> Dict[str, ObjectTypes]:
     ...
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: bool, starts_with:int=...) -> Union[Dict[ObjectTypes, str],Dict[str, ObjectTypes]]:
+def _get_dict(
+    l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = ...
+) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
     ...
 
 
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = 1) \
-        -> Union[Dict[ObjectTypes, str],Dict[str, ObjectTypes]]:
+def _get_dict(
+    l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = 1
+) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
     """
     Converts a list into a dict, where keys/values are the list indices.
 
@@ -139,13 +142,13 @@ class DatasetCategories:
     @overload
     def get_categories(
         self, *, name_as_key: Literal[True], init: bool = ..., filtered: bool = ...
-    ) -> Mapping[ObjectTypes,str]:
+    ) -> Mapping[ObjectTypes, str]:
         ...
 
     @overload
     def get_categories(
         self, *, name_as_key: Literal[False] = ..., init: bool = ..., filtered: bool = ...
-    ) -> Mapping[str,ObjectTypes]:
+    ) -> Mapping[str, ObjectTypes]:
         ...
 
     @overload
@@ -157,12 +160,12 @@ class DatasetCategories:
     @overload
     def get_categories(
         self, as_dict: Literal[True] = ..., name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Mapping[ObjectTypes,str],Mapping[str,ObjectTypes]]:
+    ) -> Union[Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
         ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Sequence[ObjectTypes],Mapping[ObjectTypes,str],Mapping[str,ObjectTypes]]:
+    ) -> Union[Sequence[ObjectTypes], Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
         """
         Get categories of a dataset. The returned value also respects modifications of the inventory like filtered
         categories of replaced categories with sub categories. However, you must correctly pass arguments to return the
@@ -214,7 +217,7 @@ class DatasetCategories:
         :return: Dict with all selected categories.
         """
         _categories: Sequence[ObjectTypes]
-        if isinstance(categories, str) or isinstance(categories, ObjectTypes):
+        if isinstance(categories, (ObjectTypes, str)):
             _categories = [get_type(categories)]
         elif isinstance(categories, list):
             _categories = [get_type(category) for category in categories]
@@ -257,11 +260,13 @@ class DatasetCategories:
                     if values_as_dict:
                         if not name_as_key:
                             sub_cat_tmp[sub_cat_key] = {
-                                str(k): v for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
+                                str(k): v
+                                for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                         else:
                             sub_cat_tmp[sub_cat_key] = {
-                                v: str(k) for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
+                                v: str(k)
+                                for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                     else:
                         sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][get_type(sub_cat_key)]
@@ -320,12 +325,14 @@ class DatasetCategories:
         """
 
         assert self._allow_update, "Filtering categories is not allowed"
-        if isinstance(categories, str) or isinstance(categories, ObjectTypes):
+        if isinstance(categories, (ObjectTypes, str)):
             categories = [get_type(categories)]
         else:
             categories = [get_type(category) for category in categories]
 
-        self._categories_filter_update: Sequence[ObjectTypes] = [cat for cat in self._categories_update if cat in categories]
+        self._categories_filter_update: Sequence[ObjectTypes] = [
+            cat for cat in self._categories_update if cat in categories
+        ]
 
     @property
     def cat_to_sub_cat(self) -> Optional[Mapping[ObjectTypes, ObjectTypes]]:

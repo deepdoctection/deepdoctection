@@ -25,7 +25,7 @@ from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
 from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.detection_types import JsonDict
-from ..utils.settings import PageType, WordType, LayoutType, TokenClasses, BioTag
+from ..utils.settings import BioTag, LayoutType, PageType, TokenClasses, WordType
 from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -101,14 +101,18 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             if token.uuid not in words_populated:
                 self.dp_manager.set_category_annotation(token.semantic_name, None, WordType.token_class, token.uuid)
                 self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.tag, token.uuid)
-                self.dp_manager.set_category_annotation(token.class_name, token.class_id, WordType.token_tag, token.uuid)
+                self.dp_manager.set_category_annotation(
+                    token.class_name, token.class_id, WordType.token_tag, token.uuid
+                )
                 words_populated.append(token.uuid)
 
         if self.use_other_as_default_category:
             word_anns = dp.get_annotation(LayoutType.word)
             for word in word_anns:
                 if WordType.token_class not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(TokenClasses.other, None, WordType.token_class, word.annotation_id)
+                    self.dp_manager.set_category_annotation(
+                        TokenClasses.other, None, WordType.token_class, word.annotation_id
+                    )
                 if WordType.tag not in word.sub_categories:
                     self.dp_manager.set_category_annotation(BioTag.outside, None, WordType.tag, word.annotation_id)
                 if WordType.token_tag not in word.sub_categories:

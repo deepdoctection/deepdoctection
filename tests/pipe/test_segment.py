@@ -23,7 +23,8 @@ from typing import List
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image
 from deepdoctection.pipe.segment import TableSegmentationService, stretch_items, tile_tables_with_items_per_table
-from deepdoctection.utils.settings import LayoutType, CellType, TableType
+from deepdoctection.utils.settings import CellType, LayoutType
+
 
 def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: Image) -> None:
     """test stretch_items"""
@@ -242,6 +243,8 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
 
         for cell, cell_expected in zip(cells, cells_expected):
             assert cell.get_sub_category(CellType.row_number) == cell_expected.get_sub_category(CellType.row_number)
-            assert cell.get_sub_category(CellType.column_number) == cell_expected.get_sub_category(CellType.column_number)
+            assert cell.get_sub_category(CellType.column_number) == cell_expected.get_sub_category(
+                CellType.column_number
+            )
             assert cell.get_sub_category(CellType.row_span) == cell_expected.get_sub_category(CellType.row_span)
             assert cell.get_sub_category(CellType.column_span) == cell_expected.get_sub_category(CellType.column_span)

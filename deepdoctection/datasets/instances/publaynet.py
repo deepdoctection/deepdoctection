@@ -36,7 +36,7 @@ from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
 from ...mapper.cats import filter_cat
 from ...mapper.cocostruct import coco_to_image
-from ...utils.settings import LayoutType, DatasetType
+from ...utils.settings import DatasetType, LayoutType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -66,7 +66,7 @@ _TYPE = DatasetType.object_detection
 _LOCATION = "publaynet"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "train.json", "val": "val.json"}
-_INIT_CATEGORIES = [LayoutType.text,LayoutType.title,LayoutType.list,LayoutType.table,LayoutType.figure]
+_INIT_CATEGORIES = [LayoutType.text, LayoutType.title, LayoutType.list, LayoutType.table, LayoutType.figure]
 
 
 @dataset_registry.register("publaynet")

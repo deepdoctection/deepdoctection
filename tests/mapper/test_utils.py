@@ -23,8 +23,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from deepdoctection.utils.settings import ObjectTypes
 from deepdoctection.mapper import DefaultMapper, LabelSummarizer
+from deepdoctection.utils.settings import ObjectTypes
 
 
 class TestDefaultMapper:

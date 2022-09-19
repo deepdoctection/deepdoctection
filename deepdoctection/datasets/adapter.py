@@ -20,7 +20,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 """
 
 
-from typing import Any, Callable, Dict, Iterator, Optional, Union, Mapping
+from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
 from torch.utils.data import IterableDataset
 
@@ -30,8 +30,7 @@ from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.logger import log_once, logger
-
-from ..utils.settings import DatasetType, LayoutType, WordType, PageType, ObjectTypes
+from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
@@ -113,7 +112,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                         anns = dp.get_annotation()
                         cat_ids = [int(ann.category_id) for ann in anns]
 
-                    elif self.dataset.dataset_info.type ==DatasetType.sequence_classification:
+                    elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
                         cat_ids = dp.summary.get_sub_category(PageType.document_type).category_id
 
                     elif self.dataset.dataset_info.type == DatasetType.token_classification:

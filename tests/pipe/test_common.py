@@ -23,6 +23,7 @@ from deepdoctection.datapoint import Image
 from deepdoctection.pipe import MatchingService
 from deepdoctection.utils.settings import LayoutType, Relationships
 
+
 class TestMatchingService:
     """
     Test MatchingService

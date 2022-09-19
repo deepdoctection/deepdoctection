@@ -44,7 +44,8 @@ def fixture_categories() -> Dict[str, ObjectTypes]:
     """
     Categories as Dict
     """
-    return {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table, "4": LayoutType.figure, "5": LayoutType.list}
+    return {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table,
+            "4": LayoutType.figure, "5": LayoutType.list}
 
 
 @fixture(name="np_image")

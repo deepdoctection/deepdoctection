@@ -37,7 +37,7 @@ from ..utils.file_utils import pytorch_available, tensorpack_available, tf_avail
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import LayoutType, CellType
+from ..utils.settings import CellType, LayoutType
 from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
@@ -202,7 +202,14 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         order = TextOrderService(
             text_container=LayoutType.word,
             floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
-            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
+            text_block_names=[
+                LayoutType.title,
+                LayoutType.text,
+                LayoutType.list,
+                LayoutType.cell,
+                CellType.header,
+                CellType.body,
+            ],
         )
         pipe_component_list.append(order)
 

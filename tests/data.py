@@ -26,7 +26,17 @@ import numpy as np
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType, get_type, ObjectTypes, BioTag, TokenClassWithTag, TokenClasses
+from deepdoctection.utils.settings import (
+    BioTag,
+    CellType,
+    LayoutType,
+    ObjectTypes,
+    TableType,
+    TokenClasses,
+    TokenClassWithTag,
+    WordType,
+    get_type,
+)
 
 
 @dataclass
@@ -1452,12 +1462,14 @@ _LAYOUT_FEATURES = {
     "width": [1000],
     "height": [1000],
     "ann_ids": [
-        ["[CLS]",
-                 "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
-                 "2b46086c-a480-357d-8e07-29b177d150b8",
-                 "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
-                 "16860148-9a2b-3530-b33e-9aaba857f5ce",
-                 "[SEP]"]
+        [
+            "[CLS]",
+            "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
+            "2b46086c-a480-357d-8e07-29b177d150b8",
+            "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
+            "16860148-9a2b-3530-b33e-9aaba857f5ce",
+            "[SEP]",
+        ]
     ],
     "input_ids": [[101, 7592, 2088, 9061, 2088, 102]],
     "token_type_ids": [[0, 0, 0, 0, 0, 0]],
@@ -1498,8 +1510,22 @@ def get_token_class_result() -> List[TokenClassResult]:
     input_ids = _LAYOUT_INPUT["input_ids"]
     token_class_predictions = [0, 1, 1, 2, 2, 0]
     tokens = _LAYOUT_INPUT["tokens"]
-    class_name = [BioTag.outside, TokenClassWithTag.b_header, TokenClassWithTag.b_header, TokenClassWithTag.i_header, TokenClassWithTag.i_header, BioTag.outside]
-    semantic_name = [TokenClasses.other, TokenClasses.header, TokenClasses.header, TokenClasses.header, TokenClasses.header, TokenClasses.other]
+    class_name = [
+        BioTag.outside,
+        TokenClassWithTag.b_header,
+        TokenClassWithTag.b_header,
+        TokenClassWithTag.i_header,
+        TokenClassWithTag.i_header,
+        BioTag.outside,
+    ]
+    semantic_name = [
+        TokenClasses.other,
+        TokenClasses.header,
+        TokenClasses.header,
+        TokenClasses.header,
+        TokenClasses.header,
+        TokenClasses.other,
+    ]
     bio_tag = [BioTag.outside, BioTag.begin, BioTag.begin, BioTag.inside, BioTag.inside, BioTag.outside]
     return [
         TokenClassResult(
@@ -1524,7 +1550,9 @@ def get_sequence_class_result() -> SequenceClassResult:
     return SequenceClassResult(class_name=get_type("FOO"), class_id=1)
 
 
+# pylint: disable=invalid-name, disallowed-name
 class TestType(ObjectTypes):
+    """Object type members for testing purposes"""
     foo = "foo"
     FOO = "FOO"
     bak = "bak"
@@ -1553,3 +1581,4 @@ class TestType(ObjectTypes):
     three = "3"
     four = "4"
     five = "5"
+# pylint: enable=invalid-name, disallowed-name

@@ -40,7 +40,7 @@ from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DocumentType, DatasetType, PageType
+from ...utils.settings import DatasetType, DocumentType, PageType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

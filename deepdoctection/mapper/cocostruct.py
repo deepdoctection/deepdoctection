@@ -26,8 +26,8 @@ from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.settings import ObjectTypes
 from ..utils.fs import load_image_from_file
+from ..utils.settings import ObjectTypes
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 

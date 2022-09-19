@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
-from ..utils.settings import TypeOrStr, ObjectTypes, get_type, DefaultType, SummaryType
 from ..utils.identifier import get_uuid, is_uuid_like
+from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from .box import BoundingBox
 from .convert import as_dict
 
@@ -203,7 +203,7 @@ class CategoryAnnotation(Annotation):
     """
 
     category_name: TypeOrStr = field(default=DefaultType.default_type)
-    _category_name:  ObjectTypes = field(default=DefaultType.default_type, init=False)
+    _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
     sub_categories: Dict[ObjectTypes, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
@@ -211,10 +211,12 @@ class CategoryAnnotation(Annotation):
 
     @property  # type: ignore
     def category_name(self) -> ObjectTypes:
+        """category name"""
         return self._category_name
 
     @category_name.setter
     def category_name(self, category_name: TypeOrStr) -> None:
+        """category name setter"""
         if not isinstance(category_name, property):
             self._category_name = get_type(category_name)
 

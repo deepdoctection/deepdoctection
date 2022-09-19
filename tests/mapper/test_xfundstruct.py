@@ -24,7 +24,8 @@ from unittest.mock import MagicMock, patch
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import WordType, TokenClasses, CellType
+from deepdoctection.utils.settings import CellType, TokenClasses, WordType
+
 from .conftest import get_always_pubtabnet_white_image
 
 
@@ -49,7 +50,7 @@ def test_xfund_to_image(
     assert words == ["Akademisches", "Auslandsamt", "Bewerbungsformular"]
 
     sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in image_anns]
-    assert sub_cats_category_names == [TokenClasses.other,TokenClasses.other, CellType.header]
+    assert sub_cats_category_names == [TokenClasses.other, TokenClasses.other, CellType.header]
 
     sub_cats_ner_tags = [ann.get_sub_category(WordType.tag).category_name for ann in image_anns]
     assert sub_cats_ner_tags == ["O", "O", "B"]

@@ -42,7 +42,10 @@ class TestDatasetCategories:
         """
         categories = [get_type("FOO"), get_type("BAK"), get_type("BAZ")]
         sub_categories = {
-            get_type("BAK"): {get_type("sub"): [get_type("BAK_11"), get_type("BAK_12")], get_type("sub_2"): [get_type("BAK_21"), get_type("BAK_22")]},
+            get_type("BAK"): {
+                get_type("sub"): [get_type("BAK_11"), get_type("BAK_12")],
+                get_type("sub_2"): [get_type("BAK_21"), get_type("BAK_22")],
+            },
             get_type("FOO"): {get_type("cat"): [get_type("FOO_1"), get_type("FOO_2"), get_type("FOO_3")]},
         }
 
@@ -108,7 +111,11 @@ class TestDatasetCategories:
         cats.filter_categories(categories=["FOO_1", "BAZ", "BAK_11"])
 
         # Assert
-        assert cats.get_categories(name_as_key=True, filtered=True) == {TestType.FOO_1: "1", TestType.BAZ: "3", TestType.BAK_11: "2"}
+        assert cats.get_categories(name_as_key=True, filtered=True) == {
+            TestType.FOO_1: "1",
+            TestType.BAZ: "3",
+            TestType.BAK_11: "2",
+        }
         assert cats.is_filtered()
 
     @staticmethod
@@ -154,8 +161,16 @@ class TestMergeDatasetCategories:
         init_categories_1 = [get_type("FOO"), get_type("BAK")]
         init_categories_2 = [get_type("FOO"), get_type("BAZ")]
 
-        sub_categories_1 = {get_type("FOO"): {get_type("FOO_1"): [get_type("1"), get_type("2")], get_type("FOO_2"): [get_type("3"), get_type("4")]}}
-        sub_categories_2 = {get_type("FOO"): {get_type("FOO_1"): [get_type("1"), get_type("3")]}, get_type("BAK"): {get_type("BAK_1"): [get_type("4"), get_type("5")]}}
+        sub_categories_1 = {
+            get_type("FOO"): {
+                get_type("FOO_1"): [get_type("1"), get_type("2")],
+                get_type("FOO_2"): [get_type("3"), get_type("4")],
+            }
+        }
+        sub_categories_2 = {
+            get_type("FOO"): {get_type("FOO_1"): [get_type("1"), get_type("3")]},
+            get_type("BAK"): {get_type("BAK_1"): [get_type("4"), get_type("5")]},
+        }
 
         return (
             DatasetCategories(init_categories=init_categories_1, init_sub_categories=sub_categories_1),
@@ -194,7 +209,13 @@ class TestMergeDatasetCategories:
 
         # Assert
         assert merge.get_categories(as_dict=False, init=True) == [TestType.FOO, TestType.BAK, TestType.BAZ]
-        assert merge.get_categories(as_dict=False) == [TestType.one, TestType.two, TestType.BAK, TestType.three, TestType.BAZ]
+        assert merge.get_categories(as_dict=False) == [
+            TestType.one,
+            TestType.two,
+            TestType.BAK,
+            TestType.three,
+            TestType.BAZ,
+        ]
 
     @staticmethod
     def test_merge_categories_updates_and_filters_categories_correctly() -> None:
@@ -213,8 +234,19 @@ class TestMergeDatasetCategories:
         merge = get_merged_categories(cat_1, cat_2)
 
         # Assert
-        assert merge.get_categories(as_dict=False, init=False) == [TestType.one,TestType.two,TestType.BAK,TestType.three,TestType.BAZ]
-        assert merge.get_categories(as_dict=False, init=False, filtered=True) == [TestType.two, TestType.one,TestType.three,TestType.BAZ]
+        assert merge.get_categories(as_dict=False, init=False) == [
+            TestType.one,
+            TestType.two,
+            TestType.BAK,
+            TestType.three,
+            TestType.BAZ,
+        ]
+        assert merge.get_categories(as_dict=False, init=False, filtered=True) == [
+            TestType.two,
+            TestType.one,
+            TestType.three,
+            TestType.BAZ,
+        ]
 
     @staticmethod
     def test_merge_categories_cannot_update_or_filter() -> None:

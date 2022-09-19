@@ -20,7 +20,7 @@ Module for EvalCallback in Tensorpack
 """
 
 from itertools import count
-from typing import Dict, List, Optional, Type, Union, Sequence, Mapping
+from typing import Mapping, Optional, Sequence, Type, Union
 
 from ..datasets import DatasetBase
 from ..extern.tpdetect import TPFrcnnDetector

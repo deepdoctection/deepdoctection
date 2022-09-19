@@ -31,9 +31,9 @@ from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.prodigystruct import prodigy_to_image
-#from ...utils.settings import names
-from ...utils.settings import DatasetType, LayoutType
 
+# from ...utils.settings import names
+from ...utils.settings import DatasetType, LayoutType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -66,7 +66,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "predict": "xrf_layout_test_predict.jsonl",
 }
 
-_INIT_CATEGORIES = [LayoutType.text,LayoutType.title,LayoutType.list,LayoutType.table,LayoutType.figure]
+_INIT_CATEGORIES = [LayoutType.text, LayoutType.title, LayoutType.list, LayoutType.table, LayoutType.figure]
 
 
 @dataset_registry.register("testlayout")

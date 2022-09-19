@@ -52,7 +52,9 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor")
     """
     raw_output = predictor([np_img])
     detection_results = [
-        DetectionResult(box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word)
+        DetectionResult(
+            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word
+        )
         for box in raw_output[0]
     ]
     return detection_results
