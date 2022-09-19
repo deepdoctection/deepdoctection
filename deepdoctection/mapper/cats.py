@@ -23,15 +23,17 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
-from ..utils.settings import get_type, TypeOrStr
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
+from ..utils.settings import TypeOrStr, get_type
 from .maputils import curry
 
 
 @curry
 def cat_to_sub_cat(
-    dp: Image, categories_dict_names_as_key: Dict[TypeOrStr, str], cat_to_sub_cat_dict: Optional[Dict[TypeOrStr, TypeOrStr]] = None
+    dp: Image,
+    categories_dict_names_as_key: Dict[TypeOrStr, str],
+    cat_to_sub_cat_dict: Optional[Dict[TypeOrStr, TypeOrStr]] = None,
 ) -> Image:
     """
     Replace some category with its affiliated sub category of CategoryAnnotations. Suppose your category name is 'foo'
@@ -46,7 +48,7 @@ def cat_to_sub_cat(
 
     if cat_to_sub_cat_dict is None:
         return dp
-    cat_to_sub_cat_dict_obj_type = {get_type(key) : get_type(value) for key, value in cat_to_sub_cat_dict.items()}
+    cat_to_sub_cat_dict_obj_type = {get_type(key): get_type(value) for key, value in cat_to_sub_cat_dict.items()}
     categories_dict = categories_dict_names_as_key
     for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict_obj_type.keys())):
         sub_cat_type = cat_to_sub_cat_dict_obj_type[get_type(ann.category_name)]
@@ -86,7 +88,9 @@ def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[TypeOrStr, st
 
 
 @curry
-def filter_cat(dp: Image, categories_as_list_filtered: List[TypeOrStr], categories_as_list_unfiltered: List[TypeOrStr]) -> Image:
+def filter_cat(
+    dp: Image, categories_as_list_filtered: List[TypeOrStr], categories_as_list_unfiltered: List[TypeOrStr]
+) -> Image:
     """
     Filters category annotations based on the on a list of categories to be kept and a list of all possible
     category names that might be available in dp.

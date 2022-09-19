@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.settings import ObjectTypes, DefaultType, TokenClasses, BioTag, TokenClassWithTag
+from ..utils.settings import DefaultType, ObjectTypes
 
 
 class PredictorBase(ABC):
@@ -93,7 +93,7 @@ class DetectionResult:
     mask: Optional[List[float]] = None
     absolute_coords: bool = True
     class_name: ObjectTypes = DefaultType.default_type
-    text: Optional[Union[str,ObjectTypes]] = None
+    text: Optional[Union[str, ObjectTypes]] = None
     block: Optional[str] = None
     line: Optional[str] = None
     uuid: Optional[str] = None
@@ -226,7 +226,7 @@ class TokenClassResult:
     token_id: int
     token: str
     class_id: int
-    class_name: ObjectTypes= DefaultType.default_type
+    class_name: ObjectTypes = DefaultType.default_type
     semantic_name: ObjectTypes = DefaultType.default_type
     bio_tag: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None

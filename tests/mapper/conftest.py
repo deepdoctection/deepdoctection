@@ -19,7 +19,7 @@
 """
 Fixtures for mapper package testing
 """
-from typing import Any, Dict, Optional, Union, Mapping
+from typing import Any, Dict, Mapping, Optional, Union
 
 from pytest import fixture
 
@@ -48,7 +48,7 @@ def fixture_datapoint_coco() -> Dict[str, Any]:
 
 
 @fixture(name="categories_coco")
-def fixture_categories_coco() -> Dict[str, str]:
+def fixture_categories_coco() -> Mapping[str, ObjectTypes]:
     """
     Categories as Dict
     """
@@ -83,7 +83,7 @@ def fixture_datapoint_pubtabnet() -> Dict[str, Any]:
 
 
 @fixture(name="categories_name_as_key_pubtabnet")
-def fixture_categories_name_as_key_pubtabnet() -> Dict[str, str]:
+def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, str]:
     """
     Categories as Dict
     """
@@ -150,11 +150,11 @@ def fixture_datapoint_prodigy() -> JsonDict:
 
 
 @fixture(name="categories_prodigy")
-def fixture_categories_prodigy() -> Dict[str, str]:
+def fixture_categories_prodigy() -> Mapping[ObjectTypes, str]:
     """
     Categories as Dict
     """
-    return DatapointProdigy().categories
+    return DatapointProdigy().categories  # type: ignore
 
 
 def get_datapoint_prodigy() -> DatapointProdigy:
@@ -231,7 +231,7 @@ def fixture_raw_layoutlm_featurest() -> JsonDict:
 
 
 @fixture(name="xfund_categories_dict_name_as_key")
-def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes,str]:
+def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, str]:
     """
     categories_dict_name_as_key
     """

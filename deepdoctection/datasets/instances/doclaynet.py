@@ -27,7 +27,7 @@ Module for DocLayNet dataset. Place the dataset as follows
 """
 
 import os
-from typing import Mapping, Union, Sequence
+from typing import Mapping, Sequence, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
 from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
@@ -37,7 +37,7 @@ from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.detection_types import JsonDict
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, LayoutType, PageType, ObjectTypes
+from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -178,7 +178,14 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
 
 _NAME_SEQ = "doclaynet-seq"
 _TYPE_SEQ = DatasetType.sequence_classification
-_INIT_CATEGORIES_SEQ = [DocumentType.financial_report, DocumentType.scientific_publication,DocumentType.laws_and_regulations,DocumentType.government_tenders,DocumentType.manuals,DocumentType.patents]
+_INIT_CATEGORIES_SEQ = [
+    DocumentType.financial_report,
+    DocumentType.scientific_publication,
+    DocumentType.laws_and_regulations,
+    DocumentType.government_tenders,
+    DocumentType.manuals,
+    DocumentType.patents,
+]
 
 
 @dataset_registry.register("doclaynet-seq")
@@ -244,7 +251,8 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
             categories_dict = self.categories.get_categories(init=True, name_as_key=True)
             category_name = label_to_category_name[dp["doc_category"]]
             summary.dump_sub_category(
-                PageType.document_type, CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name])
+                PageType.document_type,
+                CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name]),
             )
             image.summary = summary
             if not load_img:

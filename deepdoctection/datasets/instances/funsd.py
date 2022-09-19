@@ -42,7 +42,7 @@ from ...mapper.cats import cat_to_sub_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.fs import load_json
-from ...utils.settings import DatasetType, LayoutType, TokenClasses, BioTag, TokenClassWithTag, WordType, ObjectTypes
+from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -87,8 +87,8 @@ _INIT_CATEGORIES = [LayoutType.word]
 _SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.word: {
-        WordType.token_class: [TokenClasses.other,TokenClasses.question,TokenClasses.answer,TokenClasses.header],
-        WordType.tag: [BioTag.inside,BioTag.outside,BioTag.begin],
+        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header],
+        WordType.tag: [BioTag.inside, BioTag.outside, BioTag.begin],
         WordType.token_tag: [
             TokenClassWithTag.b_answer,
             TokenClassWithTag.b_header,
@@ -162,7 +162,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
             "header": TokenClasses.header,
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
-            categories= LayoutType.word,
+            categories=LayoutType.word,
             sub_categories={LayoutType.word: [WordType.token_tag]},
             keys=False,
             values_as_dict=True,
@@ -170,7 +170,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
         )[LayoutType.word][WordType.token_tag]
         df = MapData(
             df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping)
-        )  # pylint: disable=E1120
+        )
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
         if self.categories.is_cat_to_sub_cat():
             df = MapData(

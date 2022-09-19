@@ -27,7 +27,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import WordType, LayoutType, Relationships
+from ..utils.settings import LayoutType, Relationships, WordType
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -351,14 +351,18 @@ class TextOrderService(PipelineComponent):
 
         # maybe add all text containers that are not mapped to a text block
         if self._text_containers_to_text_block:
-            text_ann_ids = list(chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns]))
+            text_ann_ids = list(
+                chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
+            )
             text_container_anns = dp.get_annotation(category_names=self._text_container)
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
             text_block_anns.extend(text_container_anns)
 
         raw_reading_order_list = _reading_columns(dp, text_block_anns)
         for raw_reading_order in raw_reading_order_list:
-            self.dp_manager.set_category_annotation(Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1])
+            self.dp_manager.set_category_annotation(
+                Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
+            )
 
         # next we select all blocks that might contain text. We sort all text within these blocks
         block_anns = dp.get_annotation(category_names=self._text_block_names)

@@ -33,8 +33,7 @@ import numpy as np
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
-
-from ..utils.settings import LayoutType, Relationships, CellType, PageType, TableType, WordType
+from ..utils.settings import CellType, LayoutType, PageType, Relationships, TableType, WordType
 from ..utils.viz import draw_boxes, interactive_imshow
 from .convert import convert_b64_to_np_array, convert_np_array_to_b64
 
@@ -352,7 +351,7 @@ class Table(Layout):
         if Relationships.reading_order in annotation.sub_categories:
             reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
 
-        if TableType.html  in annotation.sub_categories:
+        if TableType.html in annotation.sub_categories:
             ann = annotation.get_sub_category(TableType.html)
             if isinstance(ann, ContainerAnnotation):
                 if isinstance(ann.value, list):
@@ -376,7 +375,9 @@ class Table(Layout):
         html_str = "".join(html_list)
 
         # generating table segments (i.e. rows and columns)
-        table_segm_anns = dp.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.row, LayoutType.column])
+        table_segm_anns = dp.get_annotation(
+            annotation_ids=all_relation_ids, category_names=[LayoutType.row, LayoutType.column]
+        )
 
         for table_segm_ann in table_segm_anns:
             table_segments.append(Layout.from_annotation(table_segm_ann, dp, text_container))
@@ -388,11 +389,17 @@ class Table(Layout):
                     and TableType.number_of_columns in annotation.image.summary.sub_categories
                 ):
                     number_rows = int(annotation.image.summary.get_sub_category(TableType.number_of_rows).category_id)
-                    number_cols = int(annotation.image.summary.get_sub_category(TableType.number_of_columns).category_id)
+                    number_cols = int(
+                        annotation.image.summary.get_sub_category(TableType.number_of_columns).category_id
+                    )
             else:
                 if cell_anns:
-                    number_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cell_anns])
-                    number_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns])
+                    number_rows = max(
+                        [int(cell.get_sub_category(CellType.row_number).category_id) for cell in cell_anns]
+                    )
+                    number_cols = max(
+                        [int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns]
+                    )
 
         return cls(
             annotation.annotation_id,

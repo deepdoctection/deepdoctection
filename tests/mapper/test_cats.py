@@ -26,8 +26,9 @@ import pytest
 from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
 from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
 from deepdoctection.utils.detection_types import JsonDict
-#from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import LayoutType, TableType, CellType, get_type
+
+# from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import CellType, LayoutType, TableType, get_type
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
@@ -44,7 +45,10 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
-    categories._cat_to_sub_cat = {LayoutType.cell: CellType.header, TableType.item: TableType.item}  # pylint: disable=W0212
+    categories._cat_to_sub_cat = {  # pylint: disable=W0212
+        LayoutType.cell: CellType.header,
+        TableType.item: TableType.item,
+    }
     categories.get_categories = Mock(
         return_value={CellType.header: "1", CellType.body: "2", LayoutType.row: "3", LayoutType.column: "4"}
     )
@@ -186,10 +190,9 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    sub_category_names = {LayoutType.cell: [CellType.row_number,
-                                            CellType.row_span,
-                                            CellType.column_number,
-                                            CellType.column_span]}
+    sub_category_names = {
+        LayoutType.cell: [CellType.row_number, CellType.row_span, CellType.column_number, CellType.column_span]
+    }
     expected_output = {
         CellType.row_number: [1, 2, 1, 2, 0],
         CellType.row_span: [1, 1, 1, 1, 0],

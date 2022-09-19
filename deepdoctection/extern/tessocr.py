@@ -178,7 +178,9 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
                     class_name=LayoutType.line,
-                    text=" ".join([detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]),
+                    text=" ".join(
+                        [detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]
+                    ),
                 )
             )
     if line_detect_result:
@@ -318,5 +320,5 @@ class TesseractOcrDetector(ObjectDetector):
 
     def possible_categories(self) -> List[ObjectTypes]:
         if self.config.LINES:
-            return [LayoutType.word,LayoutType.line]
+            return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]

@@ -29,8 +29,8 @@ from ..utils.file_utils import (
     get_pytorch_requirement,
     pytorch_available,
 )
-from ..utils.transform import InferenceResize
 from ..utils.settings import ObjectTypes
+from ..utils.transform import InferenceResize
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .pt.ptutils import set_torch_auto_device
 

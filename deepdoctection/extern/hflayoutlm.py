@@ -29,8 +29,13 @@ from ..utils.file_utils import (
     pytorch_available,
     transformers_available,
 )
-
-from ..utils.settings import BioTag, TokenClasses, ObjectTypes, token_class_tag_to_token_class_with_tag, TokenClassWithTag, token_class_with_tag_to_token_class_and_tag
+from ..utils.settings import (
+    BioTag,
+    ObjectTypes,
+    TokenClasses,
+    token_class_tag_to_token_class_with_tag,
+    token_class_with_tag_to_token_class_and_tag,
+)
 from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
@@ -224,8 +229,16 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._map_category_names(results)
 
     @staticmethod
-    def _categories_orig_to_categories(categories_semantics: List[TokenClasses], categories_bio: List[BioTag]) -> Dict[str, ObjectTypes]:
-        categories_list = sorted({token_class_tag_to_token_class_with_tag(token,tag) for token in categories_semantics for tag in categories_bio})
+    def _categories_orig_to_categories(
+        categories_semantics: List[TokenClasses], categories_bio: List[BioTag]
+    ) -> Dict[str, ObjectTypes]:
+        categories_list = sorted(
+            {
+                token_class_tag_to_token_class_with_tag(token, tag)
+                for token in categories_semantics
+                for tag in categories_bio
+            }
+        )
         return {str(k): v for k, v in enumerate(categories_list, 1)}
 
     def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
@@ -233,7 +246,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             result.class_name = self.categories[str(result.class_id + 1)]
             token_class, tag = token_class_with_tag_to_token_class_and_tag(result.class_name)
             result.semantic_name = token_class
-            result.bio_tag= tag
+            result.bio_tag = tag
             result.class_id += 1
         return token_results
 

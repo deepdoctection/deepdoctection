@@ -35,7 +35,7 @@ from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
 from ..utils.logger import logger
-from ..utils.settings import TypeOrStr, get_type, ObjectTypes
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -270,7 +270,9 @@ class ClassificationMetric(MetricBase):
     def set_categories(
         cls,
         category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        sub_category_names: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
+        sub_category_names: Optional[
+            Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]
+        ] = None,
         summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     ) -> None:
         """
@@ -293,19 +295,26 @@ class ClassificationMetric(MetricBase):
         """
 
         if category_names is not None:
-            cls._cats = [get_type(category_names)] if isinstance(category_names, str) else [get_type(category) for category in category_names]
+            cls._cats = (
+                [get_type(category_names)]
+                if isinstance(category_names, str)
+                else [get_type(category) for category in category_names]
+            )
         if sub_category_names is not None:
             _sub_cats = {}
-            if isinstance(list(sub_category_names.values())[0],list):
-                for key, value in sub_category_names.items():
+            if isinstance(list(sub_category_names.values())[0], list):
+                for key, _ in sub_category_names.items():
                     _sub_cats[get_type(key)] = [get_type(item) for item in sub_category_names[key]]
             else:
-                for key, value in sub_category_names.items():
+                for key, _ in sub_category_names.items():
                     _sub_cats[get_type(key)] = get_type(sub_category_names[key])  # type: ignore
             cls._sub_cats = _sub_cats
         if summary_sub_category_names is not None:
-            cls._summary_sub_cats = [get_type(category_names)] if isinstance(summary_sub_category_names, str) else [get_type(category) for  # type: ignore
-                                                                                            category in summary_sub_category_names]
+            cls._summary_sub_cats = (
+                [get_type(summary_sub_category_names)]
+                if isinstance(summary_sub_category_names, str)
+                else [get_type(category) for category in summary_sub_category_names]
+            )
 
     @classmethod
     def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
@@ -334,7 +343,9 @@ class ClassificationMetric(MetricBase):
         return []
 
     @property
-    def sub_cats(self) -> Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]]:
+    def sub_cats(
+        self,
+    ) -> Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]]:
         """sub cats"""
         return self._sub_cats
 

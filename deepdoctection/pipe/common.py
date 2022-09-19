@@ -29,7 +29,7 @@ from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import Relationships, LayoutType
+from ..utils.settings import LayoutType, Relationships
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

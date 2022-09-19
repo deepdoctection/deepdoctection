@@ -37,7 +37,7 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.logger import log_once, logger
-from ...utils.settings import LayoutType, CellType, DatasetType, TableType, WordType, ObjectTypes
+from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -73,19 +73,29 @@ _TYPE = DatasetType.object_detection
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
-_INIT_CATEGORIES = [LayoutType.cell,TableType.item,LayoutType.table,LayoutType.word]
+_INIT_CATEGORIES = [LayoutType.cell, TableType.item, LayoutType.table, LayoutType.word]
 _SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    TableType.item: {TableType.item: [LayoutType.row,LayoutType.column]},
+    TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
     LayoutType.cell: {
-        CellType.header: [CellType.header,CellType.body],
+        CellType.header: [CellType.header, CellType.body],
         CellType.row_number: [],
         CellType.column_number: [],
         CellType.row_span: [],
         CellType.column_span: [],
     },
-    CellType.header: {CellType.row_number: [],CellType.column_number: [],CellType.row_span: [], CellType.column_span: []},
-    CellType.body: {CellType.row_number: [],CellType.column_number: [],CellType.row_span: [], CellType.column_span: []},
+    CellType.header: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
+    CellType.body: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
     LayoutType.table: {TableType.html: [TableType.html]},
     LayoutType.word: {WordType.characters: [WordType.characters]},
 }

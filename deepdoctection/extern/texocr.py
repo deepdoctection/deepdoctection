@@ -131,5 +131,5 @@ class TextractOcrDetector(ObjectDetector):
 
     def possible_categories(self) -> List[ObjectTypes]:
         if self.text_lines:
-            return [ LayoutType.word, LayoutType.line]
+            return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]

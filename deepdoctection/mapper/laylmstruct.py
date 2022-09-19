@@ -32,7 +32,15 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import LayoutType, WordType, PageType,DatasetType, token_class_tag_to_token_class_with_tag, BioTag, ObjectTypes
+from ..utils.settings import (
+    BioTag,
+    DatasetType,
+    LayoutType,
+    ObjectTypes,
+    PageType,
+    WordType,
+    token_class_tag_to_token_class_with_tag,
+)
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
@@ -130,12 +138,12 @@ def image_to_layoutlm(
         ):
             semantic_label = ann.get_sub_category(WordType.token_class).category_name
             bio_tag = ann.get_sub_category(WordType.tag).category_name
-            category_name: Union[ObjectTypes,BioTag]
+            category_name: Union[ObjectTypes, BioTag]
             if bio_tag is BioTag.outside:
                 category_name = BioTag.outside
             else:
-                #category_name = bio_tag + "-" + semantic_label
-                category_name = token_class_tag_to_token_class_with_tag(semantic_label,bio_tag)  # type: ignore
+                # category_name = bio_tag + "-" + semantic_label
+                category_name = token_class_tag_to_token_class_with_tag(semantic_label, bio_tag)  # type: ignore
             output["label"] = int(categories_dict_name_as_key[category_name])
 
         if dp.summary is not None and categories_dict_name_as_key is not None:
@@ -242,7 +250,11 @@ def image_to_raw_layoutlm_features(
         ):
             all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
 
-    if dp.summary is not None and categories_dict_name_as_key is not None and dataset_type == DatasetType.sequence_classification:
+    if (
+        dp.summary is not None
+        and categories_dict_name_as_key is not None
+        and dataset_type == DatasetType.sequence_classification
+    ):
         category_name = dp.summary.get_sub_category(PageType.document_type).category_name
         all_labels.append(int(categories_dict_name_as_key[category_name]) - 1)
 
@@ -334,10 +346,12 @@ def raw_features_to_layoutlm_features(
         raw_features = [raw_features]
 
     _has_token_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.token_classification and raw_features[0].get("labels") is not None
+        raw_features[0]["dataset_type"] == DatasetType.token_classification
+        and raw_features[0].get("labels") is not None
     )
     _has_sequence_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.sequence_classification and raw_features[0].get("labels") is not None
+        raw_features[0]["dataset_type"] == DatasetType.sequence_classification
+        and raw_features[0].get("labels") is not None
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
 

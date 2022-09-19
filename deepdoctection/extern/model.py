@@ -30,7 +30,7 @@ from termcolor import colored
 
 from ..utils.fs import download
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Languages, ObjectTypes
+from ..utils.settings import Languages, LayoutType, ObjectTypes
 from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
@@ -104,8 +104,13 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             hf_model_name="model-800000_inf_only",
             hf_config_file=["conf_frcnn_layout.yaml"],
-            categories={"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.list, "4": LayoutType.table,
-                        "5": LayoutType.figure},
+            categories={
+                "1": LayoutType.text,
+                "2": LayoutType.title,
+                "3": LayoutType.list,
+                "4": LayoutType.table,
+                "5": LayoutType.figure,
+            },
         ),
         "cell/model-1800000_inf_only.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000_inf_only.data-00000-of-00001",
@@ -149,8 +154,13 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
             hf_model_name="model-800000",
             hf_config_file=["conf_frcnn_layout.yaml"],
-            categories={"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.list, "4": LayoutType.table,
-                        "5": LayoutType.figure},
+            categories={
+                "1": LayoutType.text,
+                "2": LayoutType.title,
+                "3": LayoutType.list,
+                "4": LayoutType.table,
+                "5": LayoutType.figure,
+            },
         ),
         "cell/model-1800000.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000.data-00000-of-00001",
@@ -172,8 +182,13 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             hf_model_name="d2_model-800000-layout.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.list, "4": LayoutType.table,
-                        "5": LayoutType.figure},
+            categories={
+                "1": LayoutType.text,
+                "2": LayoutType.title,
+                "3": LayoutType.list,
+                "4": LayoutType.table,
+                "5": LayoutType.figure,
+            },
         ),
         "layout/d2_model_0829999_layout_inf_only.pt": ModelProfile(
             name="layout/d2_model_0829999_layout_inf_only.pt",
@@ -184,8 +199,13 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             hf_model_name="d2_model_0829999_layout_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.list, "4": LayoutType.table,
-                        "5": LayoutType.figure},
+            categories={
+                "1": LayoutType.text,
+                "2": LayoutType.title,
+                "3": LayoutType.list,
+                "4": LayoutType.table,
+                "5": LayoutType.figure,
+            },
         ),
         "layout/d2_model_0829999_layout.pth": ModelProfile(
             name="layout/d2_model_0829999_layout.pth",
@@ -196,8 +216,13 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             hf_model_name="d2_model_0829999_layout.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.list, "4": LayoutType.table,
-                        "5": LayoutType.figure},
+            categories={
+                "1": LayoutType.text,
+                "2": LayoutType.title,
+                "3": LayoutType.list,
+                "4": LayoutType.table,
+                "5": LayoutType.figure,
+            },
         ),
         "cell/d2_model-1800000-cell.pkl": ModelProfile(
             name="cell/d2_model-1800000-cell.pkl",
@@ -307,7 +332,7 @@ class ModelCatalog:
                 "__label__ja": Languages.japanese,
                 "__label__es": Languages.spanish,
                 "__label__ceb": Languages.cebuano,
-                "__label__tr":  Languages.turkish,
+                "__label__tr": Languages.turkish,
                 "__label__pt": Languages.portuguese,
                 "__label__uk": Languages.ukrainian,
                 "__label__eo": Languages.esperanto,

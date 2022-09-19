@@ -34,7 +34,6 @@ from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.logger import logger
 from ..utils.settings import DatasetType
-
 from .base import MetricBase
 
 

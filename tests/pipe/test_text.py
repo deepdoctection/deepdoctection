@@ -27,7 +27,7 @@ from pytest import raises
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deepdoctection.pipe.text import TextExtractionService, TextOrderService
-from deepdoctection.utils.settings import LayoutType, CellType, Relationships
+from deepdoctection.utils.settings import CellType, LayoutType, Relationships
 
 
 class TestTextExtractionService:
@@ -125,7 +125,9 @@ class TestTextExtractionServiceWithSubImage:
         """
 
         self._text_extract_detector = MagicMock(spec=ObjectDetector, accepts_batch=False)
-        self.text_extraction_service = TextExtractionService(self._text_extract_detector, extract_from_roi=LayoutType.table)
+        self.text_extraction_service = TextExtractionService(
+            self._text_extract_detector, extract_from_roi=LayoutType.table
+        )
 
     def test_integration_pipeline_component(
         self,
@@ -207,7 +209,14 @@ class TestTextOrderService:
         text_order_service = TextOrderService(
             text_container=LayoutType.word,
             floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
-            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.cell, CellType.header, CellType.body],
+            text_block_names=[
+                LayoutType.title,
+                LayoutType.text,
+                LayoutType.list,
+                LayoutType.cell,
+                CellType.header,
+                CellType.body,
+            ],
         )
         dp_image = dp_image_with_layout_and_word_annotations
 

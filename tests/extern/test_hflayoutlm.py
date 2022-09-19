@@ -27,7 +27,7 @@ from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
-from deepdoctection.utils.settings import get_type, BioTag, TokenClasses
+from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
 
 from ..mapper.data import DatapointXfund
 
@@ -96,7 +96,7 @@ class TestHFLayoutLmTokenClassifier:
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside , get_type("B-HEADER"), get_type("I-HEADER")}
+        assert set(model.categories.values()) == {BioTag.outside, get_type("B-HEADER"), get_type("I-HEADER")}
 
         # Arrange
         categories_explicit = {"1": get_type("B-HEADER"), "2": get_type("I-HEADER"), "3": get_type("O")}

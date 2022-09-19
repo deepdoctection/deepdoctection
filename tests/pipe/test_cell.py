@@ -29,6 +29,7 @@ from deepdoctection.pipe.base import ObjectDetector
 from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import LayoutType
 
+
 def test_detect_result_generator(
     dataset_categories: DatasetCategories, dp_image: Image, layout_detect_results: List[DetectionResult]
 ) -> None:

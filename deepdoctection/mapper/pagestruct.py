@@ -27,7 +27,7 @@ from ..datapoint.doc import Cell, LayoutSegment, Page, Table, TableSegment
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
-from ..utils.settings import Relationships, CellType , WordType, LayoutType, TableType
+from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
 
 __all__ = ["to_page", "page_dict_to_page"]
 
@@ -80,7 +80,9 @@ def _to_cell(dp: Image, annotation: ImageAnnotation, text_container: str) -> Tup
 
 def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Table:
     cell_ids = annotation.get_relationship(Relationships.child)
-    cell_anns = dp.get_annotation(annotation_ids=cell_ids, category_names=[LayoutType.cell, CellType.header, CellType.body])
+    cell_anns = dp.get_annotation(
+        annotation_ids=cell_ids, category_names=[LayoutType.cell, CellType.header, CellType.body]
+    )
     cells = []
     number_rows = -1
     number_cols = -1
@@ -98,7 +100,9 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
         else:
             if cell_anns:
                 number_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cell_anns])
-                number_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns])
+                number_cols = max(
+                    [int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns]
+                )
 
     # cell
     for cell_ann in cell_anns:
@@ -114,7 +118,9 @@ def _to_table(dp: Image, annotation: ImageAnnotation, text_container: str) -> Ta
 
     # table segments
     table_segm_ids = annotation.get_relationship(Relationships.child)
-    table_segm_anns = dp.get_annotation(annotation_ids=table_segm_ids, category_names=[LayoutType.row, LayoutType.column])
+    table_segm_anns = dp.get_annotation(
+        annotation_ids=table_segm_ids, category_names=[LayoutType.row, LayoutType.column]
+    )
     table_segm = []
     for table_segm_ann in table_segm_anns:
 

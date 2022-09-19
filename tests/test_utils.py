@@ -81,8 +81,3 @@ def set_num_gpu_to_one() -> int:
     set gpu number to one
     """
     return 1
-
-
-
-
-

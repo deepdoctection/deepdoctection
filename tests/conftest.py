@@ -21,7 +21,7 @@ Module for globally accessible fixtures
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List, Tuple, Mapping, Sequence
+from typing import Dict, List, Mapping, Sequence, Tuple
 
 import numpy as np
 from pytest import fixture
@@ -37,16 +37,24 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, Relationships, WordType, ObjectTypes, object_types_registry, update_all_types_dict
+from deepdoctection.utils.settings import (
+    CellType,
+    LayoutType,
+    ObjectTypes,
+    Relationships,
+    WordType,
+    object_types_registry,
+    update_all_types_dict,
+)
 from deepdoctection.utils.systools import get_package_path
 
 from .data import (
     Annotations,
+    TestType,
     get_layoutlm_features,
     get_layoutlm_input,
     get_sequence_class_result,
     get_token_class_result,
-    TestType
 )
 from .mapper.data import DatapointImage
 
@@ -87,7 +95,13 @@ def fixture_categories() -> Dict[str, str]:
     """
     Categories as Dict
     """
-    return {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table, "4": LayoutType.figure, "5": LayoutType.list}
+    return {
+        "1": LayoutType.text,
+        "2": LayoutType.title,
+        "3": LayoutType.table,
+        "4": LayoutType.figure,
+        "5": LayoutType.list,
+    }
 
 
 @fixture(name="dataset_categories")
@@ -99,7 +113,12 @@ def fixture_dataset_categories() -> DatasetCategories:
     _sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
         LayoutType.row: {CellType.row_number: []},
         LayoutType.column: {CellType.column_number: []},
-        LayoutType.cell: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},
+        LayoutType.cell: {
+            CellType.row_number: [],
+            CellType.column_number: [],
+            CellType.row_span: [],
+            CellType.column_span: [],
+        },
     }
     return DatasetCategories(_categories, _sub_categories)
 
@@ -469,8 +488,7 @@ def fixture_language_detect_result() -> DetectionResult:
     return DetectionResult(text="eng", score=0.9876)
 
 
-def pytest_sessionstart():
-
-    object_types_registry.register("TestType",func=TestType)
+def pytest_sessionstart() -> None:
+    """Pre configuration before testing starts"""
+    object_types_registry.register("TestType", func=TestType)
     update_all_types_dict()
-

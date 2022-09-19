@@ -20,8 +20,8 @@ Some datapoint samples in a separate module
 """
 
 from collections import namedtuple
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union, Mapping
+from dataclasses import dataclass
+from typing import Dict, List, Mapping, Optional, Union
 
 import numpy as np
 
@@ -36,7 +36,17 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType, get_type, ObjectTypes, TableType, CellType, BioTag
+from deepdoctection.utils.settings import (
+    BioTag,
+    CellType,
+    DatasetType,
+    LayoutType,
+    ObjectTypes,
+    TableType,
+    TokenClasses,
+    TokenClassWithTag,
+    get_type,
+)
 from tests.data import TestType
 
 _SAMPLE_COCO = {
@@ -658,7 +668,13 @@ class DatapointCoco:
     dp = _SAMPLE_COCO
     white_image: ImageType = np.ones((794, 596, 3), dtype=np.int32) * 255  # type: ignore
     white_image_string = convert_np_array_to_b64(white_image)
-    categories = {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table, "4": LayoutType.figure, "5": LayoutType.list}
+    categories = {
+        "1": LayoutType.text,
+        "2": LayoutType.title,
+        "3": LayoutType.table,
+        "4": LayoutType.figure,
+        "5": LayoutType.list,
+    }
     first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
 
     def get_white_image(self, path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
@@ -880,7 +896,13 @@ class DatapointProdigy:
     """
 
     dp = _SAMPLE_PRODIGY
-    categories = {LayoutType.text: "1", LayoutType.title: "2", LayoutType.table: "3", LayoutType.figure: "4", LayoutType.list: "5"}
+    categories = {
+        LayoutType.text: "1",
+        LayoutType.title: "2",
+        LayoutType.table: "3",
+        LayoutType.figure: "4",
+        LayoutType.list: "5",
+    }
     first_ann_box = Box(1, 2.7, 14, 26.3)
 
     def get_width(self, image_loaded: bool) -> float:
@@ -911,7 +933,7 @@ class DatapointProdigy:
         """
         return self.first_ann_box
 
-    def get_first_ann_category(self, as_index: bool = True) -> Union[ObjectTypes,str]:
+    def get_first_ann_category(self, as_index: bool = True) -> Union[ObjectTypes, str]:
         """
         category_name or category_id
         """
@@ -1765,10 +1787,12 @@ class DatapointXfund:
 
     dp = _SAMPLE_XFUND["documents"][0]
 
-    category_names_mapping = {"other": TokenClasses.other,
-                              "question": TokenClasses.question,
-                              "answer": TokenClasses.answer,
-                              "header": TokenClasses.header}
+    category_names_mapping = {
+        "other": TokenClasses.other,
+        "question": TokenClasses.question,
+        "answer": TokenClasses.answer,
+        "header": TokenClasses.header,
+    }
     categories_dict_name_as_key = {
         get_type("B-ANSWER"): "1",
         get_type("B-HEADER"): "2",
@@ -1892,9 +1916,11 @@ class DatapointXfund:
         "image_id": "c421a065-cfd4-3057-8d50-4b98e3c09810",
         "width": 1000,
         "height": 1000,
-        "ann_ids": ["9189ca58-d603-348e-96f6-a41c322e4a55",
-                    "6cd1cb41-fdf4-3508-8f41-d457ae6e26d1",
-                    "499ea7ac-ddff-3efd-8f48-bb5e580e613b"],
+        "ann_ids": [
+            "9189ca58-d603-348e-96f6-a41c322e4a55",
+            "6cd1cb41-fdf4-3508-8f41-d457ae6e26d1",
+            "499ea7ac-ddff-3efd-8f48-bb5e580e613b",
+        ],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
         "dataset_type": DatasetType.token_classification,
@@ -2017,7 +2043,12 @@ class IIITar13KJson:
         ],
     }
 
-    categories_name_as_keys= {LayoutType.table: "1", LayoutType.logo: "2", LayoutType.figure: "3", LayoutType.signature: "4"}
+    categories_name_as_keys = {
+        LayoutType.table: "1",
+        LayoutType.logo: "2",
+        LayoutType.figure: "3",
+        LayoutType.signature: "4",
+    }
     category_names_mapping = {
         "natural_image": LayoutType.figure,
         "figure": LayoutType.figure,

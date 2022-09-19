@@ -30,7 +30,7 @@ from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import is_file_extension, load_bytes_from_pdf_file, load_image_from_file
-from ..utils.settings import CellType, LayoutType, TableType, Relationships, WordType
+from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 __all__ = ["pub_to_image"]
@@ -425,16 +425,24 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
-            TableType.number_of_rows, CategoryAnnotation(category_name=TableType.number_of_rows, category_id=str(number_of_rows)), image.image_id
+            TableType.number_of_rows,
+            CategoryAnnotation(category_name=TableType.number_of_rows, category_id=str(number_of_rows)),
+            image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.number_of_columns, CategoryAnnotation(category_name=TableType.number_of_columns, category_id=str(number_of_cols)), image.image_id
+            TableType.number_of_columns,
+            CategoryAnnotation(category_name=TableType.number_of_columns, category_id=str(number_of_cols)),
+            image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.max_row_span, CategoryAnnotation(category_name=TableType.max_row_span, category_id=str(max_rs)), image.image_id
+            TableType.max_row_span,
+            CategoryAnnotation(category_name=TableType.max_row_span, category_id=str(max_rs)),
+            image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.max_col_span, CategoryAnnotation(category_name=TableType.max_col_span, category_id=str(max_cs)), image.image_id
+            TableType.max_col_span,
+            CategoryAnnotation(category_name=TableType.max_col_span, category_id=str(max_cs)),
+            image.image_id,
         )
         image.summary = summary_ann
 

@@ -129,7 +129,9 @@ class TestDatapointManager:
 
         # Act
         assert ann_id is not None
-        cont_ann_id = dp_manager.set_container_annotation(get_type("foo"), 5, get_type("FOO"), ann_id, "hello world", 0.8)
+        cont_ann_id = dp_manager.set_container_annotation(
+            get_type("foo"), 5, get_type("FOO"), ann_id, "hello world", 0.8
+        )
 
         # Assert
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)

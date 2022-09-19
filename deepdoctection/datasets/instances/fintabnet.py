@@ -45,7 +45,7 @@ from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import logger
-from ...utils.settings import DatasetType, LayoutType, CellType, TableType, ObjectTypes
+from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType
 from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -89,7 +89,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
-_INIT_CATEGORIES = [LayoutType.table,LayoutType.cell,TableType.item]
+_INIT_CATEGORIES = [LayoutType.table, LayoutType.cell, TableType.item]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.cell: {
@@ -99,9 +99,19 @@ _SUB_CATEGORIES = {
         CellType.row_span: [],
         CellType.column_span: [],
     },
-    TableType.item: {TableType.item: [LayoutType.row,LayoutType.column]},
-    CellType.header: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},
-    CellType.body: {CellType.row_number: [], CellType.column_number: [], CellType.row_span: [], CellType.column_span: []},
+    TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
+    CellType.header: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
+    CellType.body: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
 }
 
 
@@ -234,7 +244,14 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 df,
                 maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
                     category_names_sub_image=LayoutType.table,
-                    category_names=[LayoutType.cell, CellType.header, CellType.body, TableType.item, LayoutType.row, LayoutType.column],
+                    category_names=[
+                        LayoutType.cell,
+                        CellType.header,
+                        CellType.body,
+                        TableType.item,
+                        LayoutType.row,
+                        LayoutType.column,
+                    ],
                     add_summary=True,
                 ),
             )

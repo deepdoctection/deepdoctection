@@ -26,8 +26,9 @@ from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.mapper import pub_to_image
 from deepdoctection.utils.detection_types import JsonDict
-#from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import LayoutType, CellType, TableType
+
+# from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import CellType, LayoutType, TableType
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
@@ -68,25 +69,58 @@ def test_pub_to_image(
     assert isclose(first_ann.bounding_box.uly, datapoint.get_first_ann_box().uly, rel_tol=1e-15)
     assert isclose(first_ann.bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)
     assert isclose(first_ann.bounding_box.height, datapoint.get_first_ann_box().h, rel_tol=1e-15)
-    assert first_ann.get_sub_category(CellType.header).category_name == datapoint.get_first_ann_sub_category_header_name()
-    assert first_ann.get_sub_category(CellType.row_number).category_id == datapoint.get_first_ann_sub_category_row_number_id()
-    assert first_ann.get_sub_category(CellType.column_number).category_id == datapoint.get_first_ann_sub_category_col_number_id()
-    assert first_ann.get_sub_category(CellType.row_span).category_id == datapoint.get_first_ann_sub_category_row_span_id()
-    assert first_ann.get_sub_category(CellType.column_span).category_id == datapoint.get_first_ann_sub_category_col_span_id()
+    assert (
+        first_ann.get_sub_category(CellType.header).category_name == datapoint.get_first_ann_sub_category_header_name()
+    )
+    assert (
+        first_ann.get_sub_category(CellType.row_number).category_id
+        == datapoint.get_first_ann_sub_category_row_number_id()
+    )
+    assert (
+        first_ann.get_sub_category(CellType.column_number).category_id
+        == datapoint.get_first_ann_sub_category_col_number_id()
+    )
+    assert (
+        first_ann.get_sub_category(CellType.row_span).category_id == datapoint.get_first_ann_sub_category_row_span_id()
+    )
+    assert (
+        first_ann.get_sub_category(CellType.column_span).category_id
+        == datapoint.get_first_ann_sub_category_col_span_id()
+    )
 
     assert last_ann.category_name == datapoint.get_last_ann_category_name()
     assert last_ann.get_sub_category(CellType.header).category_name == datapoint.get_last_ann_sub_category_header_name()
-    assert last_ann.get_sub_category(CellType.row_number).category_id == datapoint.get_last_ann_sub_category_row_number_id()
-    assert last_ann.get_sub_category(CellType.column_number).category_id == datapoint.get_last_ann_sub_category_col_number_id()
+    assert (
+        last_ann.get_sub_category(CellType.row_number).category_id
+        == datapoint.get_last_ann_sub_category_row_number_id()
+    )
+    assert (
+        last_ann.get_sub_category(CellType.column_number).category_id
+        == datapoint.get_last_ann_sub_category_col_number_id()
+    )
     assert last_ann.get_sub_category(CellType.row_span).category_id == datapoint.get_last_ann_sub_category_row_span_id()
-    assert last_ann.get_sub_category(CellType.column_span).category_id == datapoint.get_last_ann_sub_category_col_span_id()
+    assert (
+        last_ann.get_sub_category(CellType.column_span).category_id == datapoint.get_last_ann_sub_category_col_span_id()
+    )
 
     summary_ann = dp.summary
     assert isinstance(summary_ann, SummaryAnnotation)
-    assert summary_ann.get_sub_category(TableType.number_of_rows).category_id == datapoint.get_summary_ann_sub_category_rows_id()
-    assert summary_ann.get_sub_category(TableType.number_of_columns).category_id == datapoint.get_summary_ann_sub_category_col_id()
-    assert summary_ann.get_sub_category(TableType.max_row_span).category_id == datapoint.get_summary_ann_sub_category_row_span_id()
-    assert summary_ann.get_sub_category(TableType.max_col_span).category_id == datapoint.get_summary_ann_sub_category_col_span_id()
+    assert (
+        summary_ann.get_sub_category(TableType.number_of_rows).category_id
+        == datapoint.get_summary_ann_sub_category_rows_id()
+    )
+    assert (
+        summary_ann.get_sub_category(TableType.number_of_columns).category_id
+        == datapoint.get_summary_ann_sub_category_col_id()
+    )
+    assert (
+        summary_ann.get_sub_category(TableType.max_row_span).category_id
+        == datapoint.get_summary_ann_sub_category_row_span_id()
+    )
+    assert (
+        summary_ann.get_sub_category(TableType.max_col_span).category_id
+        == datapoint.get_summary_ann_sub_category_col_span_id()
+    )
 
 
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
