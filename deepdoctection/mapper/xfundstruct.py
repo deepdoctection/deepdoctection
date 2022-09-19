@@ -100,7 +100,7 @@ def xfund_to_image(
                 ann.dump_sub_category(WordType.characters, sub_cat_chars)
                 if sub_cat_semantic.category_name == TokenClasses.other:
                     sub_cat_tag = CategoryAnnotation(category_name=BioTag.outside)
-                    ann.dump_sub_category(WordType.token_tag, sub_cat_tag)
+                    ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     # populating ner token to be used for training and evaluation
                     sub_cat_ner_tok = CategoryAnnotation(
                         category_name=BioTag.outside, category_id=ner_token_to_id_mapping[BioTag.outside]
@@ -111,7 +111,6 @@ def xfund_to_image(
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     sub_cat_ner_tok = CategoryAnnotation(
                         category_name=token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),BioTag.begin),
-                        #category_name=TokenClassWithTag.from_value(BioTag.begin + "-" + sub_cat_semantic.category_name.value),
                         category_id=ner_token_to_id_mapping[token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),BioTag.begin)],
                     )
                     ann.dump_sub_category(WordType.token_tag, sub_cat_ner_tok)
@@ -121,7 +120,6 @@ def xfund_to_image(
                     sub_cat_ner_tok = CategoryAnnotation(
                         category_name=token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),
                                                                               BioTag.inside),
-                        #category_name=TokenClassWithTag.from_value(BioTag.inside + "-" + sub_cat_semantic.category_name),
                         category_id=ner_token_to_id_mapping[token_class_tag_to_token_class_with_tag(get_type(sub_cat_semantic.category_name),
                                                                               BioTag.inside)],
                     )

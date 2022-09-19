@@ -27,7 +27,7 @@ from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.extern.hflayoutlm import HFLayoutLmSequenceClassifier, HFLayoutLmTokenClassifier
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
-from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.settings import get_type, BioTag, TokenClasses
 
 from ..mapper.data import DatapointXfund
 
@@ -89,17 +89,17 @@ class TestHFLayoutLmTokenClassifier:
             HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], None)
 
         # Arrange
-        categories_semantics = ["FOO"]
-        categories_bio = ["B", "I", "O"]
+        categories_semantics = [TokenClasses.header]
+        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert model.categories == {"1": get_type("B-FOO"), "2": get_type("I-FOO"), "3": get_type("O")}
+        assert set(model.categories.values()) == {BioTag.outside , get_type("B-HEADER"), get_type("I-HEADER")}
 
         # Arrange
-        categories_explicit = {"1": get_type("FOO"), "2": get_type("BAK"), "3": get_type("O")}
+        categories_explicit = {"1": get_type("B-HEADER"), "2": get_type("I-HEADER"), "3": get_type("O")}
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
@@ -123,8 +123,8 @@ class TestHFLayoutLmTokenClassifier:
         """
 
         # Arrange
-        categories_semantics = ["FOO"]
-        categories_bio = ["B", "I", "O"]
+        categories_semantics = [TokenClasses.header]
+        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm.model.device = "cpu"
 

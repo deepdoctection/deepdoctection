@@ -26,7 +26,7 @@ import numpy as np
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType, get_type
+from deepdoctection.utils.settings import LayoutType, CellType, TableType, WordType, get_type, ObjectTypes, BioTag, TokenClassWithTag, TokenClasses
 
 
 @dataclass
@@ -417,10 +417,10 @@ class Annotations:
     ]  # global coordinates calculated depending on table annotation from fixture image_annotations
 
     def __post_init__(self) -> None:
-        self.layout_anns[0]._annotation_id = "a6e3e759-2ad8-3767-9855-bfe611d77073"  # pylint: disable=W0212
-        self.layout_anns[1]._annotation_id = "06bf6a32-2cc8-3fdb-b742-d22381f135d1"  # pylint: disable=W0212
-        self.layout_anns[2]._annotation_id = "982a2a72-c9af-39bd-a40e-bde5abb37927"  # pylint: disable=W0212
-        self.layout_anns[3]._annotation_id = "07f8c1f9-a67a-32bf-a253-a394220cbac6"  # pylint: disable=W0212
+        self.layout_anns[0]._annotation_id = "53b76155-60ac-3305-a8fe-3507c4aae308"  # pylint: disable=W0212
+        self.layout_anns[1]._annotation_id = "cf3161ca-0e26-385d-9891-dc5cf5c8202e"  # pylint: disable=W0212
+        self.layout_anns[2]._annotation_id = "6c59831c-79e3-339f-82ef-153d64aa348b"  # pylint: disable=W0212
+        self.layout_anns[3]._annotation_id = "f58a8974-f891-3926-85e5-2ddebcbccf47"  # pylint: disable=W0212
 
     def get_layout_detect_results(self) -> List[DetectionResult]:
         """
@@ -1427,10 +1427,10 @@ _LAYOUT_INPUT = {
     "image": np.ones((1000, 1000, 3)),
     "ids": [
         "CLS",
-        "3a696daf-15d5-3b88-be63-02912ef35cfb",
-        "37d79fd7-ab87-30fe-b460-9b6e62e901b9",
-        "5d40236e-430c-3d56-a8a3-fe9e46b872ac",
-        "f8227d59-ea7f-342a-97fa-23df1f189762",
+        "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
+        "2b46086c-a480-357d-8e07-29b177d150b8",
+        "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
+        "16860148-9a2b-3530-b33e-9aaba857f5ce",
         "SEP",
     ],
     "boxes": [
@@ -1452,14 +1452,12 @@ _LAYOUT_FEATURES = {
     "width": [1000],
     "height": [1000],
     "ann_ids": [
-        [
-            "[CLS]",
-            "3a696daf-15d5-3b88-be63-02912ef35cfb",
-            "37d79fd7-ab87-30fe-b460-9b6e62e901b9",
-            "5d40236e-430c-3d56-a8a3-fe9e46b872ac",
-            "f8227d59-ea7f-342a-97fa-23df1f189762",
-            "[SEP]",
-        ]
+        ["[CLS]",
+                 "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
+                 "2b46086c-a480-357d-8e07-29b177d150b8",
+                 "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
+                 "16860148-9a2b-3530-b33e-9aaba857f5ce",
+                 "[SEP]"]
     ],
     "input_ids": [[101, 7592, 2088, 9061, 2088, 102]],
     "token_type_ids": [[0, 0, 0, 0, 0, 0]],
@@ -1500,9 +1498,9 @@ def get_token_class_result() -> List[TokenClassResult]:
     input_ids = _LAYOUT_INPUT["input_ids"]
     token_class_predictions = [0, 1, 1, 2, 2, 0]
     tokens = _LAYOUT_INPUT["tokens"]
-    class_name = ["O", "B-FOO", "B-FOO", "I-FOO", "I-FOO", "O"]
-    semantic_name = ["OTHER", "FOO", "FOO", "FOO", "FOO", "OTHER"]
-    bio_tag = ["O", "B", "B", "I", "I", "O"]
+    class_name = [BioTag.outside, TokenClassWithTag.b_header, TokenClassWithTag.b_header, TokenClassWithTag.i_header, TokenClassWithTag.i_header, BioTag.outside]
+    semantic_name = [TokenClasses.other, TokenClasses.header, TokenClasses.header, TokenClasses.header, TokenClasses.header, TokenClasses.other]
+    bio_tag = [BioTag.outside, BioTag.begin, BioTag.begin, BioTag.inside, BioTag.inside, BioTag.outside]
     return [
         TokenClassResult(
             uuid=out[0],
@@ -1524,3 +1522,34 @@ def get_sequence_class_result() -> SequenceClassResult:
     sequence class result
     """
     return SequenceClassResult(class_name=get_type("FOO"), class_id=1)
+
+
+class TestType(ObjectTypes):
+    foo = "foo"
+    FOO = "FOO"
+    bak = "bak"
+    BAK = "BAK"
+    BAK_1 = "BAK_1"
+    BAK_11 = "BAK_11"
+    BAK_12 = "BAK_12"
+    BAK_21 = "BAK_21"
+    BAK_22 = "BAK_22"
+    cat = "cat"
+    FOO_1 = "FOO_1"
+    FOO_2 = "FOO_2"
+    FOO_3 = "FOO_3"
+    FOOBAK = "FOOBAK"
+    Test = "TEST"
+    TEST_SUMMARY = "TEST_SUMMARY"
+    baz = "baz"
+    BAZ = "BAZ"
+    b_foo = "B-FOO"
+    i_foo = "I-FOO"
+    o = "O"
+    sub = "sub"
+    sub_2 = "sub_2"
+    one = "1"
+    two = "2"
+    three = "3"
+    four = "4"
+    five = "5"

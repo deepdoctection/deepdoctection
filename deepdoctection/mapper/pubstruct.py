@@ -157,7 +157,7 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
 
 def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, str]) -> Image:
 
-    item_number = CellType.row_number if item_type == LayoutType.row else LayoutType.column
+    item_number = CellType.row_number if item_type == LayoutType.row else CellType.column_number
     item_span = CellType.row_span if item_type == LayoutType.row else CellType.column_span
 
     summary_key = TableType.number_of_rows if item_type == LayoutType.row else TableType.number_of_columns
