@@ -36,7 +36,8 @@ from deepdoctection.datapoint import (
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType, get_type, ObjectTypes
+from deepdoctection.utils.settings import TokenClasses, TokenClassWithTag, DatasetType, LayoutType, get_type, ObjectTypes, TableType, CellType, BioTag
+from tests.data import TestType
 
 _SAMPLE_COCO = {
     "file_name": "/test/path/PMC5447509_00002.jpg",
@@ -657,7 +658,7 @@ class DatapointCoco:
     dp = _SAMPLE_COCO
     white_image: ImageType = np.ones((794, 596, 3), dtype=np.int32) * 255  # type: ignore
     white_image_string = convert_np_array_to_b64(white_image)
-    categories = {"1": "text", "2": "title", "3": "table", "4": "figure", "5": "list"}
+    categories = {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table, "4": LayoutType.figure, "5": LayoutType.list}
     first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
 
     def get_white_image(self, path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
@@ -715,7 +716,7 @@ class DatapointPubtabnet:  # pylint: disable=R0904
     """
 
     dp = _SAMPLE_PUBTABNET
-    categories = {"1": "CELL", "2": "ITEM", "3": "TABLE", "4": "WORD"}
+    categories = {"1": LayoutType.cell, "2": TableType.item, "3": LayoutType.table, "4": LayoutType.word}
     categories_as_names = {v: k for k, v in categories.items()}
     first_ann_box = Box(475, 162, 10, 9)
     white_image: ImageType = np.ones((1334, 996, 3), dtype=np.int32) * 255  # type: ignore
@@ -763,11 +764,11 @@ class DatapointPubtabnet:  # pylint: disable=R0904
             return "1"
         return self.categories["1"]
 
-    def get_first_ann_sub_category_header_name(self) -> str:  # pylint: disable=R0201
+    def get_first_ann_sub_category_header_name(self) -> ObjectTypes:  # pylint: disable=R0201
         """
         category_name of sub category
         """
-        return "BODY"
+        return CellType.body
 
     def get_last_ann_category_name(self) -> str:
         """
@@ -775,11 +776,11 @@ class DatapointPubtabnet:  # pylint: disable=R0904
         """
         return self.categories["1"]
 
-    def get_last_ann_sub_category_header_name(self) -> str:  # pylint: disable=R0201
+    def get_last_ann_sub_category_header_name(self) -> ObjectTypes:  # pylint: disable=R0201
         """
         category_name of sub category
         """
-        return "HEAD"
+        return CellType.header
 
     def get_last_ann_sub_category_row_number_id(self) -> str:  # pylint: disable=R0201
         """
@@ -879,7 +880,7 @@ class DatapointProdigy:
     """
 
     dp = _SAMPLE_PRODIGY
-    categories = {"TEXT": "1", "TITLE": "2", "TABLE": "3", "FIGURE": "4", "LIST": "5"}
+    categories = {LayoutType.text: "1", LayoutType.title: "2", LayoutType.table: "3", LayoutType.figure: "4", LayoutType.list: "5"}
     first_ann_box = Box(1, 2.7, 14, 26.3)
 
     def get_width(self, image_loaded: bool) -> float:
@@ -910,13 +911,13 @@ class DatapointProdigy:
         """
         return self.first_ann_box
 
-    def get_first_ann_category(self, as_index: bool = True) -> str:
+    def get_first_ann_category(self, as_index: bool = True) -> Union[ObjectTypes,str]:
         """
         category_name or category_id
         """
         if as_index:
-            return self.categories["TABLE"]
-        return "TABLE"
+            return self.categories[LayoutType.table]
+        return LayoutType.table
 
 
 class DatapointImage:
@@ -938,15 +939,15 @@ class DatapointImage:
         self.dict_text: str = "sample.png"
         self.len_spans: int = 2
         self.first_span: JsonDict = {
-            "label": "FOO",
-            "annotation_id": "2a761d95-14f8-3a03-a5ee-f64c1130cb80",
+            "label": TestType.FOO,
+            "annotation_id": "aa62b83f-0c73-3e00-a289-f602ef512db5",
             "score": 0.53,
             "type": "rect",
             "points": [[2.6, 3.7], [2.6, 5.7], [4.6, 5.7], [4.6, 3.7]],
         }
         self.second_span: JsonDict = {
-            "label": "BAK",
-            "annotation_id": "e1dad126-ced5-3a1b-a8ae-6af5cf067b1f",
+            "label": TestType.BAK,
+            "annotation_id": "108246c0-4eee-32cc-b3c7-5b6705d4bee6",
             "score": 0.99,
             "type": "rect",
             "points": [[16.6, 26.6], [16.6, 30.6], [30.6, 30.6], [30.6, 26.6]],
@@ -1790,7 +1791,7 @@ class DatapointXfund:
         TokenClassWithTag.i_answer: "4",
         TokenClassWithTag.i_header: "5",
         TokenClassWithTag.i_question: "6",
-        TokenClasses.other: "7",
+        BioTag.outside: "7",
     }
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
@@ -1891,11 +1892,9 @@ class DatapointXfund:
         "image_id": "c421a065-cfd4-3057-8d50-4b98e3c09810",
         "width": 1000,
         "height": 1000,
-        "ann_ids": [
-            "0d0600cf-df94-34fa-9b30-5ecbbd1b36ab",
-            "34bb95dc-7fe6-3982-9dd5-e49d362b3fd7",
-            "a77dfce6-32ff-31b4-8e39-cbbdd4c0acf1",
-        ],
+        "ann_ids": ["9189ca58-d603-348e-96f6-a41c322e4a55",
+                    "6cd1cb41-fdf4-3508-8f41-d457ae6e26d1",
+                    "499ea7ac-ddff-3efd-8f48-bb5e580e613b"],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
         "dataset_type": DatasetType.token_classification,
@@ -1945,14 +1944,14 @@ class DatapointXfund:
         """
         categories semantics
         """
-        return ["FOO"]
+        return [TestType.FOO]
 
     @staticmethod
     def get_categories_bio() -> List[str]:
         """
         categories bio
         """
-        return ["B", "I", "O"]
+        return [BioTag.begin, BioTag.inside, BioTag.outside]
 
     @staticmethod
     def get_token_class_names() -> List[str]:
@@ -1960,24 +1959,24 @@ class DatapointXfund:
         token class names
         """
         return [
-            "B-FOO",
-            "I-FOO",
-            "I-FOO",
-            "B-FOO",
-            "I-FOO",
-            "O",
-            "I-FOO",
-            "I-FOO",
-            "I-FOO",
-            "B-FOO",
-            "B-FOO",
-            "B-FOO",
-            "I-FOO",
-            "O",
-            "I-FOO",
-            "B-FOO",
-            "I-FOO",
-            "I-FOO",
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.i_header,
+            BioTag.outside,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.i_header,
+            BioTag.outside,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.b_header,
+            TokenClassWithTag.i_header,
+            TokenClassWithTag.i_header,
         ]
 
     def get_categories_dict_names_as_key(self) -> Dict[ObjectTypes, str]:

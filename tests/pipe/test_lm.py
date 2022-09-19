@@ -31,8 +31,7 @@ from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layout
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
-#from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import WordType, PageType
+from deepdoctection.utils.settings import WordType, PageType, TokenClasses, BioTag
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
@@ -82,21 +81,21 @@ class TestLMTokenClassifierService:
         dp = lm_service.pass_datapoint(dp)
 
         # Assert
-        words = dp.get_annotation(annotation_ids="3a696daf-15d5-3b88-be63-02912ef35cfb")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "B"
+        words = dp.get_annotation(annotation_ids="429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="37d79fd7-ab87-30fe-b460-9b6e62e901b9")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "B"
+        words = dp.get_annotation(annotation_ids="2b46086c-a480-357d-8e07-29b177d150b8")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="5d40236e-430c-3d56-a8a3-fe9e46b872ac")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "I"
+        words = dp.get_annotation(annotation_ids="8c6c765c-3e99-3154-ae2e-6d8b661e9bcb")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
-        words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "I"
+        words = dp.get_annotation(annotation_ids="16860148-9a2b-3530-b33e-9aaba857f5ce")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
     @staticmethod
     @mark.requires_pt
@@ -121,21 +120,21 @@ class TestLMTokenClassifierService:
         dp = lm_service.pass_datapoint(dp)
 
         # Assert
-        words = dp.get_annotation(annotation_ids="3a696daf-15d5-3b88-be63-02912ef35cfb")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "B"
+        words = dp.get_annotation(annotation_ids="429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="37d79fd7-ab87-30fe-b460-9b6e62e901b9")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "B"
+        words = dp.get_annotation(annotation_ids="2b46086c-a480-357d-8e07-29b177d150b8")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="5d40236e-430c-3d56-a8a3-fe9e46b872ac")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "I"
+        words = dp.get_annotation(annotation_ids="8c6c765c-3e99-3154-ae2e-6d8b661e9bcb")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
-        words = dp.get_annotation(annotation_ids="f8227d59-ea7f-342a-97fa-23df1f189762")
-        assert words[0].get_sub_category(WordType.token_class).category_name == "FOO"
-        assert words[0].get_sub_category(WordType.tag).category_name == "I"
+        words = dp.get_annotation(annotation_ids="16860148-9a2b-3530-b33e-9aaba857f5ce")
+        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
+        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
 
 class TestLMSequenceClassifierService:

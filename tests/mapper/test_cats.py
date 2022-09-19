@@ -44,7 +44,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
-    categories._cat_to_sub_cat = {LayoutType.cell: CellType.header, TableType.item: "row_col"}  # pylint: disable=W0212
+    categories._cat_to_sub_cat = {LayoutType.cell: CellType.header, TableType.item: TableType.item}  # pylint: disable=W0212
     categories.get_categories = Mock(
         return_value={CellType.header: "1", CellType.body: "2", LayoutType.row: "3", LayoutType.column: "4"}
     )

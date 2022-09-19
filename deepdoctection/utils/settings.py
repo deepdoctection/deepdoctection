@@ -178,7 +178,10 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG={(TokenClasses.header,BioTag.begin): Toke
                                         (TokenClasses.answer, BioTag.inside): TokenClassWithTag.i_answer,
                                         (TokenClasses.question, BioTag.begin): TokenClassWithTag.b_question,
                                         (TokenClasses.question, BioTag.inside): TokenClassWithTag.i_question,
-                                        (TokenClasses.other,BioTag.outside): BioTag.outside
+                                        (TokenClasses.other,BioTag.outside): BioTag.outside,
+                                        (TokenClasses.header,BioTag.outside): BioTag.outside,
+                                        (TokenClasses.answer, BioTag.outside): BioTag.outside,
+                                        (TokenClasses.question, BioTag.outside): BioTag.outside,
                                         }
 
 
@@ -287,7 +290,7 @@ def update_all_types_dict():
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
     if isinstance(obj_type, ObjectTypes):
         return obj_type
-    return _ALL_TYPES_DICT[obj_type]
+    return _ALL_TYPES_DICT.get(obj_type)
 
 
 # naming convention for all categories and NER tags
