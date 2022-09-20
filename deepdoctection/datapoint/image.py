@@ -84,7 +84,7 @@ class Image:
     embeddings: Dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
     annotations: List[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
     _annotation_ids: List[str] = field(default_factory=list, init=False, repr=False)
-    summary: Optional[SummaryAnnotation] = field(default=None, init=False, repr=False)
+    _summary: Optional[SummaryAnnotation] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.external_id is not None:
@@ -151,6 +151,16 @@ class Image:
             self._image = image.astype(uint8)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
+
+    @property
+    def summary(self) -> Optional[SummaryAnnotation]:
+        return self._summary
+
+    @summary.setter
+    def summary(self, summary_annotation: SummaryAnnotation) -> None:
+        if summary_annotation._annotation_id is None:  # pylint: disable=W0212
+            summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
+        self._summary = summary_annotation
 
     @property
     def pdf_bytes(self) -> Optional[bytes]:
@@ -487,6 +497,7 @@ class Image:
             self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()
         export_dict["location"] = str(export_dict["location"])
+        export_dict["summary"] = export_dict.pop("_summary")
         if save_image and self.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image)
         return export_dict

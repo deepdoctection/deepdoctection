@@ -100,7 +100,7 @@ class CustomConfig(Config):
 
 
 class TEDS:
-    """Tree Edit Distance basead Similarity"""
+    """Tree Edit Distance based Similarity"""
 
     def __init__(self, structure_only: bool = False):
         self.structure_only = structure_only

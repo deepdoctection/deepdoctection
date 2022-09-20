@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.settings import DefaultType, ObjectTypes
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 
 class PredictorBase(ABC):
@@ -113,7 +113,15 @@ class ObjectDetector(PredictorBase):
     and implement the :meth:`predict`.
     """
 
-    categories: Mapping[str, ObjectTypes]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -143,9 +151,17 @@ class PdfMiner(PredictorBase):
     Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
     """
 
-    categories: Mapping[str, ObjectTypes]
+    _categories: Mapping[str, ObjectTypes]
     _pdf_bytes: Optional[bytes] = None
     _page: Any = None
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
@@ -253,7 +269,15 @@ class LMTokenClassifier(PredictorBase):
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
     """
 
-    categories: Mapping[str, ObjectTypes]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
@@ -282,7 +306,15 @@ class LMSequenceClassifier(PredictorBase):
     Deepdoctection predictors, wrap them into a class derived from this class.
     """
 
-    categories: Mapping[str, ObjectTypes]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
@@ -311,7 +343,15 @@ class LanguageDetector(PredictorBase):
     ISO-639 code for the detected language.
     """
 
-    categories: Mapping[str, ObjectTypes]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:

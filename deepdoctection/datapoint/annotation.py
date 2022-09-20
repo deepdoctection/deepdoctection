@@ -226,7 +226,7 @@ class CategoryAnnotation(Annotation):
         super().__post_init__()
 
     def dump_sub_category(
-        self, sub_category_name: ObjectTypes, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
+        self, sub_category_name: TypeOrStr, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
     ) -> None:
         """
         Storage of sub-categories. Since sub-categories usually only depend on very few attributes and the parent
@@ -250,7 +250,7 @@ class CategoryAnnotation(Annotation):
                 annotation.annotation_id = annotation.set_annotation_id(
                     annotation, tmp_annotation_id, *container_id_context
                 )
-        self.sub_categories[sub_category_name] = annotation
+        self.sub_categories[get_type(sub_category_name)] = annotation
 
     def get_sub_category(self, sub_category_name: ObjectTypes) -> "CategoryAnnotation":
         """
@@ -273,7 +273,7 @@ class CategoryAnnotation(Annotation):
         if key in self.sub_categories:
             self.sub_categories.pop(key)
 
-    def dump_relationship(self, key: ObjectTypes, annotation_id: str) -> None:
+    def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """
         Dumps an annotation id to a given key, in order to store relations between annotations. Note, that the
         referenced annotation must be stored elsewhere.
@@ -282,10 +282,11 @@ class CategoryAnnotation(Annotation):
         :param annotation_id: An annotation id
         """
         assert is_uuid_like(annotation_id), "annotation_id must be uuid"
+        key_type = get_type(key)
         if key not in self.relationships:
-            self.relationships[key] = []
-        if annotation_id not in self.relationships[key]:
-            self.relationships[key].append(annotation_id)
+            self.relationships[key_type] = []
+        if annotation_id not in self.relationships[key_type]:
+            self.relationships[key_type].append(annotation_id)
 
     def get_relationship(self, key: ObjectTypes) -> List[str]:
         """

@@ -243,7 +243,6 @@ class DatapointManager:
         assert image is not None
         if image.summary is None:
             image.summary = SummaryAnnotation()
-            image.summary.annotation_id = self.datapoint.define_annotation_id(image.summary)
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         if summary_value:

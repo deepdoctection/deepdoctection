@@ -27,7 +27,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Relationships, WordType
+from ..utils.settings import LayoutType, Relationships, WordType, get_type, TypeOrStr
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -67,7 +67,7 @@ class TextExtractionService(PredictorPipelineComponent):
     def __init__(
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
-        extract_from_roi: Optional[Union[Sequence[str], str]] = None,
+        extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
         category_id_mapping: Optional[Mapping[int, int]] = None,
     ):
         """
@@ -78,7 +78,10 @@ class TextExtractionService(PredictorPipelineComponent):
               Example: {1: 9} sets the ID of the image annotation WORD to 9.
         """
 
-        self.extract_from_category = extract_from_roi
+        if extract_from_roi is None:
+            extract_from_roi = []
+        self.extract_from_category = [get_type(extract_from_roi)] if isinstance(extract_from_roi, str) else \
+            [get_type(roi_category) for roi_category in extract_from_roi]
         super().__init__(text_extract_detector, category_id_mapping)
         if self.extract_from_category:
             assert isinstance(
