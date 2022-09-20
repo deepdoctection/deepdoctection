@@ -28,12 +28,13 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import iou
 from ..datapoint.image import Image
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
+from ..utils.settings import TypeOrStr
 
 
 def match_anns_by_intersection(
     dp: Image,
-    parent_ann_category_names: Union[str, Sequence[str]],
-    child_ann_category_names: Union[str, Sequence[str]],
+    parent_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
+    child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
     matching_rule: str,
     threshold: float,
     use_weighted_intersections: bool = False,
