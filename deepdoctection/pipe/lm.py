@@ -206,6 +206,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                 ("image_annotations", []),
                 ("sub_categories", {}),
                 ("relationships", {}),
-                ("summaries", [PageType.language]),
+                ("summaries", [PageType.document_type]),
             ]
         )

@@ -261,7 +261,8 @@ class ClassificationMetric(MetricBase):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             res = cls.metric(labels_gt[key], labels_pr[key])
-            results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
+            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
+                            "val": res, "num_samples": len(labels_gt[key])})
 
         cls._results = results
         return results
@@ -400,7 +401,7 @@ class ConfusionMetric(ClassificationMetric):
                 for col_number, val in enumerate(row, 1):
                     results.append(
                         {
-                            "key": key,
+                            "key": key.value if isinstance(key, ObjectTypes) else key,
                             "category_id_gt": row_number,
                             "category_id_pr": col_number,
                             "val": float(val),
@@ -446,7 +447,10 @@ class PrecisionMetric(ClassificationMetric):
             number_labels: TypeCounter[int] = Counter(labels_gt[key])
             for label_id, val in enumerate(score, 1):
                 results.append(
-                    {"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]}
+                    {"key": key.value if isinstance(key, ObjectTypes) else key,
+                     "category_id": label_id,
+                     "val": float(val),
+                     "num_samples": number_labels[label_id]}
                 )
         cls._results = results
         return results
@@ -491,7 +495,9 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            results.append({"key": key, "val": float(score), "num_samples": len(labels_gt[key])})
+            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
+                            "val": float(score),
+                            "num_samples": len(labels_gt[key])})
         cls._results = results
         return results
 

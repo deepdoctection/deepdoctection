@@ -62,7 +62,7 @@ class DefaultType(ObjectTypes):
 @object_types_registry.register("PageType")
 class PageType(ObjectTypes):
     """Type for document page properties """
-    document_type = "DOCUMENT_TYPE"  # was previously: "DOC_CLASS"
+    document_type = "DOC_CLASS"
     language = "LANGUAGE"
 
 
@@ -79,7 +79,7 @@ class DocumentType(ObjectTypes):
     form = "FORM"
     email = "EMAIL"
     handwritten = "HANDWRITTEN"
-    advertisement = "ADVERTISeMENT"
+    advertisement = "ADVERTISEMENT"
     scientific_report = "SCIENTIFIC REPORT"
     scientific_publication = "SCIENTIFIC PUBLICATION"
     specification = "SPECIFICATION"
@@ -147,7 +147,7 @@ class CellType(ObjectTypes):
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):
     """Types for word properties"""
-    characters = "CHARACTERS"
+    characters = "CHARS"
     block = "BLOCK"
     token_class = "TOKEN_CLASS"
     tag = "BIO_TAG"
@@ -332,7 +332,7 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
         return obj_type
     return_value = _ALL_TYPES_DICT.get(obj_type)
     if return_value is None:
-        raise KeyError(f"String {obj_type} defines not defined registered ObjectType")
+        raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")
     return return_value
 
 

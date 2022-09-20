@@ -35,6 +35,8 @@ from ..utils.settings import (
     TokenClasses,
     token_class_tag_to_token_class_with_tag,
     token_class_with_tag_to_token_class_and_tag,
+    TypeOrStr,
+    get_type
 )
 from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
@@ -147,9 +149,9 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories_semantics: Optional[Sequence[str]] = None,
-        categories_bio: Optional[Sequence[str]] = None,
-        categories: Optional[Mapping[str, ObjectTypes]] = None,
+        categories_semantics: Optional[Sequence[TypeOrStr]] = None,
+        categories_bio: Optional[Sequence[TypeOrStr]] = None,
+        categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
@@ -167,12 +169,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
         self.path_config = path_config_json
         self.path_weights = path_weights
-        self.categories_semantics = categories_semantics
-        self.categories_bio = categories_bio
+        self.categories_semantics = [get_type(cat_sem) for cat_sem in categories_semantics] if categories_semantics is not None else []
+        self.categories_bio = [get_type(cat_bio) for cat_bio in categories_bio] if categories_bio is not None else []
         if categories:
-            self.categories = copy(categories)
+            self.categories = copy(categories)  # type: ignore
         else:
-            self.categories = self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
+            self.categories = self._categories_orig_to_categories(self.categories_semantics, self.categories_bio)  # type: ignore
 
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)
         self.model = LayoutLMForTokenClassification.from_pretrained(
@@ -297,12 +299,12 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories: Mapping[str, ObjectTypes],
+        categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         self.path_config = path_config_json
         self.path_weights = path_weights
-        self.categories = copy(categories)
+        self.categories = copy(categories)  # type: ignore
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
