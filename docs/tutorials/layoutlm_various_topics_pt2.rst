@@ -1,5 +1,5 @@
-LayoutLM various topics part 2
-==============================
+Various topics around LayoutLM part 1
+=====================================
 
 Adding a CNN backbone for fine-tuning
 -------------------------------------

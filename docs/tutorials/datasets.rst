@@ -1,60 +1,66 @@
 
-Datasets
-==========================
+Data sets
+=========
 
 Regardless of whether you use data to fine-tune a task, carry out an evaluation or experiment: The creation of a
-dataset provides a standardized option to make data available for various tasks in the package.
+dataset provides a way to make data available in a standard format so that it can be processed through components
+of the library.
 
-It is due to the task Document Layout Analysis and Document Information Extraction that all datasets are image datasets.
-This means that these usually cannot be loaded into memory. At most the annotation file can be loaded into memory
-(e.g. if it is a .json file) and even here the situation is often that there is a separate annotation file for each
-image or that the annotation file is a .jsonl file that has to be loaded iteratively. For this reason, deepdoctection
-are mapped as a so-called IterableDataset.
+Document Layout Analysis and Visual Document Understanding require image datasets most of the time.
+This in turn means that they cannot be loaded into memory. Instead one has a small file with
+annotations and links that can be used as a hook to load additional material like images or text data when it is needed.
 
-For users familiar with Pytorch datasets, datasets in deepdoctection are related to the :class:`IterableDataset`. But
-instead of, as in Pytorch, being an iterator itself and iterating over samples like
+Let's say you start with a small annotation file containing some ground truth data for some images as well as references
+to each image. You load this file into memory having a list of e.g. dicts. You then need something so that you can
+iterate over each list element step by step. This is the place where generators come into place.
+
+For users familiar with Pytorch datasets, datasets in **deep**doctection are related to the :class:`IterableDataset`.
+In Pytorch you can iterate over samples like:
 
 .. code:: python
 
     dp = next(iter(MyPytorchDataset))
 
-deepdoctection has a :meth:`build` method in the :class:`DataFlowBuilder` attribute that returns a :class:`Dataflow`.
-This allows customization of datapoints being streamed, like special filtering among annotations.
+In **deep**doctection, data sets have a :meth:`build` method in the :class:`DataFlowBuilder` attribute that
+returns a :class:`Dataflow`. The :meth:`build` accepts arguments, so that you can change the representation of
+datapoints up to some degree or so that you can filter some unwanted samples or reduce the size of the dataset.
 
-A dataset consists of three components modelled as attributes: :class:`DatasetInfos`, :class:`DatasetCategories` and a
-:class:`Dataflowbuilder` class that has to be implemented separately for a dataset. The :meth:`build` of
-:class:`Dataflowbuilder` returns a generator, a :class:`Dataflow` from which allows data point streaming.
+A data set consists of three components modelled as attributes: :class:`DatasetInfos`, :class:`DatasetCategories` and a
+:class:`Dataflowbuilder` class that have to be implemented individually. :meth:`build` of
+:class:`Dataflowbuilder` returns a generator, a :class:`Dataflow` instance from which data points can be streamed.
 
-A paradigm of deepdoctection is that data points, if they are streamed via the :meth:`build`, are not returned in the
-raw annotation format of the annotation file, but in an class:`Image` format. An :class:`Image` is a class in which
+A paradigm of **deep**doctection is that data points, if they are streamed via the :meth:`build`, are not returned in the
+raw annotation format of the annotation file, but in :class:`Image` format. An :class:`Image` is a class in which
 annotations from common Document-AI tasks can be mapped in a standardized manner. This uniform mapping may seem
 redundant at first, but once having standard data point formats, it is relatively simple to try out different components
-of the deepdoctection framework or to merge datasets.
+of the **deep**doctection framework or to merge datasets.
 First of all, an :class:`Image` contains information about the image sample itself. This includes metadata such as
 storage location or pixel width and height. The image sample itself can also be saved as a numpy array. However, for the
-reasons mentioned above, one should not initially save the image sample when loading annotations, but only providing the
-location. In the training and evaluation scripts, the image sample then is loaded from its storage location just before
-the data is loaded into the model and then thereafter immediately removed from memory.
+reasons mentioned above, one should not initially save the image sample when loading annotations, but only provide the
+location. While training or evaluation, the image itself is loaded from its storage location just when needed, that is
+just before it is loaded into the model to perform a forward path. After that it will be immediately removed from memory.
 
 An :class:`Image` contains the information about the annotations of an image in the :class:`ImageAnnotations`.
-ImageAnnotation is a class that allows to store bounding boxes, category names, but also subcategories and relations.
-As far as mapping is concerned, there are already some important mapping functions that convert an annotation format
-into an :class:`image`. These are stored in the mapper module. It's a good idea to look at a mapping function like
-:func:`coco_to_image`, where a data point in coco format is mapped into an :class:`Image`.
+:class:`ImageAnnotation` is a class that allows storing bounding boxes, category names, but also subcategories and
+relations.
+
+As far as mapping is concerned, there are already some important mapping functions that convert datapoints from a raw
+annotation format into an :class:`Image`. It's a good idea to look at a mapping function like :func:`coco_to_image`,
+where a data point in coco format is mapped into an :class:`Image`.
 
 
-Custom Dataset
---------------------------
+Custom Data set
+---------------
 
-The easiest way is to physically store a dataset in the .cache directory of **deepdoctection** (usually this is
+The easiest way is to physically store a dataset in the .cache directory of **deep**doctection (usually this is
 ~/.cache/deepdoctection/datasets). If you pass the argument
 
 .. code:: python
 
     location = "custom_dataset"
 
-in the dataflow builder, it is assumed that the dataset was physically stored in the "custom_dataset" subdirectory of
-datasets. We assume that in "custom_dataset" the dataset was physically placed in the following structure:
+in the dataflow builder, it is assumed that the dataset was physically stored in the "custom_dataset" sub directory of
+datasets. We assume that in "custom_dataset" the data set was physically placed following the structure:
 
 
 |    custom_dataset
@@ -90,8 +96,8 @@ datasets. We assume that in "custom_dataset" the dataset was physically placed i
 
 
 
-Three methods :meth:`_info`, :meth:`_categories` and :meth:`_builder` must be implemented for a dataset, each of which
-returns an instance :class:`DatasetInfo`, :class:`DatasetCategories` or None and a class derived from
+Three methods :meth:`_info`, :meth:`_categories` and :meth:`_builder` must be implemented for a data set, each of which
+return an instance :class:`DatasetInfo`, :class:`DatasetCategories` or None and a class derived from
 :class:`DataFlowBaseBuilder`.
 
 DatasetInfo
@@ -106,24 +112,32 @@ DatasetCategories
 
 :class:`DatasetCategories` provides a way to manage categories and sub-categories.
 This proves to be useful if, for example, you want to filter out certain categories in the dataset. Another application
-arises, for example, if you have annotations with categories and sub-categories in the dataset and want to see
-annotations labeled with their sub-category name instead of their category name.
+arises, if you have annotations with categories and sub-categories in the dataset and want to see annotations labeled
+with their sub-category name instead of their category name.
 
-:class:`DatasetCategories` takes as argument a list of init_categories, with category names as string. If there are sub-
+:class:`DatasetCategories` takes as argument a list of init_categories, with category names. Category names must be
+members of an :class:`Enum` class that must be derived from :class:`ObjectTypes`. If there are sub-
 categories, init_sub_categories returns a dict with category names as key and a list of subcategory names as value.
 
 Example: In the annotation file there is a category "TABLE_CELL", where "TABLE_CELL" can contain two possible
-subcategories "TABLE_HEADER" and "TABLE_BODY". Suppose there are no more categories and subcategories. Then we
-initialize
+sub categories "TABLE_HEADER" and "TABLE_BODY". Suppose there are no more categories and sub categories. Then we
+define a :class:`ObjectTypes` for new categories and initialize :class:`DatasetCategories`.
 
 .. code:: python
 
-    DatasetCategories(init_categories=["TABLE_CELL"],init_sub_categories={"TABLE_CELL":[ "TABLE_HEADER", "TABLE_BODY"]}).
+    @object_types_registry.register("TableCellType")  # we need to register the ObjectType
+    class CellType(ObjectTypes):
+        table_cell = "TABLE_CELL"
+        table_header = "TABLE_HEADER"
+        table_body = "TABLE_BODY"
+
+    DatasetCategories(init_categories=[CellType.table_cell],
+                      init_sub_categories={CellType.table_cell:[CellType.table_header, CellType.table_body]}).
 
 When initializing :class:`DatasetCategories` it is important to know the meta data of the dataset annotation file
-otherwise, logical errors can occur too quickly during processing. That means, if you are in doubt, what categories
-might occur, or how sub-categories are related to categories, it is worth the time to perform a quick analysis on the
-annotation file.
+(available labels etc.) otherwise, logical errors can occur too quickly. That means, if you are in doubt, what
+categories might occur, or how sub-categories are related to categories, it is worth the time to perform a quick
+analysis on the annotation file.
 
 DataflowBuilder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,12 +145,11 @@ DataflowBuilder
 The dataflow builder is the tool to create a stream for the dataset. The base class contains an abstract method
 :meth:`build`. The following has to be implemented:
 
-- Loading a data point (e.g. ground truth data and additional components, such as an image or a path) in the raw form.
+- Loading a data point (e.g. ground truth data and additional components, such as an image or a path) in raw format.
 
 - Transforming the raw data into the core data model.
 
-Various tools are available for loading and transforming and even more is available when using :ref:`Dataflow
-<https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.htmlpackage>`. If the ground truth is in Coco format,
+Various tools are available for loading and transforming. If the ground truth is in Coco format,
 for example, the annotation file can be loaded with SerializerCoco. The instance returns a data flow through which each
 sample is streamed individually.
 
@@ -165,7 +178,7 @@ are some functions available for different annotation syntax in the mapper packa
             return df
 
 Built-in Dataset
----------------------------
+----------------
 
 A DatasetRegistry facilitates the construction of built-in datasets. We refer to the API documentation for the available
 build configurations of the dataflows.
