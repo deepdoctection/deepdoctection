@@ -1562,6 +1562,7 @@ class TestType(ObjectTypes):
     BAK_12 = "BAK_12"
     BAK_21 = "BAK_21"
     BAK_22 = "BAK_22"
+    BLA = "BLA"
     cat = "cat"
     FOO_1 = "FOO_1"
     FOO_2 = "FOO_2"
