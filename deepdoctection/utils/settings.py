@@ -79,7 +79,7 @@ class DocumentType(ObjectTypes):
     form = "FORM"
     email = "EMAIL"
     handwritten = "HANDWRITTEN"
-    advertisment = "ADVERTISMENT"
+    advertisement = "ADVERTISeMENT"
     scientific_report = "SCIENTIFIC REPORT"
     scientific_publication = "SCIENTIFIC PUBLICATION"
     specification = "SPECIFICATION"

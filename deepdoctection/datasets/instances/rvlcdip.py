@@ -72,7 +72,7 @@ _INIT_CATEGORIES = [
     DocumentType.form,
     DocumentType.email,
     DocumentType.handwritten,
-    DocumentType.advertisment,
+    DocumentType.advertisement,
     DocumentType.scientific_report,
     DocumentType.scientific_publication,
     DocumentType.specification,
