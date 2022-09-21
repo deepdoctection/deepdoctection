@@ -1,21 +1,17 @@
 Some Tensorpack trainings scripts
-----------------------
+---------------------------------
 
-Training script for cell detection task. Use TRAIN.LR_SCHEDULE=2x for
-training from scratch else TRAIN.LR_SCHEDULE=1x for training from last
-checkpoint.
+Script to train a model for cell detection on Pubtabnet. Use `TRAIN.LR_SCHEDULE=2x` to train
+from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
 
 .. code:: ipython3
 
     import os
-    from deepdoctection.datasets import get_dataset
-    from deepdoctection.eval import metric_registry
-    from deepdoctection.utils import get_configs_dir_path
-    from deepdoctection.train import train_faster_rcnn
+    import deepdoctection as dd
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
+    pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.filter_categories(categories="CELL")
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
@@ -29,28 +25,28 @@ checkpoint.
     dataset_val = pubtabnet
     build_val_config = ["max_datapoints=4000"]
     
-    coco_metric = metric_registry.get("coco")
+    coco_metric = dd.metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
     
-    train_faster_rcnn(path_config_yaml=path_config_yaml,
-                      dataset_train=dataset_train,
-                      path_weights=path_weights,
-                      config_overwrite=config_overwrite,
-                      log_dir="/path/to/dir/train",
-                      build_train_config=build_train_config,
-                      dataset_val=dataset_val,
-                      build_val_config=build_val_config,
-                      metric=coco_metric,
-                      pipeline_component_name="ImageLayoutService"
-                      )
+    dd.train_faster_rcnn(path_config_yaml=path_config_yaml,
+                         dataset_train=dataset_train,
+                         path_weights=path_weights,
+                         config_overwrite=config_overwrite,
+                         log_dir="/path/to/dir/train",
+                         build_train_config=build_train_config,
+                         dataset_val=dataset_val,
+                         build_val_config=build_val_config,
+                         metric=coco_metric,
+                         pipeline_component_name="ImageLayoutService"
+                         )
 
-Training script for row/column detection task. Use TRAIN.LR_SCHEDULE=2x
-for training from scratch else TRAIN.LR_SCHEDULE=1x for training from
-last checkpoint.
+Script to train a model for row/column detection on Pubtabnet. Use `TRAIN.LR_SCHEDULE=2x` to train
+from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
+
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
+    pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"row_col"})
     pubtabnet.dataflow.categories.filter_categories(["ROW","COLUMN"])
     
@@ -68,14 +64,14 @@ last checkpoint.
     dataset_val = pubtabnet
     build_val_config = ["max_datapoints=4000","rows_and_cols=True"]
     
-    train_faster_rcnn(path_config_yaml=path_config_yaml,
-                       dataset_train=pubtabnet,
-                       path_weights=path_weights,
-                       config_overwrite=config_overwrite,
-                       log_dir="/path/to/dir/train",
-                       build_train_config=build_train_config,
-                       dataset_val=dataset_val,
-                       build_val_config=build_val_config,
-                       metric_name="coco",
-                       pipeline_component_name="ImageLayoutService"
-                       )
+    dd.train_faster_rcnn(path_config_yaml=path_config_yaml,
+                         dataset_train=pubtabnet,
+                         path_weights=path_weights,
+                         config_overwrite=config_overwrite,
+                         log_dir="/path/to/dir/train",
+                         build_train_config=build_train_config,
+                         dataset_val=dataset_val,
+                         build_val_config=build_val_config,
+                         metric_name="coco",
+                         pipeline_component_name="ImageLayoutService"
+                         )
