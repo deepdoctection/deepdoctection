@@ -20,7 +20,7 @@ Compatibility classes and methods related to Tensorpack package
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, List, Mapping, Tuple, Union
 
 from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
 from tensorpack.tfutils import SmartInit  # pylint: disable=E0401
@@ -29,7 +29,8 @@ from tensorpack.tfutils import SmartInit  # pylint: disable=E0401
 from tensorpack.train.model_desc import ModelDesc
 from tensorpack.utils.gpu import get_num_gpu
 
-from deepdoctection.utils.metacfg import AttrDict
+from ...utils.metacfg import AttrDict
+from ...utils.settings import ObjectTypes
 
 # pylint: enable=import-error
 
@@ -106,7 +107,7 @@ class TensorpackPredictor(ABC):
     @staticmethod
     @abstractmethod
     def set_model(
-        path_yaml: str, categories: Dict[str, str], config_overwrite: Union[List[str], None]
+        path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
     ) -> ModelDescWithConfig:
         """
         Implement the config generation, its modification and instantiate a version of the model. See

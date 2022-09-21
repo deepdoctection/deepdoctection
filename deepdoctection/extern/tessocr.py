@@ -32,7 +32,7 @@ from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import TesseractNotFound, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
-from ..utils.settings import names
+from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
@@ -177,8 +177,10 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
                 DetectionResult(
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
-                    class_name=names.C.LINE,
-                    text=" ".join([detect_result.text for detect_result in block_group if detect_result.text]),
+                    class_name=LayoutType.line,
+                    text=" ".join(
+                        [detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]
+                    ),
                 )
             )
     if line_detect_result:
@@ -222,7 +224,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
                 block=str(caption[6]),
                 line=str(caption[7]),
                 class_id=1,
-                class_name=names.C.WORD,
+                class_name=LayoutType.word,
             )
             all_results.append(word)
     if text_lines:
@@ -290,9 +292,9 @@ class TesseractOcrDetector(ObjectDetector):
         self.config = hyper_param_config
 
         if self.config.LINES:
-            self.categories = {"1": names.C.WORD, "2": names.C.LINE}
+            self.categories = {"1": LayoutType.word, "2": LayoutType.line}
         else:
-            self.categories = {"1": names.C.WORD}
+            self.categories = {"1": LayoutType.word}
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -315,3 +317,8 @@ class TesseractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.config_overwrite)
+
+    def possible_categories(self) -> List[ObjectTypes]:
+        if self.config.LINES:
+            return [LayoutType.word, LayoutType.line]
+        return [LayoutType.word]

@@ -25,7 +25,7 @@ from ..datapoint.page import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
-from ..utils.settings import names
+from ..utils.settings import LayoutType, PageType
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -95,7 +95,7 @@ class LanguageDetectionService(PipelineComponent):
             text = " ".join([result.text for result in detect_result_list if result.text is not None])
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(
-            names.NLP.LANG.LANG, names.NLP.LANG.LANG, 1, predict_result.text, predict_result.score
+            PageType.language, PageType.language, 1, predict_result.text, predict_result.score
         )
 
     def _init_sanity_checks(self) -> None:
@@ -103,8 +103,8 @@ class LanguageDetectionService(PipelineComponent):
             self.text_detector or self._text_container
         ), "if no text_detector is provided a text container must be specified"
         if not self.text_detector:
-            assert self._text_container in [names.C.WORD, names.C.LINE], (
-                f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+            assert self._text_container in [LayoutType.word, LayoutType.line], (
+                f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
             )
             assert set(self._floating_text_block_names) <= set(  # type: ignore
                 self._text_block_names  # type: ignore
@@ -130,6 +130,6 @@ class LanguageDetectionService(PipelineComponent):
                 ("image_annotations", []),
                 ("sub_categories", {}),
                 ("relationships", {}),
-                ("summaries", [names.NLP.LANG.LANG]),
+                ("summaries", [PageType.language]),
             ]
         )

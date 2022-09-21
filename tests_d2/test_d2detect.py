@@ -28,6 +28,7 @@ from deepdoctection.utils.file_utils import pytorch_available, detectron2_availa
 
 from deepdoctection.extern.d2detect import D2FrcnnDetector
 from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils.settings import ObjectTypes
 
 if pytorch_available():
     import torch
@@ -60,7 +61,8 @@ class TestD2FrcnnDetector:
     @staticmethod
     @mark.requires_pt
     @patch("deepdoctection.utils.file_utils.detectron2_available",MagicMock(return_value=False))
-    def test_d2_does_not_build_when_d2_not_available(path_to_d2_frcnn_yaml: str, categories: Dict[str,str]) -> None:
+    def test_d2_does_not_build_when_d2_not_available(path_to_d2_frcnn_yaml: str,
+                                                     categories: Dict[str,ObjectTypes]) -> None:
         """
         D2 FRCNN does only build when detectron2 is properly installed
         """
@@ -74,7 +76,8 @@ class TestD2FrcnnDetector:
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector.set_model", MagicMock(return_value=MagicMock))
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._instantiate_d2_predictor", MagicMock())
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector.set_model", MagicMock(return_value=MagicMock))
-    def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,str], np_image: ImageType)-> None:
+    def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,ObjectTypes],
+                                     np_image: ImageType)-> None:
         """
         D2 FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names
         """

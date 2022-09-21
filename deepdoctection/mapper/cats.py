@@ -25,12 +25,15 @@ from typing import Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Unio
 
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
+from ..utils.settings import TypeOrStr, get_type
 from .maputils import curry
 
 
 @curry
 def cat_to_sub_cat(
-    dp: Image, categories_dict_names_as_key: Dict[str, str], cat_to_sub_cat_dict: Optional[Dict[str, str]] = None
+    dp: Image,
+    categories_dict_names_as_key: Dict[TypeOrStr, str],
+    cat_to_sub_cat_dict: Optional[Dict[TypeOrStr, TypeOrStr]] = None,
 ) -> Image:
     """
     Replace some category with its affiliated sub category of CategoryAnnotations. Suppose your category name is 'foo'
@@ -45,9 +48,10 @@ def cat_to_sub_cat(
 
     if cat_to_sub_cat_dict is None:
         return dp
+    cat_to_sub_cat_dict_obj_type = {get_type(key): get_type(value) for key, value in cat_to_sub_cat_dict.items()}
     categories_dict = categories_dict_names_as_key
-    for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict.keys())):
-        sub_cat_type = cat_to_sub_cat_dict.get(ann.category_name, "")
+    for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict_obj_type.keys())):
+        sub_cat_type = cat_to_sub_cat_dict_obj_type[get_type(ann.category_name)]
         sub_cat = ann.get_sub_category(sub_cat_type)
         if sub_cat:
             ann.category_name = sub_cat.category_name
@@ -57,7 +61,7 @@ def cat_to_sub_cat(
 
 
 @curry
-def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) -> Image:
+def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[TypeOrStr, str]) -> Image:
     """
     Re-assigning category ids is sometimes necessary to align with categories of the :class:`DatasetCategories` . E.g.
     consider the situation where some categories are filtered. In order to guarantee alignment of category ids of the
@@ -84,7 +88,9 @@ def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[str, str]) ->
 
 
 @curry
-def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_list_unfiltered: List[str]) -> Image:
+def filter_cat(
+    dp: Image, categories_as_list_filtered: List[TypeOrStr], categories_as_list_unfiltered: List[TypeOrStr]
+) -> Image:
     """
     Filters category annotations based on the on a list of categories to be kept and a list of all possible
     category names that might be available in dp.
@@ -113,7 +119,7 @@ def filter_cat(dp: Image, categories_as_list_filtered: List[str], categories_as_
 
 @curry
 def filter_summary(
-    dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[str, Sequence[str]], use_category_name: bool = True
+    dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[TypeOrStr, Sequence[TypeOrStr]], use_category_name: bool = True
 ) -> Optional[Image]:
     """
     Filters datapoints with given summary conditions. If several conditions are given, it will filter out datapoints
@@ -129,10 +135,10 @@ def filter_summary(
     """
     for key, values in sub_cat_to_sub_cat_names_or_ids.items():
         if use_category_name and dp.summary:
-            if dp.summary.get_sub_category(key).category_name in values:
+            if dp.summary.get_sub_category(get_type(key)).category_name in values:
                 return dp
         elif dp.summary:
-            if dp.summary.get_sub_category(key).category_id in values:
+            if dp.summary.get_sub_category(get_type(key)).category_id in values:
                 return dp
     return None
 
@@ -140,11 +146,11 @@ def filter_summary(
 @curry
 def image_to_cat_id(
     dp: Image,
-    category_names: Optional[Union[str, Sequence[str]]] = None,
-    sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None,
+    category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+    sub_categories: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
+    summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     id_name_or_value: Literal["id", "name", "value"] = "id",
-) -> Tuple[Dict[str, Union[List[int], List[int]]], str]:
+) -> Tuple[Dict[TypeOrStr, Union[List[int], List[int]]], str]:
     """
     Extracts all category_ids, sub category information or summary sub category information with given names into a
     defaultdict. This mapping is useful when running evaluation with e.g. an accuracy metric.
@@ -233,7 +239,7 @@ def image_to_cat_id(
                 cat_container[ann.category_name].append(int(ann.category_id))
             if ann.category_name in tmp_sub_category_names:
                 for sub_cat_name in tmp_sub_category_names[ann.category_name]:
-                    sub_cat = ann.get_sub_category(sub_cat_name)
+                    sub_cat = ann.get_sub_category(get_type(sub_cat_name))
                     if sub_cat is not None:
                         if id_name_or_value == "id":
                             cat_container[sub_cat_name].append(int(sub_cat.category_id))
@@ -249,7 +255,7 @@ def image_to_cat_id(
 
     if dp.summary is not None and summary_sub_category_names:
         for sub_cat_name in summary_sub_category_names:
-            sub_cat = dp.summary.get_sub_category(sub_cat_name)
+            sub_cat = dp.summary.get_sub_category(get_type(sub_cat_name))
             if id_name_or_value == "id":
                 cat_container[sub_cat_name].append(int(sub_cat.category_id))
             if id_name_or_value == "name":
@@ -268,10 +274,10 @@ def image_to_cat_id(
 @curry
 def remove_cats(
     dp: Image,
-    category_names: Optional[Union[str, Sequence[str]]] = None,
-    sub_categories: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    relationships: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-    summary_sub_categories: Optional[Union[str, Sequence[str]]] = None,
+    category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+    sub_categories: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
+    relationships: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
+    summary_sub_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
 ) -> Image:
     """
     Remove categories according to given category names or sub category names. Note that these will change the container
@@ -310,13 +316,13 @@ def remove_cats(
             if isinstance(sub_cats_to_remove, str):
                 sub_cats_to_remove = [sub_cats_to_remove]
             for sub_cat in sub_cats_to_remove:
-                ann.remove_sub_category(sub_cat)
+                ann.remove_sub_category(get_type(sub_cat))
         if ann.category_name in relationships.keys():
             relationships_to_remove = relationships[ann.category_name]
             if isinstance(relationships_to_remove, str):
                 relationships_to_remove = [relationships_to_remove]
             for relation in relationships_to_remove:
-                ann.remove_relationship(key=relation)
+                ann.remove_relationship(key=get_type(relation))
 
     for ann in anns_to_remove:
         dp.remove(ann)
@@ -324,6 +330,6 @@ def remove_cats(
     if summary_sub_categories is not None:
         if dp.summary is not None:
             for sub_cat in summary_sub_categories:
-                dp.summary.remove_sub_category(sub_cat)
+                dp.summary.remove_sub_category(get_type(sub_cat))
 
     return dp

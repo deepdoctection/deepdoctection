@@ -25,6 +25,7 @@ from typing import List, Mapping, Optional, Union
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
 from ..utils.metacfg import set_config_by_yaml
+from ..utils.settings import ObjectTypes, TypeOrStr
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if tensorpack_available():
@@ -61,7 +62,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         self,
         path_yaml: str,
         path_weights: str,
-        categories: Mapping[str, str],
+        categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[List[str]] = None,
         ignore_mismatch: bool = False,
     ):
@@ -85,15 +86,15 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
         self.path_yaml = path_yaml
-        self.categories = copy(categories)
+        self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
-        model = TPFrcnnDetector.set_model(path_yaml, categories, config_overwrite)
+        model = TPFrcnnDetector.set_model(path_yaml, self.categories, config_overwrite)
         super().__init__(model, path_weights, ignore_mismatch)
         assert self._number_gpus > 0, "Model only support inference with GPU"
 
     @staticmethod
     def set_model(
-        path_yaml: str, categories: Mapping[str, str], config_overwrite: Union[List[str], None]
+        path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel

@@ -21,7 +21,7 @@ Module for training Huggingface implementation of LayoutLm
 import copy
 import json
 import pprint
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 from torch.nn import Module
 from torch.utils.data import Dataset
@@ -45,7 +45,7 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_feature
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import logger
-from ..utils.settings import names
+from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
 from ..utils.utils import string_to_dict
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
@@ -56,14 +56,14 @@ _ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
-_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS = {
-    ("layoutlm", names.DS.TYPE.SEQ): LayoutLMForSequenceClassification,
-    ("layoutlm", names.DS.TYPE.TOK): LayoutLMForTokenClassification,
+_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
+    ("layoutlm", DatasetType.sequence_classification): LayoutLMForSequenceClassification,
+    ("layoutlm", DatasetType.token_classification): LayoutLMForTokenClassification,
 }
 _MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
-_DS_TYPE_TO_DD_LM_CLASS = {
-    names.DS.TYPE.TOK: HFLayoutLmTokenClassifier,
-    names.DS.TYPE.SEQ: HFLayoutLmSequenceClassifier,
+_DS_TYPE_TO_DD_LM_CLASS: Mapping[ObjectTypes, Any] = {
+    DatasetType.token_classification: HFLayoutLmTokenClassifier,
+    DatasetType.sequence_classification: HFLayoutLmSequenceClassifier,
 }
 
 
@@ -138,7 +138,7 @@ class LayoutLMTrainer(Trainer):
         return scores
 
 
-def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: str) -> Tuple[Any, Any]:
+def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: ObjectTypes) -> Tuple[Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
@@ -240,16 +240,16 @@ def train_hf_layoutlm(
 
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
-    if dataset_type == names.DS.TYPE.SEQ:
+    if dataset_type == DatasetType.sequence_classification:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
-    elif dataset_type == names.DS.TYPE.TOK:
+    elif dataset_type == DatasetType.token_classification:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-            categories=names.C.WORD,
-            sub_categories={names.C.WORD: [names.NER.TOK]},
+            categories=LayoutType.word,
+            sub_categories={LayoutType.word: [WordType.token_tag]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,
-        )[names.C.WORD][names.NER.TOK]
+        )[LayoutType.word][WordType.token_tag]
     else:
         raise ValueError("Dataset type not supported for training")
 
@@ -316,17 +316,17 @@ def train_hf_layoutlm(
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         dd_model_cls = _DS_TYPE_TO_DD_LM_CLASS[dataset_type]
-        if dataset_type == names.DS.TYPE.SEQ:
+        if dataset_type == DatasetType.sequence_classification:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
             categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                categories=names.C.WORD, sub_categories={names.C.WORD: [names.NER.TOK]}, keys=False
-            )[names.C.WORD][names.NER.TOK]
+                categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
+            )[LayoutType.word][WordType.token_tag]
         dd_model = dd_model_cls(
             path_config_json=path_config_json, path_weights=path_weights, categories=categories, device="cuda"
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        if dataset_type == names.DS.TYPE.SEQ:
+        if dataset_type == DatasetType.sequence_classification:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
         else:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features, True)

@@ -27,7 +27,7 @@ from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import names
+from ..utils.settings import ObjectTypes, Relationships
 
 
 class DatapointManager:
@@ -152,7 +152,7 @@ class DatapointManager:
                 assert ann.image
                 ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)
                 ann.image.set_embedding(self.datapoint.image_id, ann_global_box)
-                parent_ann.dump_relationship(names.C.CHILD, ann.annotation_id)
+                parent_ann.dump_relationship(Relationships.child, ann.annotation_id)
 
             self.datapoint.dump(ann)
             self._cache_anns[ann.annotation_id] = ann
@@ -166,9 +166,9 @@ class DatapointManager:
 
     def set_category_annotation(
         self,
-        category_name: str,
+        category_name: ObjectTypes,
         category_id: Optional[Union[str, int]],
-        sub_cat_key: str,
+        sub_cat_key: ObjectTypes,
         annotation_id: str,
         score: Optional[float] = None,
     ) -> str:
@@ -189,9 +189,9 @@ class DatapointManager:
 
     def set_container_annotation(
         self,
-        category_name: str,
+        category_name: ObjectTypes,
         category_id: Optional[Union[str, int]],
-        sub_cat_key: str,
+        sub_cat_key: ObjectTypes,
         annotation_id: str,
         value: Union[str, List[str]],
         score: Optional[float] = None,
@@ -216,8 +216,8 @@ class DatapointManager:
 
     def set_summary_annotation(
         self,
-        summary_key: str,
-        summary_name: str,
+        summary_key: ObjectTypes,
+        summary_name: ObjectTypes,
         summary_number: int,
         summary_value: Optional[str] = None,
         summary_score: Optional[float] = None,
@@ -243,7 +243,6 @@ class DatapointManager:
         assert image is not None
         if image.summary is None:
             image.summary = SummaryAnnotation()
-            image.summary.annotation_id = self.datapoint.define_annotation_id(image.summary)
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         if summary_value:

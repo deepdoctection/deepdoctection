@@ -19,12 +19,13 @@
 """
 Fixtures for mapper package testing
 """
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
 from deepdoctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.utils.settings import ObjectTypes
 
 from .data import (
     DatapointCoco,
@@ -47,7 +48,7 @@ def fixture_datapoint_coco() -> Dict[str, Any]:
 
 
 @fixture(name="categories_coco")
-def fixture_categories_coco() -> Dict[str, str]:
+def fixture_categories_coco() -> Mapping[str, ObjectTypes]:
     """
     Categories as Dict
     """
@@ -82,7 +83,7 @@ def fixture_datapoint_pubtabnet() -> Dict[str, Any]:
 
 
 @fixture(name="categories_name_as_key_pubtabnet")
-def fixture_categories_name_as_key_pubtabnet() -> Dict[str, str]:
+def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, str]:
     """
     Categories as Dict
     """
@@ -149,11 +150,11 @@ def fixture_datapoint_prodigy() -> JsonDict:
 
 
 @fixture(name="categories_prodigy")
-def fixture_categories_prodigy() -> Dict[str, str]:
+def fixture_categories_prodigy() -> Mapping[ObjectTypes, str]:
     """
     Categories as Dict
     """
-    return DatapointProdigy().categories
+    return DatapointProdigy().categories  # type: ignore
 
 
 def get_datapoint_prodigy() -> DatapointProdigy:
@@ -205,7 +206,7 @@ def fixture_datapoint_xfund() -> Dict[str, Any]:
 
 
 @fixture(name="xfund_category_names")
-def fixture_xfund_category_names() -> Dict[str, str]:
+def fixture_xfund_category_names() -> Mapping[str, ObjectTypes]:
     """
     Xfund category names mapping
     """
@@ -230,7 +231,7 @@ def fixture_raw_layoutlm_featurest() -> JsonDict:
 
 
 @fixture(name="xfund_categories_dict_name_as_key")
-def fixture_xfund_categories_dict_name_as_key() -> JsonDict:
+def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, str]:
     """
     categories_dict_name_as_key
     """
@@ -238,7 +239,7 @@ def fixture_xfund_categories_dict_name_as_key() -> JsonDict:
 
 
 @fixture(name="ner_token_to_id_mapping")
-def fixture_ner_token_to_id_mapping() -> JsonDict:
+def fixture_ner_token_to_id_mapping() -> Mapping[ObjectTypes, str]:
     """
     ner_token_to_id_mapping
     """
@@ -255,7 +256,7 @@ def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
 
 
 @fixture(name="iiitar13k_categories_name_as_keys")
-def fixture_iiitar13k_categories_name_as_keys() -> Dict[str, str]:
+def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, str]:
     """
     iiitar13k category names dict
     """
@@ -264,7 +265,7 @@ def fixture_iiitar13k_categories_name_as_keys() -> Dict[str, str]:
 
 
 @fixture(name="iiitar13k_category_names_mapping")
-def fixture_xfund_category_names_mapping() -> Dict[str, str]:
+def fixture_xfund_category_names_mapping() -> Mapping[str, ObjectTypes]:
     """
     iiitar13k category names mapping
     """

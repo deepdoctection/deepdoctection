@@ -33,7 +33,7 @@ from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineCompone
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.logger import logger
-from ..utils.settings import names
+from ..utils.settings import DatasetType
 from .base import MetricBase
 
 
@@ -190,7 +190,7 @@ class Evaluator:
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 
         # clean-up procedure depends on the dataset type
-        if self.dataset.dataset_info.type == names.DS.TYPE.OBJ:
+        if self.dataset.dataset_info.type == DatasetType.object_detection:
             # we keep all image annotations that will not be generated through processing
             anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
             sub_cats_to_remove = meta_anns["sub_categories"]
@@ -206,11 +206,11 @@ class Evaluator:
                 remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove),
             )
 
-        elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
+        elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
             summary_sub_cats_to_remove = meta_anns["summaries"]
             df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
-        elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
+        elif self.dataset.dataset_info.type == DatasetType.token_classification:
             sub_cats_to_remove = meta_anns["sub_categories"]
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:

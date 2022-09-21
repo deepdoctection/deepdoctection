@@ -25,7 +25,7 @@ from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
 from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import BioTag, LayoutType, PageType, TokenClasses, WordType
 from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -78,7 +78,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         self.use_other_as_default_category = use_other_as_default_category
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
-            self.other_name_as_key = {names.NER.O: categories_name_as_key[names.NER.O]}
+            self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
         super().__init__(tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
@@ -99,23 +99,27 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         words_populated: List[str] = []
         for token in lm_output:
             if token.uuid not in words_populated:
-                self.dp_manager.set_category_annotation(token.semantic_name, None, names.C.SE, token.uuid)
-                self.dp_manager.set_category_annotation(token.bio_tag, None, names.NER.TAG, token.uuid)
-                self.dp_manager.set_category_annotation(token.class_name, token.class_id, names.NER.TOK, token.uuid)
+                self.dp_manager.set_category_annotation(token.semantic_name, None, WordType.token_class, token.uuid)
+                self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.tag, token.uuid)
+                self.dp_manager.set_category_annotation(
+                    token.class_name, token.class_id, WordType.token_tag, token.uuid
+                )
                 words_populated.append(token.uuid)
 
         if self.use_other_as_default_category:
-            word_anns = dp.get_annotation(names.C.WORD)
+            word_anns = dp.get_annotation(LayoutType.word)
             for word in word_anns:
-                if names.C.SE not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(names.C.O, None, names.C.SE, word.annotation_id)
-                if names.NER.TAG not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(names.NER.O, None, names.NER.TAG, word.annotation_id)
-                if names.NER.TOK not in word.sub_categories:
+                if WordType.token_class not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        names.NER.O,
-                        self.other_name_as_key[names.NER.O],
-                        names.NER.TOK,
+                        TokenClasses.other, None, WordType.token_class, word.annotation_id
+                    )
+                if WordType.tag not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(BioTag.outside, None, WordType.tag, word.annotation_id)
+                if WordType.token_tag not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(
+                        BioTag.outside,
+                        self.other_name_as_key[BioTag.outside],
+                        WordType.token_tag,
                         word.annotation_id,
                     )
 
@@ -131,7 +135,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         return dict(
             [
                 ("image_annotations", []),
-                ("sub_categories", {names.C.WORD: {names.C.SE, names.NER.TAG, names.NER.TOK}}),
+                ("sub_categories", {LayoutType.word: {WordType.token_class, WordType.tag, WordType.token_tag}}),
                 ("relationships", {}),
                 ("summaries", []),
             ]
@@ -190,7 +194,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             return
         lm_output = self.language_model.predict(**lm_input)
         self.dp_manager.set_summary_annotation(
-            names.C.DOC, lm_output.class_name, lm_output.class_id, None, lm_output.score
+            PageType.document_type, lm_output.class_name, lm_output.class_id, None, lm_output.score
         )
 
     def clone(self) -> "LMSequenceClassifierService":
@@ -202,6 +206,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                 ("image_annotations", []),
                 ("sub_categories", {}),
                 ("relationships", {}),
-                ("summaries", [names.C.DOC]),
+                ("summaries", [PageType.document_type]),
             ]
         )

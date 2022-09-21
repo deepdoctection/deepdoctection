@@ -29,7 +29,15 @@ from ..utils.file_utils import (
     pytorch_available,
     transformers_available,
 )
-from ..utils.settings import names
+from ..utils.settings import (
+    BioTag,
+    ObjectTypes,
+    TokenClasses,
+    token_class_tag_to_token_class_with_tag,
+    token_class_with_tag_to_token_class_and_tag,
+    TypeOrStr,
+    get_type
+)
 from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
@@ -141,9 +149,9 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories_semantics: Optional[Sequence[str]] = None,
-        categories_bio: Optional[Sequence[str]] = None,
-        categories: Optional[Mapping[str, str]] = None,
+        categories_semantics: Optional[Sequence[TypeOrStr]] = None,
+        categories_bio: Optional[Sequence[TypeOrStr]] = None,
+        categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
@@ -161,12 +169,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
         self.path_config = path_config_json
         self.path_weights = path_weights
-        self.categories_semantics = categories_semantics
-        self.categories_bio = categories_bio
+        self.categories_semantics = [get_type(cat_sem) for cat_sem in categories_semantics] if categories_semantics is not None else []
+        self.categories_bio = [get_type(cat_bio) for cat_bio in categories_bio] if categories_bio is not None else []
         if categories:
-            self.categories = copy(categories)
+            self.categories = copy(categories)  # type: ignore
         else:
-            self.categories = self._categories_orig_to_categories(categories_semantics, categories_bio)  # type: ignore
+            self.categories = self._categories_orig_to_categories(self.categories_semantics, self.categories_bio)  # type: ignore
 
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)
         self.model = LayoutLMForTokenClassification.from_pretrained(
@@ -223,17 +231,24 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         return self._map_category_names(results)
 
     @staticmethod
-    def _categories_orig_to_categories(categories_semantics: List[str], categories_bio: List[str]) -> Dict[str, str]:
-        categories_list = [
-            x + "-" + y for x in categories_bio if x != names.NER.O for y in categories_semantics if y != names.C.O
-        ] + [names.NER.O]
+    def _categories_orig_to_categories(
+        categories_semantics: List[TokenClasses], categories_bio: List[BioTag]
+    ) -> Dict[str, ObjectTypes]:
+        categories_list = sorted(
+            {
+                token_class_tag_to_token_class_with_tag(token, tag)
+                for token in categories_semantics
+                for tag in categories_bio
+            }
+        )
         return {str(k): v for k, v in enumerate(categories_list, 1)}
 
     def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
         for result in token_results:
             result.class_name = self.categories[str(result.class_id + 1)]
-            result.semantic_name = result.class_name.split("-")[1] if "-" in result.class_name else names.C.O
-            result.bio_tag = result.class_name.split("-")[0] if "-" in result.class_name else names.NER.O
+            token_class, tag = token_class_with_tag_to_token_class_and_tag(result.class_name)
+            result.semantic_name = token_class
+            result.bio_tag = tag
             result.class_id += 1
         return token_results
 
@@ -284,12 +299,12 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         self,
         path_config_json: str,
         path_weights: str,
-        categories: Mapping[str, str],
+        categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         self.path_config = path_config_json
         self.path_weights = path_weights
-        self.categories = copy(categories)
+        self.categories = copy(categories)  # type: ignore
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config

@@ -22,15 +22,34 @@ Module for storing dataset info (e.g. general meta data or categories)
 from copy import copy
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
 
-from ..utils.detection_types import JsonDict
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
-def _get_dict(l: Sequence[str], name_as_key: bool, starts_with: int = 1) -> Dict[str, str]:
+@overload
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> Dict[ObjectTypes, str]:
+    ...
+
+
+@overload
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> Dict[str, ObjectTypes]:
+    ...
+
+
+@overload
+def _get_dict(
+    l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = ...
+) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
+    ...
+
+
+def _get_dict(
+    l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = 1
+) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
     """
     Converts a list into a dict, where keys/values are the list indices.
 
@@ -70,7 +89,7 @@ class DatasetInfo:
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")
     splits: Mapping[str, str] = field(default_factory=dict)
-    type: str = field(default="")
+    type: ObjectTypes = field(default=DefaultType.default_type)
 
     def get_split(self, key: str) -> str:
         """
@@ -111,30 +130,42 @@ class DatasetCategories:
     Use :meth:`filter_categories` or :meth:`set_cat_to_sub_cat` to filter or swap categories with sub-categories.
     """
 
-    init_categories: Sequence[str] = field(default_factory=list)
-    init_sub_categories: Mapping[str, Mapping[str, Sequence[str]]] = field(default_factory=dict)
+    init_categories: Sequence[ObjectTypes] = field(default_factory=list)
+    init_sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self._categories_update = self.init_categories
-        self._cat_to_sub_cat: Optional[Dict[str, str]] = None
+        self._cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
         self._allow_update = True
         self._init_sanity_check()
 
     @overload
     def get_categories(
-        self, as_dict: Literal[True] = ..., name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Dict[str, str]:
+        self, *, name_as_key: Literal[True], init: bool = ..., filtered: bool = ...
+    ) -> Mapping[ObjectTypes, str]:
+        ...
+
+    @overload
+    def get_categories(
+        self, *, name_as_key: Literal[False] = ..., init: bool = ..., filtered: bool = ...
+    ) -> Mapping[str, ObjectTypes]:
         ...
 
     @overload
     def get_categories(
         self, as_dict: Literal[False], name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> List[str]:
+    ) -> Sequence[ObjectTypes]:
+        ...
+
+    @overload
+    def get_categories(
+        self, as_dict: Literal[True] = ..., name_as_key: bool = False, init: bool = False, filtered: bool = False
+    ) -> Union[Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
         ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Dict[str, str], List[str]]:
+    ) -> Union[Sequence[ObjectTypes], Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
         """
         Get categories of a dataset. The returned value also respects modifications of the inventory like filtered
         categories of replaced categories with sub categories. However, you must correctly pass arguments to return the
@@ -167,12 +198,12 @@ class DatasetCategories:
 
     def get_sub_categories(
         self,
-        categories: Optional[Union[str, List[str]]] = None,
-        sub_categories: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+        categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        sub_categories: Optional[Mapping[TypeOrStr, Union[TypeOrStr, Sequence[TypeOrStr]]]] = None,
         keys: bool = True,
         values_as_dict: bool = True,
         name_as_key: bool = False,
-    ) -> JsonDict:
+    ) -> Mapping[ObjectTypes, Any]:
         """
         Returns a dict of list with a category name and their sub categories.
 
@@ -185,17 +216,20 @@ class DatasetCategories:
                             name_as_key set to `False` will swap keys and values.
         :return: Dict with all selected categories.
         """
-        if isinstance(categories, str):
-            categories = [categories]
-        if categories is None:
-            categories = self.get_categories(as_dict=False, filtered=True)
-            if categories is None:
-                categories = []
+        _categories: Sequence[ObjectTypes]
+        if isinstance(categories, (ObjectTypes, str)):
+            _categories = [get_type(categories)]
+        elif isinstance(categories, list):
+            _categories = [get_type(category) for category in categories]
+        else:
+            _categories = self.get_categories(as_dict=False, filtered=True)
+            if _categories is None:
+                _categories = []
         if sub_categories is None:
             sub_categories = {}
 
-        sub_cat: Dict[str, Union[str, List[str]]] = {}
-        for cat in categories:  # pylint: disable=R1702
+        sub_cat: Dict[ObjectTypes, Union[ObjectTypes, List[ObjectTypes]]] = {}
+        for cat in _categories:  # pylint: disable=R1702
             assert cat in self.get_categories(  # pylint: disable=E1135
                 as_dict=False, filtered=True
             ), f"{cat} not in categories, maybe has been replaced with sub category"
@@ -226,21 +260,23 @@ class DatasetCategories:
                     if values_as_dict:
                         if not name_as_key:
                             sub_cat_tmp[sub_cat_key] = {
-                                str(k): v for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
+                                str(k): v
+                                for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                         else:
                             sub_cat_tmp[sub_cat_key] = {
-                                v: str(k) for k, v in enumerate(self.init_sub_categories[category][sub_cat_key], 1)
+                                v: str(k)
+                                for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                     else:
-                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][sub_cat_key]
+                        sub_cat_tmp[sub_cat_key] = self.init_sub_categories[category][get_type(sub_cat_key)]
                 sub_cat_values[category] = sub_cat_tmp
             return sub_cat_values
 
         return sub_cat
 
     @call_only_once
-    def set_cat_to_sub_cat(self, cat_to_sub_cat: Dict[str, str]) -> None:
+    def set_cat_to_sub_cat(self, cat_to_sub_cat: Dict[TypeOrStr, TypeOrStr]) -> None:
         """
         Change category representation if sub-categories are available. Pass a dictionary of the main category
         and the requested sub-category. This will change the dictionary of categories and the category names
@@ -261,14 +297,16 @@ class DatasetCategories:
         :param cat_to_sub_cat: A dict of pairs of category/sub-category. Note that the combination must be available
                                according to the initial settings.
         """
+
+        _cat_to_sub_cat = {get_type(key): get_type(value) for key, value in cat_to_sub_cat.items()}
         assert self._allow_update, "Replacing categories with sub categories is not allowed"
         self._categories_update = self.init_categories
         categories = self.get_categories(name_as_key=True)
         cats_or_sub_cats = [
-            self.init_sub_categories.get(cat, {cat: [cat]}).get(cat_to_sub_cat.get(cat, cat), [cat])
+            self.init_sub_categories.get(cat, {cat: [cat]}).get(_cat_to_sub_cat.get(cat, cat), [cat])
             for cat in categories  # pylint: disable=E1133
         ]
-        self._cat_to_sub_cat = cat_to_sub_cat
+        self._cat_to_sub_cat = _cat_to_sub_cat
         _categories_update_list = list(chain(*cats_or_sub_cats))
 
         # we must keep the order of _categories_update_list if the elements are unique
@@ -278,7 +316,7 @@ class DatasetCategories:
             self._categories_update = _categories_update_list
 
     @call_only_once
-    def filter_categories(self, categories: Union[str, List[str]]) -> None:
+    def filter_categories(self, categories: Union[TypeOrStr, List[TypeOrStr]]) -> None:
         """
         Filter categories of a dataset. This will keep all the categories chosen and remove all others.
         This method can only be called once per object.
@@ -287,12 +325,17 @@ class DatasetCategories:
         """
 
         assert self._allow_update, "Filtering categories is not allowed"
-        if isinstance(categories, str):
-            categories = [categories]
-        self._categories_filter_update = [cat for cat in self._categories_update if cat in categories]
+        if isinstance(categories, (ObjectTypes, str)):
+            categories = [get_type(categories)]
+        else:
+            categories = [get_type(category) for category in categories]
+
+        self._categories_filter_update: Sequence[ObjectTypes] = [
+            cat for cat in self._categories_update if cat in categories
+        ]
 
     @property
-    def cat_to_sub_cat(self) -> Optional[Dict[str, str]]:
+    def cat_to_sub_cat(self) -> Optional[Mapping[ObjectTypes, ObjectTypes]]:
         """
         cat_to_sub_cat
         """
@@ -364,7 +407,7 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
         # form a set of possible sub category values. To get a list of all values from all dataset, take the union
         intersect_init_sub_cat_values = {}
         for sub_cat_key in intersect_sub_cat_per_key:
-            val: Set[str] = set()
+            val: Set[ObjectTypes] = set()
             for cat in categories:
                 val.update(cat.init_sub_categories[key][sub_cat_key])
             intersect_init_sub_cat_values[sub_cat_key] = list(val)

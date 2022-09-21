@@ -5,13 +5,14 @@ Summary
 -------
 
 Detectron2 is much quicker in when evaluating with two threads,
-evaluation results however are worse. Decrease in performance results
-from the fact that the model has been trained in Tensorpack framework.
-Weights have been then transposed into Detectron2 framework where the
-model however has slightly different padding mode.
+results however are worse. Decrease in performance results
+from the fact that weights have been taken from the Tensorpack framework.
+They have then been transposed into Detectron2 artefacts. Note that both model
+have a slightly different padding mode.
 
 **Update** As training scripts are available for Detectron2 we used the
-those checkpoints to resume training for Detectron2. The second training
+those checkpoints to resume training for a few iterations to adopt weights
+to the different padding strategy. The second training
 further improved the model performance by a significant amount so that
 in summary we can say: Detectron2 is trains faster and performs better
 than Tensorpack.
@@ -19,53 +20,43 @@ than Tensorpack.
 Layout
 ------
 
-The following scripts shows how to evaluate and display mAP and mAR of
-Tensorpack and Detectron2 models.
+The following scripts shows how to determine mAP (mean average precision) and mAR
+(mean average recall) for Tensorpack and Detectron2 models.
 
 Due to the fact that both models work on different deep learning
-libraries, it might be necessary to change and restart the kernel after
-finishing the evaluation of the first model.
+libraries, it might be necessary to stop and switch kernel a couple of times.
 
 Detectron2 on Publaynet
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 
-    from deepdoctection.utils.fs import is_file_extension
-    from deepdoctection.extern import D2FrcnnDetector
-    from deepdoctection.pipe import ImageLayoutService
-    from deepdoctection.eval import Evaluator, metric_registry
-    from deepdoctection.datasets import get_dataset
-    from deepdoctection.extern import ModelCatalog
+    import deepdoctection as dd
 
 .. code:: ipython3
 
-    publaynet = get_dataset("publaynet")
-    coco_metric = metric_registry.get("coco")
+    publaynet = dd.get_dataset("publaynet")
+    coco_metric = dd.metric_registry.get("coco")
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
-    path_weights = ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
+    path_weights = dd.ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
 
 .. code:: ipython3
 
     categories = publaynet.dataflow.categories.get_categories(filtered=True)
     category_names = publaynet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = D2FrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(publaynet, layout_service, coco_metric)
+    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(publaynet, layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500)
 
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=0.72s).
@@ -88,35 +79,30 @@ Detectron2 on Publaynet
 Tensorpack on Publaynet
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Maybe, a restart of the kernel is necessary.
+Maybe, a kernel restart is necessary.
 
 .. code:: ipython3
 
-    from deepdoctection.extern import TPFrcnnDetector
-    from deepdoctection.utils.fs import is_file_extension
-    from deepdoctection.pipe import ImageLayoutService
-    from deepdoctection.eval import Evaluator, metric_registry
-    from deepdoctection.datasets import get_dataset
-    from deepdoctection.extern import ModelCatalog
+    import deepdoctection as dd
 
 .. code:: ipython3
 
-    publaynet = get_dataset("publaynet")
-    coco_metric = metric_registry.get("coco")
+    publaynet = dd.get_dataset("publaynet")
+    coco_metric = dd.metric_registry.get("coco")
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
-    path_weights = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
+    path_weights = dd.ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
 
 .. code:: ipython3
 
     categories = publaynet.dataflow.categories.get_categories(filtered=True)
     category_names = publaynet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(publaynet,layout_service, coco_metric)
+    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(publaynet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500)
 
@@ -124,10 +110,6 @@ Maybe, a restart of the kernel is necessary.
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=0.84s).
@@ -157,24 +139,13 @@ Maybe switch kernel again
 
 .. code:: ipython3
 
-    from deepdoctection.utils.fs import is_file_extension
-    from deepdoctection.extern import D2FrcnnDetector
-    from deepdoctection.pipe import ImageLayoutService
-    from deepdoctection.eval import Evaluator, metric_registry
-    from deepdoctection.datasets import get_dataset
-    from deepdoctection.extern import ModelCatalog
-
-
-.. parsed-literal::
-
-    /home/janis/Public/deepdoctection_pt/venv/lib/python3.8/site-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
+    import deepdoctection as dd
 
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
-    coco_metric = metric_registry.get("coco")
+    pubtabnet = dd.get_dataset("pubtabnet")
+    coco_metric = dd.metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
 
 .. code:: ipython3
@@ -183,17 +154,17 @@ Maybe switch kernel again
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("cell/d2_model_1849999_cell_inf_only.pt")
-    path_weights = ModelCatalog.get_full_path_weights("cell/d2_model_1849999_cell_inf_only.pt")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("cell/d2_model_1849999_cell_inf_only.pt")
+    path_weights = dd.ModelCatalog.get_full_path_weights("cell/d2_model_1849999_cell_inf_only.pt")
 
 .. code:: ipython3
 
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = D2FrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
+    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500)
 
@@ -201,10 +172,6 @@ Maybe switch kernel again
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=45.76s).
@@ -229,31 +196,27 @@ Detectron2 on Pubtabnet for row and column predictions
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
-    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"row_col"})
+    pubtabnet = dd.get_dataset("pubtabnet")
+    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"ITEM"})
     pubtabnet.dataflow.categories.filter_categories(["ROW","COLUMN"])
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("item/d2_model-1620000-item.pkl")
-    path_weights = ModelCatalog.get_full_path_weights("item/d2_model-1620000-item.pkl")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("item/d2_model-1620000-item.pkl")
+    path_weights = dd.ModelCatalog.get_full_path_weights("item/d2_model-1620000-item.pkl")
     
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = D2FrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
+    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500, rows_and_cols=True)
 
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=2.80s).
@@ -278,43 +241,34 @@ Tensorpack on Pubtabnet for cell predictions
 
 .. code:: ipython3
 
-    from deepdoctection.extern import TPFrcnnDetector
-    from deepdoctection.utils.fs import is_file_extension
-    from deepdoctection.pipe import ImageLayoutService
-    from deepdoctection.eval import Evaluator, metric_registry
-    from deepdoctection.datasets import get_dataset
-    from deepdoctection.extern import ModelCatalog
+    import deepdoctection as dd
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
-    coco_metric = metric_registry.get("coco")
+    pubtabnet = dd.get_dataset("pubtabnet")
+    coco_metric = dd.metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
     pubtabnet.dataflow.categories.filter_categories("CELL")
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("cell/model-1800000_inf_only.data-00000-of-00001")
-    path_weights = ModelCatalog.get_full_path_weights("cell/model-1800000_inf_only.data-00000-of-00001")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("cell/model-1800000_inf_only.data-00000-of-00001")
+    path_weights = dd.ModelCatalog.get_full_path_weights("cell/model-1800000_inf_only.data-00000-of-00001")
 
 .. code:: ipython3
 
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
+    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500)
 
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=44.42s).
@@ -339,34 +293,30 @@ Detectron2 on Pubtabnet for row and column predictions
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
+    pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"row_col"})
     pubtabnet.dataflow.categories.filter_categories(["ROW","COLUMN"])
     
-    coco_metric = metric_registry.get("coco")
+    coco_metric = dd.metric_registry.get("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
 
 .. code:: ipython3
 
-    path_config_yaml = ModelCatalog.get_full_path_configs("item/model-1620000_inf_only.data-00000-of-00001")
-    path_weights = ModelCatalog.get_full_path_weights("item/model-1620000_inf_only.data-00000-of-00001")
+    path_config_yaml = dd.ModelCatalog.get_full_path_configs("item/model-1620000_inf_only.data-00000-of-00001")
+    path_weights = dd.ModelCatalog.get_full_path_weights("item/model-1620000_inf_only.data-00000-of-00001")
     
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = TPFrcnnDetector(path_config_yaml,path_weights,categories)
-    layout_service =  ImageLayoutService(layout_detector)
-    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
+    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_service =  dd.ImageLayoutService(layout_detector)
+    evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
     output= evaluator.run(max_datapoints=500,rows_and_cols=True)
 
 
 .. parsed-literal::
 
-    creating index...
-    index created!
-    creating index...
-    index created!
     Running per image evaluation...
     Evaluate annotation type *bbox*
     DONE (t=2.86s).

@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 
 import numpy as np
 
@@ -29,7 +29,7 @@ from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import LayoutType, Relationships, TypeOrStr, get_type, ObjectTypes
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -42,14 +42,14 @@ class ImageCroppingService(PipelineComponent):
     generally not stored.
     """
 
-    def __init__(self, category_names: Union[str, List[str]]):
+    def __init__(self, category_names: Union[TypeOrStr, Sequence[TypeOrStr]]):
         """
         :param category_names: A single name or a list of category names to crop
         """
 
         if isinstance(category_names, str):
             category_names = [category_names]
-        self.category_names = category_names
+        self.category_names = [get_type(category_name) for category_name in category_names]
         super().__init__(None)
 
     def serve(self, dp: Image) -> None:
@@ -87,8 +87,8 @@ class MatchingService(PipelineComponent):
 
     def __init__(
         self,
-        parent_categories: Union[str, List[str]],
-        child_categories: Union[str, List[str]],
+        parent_categories: Union[TypeOrStr, List[TypeOrStr]],
+        child_categories: Union[TypeOrStr, List[TypeOrStr]],
         matching_rule: str,
         threshold: float,
     ) -> None:
@@ -125,7 +125,7 @@ class MatchingService(PipelineComponent):
             matched_child_anns = np.take(child_anns, child_index)  # type: ignore
             matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(names.C.CHILD, matched_child_anns[idx].annotation_id)
+                parent.dump_relationship(Relationships.child, matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
@@ -136,7 +136,7 @@ class MatchingService(PipelineComponent):
             [
                 ("image_annotations", []),
                 ("sub_categories", {}),
-                ("relationships", {parent: {names.C.CHILD} for parent in self.parent_categories}),
+                ("relationships", {parent: {Relationships.child} for parent in self.parent_categories}),
                 ("summaries", []),
             ]
         )
@@ -151,9 +151,9 @@ class PageParsingService:
 
     def __init__(
         self,
-        text_container: str,
-        floating_text_block_names: Optional[Union[str, List[str]]] = None,
-        text_block_names: Optional[Union[str, List[str]]] = None,
+        text_container: TypeOrStr,
+        floating_text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
         text_containers_to_text_block: bool = False,
     ):
         """
@@ -170,18 +170,18 @@ class PageParsingService:
                                              you can add it to the text block ordering to ensure that the full text is
                                              part of the subsequent sub process.
         """
-        if isinstance(floating_text_block_names, str):
+        if isinstance(floating_text_block_names, (str, ObjectTypes)):
             floating_text_block_names = [floating_text_block_names]
         elif floating_text_block_names is None:
             floating_text_block_names = []
-        if isinstance(text_block_names, str):
+        if isinstance(text_block_names, (str, ObjectTypes)):
             text_block_names = [text_block_names]
         elif text_block_names is None:
             text_block_names = []
 
-        self._text_container = text_container
-        self._floating_text_block_names = floating_text_block_names
-        self._text_block_names = text_block_names
+        self._text_container = str(get_type(text_container).value)
+        self._floating_text_block_names = [str(get_type(text_block).value) for text_block in floating_text_block_names]
+        self._text_block_names = [str(get_type(text_block).value) for text_block in text_block_names]
         self._text_container_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
 
@@ -209,8 +209,8 @@ class PageParsingService:
         return MapData(df, self.pass_datapoint)
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [names.C.WORD, names.C.LINE], (
-            f"text_container must be either {names.C.WORD} or " f"{names.C.LINE}"
+        assert self._text_container in [LayoutType.word, LayoutType.line], (
+            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
         )
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names

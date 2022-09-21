@@ -27,7 +27,7 @@ import numpy as np
 from pytest import fixture
 
 from deepdoctection.utils.systools import get_package_path
-from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import LayoutType, ObjectTypes
 from deepdoctection.utils.detection_types import ImageType
 
 
@@ -40,11 +40,12 @@ def fixture_path_to_d2_frcnn_yaml() -> Path:
 
 
 @fixture(name="categories")
-def fixture_categories() -> Dict[str, str]:
+def fixture_categories() -> Dict[str, ObjectTypes]:
     """
     Categories as Dict
     """
-    return {"1": names.C.TEXT, "2": names.C.TITLE, "3": names.C.TAB, "4": names.C.FIG, "5": names.C.LIST}
+    return {"1": LayoutType.text, "2": LayoutType.title, "3": LayoutType.table,
+            "4": LayoutType.figure, "5": LayoutType.list}
 
 
 @fixture(name="np_image")

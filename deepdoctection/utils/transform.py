@@ -56,8 +56,12 @@ class ResizeTransform(BaseTransform):
     """
 
     def __init__(
-        self, h: Union[int, float], w: Union[int, float], new_h: Union[int, float], new_w: Union[int, float],
-            interp: str
+        self,
+        h: Union[int, float],
+        w: Union[int, float],
+        new_h: Union[int, float],
+        new_w: Union[int, float],
+        interp: str,
     ):
         """
         :param h: height

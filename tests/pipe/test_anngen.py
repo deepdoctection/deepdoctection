@@ -24,6 +24,7 @@ from typing import List
 from deepdoctection.datapoint import Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
+from deepdoctection.utils.settings import get_type
 
 
 class TestDatapointManager:
@@ -105,11 +106,11 @@ class TestDatapointManager:
 
         # Act
         assert ann_id is not None
-        dp_manager.set_category_annotation("foo", 5, "FOO", ann_id, 0.8)
+        dp_manager.set_category_annotation(get_type("foo"), 5, get_type("FOO"), ann_id, 0.8)
 
         # Assert
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
-        cat_ann = ann[0].get_sub_category("FOO")
+        cat_ann = ann[0].get_sub_category(get_type("FOO"))
 
         assert cat_ann.category_id == "5"
         assert cat_ann.score == 0.8
@@ -128,11 +129,13 @@ class TestDatapointManager:
 
         # Act
         assert ann_id is not None
-        cont_ann_id = dp_manager.set_container_annotation("foo", 5, "FOO", ann_id, "hello world", 0.8)
+        cont_ann_id = dp_manager.set_container_annotation(
+            get_type("foo"), 5, get_type("FOO"), ann_id, "hello world", 0.8
+        )
 
         # Assert
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
-        cont_ann = ann[0].get_sub_category("FOO")
+        cont_ann = ann[0].get_sub_category(get_type("FOO"))
 
         assert cont_ann.category_id == "5"
         assert cont_ann.score == 0.8
@@ -152,17 +155,17 @@ class TestDatapointManager:
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0], to_image=True)
 
         # Act
-        summ_id_1 = dp_manager.set_summary_annotation("foo", "foo", 1)
-        summ_id_2 = dp_manager.set_summary_annotation("bak", "bak", 2, annotation_id=ann_id)
+        summ_id_1 = dp_manager.set_summary_annotation(get_type("foo"), get_type("foo"), 1)
+        summ_id_2 = dp_manager.set_summary_annotation(get_type("bak"), get_type("bak"), 2, annotation_id=ann_id)
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
 
         # Assert
-        cat_1 = dp_manager.datapoint.summary.get_sub_category("foo")  # type: ignore
+        cat_1 = dp_manager.datapoint.summary.get_sub_category(get_type("foo"))  # type: ignore
         assert cat_1.annotation_id == summ_id_1
         assert cat_1.category_name == "foo"
         assert cat_1.category_id == "1"
 
-        cat_2 = ann[0].image.summary.get_sub_category("bak")  # type: ignore
+        cat_2 = ann[0].image.summary.get_sub_category(get_type("bak"))  # type: ignore
         assert cat_2.annotation_id == summ_id_2
         assert cat_2.category_name == "bak"
         assert cat_2.category_id == "2"

@@ -24,6 +24,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from deepdoctection.mapper import DefaultMapper, LabelSummarizer
+from deepdoctection.utils.settings import ObjectTypes
 
 
 class TestDefaultMapper:
@@ -63,7 +64,7 @@ class TestLabelSummarizer:
         ],
     )
     def test_categories_are_correctly_summarized(
-        categories: Dict[str, str], cat_ids: List[Union[List[Union[str, int]], str]], summary: Dict[str, int]
+        categories: Dict[str, ObjectTypes], cat_ids: List[Union[List[Union[str, int]], str]], summary: Dict[str, int]
     ) -> None:
         """
         Testing Summarizer input with various dumped category id representations.
