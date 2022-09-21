@@ -24,7 +24,7 @@ import json
 from deepdoctection.datapoint.annotation import CategoryAnnotation
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.page import Page
-from deepdoctection.utils.settings import names
+from deepdoctection.utils.settings import Relationships
 
 from ..test_utils import get_test_path
 
@@ -35,24 +35,36 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     """
     # Arrange
     dp_image = dp_image_with_layout_and_word_annotations
-    title_ann = dp_image.get_annotation(category_names=[names.C.TITLE])[0]
-    title_ann.dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="1"))
-    text_ann = dp_image.get_annotation(category_names=[names.C.TEXT])[0]
-    text_ann.dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="2"))
+    title_ann = dp_image.get_annotation(category_names=["TITLE"])[0]
+    title_ann.dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
+    )
+    text_ann = dp_image.get_annotation(category_names=["TEXT"])[0]
+    text_ann.dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="2")
+    )
 
-    word_anns = dp_image.get_annotation(category_names=names.C.WORD)
+    word_anns = dp_image.get_annotation(category_names="WORD")
 
-    word_anns[0].dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="1"))
-    word_anns[1].dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="2"))
-    word_anns[2].dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="1"))
-    word_anns[3].dump_sub_category(names.C.RO, CategoryAnnotation(category_name=names.C.RO, category_id="2"))
+    word_anns[0].dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
+    )
+    word_anns[1].dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="2")
+    )
+    word_anns[2].dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
+    )
+    word_anns[3].dump_sub_category(
+        Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="2")
+    )
 
     # Act
     page = Page.from_image(
         dp_image,
-        names.C.WORD,
-        [names.C.TEXT, names.C.TITLE, names.C.LIST],
-        [names.C.TEXT, names.C.TITLE, names.C.LIST, names.C.CELL],
+        "WORD",
+        ["TEXT", "TITLE", "LIST"],
+        ["TEXT", "TITLE", "LIST", "CELL"],
     )
 
     # Assert

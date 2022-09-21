@@ -21,7 +21,7 @@ Utility functions related to mapping tasks
 import functools
 import itertools
 from types import TracebackType
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from tabulate import tabulate
@@ -29,6 +29,7 @@ from termcolor import colored
 
 from ..utils.detection_types import DP, BaseExceptionType, S, T
 from ..utils.logger import log_once, logger
+from ..utils.settings import ObjectTypes
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
 
@@ -160,7 +161,7 @@ class LabelSummarizer:
 
     """
 
-    def __init__(self, categories: Dict[str, str]) -> None:
+    def __init__(self, categories: Mapping[str, ObjectTypes]) -> None:
         """
         :param categories: A dict of categories as given as in categories.get_categories().
         """
@@ -191,9 +192,11 @@ class LabelSummarizer:
         :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
         if dd_logic:
-            data = list(itertools.chain(*[[self.categories[str(i)], v] for i, v in enumerate(self.summary, 1)]))
+            data = list(itertools.chain(*[[self.categories[str(i)].value, v] for i, v in enumerate(self.summary, 1)]))
         else:
-            data = list(itertools.chain(*[[self.categories[str(i + 1)], v] for i, v in enumerate(self.summary[:-1])]))
+            data = list(
+                itertools.chain(*[[self.categories[str(i + 1)].value, v] for i, v in enumerate(self.summary[:-1])])
+            )
         num_columns = min(6, len(data))
         total_img_anns = sum(data[1::2])
         data.extend([None] * ((num_columns - len(data) % num_columns) % num_columns))

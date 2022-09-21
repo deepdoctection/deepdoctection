@@ -25,6 +25,9 @@ import pytest
 
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.datasets.info import get_merged_categories
+from deepdoctection.utils.settings import get_type
+
+from ..data import TestType
 
 
 class TestDatasetCategories:
@@ -37,10 +40,13 @@ class TestDatasetCategories:
         """
         Arrange testing setup
         """
-        categories = ["FOO", "BAK", "BAZ"]
+        categories = [get_type("FOO"), get_type("BAK"), get_type("BAZ")]
         sub_categories = {
-            "BAK": {"sub": ["BAK_11", "BAK_12"], "sub_2": ["BAK_21", "BAK_22"]},
-            "FOO": {"cat": ["FOO_1", "FOO_2", "FOO_3"]},
+            get_type("BAK"): {
+                get_type("sub"): [get_type("BAK_11"), get_type("BAK_12")],
+                get_type("sub_2"): [get_type("BAK_21"), get_type("BAK_22")],
+            },
+            get_type("FOO"): {get_type("cat"): [get_type("FOO_1"), get_type("FOO_2"), get_type("FOO_3")]},
         }
 
         return DatasetCategories(init_categories=categories, init_sub_categories=sub_categories)
@@ -55,15 +61,15 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Assert
-        assert cats.get_categories() == {"1": "FOO", "2": "BAK", "3": "BAZ"}
+        assert cats.get_categories() == {"1": TestType.FOO, "2": TestType.BAK, "3": TestType.BAZ}
         assert not cats.is_cat_to_sub_cat()
 
         # Act
-        cats.set_cat_to_sub_cat({"BAK": "sub_2"})
+        cats.set_cat_to_sub_cat({TestType.BAK: TestType.sub_2})
 
         # Assert
-        assert cats.get_categories(as_dict=False, init=True) == ["FOO", "BAK", "BAZ"]
-        assert cats.get_categories(as_dict=False) == ["FOO", "BAK_21", "BAK_22", "BAZ"]
+        assert cats.get_categories(as_dict=False, init=True) == [TestType.FOO, TestType.BAK, TestType.BAZ]
+        assert cats.get_categories(as_dict=False) == [TestType.FOO, TestType.BAK_21, TestType.BAK_22, TestType.BAZ]
         assert cats.is_cat_to_sub_cat()
 
     @staticmethod
@@ -76,16 +82,16 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Act
-        cats.set_cat_to_sub_cat({"BAK": "sub", "FOO": "cat"})
+        cats.set_cat_to_sub_cat({TestType.BAK: TestType.sub, TestType.FOO: TestType.cat})
 
         # Assert
         assert cats.get_categories(name_as_key=True) == {
-            "FOO_1": "1",
-            "FOO_2": "2",
-            "FOO_3": "3",
-            "BAK_11": "4",
-            "BAK_12": "5",
-            "BAZ": "6",
+            get_type("FOO_1"): "1",
+            get_type("FOO_2"): "2",
+            get_type("FOO_3"): "3",
+            get_type("BAK_11"): "4",
+            get_type("BAK_12"): "5",
+            get_type("BAZ"): "6",
         }
 
     @staticmethod
@@ -105,7 +111,11 @@ class TestDatasetCategories:
         cats.filter_categories(categories=["FOO_1", "BAZ", "BAK_11"])
 
         # Assert
-        assert cats.get_categories(name_as_key=True, filtered=True) == {"FOO_1": "1", "BAZ": "3", "BAK_11": "2"}
+        assert cats.get_categories(name_as_key=True, filtered=True) == {
+            TestType.FOO_1: "1",
+            TestType.BAZ: "3",
+            TestType.BAK_11: "2",
+        }
         assert cats.is_filtered()
 
     @staticmethod
@@ -118,7 +128,7 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Assert
-        assert cats.get_sub_categories() == {"BAK": ["sub", "sub_2"], "FOO": ["cat"]}
+        assert cats.get_sub_categories() == {TestType.BAK: [TestType.sub, TestType.sub_2], TestType.FOO: [TestType.cat]}
 
     @staticmethod
     def test_set_sub_categories_and_check_sub_categories() -> None:
@@ -132,9 +142,9 @@ class TestDatasetCategories:
 
         # Act
         assert cats.get_sub_categories(categories=["FOO_1", "FOO_2", "FOO_3"]) == {
-            "FOO_1": [],
-            "FOO_2": [],
-            "FOO_3": [],
+            TestType.FOO_1: [],
+            TestType.FOO_2: [],
+            TestType.FOO_3: [],
         }
 
 
@@ -148,11 +158,19 @@ class TestMergeDatasetCategories:
         """
         Arrange testing setup
         """
-        init_categories_1 = ["FOO", "BAK"]
-        init_categories_2 = ["FOO", "BAZ"]
+        init_categories_1 = [get_type("FOO"), get_type("BAK")]
+        init_categories_2 = [get_type("FOO"), get_type("BAZ")]
 
-        sub_categories_1 = {"FOO": {"FOO_1": ["1", "2"], "FOO_2": ["3", "4"]}}
-        sub_categories_2 = {"FOO": {"FOO_1": ["1", "3"]}, "BAK": {"BAK_1": ["4", "5"]}}
+        sub_categories_1 = {
+            get_type("FOO"): {
+                get_type("FOO_1"): [get_type("1"), get_type("2")],
+                get_type("FOO_2"): [get_type("3"), get_type("4")],
+            }
+        }
+        sub_categories_2 = {
+            get_type("FOO"): {get_type("FOO_1"): [get_type("1"), get_type("3")]},
+            get_type("BAK"): {get_type("BAK_1"): [get_type("4"), get_type("5")]},
+        }
 
         return (
             DatasetCategories(init_categories=init_categories_1, init_sub_categories=sub_categories_1),
@@ -172,8 +190,8 @@ class TestMergeDatasetCategories:
         merge = get_merged_categories(cat_1, cat_2)
 
         # Assert
-        assert merge.get_categories(init=True, as_dict=False) == ["FOO", "BAK", "BAZ"]
-        assert merge.get_sub_categories() == {"FOO": ["FOO_1"]}
+        assert merge.get_categories(init=True, as_dict=False) == [TestType.FOO, TestType.BAK, TestType.BAZ]
+        assert merge.get_sub_categories() == {TestType.FOO: [TestType.FOO_1]}
 
     @staticmethod
     def test_merge_categories_updates_categories_correctly() -> None:
@@ -190,8 +208,14 @@ class TestMergeDatasetCategories:
         merge = get_merged_categories(cat_1, cat_2)
 
         # Assert
-        assert merge.get_categories(as_dict=False, init=True) == ["FOO", "BAK", "BAZ"]
-        assert merge.get_categories(as_dict=False) == ["1", "2", "BAK", "3", "BAZ"]
+        assert merge.get_categories(as_dict=False, init=True) == [TestType.FOO, TestType.BAK, TestType.BAZ]
+        assert merge.get_categories(as_dict=False) == [
+            TestType.one,
+            TestType.two,
+            TestType.BAK,
+            TestType.three,
+            TestType.BAZ,
+        ]
 
     @staticmethod
     def test_merge_categories_updates_and_filters_categories_correctly() -> None:
@@ -210,8 +234,19 @@ class TestMergeDatasetCategories:
         merge = get_merged_categories(cat_1, cat_2)
 
         # Assert
-        assert merge.get_categories(as_dict=False, init=False) == ["1", "2", "BAK", "3", "BAZ"]
-        assert merge.get_categories(as_dict=False, init=False, filtered=True) == ["2", "1", "3", "BAZ"]
+        assert merge.get_categories(as_dict=False, init=False) == [
+            TestType.one,
+            TestType.two,
+            TestType.BAK,
+            TestType.three,
+            TestType.BAZ,
+        ]
+        assert merge.get_categories(as_dict=False, init=False, filtered=True) == [
+            TestType.two,
+            TestType.one,
+            TestType.three,
+            TestType.BAZ,
+        ]
 
     @staticmethod
     def test_merge_categories_cannot_update_or_filter() -> None:

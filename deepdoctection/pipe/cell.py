@@ -20,12 +20,12 @@ Module for cell detection pipeline component
 """
 
 from collections import Counter, defaultdict
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import ObjectTypes, Relationships
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -41,7 +41,11 @@ class DetectResultGenerator:
     """
 
     def __init__(
-        self, categories: Dict[str, str], image_width: float, image_height: float, group_categories: List[List[str]]
+        self,
+        categories: Mapping[str, ObjectTypes],
+        image_width: float,
+        image_height: float,
+        group_categories: List[List[str]],
     ) -> None:
         """
         :param categories: The dict of all possible detection categories
@@ -208,7 +212,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 ("image_annotations", self.predictor.possible_categories()),
                 ("sub_categories", {}),
                 # implicit setup of relations by using set_image_annotation with explicit annotation_id
-                ("relationships", {parent: {names.C.CHILD} for parent in self.sub_image_name}),
+                ("relationships", {parent: {Relationships.child} for parent in self.sub_image_name}),
                 ("summaries", []),
             ]
         )

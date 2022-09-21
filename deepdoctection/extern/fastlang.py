@@ -18,10 +18,11 @@
 """
 Deepdoctection wrappers for fasttext language detection models
 """
-
+from copy import copy
 from typing import List, Mapping
 
 from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
+from ..utils.settings import TypeOrStr
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
 if fasttext_available():
@@ -52,7 +53,7 @@ class FasttextLangDetector(LanguageDetector):
 
     """
 
-    def __init__(self, path_weights: str, categories: Mapping[str, str]):
+    def __init__(self, path_weights: str, categories: Mapping[str, TypeOrStr]):
         """
         :param path_weights: path to model weights
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
@@ -62,7 +63,7 @@ class FasttextLangDetector(LanguageDetector):
         super().__init__()
         self.path_weights = path_weights
         self.model = load_model(self.path_weights)
-        self.categories = categories
+        self.categories = copy(categories)  # type: ignore
 
     def predict(self, text_string: str) -> DetectionResult:
         output = self.model.predict(text_string)

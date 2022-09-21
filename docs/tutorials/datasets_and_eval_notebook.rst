@@ -1,112 +1,106 @@
 Datasets and Evaluation
 =======================
 
-In this tutorial we will deal with datasets, which are a separate module
-within the package.
+In this tutorial we will introduce the concept of a data set.
 
-Then we will show how to evaluate a predictor in relation to a dataset
+Then we will show how to evaluate a predictor with respect to a dataset
 and a metric.
 
-Caution! From v0.14 onwards this notebook will run only when the extended package for evaluation, datasets and training
-is installed! Check the installation guidelines or the README for further informations.
+**Caution!** This notebook will run only when at least the extended
+package **‘tf-full’, ‘source-tf-full’** has been installed! Check the
+installation guidelines or the README for further informations. You will
+need to modify the script accordingly to run it with the PyTorch
+framework.
 
 Dataset concept
 ---------------
 
-A dataset is a class that consists of a general info part, a category
-part and a dataflow. The dataflow can be used to stream the data points
-of the dataset.
+A dataset is a class that consists of an info class, a category and a
+dataflow class. The dataflow class can be used to stream data point
+samples. Data points are image scans or single page pdfs from documents.
 
-Since the focus is on document image analysis, data points from datasets
-must consist of at least one image. In addition, annotations can be
-available for each data point. Generally, these are image annotations,
-such as objects, with bouding boxes. However, depending on the data
-point, other information can also be contained in the annotations, such
-as text, relations between annotations, etc.
+Data points are represented as ``Image`` class. This class has specific
+attributes to store several types of annotations. These annotations can
+be objects that determine the layout structure, like tables or table
+cells, words etc. Annotations are represented by another class
+``ImageAnnotation`` that has attributes like bounding boxes, category
+names among other things.
 
-Dataflow is an external package that can be used to load data and
-transport it through a framework. Dataflows are successive executions of
-generators. Each execution can be used to perform specific tasks such as
-loading or mapping. The flexibility of a dataflow is that you can
-transport any Python object. There are also components that allow
-certain tasks to be executed in multiple processes.
-
-Dataflows are used to transport data points of a data set. Each data set
-contains a build method, where a dataflow is returned. Over this
-successive data points can be streamed. The data points of a dataset are
-passed in a normalized data format. Independent of how the annotations
-are stored in the source data (whether in Coco format, Pascal-VOC
-format,…), they are output in the form of a so-called image data point
-via Dataflow. This avoids that different mappings can be executed
-independently and datasets can be processed through pipelines without
-further adaptation.
-
-By default, all available information is always provided for a data
-point via the dataflow. If you want to suppress certain information, you
-can configure this accordingly in the data set.
-
-We will now make use of a builtin datasets. We use a factory function to
-have immediate access to the built-in dataset. Note, that there is no
-automatism to download, extract and save the datasets. We will show you
-how to get the required details.
+Dataflow is package that can be used to load and process data. Dataflow
+is a package that allows you to build chains of generators. Each
+dataflow chain member can be used to perform some specific tasks such as
+loading a or transforming a data point.
 
 .. code:: ipython3
 
-    from deepdoctection.datasets import print_dataset_infos, get_dataset
-    from deepdoctection.datasets.instances import pubtabnet as pt
-    from deepdoctection.extern import ModelCatalog
-    from deepdoctection.eval import MetricRegistry, Evaluator
-    from deepdoctection.extern.tpdetect import TPFrcnnDetector
-    from deepdoctection.pipe.layout import ImageLayoutService
+    import deepdoctection as dd
     
     from matplotlib import pyplot as plt
 
+Let’s print a list of all built-in datasets.
+
 .. code:: ipython3
 
-    print_dataset_infos(add_license=False, add_info=False)
+    dd.print_dataset_infos(add_license=False, add_info=False)
 
 
 .. parsed-literal::
 
-    [36m╒═════════════╕
-    │ dataset     │
-    ╞═════════════╡
-    │ fintabnet   │
-    ├─────────────┤
-    │ funsd       │
-    ├─────────────┤
-    │ iiitar13k   │
-    ├─────────────┤
-    │ testlayout  │
-    ├─────────────┤
-    │ publaynet   │
-    ├─────────────┤
-    │ pubtables1m │
-    ├─────────────┤
-    │ pubtabnet   │
-    ├─────────────┤
-    │ xfund       │
-    ╘═════════════╛[0m
+    ╒═══════════════╕
+    │ dataset       │
+    ╞═══════════════╡
+    │ doclaynet     │
+    ├───────────────┤
+    │ doclaynet-seq │
+    ├───────────────┤
+    │ fintabnet     │
+    ├───────────────┤
+    │ funsd         │
+    ├───────────────┤
+    │ iiitar13k     │
+    ├───────────────┤
+    │ testlayout    │
+    ├───────────────┤
+    │ publaynet     │
+    ├───────────────┤
+    │ pubtables1m   │
+    ├───────────────┤
+    │ pubtabnet     │
+    ├───────────────┤
+    │ rvl-cdip      │
+    ├───────────────┤
+    │ xfund         │
+    ╘═══════════════╛
 
 
-With ``get_dataset("pubtabnet")`` we can generate an instance of this
-dataset.
+With ``get_dataset("pubtabnet")`` we can create an instance of a
+built-in dataset.
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
-    pubtabnet.dataset_info.description
-
-
+    pubtabnet = dd.get_dataset("pubtabnet")
+    
+    print(pubtabnet.dataset_info.description)
 
 
 .. parsed-literal::
 
-    "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of \ntabular data annotated with the corresponding HTML representation of the tables. The table images \n are extracted from the scientific publications included in the PubMed Central Open Access Subset \n (commercial use collection). Table regions are identified by matching the PDF format and \n the XML format of the articles in the PubMed Central Open Access Subset. More details are \n available in our paper 'Image-based table recognition: data, model, and evaluation'. \nPubtabnet can be used for training cell detection models as well as for semantic table \nunderstanding algorithms. For detection it has cell bounding box annotations as \nwell as precisely described table semantics like row - and column numbers and row and col spans. \nMoreover, every cell can be classified as header or non-header cell. The dataflow builder can also \nreturn captions of bounding boxes of rows and columns. Moreover, various filter conditions on \nthe table structure are available: maximum cell numbers, maximal row and column numbers and their \nminimum equivalents can be used as filter condition"
+    PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of 
+    tabular data annotated with the corresponding HTML representation of the tables. The table images 
+     are extracted from the scientific publications included in the PubMed Central Open Access Subset 
+     (commercial use collection). Table regions are identified by matching the PDF format and 
+     the XML format of the articles in the PubMed Central Open Access Subset. More details are 
+     available in our paper 'Image-based table recognition: data, model, and evaluation'. 
+    Pubtabnet can be used for training cell detection models as well as for semantic table 
+    understanding algorithms. For detection it has cell bounding box annotations as 
+    well as precisely described table semantics like row - and column numbers and row and col spans. 
+    Moreover, every cell can be classified as header or non-header cell. The dataflow builder can also 
+    return captions of bounding boxes of rows and columns. Moreover, various filter conditions on 
+    the table structure are available: maximum cell numbers, maximal row and column numbers and their 
+    minimum equivalents can be used as filter condition
 
 
-
-To install the dataset, go to the url below and download the zip-file.
+To install the data set, go to the url below and download the zip-file.
 
 .. code:: ipython3
 
@@ -121,11 +115,11 @@ To install the dataset, go to the url below and download the zip-file.
 
 
 
-You will have to unzip and place the dataset in your local .cache
-directory. Once extracted the dataset ought to be in the format the no
-further rearraging is required. However, if you are unsure, you can get
-some additional information about the physical structure by calling the
-dataset modules docstring.
+You will have to unzip and place the data set in your local
+**.cache/deepdoctection/dataset** directory. Once extracted, the dataset
+will already have the expected folder structure. If you are unsure,
+however, you can get some additional information about the physical
+structure by calling the dataset module docstring:
 
 .. code:: ipython3
 
@@ -133,7 +127,7 @@ dataset modules docstring.
 
 .. code:: ipython3
 
-    print(pt.__doc__)
+    print(dd.datasets.instances.pubtabnet.__doc__)
 
 
 .. parsed-literal::
@@ -152,183 +146,327 @@ dataset modules docstring.
     
 
 
-Dataflows
----------
+Dataflow
+--------
 
-We now use the build method to obtain data samples.
+We will now use the ``build`` method to display some data points. As
+already mentioned, the ``build`` method returns a generator from which
+you can create an iterator to stream your data.
 
 Let’s display a tiny fraction of annotations that is available for each
 datapoint. ``datapoint_dict["annotations"][0]`` displays all
-informations that are available for one cell. First of all, there is the
-category_name. This represents the main category of the annotation. In
-this dataset there are Cells, Rows and Columns.
-
-In addition, there are various sub-categories for this category, which
-are grouped under the sub_category heading, such as ROW_NUMBER and
-COLUMN_NUMBER.
+informations that are available for a single cell. There is a
+``category_name`` represented as ``Enum`` member. There is also a
+``bounding_box`` and a dict called ``sub_categories`` that carries
+additional information relevant to a cell like ``CellType.row_number``.
 
 .. code:: ipython3
 
-    df = pubtabnet.dataflow.build(split=“train”) df.reset_state() df_iter =
-    iter(df) datapoint = next(df_iter) datapoint_dict = datapoint.as_dict()
-    datapoint_dict[“file_name”],datapoint_dict[“location”],datapoint_dict[“image_id”],
-    datapoint_dict[“annotations”][0]
-
-Depending on the dataset, different configurations can be provided via
-the build method. For example, the image itself is not loaded by
-default. By passing the parameter ``load_image=True`` the image can be
-passed in the dataflow.
-
-Note, that all images are loaded with the OpenCV framework, where the
-colors are stored as numpy array in BGR order. As matplotlib expects
-numpy array in RGB order, we have to swap dimensions.
-
-.. code:: ipython3
-
-    df = pubtabnet.dataflow.build(split="train",load_image=True)
-    df.reset_state()
-    df_iter = iter(df)
+    df = pubtabnet.dataflow.build(split="train") # get the dataflow generator
+    df.reset_state() # an intrinsic dataflow method that must always be called before streaming data. You will get an 
+                     # error if you forget to do this.
+    
+    df_iter = iter(df) 
+    
     datapoint = next(df_iter)
-    plt.figure(figsize = (15,12))
-    plt.axis('off')
-    plt.imshow(datapoint.image[:,:,::-1])
+    
+    datapoint_dict = datapoint.as_dict() # displaying the Image class is very messy
+    
+    datapoint_dict["file_name"],datapoint_dict["location"],datapoint_dict["_image_id"], datapoint_dict["annotations"][0]
 
 
 
 
 .. parsed-literal::
 
-    <matplotlib.image.AxesImage at 0x7f84737ffbb0>
+    ('PMC4840965_004_00.png',
+     PosixPath('/home/janis/.cache/deepdoctection/datasets/pubtabnet/train/PMC4840965_004_00.png'),
+     'c87ee674-4ddc-3efe-a74e-dfe25da5d7b3',
+     {'active': True,
+      'external_id': None,
+      '_annotation_id': '6a421e4d-143a-3ede-8494-9fbf5e8ef8b8',
+      'category_name': <LayoutType.cell>,
+      '_category_name': <LayoutType.cell>,
+      'category_id': '1',
+      'score': None,
+      'sub_categories': {<CellType.row_number>: {'active': True,
+        'external_id': None,
+        '_annotation_id': 'fcbd492e-4fe1-3185-b8d6-fd0027e1957a',
+        'category_name': <CellType.row_number>,
+        '_category_name': <CellType.row_number>,
+        'category_id': '28',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.column_number>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '1009bea2-272c-3a4b-abee-5e90a1d9c460',
+        'category_name': <CellType.column_number>,
+        '_category_name': <CellType.column_number>,
+        'category_id': '3',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.row_span>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '1e9b989b-06c4-388d-956a-83acbc782247',
+        'category_name': <CellType.row_span>,
+        '_category_name': <CellType.row_span>,
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.column_span>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '0866c7eb-32ff-3554-ae39-5c20567261c2',
+        'category_name': <CellType.column_span>,
+        '_category_name': <CellType.column_span>,
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.header>: {'active': True,
+        'external_id': None,
+        '_annotation_id': 'e0e7178a-b75b-34dd-8a1e-a7e62ed1e3b8',
+        'category_name': <CellType.body>,
+        '_category_name': <CellType.body>,
+        'category_id': '',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}}},
+      'relationships': {},
+      'bounding_box': {'absolute_coords': True,
+       'ulx': 336.0,
+       'uly': 381.0,
+       'lrx': 376.0,
+       'lry': 391.0},
+      'image': None})
 
 
 
+Depending on the data set, different configurations of the ``build``
+method can yield different representations of data points. For example,
+the underlying image is not loaded by default. By passing the parameter
+``load_image=True`` the image will be loaded.
 
-.. image:: ./pics/output_13_1.png
+Note, that all images are loaded using the OpenCV framework, where
+colors are stored as array in BGR format. Matplotlib expects a numpy
+array in RGB order, which is why we have to swap dimensions.
+
+.. code:: ipython3
+
+    df = pubtabnet.dataflow.build(split="train",load_image=True)
+    df.reset_state()
+    
+    df_iter = iter(df)
+    datapoint = next(df_iter)
+    
+    plt.figure(figsize = (15,12))
+    plt.axis('off')
+    plt.imshow(datapoint.image[:,:,::-1])
 
 
-It is possible to change the representation of a data point in certain
-respects. For example, one can replace the category of an annotation
+
+.. image:: output_13_1.png
+
+
+It is possible to change the representation of a data point as already
+mentioned. For example, one can replace the category of an annotation
 with one of its sub-categories.
 
-Thus, for this dataset, for each cell there is as a sub-category with
-the information whether it is a table-header or a table-body cell.
-Through the method ``set_cat_to_sub_cat`` the category can be changed.
+Looking at this dataset, each cell has as a sub-category, stating if it
+is a table-header or a table-body cell. Using the method
+``dataflow.categories.set_cat_to_sub_cat`` the main category can be
+replaced by one of its sub categories.
 
 .. code:: ipython3
 
-    pubtabnet.dataflow.categories.set_cat_to_sub_cat({“CELL”:“HEAD”}) df =
-    pubtabnet.dataflow.build(split=“train”) df.reset_state() df_iter =
-    iter(df) datapoint = next(df_iter) datapoint_dict = datapoint.as_dict()
-    datapoint_dict[“file_name”],datapoint_dict[“location”],datapoint_dict[“image_id”],
-    datapoint_dict[“annotations”][0]
+    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"CELL":"HEADER"})
+    df = pubtabnet.dataflow.build(split="train")
+    df.reset_state()
+    
+    df_iter = iter(df)
+    datapoint = next(df_iter)
+    
+    datapoint_dict = datapoint.as_dict()
+    datapoint_dict["file_name"],datapoint_dict["location"],datapoint_dict["_image_id"], datapoint_dict["annotations"][0]
 
-This data set was used to train the cell detector of the analyzer. We
-will discuss the table detection architecture in more detail later.
+
+
+.. parsed-literal::
+
+    ('PMC4840965_004_00.png',
+     PosixPath('/home/janis/.cache/deepdoctection/datasets/pubtabnet/train/PMC4840965_004_00.png'),
+     'c87ee674-4ddc-3efe-a74e-dfe25da5d7b3',
+     {'active': True,
+      'external_id': None,
+      '_annotation_id': '6a421e4d-143a-3ede-8494-9fbf5e8ef8b8',
+      'category_name': <CellType.body>,
+      '_category_name': <CellType.body>,
+      'category_id': '2',
+      'score': None,
+      'sub_categories': {<CellType.row_number>: {'active': True,
+        'external_id': None,
+        '_annotation_id': 'fcbd492e-4fe1-3185-b8d6-fd0027e1957a',
+        'category_name': <CellType.row_number>,
+        '_category_name': <CellType.row_number>,
+        'category_id': '28',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.column_number>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '1009bea2-272c-3a4b-abee-5e90a1d9c460',
+        'category_name': <CellType.column_number>,
+        '_category_name': <CellType.column_number>,
+        'category_id': '3',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.row_span>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '1e9b989b-06c4-388d-956a-83acbc782247',
+        'category_name': <CellType.row_span>,
+        '_category_name': <CellType.row_span>,
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.column_span>: {'active': True,
+        'external_id': None,
+        '_annotation_id': '0866c7eb-32ff-3554-ae39-5c20567261c2',
+        'category_name': <CellType.column_span>,
+        '_category_name': <CellType.column_span>,
+        'category_id': '1',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}},
+       <CellType.header>: {'active': True,
+        'external_id': None,
+        '_annotation_id': 'e0e7178a-b75b-34dd-8a1e-a7e62ed1e3b8',
+        'category_name': <CellType.body>,
+        '_category_name': <CellType.body>,
+        'category_id': '',
+        'score': None,
+        'sub_categories': {},
+        'relationships': {}}},
+      'relationships': {},
+      'bounding_box': {'absolute_coords': True,
+       'ulx': 336.0,
+       'uly': 381.0,
+       'lrx': 376.0,
+       'lry': 391.0},
+      'image': None})
+
+
+
+This data set was used to train the cell detector of the
+**dd-analyzer**.
 
 In the section that follows now, we will show how to measure the
-performance of the detector on the validation split. Afterwards, we want
-to measure the performance on another dataset that has documents from a
-different domain.
+performance of the detector on the Pubtabnet validation split. After
+that, we are going to measure the performance on another dataset that
+has documents from a different domain.
 
-Evaluations
------------
+Evaluation
+----------
 
-An evaluator needs a dataset on which to run the evaluation, as well as
-a predictor and a metric. The predictor must be wraped into a pipeline
-component, which is why we use the ImageLayoutService.
+In many situation you are not interested in raw predictions of a model
+but on results which have been polished through several post-processing
+steps. In other situations, you want to measure accuracy/precision etc.
+not after running one but several models. For example, getting the html
+representation of a table requires output from several predictors.
+Evaluating along a pipeline allows you to see how model prediction(s)
+and post processing works in conjunction. **deep**\ doctection therefore
+comes equipped with an evaluator that allows you to run evaluation not
+on a model directly but on a pipeline component or a full pipeline.
 
-We take the COCO metric for the problem, but define settings that
-deviate from the standard. We have to consider the following issues,
-which differ from ordinary object detection tasks:
+An evaluator needs three things to be constructed:
 
--  The objects to be identified are generally smaller
--  There are many objects to identify.
+-  a dataset
+-  a pipeline component or a pipeline and
+-  a metric.
 
-Therefore, we change the maximum number of detections to consider when
-calculating the mean average precision and also choose a different range
-scale for segmenting the cells into the categories small, medium and
-large.
+In this notebook, we are going to evaluate the cell prediction model run
+on the Pubtabnet evaluation split. We measure performance using mean
+average precision/ mean average recall. This metric has been implemented
+by pycocotools. In contrast to traditional object detection task we need
+to consider that
 
-We then set up the predictor, the pipeline component and the evaluator.
+-  objects to be identified are generally smaller
+-  there are many objects to identify.
+
+Therefore, we change the maximum number of detections to consider and
+also choose a different scale for grouping cells into one of the
+categories: small, medium and large.
 
 .. code:: ipython3
 
-    config_yaml_path = ModelCatalog.get_full_path_configs("cell/model-1800000.data-00000-of-00001")
-    weights_path = ModelCatalog.get_full_path_weights("cell/model-1800000.data-00000-of-00001")
+    config_yaml_path = dd.ModelCatalog.get_full_path_configs("cell/model-1800000.data-00000-of-00001")
+    weights_path = dd.ModelCatalog.get_full_path_weights("cell/model-1800000.data-00000-of-00001")
 
 .. code:: ipython3
 
-    coco_metric = MetricRegistry.get_metric("coco")
+    coco_metric = dd.get_metric("coco")
     coco_metric.set_params(max_detections=[50,200,600], area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
 
-A word about the dataset. We have already manipulated the dataset in the
-previous part of the notebook by swapping categories with subcategories.
-This operation cannot be undone for the dataset instance. Therefore, we
-create a new instance with the ``DatasetRegistry`` and adjust the
-configuration accordingly:
-
-Since we want to have only cells and no rows and columns as annotations
-in the datapoint, we filter them out.
+Pubtabnet does not only have ground truth for cells but also for rows
+and columns. As our model only predicts cells we need to filter out
+ground truth for objects that cannot be detected by the model.
 
 .. code:: ipython3
 
-    pubtabnet = get_dataset("pubtabnet")
+    pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.filter_categories(categories="CELL")
-    categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
+    categories = pubtabnet.dataflow.categories.get_categories(filtered=True) # this will return a dict {"1": <LayoutType.cell>}
     
-    cell_detector = TPFrcnnDetector(config_yaml_path,weights_path,categories)
-    layout_service = ImageLayoutService(cell_detector)
+    cell_detector = dd.TPFrcnnDetector(config_yaml_path,weights_path,categories)
+    layout_service = dd.ImageLayoutService(cell_detector)
 
-We start the evaluation with the ``run``. max_datapoints limits the
-number of samples in the evaluation to 100 samples. The val split is
-used by default. If this is not available, it must be given as an
-argument along with other possible build configurations.
-
-.. code:: ipython3
-
-    evaluator = Evaluator(pubtabnet,layout_service, coco_metric)
-    output= evaluator.run(category_names=["CELL"],max_datapoints=100)
-
-As mentioned we are now going to evaluate the cell predictor on tables
-from business documents. One difference from the previous evaluation is
-the representation of the dataset. Unlike Pubtabnet where tables are
-already cropped from their surronding document, the images of Fintabnet
-are whole document pages with embedded tables. In order to get tables
-only we can change the build mode, which is a specific implementation
-for some datasets. In this case we set ``build_mode = "table"``. This
-will under the hood crop the table from the image and adjust the
-bounding boxes to the sub image, so that the datasets dataflow will look
-like the Pubtabnet dataset. For those looking closer at the
-configuration, they will also observe a second parameter
-``load_image=True``. This setting is particularly necessary for this
-dataset as otherwise an AssertionError will be raised, when using this
-``build_mode``.
-
-We only need to re-instantiate the evaluator.
-
-Apart from this, the following steps are identical to those of the
-previous evaluation.
+We start evaluation using the ``run`` method. ``max_datapoints`` limits
+the number of samples to at most 100 samples. The ``val`` split is used
+by default.
 
 .. code:: ipython3
 
-    fintabnet = get_dataset("fintabnet")
+    evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
+    output= evaluator.run(max_datapoints=100)
+
+``Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.970  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.948  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.817  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.860  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.840  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.538  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.864  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.874  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.852  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.891  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.864``
+
+We are now going to evaluate the cell predictor on tables from business
+documents. One difference from the example before is the representation
+of the dataset. Unlike Pubtabnet where tables have been cropped from
+their surronding document, the images of Fintabnet are whole document
+pages. In order to get tables only, we pass a special argument to the
+``build`` method, that only affects changes for this datase:
+``build_mode = "table"``. Under the hood this will crop tables from the
+image and also adjust cell bounding boxes, so that the datapoints will
+look like datapoints from Pubtabnet.
+
+We neither change pipeline component not metric.
+
+.. code:: ipython3
+
+    fintabnet = dd.get_dataset("fintabnet")
     fintabnet.dataflow.categories.filter_categories(categories="CELL")
     
-    evaluator = Evaluator(fintabnet,layout_service, coco_metric)
+    evaluator = dd.Evaluator(fintabnet,layout_service, coco_metric)
     output= evaluator.run(max_datapoints=100,build_mode="table",load_image=True, use_multi_proc=False)
+
+``Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.911  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.709  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.559  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.570  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.700  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.590  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.657  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.657  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.638  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.636  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.774``
 
 What stands out ?
 
-The mAP for a low IoU drops somewhat. While the mAP for higher IoUs
-drops only slightly on the Pubtabnet dataset, it drops much more on the
-Fintabnet dataset. This means that the cell detector has much more
-problems in its precision. The reason for this is not so much that it is
-fundamentally unable to detect the cells (otherwise the 0.5 IoU would be
-significantly worse), but that it is more difficult for the predictor to
-determine the exact size of the cell.
+The mAP for a low IoU drops a bit. While the mAP for higher IoUs drops
+only slightly compared to Pubtabnet, it drops much more for higher IoUs.
+This means that the cell detector has much more problems in its
+precision. It recognizes the almost the same amount of cells, however it
+struggles to determine bounding boxes that precisely cover the area of a
+cell.
 
 How to continue
----------------
+===============
 
 In the last **Fine_Tune** notebook tutorial, we will discuss training a
 Tensorpack Predictor on a dataset.

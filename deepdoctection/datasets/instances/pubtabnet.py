@@ -37,7 +37,7 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.logger import log_once, logger
-from ...utils.settings import names
+from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
@@ -69,25 +69,35 @@ _URL = (
     "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = names.DS.TYPE.OBJ
+_TYPE = DatasetType.object_detection
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
-_INIT_CATEGORIES = [names.C.CELL, names.C.ITEM, names.C.TAB, names.C.WORD]
-_SUB_CATEGORIES: Dict[str, Dict[str, List[str]]]
+_INIT_CATEGORIES = [LayoutType.cell, TableType.item, LayoutType.table, LayoutType.word]
+_SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    names.C.ITEM: {"row_col": [names.C.ROW, names.C.COL]},
-    names.C.CELL: {
-        names.C.HEAD: [names.C.HEAD, names.C.BODY],
-        names.C.RN: [],
-        names.C.CN: [],
-        names.C.RS: [],
-        names.C.CS: [],
+    TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
+    LayoutType.cell: {
+        CellType.header: [CellType.header, CellType.body],
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
     },
-    names.C.HEAD: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
-    names.C.BODY: {names.C.RN: [], names.C.CN: [], names.C.RS: [], names.C.CS: []},
-    names.C.TAB: {names.C.HTAB: [names.C.HTAB]},
-    names.C.WORD: {names.C.CHARS: [names.C.CHARS]},
+    CellType.header: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
+    CellType.body: {
+        CellType.row_number: [],
+        CellType.column_number: [],
+        CellType.row_span: [],
+        CellType.column_span: [],
+    },
+    LayoutType.table: {TableType.html: [TableType.html]},
+    LayoutType.word: {WordType.characters: [WordType.characters]},
 }
 
 

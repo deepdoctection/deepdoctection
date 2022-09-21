@@ -20,7 +20,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 """
 
 
-from typing import Any, Callable, Dict, Iterator, Optional, Union
+from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
 from torch.utils.data import IterableDataset
 
@@ -30,7 +30,7 @@ from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.logger import log_once, logger
-from ..utils.settings import names
+from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
@@ -69,17 +69,17 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info("Yielding dataflow into memory and create torch dataset")
-            categories: Dict[str, str] = {}
+            categories: Mapping[str, ObjectTypes] = {}
             _data_statistics = True
-            if self.dataset.dataset_info.type in (names.DS.TYPE.OBJ, names.DS.TYPE.SEQ):
-                categories = self.dataset.dataflow.categories.get_categories(as_dict=True, filtered=True)
-            elif self.dataset.dataset_info.type in (names.DS.TYPE.TOK,):
+            if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
+                categories = self.dataset.dataflow.categories.get_categories(filtered=True)
+            elif self.dataset.dataset_info.type in (DatasetType.token_classification,):
                 categories = self.dataset.dataflow.categories.get_sub_categories(
-                    categories=names.C.WORD,
-                    sub_categories={names.C.WORD: [names.NER.TOK]},
+                    categories=LayoutType.word,
+                    sub_categories={LayoutType.word: [WordType.token_tag]},
                     keys=False,
                     values_as_dict=True,
-                )[names.C.WORD][names.NER.TOK]
+                )[LayoutType.word][WordType.token_tag]
             else:
                 logger.info(
                     "dataset is of type %s. Cannot generate statistics for this type of dataset",
@@ -108,16 +108,16 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                             "images when needed and reduce memory costs!!!",
                             "warn",
                         )
-                    if self.dataset.dataset_info.type == names.DS.TYPE.OBJ:
+                    if self.dataset.dataset_info.type == DatasetType.object_detection:
                         anns = dp.get_annotation()
                         cat_ids = [int(ann.category_id) for ann in anns]
 
-                    elif self.dataset.dataset_info.type == names.DS.TYPE.SEQ:
-                        cat_ids = dp.summary.get_sub_category(names.C.DOC).category_id
+                    elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
+                        cat_ids = dp.summary.get_sub_category(PageType.document_type).category_id
 
-                    elif self.dataset.dataset_info.type == names.DS.TYPE.TOK:
+                    elif self.dataset.dataset_info.type == DatasetType.token_classification:
                         anns = dp.get_annotation()
-                        cat_ids = [ann.get_sub_category(names.NER.TOK).category_id for ann in anns]
+                        cat_ids = [ann.get_sub_category(WordType.token_tag).category_id for ann in anns]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)

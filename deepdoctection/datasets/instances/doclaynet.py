@@ -27,7 +27,7 @@ Module for DocLayNet dataset. Place the dataset as follows
 """
 
 import os
-from typing import Mapping, Union
+from typing import Mapping, Sequence, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
 from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
@@ -37,7 +37,7 @@ from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.detection_types import JsonDict
 from ...utils.fs import load_image_from_file
-from ...utils.settings import names
+from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -63,36 +63,36 @@ _DESCRIPTION = (
 _LICENSE = "CDLA-Permissive"
 _URL = "https://codait-cos-dax.s3.us.cloud-object-storage.appdomain.cloud/dax-doclaynet/1.0.0/DocLayNet_core.zip"
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = names.DS.TYPE.OBJ
+_TYPE = DatasetType.object_detection
 
 _LOCATION = "DocLayNet_core"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "COCO/train.json", "val": "COCO/val.json", "test": "COCO/test.json"}
 _INIT_CATEGORIES = [
-    names.C.CAP,
-    names.C.FOOT,
-    names.C.FORMULA,
-    names.C.LIST,
-    names.C.PFOOT,
-    names.C.PHEAD,
-    names.C.FIG,
-    names.C.SECH,
-    names.C.TAB,
-    names.C.TEXT,
-    names.C.TITLE,
+    LayoutType.caption,
+    LayoutType.footnote,
+    LayoutType.formula,
+    LayoutType.list,
+    LayoutType.page_footer,
+    LayoutType.page_header,
+    LayoutType.figure,
+    LayoutType.section_header,
+    LayoutType.table,
+    LayoutType.text,
+    LayoutType.title,
 ]
-_SUB_CATEGORIES = {
-    names.C.CAP: {"publaynet": [names.C.TEXT]},
-    names.C.FOOT: {"publaynet": [names.C.TEXT]},
-    names.C.FORMULA: {"publaynet": [names.C.TEXT]},
-    names.C.LIST: {"publaynet": [names.C.LIST]},
-    names.C.PFOOT: {"publaynet": [names.C.TEXT]},
-    names.C.PHEAD: {"publaynet": [names.C.TITLE]},
-    names.C.FIG: {"publaynet": [names.C.FIG]},
-    names.C.SECH: {"publaynet": [names.C.TITLE]},
-    names.C.TAB: {"publaynet": [names.C.TAB]},
-    names.C.TEXT: {"publaynet": [names.C.TEXT]},
-    names.C.TITLE: {"publaynet": [names.C.TITLE]},
+_SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
+    LayoutType.caption: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.footnote: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.formula: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.list: {DatasetType.publaynet: [LayoutType.list]},
+    LayoutType.page_footer: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.page_header: {DatasetType.publaynet: [LayoutType.title]},
+    LayoutType.figure: {DatasetType.publaynet: [LayoutType.figure]},
+    LayoutType.section_header: {DatasetType.publaynet: [LayoutType.title]},
+    LayoutType.table: {DatasetType.publaynet: [LayoutType.table]},
+    LayoutType.text: {DatasetType.publaynet: [LayoutType.text]},
+    LayoutType.title: {DatasetType.publaynet: [LayoutType.title]},
 }
 
 
@@ -153,7 +153,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 coarse_mapping={1: 10, 2: 10, 3: 10, 4: 4, 5: 10, 6: 11, 7: 7, 8: 11, 9: 9, 10: 10, 11: 11},
-                coarse_sub_cat_name="publaynet",
+                coarse_sub_cat_name=DatasetType.publaynet,
             ),
         )
 
@@ -177,8 +177,15 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
 
 
 _NAME_SEQ = "doclaynet-seq"
-_TYPE_SEQ = names.DS.TYPE.SEQ
-_INIT_CATEGORIES_SEQ = [names.C.FR, names.C.SP, names.C.LR, names.C.GT, names.C.MAN, names.C.PAT]
+_TYPE_SEQ = DatasetType.sequence_classification
+_INIT_CATEGORIES_SEQ = [
+    DocumentType.financial_report,
+    DocumentType.scientific_publication,
+    DocumentType.laws_and_regulations,
+    DocumentType.government_tenders,
+    DocumentType.manuals,
+    DocumentType.patents,
+]
 
 
 @dataset_registry.register("doclaynet-seq")
@@ -234,17 +241,18 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
             image.image = load_image_from_file(image.location)
             summary = SummaryAnnotation()
             label_to_category_name = {
-                "financial_reports": names.C.FR,
-                "scientific_articles": names.C.SP,
-                "laws_and_regulations": names.C.LR,
-                "government_tenders": names.C.GT,
-                "manuals": names.C.MAN,
-                "patents": names.C.PAT,
+                "financial_reports": DocumentType.financial_report,
+                "scientific_articles": DocumentType.scientific_publication,
+                "laws_and_regulations": DocumentType.laws_and_regulations,
+                "government_tenders": DocumentType.government_tenders,
+                "manuals": DocumentType.manuals,
+                "patents": DocumentType.patents,
             }
             categories_dict = self.categories.get_categories(init=True, name_as_key=True)
             category_name = label_to_category_name[dp["doc_category"]]
             summary.dump_sub_category(
-                names.C.DOC, CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name])
+                PageType.document_type,
+                CategoryAnnotation(category_name=category_name, category_id=categories_dict[category_name]),
             )
             image.summary = summary
             if not load_img:
@@ -257,7 +265,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({names.C.DOC: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageType.document_type: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
         return df

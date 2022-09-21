@@ -32,7 +32,15 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import names
+from ..utils.settings import (
+    BioTag,
+    DatasetType,
+    LayoutType,
+    ObjectTypes,
+    PageType,
+    WordType,
+    token_class_tag_to_token_class_with_tag,
+)
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
@@ -74,7 +82,7 @@ _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 def image_to_layoutlm(
     dp: Image,
     tokenizer: "PreTrainedTokenizer",
-    categories_dict_name_as_key: Optional[Dict[str, str]] = None,
+    categories_dict_name_as_key: Optional[Dict[ObjectTypes, str]] = None,
     input_width: int = 1000,
     input_height: int = 1000,
 ) -> LayoutLMFeatures:
@@ -94,14 +102,14 @@ def image_to_layoutlm(
 
     output: JsonDict = {}
 
-    anns = dp.get_annotation_iter(category_names=names.C.WORD)
+    anns = dp.get_annotation_iter(category_names=LayoutType.word)
     all_tokens = []
     all_boxes = []
     all_ann_ids = []
     words: List[str] = []
     all_input_ids = []
     for ann in anns:
-        char_cat = ann.get_sub_category(names.C.CHARS)
+        char_cat = ann.get_sub_category(WordType.characters)
         assert isinstance(char_cat, ContainerAnnotation)
         word = char_cat.value
         assert isinstance(word, str)
@@ -124,21 +132,23 @@ def image_to_layoutlm(
             all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
 
         if (
-            names.C.SE in ann.sub_categories
-            and names.NER.TAG in ann.sub_categories
+            WordType.token_class in ann.sub_categories
+            and WordType.tag in ann.sub_categories
             and categories_dict_name_as_key is not None
         ):
-            semantic_label = ann.get_sub_category(names.C.SE).category_name
-            bio_tag = ann.get_sub_category(names.NER.TAG).category_name
-            if bio_tag == "O":
-                category_name = "O"
+            semantic_label = ann.get_sub_category(WordType.token_class).category_name
+            bio_tag = ann.get_sub_category(WordType.tag).category_name
+            category_name: Union[ObjectTypes, BioTag]
+            if bio_tag is BioTag.outside:
+                category_name = BioTag.outside
             else:
-                category_name = bio_tag + "-" + semantic_label
+                # category_name = bio_tag + "-" + semantic_label
+                category_name = token_class_tag_to_token_class_with_tag(semantic_label, bio_tag)  # type: ignore
             output["label"] = int(categories_dict_name_as_key[category_name])
 
         if dp.summary is not None and categories_dict_name_as_key is not None:
-            category_name = dp.summary.get_sub_category(names.C.DOC).category_name
-            output["label"] = int(categories_dict_name_as_key[category_name])
+            summary_cat_name = dp.summary.get_sub_category(PageType.document_type).category_name
+            output["label"] = int(categories_dict_name_as_key[summary_cat_name])  # type: ignore
 
     all_boxes = [_CLS_BOX] + all_boxes + [_SEP_BOX]
     all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
@@ -212,13 +222,13 @@ def image_to_raw_layoutlm_features(
     all_ann_ids = []
     all_words = []
     all_boxes = []
-    all_labels = []
+    all_labels: List[int] = []
 
-    anns = dp.get_annotation_iter(category_names=names.C.WORD)
+    anns = dp.get_annotation_iter(category_names=LayoutType.word)
 
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
-        char_cat = ann.get_sub_category(names.C.CHARS)
+        char_cat = ann.get_sub_category(WordType.characters)
         assert isinstance(char_cat, ContainerAnnotation)
         word = char_cat.value
         assert isinstance(word, str)
@@ -234,14 +244,18 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(box.to_list(mode="xyxy"))
 
         if (
-            names.NER.TOK in ann.sub_categories
+            WordType.token_tag in ann.sub_categories
             and categories_dict_name_as_key is not None
-            and dataset_type == names.DS.TYPE.TOK
+            and dataset_type == DatasetType.token_classification
         ):
-            all_labels.append(int(ann.get_sub_category(names.NER.TOK).category_id) - 1)
+            all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
 
-    if dp.summary is not None and categories_dict_name_as_key is not None and dataset_type == names.DS.TYPE.SEQ:
-        category_name = dp.summary.get_sub_category(names.C.DOC).category_name
+    if (
+        dp.summary is not None
+        and categories_dict_name_as_key is not None
+        and dataset_type == DatasetType.sequence_classification
+    ):
+        category_name = dp.summary.get_sub_category(PageType.document_type).category_name
         all_labels.append(int(categories_dict_name_as_key[category_name]) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
@@ -332,10 +346,12 @@ def raw_features_to_layoutlm_features(
         raw_features = [raw_features]
 
     _has_token_labels = (
-        raw_features[0]["dataset_type"] == names.DS.TYPE.TOK and raw_features[0].get("labels") is not None
+        raw_features[0]["dataset_type"] == DatasetType.token_classification
+        and raw_features[0].get("labels") is not None
     )
     _has_sequence_labels = (
-        raw_features[0]["dataset_type"] == names.DS.TYPE.SEQ and raw_features[0].get("labels") is not None
+        raw_features[0]["dataset_type"] == DatasetType.sequence_classification
+        and raw_features[0].get("labels") is not None
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
 

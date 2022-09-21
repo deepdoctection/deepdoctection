@@ -28,6 +28,7 @@ from pytest import mark, raises
 from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
+from deepdoctection.utils.settings import get_type
 
 from ..test_utils import anns_to_ids, collect_datapoint_from_dataflow, get_test_path
 from .conftest import TestPdfPage, WhiteImage
@@ -164,15 +165,15 @@ class TestImage:
         sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
 
         # Act
-        cat.dump_sub_category("BAK", sub_cat_1, test_image.image_id)
+        cat.dump_sub_category(get_type("BAK"), sub_cat_1, test_image.image_id)
         test_image.dump(cat)
 
         # Assert
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
         assert (
-            cat.annotation_id == "85444154-9593-345a-8c1d-b6ec0020d63c"
+            cat.annotation_id == "948709a4-8be9-3745-8c57-de53ea0e2edd"
         )  # get_uuid("FOOBounding Box ulx: 1.0 uly: 1.0 lrx: 2.0 lry: 3.090c05f37-a017-39cc-a178-b84f9d14ff48")
-        assert sub_cat_1.annotation_id == "e6b7d9a9-c0fe-3e55-9a9a-7dfab2a44e41"
+        assert sub_cat_1.annotation_id == "963e0b93-c520-325e-bd8c-03889cb98754"
 
     @staticmethod
     def test_dump_same_annotation_not_possible(image: WhiteImage) -> None:

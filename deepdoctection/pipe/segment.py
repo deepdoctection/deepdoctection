@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import names
+from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -133,7 +133,7 @@ def stretch_item_per_table(
     :return: Image
     """
 
-    item_ann_ids = table.get_relationship(names.C.CHILD)
+    item_ann_ids = table.get_relationship(Relationships.child)
 
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
     assert isinstance(table.image, Image)
@@ -173,21 +173,21 @@ def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_nam
     :return: Image
     """
 
-    item_ann_ids = table.get_relationship(names.C.CHILD)
+    item_ann_ids = table.get_relationship(Relationships.child)
     items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
-    items.sort(key=lambda x: x.bounding_box.cx if item_name == names.C.COL else x.bounding_box.cy)  # type: ignore
+    items.sort(key=lambda x: x.bounding_box.cx if item_name == LayoutType.column else x.bounding_box.cy)  # type: ignore
 
     assert isinstance(table.image, Image)
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
-    tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == names.C.ROW else table_embedding_box.ulx + 1.0
+    tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
     for item in items:
         with MappingContextManager(dp_name=dp.file_name):
             assert isinstance(item, ImageAnnotation) and isinstance(item.image, Image)
             item_embedding_box = item.image.get_embedding(dp.image_id)
             new_embedding_box = BoundingBox(
-                ulx=item_embedding_box.ulx if item_name == names.C.ROW else tmp_item_xy,
-                uly=tmp_item_xy if item_name == names.C.ROW else item_embedding_box.uly,
+                ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
+                uly=tmp_item_xy if item_name == LayoutType.row else item_embedding_box.uly,
                 lrx=item_embedding_box.lrx,
                 lry=item_embedding_box.lry,
                 absolute_coords=True,
@@ -195,14 +195,14 @@ def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_nam
 
             if item == items[-1]:
                 new_embedding_box = BoundingBox(
-                    ulx=item_embedding_box.ulx if item_name == names.C.ROW else tmp_item_xy,
-                    uly=tmp_item_xy if item_name == names.C.ROW else item_embedding_box.uly,
-                    lrx=item_embedding_box.lrx if item_name == names.C.ROW else table_embedding_box.lrx - 1.0,
-                    lry=table_embedding_box.lry - 1.0 if item_name == names.C.ROW else item_embedding_box.lry,
+                    ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
+                    uly=tmp_item_xy if item_name == LayoutType.row else item_embedding_box.uly,
+                    lrx=item_embedding_box.lrx if item_name == LayoutType.row else table_embedding_box.lrx - 1.0,
+                    lry=table_embedding_box.lry - 1.0 if item_name == LayoutType.row else item_embedding_box.lry,
                     absolute_coords=True,
                 )
 
-            tmp_item_xy = item_embedding_box.lry if item_name == names.C.ROW else item_embedding_box.lrx
+            tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.row else item_embedding_box.lrx
             item.image.set_embedding(dp.image_id, new_embedding_box)
 
     return dp
@@ -254,8 +254,8 @@ def _default_segment_table(cells: List[ImageAnnotation]) -> List[SegmentationRes
 def segment_table(
     dp: Image,
     table: ImageAnnotation,
-    item_names: Union[str, List[str]],
-    cell_names: Union[str, List[str]],
+    item_names: Union[ObjectTypes, Sequence[ObjectTypes]],
+    cell_names: Union[ObjectTypes, Sequence[ObjectTypes]],
     segment_rule: str,
     threshold_rows: float,
     threshold_cols: float,
@@ -279,7 +279,7 @@ def segment_table(
     :return: A list of len(number of cells) of SegmentationResult.
     """
 
-    child_ann_ids = table.get_relationship(names.C.CHILD)
+    child_ann_ids = table.get_relationship(Relationships.child)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
         item_names[0],
@@ -314,7 +314,7 @@ def segment_table(
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
             rs = np.count_nonzero(cell_index_rows == idx)
             if len(rows_of_cell):
-                row_number = min([row.get_sub_category(names.C.RN).category_id for row in rows_of_cell])
+                row_number = min([row.get_sub_category(CellType.row_number).category_id for row in rows_of_cell])
             else:
                 row_number = 0
 
@@ -322,7 +322,7 @@ def segment_table(
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = np.count_nonzero(cell_index_cols == idx)
             if len(cols_of_cell):
-                col_number = min([col.get_sub_category(names.C.CN).category_id for col in cols_of_cell])
+                col_number = min([col.get_sub_category(CellType.column_number).category_id for col in cols_of_cell])
             else:
                 col_number = 0
 
@@ -395,10 +395,10 @@ class TableSegmentationService(PipelineComponent):
         self.tile_table = tile_table_with_items
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
-        self._table_name = names.C.TAB
-        self._cell_names = [names.C.HEAD, names.C.BODY, names.C.CELL]
-        self._item_names = [names.C.ROW, names.C.COL]  # row names must be before column name
-        self._sub_item_names = [names.C.RN, names.C.CN]
+        self._table_name = LayoutType.table
+        self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
+        self._item_names = [LayoutType.row, LayoutType.column]  # row names must be before column name
+        self._sub_item_names = [CellType.row_number, CellType.column_number]
         super().__init__(None)
 
     def serve(self, dp: Image) -> None:
@@ -412,7 +412,7 @@ class TableSegmentationService(PipelineComponent):
         )
         table_anns = dp.get_annotation(category_names=self._table_name)
         for table in table_anns:
-            item_ann_ids = table.get_relationship(names.C.CHILD)
+            item_ann_ids = table.get_relationship(Relationships.child)
             for item_sub_item_name in zip(self._item_names, self._sub_item_names):  # one pass for rows and one for cols
                 item_name, sub_item_name = item_sub_item_name[0], item_sub_item_name[1]
                 if self.tile_table:
@@ -427,7 +427,7 @@ class TableSegmentationService(PipelineComponent):
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
                 items.sort(
                     key=lambda x: x.bounding_box.cx  # type: ignore
-                    if item_name == names.C.COL  # pylint: disable=W0640
+                    if item_name == LayoutType.column  # pylint: disable=W0640
                     else x.bounding_box.cy  # type: ignore
                 )
                 for item_number, item in enumerate(items, 1):
@@ -445,16 +445,16 @@ class TableSegmentationService(PipelineComponent):
             )
             for segment_result in raw_table_segments:
                 self.dp_manager.set_category_annotation(
-                    names.C.RN, segment_result.row_num, names.C.RN, segment_result.annotation_id
+                    CellType.row_number, segment_result.row_num, CellType.row_number, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    names.C.CN, segment_result.col_num, names.C.CN, segment_result.annotation_id
+                    CellType.column_number, segment_result.col_num, CellType.column_number, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    names.C.RS, segment_result.rs, names.C.RS, segment_result.annotation_id
+                    CellType.row_span, segment_result.rs, CellType.row_span, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    names.C.CS, segment_result.cs, names.C.CS, segment_result.annotation_id
+                    CellType.column_span, segment_result.cs, CellType.column_span, segment_result.annotation_id
                 )
 
     def clone(self) -> PipelineComponent:
@@ -474,9 +474,14 @@ class TableSegmentationService(PipelineComponent):
                 (
                     "sub_categories",
                     {
-                        names.C.CELL: {names.C.RN, names.C.CN, names.C.RS, names.C.CS},
-                        names.C.ROW: {names.C.RN},
-                        names.C.COL: {names.C.CN},
+                        LayoutType.cell: {
+                            CellType.row_number,
+                            CellType.column_number,
+                            CellType.row_span,
+                            CellType.column_span,
+                        },
+                        LayoutType.row: {CellType.row_number},
+                        LayoutType.column: {CellType.column_number},
                     },
                 ),
                 ("relationships", {}),

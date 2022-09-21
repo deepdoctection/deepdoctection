@@ -27,6 +27,7 @@ from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
+from ..utils.settings import get_type
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 
@@ -84,7 +85,7 @@ def pascal_voc_dict_to_image(
             assert isinstance(label, str)
 
             annotation = ImageAnnotation(
-                category_name=label,
+                category_name=get_type(label),
                 bounding_box=bbox,
                 category_id=categories_name_as_key[label],
                 score=maybe_get_fake_score(fake_score),

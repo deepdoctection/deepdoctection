@@ -31,10 +31,11 @@ from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.datasets.base import DatasetBase
 from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder
 from deepdoctection.datasets.info import DatasetCategories, DatasetInfo
+from deepdoctection.utils.settings import LayoutType
 
 _NAME = "test_set"
 _LOCATION = "/path/to/dir"
-_INIT_CATEGORIES = ["TABLE", "TEXT"]
+_INIT_CATEGORIES = [LayoutType.table, LayoutType.text]
 _DESCRIPTION = "test description"
 _URL = "test url"
 _LICENSE = "test license"

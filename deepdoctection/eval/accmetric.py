@@ -35,6 +35,7 @@ from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
 from ..utils.logger import logger
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -209,9 +210,9 @@ class ClassificationMetric(MetricBase):
     """
 
     mapper = image_to_cat_id
-    _cats: Optional[Sequence[str]] = None
-    _sub_cats: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None
-    _summary_sub_cats: Optional[Sequence[str]] = None
+    _cats: Optional[Sequence[ObjectTypes]] = None
+    _sub_cats: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None
+    _summary_sub_cats: Optional[Sequence[ObjectTypes]] = None
 
     @classmethod
     def dump(
@@ -260,7 +261,8 @@ class ClassificationMetric(MetricBase):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             res = cls.metric(labels_gt[key], labels_pr[key])
-            results.append({"key": key, "val": res, "num_samples": len(labels_gt[key])})
+            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
+                            "val": res, "num_samples": len(labels_gt[key])})
 
         cls._results = results
         return results
@@ -268,9 +270,11 @@ class ClassificationMetric(MetricBase):
     @classmethod
     def set_categories(
         cls,
-        category_names: Optional[Union[str, Sequence[str]]] = None,
-        sub_category_names: Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]] = None,
-        summary_sub_category_names: Optional[Union[str, Sequence[str]]] = None,
+        category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        sub_category_names: Optional[
+            Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]
+        ] = None,
+        summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     ) -> None:
         """
         Set categories that are supposed to be evaluated. If sub_categories have to be considered then they need to be
@@ -292,11 +296,26 @@ class ClassificationMetric(MetricBase):
         """
 
         if category_names is not None:
-            cls._cats = [category_names] if isinstance(category_names, str) else category_names
+            cls._cats = (
+                [get_type(category_names)]
+                if isinstance(category_names, str)
+                else [get_type(category) for category in category_names]
+            )
         if sub_category_names is not None:
-            cls._sub_cats = sub_category_names
+            _sub_cats = {}
+            if isinstance(list(sub_category_names.values())[0], list):
+                for key, _ in sub_category_names.items():
+                    _sub_cats[get_type(key)] = [get_type(item) for item in sub_category_names[key]]
+            else:
+                for key, _ in sub_category_names.items():
+                    _sub_cats[get_type(key)] = get_type(sub_category_names[key])  # type: ignore
+            cls._sub_cats = _sub_cats
         if summary_sub_category_names is not None:
-            cls._summary_sub_cats = summary_sub_category_names
+            cls._summary_sub_cats = (
+                [get_type(summary_sub_category_names)]
+                if isinstance(summary_sub_category_names, str)
+                else [get_type(category) for category in summary_sub_category_names]
+            )
 
     @classmethod
     def _category_sanity_checks(cls, categories: DatasetCategories) -> None:
@@ -325,12 +344,14 @@ class ClassificationMetric(MetricBase):
         return []
 
     @property
-    def sub_cats(self) -> Optional[Union[Mapping[str, str], Mapping[str, Sequence[str]]]]:
+    def sub_cats(
+        self,
+    ) -> Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]]:
         """sub cats"""
         return self._sub_cats
 
     @property
-    def summary_sub_cats(self) -> Optional[Sequence[str]]:
+    def summary_sub_cats(self) -> Optional[Sequence[ObjectTypes]]:
         """summary sub categories"""
         return self._summary_sub_cats
 
@@ -380,7 +401,7 @@ class ConfusionMetric(ClassificationMetric):
                 for col_number, val in enumerate(row, 1):
                     results.append(
                         {
-                            "key": key,
+                            "key": key.value if isinstance(key, ObjectTypes) else key,
                             "category_id_gt": row_number,
                             "category_id_pr": col_number,
                             "val": float(val),
@@ -426,7 +447,10 @@ class PrecisionMetric(ClassificationMetric):
             number_labels: TypeCounter[int] = Counter(labels_gt[key])
             for label_id, val in enumerate(score, 1):
                 results.append(
-                    {"key": key, "category_id": label_id, "val": float(val), "num_samples": number_labels[label_id]}
+                    {"key": key.value if isinstance(key, ObjectTypes) else key,
+                     "category_id": label_id,
+                     "val": float(val),
+                     "num_samples": number_labels[label_id]}
                 )
         cls._results = results
         return results
@@ -471,7 +495,9 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            results.append({"key": key, "val": float(score), "num_samples": len(labels_gt[key])})
+            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
+                            "val": float(score),
+                            "num_samples": len(labels_gt[key])})
         cls._results = results
         return results
 

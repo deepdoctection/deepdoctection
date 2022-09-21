@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, Requirement
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 
 class PredictorBase(ABC):
@@ -91,8 +92,8 @@ class DetectionResult:
     score: Optional[float] = None
     mask: Optional[List[float]] = None
     absolute_coords: bool = True
-    class_name: str = ""
-    text: Optional[str] = None
+    class_name: ObjectTypes = DefaultType.default_type
+    text: Optional[Union[str, ObjectTypes]] = None
     block: Optional[str] = None
     line: Optional[str] = None
     uuid: Optional[str] = None
@@ -112,7 +113,15 @@ class ObjectDetector(PredictorBase):
     and implement the :meth:`predict`.
     """
 
-    categories: Mapping[str, str]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -128,7 +137,7 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         """
         Abstract method possible_categories. Must implement a method that returns a list of possible detectable
         categories
@@ -142,9 +151,17 @@ class PdfMiner(PredictorBase):
     Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
     """
 
-    categories: Mapping[str, str]
+    _categories: Mapping[str, ObjectTypes]
     _pdf_bytes: Optional[bytes] = None
     _page: Any = None
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
@@ -170,7 +187,7 @@ class PdfMiner(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         """
         Returns a list of possible detectable categories
         """
@@ -225,9 +242,9 @@ class TokenClassResult:
     token_id: int
     token: str
     class_id: int
-    class_name: str = ""
-    semantic_name: str = ""
-    bio_tag: str = ""
+    class_name: ObjectTypes = DefaultType.default_type
+    semantic_name: ObjectTypes = DefaultType.default_type
+    bio_tag: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None
 
 
@@ -242,7 +259,7 @@ class SequenceClassResult:
     """
 
     class_id: int
-    class_name: str = ""
+    class_name: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None
 
 
@@ -252,7 +269,15 @@ class LMTokenClassifier(PredictorBase):
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
     """
 
-    categories: Mapping[str, str]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
@@ -261,7 +286,7 @@ class LMTokenClassifier(PredictorBase):
         """
         raise NotImplementedError
 
-    def possible_tokens(self) -> List[str]:
+    def possible_tokens(self) -> List[ObjectTypes]:
         """
         Returns a list of possible detectable tokens
         """
@@ -281,7 +306,15 @@ class LMSequenceClassifier(PredictorBase):
     Deepdoctection predictors, wrap them into a class derived from this class.
     """
 
-    categories: Mapping[str, str]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
@@ -290,7 +323,7 @@ class LMSequenceClassifier(PredictorBase):
         """
         raise NotImplementedError
 
-    def possible_categories(self) -> List[str]:
+    def possible_categories(self) -> List[ObjectTypes]:
         """
         Returns a list of possible detectable categories for a sequence
         """
@@ -310,7 +343,15 @@ class LanguageDetector(PredictorBase):
     ISO-639 code for the detected language.
     """
 
-    categories: Mapping[str, str]
+    _categories: Mapping[str, ObjectTypes]
+
+    @property
+    def categories(self) -> Mapping[str, ObjectTypes]:
+        return self._categories
+
+    @categories.setter
+    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:
@@ -319,7 +360,7 @@ class LanguageDetector(PredictorBase):
         """
         raise NotImplementedError
 
-    def possible_languages(self) -> List[str]:
+    def possible_languages(self) -> List[ObjectTypes]:
         """
         Returns a list of possible detectable languages
         """

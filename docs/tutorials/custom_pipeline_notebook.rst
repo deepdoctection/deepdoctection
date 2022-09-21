@@ -14,7 +14,7 @@ documents. The documents essentially consist of text blocks and titles.
 There are no tables. We want to use the OCR payment service from AWS
 Textract. We also want to have a reading order for text blocks, as the
 documents contain multiple columns. The analysis results are to be
-returned in a JSON structure that contains all layout informations as
+returned in a JSON structure that contains all layout information as
 well as the full text and the original image.**
 
 Processing steps
@@ -44,6 +44,8 @@ Important! Textract is an AWS paid service and you will need an AWS
 account to call the client. Alternatively, you can also instantiate a
 open sourced OCR service like Tesseract. Just disable
 ``TextractOcrDetector()`` and uncomment the following two lines!
+Moreover, to allow the TextractOcrDetector to work you will need the
+package extension ‘source-all-tf’.
 
 .. code:: ipython3
 
@@ -76,8 +78,10 @@ and outputting the extracts.
 
     path = os.path.join(get_package_path(),"notebooks/pics/samples/sample_3")
 
-.. figure:: ./pics/sample_3.png
+.. figure:: ./pics/samples/sample_3/sample_3.png
    :alt: title
+
+   title
 
 We build the pipeline by calling the analyze method and want the results
 returned as an image. An image is the core object where everything
@@ -89,6 +93,7 @@ type requires additional layout detections which we will adress later.
 .. code:: ipython3
 
     df = pipeline.analyze(path=path, output="image")
+    df.reset_state()
     doc = next(iter(df))
 
 It does not make much sense to dig deeper into the image structure. It
@@ -105,8 +110,8 @@ stored with some uuid, bounding box and value (the recorded text).
 
 .. parsed-literal::
 
-    (551,
-     ImageAnnotation(active=True, annotation_id='a913d880-af59-302c-a09c-d6cbba4a4ce6', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='767ad536-9d33-35c5-b9de-b4a7169beebd', category_name='CHARS', category_id='None', score=0.9716712951660156, sub_categories={}, relationships={}, value='Anleihemärkte')}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
+    (545,
+     ImageAnnotation(active=True, _annotation_id='3be39a8e-880b-3a18-b0d7-80e05beb68f4', category_name=<LayoutType.word>, _category_name=<LayoutType.word>, category_id='1', score=0.9221703338623047, sub_categories={<WordType.characters>: ContainerAnnotation(active=True, _annotation_id='e68e2072-ff7c-3152-ab6b-d8fc6156dc02', category_name=<WordType.characters>, _category_name=<WordType.characters>, category_id='None', score=0.9221703338623047, sub_categories={}, relationships={}, value='Anleihemärkte')}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=134.921634465456, uly=157.1062769368291, lrx=472.318872153759, lry=195.05085966736078, height=37.94458273053169, width=337.397237688303)))
 
 
 
@@ -172,11 +177,11 @@ on which this model was trained.
      'hf_model_name': 'model-800000_inf_only',
      'hf_config_file': ['conf_frcnn_layout.yaml'],
      'urls': None,
-     'categories': {'1': 'TEXT',
-      '2': 'TITLE',
-      '3': 'LIST',
-      '4': 'TABLE',
-      '5': 'FIGURE'}}
+     'categories': {'1': <LayoutType.text>,
+      '2': <LayoutType.title>,
+      '3': <LayoutType.list>,
+      '4': <LayoutType.table>,
+      '5': <LayoutType.figure>}}
 
 
 
@@ -210,24 +215,9 @@ Let’s rebuild a new pipeline and start the process again.
 .. code:: ipython3
 
     df = pipeline.analyze(path=path, output="image")
+    df.reset_state()
     doc = next(iter(df))
     len(doc.annotations), doc.annotations[0]
-
-
-.. parsed-literal::
-
-    [32m[0516 15:42:42 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-
-    [32m[0516 15:42.42 @doctectionpipe.py:92][0m [32mINF[0m processing sample_3.png
-    [32m[0516 15:42.46 @timer.py:48][0m [32mINF[0m TextExtractionService finished, 3.548 sec.
-    [32m[0516 15:42.48 @timer.py:48][0m [32mINF[0m ImageLayoutService finished, 2.4879 sec.
-
-.. parsed-literal::
-
-    (558,
-     ImageAnnotation(active=True, annotation_id='a913d880-af59-302c-a09c-d6cbba4a4ce6', category_name='WORD', category_id='1', score=0.9716712951660156, sub_categories={'CHARS': ContainerAnnotation(active=True, annotation_id='767ad536-9d33-35c5-b9de-b4a7169beebd', category_name='CHARS', category_id='None', score=0.9716712951660156, sub_categories={}, relationships={}, value='Anleihemärkte')}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=137.22318817675114, uly=155.71465119719505, lrx=474.8347396850586, lry=196.48566928505898, height=40.77101808786392, width=337.61155150830746)))
-
-
 
 Add matching and reading order
 ------------------------------
@@ -280,19 +270,8 @@ the output accordingly
 .. code:: ipython3
 
     df = pipeline.analyze(path=path, output="page")
+    df.reset_state()
     page = next(iter(df))
-
-
-.. parsed-literal::
-
-    [32m[0516 15:43:09 @common.py:558][0m [JoinData] Size check failed for the list of dataflow to be joined!
-
-    [32m[0516 15:43.09 @doctectionpipe.py:92][0m [32mINF[0m processing sample_3.png
-    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m TextExtractionService finished, 3.08 sec.
-    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m ImageLayoutService finished, 0.1061 sec.
-    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m MatchingService finished, 0.0093 sec.
-    [32m[0516 15:43.12 @timer.py:48][0m [32mINF[0m TextOrderService finished, 0.0294 sec.
-
 
 We can eventually print the OCRed text in reading order with the
 get_text method.
@@ -306,15 +285,15 @@ get_text method.
 
     
     Anleihemärkte im Geschäftsjahr bis zum 31.12.2018
-    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur den USA und Europa, auch den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder - ohne ein Übereinkommen - ungeordnet vollzogen wird. Im Gegensatz zu den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren. So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
-    Entwicklung der Leitzinsen in den USA und im Euroraum % p.a.
-    Zinswende nach bei Anleiherenditen? Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt - unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% - 2,50% p. a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p. a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
-    Fiskalpolitik des US-Präsidenten Donald Trump in Form von Steuererleichterungen und einer Erhöhung der Staatsausgaben noch befeuert wurde. Vor die- sem Hintergrund verzeichneten die US-Bondmärkte einen spür- baren Renditeanstieg, der mit merklichen Kursermäßigungen einherging. Per saldo stiegen die Renditen zehnjähriger US- Staatsanleihen auf Jahressicht von 2,4% p.a. auf 3,1% p. a.
-    Diese Entwicklung in den USA hatte auf den Euroraum jedoch nur phasenweise und partiell, insgesamt aber kaum einen zinstreibenden Effekt auf Staats- anleihen aus den europäischen Kernmärkten wie beispielsweise Deutschland und Frankreich. gaben zehnjährige deutsche Bundesanleihen im Jahresver- lauf 2018 unter Schwankungen per saldo sogar von 0,42% p.a. auf 0,25% p. a. nach. Vielmehr standen die Anleihemärkte der Euroländer - insbeson- dere ab dem zweiten Quartal 2018 - unter dem Einfluss der politischen und wirtschaftlichen Entwicklung in der Eurozone, vor allem in den Ländern mit hoher Verschuldung und nied- rigem Wirtschaftswachstum. den Monaten Mai und Juni
+    Die internationalen Anleihe- märkte entwickelten sich im Geschäftsjahr 2018 unter- schiedlich und phasenweise sehr volatil. Dabei machte sich bei den Investoren zunehmend Nervosität breit, was in steigen- den Risikoprämien zum Aus- druck kam. Grund hierfür waren Turbulenzen auf der weltpoli- tischen Bühne, die die politi- schen Risiken erhöhten. Dazu zählten unter anderem populis- tische Strömungen nicht nur in den USA und Europa, auch in den Emerging Markets, wie zuletzt in Brasilien und Mexiko, wo Populisten in die Regie- rungen gewählt wurden. Der eskalierende Handelskonflikt zwischen den USA einerseits sowie Europa und China ande- rerseits tat sein übriges. Zudem ging Italien im Rahmen seiner Haushaltspolitik auf Konfronta- tionskurs zur Europäischen Uni- on (EU). Darüber hinaus verun- sicherte weiterhin der drohende Brexit die Marktteilnehmer, insbesondere dahingehend, ob der mögliche Austritt des Ver- einigten Königreiches aus der EU geordnet oder ohne ein Übereinkommen ungeordnet vollzogen wird. Im Gegensatz den politischen Unsicher- heiten standen die bislang eher zuversichtlichen, konventionel- len Wirtschaftsindikatoren So expandierte die Weltwirtschaft kräftig, wenngleich sich deren Wachstum im Laufe der zwei- ten Jahreshälfte 2018 etwas verlangsamte. Die Geldpolitik war historisch gesehen immer noch sehr locker, trotz der welt- weit sehr hohen Verschuldung und der Zinserhöhungen der US-Notenbank.
+    Entwicklung der Leitzinsen in den USA und im Euroraum % p. a.
+    Zinswende nach Rekordtiefs bei Anleiherenditen? Im Berichtszeitraum kam es an den Anleihemärkten - wenn auch uneinheitlich und unter- schiedlich stark ausgeprägt unter Schwankungen zu stei- genden Renditen auf teilweise immer noch sehr niedrigem Niveau, begleitet von nachge- benden Kursen. Dabei konnten sich die Zinsen vor allem in den USA weiter von ihren histori- schen Tiefs lösen. Gleichzeitig wurde die Zentralbankdivergenz zwischen den USA und dem Euroraum immer deutlicher. An- gesichts des Wirtschaftsbooms in den USA hob die US-Noten- bank Fed im Berichtszeitraum den Leitzins in vier Schritten weiter um einen Prozentpunkt auf einen Korridor von 2,25% 2,50% p.a. an. Die Europäische Zentralbank (EZB) hingegen hielt an ihrer Nullzinspolitik fest und die Bank of Japan beließ ihren Leitzins bei -0,10% p.a. Die Fed begründete ihre Zinser- höhungen mit der Wachstums- beschleunigung und der Voll- beschäftigung am Arbeitsmarkt in den USA. Zinserhöhungen ermöglichten der US-Notenbank einer Überhitzung der US-Wirt- schaft vorzubeugen, die durch die prozyklische expansive
+    Fiskalpolitik des US-Präsidenten Donald Trump in Form von Steuererleichterungen und einer Erhöhung der Staatsausgaben noch befeuert wurde. Vor die- sem Hintergrund verzeichneten die US-Bondmärkte einen spür- baren Renditeanstieg, der mit merklichen Kursermäßigungen einherging. Per saldo stiegen die Renditen zehnjähriger US- Staatsanleihen auf Jahressicht von 2,4% p.a. auf 3,1% p.a.
+    Diese Entwicklung in den USA hatte auf den Euroraum jedoch nur phasenweise und partiell, insgesamt aber kaum einen zinstreibenden Effekt auf Staats- anleihen aus den europäischen Kernmärkten wie beispielsweise Deutschland und Frankreich. So gaben zehnjährige deutsche Bundesanleihen im Jahresver- lauf 2018 unter Schwankungen per saldo sogar von 0,42% p.a. auf 0,25% p. a. nach. Vielmehr standen die Anleihemärkte der Euroländer insbeson- dere ab dem zweiten Quartal 2018 unter dem Einfluss der politischen und wirtschaftlichen Entwicklung in der Eurozone, vor allem in den Ländern mit hoher Verschuldung und nied- rigem Wirtschaftswachstum In den Monaten Mai und Juni
 
 
 How to continue
----------------
+===============
 
 In the next step we recommend the tutorial **Datasets_and_Eval**. Here,
 the data model of the package is explained in more detail. It also

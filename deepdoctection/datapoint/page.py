@@ -33,7 +33,7 @@ import numpy as np
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
-from ..utils.settings import names
+from ..utils.settings import CellType, LayoutType, PageType, Relationships, TableType, WordType
 from ..utils.viz import draw_boxes, interactive_imshow
 from .convert import convert_b64_to_np_array, convert_np_array_to_b64
 
@@ -101,16 +101,16 @@ class Word:
         # generating bounding box in terms of full image size and with absolute coords
         bounding_box = _bounding_box_in_abs_coords(annotation, image_id, image_width, image_height)
 
-        if names.C.CHARS in annotation.sub_categories:
-            ann = annotation.get_sub_category(names.C.CHARS)
+        if WordType.characters in annotation.sub_categories:
+            ann = annotation.get_sub_category(WordType.characters)
             if isinstance(ann, ContainerAnnotation):
                 text = str(ann.value)
-        if names.C.RO in annotation.sub_categories:
-            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
-        if names.C.SE in annotation.sub_categories:
-            token = annotation.get_sub_category(names.C.SE).category_name
-        if names.NER.TAG in annotation.sub_categories:
-            tag = annotation.get_sub_category(names.NER.TAG).category_name
+        if Relationships.reading_order in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
+        if WordType.token_class in annotation.sub_categories:
+            token = annotation.get_sub_category(WordType.token_class).category_name
+        if WordType.tag in annotation.sub_categories:
+            tag = annotation.get_sub_category(WordType.tag).category_name
 
         return cls(annotation.annotation_id, bounding_box, text, reading_order, token, tag)
 
@@ -118,7 +118,7 @@ class Word:
 def _word_list(annotation: ImageAnnotation, image: Image, text_container: str) -> List[Word]:
     words = []
     if annotation.category_name != text_container:
-        text_ids = annotation.get_relationship(names.C.CHILD)
+        text_ids = annotation.get_relationship(Relationships.child)
         word_anns = image.get_annotation(annotation_ids=text_ids, category_names=text_container)
     else:
         word_anns = [annotation]
@@ -182,8 +182,8 @@ class Layout:
         # generating bounding box in terms of full image size and with absolute coords
         bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
 
-        if names.C.RO in annotation.sub_categories:
-            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+        if Relationships.reading_order in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
 
         return cls(
             annotation.annotation_id, annotation.category_name, reading_order, annotation.score, bounding_box, words
@@ -208,7 +208,7 @@ class Layout:
 
         return cls(
             uuid=dp.image_id,
-            layout_type=names.C.PAGE,
+            layout_type=LayoutType.page,
             reading_order=0,
             score=None,
             bounding_box=[0, 0, dp.width, dp.height],
@@ -257,17 +257,17 @@ class Cell(Layout):
         # generating bounding box in terms of full image size and with absolute coords
         bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
 
-        if names.C.RO in annotation.sub_categories:
-            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+        if Relationships.reading_order in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
 
-        if names.C.RN in annotation.sub_categories:
-            row_number = int(annotation.get_sub_category(names.C.RN).category_id)
-        if names.C.CN in annotation.sub_categories:
-            col_number = int(annotation.get_sub_category(names.C.CN).category_id)
-        if names.C.RS in annotation.sub_categories:
-            row_span = int(annotation.get_sub_category(names.C.RS).category_id)
-        if names.C.CS in annotation.sub_categories:
-            col_span = int(annotation.get_sub_category(names.C.CS).category_id)
+        if CellType.row_number in annotation.sub_categories:
+            row_number = int(annotation.get_sub_category(CellType.row_number).category_id)
+        if CellType.column_number in annotation.sub_categories:
+            col_number = int(annotation.get_sub_category(CellType.column_number).category_id)
+        if CellType.row_span in annotation.sub_categories:
+            row_span = int(annotation.get_sub_category(CellType.row_span).category_id)
+        if CellType.column_span in annotation.sub_categories:
+            col_span = int(annotation.get_sub_category(CellType.column_span).category_id)
 
         return cls(
             annotation.annotation_id,
@@ -348,19 +348,19 @@ class Table(Layout):
         # generating bounding box in terms of full image size and with absolute coords
         bounding_box = _bounding_box_in_abs_coords(annotation, dp.image_id, dp.width, dp.height)
 
-        if names.C.RO in annotation.sub_categories:
-            reading_order = int(annotation.get_sub_category(names.C.RO).category_id)
+        if Relationships.reading_order in annotation.sub_categories:
+            reading_order = int(annotation.get_sub_category(Relationships.reading_order).category_id)
 
-        if names.C.HTAB in annotation.sub_categories:
-            ann = annotation.get_sub_category(names.C.HTAB)
+        if TableType.html in annotation.sub_categories:
+            ann = annotation.get_sub_category(TableType.html)
             if isinstance(ann, ContainerAnnotation):
                 if isinstance(ann.value, list):
                     html_list = ann.value
 
         # generating cells and html representation
-        all_relation_ids = annotation.get_relationship(names.C.CHILD)
+        all_relation_ids = annotation.get_relationship(Relationships.child)
         cell_anns = dp.get_annotation(
-            annotation_ids=all_relation_ids, category_names=[names.C.CELL, names.C.HEAD, names.C.BODY]
+            annotation_ids=all_relation_ids, category_names=[LayoutType.cell, CellType.header, CellType.body]
         )
         for cell_ann in cell_anns:
             cell = Cell.from_annotation(cell_ann, dp, text_container)
@@ -375,7 +375,9 @@ class Table(Layout):
         html_str = "".join(html_list)
 
         # generating table segments (i.e. rows and columns)
-        table_segm_anns = dp.get_annotation(annotation_ids=all_relation_ids, category_names=[names.C.ROW, names.C.COL])
+        table_segm_anns = dp.get_annotation(
+            annotation_ids=all_relation_ids, category_names=[LayoutType.row, LayoutType.column]
+        )
 
         for table_segm_ann in table_segm_anns:
             table_segments.append(Layout.from_annotation(table_segm_ann, dp, text_container))
@@ -383,15 +385,21 @@ class Table(Layout):
         if annotation.image is not None:
             if annotation.image.summary is not None:
                 if (
-                    names.C.NR in annotation.image.summary.sub_categories
-                    and names.C.NC in annotation.image.summary.sub_categories
+                    TableType.number_of_rows in annotation.image.summary.sub_categories
+                    and TableType.number_of_columns in annotation.image.summary.sub_categories
                 ):
-                    number_rows = int(annotation.image.summary.get_sub_category(names.C.NR).category_id)
-                    number_cols = int(annotation.image.summary.get_sub_category(names.C.NC).category_id)
+                    number_rows = int(annotation.image.summary.get_sub_category(TableType.number_of_rows).category_id)
+                    number_cols = int(
+                        annotation.image.summary.get_sub_category(TableType.number_of_columns).category_id
+                    )
             else:
                 if cell_anns:
-                    number_rows = max([int(cell.get_sub_category(names.C.RN).category_id) for cell in cell_anns])
-                    number_cols = max([int(cell.get_sub_category(names.C.CN).category_id) for cell in cell_anns])
+                    number_rows = max(
+                        [int(cell.get_sub_category(CellType.row_number).category_id) for cell in cell_anns]
+                    )
+                    number_cols = max(
+                        [int(cell.get_sub_category(CellType.column_number).category_id) for cell in cell_anns]
+                    )
 
         return cls(
             annotation.annotation_id,
@@ -556,25 +564,25 @@ class Page:
         if text_container_to_text_block:
             floating_text_block_names.append(text_container)
             mapped_text_container = list(
-                chain(*[text_block.get_relationship(names.C.CHILD) for text_block in text_block_anns])
+                chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
             )
             text_container_anns = image.get_annotation(category_names=text_container)
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container]
             text_block_anns.extend(text_container_anns)
 
         for ann in text_block_anns:
-            if ann.category_name in {names.C.TAB}:
+            if ann.category_name in {LayoutType.table}:
                 layouts.append(Table.from_annotation(ann, image, text_container))
             else:
                 layouts.append(Layout.from_annotation(ann, image, text_container))
 
         if image.summary:
-            if names.NLP.LANG.LANG in image.summary.sub_categories:
-                cat_ann = image.summary.get_sub_category(names.NLP.LANG.LANG)
+            if PageType.language in image.summary.sub_categories:
+                cat_ann = image.summary.get_sub_category(PageType.language)
                 if isinstance(cat_ann, ContainerAnnotation):
                     language = str(cat_ann.value)
-            if names.C.DOC in image.summary.sub_categories:
-                doc_class = image.summary.get_sub_category(names.C.DOC).category_name
+            if PageType.document_type in image.summary.sub_categories:
+                doc_class = image.summary.get_sub_category(PageType.document_type).category_name
 
         if not text_block_anns and not text_container_to_text_block:
             layouts.append(Layout.from_image(image, text_container))
@@ -598,7 +606,7 @@ class Page:
         layout_list = []
         layouts = kwargs.pop("layouts")
         for layout_dict in layouts:
-            if layout_dict["layout_type"] == names.C.TAB:
+            if layout_dict["layout_type"] == LayoutType.table:
                 layout_list.append(Table.from_dict(**layout_dict))
             else:
                 layout_list.append(Layout.from_dict(**layout_dict))
@@ -627,7 +635,7 @@ class Page:
     @property
     def items(self) -> List[Layout]:
         """All layouts with tables excluded"""
-        return list(filter(lambda x: x.layout_type not in [names.C.TAB], self.layouts))
+        return list(filter(lambda x: x.layout_type not in [LayoutType.table], self.layouts))
 
     def viz(
         self,
@@ -671,7 +679,7 @@ class Page:
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bounding_box)
-                category_names_list.append(names.C.TAB)
+                category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
                         box_stack.append(cell.bounding_box)

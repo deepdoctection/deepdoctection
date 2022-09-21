@@ -24,7 +24,7 @@ from typing import List
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_aws_requirement, get_boto3_requirement
-from ..utils.settings import names
+from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if boto3_available():
@@ -48,7 +48,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     score=block["Confidence"] / 100,
                     text=block["Text"],
                     class_id=1 if block["BlockType"] == "WORD" else 2,
-                    class_name=names.C.WORD if block["BlockType"] == "WORD" else names.C.LINE,
+                    class_name=LayoutType.word if block["BlockType"] == "WORD" else LayoutType.line,
                 )
                 all_results.append(word)
 
@@ -108,9 +108,9 @@ class TextractOcrDetector(ObjectDetector):
         self.text_lines = text_lines
         self.client = boto3.client("textract")
         if self.text_lines:
-            self.categories = {"1": names.C.WORD, "2": names.C.LINE}
+            self.categories = {"1": LayoutType.word, "2": LayoutType.line}
         else:
-            self.categories = {"1": names.C.WORD}
+            self.categories = {"1": LayoutType.word}
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -128,3 +128,8 @@ class TextractOcrDetector(ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    def possible_categories(self) -> List[ObjectTypes]:
+        if self.text_lines:
+            return [LayoutType.word, LayoutType.line]
+        return [LayoutType.word]

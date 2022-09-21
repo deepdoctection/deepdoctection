@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
 from ..utils.identifier import get_uuid, is_uuid_like
+from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from .box import BoundingBox
 from .convert import as_dict
 
@@ -201,11 +202,23 @@ class CategoryAnnotation(Annotation):
     :meth:`dump_relationship` instead.
     """
 
-    category_name: str = field(default="")
+    category_name: TypeOrStr = field(default=DefaultType.default_type)
+    _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
-    sub_categories: Dict[str, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
-    relationships: Dict[str, List[str]] = field(default_factory=dict, init=False, repr=True)
+    sub_categories: Dict[ObjectTypes, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
+    relationships: Dict[ObjectTypes, List[str]] = field(default_factory=dict, init=False, repr=True)
+
+    @property  # type: ignore
+    def category_name(self) -> ObjectTypes:
+        """category name"""
+        return self._category_name
+
+    @category_name.setter
+    def category_name(self, category_name: TypeOrStr) -> None:
+        """category name setter"""
+        if not isinstance(category_name, property):
+            self._category_name = get_type(category_name)
 
     def __post_init__(self) -> None:
         self.category_id = str(self.category_id)
@@ -213,7 +226,7 @@ class CategoryAnnotation(Annotation):
         super().__post_init__()
 
     def dump_sub_category(
-        self, sub_category_name: str, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
+        self, sub_category_name: TypeOrStr, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
     ) -> None:
         """
         Storage of sub-categories. Since sub-categories usually only depend on very few attributes and the parent
@@ -237,9 +250,9 @@ class CategoryAnnotation(Annotation):
                 annotation.annotation_id = annotation.set_annotation_id(
                     annotation, tmp_annotation_id, *container_id_context
                 )
-        self.sub_categories[sub_category_name] = annotation
+        self.sub_categories[get_type(sub_category_name)] = annotation
 
-    def get_sub_category(self, sub_category_name: str) -> "CategoryAnnotation":
+    def get_sub_category(self, sub_category_name: ObjectTypes) -> "CategoryAnnotation":
         """
         Return a sub category by its key.
 
@@ -249,7 +262,7 @@ class CategoryAnnotation(Annotation):
         """
         return self.sub_categories[sub_category_name]
 
-    def remove_sub_category(self, key: str) -> None:
+    def remove_sub_category(self, key: ObjectTypes) -> None:
         """
         Removes a sub category with a given key. Necessary to call, when you want to replace an already dumped sub
         category.
@@ -260,7 +273,7 @@ class CategoryAnnotation(Annotation):
         if key in self.sub_categories:
             self.sub_categories.pop(key)
 
-    def dump_relationship(self, key: str, annotation_id: str) -> None:
+    def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """
         Dumps an annotation id to a given key, in order to store relations between annotations. Note, that the
         referenced annotation must be stored elsewhere.
@@ -269,12 +282,13 @@ class CategoryAnnotation(Annotation):
         :param annotation_id: An annotation id
         """
         assert is_uuid_like(annotation_id), "annotation_id must be uuid"
+        key_type = get_type(key)
         if key not in self.relationships:
-            self.relationships[key] = []
-        if annotation_id not in self.relationships[key]:
-            self.relationships[key].append(annotation_id)
+            self.relationships[key_type] = []
+        if annotation_id not in self.relationships[key_type]:
+            self.relationships[key_type].append(annotation_id)
 
-    def get_relationship(self, key: str) -> List[str]:
+    def get_relationship(self, key: ObjectTypes) -> List[str]:
         """
         Returns a list of annotation ids stored with a given relationship key.
 
@@ -285,7 +299,7 @@ class CategoryAnnotation(Annotation):
             return self.relationships[key]
         return []
 
-    def remove_relationship(self, key: str, annotation_ids: Optional[Union[List[str], str]] = None) -> None:
+    def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[List[str], str]] = None) -> None:
         """
         Remove relationship by some given keys and ids. If no annotation ids are provided all relationship according
         to the key will be removed.
@@ -363,13 +377,13 @@ class SummaryAnnotation(CategoryAnnotation):
     """
 
     def __post_init__(self) -> None:
-        self.category_name = "SUMMARY"
+        self._category_name = SummaryType.summary
         super().__post_init__()
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
         summary_ann = _ann_from_dict(cls, **kwargs)
-        summary_ann.category_name = "SUMMARY"
+        summary_ann.category_name = SummaryType.summary
         return summary_ann
 
 
