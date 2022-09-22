@@ -20,10 +20,20 @@ from ..utils.utils import get_rng
 class DataFlowTerminated(BaseException):
     """
     An exception indicating that the DataFlow is unable to produce any more
-    data, i.e. something wrong happened so that calling :meth:`get_data`
+    data, i.e. something wrong happened so that calling :meth:`__iter__`
     cannot give a valid iterator anymore.
     In most DataFlow this will never be raised.
     """
+
+
+class DataFlowResetStateNotCalled(BaseException):
+    """
+    An exception indicating that :meth:`reset_state()` has not been called before starting
+    iteration.
+    """
+    def __init__(self):
+        super().__init__("dataflow iteration has been started before reset_state has been called. "
+                         "Please call reset_state() before iterating dataflow")
 
 
 class DataFlowReentrantGuard:

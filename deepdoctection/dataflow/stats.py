@@ -98,7 +98,7 @@ class MeanFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = self.df.__iter__()
 
-        logger.info("____________________ CALCULATING MEAN ____________________")
+        logger.info("Calculating mean")
 
         len_df: Optional[int]
         try:
@@ -225,7 +225,7 @@ class StdFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = self.df.__iter__()
 
-        logger.info("____________________ CALCULATING STANDARD DEVIATION ____________________")
+        logger.info("Calculating standard deviation")
         try:
             len_df = len(self.df)
         except NotImplementedError:

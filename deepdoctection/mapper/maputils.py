@@ -20,6 +20,7 @@ Utility functions related to mapping tasks
 """
 import functools
 import itertools
+import traceback
 from types import TracebackType
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Union
 
@@ -28,7 +29,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.detection_types import DP, BaseExceptionType, S, T
-from ..utils.logger import log_once, logger
+from ..utils.logger import logger
 from ..utils.settings import ObjectTypes
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
@@ -63,10 +64,12 @@ class MappingContextManager:
         context exit
         """
         if exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError) and exc_tb is not None:
-            log_once(
-                f"""dp: {self.dp_name}, err: {type(exc_val).__name__},
-            msg: {str(exc_val)} in: {str(exc_tb.tb_frame)} will be filtered"""
-            )
+            frame_summary = traceback.extract_tb(exc_tb)[0]
+            logger.warning("mapping error: %s", {"file_name": self.dp_name,
+                                                 "error_type": type(exc_val).__name__,
+                                                 "error_msg": str(exc_val),
+                                                 "module": frame_summary.filename,
+                                                 "line": frame_summary.lineno})
             return True
         if exc_type is None:
             self.context_error = False

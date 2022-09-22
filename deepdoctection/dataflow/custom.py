@@ -28,7 +28,7 @@ import numpy as np
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import get_rng
-from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
+from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow, DataFlowResetStateNotCalled
 from .serialize import DataFromIterable, DataFromList
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
@@ -61,10 +61,7 @@ class CacheData(ProxyDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         if self._guard is None:
-            raise RuntimeError(
-                "Iteration has been started before method reset_state has been called. Please "
-                "call reset_state() before"
-            )
+            raise DataFlowResetStateNotCalled()
 
         with self._guard:
             if self.buffer:
@@ -129,8 +126,6 @@ class CustomDataFromList(DataFromList):
                                list and re-balance the sample. Only the output list of the re-balancing function will be
                                considered.
         """
-        if shuffle:
-            logger.info("Make sure to call .reset_state() for the dataflow otherwise an error will be raised")
         super().__init__(lst, shuffle)
         self.max_datapoints = max_datapoints
         self.rebalance_func = rebalance_func
@@ -142,10 +137,7 @@ class CustomDataFromList(DataFromList):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise RuntimeError(
-                "Iteration has been started before method reset_state has been called. Please "
-                "call reset_state() before"
-            )
+            raise DataFlowResetStateNotCalled()
         if self.rebalance_func is not None:
             lst_tmp = self.rebalance_func(self.lst)
             logger.info("subset size after re-balancing: %s", len(lst_tmp))
