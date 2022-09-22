@@ -62,11 +62,11 @@ jobs:
         run: cd deepdoctection
 
       - name: Test deepdoctection package installation
-        if: matrix.extras == ""
+        if: matrix.extras == ''
         run: pip install "."
 
       - name: Test deepdoctection with extras package installation
-        if: matrix.extras!= ""
+        if: matrix.extras!= ''
         run:  pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
