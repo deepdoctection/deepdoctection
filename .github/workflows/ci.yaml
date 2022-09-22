@@ -21,16 +21,14 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8-basic', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: ,
+          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: ,
               test_cases: test-basic }
-          #- { name: '3.8-full-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-full-tf,
-          #    test_cases: test-tf-full }
-          #- { name: '3.8-all-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'tensorflow==2.8 tensorflow-addons>=0.13.0', extras: source-all-tf,
-          #    test_cases: test-tf-all }
-          #- { name: '3.8-full-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-pt,
-          #    test_cases: test-pt-full }
-          #- { name: '3.8-all-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: source-all-pt,
-          #    test_cases: test-pt-all }
+          - { name: '3.8-basic-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: ,
+              test_cases: test-basic }
+          - { name: '3.8-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: tf,
+              test_cases: test-tf }
+          - { name: '3.8-pt', python: '3.8', os: ubuntu-20.04, tox: py310, dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu', extras: pt,
+              test_cases: test-pt }
 
     steps:
       - uses: actions/checkout@v3
