@@ -33,10 +33,10 @@ from ..utils.settings import (
     BioTag,
     ObjectTypes,
     TokenClasses,
+    TypeOrStr,
+    get_type,
     token_class_tag_to_token_class_with_tag,
     token_class_with_tag_to_token_class_and_tag,
-    TypeOrStr,
-    get_type
 )
 from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
@@ -169,7 +169,9 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
         self.path_config = path_config_json
         self.path_weights = path_weights
-        self.categories_semantics = [get_type(cat_sem) for cat_sem in categories_semantics] if categories_semantics is not None else []
+        self.categories_semantics = (
+            [get_type(cat_sem) for cat_sem in categories_semantics] if categories_semantics is not None else []
+        )
         self.categories_bio = [get_type(cat_bio) for cat_bio in categories_bio] if categories_bio is not None else []
         if categories:
             self.categories = copy(categories)  # type: ignore

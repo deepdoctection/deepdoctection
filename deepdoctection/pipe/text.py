@@ -27,7 +27,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Relationships, WordType, get_type, TypeOrStr
+from ..utils.settings import LayoutType, Relationships, TypeOrStr, WordType, get_type
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -80,8 +80,11 @@ class TextExtractionService(PredictorPipelineComponent):
 
         if extract_from_roi is None:
             extract_from_roi = []
-        self.extract_from_category = [get_type(extract_from_roi)] if isinstance(extract_from_roi, str) else \
-            [get_type(roi_category) for roi_category in extract_from_roi]
+        self.extract_from_category = (
+            [get_type(extract_from_roi)]
+            if isinstance(extract_from_roi, str)
+            else [get_type(roi_category) for roi_category in extract_from_roi]
+        )
         super().__init__(text_extract_detector, category_id_mapping)
         if self.extract_from_category:
             assert isinstance(

@@ -1553,6 +1553,7 @@ def get_sequence_class_result() -> SequenceClassResult:
 # pylint: disable=invalid-name, disallowed-name
 class TestType(ObjectTypes):
     """Object type members for testing purposes"""
+
     foo = "foo"
     FOO = "FOO"
     bak = "bak"
@@ -1582,4 +1583,6 @@ class TestType(ObjectTypes):
     three = "3"
     four = "4"
     five = "5"
+
+
 # pylint: enable=invalid-name, disallowed-name

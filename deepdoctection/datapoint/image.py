@@ -326,11 +326,7 @@ class Image:
         :return: A (possibly empty) list of Annotations
         """
 
-        cat_names = (
-            [category_names]
-            if isinstance(category_names, (ObjectTypes,str))
-            else category_names
-        )
+        cat_names = [category_names] if isinstance(category_names, (ObjectTypes, str)) else category_names
         if cat_names is not None:
             cat_names = [get_type(cat_name) for cat_name in cat_names]
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids

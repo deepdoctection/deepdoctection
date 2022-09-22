@@ -26,7 +26,6 @@ from deepdoctection.datasets import Pubtables1M
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
-@mark.full
 def test_dataset_pubtables1m_returns_image() -> None:
     """
     test dataset pubtales1m return image
