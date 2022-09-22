@@ -131,8 +131,6 @@ dist_deps = deps_list(
     "lxml-stubs",
 )
 
-# if sys.platform == "linux":
-#    dist_deps.extend(deps_list("python-prctl"))
 
 # remaining dependencies to use models that neither require TF nor PyTorch
 additional_deps = deps_list("boto3", "pdfplumber", "fasttext")
@@ -151,6 +149,9 @@ tf_deps = dist_deps + tf_deps + additional_deps
 pt_deps = dist_deps + pt_deps + additional_deps
 source_pt_deps = dist_deps + source_pt_deps + additional_deps
 
+
+# if sys.platform == "linux":
+#    source_pt_deps.extend(deps_list("python-prctl"))
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list(
