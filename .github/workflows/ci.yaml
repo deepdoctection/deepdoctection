@@ -21,7 +21,7 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: ,
+          - { name: '3.8-basic', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: ,
               test_cases: test-basic }
           #- { name: '3.8-full-tf', python: '3.8', os: ubuntu-20.04, tox: py310, dll: tensorflow==2.4.1, extras: source-full-tf,
           #    test_cases: test-tf-full }
