@@ -18,7 +18,6 @@
 import os
 import re
 import sys
-from copy import deepcopy
 
 from setuptools import find_packages, setup
 
