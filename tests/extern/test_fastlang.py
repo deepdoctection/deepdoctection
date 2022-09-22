@@ -41,7 +41,7 @@ class TestFasttextLangDetector:
     """
 
     @staticmethod
-    @mark.all
+    @mark.requires_tf_or_pt
     @patch("deepdoctection.extern.fastlang.load_model", MagicMock(return_value=MagicMock()))
     def test_fasttext_lang_detector_predicts_language() -> None:
         """

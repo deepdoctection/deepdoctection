@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 
-from typing import List, Optional, Union, Sequence
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -29,7 +29,7 @@ from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, Relationships, TypeOrStr, get_type, ObjectTypes
+from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 

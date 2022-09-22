@@ -59,11 +59,27 @@ class TestDoctrTextlineDetector:
 
     @staticmethod
     @mark.requires_tf
-    @mark.all
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_doctr_detector_predicts_image(np_image: ImageType) -> None:
+    def test_doctr_tf_detector_predicts_image(np_image: ImageType) -> None:
         """
-        Detector calls doctr_predict_text_lines
+        Detector calls doctr_predict_text_lines. Only runs in tf environment
+        """
+
+        # Arrange
+        doctr = DoctrTextlineDetector()
+
+        # Act
+        results = doctr.predict(np_image)
+
+        # Assert
+        assert len(results) == 2
+
+    @staticmethod
+    @mark.requires_pt
+    @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
+    def test_doctr_pt_detector_predicts_image(np_image: ImageType) -> None:
+        """
+        Detector calls doctr_predict_text_lines. Only runs in pt environment
         """
 
         # Arrange
@@ -83,11 +99,27 @@ class TestDoctrTextRecognizer:
 
     @staticmethod
     @mark.requires_tf
-    @mark.all
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_detector_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
+    def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
         """
-        Detector calls doctr_predict_text
+        Detector calls doctr_predict_text. Only runs in tf environment
+        """
+
+        # Arrange
+        doctr = DoctrTextRecognizer()
+
+        # Act
+        results = doctr.predict(text_lines)
+
+        # Assert
+        assert len(results) == 2
+
+    @staticmethod
+    @mark.requires_pt
+    @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
+    def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
+        """
+        Detector calls doctr_predict_text. Only runs in pt environment
         """
 
         # Arrange
