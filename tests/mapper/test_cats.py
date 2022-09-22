@@ -34,6 +34,7 @@ from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
 
 
+@pytest.mark.basic
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: DatapointPubtabnet) -> None:
     """
@@ -75,6 +76,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         assert str(len(cols)) == datapoint.get_summary_ann_sub_category_col_id()
 
 
+@pytest.mark.basic
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: DatapointPubtabnet) -> None:
     """
@@ -110,6 +112,7 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     assert len(cells) == 0
 
 
+@pytest.mark.basic
 def test_filter_summary_1(datapoint_image_with_summary: Image) -> None:
     """
     test func:`filter_summary` does not filter dataset, if condition is satisfied.
@@ -122,6 +125,7 @@ def test_filter_summary_1(datapoint_image_with_summary: Image) -> None:
     assert output is not None
 
 
+@pytest.mark.basic
 def test_filter_summary_2(datapoint_image_with_summary: Image) -> None:
     """
     test func:`filter_summary`  does filter dataset, if condition is not satisfied.
@@ -134,6 +138,7 @@ def test_filter_summary_2(datapoint_image_with_summary: Image) -> None:
     assert output is None
 
 
+@pytest.mark.basic
 def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
     """
     test func: image_to_cat_id returns extraction of category_ids
@@ -150,6 +155,7 @@ def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
     assert output[LayoutType.table] == expected_output
 
 
+@pytest.mark.basic
 def test_image_to_cat_id_2(dp_image_fully_segmented: Image) -> None:
     """
     test func: image_to_cat_id returns extraction of category_ids
@@ -168,6 +174,7 @@ def test_image_to_cat_id_2(dp_image_fully_segmented: Image) -> None:
     assert output[LayoutType.column] == expected_output[LayoutType.column]
 
 
+@pytest.mark.basic
 def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     """
     test func: image_to_cat_id returns extraction of category_ids
@@ -184,6 +191,7 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     assert output[CellType.row_span] == expected_output[CellType.row_span]
 
 
+@pytest.mark.basic
 def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     """
     test func: image_to_cat_id returns extraction of category_ids
@@ -210,6 +218,7 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     assert output[CellType.column_span] == expected_output[CellType.column_span]
 
 
+@pytest.mark.basic
 def test_remove_cats(dp_image_fully_segmented: Image) -> None:
     """
     test func: remove_cats returns datapoint with removed categories
@@ -227,6 +236,7 @@ def test_remove_cats(dp_image_fully_segmented: Image) -> None:
     assert len(anns) == 0
 
 
+@pytest.mark.basic
 def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     """
     test func: remove_cats returns datapoint with removed sub categories
@@ -273,6 +283,7 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     assert isinstance(scd_ann_cell.get_sub_category(CellType.column_span), CategoryAnnotation)
 
 
+@pytest.mark.basic
 def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
     """
     test func: remove_cats removes summary sub category

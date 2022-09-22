@@ -23,19 +23,10 @@ from typing import List
 from pytest import fixture
 
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.extern.base import DetectionResult
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
-from .data import PDF_BYTES, PDF_BYTES_2, WORD_RESULTS
-
-
-@fixture(name="word_result_list_same_line")
-def fixture_pdf_bytes_page_2() -> List[DetectionResult]:
-    """
-    fixture list of word results. Words are in the same line
-    """
-    return WORD_RESULTS
+from .data import PDF_BYTES, PDF_BYTES_2
 
 
 @fixture(name="layoutlm_input")

@@ -21,6 +21,7 @@ Testing the module mapper.pubstruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
@@ -34,6 +35,7 @@ from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
 
 
+@mark.basic
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_pub_to_image(
     datapoint_pubtabnet: JsonDict,
@@ -123,6 +125,7 @@ def test_pub_to_image(
     )
 
 
+@mark.basic
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_pub_to_image_when_items_are_added(
     datapoint_pubtabnet: JsonDict, categories_name_as_key_pubtabnet: Dict[str, str]
@@ -147,6 +150,7 @@ def test_pub_to_image_when_items_are_added(
     )
 
 
+@mark.basic
 @patch("deepdoctection.mapper.pubstruct.load_image_from_file", MagicMock(side_effect=get_pubtabnet_white_image))
 def test_pub_to_image_when_dd_pipe_like(
     datapoint_pubtabnet: JsonDict, categories_name_as_key_pubtabnet: Dict[str, str]

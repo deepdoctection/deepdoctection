@@ -45,6 +45,7 @@ class TestAccuracyMetric:
     """
 
     @staticmethod
+    @mark.basic
     def test_accuracy_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -72,6 +73,7 @@ class TestAccuracyMetric:
         AccuracyMetric._sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
+    @mark.basic
     def test_accuracy_metric_for_sub_cat_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -98,6 +100,7 @@ class TestAccuracyMetric:
         AccuracyMetric._sub_cats = None  # pylint: disable=W0212
 
     @staticmethod
+    @mark.basic
     def test_accuracy_metric_for_sub_cat_returns_correct_distance_as_dict(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -126,6 +129,7 @@ class TestConfusionMetric:
     """
 
     @staticmethod
+    @mark.basic
     def test_confusion_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -180,6 +184,7 @@ class TestPrecisionMetric:
     """
 
     @staticmethod
+    @mark.basic
     def test_precision_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -210,6 +215,7 @@ class TestRecallMetric:
     """
 
     @staticmethod
+    @mark.basic
     def test_recall_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -240,6 +246,7 @@ class TestF1Metric:
     """
 
     @staticmethod
+    @mark.basic
     def test_f1_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -270,6 +277,7 @@ class TestPrecisionMetricMicro:
     """
 
     @staticmethod
+    @mark.basic
     def test_precision_micro_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -300,6 +308,7 @@ class TestRecallMetricMicro:
     """
 
     @staticmethod
+    @mark.basic
     def test_recall_micro_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:
@@ -330,6 +339,7 @@ class TestF1MetricMicro:
     """
 
     @staticmethod
+    @mark.basic
     def test_f1_micro_metric_returns_correct_distance(
         dp_image_fully_segmented: Image, dataset_categories: DatasetCategories
     ) -> None:

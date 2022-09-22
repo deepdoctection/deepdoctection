@@ -22,7 +22,7 @@ Testing module pipe.text
 from typing import List
 from unittest.mock import MagicMock
 
-from pytest import raises
+from pytest import raises, mark
 
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
@@ -43,6 +43,7 @@ class TestTextExtractionService:
         self._text_extract_detector = MagicMock(spec=ObjectDetector)
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
+    @mark.basic
     def test_integration_pipeline_component(
         self, dp_image_fully_segmented_fully_tiled: Image, word_detect_result: List[DetectionResult]
     ) -> None:
@@ -77,6 +78,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
         self._text_extract_detector = MagicMock(spec=PdfMiner)
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
+    @mark.basic
     def test_integration_pipeline_component(
         self, dp_image_fully_segmented_fully_tiled: Image, word_detect_result: List[DetectionResult]
     ) -> None:
@@ -100,6 +102,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
         assert embedding_bbox == first_text_ann.bounding_box
 
 
+@mark.basic
 def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> None:
     """
     Testing TextExtractionService does not build when instantiating with a PdfMiner and passing some ROI
@@ -129,6 +132,7 @@ class TestTextExtractionServiceWithSubImage:
             self._text_extract_detector, extract_from_roi=LayoutType.table
         )
 
+    @mark.basic
     def test_integration_pipeline_component(
         self,
         dp_image_with_layout_anns: Image,
@@ -200,6 +204,7 @@ class TestTextOrderService:
     """
 
     @staticmethod
+    @mark.basic
     def test_integration_pipeline_component(dp_image_with_layout_and_word_annotations: Image) -> None:
         """
         test integration_pipeline_component

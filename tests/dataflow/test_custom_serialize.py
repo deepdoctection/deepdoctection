@@ -19,6 +19,7 @@
 Testing the module dataflow.custom_serialize
 """
 import os
+from pytest import mark
 
 from deepdoctection.dataflow import (
     CustomDataFromList,
@@ -38,6 +39,7 @@ class TestSerializerJsonlines:
     """
 
     @staticmethod
+    @mark.basic
     def test_loading() -> None:
         """
         Testing the loading of a .jsonl file
@@ -54,6 +56,7 @@ class TestSerializerJsonlines:
         assert len(output) == 3
 
     @staticmethod
+    @mark.basic
     def test_saving() -> None:
         """
         Testing the saving of a .jsonl file
@@ -82,6 +85,7 @@ class TestSerializerFiles:
     """
 
     @staticmethod
+    @mark.basic
     def test_loading() -> None:
         """
         Test the loading of elements of a .jsonl file
@@ -101,6 +105,7 @@ class TestSerializerTabsepFiles:
     """
 
     @staticmethod
+    @mark.basic
     def test_loading() -> None:
         """
         Test the loading of elements of a .txt file
@@ -120,6 +125,7 @@ class TestSerializerCoco:
     """
 
     @staticmethod
+    @mark.basic
     def test_loading() -> None:
         """
         Test the loading of a .json file
@@ -149,6 +155,7 @@ class TestSerializerPdfDoc:
     """
 
     @staticmethod
+    @mark.basic
     def test_loading() -> None:
         """
         Test the loading of a .pdf file

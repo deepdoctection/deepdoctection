@@ -108,13 +108,13 @@ test-build:
 	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 test-basic:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt or not requires_tf or not requires_pt_or_tf" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
 test-tf:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_tf or requires_tf_or_pt" tests
 
 test-pt: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not requires_gpu" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_pt or requires_tf_or_pt" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-integration:

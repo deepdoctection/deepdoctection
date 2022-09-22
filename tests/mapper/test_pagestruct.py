@@ -19,6 +19,8 @@
 Testing the module mapper.pagestruct
 """
 
+from pytest import mark
+
 from deepdoctection.datapoint import CategoryAnnotation, Image
 from deepdoctection.mapper.pagestruct import page_dict_to_page, to_page
 from deepdoctection.utils.detection_types import JsonDict
@@ -27,6 +29,7 @@ from deepdoctection.utils.settings import LayoutType, Relationships
 from .data import DatapointPageDict
 
 
+@mark.basic
 def test_to_page(dp_image_with_layout_and_word_annotations: Image) -> None:
     """
     test to_page
@@ -70,6 +73,7 @@ def test_to_page(dp_image_with_layout_and_word_annotations: Image) -> None:
     assert page.get_text() == "\nhello world\nbye world"
 
 
+@mark.basic
 def test_page_dict_to_page(page_dict: JsonDict) -> None:
     """
     test page_dict_to_page

@@ -52,6 +52,7 @@ class TestDatasetCategories:
         return DatasetCategories(init_categories=categories, init_sub_categories=sub_categories)
 
     @staticmethod
+    @pytest.mark.basic
     def test_set_cat_to_subcat_and_check_categories_case_1() -> None:
         """
         Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
@@ -73,6 +74,7 @@ class TestDatasetCategories:
         assert cats.is_cat_to_sub_cat()
 
     @staticmethod
+    @pytest.mark.basic
     def test_set_cat_to_subcat_and_check_categories_case_2() -> None:
         """
         Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
@@ -95,6 +97,7 @@ class TestDatasetCategories:
         }
 
     @staticmethod
+    @pytest.mark.basic
     def test_filter_and_check_categories() -> None:
         """
         Categories are filtered and meth: is_filtered works properly
@@ -119,6 +122,7 @@ class TestDatasetCategories:
         assert cats.is_filtered()
 
     @staticmethod
+    @pytest.mark.basic
     def test_check_sub_categories() -> None:
         """
         get_sub_categories works as expected
@@ -131,6 +135,7 @@ class TestDatasetCategories:
         assert cats.get_sub_categories() == {TestType.BAK: [TestType.sub, TestType.sub_2], TestType.FOO: [TestType.cat]}
 
     @staticmethod
+    @pytest.mark.basic
     def test_set_sub_categories_and_check_sub_categories() -> None:
         """
         when categories are replaced with sub categories then get_sub_categories works as expected
@@ -178,6 +183,7 @@ class TestMergeDatasetCategories:
         )
 
     @staticmethod
+    @pytest.mark.basic
     def test_merge_categories_returns_union_categories_and_sub_categories() -> None:
         """
         Merge categories returns union of categories of datasets
@@ -194,6 +200,7 @@ class TestMergeDatasetCategories:
         assert merge.get_sub_categories() == {TestType.FOO: [TestType.FOO_1]}
 
     @staticmethod
+    @pytest.mark.basic
     def test_merge_categories_updates_categories_correctly() -> None:
         """
         Merge categories updates categories when categories of datasets are being updated
@@ -218,6 +225,7 @@ class TestMergeDatasetCategories:
         ]
 
     @staticmethod
+    @pytest.mark.basic
     def test_merge_categories_updates_and_filters_categories_correctly() -> None:
         """
         Merge categories returns updates and filtered categories correctly
@@ -249,6 +257,7 @@ class TestMergeDatasetCategories:
         ]
 
     @staticmethod
+    @pytest.mark.basic
     def test_merge_categories_cannot_update_or_filter() -> None:
         """
         Calling :meth::`filter_categories` or :meth::`set_cat_to_sub_cat` is not allowed

@@ -22,6 +22,7 @@ Testing the module mapper.cocostruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -34,6 +35,7 @@ from .conftest import get_coco_white_image
 from .data import DatapointCoco, DatapointImage
 
 
+@mark.basic
 @patch("deepdoctection.mapper.cocostruct.load_image_from_file", MagicMock(side_effect=get_coco_white_image))
 def test_coco_to_image(datapoint_coco: JsonDict, categories_coco: Dict[str, str], coco_results: DatapointCoco) -> None:
     """
@@ -67,6 +69,7 @@ def test_coco_to_image(datapoint_coco: JsonDict, categories_coco: Dict[str, str]
     assert isclose(dp.height, datapoint.get_height(load_image), rel_tol=1e-15)
 
 
+@mark.basic
 def test_image_to_coco(datapoint_image: Image, image_results: DatapointImage) -> None:
     """
     testing image_to_coco is mapping correctly

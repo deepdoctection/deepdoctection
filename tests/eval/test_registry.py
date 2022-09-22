@@ -21,6 +21,7 @@ Testing the module eval.registry
 
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock
+from pytest import mark
 
 from deepdoctection.dataflow import DataFlow
 from deepdoctection.datasets.info import DatasetCategories
@@ -30,6 +31,7 @@ from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import apted_available
 
 
+@mark.basic
 def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     test metric registry has all metrics registered
@@ -41,6 +43,7 @@ def test_metric_registry_has_all_build_in_metric_registered() -> None:
         assert len(metric_registry.get_all()) == 9
 
 
+@mark.basic
 def test_metric_registry_registered_new_metric() -> None:
     """
     test, that the new generated metric "TestMetric" can be registered and retrieved from registry

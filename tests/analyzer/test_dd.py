@@ -27,7 +27,6 @@ from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_p
 
 
 @mark.integration
-@mark.requires_tf_or_pt
 def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting tables = False and ocr = False
@@ -52,7 +51,6 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
 
 
 @mark.integration
-@mark.requires_tf_or_pt
 def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting tables = True and ocr = False
@@ -89,7 +87,6 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
 
 
 @mark.integration
-@mark.requires_tf_or_pt
 def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting tables = True and ocr = True

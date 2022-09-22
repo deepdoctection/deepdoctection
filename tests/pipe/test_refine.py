@@ -36,6 +36,7 @@ from deepdoctection.pipe.refine import (
 from deepdoctection.utils.settings import CellType, LayoutType, TableType
 
 
+@mark.basic
 @mark.parametrize(
     "tiles_to_cells,expected_rectangle_cells_list",
     [
@@ -103,6 +104,7 @@ def test_rectangle_cell_tiling(
         assert el in expected_rectangle_cells_list
 
 
+@mark.basic
 @mark.parametrize(
     "table_list,cells_ann_list,number_of_rows,number_of_cols,expected_html_list",
     [
@@ -263,6 +265,7 @@ class TestTableSegmentationRefinementService:
 
         self.table_segmentation_refinement_service = TableSegmentationRefinementService()
 
+    @mark.basic
     def test_integration_pipeline_component(self, dp_image_fully_segmented_fully_tiled: Image) -> None:
         """
         Integration test for pipeline component

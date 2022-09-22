@@ -35,7 +35,6 @@ if tf_available() and tensorpack_available():
 
 
 @mark.requires_tf
-@mark.full
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 @patch("deepdoctection.train.tp_frcnn_train.set_mp_spawn")
 def test_get_train_dataflow(
@@ -64,7 +63,6 @@ def test_get_train_dataflow(
 
 
 @mark.requires_tf
-@mark.full
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deepdoctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))

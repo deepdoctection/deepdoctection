@@ -20,6 +20,7 @@ Testing the module mapper.utils
 """
 from typing import Dict, List, Union
 from unittest.mock import MagicMock
+from pytest import mark
 
 import pytest
 
@@ -33,6 +34,7 @@ class TestDefaultMapper:
     """
 
     @staticmethod
+    @mark.basic
     def test_func_is_called_with_default_arguments() -> None:
         """
         Function in DefaultMapper is called with first argument of default_mapper meth: __call__ argument and all other
@@ -55,6 +57,7 @@ class TestLabelSummarizer:
     """
 
     @staticmethod
+    @mark.basic
     @pytest.mark.parametrize(
         "categories, cat_ids, summary",
         [

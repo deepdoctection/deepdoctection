@@ -19,11 +19,14 @@
 Testing module pipe.registry
 """
 
+from pytest import mark
+
 from deepdoctection.datapoint.image import Image
 from deepdoctection.pipe.base import PipelineComponent
 from deepdoctection.pipe.registry import pipeline_component_registry
 
 
+@mark.basic
 def test_pipe_registry_has_all_build_in_pipe_component_registered() -> None:
     """
     test pipe registry has all pipeline components registered
@@ -31,6 +34,7 @@ def test_pipe_registry_has_all_build_in_pipe_component_registered() -> None:
     assert len(pipeline_component_registry.get_all()) == 12
 
 
+@mark.basic
 def test_pipe_registry_registered_new_pipeline_component() -> None:
     """
     test, that the new generated pipe component "TestPipeComponent" can be registered and retrieved from registry

@@ -40,6 +40,7 @@ class TestImage:
     """
 
     @staticmethod
+    @mark.basic
     @mark.parametrize(
         "location, file_name, external_id, expected",
         [
@@ -71,6 +72,7 @@ class TestImage:
         assert test_image.image_id == expected
 
     @staticmethod
+    @mark.basic
     def test_image_id_cannot_be_reassigned(image: WhiteImage) -> None:
         """
         Once image_id is assigned, it cannot be reassigned
@@ -84,6 +86,7 @@ class TestImage:
             test_image.image_id = "ec2aac06-c261-3669-b8bd-4486a54ce740"
 
     @staticmethod
+    @mark.basic
     def test_image_stores_correct_image_and_meta(image: WhiteImage) -> None:
         """
         Image stores image given as np.array correctly. It returns height as width as expected
@@ -101,6 +104,7 @@ class TestImage:
         assert test_image.width == image.get_bounding_box().width
 
     @staticmethod
+    @mark.basic
     def test_image_has_its_own_embedding_entry(image: WhiteImage) -> None:
         """
         Image has embedding k/v entry image_id/self._bbox
@@ -117,6 +121,7 @@ class TestImage:
         assert test_image.get_embedding(test_image.image_id) == test_image._bbox  # pylint: disable=W0212
 
     @staticmethod
+    @mark.basic
     def test_image_stores_correct_image_from_pdf(pdf_page: TestPdfPage) -> None:
         """
 
@@ -134,6 +139,7 @@ class TestImage:
         assert test_image.width == pdf_page.np_array_shape[1]
 
     @staticmethod
+    @mark.basic
     def test_image_returns_image_representation(image: WhiteImage) -> None:
         """
         Image stores and returns image given as b64 string correctly. It returns height as width as expected.
@@ -150,6 +156,7 @@ class TestImage:
         assert test_image.width == image.get_bounding_box().width
 
     @staticmethod
+    @mark.basic
     def test_dump_cat_and_check_ann_id(image: WhiteImage) -> None:
         """
         Categories are dumped and annotation ids are correctly assigned.
@@ -176,6 +183,7 @@ class TestImage:
         assert sub_cat_1.annotation_id == "963e0b93-c520-325e-bd8c-03889cb98754"
 
     @staticmethod
+    @mark.basic
     def test_dump_same_annotation_not_possible(image: WhiteImage) -> None:
         """
         Same image annotations cannot be dumped twice
@@ -196,6 +204,7 @@ class TestImage:
             test_image.dump(cat)
 
     @staticmethod
+    @mark.basic
     def test_get_annotation(image: WhiteImage) -> None:
         """
         Annotations are returned by conditions.
@@ -246,6 +255,7 @@ class TestImage:
         assert set(filtered_anns_5_ids) == {cat_1.annotation_id, cat_2.annotation_id, cat_3.annotation_id}
 
     @staticmethod
+    @mark.basic
     def test_image_ann_to_image(image: WhiteImage) -> None:
         """
         test meth: image_ann_to_image add attr: image to ImageAnnotation and generates Image instance correctly
@@ -274,6 +284,7 @@ class TestImage:
         assert cat_1.image.image.shape == (4, 10, 3)
 
     @staticmethod
+    @mark.basic
     def test_image_with_anns_can_be_exported(image: WhiteImage) -> None:
         """
         test meth: get_export returns a dictionary
@@ -308,6 +319,7 @@ class TestImage:
         assert "score" in ann
 
     @staticmethod
+    @mark.basic
     def test_load_image_from_dict() -> None:
         """
         test class meth: from_dict returns a image

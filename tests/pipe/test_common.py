@@ -18,6 +18,7 @@
 """
 Testing module pipe.common
 """
+from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.pipe import MatchingService
@@ -47,6 +48,7 @@ class TestMatchingService:
             self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,  # type: ignore
         )
 
+    @mark.basic
     def test_integration_pipeline_component(self, dp_image_fully_segmented_unrelated_words: Image) -> None:
         """
         test matching service assigns child annotation according to matching rule correctly to parental
