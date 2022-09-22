@@ -102,7 +102,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
     @no_type_check
     def _recv_filter_none(self):
         ret = self._recv()
-        assert ret is not None, f"[{type(self).__name__}] Map function cannot return None when strict mode is used."
+        assert ret is not None, f"[{type(self).__name__}] map function cannot return None when strict mode is used."
         return ret
 
     @no_type_check
@@ -115,7 +115,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
                 self._send(dp)
         except StopIteration as exce:
             raise RuntimeError(
-                f"[{type(self).__name__}] buffer_size cannot be larger than the size of the DataFlow when strict=True! "
+                f"[{type(self).__name__}] buffer_size cannot be larger than the size of the dataflow when strict=True! "
                 "Please use a smaller buffer_size!"
             ) from exce
         self._buffer_occupancy += cnt

@@ -16,7 +16,7 @@ from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
-from .base import DataFlow, RNGDataFlow
+from .base import DataFlow, RNGDataFlow, DataFlowResetStateNotCalled
 
 
 class DataFromList(RNGDataFlow):
@@ -44,10 +44,7 @@ class DataFromList(RNGDataFlow):
                 for k in idxs:
                     yield self.lst[k]
             else:
-                raise RuntimeError(
-                    "Iteration has been started before method reset_state has been called. Please "
-                    "call reset_state() before"
-                )
+                raise DataFlowResetStateNotCalled()
 
 
 class DataFromIterable(DataFlow):
@@ -111,10 +108,7 @@ class FakeData(RNGDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise RuntimeError(
-                "Iteration has been started before method reset_state has been called. Please "
-                "call reset_state() before"
-            )
+            raise DataFlowResetStateNotCalled()
         if self.random:
             for _ in range(self._size):
                 val = []
