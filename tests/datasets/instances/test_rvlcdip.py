@@ -19,6 +19,7 @@
 Testing module datasets.instances.rvlcdip
 """
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from deepdoctection.datasets import Rvlcdip
 
@@ -26,6 +27,7 @@ from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
 
 
+@mark.basic
 @patch("deepdoctection.datasets.instances.rvlcdip.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_pubtabnet_returns_image() -> None:
     """

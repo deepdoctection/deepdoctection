@@ -20,6 +20,7 @@ Testing module pipe.layout
 """
 
 from unittest.mock import MagicMock
+from pytest import mark
 
 from deepdoctection.datapoint import Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
@@ -39,6 +40,7 @@ class TestImageLayoutService:
         self._layout_detector = MagicMock(spec=ObjectDetector)
         self.image_layout_service = ImageLayoutService(self._layout_detector, to_image=True)
 
+    @mark.basic
     def test_pass_datapoint(
         self, dp_image: Image, layout_detect_results: DetectionResult, layout_annotations: ImageAnnotation
     ) -> None:

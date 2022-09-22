@@ -45,6 +45,7 @@ class TestBoundingBox:
     """
 
     @staticmethod
+    @mark.basic
     def test_incomplete_data_for_bounding_box(box: Box) -> None:
         """
         Testing assertion errors when box constructor receives incomplete
@@ -60,6 +61,7 @@ class TestBoundingBox:
             BoundingBox(ulx=box.ulx, uly=box.uly, height=box.h, width=0.0, absolute_coords=box.absolute_coords)
 
     @staticmethod
+    @mark.basic
     def test_center_area_to_list(box: Box) -> None:
         """
         Testing internal box coordinates and get_export methods
@@ -79,6 +81,7 @@ class TestBoundingBox:
         assert bounding_box.to_list(mode="xywh") == [box.ulx, box.uly, box.w, box.h]
 
     @staticmethod
+    @mark.basic
     def test_transform(box: Box) -> None:
         """
         Testing relative <-> absolute coordinate transformation
@@ -106,6 +109,7 @@ class TestBoundingBox:
         assert box_copy.absolute_coords is False
 
 
+@mark.basic
 @mark.parametrize(
     "box_1,box_2,expected_box",
     [
@@ -138,6 +142,7 @@ def test_intersection_box(box_1: BoundingBox, box_2: BoundingBox, expected_box: 
     assert output_box == expected_box
 
 
+@mark.basic
 @mark.parametrize(
     "box_1,box_2,width,height,expected_box",
     [
@@ -178,6 +183,7 @@ def get_np_array_for_cropping() -> ImageType:
     return asarray([[[0, 1, 2], [3, 4, 5], [6, 7, 8]], [[9, 10, 11], [12, 13, 14], [15, 16, 17]]])
 
 
+@mark.basic
 @mark.parametrize(
     "np_image,crop_box,width,height,expected_np_array",
     [
@@ -229,6 +235,7 @@ def test_crop_image(
     assert_array_equal(cropped_image, expected_np_array)
 
 
+@mark.basic
 @mark.parametrize(
     "local_box,embedding_box,expected_embedded_box",
     [
@@ -253,6 +260,7 @@ def test_local_to_global_coords(
     assert embedded_box == expected_embedded_box
 
 
+@mark.basic
 @mark.parametrize(
     "global_box,embedding_box,expected_local_box",
     [
@@ -282,6 +290,7 @@ def test_global_to_local_coords(
     assert local_box == expected_local_box
 
 
+@mark.basic
 @mark.parametrize(
     "box_list,expected_box",
     [
@@ -314,6 +323,7 @@ def test_merge_boxes(box_list: List[BoundingBox], expected_box: BoundingBox) -> 
     assert merged_box == expected_box
 
 
+@mark.basic
 @mark.parametrize(
     "box,current_total_width,current_total_height,scaled_total_width,scaled_total_height,expected_box",
     [

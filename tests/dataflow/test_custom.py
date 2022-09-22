@@ -19,10 +19,12 @@
 Testing the module dataflow.custom
 """
 from typing import Any, List, Union
+from pytest import mark
 
 from deepdoctection.dataflow import CacheData, CustomDataFromList
 
 
+@mark.basic
 def test_dataflow_cached_in_list(datapoint_list: List[Any]) -> None:
     """
     Testing CacheData get_cache method.
@@ -40,6 +42,7 @@ def test_dataflow_cached_in_list(datapoint_list: List[Any]) -> None:
     assert set(df_list) == set(datapoint_list)
 
 
+@mark.basic
 def test_dataflow_from_list_with_max_datapoint(datapoint_list: List[Any]) -> None:
     """
     Testing CustomDataFromList max_datapoint argument

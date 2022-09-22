@@ -19,6 +19,7 @@
 Testing the module dataflow.stats
 """
 from typing import List
+from pytest import mark
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -32,6 +33,7 @@ class TestMeanFromDataFlow:
     """
 
     @staticmethod
+    @mark.basic
     def test_mean_along_one_dimension(dataset_three_dim: List[List[float]], mean_axis_zero: List[float]) -> None:
         """
         Test mean along the 0th dimension.
@@ -47,6 +49,7 @@ class TestMeanFromDataFlow:
         assert_array_equal(mean, np.array(mean_axis_zero))
 
     @staticmethod
+    @mark.basic
     def test_mean_along_all_dimension(dataset_three_dim: List[List[float]], mean_all_axes: List[float]) -> None:
         """
         Test mean along all dimensions.
@@ -68,6 +71,7 @@ class TestStdFromDataFlow:
     """
 
     @staticmethod
+    @mark.basic
     def test_std_along_one_dimension(dataset_three_dim: List[List[float]], std_axis_zero: List[float]) -> None:
         """
         Test std along the 0th dimension.
@@ -83,6 +87,7 @@ class TestStdFromDataFlow:
         assert_array_almost_equal(std, np.array(std_axis_zero), decimal=4)
 
     @staticmethod
+    @mark.basic
     def test_std_along_all_dimension(dataset_three_dim: List[List[float]], std_all_axes: List[float]) -> None:
         """
         Test std along all dimensions.
