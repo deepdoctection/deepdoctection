@@ -29,8 +29,7 @@ from jsonlines import Reader, Writer
 
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict, Pathlike
-from ..utils.fs import is_file_extension
-from ..utils.logger import logger
+from ..utils.fs import is_file_extension, FileExtensionError
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
 from .base import DataFlow
@@ -87,17 +86,13 @@ class SerializerJsonlines:
         :param max_datapoints: maximum number of datapoint to consider writing to a file.
         """
 
-        assert os.path.isdir(path), f"not a dir {path}"
-        assert is_file_extension(file_name, ".jsonl")
+        if not os.path.isdir(path):
+            raise NotADirectoryError(path)
+        if not is_file_extension(file_name, ".jsonl"):
+            raise FileExtensionError(f"Expected .jsonl file got {path}")
 
         with open(os.path.join(path, file_name), "w") as file:  # pylint: disable=W1514
             writer = Writer(file)
-            length = _reset_df_and_get_length(df)
-            if length == 0:
-                logger.info("cannot estimate length of dataflow")
-            if max_datapoints is not None:
-                if max_datapoints < length:
-                    logger.info("dataflow larger than max_datapoints")
             for k, dp in enumerate(df):
                 if max_datapoints is None:
                     writer.write(dp)
@@ -147,16 +142,12 @@ class SerializerTabsepFiles:
         :param max_datapoints: maximum number of datapoint to consider writing to a file.
         """
 
-        assert os.path.isdir(path), f"not a dir {path}"
-        assert is_file_extension(file_name, ".txt")
+        if not os.path.isdir(path):
+            raise NotADirectoryError(path)
+        if not is_file_extension(file_name, ".jsonl"):
+            raise FileExtensionError(f"Expected .txt file got {path}")
 
         with open(os.path.join(path, file_name), "w", encoding="UTF-8") as file:
-            length = _reset_df_and_get_length(df)
-            if length == 0:
-                logger.info("cannot estimate length of dataflow")
-            if max_datapoints is not None:
-                if max_datapoints < length:
-                    logger.info("dataflow larger than max_datapoints")
             for k, dp in enumerate(df):
                 if max_datapoints is None:
                     file.write(dp)
@@ -254,7 +245,8 @@ class CocoParser:
             with timed_operation(message="Loading annotations to memory"):
                 with open(annotation_file, "r", encoding="UTF-8") as file:
                     dataset = json.load(file)
-                assert isinstance(dataset, dict), f"annotation file format {type(dataset)} not supported"
+                if not isinstance(dataset, dict):
+                    raise TypeError(f"Annotation file format {type(dataset)} for {annotation_file} not supported")
             self.dataset = dataset
             self._create_index()
 
@@ -485,9 +477,11 @@ class SerializerCoco:
         :param path: a path to a .json file.
         :return: dataflow to iterate from
         """
-        assert os.path.isfile(path), path
+        if not os.path.isfile(path):
+            raise FileNotFoundError(path)
         file = os.path.split(path)[1]
-        assert is_file_extension(file, ".json"), file
+        if not is_file_extension(file, ".json"):
+            raise FileExtensionError(f"Expected .json file got {path}")
 
         with timed_operation("Start loading .json file and serializing"):
             coco = CocoParser(path)
@@ -559,7 +553,8 @@ class SerializerPdfDoc:
         """
         if path_target is None:
             path_target, _ = os.path.split(path)
-        assert os.path.isdir(path_target), f"not a dir {path_target}"
+        if not os.path.isdir(path_target):
+            raise NotADirectoryError(path)
         df = SerializerPdfDoc.load(path, max_datapoint)
         for dp in df:
             with open(os.path.join(path_target, dp["file_name"]), "wb") as page:

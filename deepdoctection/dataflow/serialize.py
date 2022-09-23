@@ -100,8 +100,10 @@ class FakeData(RNGDataFlow):
         self.random = random
         self.dtype = [dtype] * len(shapes) if isinstance(dtype, str) else dtype
         self.domain = [domain] * len(shapes) if isinstance(domain, tuple) else domain
-        assert len(self.dtype) == len(self.shapes)
-        assert len(self.domain) == len(self.domain)
+        if len(self.dtype) != len(self.shapes):
+            raise ValueError(f"self.dtype={self.dtype} and self.shapes={self.shapes} must have same length")
+        if len(self.dtype) == len(self.domain):
+            raise ValueError(f"self.dtype={self.dtype} and self.domain={self.domain} must have same length")
 
     def __len__(self) -> int:
         return self._size
