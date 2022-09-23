@@ -263,7 +263,7 @@ def get_dd_analyzer(
     cfg.LANG = language
     cfg.freeze()
 
-    logger.info("Config: \n %s", str(cfg))
+    logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 
     # will silent all TP loggings while building the tower
     if tensorpack_available():

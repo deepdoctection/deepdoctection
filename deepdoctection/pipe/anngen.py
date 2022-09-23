@@ -119,7 +119,7 @@ class DatapointManager:
         assert detect_result.class_id
         assert isinstance(detect_result.box, (list, np.ndarray))
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
-        with MappingContextManager(dp_name=str(detect_result)) as annotation_context:
+        with MappingContextManager(dp_name=str(detect_result), filter_level="annotation") as annotation_context:
             box = BoundingBox(
                 ulx=detect_result.box[0],
                 uly=detect_result.box[1],
@@ -171,7 +171,7 @@ class DatapointManager:
         sub_cat_key: ObjectTypes,
         annotation_id: str,
         score: Optional[float] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """
         Create a category annotation and dump it as sub category to an already created annotation.
 
@@ -183,8 +183,11 @@ class DatapointManager:
         :return: the annotation_id of the generated category annotation
         """
         self.assert_datapoint_passed()
-        cat_ann = CategoryAnnotation(category_name=category_name, category_id=str(category_id), score=score)
-        self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
+        with MappingContextManager(dp_name=annotation_id, filter_level="annotation") as annotation_context:
+            cat_ann = CategoryAnnotation(category_name=category_name, category_id=str(category_id), score=score)
+            self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
+        if annotation_context.context_error:
+            return None
         return cat_ann.annotation_id
 
     def set_container_annotation(
@@ -195,7 +198,7 @@ class DatapointManager:
         annotation_id: str,
         value: Union[str, List[str]],
         score: Optional[float] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """
         Create a container annotation and dump it as sub category to an already created annotation.
 
@@ -208,10 +211,13 @@ class DatapointManager:
         :return: annotation_id of the generated container annotation
         """
         self.assert_datapoint_passed()
-        cont_ann = ContainerAnnotation(
-            category_name=category_name, category_id=str(category_id), value=value, score=score
-        )
-        self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
+        with MappingContextManager(dp_name=annotation_id, filter_level="annotation") as annotation_context:
+            cont_ann = ContainerAnnotation(
+                category_name=category_name, category_id=str(category_id), value=value, score=score
+            )
+            self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
+        if annotation_context.context_error:
+            return None
         return cont_ann.annotation_id
 
     def set_summary_annotation(
@@ -222,7 +228,7 @@ class DatapointManager:
         summary_value: Optional[str] = None,
         summary_score: Optional[float] = None,
         annotation_id: Optional[str] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """
         Creates a sub category of a summary annotation. If a summary of the given annotation_id does not exist, it will
         create a new one.
@@ -245,11 +251,15 @@ class DatapointManager:
             image.summary = SummaryAnnotation()
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
-        if summary_value:
-            ann = ContainerAnnotation(
-                category_name=summary_name, category_id=str(summary_number), value=summary_value, score=summary_score
-            )
-        else:
-            ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
-        image.summary.dump_sub_category(summary_key, ann, image.image_id)
+        with MappingContextManager(dp_name=annotation_id, filter_level="annotation") as annotation_context:
+            if summary_value:
+                ann = ContainerAnnotation(
+                    category_name=summary_name, category_id=str(summary_number), value=summary_value, score=summary_score
+                )
+            else:
+                ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
+            image.summary.dump_sub_category(summary_key, ann, image.image_id)
+
+        if annotation_context.context_error:
+            return None
         return ann.annotation_id

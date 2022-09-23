@@ -25,12 +25,13 @@ The logger module itself has the common logging functions of Python's
 import errno
 import functools
 import logging
+import logging.config
 import os
 import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from termcolor import colored
 
@@ -39,33 +40,72 @@ from .detection_types import Pathlike
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 
-class _Formatter(logging.Formatter):
+class DoctectionFilter(logging.Filter):
+    """A custom filter"""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        setattr(record, "log_dict", {})
+        return True
+
+
+class DoctectionFormatter(logging.Formatter):
+    """A custom formatter to produce unified LogRecords"""
+
     def format(self, record: logging.LogRecord) -> str:
+        args = record.args
+        str_args = []
+        for arg in args:
+            if isinstance(arg, dict):
+                record.log_dict.update(arg)
+            else:
+                str_args.append(arg)
+
+        record.args = tuple(str_args)
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
-        msg = "%(message)s"
+        msg = colored("%(message)s", "white")
+        record.log_dict["level_no"] = record.levelno
+        record.log_dict["level_name"] = record.levelname
+        record.log_dict["file_name"] = record.filename
+        record.log_dict["line_number"] = record.lineno
+        record.log_dict["message"] = record.msg
+        record.log_dict["time"] = datetime.now().strftime("%m%d-%H%M%S")
+
         if record.levelno == logging.WARNING:
-            fmt = date + " " + colored("WRN", "magenta", attrs=["blink"]) + " " + msg
+            fmt = f"{date}  {colored('WRN', 'magenta', attrs=['blink'])}  {msg}"
         elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:  # pylint: disable=R1714
-            fmt = date + " " + colored("ERR", "red", attrs=["blink", "underline"]) + " " + msg
+            fmt = f"{date}  {colored('ERR', 'red', attrs=['blink', 'underline'])}  {msg}"
         elif record.levelno == logging.DEBUG:
-            fmt = date + " " + colored("DBG", "green", attrs=["blink"]) + " " + msg
+            fmt = f"{date}  {colored('DBG', 'green', attrs=['blink'])}  {msg}"
         elif record.levelno == logging.INFO:
-            fmt = date + " " + colored("INF", "green") + " " + msg
+            fmt = f"{date}  {colored('INF', 'green')}  {msg}"
         else:
-            fmt = date + " " + msg
+            fmt = f"{date} {msg}"
         self._style._fmt = fmt  # pylint: disable=W0212
         self._fmt = fmt
         return super().format(record)
 
 
+_CONFIG_DICT: Dict[str, Any] = {"version": 1,
+                                "filters": {
+                                    "doctectionfilter": {"()": lambda: DoctectionFilter()}},
+                                "formatters": {
+                                    "doctectionformatter":  {"()": lambda: DoctectionFormatter(datefmt="%m%d %H:%M.%S")}
+                                },
+                                "handlers": {
+                                    "doctectionhandler": {
+                                        "filters": ["doctectionfilter"],
+                                        "formatter": "doctectionformatter",
+                                        "class": "logging.StreamHandler"}},
+                                "root": {
+                                    "handlers": ["doctectionhandler"],
+                                    "level": "INFO",
+                                    "propagate": False}}
+
+logging.config.dictConfig(_CONFIG_DICT)
+
+
 def _get_logger() -> logging.Logger:
-    package_name = __name__
-    _logger = logging.getLogger(package_name)
-    _logger.propagate = False
-    _logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(_Formatter(datefmt="%m%d %H:%M.%S"))
-    _logger.addHandler(handler)
+    _logger = logging.getLogger(__name__)
     return _logger
 
 
@@ -93,7 +133,7 @@ def _set_file(path: Pathlike) -> None:
         shutil.move(path, backup_name)
         logger.info("Existing log file %s backuped to %s", path, backup_name)
     hdl = logging.FileHandler(filename=path, encoding="utf-8", mode="w")
-    hdl.setFormatter(_Formatter(datefmt="%m%d %H:%M:%S"))
+    hdl.setFormatter(DoctectionFormatter(datefmt="%m%d %H:%M:%S"))
 
     _FILE_HANDLER = hdl
     logger.addHandler(hdl)
@@ -197,5 +237,4 @@ def log_once(message: str, function: str = "info") -> None:
     :param function: the name of the logger method. e.g. "info", "warn", "error".
     :return:
     """
-
     getattr(logger, function)(message)
