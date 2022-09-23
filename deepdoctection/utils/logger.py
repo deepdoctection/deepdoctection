@@ -31,7 +31,7 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, no_type_check
 
 from termcolor import colored
 
@@ -51,6 +51,7 @@ class DoctectionFilter(logging.Filter):
 class DoctectionFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
+    @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         args = record.args
         str_args = []

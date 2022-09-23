@@ -31,7 +31,7 @@ class DataFlowResetStateNotCalled(BaseException):
     An exception indicating that :meth:`reset_state()` has not been called before starting
     iteration.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Iterating a dataflow requires .reset_state() to be called first")
 
 
