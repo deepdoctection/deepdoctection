@@ -41,11 +41,14 @@ class MappingContextManager:
     context if an exception has been thrown.
     """
 
-    def __init__(self, dp_name: Optional[str] = None) -> None:
+    def __init__(self, dp_name: Optional[str] = None, filter_level: str = "image") -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
+        :param filter_level: Indicates if the :class:`MappingContextManager` is use on datapoint level,
+                             annotation level etc. Filter level will only be used for logging
         """
         self.dp_name = dp_name if dp_name is not None else ""
+        self.filter_level = filter_level
         self.context_error = True
 
     def __enter__(self) -> "MappingContextManager":
@@ -65,11 +68,12 @@ class MappingContextManager:
         """
         if exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError) and exc_tb is not None:
             frame_summary = traceback.extract_tb(exc_tb)[0]
-            logger.warning("mapping error: %s", {"file_name": self.dp_name,
-                                                 "error_type": type(exc_val).__name__,
-                                                 "error_msg": str(exc_val),
-                                                 "module": frame_summary.filename,
-                                                 "line": frame_summary.lineno})
+            logger.warning("MappingContextManager error. Will filter %s", self.filter_level,
+                           {"file_name": self.dp_name,
+                            "error_type": type(exc_val).__name__,
+                            "error_msg": str(exc_val),
+                            "module": frame_summary.filename,
+                            "line": frame_summary.lineno})
             return True
         if exc_type is None:
             self.context_error = False
