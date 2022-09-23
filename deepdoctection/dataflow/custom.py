@@ -44,9 +44,8 @@ class CacheData(ProxyDataFlow):
 
     def __init__(self, df: DataFlow, shuffle: bool = False) -> None:
         """
-        Args:
-            df (DataFlow): input DataFlow.
-            shuffle (bool): whether to shuffle the cache before yielding from it.
+        :param df: input DataFlow.
+        :param shuffle: whether to shuffle the cache before yielding from it.
         """
         self.shuffle = shuffle
         self.buffer: List[Any] = []

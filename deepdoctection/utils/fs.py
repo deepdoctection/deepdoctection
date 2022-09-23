@@ -44,6 +44,7 @@ __all__ = [
     "mkdir_p",
     "is_file_extension",
     "load_json",
+    "FileExtensionError"
 ]
 
 
@@ -122,6 +123,12 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
 
     logger.info("Successfully downloaded %s. %s.", file_name, sizeof_fmt(size))
     return f_path
+
+
+class FileExtensionError(BaseException):
+    """
+    An exception indicating that a file does not seem to have an expected type
+    """
 
 
 def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:

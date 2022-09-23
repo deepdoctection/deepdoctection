@@ -66,9 +66,11 @@ def _get_pipe_name(name):
         pipename = f"ipc://@{name}-pipe-{str(uuid.uuid1())[:8]}"
     else:
         pipedir = "."
-        assert os.path.isdir(pipedir), pipedir
+        if not os.path.isdir(pipedir):
+            raise NotADirectoryError(pipedir)
         filename = f"{pipedir.rstrip('/')}/{name}-pipe-{str(uuid.uuid1())[:6]}"
-        assert not os.path.exists(filename), f"Pipe {filename} exists! You may be unlucky."
+        if os.path.exists(filename):
+            raise FileExistsError(filename)
         pipename = f"ipc://{filename}"
     return pipename
 
@@ -76,7 +78,8 @@ def _get_pipe_name(name):
 class _ParallelMapData(ProxyDataFlow, ABC):
     def __init__(self, df: DataFlow, buffer_size: int, strict: bool = False) -> None:
         super().__init__(df)
-        assert buffer_size > 0, buffer_size
+        if not buffer_size:
+            raise ValueError("buffer_size must be a positive number")
         self._buffer_size = buffer_size
         self._buffer_occupancy = 0  # actual #elements in buffer, only useful in strict mode
         self._strict = strict
@@ -276,7 +279,8 @@ class MultiThreadMapData(_ParallelMapData):
 
 class _MultiProcessZMQDataFlow(DataFlow, ABC):
     def __init__(self) -> None:
-        assert os.name != "nt", "ZMQ IPC doesn't support windows!"
+        if os.name == "nt":
+            raise EnvironmentError("ZMQ IPC doesn't support windows")
         self._reset_done = False
         self._procs: List[Any] = []
         self.context = None
@@ -307,7 +311,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
             for x in self._procs:
                 x.terminate()
                 x.join(5)
-            print(f"{type(self).__name__} successfully cleaned-up.")
+            logger.info(f"{type(self).__name__} successfully cleaned-up.")
         except Exception:  # pylint: disable=W0703
             pass
 
@@ -318,9 +322,8 @@ def _bind_guard(sock, name):
         sock.bind(name)
     except zmq.ZMQError:
         logger.error(
-            "ZMQError in socket.bind('{name}'). Perhaps you're \
-using pipes on a non-local file system. See documentation of MultiProcessRunnerZMQ \
-for more information."
+            "ZMQError in socket.bind('{name}'). Perhaps you're using pipes on a non-local file system. "
+            "See documentation of MultiProcessRunnerZMQ for more information."
         )
         raise
 
@@ -391,7 +394,8 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
 
         _ParallelMapData.__init__(self, df, buffer_size, strict)
         _MultiProcessZMQDataFlow.__init__(self)
-        assert num_proc > 0, num_proc
+        if num_proc:
+            raise ValueError("num_proc must be a positive number")
         self.num_proc = num_proc
         self.map_func = map_func
         self._strict = strict
