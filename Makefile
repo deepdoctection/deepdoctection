@@ -42,7 +42,7 @@ format:
 
 install-dd-dev-pt: check-venv
 	@echo "--> Installing source-all-pt"
-	pip install -e ".[source-all-pt]"
+	pip install -e ".[source-pt]"
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
@@ -50,7 +50,7 @@ install-dd-dev-pt: check-venv
 
 install-dd-dev-tf: check-venv
 	@echo "--> Installing source-all-tf"
-	pip install -e ".[source-all-tf]"
+	pip install -e ".[tf]"
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
