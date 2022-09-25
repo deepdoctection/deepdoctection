@@ -146,9 +146,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        annotation_split = self.annotation_files[split]
-        assert isinstance(annotation_split, str)
-        path_ann_files = self.get_workdir() / self.splits[split] / annotation_split
+        path_ann_files = self.get_workdir() / self.splits[split] / self.get_annotation_file(split)
 
         df = SerializerFiles.load(path_ann_files, ".json", max_datapoints)
 

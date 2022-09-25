@@ -128,9 +128,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
 
         # Load
-        dataset_split = self.annotation_files[split]
-        assert isinstance(dataset_split, str)
-        path_ann_files = self.get_workdir() / dataset_split
+        path_ann_files = self.get_workdir() / self.get_annotation_file(split)
 
         df = SerializerFiles.load(path_ann_files, ".xml", max_datapoints)
         utf8_parser = etree.XMLParser(encoding="utf-8")

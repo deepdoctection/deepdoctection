@@ -93,12 +93,16 @@ _CONFIG_DICT: Dict[str, Any] = {"version": 1,
                                     "doctectionformatter":  {"()": lambda: DoctectionFormatter(datefmt="%m%d %H:%M.%S")}
                                 },
                                 "handlers": {
-                                    "doctectionhandler": {
+                                    "doctectionhandler_stream": {
+                                        "filters": ["doctectionfilter"],
+                                        "formatter": "doctectionformatter",
+                                        "class": "logging.StreamHandler"},
+                                    "doctectionhandler_file": {
                                         "filters": ["doctectionfilter"],
                                         "formatter": "doctectionformatter",
                                         "class": "logging.StreamHandler"}},
                                 "root": {
-                                    "handlers": ["doctectionhandler"],
+                                    "handlers": ["doctectionhandler_stream"],
                                     "level": "INFO",
                                     "propagate": False}}
 

@@ -110,9 +110,11 @@ def image_to_layoutlm(
     all_input_ids = []
     for ann in anns:
         char_cat = ann.get_sub_category(WordType.characters)
-        assert isinstance(char_cat, ContainerAnnotation)
+        if not isinstance(char_cat, ContainerAnnotation):
+            raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
         word = char_cat.value
-        assert isinstance(word, str)
+        if not isinstance(word, str):
+            raise ValueError(f"word must be of type str but is of type {type(word)}")
         words.append(word)
         word_tokens = tokenizer.tokenize(word)
         all_input_ids.extend(tokenizer.convert_tokens_to_ids(word_tokens))
@@ -122,7 +124,7 @@ def image_to_layoutlm(
             box = ann.image.get_embedding(dp.image_id)
         else:
             box = ann.bounding_box
-        assert box is not None
+        assert box is not None, box
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
         box = box.to_list(mode="xyxy")
@@ -229,16 +231,18 @@ def image_to_raw_layoutlm_features(
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
         char_cat = ann.get_sub_category(WordType.characters)
-        assert isinstance(char_cat, ContainerAnnotation)
+        if not isinstance(char_cat, ContainerAnnotation):
+            raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
         word = char_cat.value
-        assert isinstance(word, str)
+        if not isinstance(word, str):
+            raise ValueError(f"word must be of type str but is of type {type(word)}")
         all_words.append(word)
 
         if ann.image is not None:
             box = ann.image.get_embedding(dp.image_id)
         else:
             box = ann.bounding_box
-        assert box is not None
+        assert box is not None, box
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
         all_boxes.append(box.to_list(mode="xyxy"))
@@ -492,10 +496,10 @@ class LayoutLMDataCollator:
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
         if self.return_tensors:
-            assert self.padding not in ("do_not_pad",)
-            assert self.truncation
+            assert self.padding not in ("do_not_pad",), self.padding
+            assert self.truncation, self.truncation
         if self.return_overflowing_tokens:
-            assert self.truncation
+            assert self.truncation, self.truncation
 
     def __call__(self, raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
         """

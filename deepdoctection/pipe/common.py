@@ -210,7 +210,7 @@ class PageParsingService:
 
     def _init_sanity_checks(self) -> None:
         assert self._text_container in [LayoutType.word, LayoutType.line], (
-            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
+            f"text_container must be either {LayoutType.word} or {LayoutType.line}"
         )
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names

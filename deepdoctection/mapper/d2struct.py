@@ -64,7 +64,8 @@ def image_to_d2_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
     annotations = []
 
     for ann in anns:
-        assert isinstance(ann.bounding_box, BoundingBox)
+        if ann.bounding_box is None:
+            raise ValueError("BoundingBox cannot be None")
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": ann.bounding_box.to_list(mode="xyxy"),

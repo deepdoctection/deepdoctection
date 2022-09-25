@@ -152,7 +152,8 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
-        assert isinstance(predictor, (ObjectDetector, PdfMiner))
+        if not isinstance(predictor, (ObjectDetector, PdfMiner)):
+            raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
         return self.__class__(predictor, copy(self.dp_manager.category_id_mapping))
 
 
