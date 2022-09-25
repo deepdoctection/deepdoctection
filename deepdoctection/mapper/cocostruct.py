@@ -119,7 +119,9 @@ def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
     :return: A tuple of dicts, the first corresponding to the coco-image object, the second to their coco-annotations
     """
 
-    assert isinstance(dp, Image), f"datapoints must be of type Image, is of type {type(dp)}"
+    if not isinstance(dp, Image):
+        raise TypeError(f"datapoints must be of type Image, is of type {type(dp)}")
+
     img: JsonDict = {}
     anns: List[JsonDict] = []
 

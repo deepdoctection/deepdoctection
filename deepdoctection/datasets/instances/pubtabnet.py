@@ -36,7 +36,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
-from ...utils.logger import log_once, logger
+from ...utils.logger import logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -143,7 +143,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         """
         split = str(kwargs.get("split", "val"))
         if split == "val":
-            log_once("Loading annotations for 'val' split from Pubtabnet will take some time...")
+            logger.info("Loading annotations for 'val' split from Pubtabnet will take some time.")
         max_datapoints = kwargs.get("max_datapoints")
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -153,14 +153,12 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
         dd_pipe_like = kwargs.get("dd_pipe_like", False)
         if dd_pipe_like:
-            logger.info("When 'dd_pipe_like' is set to True will reset 'load_image' to True")
+            logger.info("When 'dd_pipe_like'=True will set 'load_image'=True")
             load_image = True
 
         # Load
         df: DataFlow
-        dataset_split = self.annotation_files["all"]
-        assert isinstance(dataset_split, str)
-        path = self.get_workdir() / dataset_split
+        path = self.get_workdir() / self.get_annotation_file("all")
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map

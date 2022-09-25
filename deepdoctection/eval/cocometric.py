@@ -228,10 +228,10 @@ class CocoMetric(MetricBase):
         :param f1_iou: Use with f1_score True and reset the f1 iou threshold
         """
         if max_detections is not None:
-            assert len(max_detections) == 3
+            assert len(max_detections) == 3, max_detections
             cls._params["maxDets"] = max_detections
         if area_range is not None:
-            assert len(area_range) == 4
+            assert len(area_range) == 4, area_range
             cls._params["areaRng"] = area_range
 
         cls._f1_score = f1_score

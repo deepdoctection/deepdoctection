@@ -57,7 +57,7 @@ class DatapointManager:
         """
         if self._datapoint is not None:
             return self._datapoint
-        raise AssertionError("no datapoint passed")
+        raise ValueError("no datapoint passed")
 
     @datapoint.setter
     def datapoint(self, dp: Image) -> None:
@@ -116,8 +116,10 @@ class DatapointManager:
         :return: the annotation_id of the generated image annotation
         """
         self.assert_datapoint_passed()
-        assert detect_result.class_id
-        assert isinstance(detect_result.box, (list, np.ndarray))
+        assert detect_result.class_id, detect_result.class_id
+        if not isinstance(detect_result.box, (list, np.ndarray)):
+            raise TypeError(f"detect_result.box must be of type list or np.ndarray, "
+                            f"but is of type {(type(detect_result.box))}")
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
         with MappingContextManager(dp_name=str(detect_result), filter_level="annotation") as annotation_context:
             box = BoundingBox(
@@ -143,13 +145,13 @@ class DatapointManager:
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
-                assert parent_ann.image
+                assert parent_ann.image, parent_ann.image
                 parent_ann.image.dump(ann)
                 parent_ann.image.image_ann_to_image(ann.annotation_id)
                 ann_global_box = local_to_global_coords(
                     ann.bounding_box, parent_ann.image.get_embedding(self.datapoint.image_id)  # type: ignore
                 )
-                assert ann.image
+                assert ann.image, ann.image
                 ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)
                 ann.image.set_embedding(self.datapoint.image_id, ann_global_box)
                 parent_ann.dump_relationship(Relationships.child, ann.annotation_id)
@@ -246,7 +248,7 @@ class DatapointManager:
             image = self._cache_anns[annotation_id].image
         else:
             image = self.datapoint
-        assert image is not None
+        assert image is not None, image
         if image.summary is None:
             image.summary = SummaryAnnotation()
 
