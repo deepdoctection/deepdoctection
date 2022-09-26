@@ -106,7 +106,7 @@ class DoctectionPipe(Pipeline):
             if path is None:
                 path_tmp = doc_path
             else:
-                path_tmp = path # type: ignore
+                path_tmp = path  # type: ignore
             logger.info("Processing %s", dp.file_name, {"path": path_tmp, "df": path_tmp, "file_name": dp.file_name})
             return dp
 

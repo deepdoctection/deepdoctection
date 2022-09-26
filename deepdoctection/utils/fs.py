@@ -30,11 +30,11 @@ from urllib.request import urlretrieve
 
 from cv2 import IMREAD_COLOR, imread
 
-from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .utils import is_file_extension, FileExtensionError
 from .detection_types import ImageType, JsonDict, Pathlike
 from .logger import logger
+from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .tqdm import get_tqdm
+from .utils import FileExtensionError, is_file_extension
 
 __all__ = [
     "load_image_from_file",
@@ -45,7 +45,7 @@ __all__ = [
     "mkdir_p",
     "is_file_extension",
     "load_json",
-    "FileExtensionError"
+    "FileExtensionError",
 ]
 
 

@@ -155,10 +155,12 @@ class Image:
 
     @property
     def summary(self) -> Optional[SummaryAnnotation]:
+        """summary"""
         return self._summary
 
     @summary.setter
     def summary(self, summary_annotation: SummaryAnnotation) -> None:
+        """summary setter"""
         if summary_annotation._annotation_id is None:  # pylint: disable=W0212
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
         self._summary = summary_annotation
@@ -297,8 +299,10 @@ class Image:
         :param annotation: image annotation to store
         """
         if not isinstance(annotation, ImageAnnotation):
-            raise TypeError(f"Annotation must be of type ImageAnnotation: "
-                            f"{annotation.annotation_id} but is of type {str(type(annotation))}")
+            raise TypeError(
+                f"Annotation must be of type ImageAnnotation: "
+                f"{annotation.annotation_id} but is of type {str(type(annotation))}"
+            )
         if annotation._annotation_id is None:  # pylint: disable=W0212
             annotation.annotation_id = self.define_annotation_id(annotation)
         if annotation.annotation_id in self._annotation_ids:
@@ -325,11 +329,7 @@ class Image:
         :return: A (possibly empty) list of Annotations
         """
 
-        cat_names = (
-            [category_names]
-            if isinstance(category_names, (ObjectTypes,str))
-            else category_names
-        )
+        cat_names = [category_names] if isinstance(category_names, (ObjectTypes, str)) else category_names
         if cat_names is not None:
             cat_names = [get_type(cat_name) for cat_name in cat_names]
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
@@ -475,8 +475,9 @@ class Image:
         sub_images = self.get_annotation(annotation_ids=selected_ids.tolist())
         for sub_image in sub_images:
             if sub_image.image is None:
-                raise ValueError("When setting an embedding to ImageAnnotation then ImageAnnotation.image must not "
-                                 "be None")
+                raise ValueError(
+                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not " "be None"
+                )
             sub_image.image.set_embedding(
                 annotation_id,
                 global_to_local_coords(

@@ -49,13 +49,9 @@ def _global_import(
 _global_import("file_utils", suffix=("_available", "_requirement"))
 _global_import("metacfg", prefix=("set_config_by_yaml", "save_config_to_yaml", "config_to_cli_str"))
 _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string_to_dict"))
-_global_import("settings", suffix=("Type",
-                                   "TokenClasses",
-                                   "BioTag",
-                                   "TokenClassWithTag",
-                                   "Relationships",
-                                   "Languages",
-                                   "get_type"))
+_global_import(
+    "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
+)
 
 # pylint: disable=undefined-variable
 __all__.extend(context.__all__)  # type: ignore

@@ -16,7 +16,7 @@ from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
-from .base import DataFlow, RNGDataFlow, DataFlowResetStateNotCalled
+from .base import DataFlow, DataFlowResetStateNotCalled, RNGDataFlow
 
 
 class DataFromList(RNGDataFlow):

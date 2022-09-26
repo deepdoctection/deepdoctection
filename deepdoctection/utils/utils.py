@@ -23,11 +23,11 @@ import inspect
 import os
 from collections.abc import MutableMapping
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Set, Union, Sequence
-
-from .detection_types import Pathlike
+from typing import Any, Callable, Dict, List, Sequence, Set, Union
 
 import numpy as np
+
+from .detection_types import Pathlike
 
 
 def delete_keys_from_dict(

@@ -311,7 +311,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
             for x in self._procs:
                 x.terminate()
                 x.join(5)
-            logger.info(f"{type(self).__name__} successfully cleaned-up.")
+            logger.info("%s successfully cleaned-up.", type(self).__name__)
         except Exception:  # pylint: disable=W0703
             pass
 

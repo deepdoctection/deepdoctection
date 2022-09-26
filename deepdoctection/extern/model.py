@@ -692,8 +692,11 @@ class ModelDownloadManager:
         for expect_size, file_name in zip(profile.size, file_names):
             size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
-                logger.error("File downloaded from %s does not match the expected size! You may have downloaded"
-                             " a broken file, or the upstream may have modified the file.", repo_id)
+                logger.error(
+                    "File downloaded from %s does not match the expected size! You may have downloaded"
+                    " a broken file, or the upstream may have modified the file.",
+                    repo_id,
+                )
 
     @staticmethod
     def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:

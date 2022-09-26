@@ -18,8 +18,9 @@
 """
 Module for datapoint populating helpers
 """
-from typing import Dict, List, Mapping, Optional, Union
 from dataclasses import asdict
+from typing import Dict, List, Mapping, Optional, Union
+
 import numpy as np
 
 from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
@@ -118,12 +119,13 @@ class DatapointManager:
         self.assert_datapoint_passed()
         assert detect_result.class_id, detect_result.class_id
         if not isinstance(detect_result.box, (list, np.ndarray)):
-            raise TypeError(f"detect_result.box must be of type list or np.ndarray, "
-                            f"but is of type {(type(detect_result.box))}")
+            raise TypeError(
+                f"detect_result.box must be of type list or np.ndarray, " f"but is of type {(type(detect_result.box))}"
+            )
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
-        with MappingContextManager(dp_name=self._datapoint.file_name,
-                                   filter_level="annotation",
-                                   detect_result=asdict(detect_result)) as annotation_context:
+        with MappingContextManager(
+            dp_name=self.datapoint.file_name, filter_level="annotation", detect_result=asdict(detect_result)
+        ) as annotation_context:
             box = BoundingBox(
                 ulx=detect_result.box[0],
                 uly=detect_result.box[1],
@@ -187,11 +189,15 @@ class DatapointManager:
         :return: the annotation_id of the generated category annotation
         """
         self.assert_datapoint_passed()
-        with MappingContextManager(dp_name=self._datapoint.file_name,
-                                   filter_level="annotation",
-                                   category_annotation={"category_name": category_name.value,
-                                                        "sub_cat_key": sub_cat_key.value,
-                                                        "annotation_id": annotation_id}) as annotation_context:
+        with MappingContextManager(
+            dp_name=self.datapoint.file_name,
+            filter_level="annotation",
+            category_annotation={
+                "category_name": category_name.value,
+                "sub_cat_key": sub_cat_key.value,
+                "annotation_id": annotation_id,
+            },
+        ) as annotation_context:
             cat_ann = CategoryAnnotation(category_name=category_name, category_id=str(category_id), score=score)
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
         if annotation_context.context_error:
@@ -219,13 +225,16 @@ class DatapointManager:
         :return: annotation_id of the generated container annotation
         """
         self.assert_datapoint_passed()
-        with MappingContextManager(dp_name=self._datapoint.file_name,
-                                   filter_level="annotation",
-                                   container_annotation={"category_name": category_name.value,
-                                                         "sub_cat_key": sub_cat_key.value,
-                                                         "annotation_id": annotation_id,
-                                                         "value": str(value)}
-                                   ) as annotation_context:
+        with MappingContextManager(
+            dp_name=self.datapoint.file_name,
+            filter_level="annotation",
+            container_annotation={
+                "category_name": category_name.value,
+                "sub_cat_key": sub_cat_key.value,
+                "annotation_id": annotation_id,
+                "value": str(value),
+            },
+        ) as annotation_context:
             cont_ann = ContainerAnnotation(
                 category_name=category_name, category_id=str(category_id), value=value, score=score
             )
@@ -265,18 +274,27 @@ class DatapointManager:
             image.summary = SummaryAnnotation()
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
-        with MappingContextManager(dp_name=annotation_id,
-                                   filter_level="annotation",
-                                   summary_annotation={"summary_key": summary_key.value,
-                                                       "summary_name": summary_name.value,
-                                                       "summary_value": summary_value,
-                                                       "annotation_id": annotation_id}) as annotation_context:
+        with MappingContextManager(
+            dp_name=annotation_id,
+            filter_level="annotation",
+            summary_annotation={
+                "summary_key": summary_key.value,
+                "summary_name": summary_name.value,
+                "summary_value": summary_value,
+                "annotation_id": annotation_id,
+            },
+        ) as annotation_context:
             if summary_value:
                 ann = ContainerAnnotation(
-                    category_name=summary_name, category_id=str(summary_number), value=summary_value, score=summary_score
+                    category_name=summary_name,
+                    category_id=str(summary_number),
+                    value=summary_value,
+                    score=summary_score,
                 )
             else:
-                ann = CategoryAnnotation(category_name=summary_name, category_id=str(summary_number), score=summary_score)
+                ann = CategoryAnnotation(
+                    category_name=summary_name, category_id=str(summary_number), score=summary_score
+                )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 
         if annotation_context.context_error:

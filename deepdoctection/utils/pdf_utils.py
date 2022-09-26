@@ -35,7 +35,7 @@ from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
 from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import logger
-from .utils import is_file_extension, FileExtensionError
+from .utils import FileExtensionError, is_file_extension
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
@@ -91,7 +91,7 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
         if input_pdf_as_bytes.isEncrypted:
             is_decrypted = decrypt_pdf_document(path)
             if not is_decrypted:
-                logger.error(f"pdf document {path} cannot be decrypted and therefore cannot be processed further.")
+                logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
                 sys.exit()
 
     file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732

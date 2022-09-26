@@ -235,8 +235,9 @@ class MergeDataset(DatasetBase):
         """
         self.dataflows = dataflows
         if len(self.datasets) > len(self.dataflows):
-            raise ValueError(f"len(self.datasets) = {len(self.datasets)} must be"
-                             f" <= len(self.dataflows) = {len(self.dataflows)}")
+            raise ValueError(
+                f"len(self.datasets) = {len(self.datasets)} must be" f" <= len(self.dataflows) = {len(self.dataflows)}"
+            )
         self._dataflow_builder = self._builder()
         self._dataflow_builder.categories = self._categories()
 

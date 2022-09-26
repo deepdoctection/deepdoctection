@@ -726,7 +726,7 @@ class DatapointCoco:
 
 
 @dataclass
-class DatapointPubtabnet:  # pylint: disable=R0904
+class DatapointPubtabnet:
     """
     Class for datapoint in pubtabnet annotation format
     """
