@@ -229,7 +229,8 @@ class MultiThreadMapData(_ParallelMapData):
                 pass
 
         super().__init__(df, buffer_size, strict)
-        assert num_thread > 0, num_thread
+        if not num_thread:
+            raise ValueError("num_thread must be a positive number")
 
         self._strict = strict
         self.num_thread = num_thread
@@ -394,7 +395,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
 
         _ParallelMapData.__init__(self, df, buffer_size, strict)
         _MultiProcessZMQDataFlow.__init__(self)
-        if num_proc:
+        if not num_proc:
             raise ValueError("num_proc must be a positive number")
         self.num_proc = num_proc
         self.map_func = map_func
