@@ -962,14 +962,14 @@ class DatapointImage:
         self.len_spans: int = 2
         self.first_span: JsonDict = {
             "label": TestType.FOO,
-            "annotation_id": "aa62b83f-0c73-3e00-a289-f602ef512db5",
+            "annotation_id": "ec7e5bca-b4f4-3272-8952-35a500663131",
             "score": 0.53,
             "type": "rect",
             "points": [[2.6, 3.7], [2.6, 5.7], [4.6, 5.7], [4.6, 3.7]],
         }
         self.second_span: JsonDict = {
             "label": TestType.BAK,
-            "annotation_id": "108246c0-4eee-32cc-b3c7-5b6705d4bee6",
+            "annotation_id": "b8cb337a-de1b-3bfd-bb36-603d852104f2",
             "score": 0.99,
             "type": "rect",
             "points": [[16.6, 26.6], [16.6, 30.6], [30.6, 30.6], [30.6, 26.6]],
@@ -1917,9 +1917,9 @@ class DatapointXfund:
         "width": 1000,
         "height": 1000,
         "ann_ids": [
-            "9189ca58-d603-348e-96f6-a41c322e4a55",
-            "6cd1cb41-fdf4-3508-8f41-d457ae6e26d1",
-            "499ea7ac-ddff-3efd-8f48-bb5e580e613b",
+            "440c677a-05ca-33a5-8e61-dd2a9724367d",
+            "75d7e019-4951-342b-b073-27aba447e7e8",
+            "0b07ba23-6f2c-3c73-ab62-cb1bd891ae7f",
         ],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],

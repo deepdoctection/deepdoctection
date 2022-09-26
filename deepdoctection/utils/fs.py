@@ -25,12 +25,13 @@ import os
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
-from typing import Callable, Literal, Optional, Protocol, Sequence, Union, overload
+from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
 from cv2 import IMREAD_COLOR, imread
 
-from ..utils.pdf_utils import get_pdf_file_reader, get_pdf_file_writer
+from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
+from .utils import is_file_extension, FileExtensionError
 from .detection_types import ImageType, JsonDict, Pathlike
 from .logger import logger
 from .tqdm import get_tqdm
@@ -123,25 +124,6 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
 
     logger.info("Successfully downloaded %s. %s.", file_name, sizeof_fmt(size))
     return f_path
-
-
-class FileExtensionError(BaseException):
-    """
-    An exception indicating that a file does not seem to have an expected type
-    """
-
-
-def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:
-    """
-    Check if a given file name has a given extension
-
-    :param file_name: the file name, either full along with path or as stand alone
-    :param extension: the extension of the file. Must add a dot (.)
-    :return: True/False
-    """
-    if isinstance(extension, str):
-        return os.path.splitext(file_name)[-1].lower() == extension
-    return os.path.splitext(file_name)[-1].lower() in extension
 
 
 @overload

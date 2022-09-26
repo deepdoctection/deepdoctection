@@ -27,6 +27,7 @@ from pytest import mark, raises
 
 from deepdoctection.datapoint import (
     BoundingBox,
+    BoundingBoxError,
     crop_box_from_image,
     global_to_local_coords,
     intersection_box,
@@ -53,10 +54,10 @@ class TestBoundingBox:
         """
 
         # Act and Assert
-        with raises(AssertionError):
+        with raises(BoundingBoxError):
             BoundingBox(ulx=box.ulx, uly=box.uly, lrx=box.lrx, absolute_coords=box.absolute_coords)
 
-        with raises(AssertionError):
+        with raises(BoundingBoxError):
             BoundingBox(ulx=box.ulx, uly=box.uly, height=box.h, width=0.0, absolute_coords=box.absolute_coords)
 
     @staticmethod

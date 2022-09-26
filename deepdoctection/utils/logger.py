@@ -24,6 +24,7 @@ The logger module itself has the common logging functions of Python's
 
 import errno
 import functools
+import json
 import logging
 import logging.config
 import os
@@ -32,6 +33,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, no_type_check
+from copy import copy
 
 from termcolor import colored
 
@@ -40,36 +42,31 @@ from .detection_types import Pathlike
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 
-class DoctectionFilter(logging.Filter):
+class CustomFilter(logging.Filter):
     """A custom filter"""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        setattr(record, "log_dict", {})
-        return True
-
-
-class DoctectionFormatter(logging.Formatter):
-    """A custom formatter to produce unified LogRecords"""
-
-    @no_type_check
-    def format(self, record: logging.LogRecord) -> str:
+        log_dict = {}
         args = record.args
         str_args = []
         for arg in args:
             if isinstance(arg, dict):
-                record.log_dict.update(arg)
+                log_dict.update(arg)
             else:
                 str_args.append(arg)
-
         record.args = tuple(str_args)
+        if not hasattr(record, "log_dict"):
+            setattr(record, "log_dict", log_dict)
+        return True
+
+
+class StreamFormatter(logging.Formatter):
+    """A custom formatter to produce unified LogRecords"""
+
+    @no_type_check
+    def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
         msg = colored("%(message)s", "white")
-        record.log_dict["level_no"] = record.levelno
-        record.log_dict["level_name"] = record.levelname
-        record.log_dict["file_name"] = record.filename
-        record.log_dict["line_number"] = record.lineno
-        record.log_dict["message"] = record.msg
-        record.log_dict["time"] = datetime.now().strftime("%m%d-%H%M%S")
 
         if record.levelno == logging.WARNING:
             fmt = f"{date}  {colored('WRN', 'magenta', attrs=['blink'])}  {msg}"
@@ -86,30 +83,42 @@ class DoctectionFormatter(logging.Formatter):
         return super().format(record)
 
 
+class FileFormatter(logging.Formatter):
+    """A custom formatter to produce a loggings in json format"""
+
+    @no_type_check
+    def format(self, record: logging.LogRecord) -> str:
+        message = super().format(record)
+        log_dict = {"level_no": record.levelno,
+                    "level_name": record.levelname,
+                    "module_name": record.filename,
+                    "line_number": record.lineno,
+                    "time": datetime.now().strftime("%m%d-%H%M%S"),
+                    "message": message}
+        log_dict.update(record.log_dict)
+        return json.dumps(log_dict)
+
+
+_LOG_DIR = None
 _CONFIG_DICT: Dict[str, Any] = {"version": 1,
                                 "filters": {
-                                    "doctectionfilter": {"()": lambda: DoctectionFilter()}},
+                                    "customfilter": {"()": lambda: CustomFilter()}},
                                 "formatters": {
-                                    "doctectionformatter":  {"()": lambda: DoctectionFormatter(datefmt="%m%d %H:%M.%S")}
+                                    "streamformatter":  {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
                                 },
                                 "handlers": {
-                                    "doctectionhandler_stream": {
-                                        "filters": ["doctectionfilter"],
-                                        "formatter": "doctectionformatter",
-                                        "class": "logging.StreamHandler"},
-                                    "doctectionhandler_file": {
-                                        "filters": ["doctectionfilter"],
-                                        "formatter": "doctectionformatter",
+                                    "streamhandler": {
+                                        "filters": ["customfilter"],
+                                        "formatter": "streamformatter",
                                         "class": "logging.StreamHandler"}},
                                 "root": {
-                                    "handlers": ["doctectionhandler_stream"],
+                                    "handlers": ["streamhandler"],
                                     "level": "INFO",
                                     "propagate": False}}
 
-logging.config.dictConfig(_CONFIG_DICT)
-
 
 def _get_logger() -> logging.Logger:
+    logging.config.dictConfig(_CONFIG_DICT)
     _logger = logging.getLogger(__name__)
     return _logger
 
@@ -121,7 +130,7 @@ for func in _LOGGING_METHOD:
     locals()[func] = getattr(logger, func)
     __all__.append(func)
 
-LOG_DIR = None
+
 _FILE_HANDLER = None
 
 
@@ -138,7 +147,8 @@ def _set_file(path: Pathlike) -> None:
         shutil.move(path, backup_name)
         logger.info("Existing log file %s backuped to %s", path, backup_name)
     hdl = logging.FileHandler(filename=path, encoding="utf-8", mode="w")
-    hdl.setFormatter(DoctectionFormatter(datefmt="%m%d %H:%M:%S"))
+    hdl.setFormatter(FileFormatter(datefmt="%m%d %H:%M:%S"))
+    hdl.addFilter(CustomFilter())
 
     _FILE_HANDLER = hdl
     logger.addHandler(hdl)
@@ -164,8 +174,9 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
     if isinstance(dir_name, Path):
         dir_name = dir_name.as_posix()
     dir_name = os.path.normpath(dir_name)
-    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0603
+    global _LOG_DIR, _FILE_HANDLER  # pylint: disable=W0603
     if _FILE_HANDLER:
+        # unload and close the old file handler, so that we may safely delete the logger directory
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
@@ -196,15 +207,14 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
             pass
         else:
             raise OSError(f"Directory {dir_name} exits!")
-    LOG_DIR = dir_name
-
+    _LOG_DIR = os.path.join(dir_name, "log.jsonl")
     try:
         os.makedirs(dir_name)
     except OSError as err:
         if err.errno != errno.EEXIST:
             raise err
 
-    _set_file(os.path.join(dir_name, "log.log"))
+    _set_file(_LOG_DIR)
 
 
 def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> None:
@@ -229,7 +239,7 @@ def get_logger_dir() -> Optional[str]:
     The logger directory, or None if not set.
     The directory is used for general logging, tensorboard events, checkpoints, etc.
     """
-    return LOG_DIR
+    return _LOG_DIR
 
 
 @functools.lru_cache(maxsize=None)
