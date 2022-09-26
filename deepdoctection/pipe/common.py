@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 
-from typing import List, Optional, Union, Sequence
+from typing import List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -29,7 +29,7 @@ from ..datapoint.page import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, Relationships, TypeOrStr, get_type, ObjectTypes
+from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -209,9 +209,10 @@ class PageParsingService:
         return MapData(df, self.pass_datapoint)
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [LayoutType.word, LayoutType.line], (
-            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
-        )
+        assert self._text_container in [
+            LayoutType.word,
+            LayoutType.line,
+        ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names
         ), "floating_text_block_names must be a subset of text_block_names"

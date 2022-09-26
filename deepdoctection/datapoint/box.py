@@ -139,6 +139,10 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return np_iou(boxes1, boxes2)
 
 
+class BoundingBoxError(BaseException):
+    """Special exception only for :class:`BoundingBox`"""
+
+
 @dataclass
 class BoundingBox:
     """
@@ -174,30 +178,34 @@ class BoundingBox:
 
     def __post_init__(self) -> None:
         if self.width == 0.0:
-            assert self.lrx is not None, "Bounding box not fully initialized"
+            if self.lrx is None:
+                raise BoundingBoxError("Bounding box not fully initialized")
             self.width = self.lrx - self.ulx
         if self.height == 0.0:
-            assert self.lry is not None, "Bounding box not fully initialized"
+            if self.lry is None:
+                raise BoundingBoxError("Bounding box not fully initialized")
             self.height = self.lry - self.uly
 
         if self.lrx == 0.0:
-            assert self.width is not None, "Bounding box not fully initialized"
+            if self.width is None:
+                raise BoundingBoxError("Bounding box not fully initialized")
             self.lrx = self.ulx + self.width
         if self.lry == 0.0:
-            assert self.height is not None, "Bounding box not fully initialized"
+            if self.height is None:
+                raise BoundingBoxError("Bounding box not fully initialized")
             self.lry = self.uly + self.height
 
-        assert self.ulx >= 0.0 and self.uly >= 0.0, "bounding box ul must be >= (0.,0.)"
-        assert self.height > 0.0 and self.width > 0.0, (
-            f"bounding box must have height and width >0. Check coords "
-            f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
-            f"lry: {self.lry}."
-        )
-
+        if not (self.ulx >= 0.0 and self.uly >= 0.0):
+            raise BoundingBoxError("Bounding box ul must be >= (0.,0.)")
+        if not (self.height > 0.0 and self.width > 0.0):
+            raise BoundingBoxError(
+                f"bounding box must have height and width >0. Check coords "
+                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
+                f"lry: {self.lry}."
+            )
         if not self.absolute_coords:
-            assert (
-                self.ulx <= 1.0 and self.uly <= 1.0 and self.lrx <= 1.0 and self.lry <= 1.0
-            ), "coordinates must be between 0 and 1"
+            if not (self.ulx <= 1.0 and self.uly <= 1.0 and self.lrx <= 1.0 and self.lry <= 1.0):
+                raise BoundingBoxError("coordinates must be between 0 and 1")
 
     @property
     def cx(self) -> float:
@@ -245,7 +253,7 @@ class BoundingBox:
         np_poly_scale = np.array(
             [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
         )
-        assert mode in ("xyxy", "xywh", "poly"), "not a valid mode"
+        assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return np.array([self.ulx, self.uly, self.lrx, self.lry], dtype=np.float32) * np_box_scale
         if mode == "xywh":
@@ -267,7 +275,7 @@ class BoundingBox:
         :param scale_y: rescale the y coordinate. Defaults to 1
         :return: box coordinates
         """
-        assert mode in ("xyxy", "xywh", "poly"), "not a valid mode"
+        assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return [
                 self.ulx * scale_x,
@@ -331,7 +339,7 @@ class BoundingBox:
         return self
 
     def __str__(self) -> str:
-        return f"Bounding Box ulx: {self.ulx} uly: {self.uly} lrx: {self.lrx} lry: {self.lry}"
+        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod
     def remove_keys() -> List[str]:
@@ -430,7 +438,11 @@ def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -
     :return: bounding box with local box transformed to absolute coords
     """
 
-    assert local_box.absolute_coords and embedding_box.absolute_coords, "absolute coords required"
+    assert local_box.absolute_coords and embedding_box.absolute_coords, (
+        f"absolute coords "
+        f"(={local_box.absolute_coords} for local_box and embedding_box (={embedding_box.absolute_coords}) must be "
+        f"True"
+    )
     assert embedding_box.ulx is not None and embedding_box.uly is not None
     assert (
         local_box.ulx is not None
@@ -459,15 +471,12 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
     :return: Bounding box of the embedded box in local coordinates.
     """
 
-    assert global_box.absolute_coords and embedding_box.absolute_coords, "absolute coords required"
-    assert embedding_box.ulx is not None and embedding_box.uly is not None
-    assert embedding_box.width is not None and embedding_box.height is not None
-    assert (
-        global_box.ulx is not None
-        and global_box.uly is not None
-        and global_box.lrx is not None
-        and global_box.lry is not None
+    assert global_box.absolute_coords and embedding_box.absolute_coords, (
+        f"absolute coords "
+        f"(={global_box.absolute_coords} for local_box and embedding_box (={embedding_box.absolute_coords}) must be "
+        f"True"
     )
+
     return BoundingBox(
         absolute_coords=True,
         ulx=max(global_box.ulx - embedding_box.ulx, 0),

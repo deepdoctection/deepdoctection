@@ -61,7 +61,8 @@ class DefaultType(ObjectTypes):
 
 @object_types_registry.register("PageType")
 class PageType(ObjectTypes):
-    """Type for document page properties """
+    """Type for document page properties"""
+
     document_type = "DOC_CLASS"
     language = "LANGUAGE"
 
@@ -69,12 +70,14 @@ class PageType(ObjectTypes):
 @object_types_registry.register("SummaryType")
 class SummaryType(ObjectTypes):
     """Summary type member"""
+
     summary = "SUMMARY"
 
 
 @object_types_registry.register("DocumentType")
 class DocumentType(ObjectTypes):
     """Document types"""
+
     letter = "LETTER"
     form = "FORM"
     email = "EMAIL"
@@ -101,6 +104,7 @@ class DocumentType(ObjectTypes):
 @object_types_registry.register("LayoutType")
 class LayoutType(ObjectTypes):
     """Layout types"""
+
     table = "TABLE"
     figure = "FIGURE"
     list = "LIST"
@@ -125,6 +129,7 @@ class LayoutType(ObjectTypes):
 @object_types_registry.register("TableType")
 class TableType(ObjectTypes):
     """Types for table properties"""
+
     item = "ITEM"
     number_of_rows = "NUMBER_OF_ROWS"
     number_of_columns = "NUMBER_OF_COLUMNS"
@@ -136,6 +141,7 @@ class TableType(ObjectTypes):
 @object_types_registry.register("CellType")
 class CellType(ObjectTypes):
     """Types for cell properties"""
+
     header = "HEADER"
     body = "BODY"
     row_number = "ROW_NUMBER"
@@ -147,6 +153,7 @@ class CellType(ObjectTypes):
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):
     """Types for word properties"""
+
     characters = "CHARS"
     block = "BLOCK"
     token_class = "TOKEN_CLASS"
@@ -158,6 +165,7 @@ class WordType(ObjectTypes):
 @object_types_registry.register("TokenClasses")
 class TokenClasses(ObjectTypes):
     """Types for token classes"""
+
     header = "HEADER"
     question = "QUESTION"
     answer = "ANSWER"
@@ -167,6 +175,7 @@ class TokenClasses(ObjectTypes):
 @object_types_registry.register("BioTag")
 class BioTag(ObjectTypes):
     """Types for tags"""
+
     begin = "B"
     inside = "I"
     outside = "O"
@@ -175,6 +184,7 @@ class BioTag(ObjectTypes):
 @object_types_registry.register("TokenClassWithTag")
 class TokenClassWithTag(ObjectTypes):
     """Types for token classes with tags, e.g. B-ANSWER"""
+
     b_answer = "B-ANSWER"
     b_header = "B-HEADER"
     b_question = "B-QUESTION"
@@ -192,6 +202,7 @@ class TokenClassWithTag(ObjectTypes):
 @object_types_registry.register("Relationships")
 class Relationships(ObjectTypes):
     """Types for describing relationships between types"""
+
     child = "CHILD"
     reading_order = "READING_ORDER"
     semantic_entity_link = "SEMANTIC_ENTITY_LINK"
@@ -200,6 +211,7 @@ class Relationships(ObjectTypes):
 @object_types_registry.register("Languages")
 class Languages(ObjectTypes):
     """Language types"""
+
     english = "eng"
     russian = "rus"
     german = "deu"
@@ -264,6 +276,7 @@ class Languages(ObjectTypes):
 @object_types_registry.register("DatasetType")
 class DatasetType(ObjectTypes):
     """Dataset types"""
+
     object_detection = "OBJECT_DETECTION"
     sequence_classification = "SEQUENCE_CLASSIFICATION"
     token_classification = "TOKEN_CLASSIFICATION"

@@ -27,7 +27,8 @@ from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import lxml_available
-from ..utils.fs import get_load_image_func, is_file_extension, load_image_from_file
+from ..utils.fs import get_load_image_func, load_image_from_file
+from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry
 
 if lxml_available():

@@ -113,9 +113,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
 
         # Load
-        dataset_split = self.annotation_files[split]
-        assert isinstance(dataset_split, str)
-        path = self.get_workdir() / dataset_split
+        path = self.get_workdir() / self.get_annotation_file(split)
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
@@ -128,7 +126,6 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         )
         df = MapData(df, coco_mapper)
 
-        assert self.categories is not None  # avoid many typing issues
         if self.categories.is_filtered():
             df = MapData(
                 df,

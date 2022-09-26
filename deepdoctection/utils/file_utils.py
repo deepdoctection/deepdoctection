@@ -306,7 +306,7 @@ def get_tesseract_requirement() -> Requirement:
 # Poppler utils or resp. pdftoppm and pdftocairo for Linux platforms
 _PDF_TO_PPM_AVAILABLE = which("pdftoppm") is not None
 _PDF_TO_CAIRO_AVAILABLE = which("pdftocairo") is not None
-_POPPLER_ERR_MSG = "Poppler is not found. Please check that Poppler is installed and it is added to your path"
+_POPPLER_ERR_MSG = "Poppler cannot be found. Please check that Poppler is installed and it is added to your path"
 
 
 def pdf_to_ppm_available() -> bool:

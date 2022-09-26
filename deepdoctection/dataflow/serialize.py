@@ -16,7 +16,7 @@ from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
-from .base import DataFlow, RNGDataFlow
+from .base import DataFlow, DataFlowResetStateNotCalled, RNGDataFlow
 
 
 class DataFromList(RNGDataFlow):
@@ -44,10 +44,7 @@ class DataFromList(RNGDataFlow):
                 for k in idxs:
                     yield self.lst[k]
             else:
-                raise RuntimeError(
-                    "Iteration has been started before method reset_state has been called. Please "
-                    "call reset_state() before"
-                )
+                raise DataFlowResetStateNotCalled()
 
 
 class DataFromIterable(DataFlow):
@@ -103,18 +100,15 @@ class FakeData(RNGDataFlow):
         self.random = random
         self.dtype = [dtype] * len(shapes) if isinstance(dtype, str) else dtype
         self.domain = [domain] * len(shapes) if isinstance(domain, tuple) else domain
-        assert len(self.dtype) == len(self.shapes)
-        assert len(self.domain) == len(self.domain)
+        if len(self.dtype) != len(self.shapes):
+            raise ValueError(f"self.dtype={self.dtype} and self.shapes={self.shapes} must have same length")
 
     def __len__(self) -> int:
         return self._size
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise RuntimeError(
-                "Iteration has been started before method reset_state has been called. Please "
-                "call reset_state() before"
-            )
+            raise DataFlowResetStateNotCalled()
         if self.random:
             for _ in range(self._size):
                 val = []

@@ -70,7 +70,8 @@ class MeanFromDataFlow(ProxyDataFlow):
         if isinstance(axis, int):
             axis = (axis,)
         if axis is not None:
-            assert 0 in axis, "Requires 0-th axis for calculating mean"
+            if 0 not in axis:
+                raise ValueError("0-th axis required for calculating mean")
         self.axis = axis
         self.key = key
         self.max_datapoints = max_datapoints
@@ -98,7 +99,7 @@ class MeanFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = self.df.__iter__()
 
-        logger.info("____________________ CALCULATING MEAN ____________________")
+        logger.info("Calculating mean")
 
         len_df: Optional[int]
         try:
@@ -196,7 +197,8 @@ class StdFromDataFlow(ProxyDataFlow):
         if isinstance(axis, int):
             axis = (axis,)
         if axis is not None:
-            assert 0 in axis, "Requires 0-th axis for calculating mean"
+            if 0 not in axis:
+                raise ValueError("0-th axis required for calculating std")
         self.axis = axis
         self.key = key
         self.max_datapoints = max_datapoints
@@ -225,7 +227,7 @@ class StdFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = self.df.__iter__()
 
-        logger.info("____________________ CALCULATING STANDARD DEVIATION ____________________")
+        logger.info("Calculating standard deviation")
         try:
             len_df = len(self.df)
         except NotImplementedError:

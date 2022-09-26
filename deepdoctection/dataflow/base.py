@@ -20,10 +20,20 @@ from ..utils.utils import get_rng
 class DataFlowTerminated(BaseException):
     """
     An exception indicating that the DataFlow is unable to produce any more
-    data, i.e. something wrong happened so that calling :meth:`get_data`
+    data, i.e. something wrong happened so that calling :meth:`__iter__`
     cannot give a valid iterator anymore.
     In most DataFlow this will never be raised.
     """
+
+
+class DataFlowResetStateNotCalled(BaseException):
+    """
+    An exception indicating that :meth:`reset_state()` has not been called before starting
+    iteration.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("Iterating a dataflow requires .reset_state() to be called first")
 
 
 class DataFlowReentrantGuard:
@@ -39,7 +49,7 @@ class DataFlowReentrantGuard:
     def __enter__(self) -> None:
         self._succ = self._lock.acquire(False)
         if not self._succ:
-            raise threading.ThreadError("This DataFlow is not reentrant!")
+            raise threading.ThreadError("This dataflow is not reentrant!")
 
     @no_type_check
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -111,7 +121,7 @@ class DataFlow:
         * A dataflow is not fork-safe after :meth:`reset_state` is called (because this will violate the guarantee).
           There are a few other dataflows that are not fork-safe anytime, which will be mentioned in the docs.
         * You should take the responsibility and follow the above guarantee if you're the caller of a dataflow yourself
-          (either when you're using dataflow outside of tensorpack, or if you're writing a wrapper dataflow).
+          (either when you're using dataflow outside tensorpack, or if you're writing a wrapper dataflow).
         * Tensorpack's built-in forking dataflows (:class:`MultiProcessRunner`, :class:`MultiProcessMapData`, etc)
           and other component that uses dataflows (:class:`InputSource`)
           already take care of the responsibility of calling this method.

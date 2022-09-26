@@ -259,6 +259,6 @@ class TestMergeDatasetCategories:
         merge = get_merged_categories(cat_1, cat_2)
 
         # Act & Assert
-        with pytest.raises(AssertionError):
+        with pytest.raises(PermissionError):
             merge.filter_categories(categories="BAZ")
             merge.set_cat_to_sub_cat({"FOO": "FOO_1"})

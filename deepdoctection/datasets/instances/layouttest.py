@@ -31,8 +31,6 @@ from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.prodigystruct import prodigy_to_image
-
-# from ...utils.settings import names
 from ...utils.settings import DatasetType, LayoutType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -114,9 +112,7 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
 
         # Load
         df: DataFlow
-        dataset_split = self.annotation_files[split]
-        assert isinstance(dataset_split, str)
-        path = self.get_workdir() / self.splits[split] / dataset_split
+        path = self.get_workdir() / self.splits[split] / self.get_annotation_file(split)
 
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 

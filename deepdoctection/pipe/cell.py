@@ -143,9 +143,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
         self.sub_image_name = sub_image_names
         self.dummy_generator_cls = None
         if add_dummy_detection:
-            assert category_id_mapping is not None, (
-                "Using DetectResult dummy generator requires passing a " "category_id_mapping"
-            )
+            if category_id_mapping is None:
+                raise ValueError("Using DetectResult dummy generator requires passing a category_id_mapping")
             self.dummy_generator_cls = DetectResultGenerator
             group_categories_dict = defaultdict(list)
             for group in category_id_mapping.items():
@@ -163,7 +162,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
         """
         sub_image_anns = dp.get_annotation_iter(category_names=self.sub_image_name)
         for sub_image_ann in sub_image_anns:
-            assert sub_image_ann.image is not None
+            if sub_image_ann.image is None:
+                raise ValueError("sub_image_ann.image is None, but must be an image")
             detect_result_list = self.predictor.predict(sub_image_ann.image.image)
             if self.has_dummy_generator():
                 if hasattr(self.predictor, "categories"):

@@ -50,7 +50,8 @@ def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
         return None
 
     for ann in anns:
-        assert ann.bounding_box is not None
+        if ann.bounding_box is None:
+            raise ValueError("ann.bounding_box cannot be None")
         all_boxes.append(ann.bounding_box.to_list(mode="xyxy"))
         all_categories.append(ann.category_id)
 
