@@ -29,9 +29,9 @@ from jsonlines import Reader, Writer
 
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict, Pathlike
-from ..utils.utils import is_file_extension, FileExtensionError
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
+from ..utils.utils import FileExtensionError, is_file_extension
 from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList

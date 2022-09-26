@@ -28,10 +28,10 @@ import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
+from ..datapoint.box import BoundingBoxError
 from ..utils.detection_types import DP, BaseExceptionType, S, T
 from ..utils.logger import logger
 from ..utils.settings import ObjectTypes
-from ..datapoint.box import BoundingBoxError
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
 
@@ -42,7 +42,8 @@ class MappingContextManager:
     context if an exception has been thrown.
     """
 
-    def __init__(self, dp_name: Optional[str] = None, filter_level: str = "image", **kwargs) -> None:
+    def __init__(self, dp_name: Optional[str] = None, filter_level: str = "image",
+                 **kwargs: Dict[str, Optional[str]]) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
         :param filter_level: Indicates if the :class:`MappingContextManager` is use on datapoint level,
@@ -68,19 +69,23 @@ class MappingContextManager:
         """
         context exit
         """
-        if exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError) \
-                and exc_tb is not None:
+        if (
+            exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError)
+            and exc_tb is not None
+        ):
             frame_summary = traceback.extract_tb(exc_tb)[0]
-            log_dict = {"file_name": self.dp_name,
-                            "error_type": type(exc_val).__name__,
-                            "error_msg": str(exc_val),
-                            "orig_module": frame_summary.filename,
-                            "line": frame_summary.lineno}
+            log_dict = {
+                "file_name": self.dp_name,
+                "error_type": type(exc_val).__name__,
+                "error_msg": str(exc_val),
+                "orig_module": frame_summary.filename,
+                "line": frame_summary.lineno,
+            }
             for key, value in self.kwargs.items():
                 if isinstance(value, dict):
                     log_dict["type"] = key
                     log_dict.update(value)
-            logger.warning("MappingContextManager error. Will filter %s", self.filter_level,log_dict)
+            logger.warning("MappingContextManager error. Will filter %s", self.filter_level, log_dict)
             return True
         if exc_type is None:
             self.context_error = False

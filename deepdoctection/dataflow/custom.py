@@ -28,7 +28,7 @@ import numpy as np
 from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import get_rng
-from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow, DataFlowResetStateNotCalled
+from .base import DataFlow, DataFlowReentrantGuard, DataFlowResetStateNotCalled, ProxyDataFlow
 from .serialize import DataFromIterable, DataFromList
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]

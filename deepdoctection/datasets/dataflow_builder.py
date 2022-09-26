@@ -117,5 +117,3 @@ class DataFlowBaseBuilder(ABC):
         if isinstance(split_file, str):
             return split_file
         raise TypeError("Unsupported get method for sequence type splits")
-
-

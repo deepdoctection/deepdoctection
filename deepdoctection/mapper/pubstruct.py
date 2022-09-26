@@ -30,8 +30,8 @@ from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.fs import load_bytes_from_pdf_file, load_image_from_file
-from ..utils.utils import is_file_extension
 from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
+from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 __all__ = ["pub_to_image"]

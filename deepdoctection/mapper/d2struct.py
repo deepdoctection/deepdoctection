@@ -25,7 +25,6 @@ from typing import Dict, List, Optional, Union
 
 from detectron2.structures import BoxMode
 
-from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict

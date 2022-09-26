@@ -32,8 +32,7 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, no_type_check
-from copy import copy
+from typing import Any, Dict, Optional, no_type_check
 
 from termcolor import colored
 
@@ -49,11 +48,12 @@ class CustomFilter(logging.Filter):
         log_dict = {}
         args = record.args
         str_args = []
-        for arg in args:
-            if isinstance(arg, dict):
-                log_dict.update(arg)
-            else:
-                str_args.append(arg)
+        if args:
+            for arg in args:
+                if isinstance(arg, dict):
+                    log_dict.update(arg)
+                else:
+                    str_args.append(arg)
         record.args = tuple(str_args)
         if not hasattr(record, "log_dict"):
             setattr(record, "log_dict", log_dict)
@@ -89,32 +89,30 @@ class FileFormatter(logging.Formatter):
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
-        log_dict = {"level_no": record.levelno,
-                    "level_name": record.levelname,
-                    "module_name": record.filename,
-                    "line_number": record.lineno,
-                    "time": datetime.now().strftime("%m%d-%H%M%S"),
-                    "message": message}
+        log_dict = {
+            "level_no": record.levelno,
+            "level_name": record.levelname,
+            "module_name": record.filename,
+            "line_number": record.lineno,
+            "time": datetime.now().strftime("%m%d-%H%M%S"),
+            "message": message,
+        }
         log_dict.update(record.log_dict)
         return json.dumps(log_dict)
 
 
 _LOG_DIR = None
-_CONFIG_DICT: Dict[str, Any] = {"version": 1,
-                                "filters": {
-                                    "customfilter": {"()": lambda: CustomFilter()}},
-                                "formatters": {
-                                    "streamformatter":  {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
-                                },
-                                "handlers": {
-                                    "streamhandler": {
-                                        "filters": ["customfilter"],
-                                        "formatter": "streamformatter",
-                                        "class": "logging.StreamHandler"}},
-                                "root": {
-                                    "handlers": ["streamhandler"],
-                                    "level": "INFO",
-                                    "propagate": False}}
+_CONFIG_DICT: Dict[str, Any] = {
+    "version": 1,
+    "filters": {"customfilter": {"()": lambda: CustomFilter()}}, # pylint: disable=W0108
+    "formatters": {
+        "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
+    },
+    "handlers": {
+        "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter", "class": "logging.StreamHandler"}
+    },
+    "root": {"handlers": ["streamhandler"], "level": "INFO", "propagate": False},
+}
 
 
 def _get_logger() -> logging.Logger:

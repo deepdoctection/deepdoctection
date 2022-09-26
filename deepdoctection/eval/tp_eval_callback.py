@@ -62,7 +62,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         pipeline_component: PredictorPipelineComponent,
         in_names: str,
         out_names: str,
-        **build_eval_kwargs: str
+        **build_eval_kwargs: str,
     ) -> None:
         """
         :param dataset: dataset
@@ -83,8 +83,10 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         self.num_gpu = get_num_gpu()
         self.category_names = category_names
         self.sub_categories = sub_categories
-        assert isinstance(pipeline_component.predictor, TPFrcnnDetector), f"pipeline_component.predictor must be of " \
+        assert isinstance(pipeline_component.predictor, TPFrcnnDetector), (
+            f"pipeline_component.predictor must be of "
             f"type TPFrcnnDetector but is type {type(pipeline_component.predictor)}"
+        )
         self.cfg = pipeline_component.predictor.model.cfg
         if _use_replicated(self.cfg):
             self.evaluator = Evaluator(dataset, pipeline_component, metric, num_threads=self.num_gpu * 2)
@@ -99,7 +101,9 @@ class EvalCallback(Callback):  # pylint: disable=R0903
                 if not isinstance(comp, PredictorPipelineComponent):
                     raise TypeError(f"comp must be of type PredictorPipelineComponent but is type {type(comp)}")
                 if not isinstance(comp.predictor, TPFrcnnDetector):
-                    raise TypeError(f"comp.predictor mus be of type TPFrcnnDetector but is of type {type(comp.predictor)}")
+                    raise TypeError(
+                        f"comp.predictor mus be of type TPFrcnnDetector but is of type {type(comp.predictor)}"
+                    )
                 comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
 
     def _build_predictor(self, idx: int) -> OnlinePredictor:

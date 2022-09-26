@@ -70,7 +70,7 @@ class MeanFromDataFlow(ProxyDataFlow):
         if isinstance(axis, int):
             axis = (axis,)
         if axis is not None:
-            if not (0 in axis):
+            if 0 not in axis:
                 raise ValueError("0-th axis required for calculating mean")
         self.axis = axis
         self.key = key
@@ -197,7 +197,7 @@ class StdFromDataFlow(ProxyDataFlow):
         if isinstance(axis, int):
             axis = (axis,)
         if axis is not None:
-            if not (0 in axis):
+            if 0 not in axis:
                 raise ValueError("0-th axis required for calculating std")
         self.axis = axis
         self.key = key
