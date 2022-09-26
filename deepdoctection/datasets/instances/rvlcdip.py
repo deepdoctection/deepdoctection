@@ -131,9 +131,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
 
         # Load
         df: DataFlow
-        dataset_split = self.annotation_files[split]
-        assert isinstance(dataset_split, str)
-        path = self.get_workdir() / dataset_split
+        path = self.get_workdir() / self.get_annotation_file(split)
         df = SerializerTabsepFiles.load(path, max_datapoints)
 
         @curry
@@ -155,7 +153,6 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
 
         df = MapData(df, _map_str_to_image(load_image))  # pylint: disable=E1120
 
-        assert self.categories is not None
         if self.categories.is_filtered():
             df = MapData(
                 df,

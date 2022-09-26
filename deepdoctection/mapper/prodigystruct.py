@@ -126,7 +126,8 @@ def prodigy_to_image(
                     label = span["label"]
             else:
                 label = span["label"]
-            assert isinstance(label, str)
+            if not isinstance(label, str):
+                raise ValueError("label could not assigned to be a string")
 
             annotation = ImageAnnotation(
                 category_name=label,
@@ -161,7 +162,8 @@ def image_to_prodigy(dp: Image) -> JsonDict:
 
     spans = []
     for ann in dp.get_annotation_iter():
-        assert isinstance(ann.bounding_box, BoundingBox)
+        if ann.bounding_box is None:
+            raise ValueError("ann.bounding_box cannot be None")
         box: JsonDict = {"label": ann.category_name, "annotation_id": ann.annotation_id}
         if ann.score is not None:
             box["score"] = float(round(ann.score, 3))

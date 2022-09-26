@@ -54,9 +54,8 @@ __all__ = [
 def _mask_some_gt_and_pr_labels(
     np_label_gt: NDArray[int32], np_label_pr: NDArray[int32], masks: Sequence[int]
 ) -> Tuple[NDArray[int32], NDArray[int32]]:
-    assert len(np_label_gt) == len(
-        masks
-    ), f"length of label_gt ({len(np_label_gt)}) and masks ({len(masks)}) must be equal"
+    if len(np_label_gt) != len(masks):
+        raise ValueError(f"length of label_gt ({len(np_label_gt)}) and masks ({len(masks)}) must be equal")
     np_masks = np.asarray(masks)
     np_masks.astype(bool)
     np_label_gt = np_label_gt[np_masks]
@@ -85,10 +84,10 @@ def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: O
     """
 
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
-    assert len(np_label_gt) == len(
-        np_label_pr
-    ), f"length of label_gt ({len(np_label_gt)}) and label_predictions ({len(np_label_pr)}) must be equal"
-
+    if len(np_label_gt) != len(np_label_pr):
+        raise ValueError(
+            f"length of label_gt ({len(np_label_gt)}) and label_predictions" f" ({len(np_label_pr)}) must be equal"
+        )
     if masks is not None:
         np_label_gt, np_label_pr = _mask_some_gt_and_pr_labels(np_label_gt, np_label_pr, masks)
 
@@ -261,8 +260,13 @@ class ClassificationMetric(MetricBase):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             res = cls.metric(labels_gt[key], labels_pr[key])
-            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
-                            "val": res, "num_samples": len(labels_gt[key])})
+            results.append(
+                {
+                    "key": key.value if isinstance(key, ObjectTypes) else key,
+                    "val": res,
+                    "num_samples": len(labels_gt[key]),
+                }
+            )
 
         cls._results = results
         return results
@@ -327,11 +331,14 @@ class ClassificationMetric(MetricBase):
 
         if cls._cats:
             for cat in cls._cats:
+                if cat not in cats:
+                    raise ValueError(f"{cat} must be in {cats}")
                 assert cat in cats
 
         if cls._sub_cats:
             for key, val in cls._sub_cats.items():
-                assert set(val) <= set(sub_cats[key])
+                if set(val) > set(sub_cats[key]):
+                    raise ValueError(f"set(val) = {set(val)} must be a sub set of sub_cats[{key}]={sub_cats[key]}")
 
         if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
             logger.warning(
@@ -447,10 +454,12 @@ class PrecisionMetric(ClassificationMetric):
             number_labels: TypeCounter[int] = Counter(labels_gt[key])
             for label_id, val in enumerate(score, 1):
                 results.append(
-                    {"key": key.value if isinstance(key, ObjectTypes) else key,
-                     "category_id": label_id,
-                     "val": float(val),
-                     "num_samples": number_labels[label_id]}
+                    {
+                        "key": key.value if isinstance(key, ObjectTypes) else key,
+                        "category_id": label_id,
+                        "val": float(val),
+                        "num_samples": number_labels[label_id],
+                    }
                 )
         cls._results = results
         return results
@@ -495,9 +504,13 @@ class PrecisionMetricMicro(ClassificationMetric):
         results = []
         for key in labels_gt:  # pylint: disable=C0206
             score = cls.metric(labels_gt[key], labels_pr[key], micro=True)
-            results.append({"key": key.value if isinstance(key, ObjectTypes) else key,
-                            "val": float(score),
-                            "num_samples": len(labels_gt[key])})
+            results.append(
+                {
+                    "key": key.value if isinstance(key, ObjectTypes) else key,
+                    "val": float(score),
+                    "num_samples": len(labels_gt[key]),
+                }
+            )
         cls._results = results
         return results
 

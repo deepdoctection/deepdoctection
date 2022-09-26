@@ -181,13 +181,11 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
         if kwargs.get("build_mode", "") != "table":
-            logger.info("Logic will currently display only ONE table per page, even if there are more !!")
+            logger.info("Logic will display only only table per page, even if there are more!!")
 
         # Load
         df: DataFlow
-        dataset_split = self.annotation_files[split]
-        assert isinstance(dataset_split, str)
-        path = self.get_workdir() / dataset_split
+        path = self.get_workdir() / self.get_annotation_file(split)
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map

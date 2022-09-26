@@ -20,6 +20,7 @@ Utility functions related to mapping tasks
 """
 import functools
 import itertools
+import traceback
 from types import TracebackType
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Union
 
@@ -27,8 +28,9 @@ import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
+from ..datapoint.box import BoundingBoxError
 from ..utils.detection_types import DP, BaseExceptionType, S, T
-from ..utils.logger import log_once, logger
+from ..utils.logger import logger
 from ..utils.settings import ObjectTypes
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
@@ -40,12 +42,17 @@ class MappingContextManager:
     context if an exception has been thrown.
     """
 
-    def __init__(self, dp_name: Optional[str] = None) -> None:
+    def __init__(self, dp_name: Optional[str] = None, filter_level: str = "image",
+                 **kwargs: Dict[str, Optional[str]]) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
+        :param filter_level: Indicates if the :class:`MappingContextManager` is use on datapoint level,
+                             annotation level etc. Filter level will only be used for logging
         """
         self.dp_name = dp_name if dp_name is not None else ""
+        self.filter_level = filter_level
         self.context_error = True
+        self.kwargs = kwargs
 
     def __enter__(self) -> "MappingContextManager":
         """
@@ -62,11 +69,23 @@ class MappingContextManager:
         """
         context exit
         """
-        if exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError) and exc_tb is not None:
-            log_once(
-                f"""dp: {self.dp_name}, err: {type(exc_val).__name__},
-            msg: {str(exc_val)} in: {str(exc_tb.tb_frame)} will be filtered"""
-            )
+        if (
+            exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError)
+            and exc_tb is not None
+        ):
+            frame_summary = traceback.extract_tb(exc_tb)[0]
+            log_dict = {
+                "file_name": self.dp_name,
+                "error_type": type(exc_val).__name__,
+                "error_msg": str(exc_val),
+                "orig_module": frame_summary.filename,
+                "line": frame_summary.lineno,
+            }
+            for key, value in self.kwargs.items():
+                if isinstance(value, dict):
+                    log_dict["type"] = key
+                    log_dict.update(value)
+            logger.warning("MappingContextManager error. Will filter %s", self.filter_level, log_dict)
             return True
         if exc_type is None:
             self.context_error = False

@@ -80,7 +80,7 @@ class TestImage:
         test_image = Image(file_name=image.file_name, location=image.loc, external_id=image.external_id)
 
         # Act and assert
-        with raises(AssertionError):
+        with raises(ValueError):
             test_image.image_id = "ec2aac06-c261-3669-b8bd-4486a54ce740"
 
     @staticmethod
@@ -171,9 +171,9 @@ class TestImage:
         # Assert
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
         assert (
-            cat.annotation_id == "948709a4-8be9-3745-8c57-de53ea0e2edd"
+            cat.annotation_id == "531191bc-3b48-3592-b4c3-70a0a5ac20aa"
         )  # get_uuid("FOOBounding Box ulx: 1.0 uly: 1.0 lrx: 2.0 lry: 3.090c05f37-a017-39cc-a178-b84f9d14ff48")
-        assert sub_cat_1.annotation_id == "963e0b93-c520-325e-bd8c-03889cb98754"
+        assert sub_cat_1.annotation_id == "1377b99d-127d-366f-a7fc-ba25296fe4e5"
 
     @staticmethod
     def test_dump_same_annotation_not_possible(image: WhiteImage) -> None:
@@ -192,7 +192,7 @@ class TestImage:
         # Act and Assert
         test_image.dump(cat)
 
-        with raises(AssertionError):
+        with raises(ValueError):
             test_image.dump(cat)
 
     @staticmethod

@@ -136,11 +136,13 @@ def stretch_item_per_table(
     item_ann_ids = table.get_relationship(Relationships.child)
 
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
-    assert isinstance(table.image, Image)
+    if table.image is None:
+        raise ValueError("table.image cannot be None")
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
     for row in rows:
-        assert isinstance(row, ImageAnnotation) and isinstance(row.image, Image)
+        if row.image is None:
+            raise ValueError("row.image cannot be None")
         row_embedding_box = row.image.get_embedding(dp.image_id)
         row_embedding_box.ulx = table_embedding_box.ulx + 1.0
         row_embedding_box.lrx = table_embedding_box.lrx - 1.0
@@ -150,7 +152,8 @@ def stretch_item_per_table(
     cols = dp.get_annotation(category_names=col_name, annotation_ids=item_ann_ids)
 
     for col in cols:
-        assert isinstance(col, ImageAnnotation) and isinstance(col.image, Image)
+        if col.image is None:
+            raise ValueError("row.image cannot be None")
         col_embedding_box = col.image.get_embedding(dp.image_id)
         col_embedding_box.uly = table_embedding_box.uly + 1.0
         col_embedding_box.lry = table_embedding_box.lry - 1.0
@@ -177,13 +180,15 @@ def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_nam
     items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
     items.sort(key=lambda x: x.bounding_box.cx if item_name == LayoutType.column else x.bounding_box.cy)  # type: ignore
 
-    assert isinstance(table.image, Image)
+    if table.image is None:
+        raise ValueError("table.image cannot be None")
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
     for item in items:
         with MappingContextManager(dp_name=dp.file_name):
-            assert isinstance(item, ImageAnnotation) and isinstance(item.image, Image)
+            if item.image is None:
+                raise ValueError("item.image cannot be None")
             item_embedding_box = item.image.get_embedding(dp.image_id)
             new_embedding_box = BoundingBox(
                 ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
@@ -387,7 +392,7 @@ class TableSegmentationService(PipelineComponent):
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
         """
-        assert segment_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
+        assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
 
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows

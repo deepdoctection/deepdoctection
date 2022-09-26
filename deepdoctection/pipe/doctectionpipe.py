@@ -65,16 +65,18 @@ class DoctectionPipe(Pipeline):
 
     def _entry(self, **kwargs: Union[str, DataFlow, bool, int, Pathlike, Union[str, List[str]]]) -> DataFlow:
         dataset_dataflow = kwargs.get("dataset_dataflow")
-
         path = kwargs.get("path")
-        assert path is not None or dataset_dataflow is not None, "pass either path or dataset_dataflow as argument"
+        if path is None and dataset_dataflow is None:
+            raise ValueError("Pass either path or dataset_dataflow as argument")
 
         shuffle = kwargs.get("shuffle", False)
-        assert isinstance(shuffle, bool)
+        if not isinstance(shuffle, bool):
+            raise TypeError(f"shuffle must be of type bool but is of type {type(shuffle)}")
 
         doc_path = None
         if path:
-            assert isinstance(path, (str, Path))
+            if not isinstance(path, (str, Path)):
+                raise TypeError("path must be of type PathOrStr")
             path_type = maybe_path_or_pdf(path)
             if path_type == 2:
                 doc_path = path
@@ -85,11 +87,13 @@ class DoctectionPipe(Pipeline):
         file_type = kwargs.get("file_type", [".jpg", ".png", ".tif"])
 
         max_datapoints = kwargs.get("max_datapoints")
+        if not isinstance(max_datapoints, (int, type(None))):
+            raise TypeError(f"max_datapoints must be of type int, but is of type {type(max_datapoints)}")
         df: DataFlow
-        assert isinstance(max_datapoints, (int, type(None)))
 
         if isinstance(path, (str, Path)):
-            assert isinstance(file_type, (str, list))
+            if not isinstance(file_type, (str, list)):
+                raise TypeError(f"file_type must be of type string or list, but is of type {type(file_type)}")
             df = DoctectionPipe.path_to_dataflow(path, file_type, shuffle=shuffle)
         if isinstance(doc_path, (str, Path)):
             df = DoctectionPipe.doc_to_dataflow(
@@ -99,7 +103,11 @@ class DoctectionPipe(Pipeline):
             df = dataset_dataflow
 
         def _proto_process(dp: Image) -> Image:
-            logger.info("processing %s", dp.file_name)
+            if path is None:
+                path_tmp = doc_path
+            else:
+                path_tmp = path  # type: ignore
+            logger.info("Processing %s", dp.file_name, {"path": path_tmp, "df": path_tmp, "file_name": dp.file_name})
             return dp
 
         df = MapData(df, _proto_process)
@@ -122,7 +130,8 @@ class DoctectionPipe(Pipeline):
         :param shuffle: Shuffle file names in order to stream them randomly
         :return: dataflow
         """
-        assert os.path.isdir(path), f"{path} not a directory"
+        if not os.path.isdir(path):
+            raise NotADirectoryError(f"{path} not a directory")
         df = SerializerFiles.load(path, file_type, max_datapoints, shuffle)
 
         def _to_image(dp: str) -> Optional[Image]:
@@ -142,7 +151,9 @@ class DoctectionPipe(Pipeline):
         :param max_datapoints: max number of datapoints to consider
         :return: dataflow
         """
-        assert os.path.isfile(path), f"{path} not a file"
+        if not os.path.isfile(path):
+            raise FileExistsError(f"{path} not a file")
+
         df = SerializerPdfDoc.load(path, max_datapoints=max_datapoints)
 
         @curry
@@ -174,7 +185,7 @@ class DoctectionPipe(Pipeline):
         """
 
         output = kwargs.get("output", "page")
-        assert output in ["page", "image", "dict"], "output must be either page image or dict"
+        assert output in ("page", "image", "dict"), "output must be either page image or dict"
         df = self._entry(**kwargs)
         df = self._build_pipe(df)
         if output == "page":

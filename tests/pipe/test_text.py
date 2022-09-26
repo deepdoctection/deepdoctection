@@ -109,7 +109,7 @@ def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> 
     text_extract_detector = MagicMock(spec=PdfMiner)
 
     # Act and Assert
-    with raises(AssertionError):
+    with raises(TypeError):
         TextExtractionService(text_extract_detector, extract_from_roi=LayoutType.table)
 
 

@@ -519,7 +519,7 @@ class ModelCatalog:
         if profile.name is not None:
             return os.path.join(get_weights_dir_path(), profile.name)
         logger.info(
-            "Model is not registered. Please make sure the weights are available in the weights cache " "directory"
+            "Model is not registered. Please make sure the weights are available in the weights cache directory"
         )
         return os.path.join(get_weights_dir_path(), name)
 
@@ -658,7 +658,8 @@ class ModelDownloadManager:
                 file_names = get_tp_weight_names(name)
             else:
                 hf_model_name = profile.hf_model_name
-                assert isinstance(hf_model_name, str)
+                if hf_model_name is None:
+                    raise ValueError("hf_model_name cannot be None")
                 file_names.append(hf_model_name)
             if profile.hf_repo_id:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
@@ -684,18 +685,23 @@ class ModelDownloadManager:
                            models
         """
         repo_id = profile.hf_repo_id
-        assert repo_id
+        if repo_id is None:
+            raise ValueError("hf_repo_id cannot be None")
         directory, _ = os.path.split(absolute_path)
 
         for expect_size, file_name in zip(profile.size, file_names):
             size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
-                logger.error("File downloaded from %s does not match the expected size!", repo_id)
-                logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
+                logger.error(
+                    "File downloaded from %s does not match the expected size! You may have downloaded"
+                    " a broken file, or the upstream may have modified the file.",
+                    repo_id,
+                )
 
     @staticmethod
     def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
-        assert profile.urls is not None
+        if profile.urls is None:
+            raise ValueError("urls cannot be None")
         for size, url, file_name in zip(profile.size, profile.urls, file_names):
             directory, _ = os.path.split(absolute_path)
             download(str(url), directory, file_name, int(size))
@@ -711,10 +717,11 @@ class ModelDownloadManager:
         """
 
         repo_id = profile.hf_repo_id
-        assert repo_id
+        if repo_id is None:
+            raise ValueError("hf_repo_id cannot be None")
         directory, _ = os.path.split(absolute_path)
-        assert isinstance(profile.hf_config_file, list)
-
+        if not profile.hf_config_file:
+            raise ValueError("hf_config_file cannot be None")
         for file_name in profile.hf_config_file:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 

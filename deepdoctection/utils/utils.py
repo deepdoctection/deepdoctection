@@ -23,9 +23,11 @@ import inspect
 import os
 from collections.abc import MutableMapping
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Set, Union
+from typing import Any, Callable, Dict, List, Sequence, Set, Union
 
 import numpy as np
+
+from .detection_types import Pathlike
 
 
 def delete_keys_from_dict(
@@ -140,3 +142,22 @@ def get_rng(obj: Any = None) -> np.random.RandomState:
     """
     seed = (id(obj) + os.getpid() + int(datetime.now().strftime("%Y%m%d%H%M%S%f"))) % 4294967295
     return np.random.RandomState(seed)
+
+
+class FileExtensionError(BaseException):
+    """
+    An exception indicating that a file does not seem to have an expected type
+    """
+
+
+def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:
+    """
+    Check if a given file name has a given extension
+
+    :param file_name: the file name, either full along with path or as stand alone
+    :param extension: the extension of the file. Must add a dot (.)
+    :return: True/False
+    """
+    if isinstance(extension, str):
+        return os.path.splitext(file_name)[-1].lower() == extension
+    return os.path.splitext(file_name)[-1].lower() in extension

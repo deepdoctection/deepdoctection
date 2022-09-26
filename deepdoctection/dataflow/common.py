@@ -16,7 +16,6 @@ from typing import Any, Callable, Iterator, List, Union
 
 import tqdm
 
-from ..utils.logger import logger
 from ..utils.tqdm import get_tqdm, get_tqdm_default_kwargs
 from .base import DataFlow, ProxyDataFlow
 
@@ -223,12 +222,14 @@ class JoinData(DataFlow):
 
     .. code-block:: python
 
-        df1 produces: [c1, c2]
-        df2 produces: [c3, c4]
-        joined: [c1, c2, c3, c4]
+        df1 produces: [[c1], [c2]]
+        df2 produces: [[c3], [c4]]
+        joined: [[c1, c3], [c2, c4]]
         df1 produces: {"a":c1, "b":c2}
         df2 produces: {"c":c3}
         joined: {"a":c1, "b":c2, "c":c3}
+
+    `JoinData` will stop once the first Dataflow throws a StopIteration
     """
 
     def __init__(self, df_lists: List[DataFlow]) -> None:
@@ -241,13 +242,6 @@ class JoinData(DataFlow):
                 but note that in that case `__iter__` will then also be called many times.
         """
         self.df_lists = df_lists
-
-        try:
-            self._size = len(self.df_lists[0])
-            for df in self.df_lists:
-                assert len(df) == self._size, f"All DataFlow must have the same size! {len(df)} != {self._size}"
-        except (NotImplementedError, AssertionError):
-            logger.info("[JoinData] Size check failed for the list of dataflow to be joined!")
 
     def reset_state(self) -> None:
         for df in set(self.df_lists):

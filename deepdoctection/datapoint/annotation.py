@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
 from ..utils.identifier import get_uuid, is_uuid_like
+from ..utils.logger import logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from .box import BoundingBox
 from .convert import as_dict
@@ -105,13 +106,13 @@ class Annotation(ABC):
         annotation_id setter
         """
         if self._annotation_id is not None:
-            raise AssertionError("annotation_id already defined and cannot be reset")
+            raise AssertionError("Annotation_id already defined and cannot be reset")
         if is_uuid_like(input_id):
             self._annotation_id = input_id
         elif isinstance(input_id, property):
             pass
         else:
-            raise ValueError("annotation_id must be uuid3 string")
+            raise ValueError("Annotation_id must be uuid3 string")
 
     @abstractmethod
     def get_defining_attributes(self) -> List[str]:
@@ -126,9 +127,8 @@ class Annotation(ABC):
 
     def _assert_defining_attributes_have_str(self) -> None:
         for attr in self.get_defining_attributes():
-            assert hasattr(
-                eval("self." + attr), "__str__"  # pylint: disable=W0123
-            ), f"attribute {attr} must have __str__ method"
+            if not hasattr(eval("self." + attr), "__str__"):  # pylint: disable=W0123
+                raise AttributeError(f"Attribute {attr} must have __str__ method")
 
     @staticmethod
     def set_annotation_id(annotation: "CategoryAnnotation", *container_id_context: Optional[str]) -> str:
@@ -238,9 +238,9 @@ class CategoryAnnotation(Annotation):
         :param container_id_context: Tuple/list of context ids.
         """
 
-        assert sub_category_name not in self.sub_categories, (
-            f"{sub_category_name} as sub category already defined for " f"{self.annotation_id}"
-        )
+        if sub_category_name in self.sub_categories:
+            raise KeyError(f"{sub_category_name} as sub category already defined for " f"{self.annotation_id}")
+
         if self._annotation_id is not None:
             if annotation._annotation_id is None:  # pylint: disable=W0212
                 annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
@@ -281,7 +281,9 @@ class CategoryAnnotation(Annotation):
         :param key: The key, where to place the annotation id.
         :param annotation_id: An annotation id
         """
-        assert is_uuid_like(annotation_id), "annotation_id must be uuid"
+        if not is_uuid_like(annotation_id):
+            raise ValueError("Annotation_id must be uuid")
+
         key_type = get_type(key)
         if key not in self.relationships:
             self.relationships[key_type] = []
@@ -316,7 +318,7 @@ class CategoryAnnotation(Annotation):
                 try:
                     self.relationships[key].remove(ann_id)
                 except ValueError:
-                    pass
+                    logger.warning("Relationship %s cannot be removed because it does not exist", key)
         else:
             self.relationships[key].clear()
 
