@@ -35,6 +35,7 @@ from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
 from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import logger
+from .utils import is_file_extension, FileExtensionError
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
@@ -78,9 +79,11 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
     :return: A file reader object from which you can iterate through the document.
     """
 
-    assert os.path.isfile(path), path
+    if not os.path.isfile(path):
+        raise FileNotFoundError(str(path))
     file_name = os.path.split(path)[1]
-    assert os.path.splitext(file_name)[-1].lower() == ".pdf", f"must be a pdf file: {file_name}"
+    if not is_file_extension(file_name, ".pdf"):
+        raise FileExtensionError(f"must be a pdf file: {file_name}")
 
     with open(path, "rb") as file:
         input_pdf_as_bytes = PdfFileReader(file)
@@ -88,7 +91,7 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
         if input_pdf_as_bytes.isEncrypted:
             is_decrypted = decrypt_pdf_document(path)
             if not is_decrypted:
-                logger.error("pdf document cannot be decrypted and therefore cannot be processed further.")
+                logger.error(f"pdf document {path} cannot be decrypted and therefore cannot be processed further.")
                 sys.exit()
 
     file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732

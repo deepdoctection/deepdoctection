@@ -81,19 +81,19 @@ class TestLMTokenClassifierService:
         dp = lm_service.pass_datapoint(dp)
 
         # Assert
-        words = dp.get_annotation(annotation_ids="429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e")
+        words = dp.get_annotation(annotation_ids="7e79459d-0cf9-3954-802c-6d8c4d017792")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="2b46086c-a480-357d-8e07-29b177d150b8")
+        words = dp.get_annotation(annotation_ids="08e645c4-f28d-30e6-befe-ab22dc53da92")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="8c6c765c-3e99-3154-ae2e-6d8b661e9bcb")
+        words = dp.get_annotation(annotation_ids="224d479a-77e1-3c7a-9cd1-08430c61f020")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
-        words = dp.get_annotation(annotation_ids="16860148-9a2b-3530-b33e-9aaba857f5ce")
+        words = dp.get_annotation(annotation_ids="841c74d7-45b2-3e0d-a8d5-7be3391685d6")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
@@ -120,19 +120,19 @@ class TestLMTokenClassifierService:
         dp = lm_service.pass_datapoint(dp)
 
         # Assert
-        words = dp.get_annotation(annotation_ids="429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e")
+        words = dp.get_annotation(annotation_ids="7e79459d-0cf9-3954-802c-6d8c4d017792")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="2b46086c-a480-357d-8e07-29b177d150b8")
+        words = dp.get_annotation(annotation_ids="08e645c4-f28d-30e6-befe-ab22dc53da92")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
 
-        words = dp.get_annotation(annotation_ids="8c6c765c-3e99-3154-ae2e-6d8b661e9bcb")
+        words = dp.get_annotation(annotation_ids="224d479a-77e1-3c7a-9cd1-08430c61f020")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
-        words = dp.get_annotation(annotation_ids="16860148-9a2b-3530-b33e-9aaba857f5ce")
+        words = dp.get_annotation(annotation_ids="841c74d7-45b2-3e0d-a8d5-7be3391685d6")
         assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
         assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 

@@ -29,7 +29,7 @@ from jsonlines import Reader, Writer
 
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict, Pathlike
-from ..utils.fs import is_file_extension, FileExtensionError
+from ..utils.utils import is_file_extension, FileExtensionError
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
 from .base import DataFlow
@@ -91,6 +91,7 @@ class SerializerJsonlines:
         if not is_file_extension(file_name, ".jsonl"):
             raise FileExtensionError(f"Expected .jsonl file got {path}")
 
+        df.reset_state()
         with open(os.path.join(path, file_name), "w") as file:  # pylint: disable=W1514
             writer = Writer(file)
             for k, dp in enumerate(df):

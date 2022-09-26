@@ -87,7 +87,7 @@ class DoctectionPipe(Pipeline):
         file_type = kwargs.get("file_type", [".jpg", ".png", ".tif"])
 
         max_datapoints = kwargs.get("max_datapoints")
-        if not isinstance(max_datapoints, int):
+        if not isinstance(max_datapoints, (int, type(None))):
             raise TypeError(f"max_datapoints must be of type int, but is of type {type(max_datapoints)}")
         df: DataFlow
 
