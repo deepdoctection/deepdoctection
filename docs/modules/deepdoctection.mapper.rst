@@ -59,6 +59,14 @@ deepdoctection.mapper.misc
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.mapper.pagestruct
+-----------------------------------
+
+.. automodule:: deepdoctection.mapper.pagestruct
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.mapper.pascalstruct
 -----------------------------------------
 

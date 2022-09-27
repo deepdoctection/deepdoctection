@@ -267,7 +267,7 @@ array in RGB order, which is why we have to swap dimensions.
 
 
 
-.. image:: output_13_1.png
+.. image:: ./pics/output_13_1.png
 
 
 It is possible to change the representation of a data point as already
@@ -432,7 +432,21 @@ by default.
     evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     output= evaluator.run(max_datapoints=100)
 
-``Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.970  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.948  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.817  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.860  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.840  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.538  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.864  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.874  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.852  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.891  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.864``
+.. parsed-literal::
+
+   Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+   Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.970
+   Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.948
+   Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.817
+   Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.860
+   Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.840
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.538
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.864
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.874
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.852
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.891
+   Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.864
+
 
 We are now going to evaluate the cell predictor on tables from business
 documents. One difference from the example before is the representation
@@ -454,7 +468,21 @@ We neither change pipeline component not metric.
     evaluator = dd.Evaluator(fintabnet,layout_service, coco_metric)
     output= evaluator.run(max_datapoints=100,build_mode="table",load_image=True, use_multi_proc=False)
 
-``Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.911  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.709  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.559  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.570  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.700  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.590  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.657  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.657  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.638  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.636  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.774``
+.. parsed-literal::
+
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=600 ] = 0.911
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=600 ] = 0.709
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.559
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.570
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.700
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 50 ] = 0.590
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=200 ] = 0.657
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=600 ] = 0.657
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=600 ] = 0.638
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=600 ] = 0.636
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=600 ] = 0.774
+
 
 What stands out ?
 
@@ -466,7 +494,7 @@ struggles to determine bounding boxes that precisely cover the area of a
 cell.
 
 How to continue
-===============
+---------------
 
 In the last **Fine_Tune** notebook tutorial, we will discuss training a
 Tensorpack Predictor on a dataset.

@@ -25,7 +25,7 @@ image datapoints with layout objects and in particular tables.
         cfg = dd.set_config_by_yaml("/home/janis/.cache/deepdoctection/configs/dd/conf_dd_one.yaml")
         pipe_component_list: List[PipelineComponent] = []
 
-        crop = dd.ImageCroppingService(category_names=names.C.TAB)
+        crop = dd.ImageCroppingService(category_names="TABLE")
         pipe_component_list.append(crop)
 
         cell_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
@@ -39,10 +39,10 @@ image datapoints with layout objects and in particular tables.
         assert categories_item is not None
         d_item = dd.D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device="gpu")
 
-        cell = dd.SubImageLayoutService(d_cell, names.C.TAB, {1: 6}, True)
+        cell = dd.SubImageLayoutService(d_cell, "TABLE", {1: 6}, True)
         pipe_component_list.append(cell)
 
-        item = dd.SubImageLayoutService(d_item, names.C.TAB, {1: 7, 2: 8}, True)
+        item = dd.SubImageLayoutService(d_item, "TABLE", {1: 7, 2: 8}, True)
         pipe_component_list.append(item)
 
         table_segmentation = dd.TableSegmentationService(
@@ -66,7 +66,7 @@ image datapoints with layout objects and in particular tables.
         pipe_component_list.append(text)
         match = dd.MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=names.C.WORD,
+            child_categories="WORD",
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.IOU_THRESHOLD
             if cfg.WORD_MATCHING.RULE in ["iou"]
@@ -74,9 +74,9 @@ image datapoints with layout objects and in particular tables.
         )
         pipe_component_list.append(match)
         order = dd.TextOrderService(
-            text_container=names.C.WORD,
-            floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
-            text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL, names.C.HEAD, names.C.BODY],
+            text_container="WORD",
+            floating_text_block_names=["TITLE", "TEXT", "LIST"],
+            text_block_names=["TITLE", "TEXT", "LIST", "CELL", "HEAD", "BODY"],
         )
         pipe_component_list.append(order)
         return dd.DoctectionPipe(pipeline_component_list=pipe_component_list)

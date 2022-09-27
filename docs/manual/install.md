@@ -19,11 +19,11 @@ and [PyTorch](https://pytorch.org/get-started/locally/).
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
 If you only want to run some Tensorpack models, Tensorflow >= 2.4.1 will suffice.
-Tensorpack has been developed for TF1, models however run on TF2 as well by using tf.compat.v1. This is not ideal, 
+Tensorpack has been developed for TF1, models however runs on TF2 as well by using tf.compat.v1. This is not ideal, 
 however transferring all Tensorpack features into a TF2 framework will take a significant amount of work and will not be
 the top priority.
 
-The code has been tested on Ubuntu 20.04. Functions not involving a GPU have also been tested on MacOS. 
+The code has been tested on Ubuntu 20.04. Functions not involving a GPU have also been tested on macOS. 
 
 In many applications Tesseract is used to ocr documents. Check the [installation](https://github.com/tesseract-ocr/tesseract) 
 instruction.
@@ -51,8 +51,8 @@ first install **Detectron2** separately as it is not distributed via PyPi. Check
 pip install deepdoctection[pt]
 ```
 
-This will install **deep**doctection with all dependencies listed in the diagram above the **deep**doctection layer. 
-This includes:
+This will install **deep**doctection with all dependencies listed in the dependency diagram above the **deep**doctection 
+layer. This includes:
 
 - DocTr, an OCR library as alternative to Tesseract
 - Pdfplumber, a PDF text miner based on Pdfminer.six
@@ -62,13 +62,13 @@ This includes:
   requires an AWS account.
 - Tensorpack, if the Tensorflow setting has been installed. Tensorpack is a library for training models and also 
   provides many examples. We only use the object detection model.
-- Transformers, if the PyTorch setting has been installed. Transformers contains a lot of different models in various
+- Transformers, if the PyTorch setting has been installed. The library provides a lot of different models in various
   frameworks. We currently only provide some PyTorch model wrappers. 
     
 
 Use the setting above, if you want to get started or want to explore all features. 
 
-If you want to have more control with your installation and are looking for less dependencies then 
+If you want to have more control with your installation and are looking for fewer dependencies then 
 install **deep**doctection with the basic setup only.
 
 ```
@@ -123,8 +123,7 @@ kernel 'deep-doc' in the kernel drop down menu.
 
 ## Testing the environment
 
-To check, if the installation has been successful you can run some tests. You need to install the 
-test suite for that.
+To check, if the installation has been successful you can run some tests. You need to install the test suite for that.
 
 ```
 pip install -e ".[test]"
