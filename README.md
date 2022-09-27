@@ -59,13 +59,13 @@ formats like COCO and it has a dataset framework (akin to [**datasets**](https:/
    
 ## Evaluation
 
-**deep**doctection comes equipped with a framework that allows you evaluating prediction of a single or multiple 
+**deep**doctection comes equipped with a framework that allows you to evaluate predictions of a single or multiple 
 models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
 done.  
 
 ## Inference
 
-Having setup a pipeline it takes you a few lines of code to instantiate the pipeline and after a for loop all pages will 
+Having set up a pipeline it takes you a few lines of code to instantiate the pipeline and after a for loop all pages will 
 be processed through the pipeline. 
 
 ```
@@ -122,16 +122,17 @@ documentation.
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 
 
+- Linux or macOS. Windows is not supported. 
+- Python >= 3.8
+- PyTorch >= 1.8 **or** Tensorflow >= 2.8 and CUDA. If you want to run the models provided by Tensorpack a GPU is
+  required. You can run on PyTorch with a CPU only.
 - **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images. 
 - With respect to the Deep Learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en)
   and [PyTorch](https://pytorch.org/get-started/locally/).
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
   engine has to be installed separately.
-- If you want to run the models provided by Tensorpack a GPU is required. 
-- You can run on PyTorch with a CPU only.
 
-Windows is not supported. 
 
 
 ## Installation
@@ -161,7 +162,7 @@ pip install deepdoctection[pt]
 This will install **deep**doctection with all dependencies listed above the **deep**doctection layer. Use this setting, 
 if you want to get started or want to explore all features. 
 
-If you want to have more control with your installation and are looking for less dependencies then 
+If you want to have more control with your installation and are looking for fewer dependencies then 
 install **deep**doctection with the basic setup only.
 
 ```
@@ -198,7 +199,7 @@ pip install ".[source-pt]"
 
 ## Credits
 
-We thank all libraries that provide high quality code and pre-trained models. Without them it would be impossible 
+We thank all libraries that provide high quality code and pre-trained models. Without, it would have been impossible 
 to develop this framework.
 
 ## Problems

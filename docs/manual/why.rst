@@ -44,9 +44,9 @@ Purpose
 Document AI as a discipline continues to develop and not a day goes by without a new paper with new
 results on this topic being published on arxiv. In many cases, researchers and developers have also established
 to provide a repo with code for verification or evaluation, experiments and further exploration. One key question,
-however, remains: How can this great work be made more usable? Deep-Doctection aims to make this work accessible through
-**wrappers or new implementations**. The prerequisite for this is that pre-trained models are available or the
-underlying datasets are publicly accessible.
+however, remains: How can this great work be made more usable? **deep**\doctection aims to make this work accessible
+through **wrappers** of third party libraries. The prerequisite for this is that pre-trained models are available and
+the source code is robust.
 
 Document Analysis consists of many facets, but often models try to solve one task. In order to achieve a usable service,
 one has to integrate different solutions in a framework. **deep**\doctection offers a framework so that you can call
@@ -55,7 +55,7 @@ different services one after the other in a **pipeline** using just a few comman
 :ref:`Pipelines`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The built-in **deep**doctection Analyzer performs layout analysis (title, text, figure, list, table), table
+The built-in **deep**\doctection analyzer performs layout analysis (title, text, figure, list, table), table
 segmentation and extraction, text extraction via OCR or (and later PDF text mining also) and reading order deduction.
 Another feature is the implementation of a **generic data model** with which all essential information (image, objects,
 annotations, text, relations between objects) can be transported uniformly through various components.
@@ -74,16 +74,16 @@ specially created datasets and new tasks can also be carried out.
 :ref:`Datasets`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As soon as the term training comes up, you naturally have to think about **datasets** as well. Deep-Doctection provides
-an interface (inspired by **Huggingface** datasets) for creating datasets. Interfaces for benchmark datasets (Publaynet,
-Pubtabnet, ...) are already stored. Conversion scripts allow essential document layout analysis tasks to be fine-tuned
-or trained from scratch with a few lines of code.
+As soon as the term training comes up, you naturally have to think about **datasets** as well. **deep**\doctection
+provides an interface (inspired by **Huggingface** datasets) for creating datasets. Interfaces for benchmark datasets
+(Publaynet, Pubtabnet, ...) are already stored. Conversion scripts allow essential document layout analysis tasks to be
+fine-tuned or trained from scratch with a few lines of code.
 
 
 Evaluation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For **evaluation**\, tools such as metrics are necessary to monitor the performance of the learning development using
+For **evaluation**, tools such as metrics are necessary to monitor the performance of the learning development using
 objective criteria. **deep**\doctection provides a simple evaluation interface so that an evaluation of the predictor can
 be scripted in just a few lines by selecting the predictor, metric and dataset.
 

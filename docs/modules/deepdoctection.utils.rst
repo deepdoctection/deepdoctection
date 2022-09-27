@@ -1,6 +1,14 @@
 deepdoctection.utils
 ==============================
 
+deepdoctection.utils.concurrency
+----------------------------------------------
+
+.. automodule:: deepdoctection.utils.concurrency
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.utils.context
 ----------------------------------------------
 
@@ -85,6 +93,14 @@ deepdoctection.utils.tqdm
 ----------------------------------
 
 .. automodule:: deepdoctection.utils.tqdm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+deepdoctection.utils.transform
+----------------------------------
+
+.. automodule:: deepdoctection.utils.transform
    :members:
    :undoc-members:
    :show-inheritance:

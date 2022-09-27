@@ -293,7 +293,7 @@ get_text method.
 
 
 How to continue
-===============
+---------------
 
 In the next step we recommend the tutorial **Datasets_and_Eval**. Here,
 the data model of the package is explained in more detail. It also
