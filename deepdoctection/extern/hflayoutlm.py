@@ -178,7 +178,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         if categories:
             self.categories = copy(categories)  # type: ignore
         else:
-            self.categories = self._categories_orig_to_categories(self.categories_semantics,
+            self.categories = self._categories_orig_to_categories(self.categories_semantics,  # type: ignore
                                                                   self.categories_bio)  # type: ignore
 
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)

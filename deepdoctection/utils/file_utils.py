@@ -13,9 +13,11 @@ import multiprocessing as mp
 import string
 import subprocess
 import sys
-from os import environ
+
+from types import ModuleType
+from os import environ, path
 from shutil import which
-from typing import Tuple, Union
+from typing import Tuple, Union, Any, no_type_check
 
 import importlib_metadata
 from packaging import version
@@ -548,3 +550,65 @@ def set_mp_spawn() -> None:
         mp.set_start_method("spawn")
         _S.mp_context_set = True
         _S.freeze()
+
+
+# Copy and paste from https://github.com/Layout-Parser/layout-parser/blob/main/src/layoutparser/file_utils.py
+
+class _LazyModule(ModuleType):
+    """
+    Module class that surfaces all objects but only performs associated imports when the objects are requested.
+    """
+
+    @no_type_check
+    def __init__(
+        self, name, module_file, import_structure, module_spec=None, extra_objects=None
+    ):
+        super().__init__(name)
+        self._modules = set(import_structure.keys())
+        self._class_to_module = {}
+        for key, values in import_structure.items():
+            for value in values:
+                self._class_to_module[value] = key
+        # Needed for autocompletion in an IDE
+        self.__all__ = list(import_structure.keys()) + sum(
+            import_structure.values(), []
+        )
+        self.__file__ = module_file
+        self.__spec__ = module_spec
+        self.__path__ = [path.dirname(module_file)]
+        self._objects = {} if extra_objects is None else extra_objects
+        self._name = name
+        self._import_structure = import_structure
+
+        # Following [PEP 366](https://www.python.org/dev/peps/pep-0366/)
+        # The __package__ variable should be set
+        # https://docs.python.org/3/reference/import.html#__package__
+        self.__package__ = self.__name__
+
+    # Needed for autocompletion in an IDE
+    @no_type_check
+    def __dir__(self):
+        return super().__dir__() + self.__all__
+
+    @no_type_check
+    def __getattr__(self, name: str) -> Any:
+        if name in self._objects:
+            return self._objects[name]
+        if name in self._modules:
+            value = self._get_module(name)
+        elif name in self._class_to_module.keys():
+            module = self._get_module(self._class_to_module[name])
+            value = getattr(module, name)
+        else:
+            raise AttributeError(f"module {self.__name__} has no attribute {name}")
+
+        setattr(self, name, value)
+        return value
+
+    @no_type_check
+    def _get_module(self, module_name: str):
+        return importlib.import_module("." + module_name, self.__name__)
+
+    @no_type_check
+    def __reduce__(self):
+        return self.__class__, (self._name, self.__file__, self._import_structure)
