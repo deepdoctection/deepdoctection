@@ -1,0 +1,80 @@
+# This workflow will install Python dependencies, run tests
+
+name: Tests
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310,
+              dll: tensorflow==2.4.1, extras: ,
+              test_cases: test-basic }
+          - { name: '3.8-basic-pt', python: '3.8', os: ubuntu-20.04, tox: py310,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              extras: ,
+              test_cases: test-basic }
+          - { name: '3.8-tf', python: '3.8', os: ubuntu-20.04, tox: py310,
+              dll: tensorflow==2.8, extras: tf,
+              test_cases: test-tf }
+          - { name: '3.8-pt', python: '3.8', os: ubuntu-20.04, tox: py310,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              extras: source-pt,
+              test_cases: test-pt }
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Upgrade pip
+        run: python3 -m pip install --upgrade pip tox
+
+      - name: Install libcap
+        run: sudo apt-get install build-essential libcap-dev
+
+      - name: Set Python version
+        # See https://pre-commit.com/#github-actions-example
+        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Install tesseract and poppler
+        run: sudo apt-get -y update &&
+             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu &&
+             sudo apt-get install poppler-utils
+
+      - name: Install DL library
+        run: pip install ${{ matrix.dll }}
+
+      - name: cd
+        run: cd deepdoctection
+
+      - name: Test deepdoctection package installation
+        if: matrix.extras == ''
+        run: pip install "."
+
+      - name: Test deepdoctection with extras package installation
+        if: matrix.extras!= ''
+        run:  pip install ".[${{ matrix.extras }}]"
+
+      - name: Install test suite
+        run: pip install pytest pytest-cov
+
+      - name: Run tests
+        run: make ${{ matrix.test_cases }}
