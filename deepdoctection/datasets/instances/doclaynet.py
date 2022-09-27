@@ -139,8 +139,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
 
         # Load
         df: DataFlow
-        dataset_split = self.annotation_files[split]
-        path = self.get_workdir() / dataset_split  # type: ignore
+        path = self.get_workdir() / self.get_annotation_file(split)
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map

@@ -111,7 +111,7 @@ class Image:
         image_id setter
         """
         if self._image_id is not None:
-            raise AssertionError("image_id already defined and cannot be reset")
+            raise ValueError("image_id already defined and cannot be reset")
         if is_uuid_like(input_id):
             self._image_id = input_id
         elif isinstance(input_id, property):
@@ -147,17 +147,20 @@ class Image:
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         else:
-            assert isinstance(image, np.ndarray), f"cannot load image is of type: {type(image)}"
+            if not isinstance(image, np.ndarray):
+                raise TypeError(f"Cannot load image is of type: {type(image)}")
             self._image = image.astype(uint8)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
 
     @property
     def summary(self) -> Optional[SummaryAnnotation]:
+        """summary"""
         return self._summary
 
     @summary.setter
     def summary(self, summary_annotation: SummaryAnnotation) -> None:
+        """summary setter"""
         if summary_annotation._annotation_id is None:  # pylint: disable=W0212
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
         self._summary = summary_annotation
@@ -269,7 +272,8 @@ class Image:
         :param image_id: A uuid of the embedding image.
         :param bounding_box: bounding box of this image in terms of the embedding image.
         """
-        assert isinstance(bounding_box, BoundingBox), "bounding box must be of type BoundingBox"
+        if not isinstance(bounding_box, BoundingBox):
+            raise TypeError(f"Bounding box must be of type BoundingBox, is of type {type(bounding_box)}")
         self.embeddings[image_id] = bounding_box
 
     def get_embedding(self, image_id: str) -> BoundingBox:
@@ -284,7 +288,6 @@ class Image:
 
     def _self_embedding(self) -> None:
         if self._bbox is not None:
-            assert isinstance(self.image_id, str)
             self.set_embedding(self.image_id, self._bbox)
 
     def dump(self, annotation: ImageAnnotation) -> None:
@@ -295,15 +298,15 @@ class Image:
 
         :param annotation: image annotation to store
         """
-        assert isinstance(annotation, ImageAnnotation), (
-            f"Annotation must be of type ImageAnnotation: "
-            f"{annotation.annotation_id} but is of type {str(type(annotation))}"
-        )
+        if not isinstance(annotation, ImageAnnotation):
+            raise TypeError(
+                f"Annotation must be of type ImageAnnotation: "
+                f"{annotation.annotation_id} but is of type {str(type(annotation))}"
+            )
         if annotation._annotation_id is None:  # pylint: disable=W0212
             annotation.annotation_id = self.define_annotation_id(annotation)
-        assert annotation.annotation_id not in self._annotation_ids, (
-            f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}"
-        )
+        if annotation.annotation_id in self._annotation_ids:
+            raise ValueError(f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}")
         self._annotation_ids.append(annotation.annotation_id)
         self.annotations.append(annotation)
 
@@ -394,7 +397,6 @@ class Image:
 
         attributes = annotation.get_defining_attributes()
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
-        assert self.image_id is not None
         return get_uuid(*attributes_values, str(self.image_id))
 
     def remove(self, annotation: ImageAnnotation) -> None:
@@ -421,13 +423,12 @@ class Image:
         """
 
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
-        assert isinstance(
-            ann, ImageAnnotation
-        ), f"Annotation must be of type ImageAnnotation: {annotation_id} but is of type {str(type(ann))}"
 
         new_image = Image(file_name=self.file_name, location=self.location, external_id=annotation_id)
 
-        assert self._bbox is not None and ann.bounding_box is not None
+        if self._bbox is None or ann.bounding_box is None:
+            raise ValueError(f"Bounding box for image and ImageAnnotation ({annotation_id}) must be set")
+
         new_bounding_box = intersection_box(self._bbox, ann.bounding_box, self.width, self.height)
         if new_bounding_box.absolute_coords:
             width = new_bounding_box.width
@@ -441,7 +442,7 @@ class Image:
         if crop_image and self.image is not None:
             new_image.image = crop_box_from_image(self.image, ann.bounding_box, self.width, self.height)
         elif crop_image and self.image is None:
-            raise ValueError("crop_image = 'True' requires self.image to be not None")
+            raise ValueError("crop_image = True requires self.image to be not None")
 
         ann.image = new_image
 
@@ -458,7 +459,8 @@ class Image:
         """
 
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
-        assert ann.image is not None, "adding sub images to annotations requires ann to have an image"
+        if ann.image is None:
+            raise ValueError("When adding sub images to ImageAnnotation then ImageAnnotation.image must not be None")
         assert ann.bounding_box is not None
         box = ann.bounding_box.to_list("xyxy")
         proposals = self.get_annotation(category_names)
@@ -472,7 +474,10 @@ class Image:
         selected_ids = ann_ids[indices]
         sub_images = self.get_annotation(annotation_ids=selected_ids.tolist())
         for sub_image in sub_images:
-            assert sub_image.image is not None
+            if sub_image.image is None:
+                raise ValueError(
+                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not " "be None"
+                )
             sub_image.image.set_embedding(
                 annotation_id,
                 global_to_local_coords(

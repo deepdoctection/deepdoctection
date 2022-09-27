@@ -347,9 +347,7 @@ def train_frcnn_config(config: AttrDict) -> Tuple[List[Tuple[int, int]], List[Tu
     for idx, steps in enumerate(config.TRAIN.LR_SCHEDULE[:-1]):
         mult = 0.1 ** (idx + 1)
         lr_schedule.append((steps * float(factor) // step_num, config.TRAIN.BASE_LR * float(mult)))
-    logger.info("Warm Up Schedule (steps, value): %s", str(warmup_schedule))
-    logger.info("LR Schedule (epochs, value): %s", str(lr_schedule))
 
     config.freeze()
-    logger.info("Config: ------------------------------------------\n %s", str(config))
+    logger.info("Config: \n %s", str(config), config.to_dict())
     return warmup_schedule, lr_schedule, step_num

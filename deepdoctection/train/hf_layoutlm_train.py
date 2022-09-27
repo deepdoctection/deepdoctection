@@ -298,10 +298,7 @@ def train_hf_layoutlm(
         )
 
     arguments = TrainingArguments(**conf_dict)
-    logger.info(
-        "Config: ------------------------------------------\n %s",
-        pprint.pformat(arguments.to_dict(), width=100, compact=True),
-    )
+    logger.info("Config: \n %s", str(arguments.to_dict()), arguments.to_dict())
 
     model_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
 

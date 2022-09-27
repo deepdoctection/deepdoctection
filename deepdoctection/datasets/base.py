@@ -234,7 +234,10 @@ class MergeDataset(DatasetBase):
         :param dataflows: An arbitrary number of dataflows
         """
         self.dataflows = dataflows
-        assert len(self.datasets) <= len(self.dataflows)
+        if len(self.datasets) > len(self.dataflows):
+            raise ValueError(
+                f"len(self.datasets) = {len(self.datasets)} must be" f" <= len(self.dataflows) = {len(self.dataflows)}"
+            )
         self._dataflow_builder = self._builder()
         self._dataflow_builder.categories = self._categories()
 
@@ -256,7 +259,7 @@ class MergeDataset(DatasetBase):
                       split.
         :param add_test: Add a test split
         """
-        assert self.datapoint_list is not None, "datasets need to be buffered before splitting"
+        assert self.datapoint_list is not None, "Datasets need to be buffered before splitting"
         number_datapoints = len(self.datapoint_list)
         indices = np.random.binomial(1, ratio, number_datapoints)
         train_dataset = [self.datapoint_list[i] for i in range(number_datapoints) if indices[i] == 0]
@@ -307,7 +310,8 @@ class MergeDataset(DatasetBase):
                 """
 
                 split = kwargs.get("split", "train")
-                assert isinstance(split, str)
+                if not isinstance(split, str):
+                    raise ValueError("'split' must be a string")
                 max_datapoints = kwargs.get("max_datapoints")
                 if isinstance(max_datapoints, str):
                     max_datapoints = int(max_datapoints)

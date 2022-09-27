@@ -232,7 +232,7 @@ class DatasetCategories:
         for cat in _categories:  # pylint: disable=R1702
             assert cat in self.get_categories(  # pylint: disable=E1135
                 as_dict=False, filtered=True
-            ), f"{cat} not in categories, maybe has been replaced with sub category"
+            ), f"{cat} not in categories. Maybe it has been replaced with sub category"
             sub_cat_dict = self.init_sub_categories.get(cat)
             if sub_cat_dict is None:
                 if self._cat_to_sub_cat:
@@ -299,7 +299,8 @@ class DatasetCategories:
         """
 
         _cat_to_sub_cat = {get_type(key): get_type(value) for key, value in cat_to_sub_cat.items()}
-        assert self._allow_update, "Replacing categories with sub categories is not allowed"
+        if not self._allow_update:
+            raise PermissionError("Replacing categories with sub categories is not allowed")
         self._categories_update = self.init_categories
         categories = self.get_categories(name_as_key=True)
         cats_or_sub_cats = [
@@ -324,7 +325,8 @@ class DatasetCategories:
         :param categories: A single category name or a list of category names.
         """
 
-        assert self._allow_update, "Filtering categories is not allowed"
+        if not self._allow_update:
+            raise PermissionError("Filtering categories is not allowed")
         if isinstance(categories, (ObjectTypes, str)):
             categories = [get_type(categories)]
         else:

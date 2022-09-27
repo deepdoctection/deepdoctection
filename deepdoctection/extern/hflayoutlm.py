@@ -164,8 +164,10 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         """
 
         if categories is None:
-            assert categories_semantics is not None
-            assert categories_bio is not None
+            if categories_semantics is None:
+                raise ValueError("If categories is None then categories_semantics cannot be None")
+            if categories_bio is None:
+                raise ValueError("If categories is None then categories_bio cannot be None")
 
         self.path_config = path_config_json
         self.path_weights = path_weights
@@ -176,7 +178,8 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         if categories:
             self.categories = copy(categories)  # type: ignore
         else:
-            self.categories = self._categories_orig_to_categories(self.categories_semantics, self.categories_bio)  # type: ignore
+            self.categories = self._categories_orig_to_categories(self.categories_semantics,
+                                                                  self.categories_bio)  # type: ignore
 
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)
         self.model = LayoutLMForTokenClassification.from_pretrained(
@@ -212,14 +215,14 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         boxes = encodings.get("bbox")
         tokens = encodings.get("tokens")
 
-        assert isinstance(ann_ids, list)
+        assert isinstance(ann_ids, list), type(ann_ids)
         if len(ann_ids) > 1:
             raise ValueError("HFLayoutLmTokenClassifier accepts for inference only batch size of 1")
-        assert isinstance(input_ids, torch.Tensor)
-        assert isinstance(attention_mask, torch.Tensor)
-        assert isinstance(token_type_ids, torch.Tensor)
-        assert isinstance(boxes, torch.Tensor)
-        assert isinstance(tokens, list)
+        assert isinstance(input_ids, torch.Tensor), type(input_ids)
+        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
+        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
+        assert isinstance(boxes, torch.Tensor), type(boxes)
+        assert isinstance(tokens, list), type(tokens)
 
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
@@ -324,10 +327,10 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         token_type_ids = encodings.get("token_type_ids")
         boxes = encodings.get("bbox")
 
-        assert isinstance(input_ids, torch.Tensor)
-        assert isinstance(attention_mask, torch.Tensor)
-        assert isinstance(token_type_ids, torch.Tensor)
-        assert isinstance(boxes, torch.Tensor)
+        assert isinstance(input_ids, torch.Tensor), type(input_ids)
+        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
+        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
+        assert isinstance(boxes, torch.Tensor), type(boxes)
 
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)

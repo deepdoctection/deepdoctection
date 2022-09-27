@@ -224,8 +224,8 @@ class D2FrcnnDetector(ObjectDetector):
         """
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
-            assert isinstance(result.class_id, int)
-            result.class_id += 1
+            if isinstance(result.class_id, int):
+                result.class_id += 1
         return detection_results
 
     @classmethod
