@@ -117,10 +117,12 @@ class ObjectDetector(PredictorBase):
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
+        """categories"""
         return self._categories
 
     @categories.setter
     def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        """categories setter"""
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
@@ -157,6 +159,7 @@ class PdfMiner(PredictorBase):
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
+        """categories"""
         return self._categories
 
     @categories.setter
@@ -273,10 +276,12 @@ class LMTokenClassifier(PredictorBase):
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
+        """categories"""
         return self._categories
 
     @categories.setter
     def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        """categories setter"""
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
@@ -310,10 +315,12 @@ class LMSequenceClassifier(PredictorBase):
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
+        """categories"""
         return self._categories
 
     @categories.setter
     def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        """categories setter"""
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
@@ -347,10 +354,12 @@ class LanguageDetector(PredictorBase):
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
+        """categories"""
         return self._categories
 
     @categories.setter
     def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
+        """categories setter"""
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod

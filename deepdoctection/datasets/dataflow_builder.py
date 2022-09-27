@@ -110,3 +110,10 @@ class DataFlowBaseBuilder(ABC):
         :return: dataflow
         """
         raise NotImplementedError
+
+    def get_annotation_file(self, split: str) -> str:
+        """Get single annotation file."""
+        split_file = self.annotation_files[split]
+        if isinstance(split_file, str):
+            return split_file
+        raise TypeError("Unsupported get method for sequence type splits")

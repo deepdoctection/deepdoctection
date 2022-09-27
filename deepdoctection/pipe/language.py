@@ -89,7 +89,8 @@ class LanguageDetectionService(PipelineComponent):
             page = Page.from_image(dp, self._text_container, self._floating_text_block_names, self._text_block_names)
             text = page.get_text()
         else:
-            assert dp.image is not None
+            if dp.image is None:
+                raise ValueError("dp.image cannot be None")
             detect_result_list = self.text_detector.predict(dp.image)
             # this is a concatenation of all detection result. No reading order
             text = " ".join([result.text for result in detect_result_list if result.text is not None])

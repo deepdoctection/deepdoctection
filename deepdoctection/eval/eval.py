@@ -146,7 +146,6 @@ class Evaluator:
         :return: dict with metric results.
         """
 
-        assert self.dataset.dataflow.categories is not None, "dataset requires dataflow.categories to be not None"
         df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
         df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
 
@@ -173,10 +172,9 @@ class Evaluator:
             df_pr_list = self.pipe_component.start()
             return DataFromList(df_pr_list)
         df_pr = MapData(df_pr, maybe_load_image)
-        assert self.pipe
-        df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")
+        df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")  # type: ignore
         # deactivate timer for components
-        for comp in self.pipe.pipe_component_list:
+        for comp in self.pipe.pipe_component_list:  # type: ignore
             comp.timer_on = False
         df_pr = MapData(df_pr, maybe_remove_image)
         df_list = CacheData(df_pr).get_cache()
@@ -185,8 +183,7 @@ class Evaluator:
     def _clean_up_predict_dataflow_annotations(self, df_pr: DataFlow) -> DataFlow:
         # will use the first pipe component of MultiThreadPipelineComponent to get meta annotation
         pipe_or_component = self.pipe_component.pipe_components[0] if self.pipe_component is not None else self.pipe
-        assert pipe_or_component
-        meta_anns = pipe_or_component.get_meta_annotation()
+        meta_anns = pipe_or_component.get_meta_annotation()  # type: ignore
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 
         # clean-up procedure depends on the dataset type

@@ -24,13 +24,15 @@ The logger module itself has the common logging functions of Python's
 
 import errno
 import functools
+import json
 import logging
+import logging.config
 import os
 import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional, no_type_check
 
 from termcolor import colored
 
@@ -39,33 +41,83 @@ from .detection_types import Pathlike
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 
-class _Formatter(logging.Formatter):
+class CustomFilter(logging.Filter):
+    """A custom filter"""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        log_dict = {}
+        args = record.args
+        str_args = []
+        if args:
+            for arg in args:
+                if isinstance(arg, dict):
+                    log_dict.update(arg)
+                else:
+                    str_args.append(arg)
+        record.args = tuple(str_args)
+        if not hasattr(record, "log_dict"):
+            setattr(record, "log_dict", log_dict)
+        return True
+
+
+class StreamFormatter(logging.Formatter):
+    """A custom formatter to produce unified LogRecords"""
+
+    @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
-        msg = "%(message)s"
+        msg = colored("%(message)s", "white")
+
         if record.levelno == logging.WARNING:
-            fmt = date + " " + colored("WRN", "magenta", attrs=["blink"]) + " " + msg
+            fmt = f"{date}  {colored('WRN', 'magenta', attrs=['blink'])}  {msg}"
         elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:  # pylint: disable=R1714
-            fmt = date + " " + colored("ERR", "red", attrs=["blink", "underline"]) + " " + msg
+            fmt = f"{date}  {colored('ERR', 'red', attrs=['blink', 'underline'])}  {msg}"
         elif record.levelno == logging.DEBUG:
-            fmt = date + " " + colored("DBG", "green", attrs=["blink"]) + " " + msg
+            fmt = f"{date}  {colored('DBG', 'green', attrs=['blink'])}  {msg}"
         elif record.levelno == logging.INFO:
-            fmt = date + " " + colored("INF", "green") + " " + msg
+            fmt = f"{date}  {colored('INF', 'green')}  {msg}"
         else:
-            fmt = date + " " + msg
+            fmt = f"{date} {msg}"
         self._style._fmt = fmt  # pylint: disable=W0212
         self._fmt = fmt
         return super().format(record)
 
 
+class FileFormatter(logging.Formatter):
+    """A custom formatter to produce a loggings in json format"""
+
+    @no_type_check
+    def format(self, record: logging.LogRecord) -> str:
+        message = super().format(record)
+        log_dict = {
+            "level_no": record.levelno,
+            "level_name": record.levelname,
+            "module_name": record.filename,
+            "line_number": record.lineno,
+            "time": datetime.now().strftime("%m%d-%H%M%S"),
+            "message": message,
+        }
+        log_dict.update(record.log_dict)
+        return json.dumps(log_dict)
+
+
+_LOG_DIR = None
+_CONFIG_DICT: Dict[str, Any] = {
+    "version": 1,
+    "filters": {"customfilter": {"()": lambda: CustomFilter()}}, # pylint: disable=W0108
+    "formatters": {
+        "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
+    },
+    "handlers": {
+        "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter", "class": "logging.StreamHandler"}
+    },
+    "root": {"handlers": ["streamhandler"], "level": "INFO", "propagate": False},
+}
+
+
 def _get_logger() -> logging.Logger:
-    package_name = __name__
-    _logger = logging.getLogger(package_name)
-    _logger.propagate = False
-    _logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(_Formatter(datefmt="%m%d %H:%M.%S"))
-    _logger.addHandler(handler)
+    logging.config.dictConfig(_CONFIG_DICT)
+    _logger = logging.getLogger(__name__)
     return _logger
 
 
@@ -76,7 +128,7 @@ for func in _LOGGING_METHOD:
     locals()[func] = getattr(logger, func)
     __all__.append(func)
 
-LOG_DIR = None
+
 _FILE_HANDLER = None
 
 
@@ -93,7 +145,8 @@ def _set_file(path: Pathlike) -> None:
         shutil.move(path, backup_name)
         logger.info("Existing log file %s backuped to %s", path, backup_name)
     hdl = logging.FileHandler(filename=path, encoding="utf-8", mode="w")
-    hdl.setFormatter(_Formatter(datefmt="%m%d %H:%M:%S"))
+    hdl.setFormatter(FileFormatter(datefmt="%m%d %H:%M:%S"))
+    hdl.addFilter(CustomFilter())
 
     _FILE_HANDLER = hdl
     logger.addHandler(hdl)
@@ -119,8 +172,9 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
     if isinstance(dir_name, Path):
         dir_name = dir_name.as_posix()
     dir_name = os.path.normpath(dir_name)
-    global LOG_DIR, _FILE_HANDLER  # pylint: disable=W0603
+    global _LOG_DIR, _FILE_HANDLER  # pylint: disable=W0603
     if _FILE_HANDLER:
+        # unload and close the old file handler, so that we may safely delete the logger directory
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
@@ -151,15 +205,14 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
             pass
         else:
             raise OSError(f"Directory {dir_name} exits!")
-    LOG_DIR = dir_name
-
+    _LOG_DIR = os.path.join(dir_name, "log.jsonl")
     try:
         os.makedirs(dir_name)
     except OSError as err:
         if err.errno != errno.EEXIST:
             raise err
 
-    _set_file(os.path.join(dir_name, "log.log"))
+    _set_file(_LOG_DIR)
 
 
 def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> None:
@@ -184,7 +237,7 @@ def get_logger_dir() -> Optional[str]:
     The logger directory, or None if not set.
     The directory is used for general logging, tensorboard events, checkpoints, etc.
     """
-    return LOG_DIR
+    return _LOG_DIR
 
 
 @functools.lru_cache(maxsize=None)
@@ -197,5 +250,4 @@ def log_once(message: str, function: str = "info") -> None:
     :param function: the name of the logger method. e.g. "info", "warn", "error".
     :return:
     """
-
     getattr(logger, function)(message)

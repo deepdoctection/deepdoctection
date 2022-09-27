@@ -80,5 +80,6 @@ def dataflow_to_json(
                 json.dump(dp, file)
 
     else:
-        assert file_name, "if single_files is set to False must pass a valid file name for .jsonl file"
+        if not file_name:
+            raise ValueError("If single_files is set to False must pass a valid file name for .jsonl file")
         SerializerJsonlines.save(df, path, file_name, max_datapoints)

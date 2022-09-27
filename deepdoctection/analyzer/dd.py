@@ -70,16 +70,12 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
             return "tf", "cuda"
         if pytorch_available():
             return "pt", "cpu"
-        raise ImportError("No GPU is available. You must install Pytorch in order to run on a CPU")
+        raise ModuleNotFoundError("Install Pytorch and Torchvision to run with a CPU")
     if pytorch_available():
         if cuda.is_available():
             return "pt", "gpu"
         return "pt", "cpu"
-    raise ImportError(
-        "Neither Pytorch nor Tensorflow are installed. You must install at least one of them before "
-        "running the analyzer. Note, that if no GPU is available you can only use Detectron2 along "
-        "with Pytorch."
-    )
+    raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
 def _maybe_copy_config_to_cache(file_name: str) -> str:
@@ -267,26 +263,7 @@ def get_dd_analyzer(
     cfg.LANG = language
     cfg.freeze()
 
-    logger.info("Deep Doctection Analyzer Config: ------------------------------------------\n %s", str(cfg))
-
-    logger.info(
-        "Building the Analyzer pipeline. This includes layout analysis with detection of titles, text, lists "
-        "tables and figures."
-    )
-
-    if cfg.TAB:
-        logger.info(
-            "As tables have been chosen, a table recognition system will be invoked. This means, "
-            "that the interior of each detected table will be segmented into cells, rows and column and every "
-            "cell will be labeled with its row and column position as well as its spans."
-        )
-
-    if cfg.OCR:
-        logger.info(
-            " OCR will be performed and each words will be assigned to the detected layout "
-            "compartment, if possible. Finally, words will be stringed together according to its"
-            " reading order."
-        )
+    logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 
     # will silent all TP loggings while building the tower
     if tensorpack_available():

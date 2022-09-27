@@ -64,7 +64,7 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
         cs = int(cell.get_sub_category(CellType.column_span).category_id)
         for k in range(rs):
             for l in range(cs):
-                assert cell.annotation_id is not None
+                assert cell.annotation_id is not None, cell.annotation_id
                 tile_to_cells.append(((row_number + k, col_number + l), cell.annotation_id))
 
     return tile_to_cells
@@ -300,7 +300,8 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     :param table: An annotation that has a not None image and fully segmented cell annotation.
     :return: HTML representation of the table
     """
-    assert table.image is not None
+    if table.image is None:
+        raise ValueError("table.image cannot be None")
     table_image = table.image
     cells = table_image.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body])
     number_of_rows = int(table_image.summary.get_sub_category(TableType.number_of_rows).category_id)
@@ -395,7 +396,8 @@ class TableSegmentationRefinementService(PipelineComponent):
     def serve(self, dp: Image) -> None:
         tables = dp.get_annotation(category_names=self._table_name)
         for table in tables:
-            assert table.image is not None
+            if table.image is None:
+                raise ValueError("table.image cannot be None")
             tiles_to_cells_list = tiles_to_cells(dp, table)
             connected_components, tile_to_cell_dict = connected_component_tiles(tiles_to_cells_list)
             rectangle_tiling = generate_rectangle_tiling(connected_components)

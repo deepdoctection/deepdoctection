@@ -87,9 +87,8 @@ class TextExtractionService(PredictorPipelineComponent):
         )
         super().__init__(text_extract_detector, category_id_mapping)
         if self.extract_from_category:
-            assert isinstance(
-                self.predictor, (ObjectDetector, TextRecognizer)
-            ), "Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer."
+            if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
+                raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -98,7 +97,8 @@ class TextExtractionService(PredictorPipelineComponent):
             if isinstance(text_roi, ImageAnnotation):
                 ann_id = text_roi.annotation_id
             predictor_input = self.get_predictor_input(text_roi)
-            assert predictor_input is not None
+            if predictor_input is None:
+                raise ValueError("predictor_input cannot be None")
             width, height = None, None
             detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
@@ -154,11 +154,14 @@ class TextExtractionService(PredictorPipelineComponent):
         """
 
         if isinstance(text_roi, ImageAnnotation):
-            assert text_roi.image is not None
-            assert text_roi.image.image is not None
+            if text_roi.image is None:
+                raise ValueError("text_roi.image cannot be None")
+            if text_roi.image.image is None:
+                raise ValueError("text_roi.image.image cannot be None")
             return text_roi.image.image
         if isinstance(self.predictor, ObjectDetector):
-            assert isinstance(text_roi, Image)
+            if not isinstance(text_roi, Image):
+                raise ValueError("text_roi must be an image")
             return text_roi.image
         if isinstance(text_roi, list):
             assert all(roi.image is not None for roi in text_roi)
@@ -170,7 +173,11 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             sub_cat_dict = {category: {WordType.characters} for category in self.extract_from_category}
         else:
-            assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
+            if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
+                raise TypeError(
+                    f"self.predictor must be of type ObjectDetector or PdfMiner but is of type "
+                    f"{type(self.predictor)}"
+                )
             sub_cat_dict = {category: {WordType.characters} for category in self.predictor.possible_categories()}
         return dict(
             [

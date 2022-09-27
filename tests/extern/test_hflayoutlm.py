@@ -85,7 +85,7 @@ class TestHFLayoutLmTokenClassifier:
         """
 
         # Arrange, Act & Assert
-        with raises(AssertionError):
+        with raises(ValueError):
             HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], None)
 
         # Arrange

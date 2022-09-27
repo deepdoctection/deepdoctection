@@ -427,10 +427,10 @@ class Annotations:
     ]  # global coordinates calculated depending on table annotation from fixture image_annotations
 
     def __post_init__(self) -> None:
-        self.layout_anns[0]._annotation_id = "53b76155-60ac-3305-a8fe-3507c4aae308"  # pylint: disable=W0212
-        self.layout_anns[1]._annotation_id = "cf3161ca-0e26-385d-9891-dc5cf5c8202e"  # pylint: disable=W0212
-        self.layout_anns[2]._annotation_id = "6c59831c-79e3-339f-82ef-153d64aa348b"  # pylint: disable=W0212
-        self.layout_anns[3]._annotation_id = "f58a8974-f891-3926-85e5-2ddebcbccf47"  # pylint: disable=W0212
+        self.layout_anns[0]._annotation_id = "38c755da-ace2-3712-98ac-b2c800e0725e"  # pylint: disable=W0212
+        self.layout_anns[1]._annotation_id = "0c53dc7c-b0ed-3082-9bf0-7522739fb42c"  # pylint: disable=W0212
+        self.layout_anns[2]._annotation_id = "e2341ea6-d7e5-3d69-96a5-d6ee1d0e3a39"  # pylint: disable=W0212
+        self.layout_anns[3]._annotation_id = "5a576938-6452-33db-aa28-8d4728e7b337"  # pylint: disable=W0212
 
     def get_layout_detect_results(self) -> List[DetectionResult]:
         """
@@ -1437,10 +1437,10 @@ _LAYOUT_INPUT = {
     "image": np.ones((1000, 1000, 3)),
     "ids": [
         "CLS",
-        "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
-        "2b46086c-a480-357d-8e07-29b177d150b8",
-        "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
-        "16860148-9a2b-3530-b33e-9aaba857f5ce",
+        "7e79459d-0cf9-3954-802c-6d8c4d017792",
+        "08e645c4-f28d-30e6-befe-ab22dc53da92",
+        "224d479a-77e1-3c7a-9cd1-08430c61f020",
+        "841c74d7-45b2-3e0d-a8d5-7be3391685d6",
         "SEP",
     ],
     "boxes": [
@@ -1464,10 +1464,10 @@ _LAYOUT_FEATURES = {
     "ann_ids": [
         [
             "[CLS]",
-            "429e2ed0-7f89-31bf-bba5-0f0f65c0eb2e",
-            "2b46086c-a480-357d-8e07-29b177d150b8",
-            "8c6c765c-3e99-3154-ae2e-6d8b661e9bcb",
-            "16860148-9a2b-3530-b33e-9aaba857f5ce",
+            "7e79459d-0cf9-3954-802c-6d8c4d017792",
+            "08e645c4-f28d-30e6-befe-ab22dc53da92",
+            "224d479a-77e1-3c7a-9cd1-08430c61f020",
+            "841c74d7-45b2-3e0d-a8d5-7be3391685d6",
             "[SEP]",
         ]
     ],

@@ -25,7 +25,6 @@ from typing import Dict, List, Optional, Union
 
 from detectron2.structures import BoxMode
 
-from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
@@ -64,7 +63,8 @@ def image_to_d2_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
     annotations = []
 
     for ann in anns:
-        assert isinstance(ann.bounding_box, BoundingBox)
+        if ann.bounding_box is None:
+            raise ValueError("BoundingBox cannot be None")
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": ann.bounding_box.to_list(mode="xyxy"),

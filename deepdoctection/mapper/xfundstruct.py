@@ -86,11 +86,11 @@ def xfund_to_image(
         entity_id_to_entity_link_id = defaultdict(list)
         ann_id_to_entity_id = {}
 
-        entities = dp.get("document")
+        entities = dp.get("document", [])
 
         if entities is None:
-            entities = dp.get("form")
-        assert isinstance(entities, list)
+            entities = dp.get("form", [])
+
         for entity in entities:
             words = entity.get("words")
 

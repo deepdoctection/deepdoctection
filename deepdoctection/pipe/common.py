@@ -209,9 +209,10 @@ class PageParsingService:
         return MapData(df, self.pass_datapoint)
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [LayoutType.word, LayoutType.line], (
-            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
-        )
+        assert self._text_container in [
+            LayoutType.word,
+            LayoutType.line,
+        ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
         assert set(self._floating_text_block_names) <= set(
             self._text_block_names
         ), "floating_text_block_names must be a subset of text_block_names"
