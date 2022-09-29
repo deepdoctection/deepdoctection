@@ -177,7 +177,7 @@ dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 EXTRA_DEPS = {
     "tf": tf_deps,
     "pt": pt_deps ,
-    "source-pt": source_pt_deps,
+    #"source-pt": source_pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,

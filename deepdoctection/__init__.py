@@ -13,7 +13,7 @@ from packaging import version
 from .utils.file_utils import get_tf_version, pytorch_available, tf_available, _LazyModule
 from .utils.logger import logger
 
-__version__ = 0.16
+__version__ = 0.17
 
 _IMPORT_STRUCTURE = {
     "analyzer": ["get_dd_analyzer",
