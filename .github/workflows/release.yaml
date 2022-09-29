@@ -20,6 +20,7 @@ jobs:
         architecture: x64
 
     - name: Install package
-      run: python3 -m pip install --upgrade pip
+      run: |
+           python3 -m pip install --upgrade pip
            pip install deepdoctection
            python -c "import deepdoctection; print(deepdoctection.__version__)"
