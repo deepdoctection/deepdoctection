@@ -24,18 +24,17 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import DatasetBase
-from deepdoctection.utils.file_utils import tf_available
+from deepdoctection.utils.file_utils import tf_available, tensorpack_available
 from deepdoctection.utils.metacfg import set_config_by_yaml
 
 from ..test_utils import collect_datapoint_from_dataflow, set_num_gpu_to_one
 
-if tf_available():
+if tf_available() and tensorpack_available():
     from deepdoctection.extern.tp.tpfrcnn.config.config import model_frcnn_config
     from deepdoctection.train.tp_frcnn_train import get_train_dataflow, train_faster_rcnn
 
 
 @mark.requires_tf
-@mark.full
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 @patch("deepdoctection.train.tp_frcnn_train.set_mp_spawn")
 def test_get_train_dataflow(
@@ -64,7 +63,6 @@ def test_get_train_dataflow(
 
 
 @mark.requires_tf
-@mark.full
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deepdoctection.extern.tp.tpfrcnn.config.config.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))

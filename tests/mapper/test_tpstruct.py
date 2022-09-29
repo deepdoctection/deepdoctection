@@ -19,6 +19,7 @@
 Testing module mapper.tpstruct
 """
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from numpy.testing import assert_allclose, assert_array_equal
 
@@ -28,6 +29,7 @@ from deepdoctection.mapper.tpstruct import image_to_tp_frcnn_training
 from .data import DatapointImage
 
 
+@mark.basic
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_image_to_tp_frcnn_training(datapoint_image: Image, image_results: DatapointImage) -> None:
     """

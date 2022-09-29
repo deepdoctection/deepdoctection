@@ -85,6 +85,7 @@ def test_image_to_layoutlm(
     assert output["token_type_ids"] == layoutlm_input["token_type_ids"]
 
 
+@mark.basic
 @patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
 def test_image_to_raw_layoutlm_features_for_token_data(
     datapoint_xfund: JsonDict,
@@ -117,6 +118,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     assert raw_features["labels"] == raw_layoutlm_features["labels"]
 
 
+@mark.basic
 @patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(return_value=np.ones((1000, 1000, 3))))
 def test_image_to_raw_layoutlm_features_for_inference(
     datapoint_xfund: JsonDict,

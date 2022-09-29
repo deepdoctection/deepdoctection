@@ -19,11 +19,14 @@
 Testing module datasets.instances.doclaynet
 """
 
+from pytest import mark
+
 from deepdoctection.datasets import DocLayNet
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
+@mark.basic
 def test_dataset_doclaynet_returns_image() -> None:
     """
     test dataset publaynet returns image

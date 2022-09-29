@@ -14,7 +14,7 @@ Let's say you start with a small annotation file containing some ground truth da
 to each image. You load this file into memory having a list of e.g. dicts. You then need something so that you can
 iterate over each list element step by step. This is the place where generators come into place.
 
-For users familiar with Pytorch datasets, datasets in **deep**doctection are related to the :class:`IterableDataset`.
+For users familiar with Pytorch datasets, datasets in **deep**\doctection are related to the :class:`IterableDataset`.
 In Pytorch you can iterate over samples like:
 
 .. code:: python
@@ -29,11 +29,11 @@ A data set consists of three components modelled as attributes: :class:`DatasetI
 :class:`Dataflowbuilder` class that have to be implemented individually. :meth:`build` of
 :class:`Dataflowbuilder` returns a generator, a :class:`Dataflow` instance from which data points can be streamed.
 
-A paradigm of **deep**doctection is that data points, if they are streamed via the :meth:`build`, are not returned in the
+A paradigm of **deep**\doctection is that data points, if they are streamed via the :meth:`build`, are not returned in the
 raw annotation format of the annotation file, but in :class:`Image` format. An :class:`Image` is a class in which
 annotations from common Document-AI tasks can be mapped in a standardized manner. This uniform mapping may seem
 redundant at first, but once having standard data point formats, it is relatively simple to try out different components
-of the **deep**doctection framework or to merge datasets.
+of the **deep**\doctection framework or to merge datasets.
 First of all, an :class:`Image` contains information about the image sample itself. This includes metadata such as
 storage location or pixel width and height. The image sample itself can also be saved as a numpy array. However, for the
 reasons mentioned above, one should not initially save the image sample when loading annotations, but only provide the

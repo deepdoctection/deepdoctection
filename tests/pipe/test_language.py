@@ -20,6 +20,7 @@ Testing module pipe.language
 """
 
 from unittest.mock import MagicMock
+from pytest import mark
 
 from deepdoctection.datapoint import ContainerAnnotation, Image
 from deepdoctection.extern.base import DetectionResult
@@ -65,6 +66,7 @@ class TestLanguageDetectionService:
             ],
         )
 
+    @mark.basic
     def test_pass_datapoint(
         self, dp_image_with_layout_and_word_annotations: Image, language_detect_result: DetectionResult
     ) -> None:

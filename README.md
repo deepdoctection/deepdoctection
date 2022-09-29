@@ -50,7 +50,7 @@ requested. For instance, you can find pre-trained object detection models from t
 ## Datasets and training scripts
 
 Training is a substantial part to get pipelines ready on some specific domain, let it be document layout analysis, 
-document classification or NER. **deep**doctection provides scripts for models that are based on trainers
+document classification or NER. **deep**doctection provides training scripts for models that are based on trainers
 developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
 datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
 formats like COCO and it has a dataset framework (akin to [**datasets**](https://github.com/huggingface/datasets) so that
@@ -59,19 +59,52 @@ formats like COCO and it has a dataset framework (akin to [**datasets**](https:/
    
 ## Evaluation
 
-**deep**doctection comes equipped with a framework that allows you evaluating prediction of a single or multiple 
-chained models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
+**deep**doctection comes equipped with a framework that allows you to evaluate predictions of a single or multiple 
+models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
 done.  
 
 ## Inference
 
-Having setup a pipeline it takes you two lines of code to instantiate the pipeline, one line to specify the path to your
-document or page folder and after a for loop all pages will be processed through the pipeline. 
+Having set up a pipeline it takes you a few lines of code to instantiate the pipeline and after a for loop all pages will 
+be processed through the pipeline. 
+
+```
+import deepdoctection as dd
+from IPython.core.display import HTML
+from matplotlib import pyplot as plt
+
+analyzer = dd.get_dd_analyzer()  # instantiate the built-in analyzer similar to the Hugging Face space demo
+
+df = analyzer.analyze(path = "/path/to/your/doc.pdf")  # setting up pipeline
+df.reset_state()                 # Trigger some initialization
+
+doc = iter(df)
+page = next(doc) 
+
+image = page.viz()
+plt.figure(figsize = (25,17))
+plt.axis('off')
+plt.imshow(image)
+```
+
+![text](./notebooks/pics/dd_rm_sample.png)
+
+```
+HTML(page.tables[0].html)
+```
+
+![table](./notebooks/pics/dd_rm_table.png)
+
+
+```
+print(page.get_text())
+```
+
+![table](./notebooks/pics/dd_rm_text.png)
+
 
 This excerpt shows how to instantiate the built-in **deep**doctection analyzer as deployed on the Hugging Face space 
 and how to get parsed result from a PDF document page by page. 
-
-![image info](./notebooks/pics/dd_rm_sample_notebook.png)
 
 ## Documentation
 
@@ -84,23 +117,23 @@ documentation.
 
 ## Requirements
 
-### Platform and Python
+![requirements](./notebooks/pics/requirements_deepdoctection.jpg)
 
-Before you start, please ensure your installation fulfills the following requirements:
+Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
+separately. 
 
-- Linux **or** macOS
-- Python >=  3.8 
-- PyTorch >= 1.8 and torchvision **or** Tensorflow >=2.4.1 and CUDA
+- Linux or macOS. Windows is not supported. 
+- Python >= 3.8
+- PyTorch >= 1.8 **or** Tensorflow >= 2.8 and CUDA. If you want to run the models provided by Tensorpack a GPU is
+  required. You can run on PyTorch with a CPU only.
+- **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
+images. 
+- With respect to the Deep Learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en)
+  and [PyTorch](https://pytorch.org/get-started/locally/).
+- [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
+  engine has to be installed separately.
 
-Windows is not supported.
 
-You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
-
-### Other
-
-**deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
-images and for calling [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine. 
-If you get started and want to run the notebooks for the first time it is required to have them installed as well.
 
 ## Installation
 
@@ -109,13 +142,7 @@ will be deployed to PyPi every 4 to 6 weeks.
 
 ### Install with pip from PyPi
 
-[Dataflow](https://github.com/tensorpack/dataflow) is not available on the PyPi server and must be installed separately.
-
-```
-pip install  "dataflow @ git+https://github.com/tensorpack/dataflow.git"
-```
-
-Depending on which Deep Learning library is available, use the following installation option:
+Depending on which Deep Learning library you have available, use the following installation option:
 
 For **Tensorflow**, run
 
@@ -123,19 +150,29 @@ For **Tensorflow**, run
 pip install deepdoctection[tf]
 ```
 
-For **PyTorch**, first install **Detectron2** separately as it is not on the PyPi, either. Check the instruction 
+For **PyTorch**, 
+
+first install **Detectron2** separately as it is not distributed via PyPi. Check the instruction 
 [here](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). Then run
 
 ```
 pip install deepdoctection[pt]
 ```
 
-This will install the basic setup which is needed to run the first two notebooks and do some inference with pipelines.
+This will install **deep**doctection with all dependencies listed above the **deep**doctection layer. Use this setting, 
+if you want to get started or want to explore all features. 
 
-Some libraries are not added to the requirements in order to keep the dependencies as small as possible (e.g. DocTr,
-pdfplumber, fastText, ...). If you want to use them, you have to pip install them individually by yourself. 
-Alternatively, consult the 
-[**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html).
+If you want to have more control with your installation and are looking for fewer dependencies then 
+install **deep**doctection with the basic setup only.
+
+```
+pip install deepdoctection
+```
+
+This will ignore all model libraries (layers above the **deep**doctection layer in the diagram) and you 
+will be responsible to install them by yourself. Note, that you will not be able to run any pipeline with this setup.
+
+For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html).
 
 
 ### Installation from source
@@ -150,40 +187,20 @@ To get started with **Tensorflow**, run:
 
 ```
 cd deepdoctection
-pip install ".[source-tf]"
+pip install ".[tf]"
 ```
 
-or with **PyTorch**:
+Installing the full **PyTorch** setup from source will also install **Detectron2** for you:
  
 ```
 cd deepdoctection
 pip install ".[source-pt]"
 ```
 
-This will install the basic dependencies to get started with the first notebooks. To get all package extensions,
-
-```
-cd deepdoctection
-pip install ".[source-all-tf]"
-```
-
-or 
-
-```
-cd deepdoctection
-pip install ".[source-all-pt]"
-```
-
-will install all available external libraries that can be used for inference (e.g. DocTr, pdfplumber, fastText, ...).
-
-Again, for other installation options check 
-[**this**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html) site.
-
-
 ## Credits
 
-We thank all libraries that provide high quality code and pre-trained models. Without them it would be impossible for a 
-single person to develop this framework.
+We thank all libraries that provide high quality code and pre-trained models. Without, it would have been impossible 
+to develop this framework.
 
 ## Problems
 

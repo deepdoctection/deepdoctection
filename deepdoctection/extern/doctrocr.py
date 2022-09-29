@@ -35,7 +35,7 @@ from ..utils.file_utils import (
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 
-if doctr_available() and tf_addons_available():
+if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611

@@ -21,6 +21,7 @@ Testing module mapper.xfundstruct
 
 from typing import Dict
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
@@ -29,6 +30,7 @@ from deepdoctection.utils.settings import CellType, TokenClasses, WordType
 from .conftest import get_always_pubtabnet_white_image
 
 
+@mark.basic
 @patch(
     "deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_always_pubtabnet_white_image)
 )

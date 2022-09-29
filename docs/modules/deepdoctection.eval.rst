@@ -42,6 +42,14 @@ deepdoctection.eval.registry
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.eval.tedsmetric
+-------------------------------------
+
+.. automodule:: deepdoctection.eval.tedsmetric
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.eval.tp\_eval\_callback
 -----------------------------------------------
 

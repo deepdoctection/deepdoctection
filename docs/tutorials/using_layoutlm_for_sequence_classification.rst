@@ -1,5 +1,5 @@
-Using LayoutLM for sequence classification
-==========================================
+LayoutLM for sequence classification
+====================================
 
 `LayoutLM <https://arxiv.org/abs/1912.13318>`__ developed by Microsoft
 Research Asia has become a very popular model for document understanding

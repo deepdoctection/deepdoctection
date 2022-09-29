@@ -20,6 +20,7 @@ Testing module pipe.anngen
 """
 
 from typing import List
+from pytest import mark
 
 from deepdoctection.datapoint import Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult
@@ -33,6 +34,7 @@ class TestDatapointManager:
     """
 
     @staticmethod
+    @mark.basic
     def test_set_image_annotation(
         dp_image: Image, layout_detect_results: List[DetectionResult], layout_annotations: List[ImageAnnotation]
     ) -> None:
@@ -54,6 +56,7 @@ class TestDatapointManager:
         assert dp_manager._cache_anns[ann_id] == layout_annotations[0]  # pylint: disable=W0212
 
     @staticmethod
+    @mark.basic
     def test_set_image_annotation_with_image(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
         """
         test set_image_annotation with image_ann_to_image
@@ -71,6 +74,7 @@ class TestDatapointManager:
         assert ann[0].bounding_box == ann[0].image.get_embedding(dp_image.image_id)
 
     @staticmethod
+    @mark.basic
     def test_set_image_annotation_to_image_ann(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
         """
         test set_image_annotation with ann to image ann
@@ -94,6 +98,7 @@ class TestDatapointManager:
         assert dp_manager._cache_anns[ann_id]  # type:ignore # pylint: disable=W0212
 
     @staticmethod
+    @mark.basic
     def test_set_category_annotation(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
         """
         test set_category_annotation
@@ -117,6 +122,7 @@ class TestDatapointManager:
         assert cat_ann.category_name == "foo"
 
     @staticmethod
+    @mark.basic
     def test_set_container_annotation(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
         """
         test set_container_annotation
@@ -144,6 +150,7 @@ class TestDatapointManager:
         assert cont_ann.annotation_id == cont_ann_id
 
     @staticmethod
+    @mark.basic
     def test_summary_annotation(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
         """
         test summary_annotation

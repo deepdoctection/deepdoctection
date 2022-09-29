@@ -35,6 +35,7 @@ _TEST_IMAGE_2 = Image(file_name="test_image.pdf", location="test/to/path/test_im
 _TEST_IMAGE_2.image = ones((4, 3, 3), dtype=uint8)
 
 
+@mark.basic
 @mark.parametrize(
     "datapoint,expected_image",
     [

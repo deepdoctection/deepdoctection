@@ -19,12 +19,14 @@
 Testing module datasets.instances.layouttest
 """
 
+from pytest import mark
 
 from deepdoctection.datasets import LayoutTest
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
+@mark.basic
 def test_dataset_layouttest_returns_image() -> None:
     """
     test dataset layouttest returns image
@@ -42,6 +44,7 @@ def test_dataset_layouttest_returns_image() -> None:
     assert len(df_list) == 2
 
 
+@mark.basic
 def test_dataset_layouttest_with_load_image_returns_image() -> None:
     """
     test dataset layouttest returns image

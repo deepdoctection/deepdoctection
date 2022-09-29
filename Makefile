@@ -42,7 +42,7 @@ format:
 
 install-dd-dev-pt: check-venv
 	@echo "--> Installing source-all-pt"
-	pip install -e ".[source-all-pt]"
+	pip install -e ".[source-pt]"
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
@@ -50,7 +50,7 @@ install-dd-dev-pt: check-venv
 
 install-dd-dev-tf: check-venv
 	@echo "--> Installing source-all-tf"
-	pip install -e ".[source-all-tf]"
+	pip install -e ".[tf]"
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
@@ -108,23 +108,13 @@ test-build:
 	$(PYTHON) -m twine upload --repository testpypi dist/*
 
 test-basic:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not requires_tf and not full and not all" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
-test-tf-basic:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not full and not all" tests
+test-tf:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_tf or requires_tf_or_pt" tests
 
-test-tf-full:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt and not all" tests
-
-test-tf-all:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_pt" tests
-
-test-pt-full: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not all and not requires_gpu" tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
-
-test-pt-all: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "not requires_tf and not requires_gpu" tests
+test-pt: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_pt or requires_tf_or_pt" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-integration:

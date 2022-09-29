@@ -52,7 +52,7 @@ if pytorch_available():
     from ..extern.d2detect import D2FrcnnDetector
 
 
-__all__ = ["get_dd_analyzer"]
+__all__ = ["get_dd_analyzer", "build_analyzer"]
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"

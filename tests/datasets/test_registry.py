@@ -20,6 +20,7 @@ Testing module datasets.instances.registry
 """
 
 from unittest.mock import MagicMock
+from pytest import mark
 
 from deepdoctection.datasets.base import DatasetBase
 from deepdoctection.datasets.dataflow_builder import DataFlowBaseBuilder
@@ -27,6 +28,7 @@ from deepdoctection.datasets.info import DatasetCategories, DatasetInfo
 from deepdoctection.datasets.registry import dataset_registry, get_dataset
 
 
+@mark.basic
 def test_dataset_registry_has_all_build_in_datasets_registered() -> None:
     """
     test dataset registry has all pipeline components registered
@@ -34,6 +36,7 @@ def test_dataset_registry_has_all_build_in_datasets_registered() -> None:
     assert len(dataset_registry.get_all()) == 11
 
 
+@mark.basic
 def test_dataset_registry_registered_new_dataset() -> None:
     """
     test, that the new generated dataset component "TestDataset" can be registered and retrieved from registry

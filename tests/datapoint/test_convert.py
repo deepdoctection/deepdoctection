@@ -18,11 +18,15 @@
 """
 Testing module datapoint.convert
 """
+
+from pytest import mark
+
 from deepdoctection.datapoint import convert_pdf_bytes_to_np_array_v2
 
 from .conftest import TestPdfPage
 
 
+@mark.basic
 def test_convert_pdf_bytes_to_np_array_v2(pdf_page: TestPdfPage) -> None:
     """
     testing convert_pdf_bytes_to_np_array_v2 returns a np.array of correct shape
@@ -35,6 +39,7 @@ def test_convert_pdf_bytes_to_np_array_v2(pdf_page: TestPdfPage) -> None:
     assert np_array.shape == pdf_page.np_array_shape_default
 
 
+@mark.basic
 def test_convert_pdf_bytes_to_np_array_v2_with_dpi_300(pdf_page: TestPdfPage) -> None:
     """
     testing convert_pdf_bytes_to_np_array_v2 returns a np.array of correct shape when dpi is set to 300

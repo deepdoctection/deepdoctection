@@ -21,6 +21,7 @@ Testing module pipe.cell
 
 from typing import List
 from unittest.mock import MagicMock
+from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
@@ -30,6 +31,7 @@ from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutServic
 from deepdoctection.utils.settings import LayoutType
 
 
+@mark.basic
 def test_detect_result_generator(
     dataset_categories: DatasetCategories, dp_image: Image, layout_detect_results: List[DetectionResult]
 ) -> None:
@@ -66,6 +68,7 @@ class TestSubImageLayoutService:
         self._cell_detector = MagicMock(spec=ObjectDetector)
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
 
+    @mark.basic
     def test_pass_datapoint(
         self,
         dp_image_with_layout_anns: Image,

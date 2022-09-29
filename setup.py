@@ -18,7 +18,6 @@
 import os
 import re
 import sys
-from copy import deepcopy
 
 from setuptools import find_packages, setup
 
@@ -42,31 +41,31 @@ sys.path.insert(0, ROOT)
 # that need to be installed separately
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
+    "apted==1.0.3",
     "catalogue==2.0.7",
-    "importlib-metadata>=4.11.2",
+    "distance==0.1.3",
     "huggingface_hub>=0.4.0",
+    "importlib-metadata>=4.11.2",
     "jsonlines==3.0.0",
+    "lxml>=4.9.1",
     "mock==4.0.3",
     "networkx>=2.7.1",
     "numpy>=1.21",
     "opencv-python==4.5.4.60",
     "packaging>=20.0",
+    "pycocotools>=2.0.2",
     "pypdf2>=1.27.5,<2.10.1",
     "python-prctl",
     "pyyaml==6.0",
     "pyzmq>=16",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
+    # type-stubs
     "types-PyYAML",
     "types-termcolor==1.1.3",
     "types-tabulate",
     "types-tqdm",
-    # additional requirements to run eval and datasets (again without considering DL models)
-    "lxml",
     "lxml-stubs",
-    "pycocotools>=2.0.2",
-    "distance",
-    "apted",
     # Tensorflow related dependencies
     "protobuf==3.20.1",
     "tensorpack",
@@ -75,12 +74,12 @@ _DEPS = [
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "boto3",
-    "pdfplumber",
+    "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.13.0",
     "python-doctr",
     "fasttext",
     # dev dependencies
-    "click==8.0.4",  # because this does not break black
+    "click==8.0.4",  # version will not break black
     "black==22.3.0",
     "isort",
     "pylint==2.13.4",
@@ -95,7 +94,6 @@ _DEPS = [
 ]
 
 # lookup table with items like:
-#
 # pycocotools: "pycocotools>=2.0.2"
 # tensorpack: "tensorpack"
 deps = {b: a for a, b in (re.findall(r"^(([^!=<>]+)(?:[!=<>].*)?$)", x)[0] for x in _DEPS)}
@@ -107,15 +105,19 @@ def deps_list(*pkgs: str):
 
 # pyp-pi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
+    "apted",
     "catalogue",
-    "importlib-metadata",
+    "distance",
     "huggingface_hub",
+    "importlib-metadata",
     "jsonlines",
+    "lxml",
     "mock",
     "networkx",
     "numpy",
     "opencv-python",
     "packaging",
+    "pycocotools",
     "pypdf2",
     "pyyaml",
     "pyzmq",
@@ -125,40 +127,30 @@ dist_deps = deps_list(
     "types-termcolor",
     "types-tabulate",
     "types-tqdm",
+    "lxml-stubs",
 )
 
-# if sys.platform == "linux":
-#    dist_deps.extend(deps_list("python-prctl"))
 
-
-# full dependencies for using evaluations and all datasets
-additional_deps = deps_list("lxml", "lxml-stubs", "pycocotools", "distance", "apted")
-
-# remaining dependencies to use all models
-remaining_deps = deps_list("boto3", "pdfplumber", "tensorflow-addons", "python-doctr", "fasttext")
-
-full_deps = dist_deps + additional_deps
-source_full_deps = dist_deps + additional_deps
-source_all_deps = dist_deps + additional_deps + remaining_deps
+# remaining dependencies to use models that neither require TF nor PyTorch
+additional_deps = deps_list("boto3", "pdfplumber", "fasttext")
 
 # Tensorflow dependencies
-additional_tf_deps = deps_list("tensorpack", "protobuf")
-
-source_tf_deps = dist_deps + additional_tf_deps
-full_tf_deps = full_deps + additional_tf_deps
-source_full_tf_deps = source_full_deps + additional_tf_deps
-source_all_tf_deps = source_all_deps + additional_tf_deps
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr")
 
 # PyTorch dependencies
-additional_pt_deps = deps_list("transformers")
-source_additional_pt_deps = additional_pt_deps + deps_list(
+pt_deps = deps_list("transformers", "python-doctr")
+source_pt_deps = pt_deps + deps_list(
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 )
 
-# it does not make sense to define a non-full pt dependency, because everything is already available
-full_pt_deps = full_deps + additional_pt_deps
-source_full_pt_deps = source_full_deps + source_additional_pt_deps
-source_all_pt_deps = source_all_deps + source_additional_pt_deps
+# Putting all together
+tf_deps = dist_deps + tf_deps + additional_deps
+pt_deps = dist_deps + pt_deps + additional_deps
+source_pt_deps = dist_deps + source_pt_deps + additional_deps
+
+
+# if sys.platform == "linux":
+#    source_pt_deps.extend(deps_list("python-prctl"))
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list(
@@ -171,13 +163,6 @@ docs_deps = deps_list(
     "pycocotools",
 )
 
-if "python-prctl" in docs_deps:
-    docs_deps.remove("python-prctl")
-
-# dependencies for HF Spaces - basically removing detectron2, because we install it differently
-hf_spaces_deps = deepcopy(source_full_deps) + deepcopy(additional_pt_deps)
-if "python-prctl" in hf_spaces_deps:
-    hf_spaces_deps.remove("python-prctl")
 
 # test dependencies
 test_deps = deps_list("pytest", "pytest-cov")
@@ -190,18 +175,13 @@ dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 # when uploading to pypi first comment all source extra dependencies so that there are no dependencies to dataflow
 
 EXTRA_DEPS = {
-    "tf": additional_tf_deps,
-    "source-tf": source_tf_deps,
-    "full-tf": full_tf_deps,
-    "source-full-tf": source_full_tf_deps,
-    "source-all-tf": source_all_tf_deps,
-    "pt": full_pt_deps,
-    "source-pt": source_full_pt_deps,
-    "source-all-pt": source_all_pt_deps,
+    "tf": tf_deps,
+    "pt": pt_deps ,
+    "source-pt": source_pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
-    "hf": hf_spaces_deps,
+    "hf": pt_deps,
 }
 
 setup(
