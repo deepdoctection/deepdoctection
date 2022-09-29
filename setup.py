@@ -74,7 +74,7 @@ _DEPS = [
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "boto3",
-    "pdfplumber",
+    "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.13.0",
     "python-doctr",
     "fasttext",
