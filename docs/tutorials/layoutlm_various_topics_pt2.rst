@@ -182,12 +182,12 @@ Setting up training script
     funsd = dd.get_dataset("funsd")
     dataset_type = funsd.dataset_info.type
     categories_dict_name_as_key = funsd.dataflow.categories.get_sub_categories(
-        categories=dd.names.C.WORD,
-        sub_categories={dd.names.C.WORD: [dd.names.NER.TOK]},
+        categories="WORD",
+        sub_categories={"WORD": ["TOKEN_TAG"]},
         keys=False,
         values_as_dict=True,
         name_as_key=True,
-        )[dd.names.C.WORD][dd.names.NER.TOK]
+        )["WORD"]["TOKEN_TAG"]
     
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
     
@@ -424,11 +424,11 @@ evaluator, we first have to provide a model wrapper
         dataset_val = dd.get_dataset("funsd")
     
         categories = dataset_val.dataflow.categories.get_sub_categories(
-            categories=dd.names.C.WORD, sub_categories={dd.names.C.WORD: [dd.names.NER.TOK]}, keys=False
-        )[dd.names.C.WORD][dd.names.NER.TOK]
+            categories="WORD", sub_categories={"WORD": ["TOKEN_TAG"]}, keys=False
+        )["WORD"]["TOKEN_TAG"]
     
         metric = dd.get_metric("f1")
-        metric.set_categories(sub_category_names={dd.names.C.WORD: [dd.names.NER.TOK]})
+        metric.set_categories(sub_category_names={"WORD": ["TOKEN_TAG"]})
         #language_model = dd.HFLayoutLmTokenClassifier(config,weights,categories=categories)
         language_model = HFLayoutLmWithImageFeaturesTokenClassifier(config, path_yaml, weights, categories=categories)
         pipeline_component = dd.LMTokenClassifierService(tokenizer_fast, language_model, dd.image_to_layoutlm_features,

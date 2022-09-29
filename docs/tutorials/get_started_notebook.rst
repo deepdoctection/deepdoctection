@@ -1,8 +1,6 @@
 .. figure:: ./pics/dd_logo.png
    :alt: title
 
-   title
-
 Getting started
 ===============
 
@@ -75,7 +73,7 @@ need to change ``image_path``.)
     plt.axis('off')
     plt.imshow(image)
 
-.. figure:: ./pics/samples/sample_2/sample_2.png
+.. figure:: ./pics/sample_2.png
    :alt: title
 
    title
@@ -268,7 +266,7 @@ Finally, you can save the full results to a JSON file.
     page.save(image_path)
 
 How to continue
-===============
+---------------
 
 In this notebook we have shown how to use the built-in analyzer for text
 extraction from image/PDF documents.

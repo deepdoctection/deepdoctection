@@ -21,11 +21,14 @@ Testing module pipe.segment
 
 from typing import List
 
+from pytest import mark
+
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image
 from deepdoctection.pipe.segment import TableSegmentationService, stretch_items, tile_tables_with_items_per_table
 from deepdoctection.utils.settings import CellType, LayoutType
 
 
+@mark.basic
 def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: Image) -> None:
     """test stretch_items"""
     # Arrange
@@ -90,6 +93,7 @@ class TestTableSegmentationService:
             self._remove_iou_threshold_cols,
         )
 
+    @mark.basic
     def test_pass_datapoint(self, dp_image_tab_cell_item: Image, dp_image_fully_segmented: Image) -> None:
         """test pass_datapoint"""
 
@@ -144,6 +148,7 @@ class TestTableSegmentationService:
             assert cs_sub_cat.category_id == cs_sub_cat_expected.category_id
 
 
+@mark.basic
 def test_tile_tables_with_items_per_table(
     dp_image_item_stretched: Image,
     row_box_tiling_table: List[BoundingBox],
@@ -216,6 +221,7 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
             self._remove_iou_threshold_cols,
         )
 
+    @mark.basic
     def test_integration_pipeline_component(
         self, dp_image_tab_cell_item: Image, dp_image_fully_segmented_fully_tiled: Image
     ) -> None:

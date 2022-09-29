@@ -22,6 +22,7 @@ Testing module mapper.iiitarstruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from deepdoctection.mapper.pascalstruct import pascal_voc_dict_to_image
 from deepdoctection.utils.detection_types import JsonDict
@@ -29,6 +30,7 @@ from deepdoctection.utils.detection_types import JsonDict
 from .data import IIITar13KJson
 
 
+@mark.basic
 @patch("deepdoctection.mapper.pascalstruct.load_image_from_file", MagicMock())
 def test_pascal_voc_dict_to_image(
     datapoint_iiitar13kjson: JsonDict,

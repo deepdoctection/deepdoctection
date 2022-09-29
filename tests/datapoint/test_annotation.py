@@ -35,6 +35,7 @@ class TestCategoryAnnotation:
     """
 
     @staticmethod
+    @mark.basic
     @mark.parametrize(
         "external_id,expected",
         [
@@ -56,6 +57,7 @@ class TestCategoryAnnotation:
         assert test_cat.annotation_id == expected
 
     @staticmethod
+    @mark.basic
     def test_dump_sup_cat_and_check_ann_id() -> None:
         """
         Sub categories are dumped to category instance and annotation ids are correctly assigned
@@ -82,6 +84,7 @@ class TestCategoryAnnotation:
             )
 
     @staticmethod
+    @mark.basic
     def test_dump_sub_cat_with_external_id() -> None:
         """
         Sub categories are dumped to category instance and external category ids will be annotation ids
@@ -102,6 +105,7 @@ class TestCategoryAnnotation:
             assert export_sub_cat_1.annotation_id == "c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
 
     @staticmethod
+    @mark.basic
     def test_remove_sub_cat() -> None:
         """
         Existing sub categories are correctly removed

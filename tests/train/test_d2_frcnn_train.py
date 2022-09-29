@@ -40,7 +40,6 @@ def set_num_gpu_to_one() -> int:
 
 
 @mark.requires_gpu
-@mark.requires_pt
 @patch("deepdoctection.train.d2_frcnn_train.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
 @patch("deepdoctection.train.d2_frcnn_train.D2Trainer.train")
 def test_train_faster_rcnn(

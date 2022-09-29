@@ -20,6 +20,7 @@ Testing module datasets.instances.publaynet
 """
 
 from unittest.mock import MagicMock, patch
+from pytest import mark
 
 from deepdoctection.datasets import Publaynet
 
@@ -27,6 +28,7 @@ from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
 
 
+@mark.basic
 def test_dataset_publaynet_returns_image() -> None:
     """
     test dataset publaynet returns image
@@ -43,6 +45,7 @@ def test_dataset_publaynet_returns_image() -> None:
     assert len(df_list) == 6
 
 
+@mark.basic
 @patch("deepdoctection.mapper.cocostruct.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_publaynet_with_load_image_returns_image() -> None:
     """

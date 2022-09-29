@@ -19,6 +19,7 @@
 Testing module dataflow.parallel_map
 """
 from typing import no_type_check
+from pytest import mark
 
 import numpy as np
 
@@ -33,6 +34,7 @@ def map_to_one(dp):
     return np.ones(dp[0].shape)
 
 
+@mark.basic
 def test_multithread_map_data_non_strict() -> None:
     """Test MultiThreadMapData non strict"""
 
@@ -48,6 +50,7 @@ def test_multithread_map_data_non_strict() -> None:
     assert len(output) == 20
 
 
+@mark.basic
 def test_multithread_map_data_strict() -> None:
     """Test MultiThreadMapData strict"""
 

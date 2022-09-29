@@ -58,12 +58,11 @@ class TestDoctrTextlineDetector:
     """
 
     @staticmethod
-    @mark.requires_tf
-    @mark.all
+    @mark.requires_tf_or_pt
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_doctr_detector_predicts_image(np_image: ImageType) -> None:
+    def test_doctr__detector_predicts_image(np_image: ImageType) -> None:
         """
-        Detector calls doctr_predict_text_lines
+        Detector calls doctr_predict_text_lines. Only runs in tf environment
         """
 
         # Arrange
@@ -82,12 +81,11 @@ class TestDoctrTextRecognizer:
     """
 
     @staticmethod
-    @mark.requires_tf
-    @mark.all
+    @mark.requires_tf_or_pt
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_detector_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
+    def test_doctr_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
         """
-        Detector calls doctr_predict_text
+        Detector calls doctr_predict_text. Only runs in tf environment
         """
 
         # Arrange

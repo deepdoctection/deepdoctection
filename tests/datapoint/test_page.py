@@ -20,6 +20,7 @@ Testing the module datapoint.page
 """
 
 import json
+from pytest import mark
 
 from deepdoctection.datapoint.annotation import CategoryAnnotation
 from deepdoctection.datapoint.image import Image
@@ -29,6 +30,7 @@ from deepdoctection.utils.settings import Relationships
 from ..test_utils import get_test_path
 
 
+@mark.basic
 def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> None:
     """
     test page gets converted from an image correctly
@@ -71,6 +73,7 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     assert page.get_text() == "\nhello world\nbye world"
 
 
+@mark.basic
 def test_page_from_page_dict() -> None:
     """
     test page gets generated from a page dict

@@ -23,6 +23,7 @@ from typing import List, no_type_check
 
 import numpy as np
 from numpy.testing import assert_array_equal
+from pytest import mark
 
 from deepdoctection.dataflow import (
     ConcatData,
@@ -40,6 +41,7 @@ from deepdoctection.dataflow import (
 from ..test_utils import collect_datapoint_from_dataflow
 
 
+@mark.basic
 def test_flatten_data(dataset_three_dim: List[List[float]], dataset_flatten: List[List[List[float]]]) -> None:
     """
     Test the flattening of a dataflow
@@ -57,6 +59,7 @@ def test_flatten_data(dataset_three_dim: List[List[float]], dataset_flatten: Lis
     assert output == dataset_flatten
 
 
+@mark.basic
 def test_map_data() -> None:
     """Test MapData"""
 
@@ -76,6 +79,7 @@ def test_map_data() -> None:
     assert_array_equal(output[0], np.ones((4, 7, 3)))
 
 
+@mark.basic
 def test_map_data_component() -> None:
     """Test MapDataComponent"""
 
@@ -95,6 +99,7 @@ def test_map_data_component() -> None:
     assert output[1]["bak"] == "c"
 
 
+@mark.basic
 def test_repeated_data() -> None:
     """Test RepeatedData"""
 
@@ -111,6 +116,7 @@ def test_repeated_data() -> None:
     assert len(output) == 4
 
 
+@mark.basic
 def test_repeated_data_yields_infinitely_many_datapoints() -> None:
     """Test RepeatedData produces infinitely many datapoints"""
     # Arrange
@@ -126,6 +132,7 @@ def test_repeated_data_yields_infinitely_many_datapoints() -> None:
     assert len(output) == 100
 
 
+@mark.basic
 def test_concat_data() -> None:
     """Test ConcatData"""
 
@@ -144,6 +151,7 @@ def test_concat_data() -> None:
     assert len(output) == 4
 
 
+@mark.basic
 def test_join_data() -> None:
     """Test JoinData"""
 

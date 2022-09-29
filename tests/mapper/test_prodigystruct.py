@@ -19,9 +19,10 @@
 Testing the module mapper.prodigystruct
 """
 
-
 from math import isclose
 from typing import Dict
+
+from pytest import mark
 
 from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper import image_to_prodigy, prodigy_to_image
@@ -30,6 +31,7 @@ from deepdoctection.utils.detection_types import JsonDict
 from .data import DatapointImage, DatapointProdigy
 
 
+@mark.basic
 def test_prodigy_to_image(
     datapoint_prodigy: JsonDict, categories_prodigy: Dict[str, str], prodigy_results: DatapointProdigy
 ) -> None:
@@ -58,6 +60,7 @@ def test_prodigy_to_image(
     assert isclose(test_anns[0].bounding_box.height, datapoint.get_first_ann_box().h, rel_tol=1e-15)
 
 
+@mark.basic
 def test_image_to_prodigy(datapoint_image: Image, image_results: DatapointImage) -> None:
     """
     testing image_to_prodigy is mapping correctly
