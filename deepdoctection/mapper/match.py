@@ -19,7 +19,7 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Tuple, Union, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,7 +35,7 @@ def match_anns_by_intersection(
     dp: Image,
     parent_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
     child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
-    matching_rule: str,
+    matching_rule: Literal["iou","ioa"],
     threshold: float,
     use_weighted_intersections: bool = False,
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
@@ -93,32 +93,29 @@ def match_anns_by_intersection(
     """
 
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
-    iou_threshold, ioa_threshold = 0.0, 0.0
-    if matching_rule in ["iou"]:
-        iou_threshold = threshold
-    else:
-        ioa_threshold = threshold
 
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in child_anns if ann.image is not None]
+        [ann.image.get_embedding(dp.image_id).transform(dp.width,dp.height,absolute_coords=True).to_list(mode="xyxy")
+         for ann in child_anns if ann.image is not None]
     )
 
     parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
     parent_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).to_list(mode="xyxy") for ann in parent_anns if ann.image is not None]
+        [ann.image.get_embedding(dp.image_id).transform(dp.width,dp.height,absolute_coords=True).to_list(mode="xyxy")
+         for ann in parent_anns if ann.image is not None]
     )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
         iou_matrix = iou(child_ann_boxes, parent_ann_boxes)
-        output = iou_matrix > iou_threshold
+        output = iou_matrix > threshold
         child_index, parent_index = output.nonzero()
     elif matching_rule in ["ioa"] and parent_anns and child_anns:
         ioa_matrix = np.transpose(np_ioa(parent_ann_boxes, child_ann_boxes))
 
         if max_parent_only:
             # set all matrix values below threshold to 0
-            ioa_matrix[ioa_matrix < ioa_threshold] = 0
+            ioa_matrix[ioa_matrix < threshold] = 0
             # add a dummy column to the left. argmax will choose this column if all ioa values of one child are 0.
             # This index will be ignored in output
             ioa_matrix = np.hstack([np.zeros((ioa_matrix.shape[0], 1)), ioa_matrix])
@@ -136,7 +133,7 @@ def match_anns_by_intersection(
 
             if use_weighted_intersections:
                 ioa_matrix = _weighted_ioa_matrix(ioa_matrix)
-            output = ioa_matrix > ioa_threshold
+            output = ioa_matrix > threshold
             child_index, parent_index = output.nonzero()
 
     else:
