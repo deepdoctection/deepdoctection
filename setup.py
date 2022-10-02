@@ -76,7 +76,7 @@ _DEPS = [
     "boto3",
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.13.0",
-    "python-doctr",
+    "python-doctr<=0.5.1",
     "fasttext",
     # dev dependencies
     "click==8.0.4",  # version will not break black
