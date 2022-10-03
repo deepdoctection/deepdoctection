@@ -19,7 +19,7 @@
 Module for refining methods of table segmentation. The refining methods lead ultimately to a table structure which
 enables html table representations
 """
-
+from dataclasses import asdict
 from collections import defaultdict
 from copy import copy
 from itertools import chain, product
@@ -31,6 +31,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
+from ..mapper.maputils import MappingContextManager
 from ..utils.detection_types import JsonDict
 from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type
 from .base import PipelineComponent
@@ -403,11 +404,11 @@ class TableSegmentationRefinementService(PipelineComponent):
             rectangle_tiling = generate_rectangle_tiling(connected_components)
             rectangle_cells_list = rectangle_cells(rectangle_tiling, tile_to_cell_dict)
             for tiling, cells_to_merge in zip(rectangle_tiling, rectangle_cells_list):
+                no_context_error = True
                 if len(cells_to_merge) != 1:
                     cells = dp.get_annotation(annotation_ids=list(cells_to_merge))
-                    merged_box = merge_boxes(
-                        *[cell.image.get_embedding(table.image.image_id) for cell in cells if cell.image is not None]
-                    )
+                    cell_boxes = [cell.image.get_embedding(table.image.image_id) for cell in cells if cell.image is not None]
+                    merged_box = merge_boxes(*cell_boxes)
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
                         score=-1.0,
@@ -429,6 +430,17 @@ class TableSegmentationRefinementService(PipelineComponent):
                         self.dp_manager.set_category_annotation(
                             CellType.column_span, col_span, CellType.column_span, new_cell_ann_id
                         )
+                    else:
+                        # DetectionResult cannot be dumped, hence merged_box must already exist. Hence, it must
+                        # contain all other boxes. Hence we must deactivate all other boxes.
+                        with MappingContextManager(dp_name=dp.file_name,
+                                                   filter_level="annotation",
+                                                   detect_result=asdict(det_result)
+                                                   ) as annotation_context:
+                            box_index = cell_boxes.index(merged_box)
+                            cells.pop(box_index)
+                        no_context_error = not annotation_context.context_error
+                    if no_context_error:
                         for cell in cells:
                             cell.deactivate()
 
