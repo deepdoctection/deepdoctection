@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union, Literal
 
 import numpy as np
 
@@ -163,23 +163,41 @@ def stretch_item_per_table(
     return dp
 
 
-def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_name: str) -> Image:
-    """
-    Tiling a table with items (i.e. rows or columns). To ensure that every position in a table can be assigned to a row
-    or column, rows are stretched vertically and columns horizontally. The stretching takes place according to ascending
-    coordinate axes. The first item is stretched to the top or right-hand edge of the table. The next item down or to
-    the right is stretched to the lower or right edge of the previous item.
+def _tile_by_stretching_rows_left_and_rightwise(dp: Image,
+                                                items: List[ImageAnnotation],
+                                                table: ImageAnnotation,
+                                                item_name: str) -> None:
+    if table.image is None:
+        raise ValueError("table.image cannot be None")
+    table_embedding_box = table.image.get_embedding(dp.image_id)
 
-    :param dp: Image
-    :param table: table
-    :param item_name: names.C.ROW or names.C.COL
-    :return: Image
-    """
+    tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
+    for idx, item in enumerate(items):
+        with MappingContextManager(dp_name=dp.file_name):
+            if item.image is None:
+                raise ValueError("item.image cannot be None")
+            item_embedding_box = item.image.get_embedding(dp.image_id)
+            if idx !=len(items)-1:
+                next_item_embedding_box = items[idx+1].image.get_embedding(dp.image_id)
+                tmp_next_item_xy = (item_embedding_box.lry + next_item_embedding_box.uly)/2 if item_name == LayoutType.row else  (item_embedding_box.lrx + next_item_embedding_box.ulx)/2
+            else:
+                tmp_next_item_xy = table_embedding_box.lry -1.0 if item_name == LayoutType.row  else table_embedding_box.lrx - 1.0
 
-    item_ann_ids = table.get_relationship(Relationships.child)
-    items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
-    items.sort(key=lambda x: x.bounding_box.cx if item_name == LayoutType.column else x.bounding_box.cy)  # type: ignore
+            new_embedding_box = BoundingBox(
+                ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
+                uly=tmp_item_xy if item_name == LayoutType.row else item_embedding_box.uly,
+                lrx=item_embedding_box.lrx if item_name == LayoutType.row else tmp_next_item_xy,
+                lry=tmp_next_item_xy if item_name == LayoutType.row else item_embedding_box.lry,
+                absolute_coords=True,
+            )
+            item.image.set_embedding(dp.image_id, new_embedding_box)
+            tmp_item_xy = tmp_next_item_xy
 
+
+def _tile_by_stretching_rows_leftwise_column_downwise(dp: Image,
+                                                      items: List[ImageAnnotation],
+                                                      table: ImageAnnotation,
+                                                      item_name: str) -> None:
     if table.image is None:
         raise ValueError("table.image cannot be None")
     table_embedding_box = table.image.get_embedding(dp.image_id)
@@ -209,6 +227,38 @@ def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_nam
 
             tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.row else item_embedding_box.lrx
             item.image.set_embedding(dp.image_id, new_embedding_box)
+
+
+def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_name: str,
+                                     stretch_rule: Literal["left","equal"]="left") -> Image:
+    """
+    Tiling a table with items (i.e. rows or columns). To ensure that every position in a table can be assigned to a row
+    or column, rows are stretched vertically and columns horizontally. The stretching takes place according to ascending
+    coordinate axes. The first item is stretched to the top or right-hand edge of the table. The next item down or to
+    the right is stretched to the lower or right edge of the previous item.
+
+    :param dp: Image
+    :param table: table
+    :param item_name: names.C.ROW or names.C.COL
+    :param stretch_rule: Tiling can be achieved by two different stretching rules for rows and columns.
+                         - 'left': The upper horizontal edge of a row will be shifted up to the lower horizontal edge
+                                   of the upper neighboring row. Similarly, the left sided vertical edge of a column
+                                   will be shifted towards the right sided vertical edge of the left sided neighboring
+                                   column.
+                         - 'equal': Upper and lower horizontal edge of rows will be shifted to the middle of the gap
+                                    of two neighboring rows. Similarly, left and right sided vertical edge of a column
+                                    will be shifted to the middle of the gap of two neighboring columns.
+    :return: Image
+    """
+
+    item_ann_ids = table.get_relationship(Relationships.child)
+    items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
+    items.sort(key=lambda x: x.bounding_box.cx if item_name == LayoutType.column else x.bounding_box.cy)  # type: ignore
+
+    if stretch_rule == "left":
+        _tile_by_stretching_rows_leftwise_column_downwise(dp, items, table, item_name)
+    else:
+        _tile_by_stretching_rows_left_and_rightwise(dp, items, table, item_name)
 
     return dp
 
@@ -261,7 +311,7 @@ def segment_table(
     table: ImageAnnotation,
     item_names: Union[ObjectTypes, Sequence[ObjectTypes]],
     cell_names: Union[ObjectTypes, Sequence[ObjectTypes]],
-    segment_rule: str,
+    segment_rule: Literal["iou","ioa"],
     threshold_rows: float,
     threshold_cols: float,
 ) -> List[SegmentationResult]:
@@ -376,12 +426,13 @@ class TableSegmentationService(PipelineComponent):
 
     def __init__(
         self,
-        segment_rule: str,
+        segment_rule: Literal["iou","ioa"],
         threshold_rows: float,
         threshold_cols: float,
         tile_table_with_items: bool,
         remove_iou_threshold_rows: float,
         remove_iou_threshold_cols: float,
+        stretch_rule: Literal["left","equal"] = "left"
     ):
         """
         :param segment_rule: rule to assign cell to row, columns resp. must be either iou or ioa
@@ -391,8 +442,10 @@ class TableSegmentationService(PipelineComponent):
                                       the adjacent row. Will do a similar shifting with columns.
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
+        :param stretch_rule: Check the description in :func:`tile_tables_with_items_per_table`
         """
         assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
+        assert stretch_rule in ("left","equal"), "stretch rule must be either 'left' or 'equal'"
 
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows
@@ -400,6 +453,7 @@ class TableSegmentationService(PipelineComponent):
         self.tile_table = tile_table_with_items
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
+        self.stretch_rule = stretch_rule
         self._table_name = LayoutType.table
         self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
         self._item_names = [LayoutType.row, LayoutType.column]  # row names must be before column name
@@ -421,7 +475,7 @@ class TableSegmentationService(PipelineComponent):
             for item_sub_item_name in zip(self._item_names, self._sub_item_names):  # one pass for rows and one for cols
                 item_name, sub_item_name = item_sub_item_name[0], item_sub_item_name[1]
                 if self.tile_table:
-                    dp = tile_tables_with_items_per_table(dp, table, item_name)
+                    dp = tile_tables_with_items_per_table(dp, table, item_name, self.stretch_rule)
                 items_proposals = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
                 reference_items_proposals = dp.get_annotation(
                     category_names=self._cell_names, annotation_ids=item_ann_ids
