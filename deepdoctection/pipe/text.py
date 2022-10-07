@@ -207,19 +207,19 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
             row_cy = (row["upper"] + row["lower"]) / 2
 
             if (row["upper"] < bounding_box.cy < row["lower"]) or (bounding_box.uly < row_cy < bounding_box.lry):
-                reading_lines.append((idx, word.annotation_id))
+                reading_lines.append((idx, word.annotation_id, bounding_box.cx))
                 row_found = True
                 break
 
         if not row_found:
             rows.append({"upper": bounding_box.uly, "lower": bounding_box.lry})
-            reading_lines.append((len(rows) - 1, word.annotation_id))
+            reading_lines.append((len(rows) - 1, word.annotation_id, bounding_box.cx))
 
     rows_dict = {k: rows[k] for k in range(len(rows))}
     rows_dict = {
         idx: key[0] for idx, key in enumerate(sorted(rows_dict.items(), key=lambda it: it[1]["upper"]))  # type:ignore
     }
-    reading_lines.sort(key=lambda x: rows_dict[x[0]])  # type:ignore
+    reading_lines.sort(key=lambda x: (rows_dict[x[0]], x[2]))  # type:ignore
     reading_lines = [(idx + 1, word[1]) for idx, word in enumerate(reading_lines)]
     return reading_lines
 
