@@ -15,6 +15,9 @@ and selected NLP tasks and provides an integrated frameworks for fine-tuning, ev
 **deep**doctection focuses on applications and is made for those who want to solve real world problems related to 
 document extraction from PDFs or scans in various image formats.
 
+Check the demo of a document layout analysis pipeline with OCR on 
+:hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection).
+
 # Overview
 
 **deep**doctection provides model wrappers of supported libraries for various tasks to be integrated into 
@@ -35,9 +38,7 @@ pipelines. Its core function does not depend on any specific deep learning libra
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
 into contiguous text. You will get an output in JSON format that you can customize even further by yourself. 
      
-Check the demo of a document layout analysis pipeline with OCR on 
-:hugs: [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) or have a look at the 
-[**introduction notebook**](./notebooks/Get_Started.ipynb) for an easy start.
+Have a look at the [**introduction notebook**](./notebooks/Get_Started.ipynb) for an easy start.
 
 
 ## Models    
