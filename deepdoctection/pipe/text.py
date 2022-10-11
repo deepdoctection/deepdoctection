@@ -225,12 +225,10 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
 
 
 def _reading_columns(
-    dp: Image,
-    anns: List[ImageAnnotation],
-    starting_point_tolerance: float = 0.01,
-    height_tolerance: float = 3.0,
-    same_line_top_tolerance: float = 0.001,
-    same_line_spacing_tolerance: float = 5.0,
+        dp: Image,
+        anns: List[ImageAnnotation],
+        starting_point_tolerance: float = 0.01,
+        height_tolerance: float = 3.0,
 ) -> List[Tuple[int, str]]:
     reading_blocks = []
     columns: List[Dict[str, float]] = []
@@ -248,37 +246,62 @@ def _reading_columns(
 
         column_found = False
         for idx, col in enumerate(columns):
-            # if the starting point is within starting_point_tolerance (first_condition) and
-            # the top location is within height_tolerance * bbox_height (second_condition), or
-            # the new line appeared to be broken by Textract mistake and should be of the same line
-            # by looking at the top (third_condition) and
-            # the left of the new line appears right next to the right of the last line (fourth_condition)
-            # then consider the new line as part of said column
-            first_condition = abs(rel_coords_box.ulx - col["left"]) < starting_point_tolerance
-            second_condition = abs(rel_coords_box.uly - col["top"]) < height_tolerance * bounding_box.height
-            third_condition = (
-                abs(rel_coords_box.uly - col["top"]) < same_line_top_tolerance
-            )  # appeared to be in the same line
-            fourth_condition = (
-                abs(rel_coords_box.ulx - col["right"]) < same_line_spacing_tolerance * starting_point_tolerance
-            )
-            if (first_condition and second_condition) or (third_condition and fourth_condition):
+            # if the x-coordinate left and right is within starting_point_tolerance (first_condition and
+            # second_condition) or if x-coordinate left and right is within the left or right border of the column
+            # then the annotation will belong to this column and column left/right will be re-adjusted
+
+            first_condition = all((col["left"] - starting_point_tolerance < rel_coords_box.ulx,
+                                   rel_coords_box.lrx < col["right"] + starting_point_tolerance))
+            second_condition = all((rel_coords_box.ulx - starting_point_tolerance < col["left"],
+                                    col["right"] < rel_coords_box.lrx + starting_point_tolerance))
+
+            third_condition = abs(rel_coords_box.uly - col["bottom"]) < height_tolerance * rel_coords_box.height
+            fourth_condition = abs(rel_coords_box.lry - col["top"]) < height_tolerance * rel_coords_box.height
+
+            if (first_condition and (third_condition or fourth_condition)) \
+                    or (second_condition and (third_condition or fourth_condition)):
                 reading_blocks.append((idx, ann.annotation_id))
                 # update the top and right with the new line added.
-                col["top"] = rel_coords_box.uly
-                col["right"] = rel_coords_box.lry
+                col["left"] = min(rel_coords_box.ulx, col["left"])
+                col["top"] = min(rel_coords_box.uly, col["top"])
+                col["right"] = max(rel_coords_box.lrx, col["right"])
+                col["bottom"] = max(rel_coords_box.lry, col["bottom"])
                 column_found = True
                 break
 
         if not column_found:
-            columns.append({"left": rel_coords_box.ulx, "right": rel_coords_box.lrx, "top": rel_coords_box.uly})
+            columns.append({"left": rel_coords_box.ulx, "right": rel_coords_box.lrx, "top": rel_coords_box.uly,
+                            "bottom": rel_coords_box.lry})
             # update the top and right with the new reading block added.
             reading_blocks.append((len(columns) - 1, ann.annotation_id))
 
-    columns_dict = {k: columns[k] for k in range(len(columns))}
-    columns_dict = {
-        idx: key[0] for idx, key in enumerate(sorted(columns_dict.items(), key=lambda it: it[1]["left"]))  # type:ignore
-    }
+    # building connected components of columns
+    connected_components = []
+    for idx, col in enumerate(columns):
+        col["id"] = idx
+        component_found = False
+        for comp in connected_components:
+            if comp["top"] < col["top"] < comp["bottom"] or comp["top"] < col["bottom"] < comp["bottom"]:
+                comp["top"] = min(comp["top"], col["top"])
+                comp["bottom"] = max(comp["bottom"], col["bottom"])
+                comp["left"] = col["left"]
+                comp["column"].append(col)
+                component_found = True
+                break
+        if not component_found:
+            connected_components.append({"top": col["top"], "bottom": col["bottom"], "left": col["left"],
+                                         "column": [col]})
+
+    # next, sorting columns in connected components by increasing x-value
+    for comp in connected_components:
+        comp["column"].sort(key=lambda x: x["left"])
+
+    # finally, sorting connected components by increasing y-value
+    connected_components.sort(key=lambda x: x["top"])
+    columns = list(chain(*[comp["column"] for comp in connected_components]))
+
+    # old to new mapping
+    columns_dict = {k: col["id"] for k, col in enumerate(columns)}
     _blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]
     _blocks.sort(key=lambda x: x[0])  # type:ignore
     reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(_blocks)]
@@ -371,7 +394,7 @@ class TextOrderService(PipelineComponent):
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
             text_block_anns.extend(text_container_anns)
 
-        raw_reading_order_list = _reading_columns(dp, text_block_anns)
+        raw_reading_order_list = _reading_columns(dp, text_block_anns, 0.05, 2.0)
         for raw_reading_order in raw_reading_order_list:
             self.dp_manager.set_category_annotation(
                 Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
