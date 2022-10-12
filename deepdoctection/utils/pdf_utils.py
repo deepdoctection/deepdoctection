@@ -29,7 +29,7 @@ from typing import Generator, List, Optional, Tuple
 
 from cv2 import IMREAD_COLOR, imread
 from numpy import uint8
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfFileWriter, errors
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
@@ -86,13 +86,19 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
         raise FileExtensionError(f"must be a pdf file: {file_name}")
 
     with open(path, "rb") as file:
-        input_pdf_as_bytes = PdfFileReader(file)
+        qpdf_called = False
+        try:
+            input_pdf_as_bytes = PdfFileReader(file)
+        except errors.PdfReadError:
+            _ = decrypt_pdf_document(path)
+            qpdf_called = True
 
-        if input_pdf_as_bytes.isEncrypted:
-            is_decrypted = decrypt_pdf_document(path)
-            if not is_decrypted:
-                logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
-                sys.exit()
+        if not qpdf_called:
+            if input_pdf_as_bytes.isEncrypted:
+                is_decrypted = decrypt_pdf_document(path)
+                if not is_decrypted:
+                    logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
+                    sys.exit()
 
     file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732
     return file_reader

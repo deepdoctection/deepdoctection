@@ -68,4 +68,3 @@ class TestPdfPlumberTextDetector:
         width, height = pdf_text_predictor.get_width_height(pdf_bytes_page_2)
         assert width == 1112
         assert height == 1792
-

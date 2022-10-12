@@ -44,7 +44,7 @@ class TestMatchingService:
         self.matching_service = MatchingService(
             self._parent_categories,
             self._child_categories,
-            self._matching_rule,
+            self._matching_rule,  # type: ignore
             self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,  # type: ignore
         )
 

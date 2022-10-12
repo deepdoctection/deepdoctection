@@ -19,9 +19,9 @@
 Testing module dataflow.parallel_map
 """
 from typing import no_type_check
-from pytest import mark
 
 import numpy as np
+from pytest import mark
 
 from deepdoctection.dataflow import DataFlow, FakeData, MultiThreadMapData
 

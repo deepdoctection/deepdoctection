@@ -22,7 +22,7 @@ Testing module pipe.text
 from typing import List
 from unittest.mock import MagicMock
 
-from pytest import raises, mark
+from pytest import mark, raises
 
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner

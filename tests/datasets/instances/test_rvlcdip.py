@@ -19,6 +19,7 @@
 Testing module datasets.instances.rvlcdip
 """
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deepdoctection.datasets import Rvlcdip
