@@ -102,10 +102,7 @@ print(page.get_text())
 ```
 
 ![table](./notebooks/pics/dd_rm_text.png)
-
-
-This excerpt shows how to instantiate the built-in **deep**doctection analyzer as deployed on the Hugging Face space 
-and how to get parsed result from a PDF document page by page. 
+ 
 
 ## Documentation
 
