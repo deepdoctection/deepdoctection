@@ -26,7 +26,7 @@ from pytest import mark, raises
 
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.utils.detection_types import ImageType
-from deepdoctection.utils.file_utils import tf_available, tensorpack_available
+from deepdoctection.utils.file_utils import tensorpack_available, tf_available
 from deepdoctection.utils.settings import ObjectTypes
 
 if tf_available() and tensorpack_available():

@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import DatasetBase
-from deepdoctection.utils.file_utils import tf_available, tensorpack_available
+from deepdoctection.utils.file_utils import tensorpack_available, tf_available
 from deepdoctection.utils.metacfg import set_config_by_yaml
 
 from ..test_utils import collect_datapoint_from_dataflow, set_num_gpu_to_one

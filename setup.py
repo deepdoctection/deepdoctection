@@ -139,9 +139,7 @@ tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr
 
 # PyTorch dependencies
 pt_deps = deps_list("transformers", "python-doctr")
-source_pt_deps = pt_deps + deps_list(
-    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
-)
+source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
 
 # Putting all together
 tf_deps = dist_deps + tf_deps + additional_deps
@@ -176,7 +174,7 @@ dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
 
 EXTRA_DEPS = {
     "tf": tf_deps,
-    "pt": pt_deps ,
+    "pt": pt_deps,
     "source-pt": source_pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,

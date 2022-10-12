@@ -20,6 +20,7 @@ Testing module pipe.layout
 """
 
 from unittest.mock import MagicMock
+
 from pytest import mark
 
 from deepdoctection.datapoint import Image, ImageAnnotation

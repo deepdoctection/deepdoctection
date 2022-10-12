@@ -19,6 +19,7 @@
 Testing the module dataflow.custom
 """
 from typing import Any, List, Union
+
 from pytest import mark
 
 from deepdoctection.dataflow import CacheData, CustomDataFromList

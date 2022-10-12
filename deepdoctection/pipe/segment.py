@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Union, Literal
+from typing import List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
@@ -163,10 +163,9 @@ def stretch_item_per_table(
     return dp
 
 
-def _tile_by_stretching_rows_left_and_rightwise(dp: Image,
-                                                items: List[ImageAnnotation],
-                                                table: ImageAnnotation,
-                                                item_name: str) -> None:
+def _tile_by_stretching_rows_left_and_rightwise(
+    dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
+) -> None:
     if table.image is None:
         raise ValueError("table.image cannot be None")
     table_embedding_box = table.image.get_embedding(dp.image_id)
@@ -177,11 +176,17 @@ def _tile_by_stretching_rows_left_and_rightwise(dp: Image,
             if item.image is None:
                 raise ValueError("item.image cannot be None")
             item_embedding_box = item.image.get_embedding(dp.image_id)
-            if idx !=len(items)-1:
-                next_item_embedding_box = items[idx+1].image.get_embedding(dp.image_id)
-                tmp_next_item_xy = (item_embedding_box.lry + next_item_embedding_box.uly)/2 if item_name == LayoutType.row else  (item_embedding_box.lrx + next_item_embedding_box.ulx)/2
+            if idx != len(items) - 1:
+                next_item_embedding_box = items[idx + 1].image.get_embedding(dp.image_id)  # type: ignore
+                tmp_next_item_xy = (
+                    (item_embedding_box.lry + next_item_embedding_box.uly) / 2
+                    if item_name == LayoutType.row
+                    else (item_embedding_box.lrx + next_item_embedding_box.ulx) / 2
+                )
             else:
-                tmp_next_item_xy = table_embedding_box.lry -1.0 if item_name == LayoutType.row  else table_embedding_box.lrx - 1.0
+                tmp_next_item_xy = (
+                    table_embedding_box.lry - 1.0 if item_name == LayoutType.row else table_embedding_box.lrx - 1.0
+                )
 
             new_embedding_box = BoundingBox(
                 ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
@@ -194,10 +199,9 @@ def _tile_by_stretching_rows_left_and_rightwise(dp: Image,
             tmp_item_xy = tmp_next_item_xy
 
 
-def _tile_by_stretching_rows_leftwise_column_downwise(dp: Image,
-                                                      items: List[ImageAnnotation],
-                                                      table: ImageAnnotation,
-                                                      item_name: str) -> None:
+def _tile_by_stretching_rows_leftwise_column_downwise(
+    dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
+) -> None:
     if table.image is None:
         raise ValueError("table.image cannot be None")
     table_embedding_box = table.image.get_embedding(dp.image_id)
@@ -229,8 +233,9 @@ def _tile_by_stretching_rows_leftwise_column_downwise(dp: Image,
             item.image.set_embedding(dp.image_id, new_embedding_box)
 
 
-def tile_tables_with_items_per_table(dp: Image, table: ImageAnnotation, item_name: str,
-                                     stretch_rule: Literal["left","equal"]="left") -> Image:
+def tile_tables_with_items_per_table(
+    dp: Image, table: ImageAnnotation, item_name: str, stretch_rule: Literal["left", "equal"] = "left"
+) -> Image:
     """
     Tiling a table with items (i.e. rows or columns). To ensure that every position in a table can be assigned to a row
     or column, rows are stretched vertically and columns horizontally. The stretching takes place according to ascending
@@ -311,7 +316,7 @@ def segment_table(
     table: ImageAnnotation,
     item_names: Union[ObjectTypes, Sequence[ObjectTypes]],
     cell_names: Union[ObjectTypes, Sequence[ObjectTypes]],
-    segment_rule: Literal["iou","ioa"],
+    segment_rule: Literal["iou", "ioa"],
     threshold_rows: float,
     threshold_cols: float,
 ) -> List[SegmentationResult]:
@@ -426,13 +431,13 @@ class TableSegmentationService(PipelineComponent):
 
     def __init__(
         self,
-        segment_rule: Literal["iou","ioa"],
+        segment_rule: Literal["iou", "ioa"],
         threshold_rows: float,
         threshold_cols: float,
         tile_table_with_items: bool,
         remove_iou_threshold_rows: float,
         remove_iou_threshold_cols: float,
-        stretch_rule: Literal["left","equal"] = "left"
+        stretch_rule: Literal["left", "equal"] = "left",
     ):
         """
         :param segment_rule: rule to assign cell to row, columns resp. must be either iou or ioa
@@ -445,7 +450,7 @@ class TableSegmentationService(PipelineComponent):
         :param stretch_rule: Check the description in :func:`tile_tables_with_items_per_table`
         """
         assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
-        assert stretch_rule in ("left","equal"), "stretch rule must be either 'left' or 'equal'"
+        assert stretch_rule in ("left", "equal"), "stretch rule must be either 'left' or 'equal'"
 
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows

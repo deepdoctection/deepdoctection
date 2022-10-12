@@ -19,9 +19,9 @@
 Testing module mapper.tpstruct
 """
 from unittest.mock import MagicMock, patch
-from pytest import mark
 
 from numpy.testing import assert_allclose, assert_array_equal
+from pytest import mark
 
 from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper.tpstruct import image_to_tp_frcnn_training

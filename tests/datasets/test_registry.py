@@ -20,6 +20,7 @@ Testing module datasets.instances.registry
 """
 
 from unittest.mock import MagicMock
+
 from pytest import mark
 
 from deepdoctection.datasets.base import DatasetBase

@@ -21,6 +21,7 @@ Testing module pipe.cell
 
 from typing import List
 from unittest.mock import MagicMock
+
 from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, Image

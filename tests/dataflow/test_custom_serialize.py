@@ -19,6 +19,7 @@
 Testing the module dataflow.custom_serialize
 """
 import os
+
 from pytest import mark
 
 from deepdoctection.dataflow import (
