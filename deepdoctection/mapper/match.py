@@ -19,7 +19,7 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import Any, Optional, Sequence, Tuple, Union, Literal
+from typing import Any, Literal, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,7 +35,7 @@ def match_anns_by_intersection(
     dp: Image,
     parent_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
     child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
-    matching_rule: Literal["iou","ioa"],
+    matching_rule: Literal["iou", "ioa"],
     threshold: float,
     use_weighted_intersections: bool = False,
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
@@ -96,14 +96,24 @@ def match_anns_by_intersection(
 
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).transform(dp.width,dp.height,absolute_coords=True).to_list(mode="xyxy")
-         for ann in child_anns if ann.image is not None]
+        [
+            ann.image.get_embedding(dp.image_id)
+            .transform(dp.width, dp.height, absolute_coords=True)
+            .to_list(mode="xyxy")
+            for ann in child_anns
+            if ann.image is not None
+        ]
     )
 
     parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
     parent_ann_boxes = np.array(
-        [ann.image.get_embedding(dp.image_id).transform(dp.width,dp.height,absolute_coords=True).to_list(mode="xyxy")
-         for ann in parent_anns if ann.image is not None]
+        [
+            ann.image.get_embedding(dp.image_id)
+            .transform(dp.width, dp.height, absolute_coords=True)
+            .to_list(mode="xyxy")
+            for ann in parent_anns
+            if ann.image is not None
+        ]
     )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:

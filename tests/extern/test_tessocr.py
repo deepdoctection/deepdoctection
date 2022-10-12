@@ -27,8 +27,8 @@ from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.tessocr import TesseractOcrDetector, tesseract_line_to_detectresult
 from deepdoctection.utils.detection_types import ImageType
 from deepdoctection.utils.file_utils import TesseractNotFound
-
 from tests.data import Annotations
+
 from .data import WORD_RESULTS
 
 

@@ -20,6 +20,7 @@ Testing module datasets.instances.fintabnet
 """
 
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deepdoctection.datasets import Fintabnet

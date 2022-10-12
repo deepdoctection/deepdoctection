@@ -20,6 +20,7 @@ Testing module pipe.anngen
 """
 
 from typing import List
+
 from pytest import mark
 
 from deepdoctection.datapoint import Image, ImageAnnotation

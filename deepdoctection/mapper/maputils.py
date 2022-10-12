@@ -42,8 +42,9 @@ class MappingContextManager:
     context if an exception has been thrown.
     """
 
-    def __init__(self, dp_name: Optional[str] = None, filter_level: str = "image",
-                 **kwargs: Dict[str, Optional[str]]) -> None:
+    def __init__(
+        self, dp_name: Optional[str] = None, filter_level: str = "image", **kwargs: Dict[str, Optional[str]]
+    ) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
         :param filter_level: Indicates if the :class:`MappingContextManager` is use on datapoint level,

@@ -19,9 +19,9 @@
 Module for refining methods of table segmentation. The refining methods lead ultimately to a table structure which
 enables html table representations
 """
-from dataclasses import asdict
 from collections import defaultdict
 from copy import copy
+from dataclasses import asdict
 from itertools import chain, product
 from typing import DefaultDict, List, Optional, Set, Tuple, Union
 
@@ -407,7 +407,9 @@ class TableSegmentationRefinementService(PipelineComponent):
                 no_context_error = True
                 if len(cells_to_merge) != 1:
                     cells = dp.get_annotation(annotation_ids=list(cells_to_merge))
-                    cell_boxes = [cell.image.get_embedding(table.image.image_id) for cell in cells if cell.image is not None]
+                    cell_boxes = [
+                        cell.image.get_embedding(table.image.image_id) for cell in cells if cell.image is not None
+                    ]
                     merged_box = merge_boxes(*cell_boxes)
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
@@ -433,10 +435,9 @@ class TableSegmentationRefinementService(PipelineComponent):
                     else:
                         # DetectionResult cannot be dumped, hence merged_box must already exist. Hence, it must
                         # contain all other boxes. Hence we must deactivate all other boxes.
-                        with MappingContextManager(dp_name=dp.file_name,
-                                                   filter_level="annotation",
-                                                   detect_result=asdict(det_result)
-                                                   ) as annotation_context:
+                        with MappingContextManager(
+                            dp_name=dp.file_name, filter_level="annotation", detect_result=asdict(det_result)
+                        ) as annotation_context:
                             box_index = cell_boxes.index(merged_box)
                             cells.pop(box_index)
                         no_context_error = not annotation_context.context_error

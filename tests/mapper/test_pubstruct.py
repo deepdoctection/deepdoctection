@@ -21,6 +21,7 @@ Testing the module mapper.pubstruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deepdoctection.datapoint.annotation import SummaryAnnotation
