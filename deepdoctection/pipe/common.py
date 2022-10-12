@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union, Literal
 
 import numpy as np
 
@@ -89,7 +89,7 @@ class MatchingService(PipelineComponent):
         self,
         parent_categories: Union[TypeOrStr, List[TypeOrStr]],
         child_categories: Union[TypeOrStr, List[TypeOrStr]],
-        matching_rule: str,
+        matching_rule: Literal["iou", "ioa"],
         threshold: float,
     ) -> None:
         """

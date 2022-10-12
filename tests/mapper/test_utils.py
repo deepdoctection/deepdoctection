@@ -20,9 +20,9 @@ Testing the module mapper.utils
 """
 from typing import Dict, List, Union
 from unittest.mock import MagicMock
-from pytest import mark
 
 import pytest
+from pytest import mark
 
 from deepdoctection.mapper import DefaultMapper, LabelSummarizer
 from deepdoctection.utils.settings import ObjectTypes

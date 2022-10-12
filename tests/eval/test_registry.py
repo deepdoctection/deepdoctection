@@ -21,6 +21,7 @@ Testing the module eval.registry
 
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock
+
 from pytest import mark
 
 from deepdoctection.dataflow import DataFlow

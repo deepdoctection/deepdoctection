@@ -13,11 +13,10 @@ import multiprocessing as mp
 import string
 import subprocess
 import sys
-
-from types import ModuleType
 from os import environ, path
 from shutil import which
-from typing import Tuple, Union, Any, no_type_check
+from types import ModuleType
+from typing import Any, Tuple, Union, no_type_check
 
 import importlib_metadata
 from packaging import version
@@ -554,15 +553,14 @@ def set_mp_spawn() -> None:
 
 # Copy and paste from https://github.com/Layout-Parser/layout-parser/blob/main/src/layoutparser/file_utils.py
 
+
 class _LazyModule(ModuleType):
     """
     Module class that surfaces all objects but only performs associated imports when the objects are requested.
     """
 
     @no_type_check
-    def __init__(
-        self, name, module_file, import_structure, module_spec=None, extra_objects=None
-    ):
+    def __init__(self, name, module_file, import_structure, module_spec=None, extra_objects=None):
         super().__init__(name)
         self._modules = set(import_structure.keys())
         self._class_to_module = {}
@@ -570,9 +568,7 @@ class _LazyModule(ModuleType):
             for value in values:
                 self._class_to_module[value] = key
         # Needed for autocompletion in an IDE
-        self.__all__ = list(import_structure.keys()) + sum(
-            import_structure.values(), []
-        )
+        self.__all__ = list(import_structure.keys()) + sum(import_structure.values(), [])
         self.__file__ = module_file
         self.__spec__ = module_spec
         self.__path__ = [path.dirname(module_file)]
@@ -596,7 +592,7 @@ class _LazyModule(ModuleType):
             return self._objects[name]
         if name in self._modules:
             value = self._get_module(name)
-        elif name in self._class_to_module.keys():
+        elif name in self._class_to_module.keys():  # pylint: disable=C0201
             module = self._get_module(self._class_to_module[name])
             value = getattr(module, name)
         else:

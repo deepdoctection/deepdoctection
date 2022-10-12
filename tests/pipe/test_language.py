@@ -20,6 +20,7 @@ Testing module pipe.language
 """
 
 from unittest.mock import MagicMock
+
 from pytest import mark
 
 from deepdoctection.datapoint import ContainerAnnotation, Image

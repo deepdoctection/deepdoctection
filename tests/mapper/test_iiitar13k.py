@@ -22,6 +22,7 @@ Testing module mapper.iiitarstruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deepdoctection.mapper.pascalstruct import pascal_voc_dict_to_image

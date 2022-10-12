@@ -21,6 +21,7 @@ Testing module mapper.xfundstruct
 
 from typing import Dict
 from unittest.mock import MagicMock, patch
+
 from pytest import mark
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image

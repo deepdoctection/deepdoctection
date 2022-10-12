@@ -20,6 +20,7 @@ Testing the module datapoint.page
 """
 
 import json
+
 from pytest import mark
 
 from deepdoctection.datapoint.annotation import CategoryAnnotation

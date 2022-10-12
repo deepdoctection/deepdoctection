@@ -19,10 +19,10 @@
 Testing the module dataflow.stats
 """
 from typing import List
-from pytest import mark
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+from pytest import mark
 
 from deepdoctection.dataflow import CustomDataFromList, MeanFromDataFlow, StdFromDataFlow
 

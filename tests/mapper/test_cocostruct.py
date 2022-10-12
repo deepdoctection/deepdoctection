@@ -22,10 +22,10 @@ Testing the module mapper.cocostruct
 from math import isclose
 from typing import Dict
 from unittest.mock import MagicMock, patch
-from pytest import mark
 
 import numpy as np
 from numpy.testing import assert_allclose
+from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.mapper import coco_to_image, image_to_coco
