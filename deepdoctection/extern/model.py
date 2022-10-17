@@ -29,7 +29,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.fs import download
-from ..utils.logger import logger
+from ..utils.logger import logger, log_once
 from ..utils.settings import Languages, LayoutType, ObjectTypes
 from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
@@ -516,11 +516,13 @@ class ModelCatalog:
         :return: absolute weight path
         """
         profile = ModelCatalog.get_profile(name)
-        if profile.name is not None:
+        if profile.name:
             return os.path.join(get_weights_dir_path(), profile.name)
-        logger.info(
-            "Model is not registered. Please make sure the weights are available in the weights cache directory"
-        )
+        log_once(
+            f"Model {name} is not registered. Please make sure the weights are available in the weights cache directory or"
+            " the full path you provide is correct")
+        if os.path.isfile(name):
+            return name
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
@@ -670,7 +672,6 @@ class ModelDownloadManager:
 
             return absolute_path_weights
 
-        logger.info("Will use not registered model. Make sure path to weights is correctly set")
         return absolute_path_weights
 
     @staticmethod
