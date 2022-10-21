@@ -42,7 +42,7 @@ class DatapointManager:
     The manager is part of each PipelineComponent.
     """
 
-    def __init__(self, category_id_mapping: Optional[Mapping[int, int]]) -> None:
+    def __init__(self, category_id_mapping: Optional[Mapping[int, int]] = None) -> None:
         """
         :param category_id_mapping: Reassignment of category ids. Handover via dict
         """
