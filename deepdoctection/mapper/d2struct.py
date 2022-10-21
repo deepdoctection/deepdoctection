@@ -68,7 +68,7 @@ def image_to_d2_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": ann.bounding_box.to_list(mode="xyxy"),
-            "category_id": category_id_mapping.get(int(ann.category_id), int(ann.category_id))-1,
+            "category_id": int(ann.category_id) - 1,
         }
         annotations.append(mapped_ann)
 
