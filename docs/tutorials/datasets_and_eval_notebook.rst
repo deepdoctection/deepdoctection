@@ -420,7 +420,7 @@ ground truth for objects that cannot be detected by the model.
     pubtabnet.dataflow.categories.filter_categories(categories="CELL")
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True) # this will return a dict {"1": <LayoutType.cell>}
     
-    cell_detector = dd.TPFrcnnDetector(config_yaml_path,weights_path,categories)
+    cell_detector = dd.TPFrcnnDetector("frcnn_tp", config_yaml_path,weights_path,categories)
     layout_service = dd.ImageLayoutService(cell_detector)
 
 We start evaluation using the ``run`` method. ``max_datapoints`` limits

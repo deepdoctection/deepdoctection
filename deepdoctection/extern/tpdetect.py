@@ -53,7 +53,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/model-162000.data-00000-of-00001")
         categories = ModelCatalog.get_profile("item/model-162000.data-00000-of-00001").categories
 
-        tp_predictor = TPFrcnnDetector(config_path,weights_path,categories)
+        tp_predictor = TPFrcnnDetector("tp_frcnn", config_path,weights_path,categories)  # first argument is only a name
         detection_results = tp_predictor.predict(bgr_image_np_array)
 
     """
@@ -77,6 +77,8 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
         Mask-Mode could be used as well here provided the data structure is established.
 
+        :param name: name of the detector. The name will be passed to a pipeline component and is used to describe the
+                     service.
         :param path_yaml: The path to the yaml config
         :param path_weights: The path to the model checkpoint
         :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a

@@ -140,7 +140,8 @@ class D2FrcnnDetector(ObjectDetector):
 
         The configuration of the model uses the full stack of build model tools of D2. For more information
         please check https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config .
-        :param name: name of the predictor
+        :param name: name of the predictor. The name will be passed to a pipeline component and is used to describe the
+                     service.
         :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
                           the highest level .yaml file.
         :param path_weights: The path to the model checkpoint.

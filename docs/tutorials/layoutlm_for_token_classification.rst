@@ -215,7 +215,7 @@ Building a production pipeline
         text_recognizer = dd.DoctrTextRecognizer()
         text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="WORD")
     
-        layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
+        layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier("layoutlmv1", path_config_json,
                                                               path_weights,
                                                               categories={
                                                                   "1": "B-ANSWER",

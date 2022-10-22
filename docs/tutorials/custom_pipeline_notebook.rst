@@ -190,7 +190,7 @@ on which this model was trained.
     config_yaml_path = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
     weights_path = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001") 
     categories_layout = profile.categories
-    layout_detector = TPFrcnnDetector(config_yaml_path,weights_path,categories_layout)
+    layout_detector = TPFrcnnDetector("frcnn_layout",config_yaml_path,weights_path,categories_layout)
 
 The ImageLayoutService does need a detector and an additional attribute
 that we will not discuss here.

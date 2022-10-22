@@ -127,7 +127,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+            layoutlm = HFLayoutLmTokenClassifier("layoutlmv1","path/to/config.json","path/to/model.bin",
                                                   categories= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
                                                                'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
                                                                'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD',
@@ -290,7 +290,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+            layoutlm = HFLayoutLmSequenceClassifier("layoutlmv1", "path/to/config.json","path/to/model.bin",
                                                   categories=["HANDWRITTEN", "PRESENTATION", "RESUME"])
 
             # token classification service

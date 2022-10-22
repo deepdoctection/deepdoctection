@@ -301,7 +301,7 @@ Fine tuning
     path_config_json = "/path/to/dir/Seq_Doclaynet/checkpoint-2000/config.json"
     path_weights = "/path/to/dir/Seq_Doclaynet/checkpoint-2000/pytorch_model.bin"
     
-    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
+    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier("layoutlmv1", path_config_json,
                                                           path_weights,
                                                           merge.dataflow.categories.get_categories(as_dict=True))
     

@@ -48,7 +48,7 @@ Detectron2 on Publaynet
     categories = publaynet.dataflow.categories.get_categories(filtered=True)
     category_names = publaynet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.D2FrcnnDetector("layout_d2", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(publaynet, layout_service, coco_metric)
     
@@ -100,7 +100,7 @@ Maybe, a kernel restart is necessary.
     categories = publaynet.dataflow.categories.get_categories(filtered=True)
     category_names = publaynet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.TPFrcnnDetector("layout_tp", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(publaynet,layout_service, coco_metric)
     
@@ -162,7 +162,7 @@ Maybe switch kernel again
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.D2FrcnnDetector("layout_d2", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
@@ -208,7 +208,7 @@ Detectron2 on Pubtabnet for row and column predictions
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.D2FrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.D2FrcnnDetector("layout_d2", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
@@ -260,7 +260,7 @@ Tensorpack on Pubtabnet for cell predictions
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.TPFrcnnDetector("layout_tp", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
@@ -308,7 +308,7 @@ Detectron2 on Pubtabnet for row and column predictions
     categories = pubtabnet.dataflow.categories.get_categories(filtered=True)
     category_names = pubtabnet.dataflow.categories.get_categories(filtered=True, as_dict=False)
     
-    layout_detector = dd.TPFrcnnDetector(path_config_yaml,path_weights,categories)
+    layout_detector = dd.TPFrcnnDetector("layout_tp", path_config_yaml,path_weights,categories)
     layout_service =  dd.ImageLayoutService(layout_detector)
     evaluator = dd.Evaluator(pubtabnet,layout_service, coco_metric)
     
