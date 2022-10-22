@@ -21,7 +21,7 @@ Module for the base class for building pipelines
 """
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from copy import copy, deepcopy
+from copy import deepcopy
 from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Set, Union
 
 from ..dataflow import DataFlow, MapData
@@ -288,8 +288,15 @@ class Pipeline(ABC):
 
         return pipeline_populations
 
-    def get_pipeline_info(self, position: Optional[int]= None, name: Optional[str]=None):
-        comp_info = {key+1: comp.name for key, comp in enumerate(self.pipe_component_list)}
+    def get_pipeline_info(self, position: Optional[int] = None, name: Optional[str] = None) \
+            -> Union[Mapping[int,str],str, int]:
+        """Get pipeline information: Returns a dictionary with a description of each pipeline component
+        :param position: position of the pipeline component in the pipeline
+        :param name: name of the pipeline component to search for
+        :return: Either a full dictionary with position and name of all pipeline components or the name, if the position
+                 has been passed or the position if the name has been passed.
+        """
+        comp_info = {key + 1: comp.name for key, comp in enumerate(self.pipe_component_list)}
         comp_info_name_as_key = {value: key for key, value in comp_info.items()}
         if position:
             return comp_info[position]

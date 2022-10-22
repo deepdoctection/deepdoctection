@@ -239,8 +239,9 @@ class D2FrcnnDetector(ObjectDetector):
         return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.name, self.path_yaml, self.path_weights, self.categories, self.config_overwrite,
-                              self.device)
+        return self.__class__(
+            self.name, self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device
+        )
 
     def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())

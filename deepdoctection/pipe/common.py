@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 
-from typing import List, Optional, Sequence, Union, Literal
+from typing import List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
