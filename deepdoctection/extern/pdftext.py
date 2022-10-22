@@ -70,6 +70,7 @@ class PdfPlumberTextDetector(PdfMiner):
     """
 
     def __init__(self) -> None:
+        self.name = "pdfplumber"
         self.categories = {"1": LayoutType.word}
 
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:

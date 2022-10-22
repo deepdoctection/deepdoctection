@@ -42,14 +42,11 @@ class DatapointManager:
     The manager is part of each PipelineComponent.
     """
 
-    def __init__(self, category_id_mapping: Optional[Mapping[int, int]] = None) -> None:
-        """
-        :param category_id_mapping: Reassignment of category ids. Handover via dict
-        """
+    def __init__(self) -> None:
         self._datapoint: Optional[Image] = None
         self._cache_anns: Dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
-        self.category_id_mapping: Optional[Mapping[int, int]] = category_id_mapping
+        self.category_id_mapping: Optional[Mapping[int, int]] = None
 
     @property
     def datapoint(self) -> Image:
@@ -85,6 +82,16 @@ class DatapointManager:
         if self.category_id_mapping is None:
             return int(category_id)
         return self.category_id_mapping[int(category_id)]
+
+    def set_category_id_mapping(self, category_id_mapping: Mapping[int, int]) -> None:
+        """
+        In many cases the category ids sent back from a model have to be modified. Pass a mapping from model
+        category ids to target annotation category ids.
+
+        :param category_id_mapping: A mapping of model category ids (sent from DetectionResult) to category ids (saved
+                                    in annotations)
+        """
+        self.category_id_mapping = category_id_mapping
 
     def set_image_annotation(
         self,

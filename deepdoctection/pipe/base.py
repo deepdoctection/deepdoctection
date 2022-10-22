@@ -52,12 +52,14 @@ class PipelineComponent(ABC):
     Caution: Currently, predictors can only process single images. Processing higher number of batches is not planned.
     """
 
-    def __init__(self, category_id_mapping: Optional[Mapping[int, int]]):
+    def __init__(self, name: str):
         """
-        :param category_id_mapping: Reassignment of category ids. Handover via dict
+        :param name: The name of the pipeline component. The name will be used to identify a pipeline component in a
+                     pipeline. Use something that describe the task of the pipeline.
         """
+        self.name = name
         self._meta_has_all_types()
-        self.dp_manager = DatapointManager(category_id_mapping)
+        self.dp_manager = DatapointManager()
         self.timer_on = False
 
     @abstractmethod
@@ -141,20 +143,21 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
 
     def __init__(
         self,
+        name: str,
         predictor: Union[ObjectDetector, PdfMiner, TextRecognizer],
-        category_id_mapping: Optional[Mapping[int, int]],
     ) -> None:
         """
+        :param name: Will be passed to base class
         :param predictor: An Object detector for predicting
         """
         self.predictor = predictor
-        super().__init__(category_id_mapping)
+        super().__init__(name)
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner)):
             raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
-        return self.__class__(predictor, copy(self.dp_manager.category_id_mapping))
+        return self.__class__(self.name, predictor)
 
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
@@ -164,17 +167,19 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
 
     def __init__(
         self,
+        name: str,
         tokenizer: Any,
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
     ):
         """
+        :param name: Will be passed to base class
         :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
         :param mapping_to_lm_input_func: Function mapping image to layout language model features
         """
 
         self.tokenizer = tokenizer
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
-        super().__init__(None)
+        super().__init__(name)
 
     @abstractmethod
     def clone(self) -> "LanguageModelPipelineComponent":
@@ -282,3 +287,12 @@ class Pipeline(ABC):
             pipeline_populations["summaries"].extend(meta_anns["summaries"])  # type: ignore
 
         return pipeline_populations
+
+    def get_pipeline_info(self, position: Optional[int]= None, name: Optional[str]=None):
+        comp_info = {key+1: comp.name for key, comp in enumerate(self.pipe_component_list)}
+        comp_info_name_as_key = {value: key for key, value in comp_info.items()}
+        if position:
+            return comp_info[position]
+        if name:
+            return comp_info_name_as_key[name]
+        return comp_info

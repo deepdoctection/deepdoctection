@@ -82,7 +82,7 @@ class LanguageDetectionService(PipelineComponent):
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
         self._init_sanity_checks()
-        super().__init__(None)  # cannot use PredictorPipelineComponent class because of return type of predict meth
+        super().__init__(self._get_name(self.predictor.name))  # cannot use PredictorPipelineComponent class because of return type of predict meth
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
@@ -134,3 +134,7 @@ class LanguageDetectionService(PipelineComponent):
                 ("summaries", [PageType.language]),
             ]
         )
+
+    @staticmethod
+    def _get_name(predictor_name: str) -> str:
+        return f"language_detection_{predictor_name}"

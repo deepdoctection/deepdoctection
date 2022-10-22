@@ -68,14 +68,10 @@ class TextExtractionService(PredictorPipelineComponent):
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
-        category_id_mapping: Optional[Mapping[int, int]] = None,
     ):
         """
         :param text_extract_detector: ObjectDetector
         :param extract_from_roi: one or more category names for roi selection
-        :param category_id_mapping: Mapping of category IDs. The word category is set to 1 without mapping.
-
-              Example: {1: 9} sets the ID of the image annotation WORD to 9.
         """
 
         if extract_from_roi is None:
@@ -85,7 +81,7 @@ class TextExtractionService(PredictorPipelineComponent):
             if isinstance(extract_from_roi, str)
             else [get_type(roi_category) for roi_category in extract_from_roi]
         )
-        super().__init__(text_extract_detector, category_id_mapping)
+        super().__init__(self._get_name(text_extract_detector.name), text_extract_detector)
         if self.extract_from_category:
             if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
                 raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
@@ -192,6 +188,10 @@ class TextExtractionService(PredictorPipelineComponent):
                 ("summaries", []),
             ]
         )
+
+    @staticmethod
+    def _get_name(text_detector_name: str) -> str:
+        return f"text_extract_{text_detector_name}"
 
 
 def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
@@ -393,7 +393,7 @@ class TextOrderService(PipelineComponent):
         self._text_block_names = text_block_names
         self._text_containers_to_text_block = text_containers_to_text_block
         self._init_sanity_checks()
-        super().__init__(None)
+        super().__init__("text_order")
 
     def serve(self, dp: Image) -> None:
         # select all text blocks that are considered to be relevant for page text. This does not include some layout

@@ -279,7 +279,7 @@ class TesseractOcrDetector(ObjectDetector):
         :param config_overwrite: Overwrite config parameters defined by the yaml file with new values.
                                  E.g. ["oem=14"]
         """
-
+        self.name = "tesseract"
         if config_overwrite is None:
             config_overwrite = []
 

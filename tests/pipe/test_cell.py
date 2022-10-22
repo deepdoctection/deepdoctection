@@ -67,6 +67,7 @@ class TestSubImageLayoutService:
         """
 
         self._cell_detector = MagicMock(spec=ObjectDetector)
+        self._cell_detector.name = "mock_cell_detector"
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
 
     @mark.basic

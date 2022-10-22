@@ -50,7 +50,7 @@ class ImageCroppingService(PipelineComponent):
         if isinstance(category_names, str):
             category_names = [category_names]
         self.category_names = [get_type(category_name) for category_name in category_names]
-        super().__init__(None)
+        super().__init__("image_crop")
 
     def serve(self, dp: Image) -> None:
         for ann in dp.get_annotation(category_names=self.category_names):
@@ -103,7 +103,7 @@ class MatchingService(PipelineComponent):
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
         self.threshold = threshold
-        super().__init__(None)
+        super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
         """

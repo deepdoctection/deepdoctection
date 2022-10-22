@@ -72,7 +72,7 @@ class TestHFLayoutLmTokenClassifier:
 
         # Arrange, Act & Assert
         with raises(ImportError):
-            HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
+            HFLayoutLmTokenClassifier("layoutlmv1","path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
 
     @staticmethod
     @mark.requires_pt
@@ -86,14 +86,14 @@ class TestHFLayoutLmTokenClassifier:
 
         # Arrange, Act & Assert
         with raises(ValueError):
-            HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], None)
+            HFLayoutLmTokenClassifier("layoutlmv1","path/to/json", "path/to/model", ["foo"], None)
 
         # Arrange
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        model = HFLayoutLmTokenClassifier("layoutlmv1", "path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
         assert set(model.categories.values()) == {BioTag.outside, get_type("B-HEADER"), get_type("I-HEADER")}
@@ -102,7 +102,7 @@ class TestHFLayoutLmTokenClassifier:
         categories_explicit = {"1": get_type("B-HEADER"), "2": get_type("I-HEADER"), "3": get_type("O")}
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
+        model = HFLayoutLmTokenClassifier("layoutlmv1","path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
         assert model.categories == categories_explicit
@@ -125,7 +125,7 @@ class TestHFLayoutLmTokenClassifier:
         # Arrange
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
-        layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        layoutlm = HFLayoutLmTokenClassifier("layoutlmv1","path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm.model.device = "cpu"
 
         # Act
@@ -170,7 +170,7 @@ class TestHFLayoutLmSequenceClassifier:
 
         # Arrange
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
-        layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
+        layoutlm = HFLayoutLmSequenceClassifier("layoutlmv1","path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 
         # Act

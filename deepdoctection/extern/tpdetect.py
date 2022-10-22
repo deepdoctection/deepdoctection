@@ -60,6 +60,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     def __init__(
         self,
+        name: str,
         path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -85,6 +86,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
+        self.name = name
         self.path_yaml = path_yaml
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
@@ -148,6 +150,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         return [get_tensorflow_requirement(), get_tensorpack_requirement()]
 
     def clone(self) -> PredictorBase:
-        return self.__class__(
+        return self.__class__(self.name,
             self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
         )
