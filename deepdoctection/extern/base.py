@@ -33,6 +33,8 @@ class PredictorBase(ABC):
     Abstract base class for all types of predictors (e.g. object detectors language models, ...)
     """
 
+    name: str
+
     def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
         requirements = cls.get_requirements()
         name = cls.__name__ if hasattr(cls, "__name__") else cls.__class__.__name__
