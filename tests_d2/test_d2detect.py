@@ -69,7 +69,7 @@ class TestD2FrcnnDetector:
 
         # Arrange, Act & Assert
         with raises(ImportError):
-            D2FrcnnDetector(path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
+            D2FrcnnDetector("frcnn_detector", path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
 
     @staticmethod
     @mark.requires_pt

@@ -18,7 +18,6 @@
 """
 Module for layout pipeline component
 """
-from typing import Dict, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner

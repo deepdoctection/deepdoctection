@@ -29,7 +29,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.fs import download
-from ..utils.logger import logger, log_once
+from ..utils.logger import log_once, logger
 from ..utils.settings import Languages, LayoutType, ObjectTypes
 from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
@@ -519,8 +519,9 @@ class ModelCatalog:
         if profile.name:
             return os.path.join(get_weights_dir_path(), profile.name)
         log_once(
-            f"Model {name} is not registered. Please make sure the weights are available in the weights cache directory or"
-            " the full path you provide is correct")
+            f"Model {name} is not registered. Please make sure the weights are available in the weights cache "
+            f"directory or the full path you provide is correct"
+        )
         if os.path.isfile(name):
             return name
         return os.path.join(get_weights_dir_path(), name)

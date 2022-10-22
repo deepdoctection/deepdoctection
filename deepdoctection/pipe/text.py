@@ -20,7 +20,7 @@ Module for text extraction pipeline component
 """
 from copy import deepcopy
 from itertools import chain
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union, Any
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
@@ -265,7 +265,7 @@ def _reading_columns(
             third_condition = abs(rel_coords_box.uly - col["bottom"]) < height_tolerance * rel_coords_box.height
             fourth_condition = abs(rel_coords_box.lry - col["top"]) < height_tolerance * rel_coords_box.height
 
-            if (first_condition and (third_condition or fourth_condition)) or (  # pylint: ignore=R0916
+            if (first_condition and (third_condition or fourth_condition)) or (  # pylint: disable=R0916
                 second_condition and (third_condition or fourth_condition)
             ):
                 reading_blocks.append((idx, ann.annotation_id))
