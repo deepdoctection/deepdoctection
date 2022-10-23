@@ -313,7 +313,7 @@ conventional tokenizer will not work.
     path_config_json = "/path/to/traindir/checkpoint-2500/config.json"
     path_weights = "/path/to/traindir/checkpoint-2500/pytorch_model.bin"
     
-    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
+    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier("layoutlmv1", path_config_json,
                                                           path_weights,
                                                           merge.dataflow.categories.get_categories(as_dict=True))
     
@@ -349,7 +349,7 @@ followed by the LMSequenceClassifierService.
         text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="WORD")
         
         
-        layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
+        layoutlm_classifier = dd.HFLayoutLmSequenceClassifier("layoutlmv1", path_config_json,
                                                               path_weights,
                                                               {'1': 'FORM', '2': 'INVOICE', '3': 'BUDGET'})
         

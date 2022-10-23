@@ -108,6 +108,7 @@ class DoctrTextlineDetector(ObjectDetector):
     """
 
     def __init__(self) -> None:
+        self.name = "doctr_text_detector"
         self.doctr_predictor = detection_predictor(pretrained=True)
         self.categories = {"1": LayoutType.word}
 
@@ -164,6 +165,7 @@ class DoctrTextRecognizer(TextRecognizer):
     """
 
     def __init__(self) -> None:
+        self.name = "doctr_text_recognizer"
         self.doctr_predictor = recognition_predictor(pretrained=True)
 
     def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:

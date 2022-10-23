@@ -89,7 +89,7 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
         qpdf_called = False
         try:
             input_pdf_as_bytes = PdfFileReader(file)
-        except errors.PdfReadError:
+        except (errors.PdfReadError, AttributeError):
             _ = decrypt_pdf_document(path)
             qpdf_called = True
 

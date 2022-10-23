@@ -26,7 +26,7 @@ text line level and you somehow need to relate the results obtained.
     layout_config_path = os.path.join(get_configs_dir_path(), "dd/tp/conf_frcnn_layout.yaml")
 
     layout_weights_path = "/path/to/dir/model-820000.data-00000-of-00001"
-    d_layout = dd.TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
+    d_layout = dd.TPFrcnnDetector("layout_tp", layout_config_path, layout_weights_path, categories_layout)
     layout = dd.ImageLayoutService(d_layout, to_image=True)
 
     # setting up OCR detector and ocr service

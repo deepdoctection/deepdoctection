@@ -127,7 +127,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+            layoutlm = HFLayoutLmTokenClassifier("layoutlmv1","path/to/config.json","path/to/model.bin",
                                                   categories= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
                                                                'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
                                                                'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD',
@@ -147,6 +147,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def __init__(
         self,
+        name: str,
         path_config_json: str,
         path_weights: str,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
@@ -155,6 +156,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
+        :param name: name of the layoutlm model (e.g. LayoutLMv1)
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
                                      entities self. To be consistent with detectors use only values >0. Conversion will
                                      be done internally.
@@ -163,6 +165,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         """
 
+        self.name = name
         if categories is None:
             if categories_semantics is None:
                 raise ValueError("If categories is None then categories_semantics cannot be None")
@@ -260,6 +263,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def clone(self) -> "HFLayoutLmTokenClassifier":
         return self.__class__(
+            self.name,
             self.path_config,
             self.path_weights,
             self.categories_semantics,
@@ -286,7 +290,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+            layoutlm = HFLayoutLmSequenceClassifier("layoutlmv1", "path/to/config.json","path/to/model.bin",
                                                   categories=["HANDWRITTEN", "PRESENTATION", "RESUME"])
 
             # token classification service
@@ -303,11 +307,13 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
     def __init__(
         self,
+        name: str,
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        self.name = name
         self.path_config = path_config_json
         self.path_weights = path_weights
         self.categories = copy(categories)  # type: ignore
@@ -355,4 +361,4 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> "HFLayoutLmSequenceClassifier":
-        return self.__class__(self.path_config, self.path_weights, self.categories)
+        return self.__class__(self.name, self.path_config, self.path_weights, self.categories)

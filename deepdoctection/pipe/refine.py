@@ -392,7 +392,7 @@ class TableSegmentationRefinementService(PipelineComponent):
     def __init__(self) -> None:
         self._table_name = LayoutType.table
         self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
-        super().__init__(None)
+        super().__init__("table_segment_refine")
 
     def serve(self, dp: Image) -> None:
         tables = dp.get_annotation(category_names=self._table_name)

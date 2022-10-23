@@ -105,6 +105,7 @@ class TextractOcrDetector(ObjectDetector):
         """
         :param text_lines: If True, it will return DetectionResults of Text lines as well.
         """
+        self.name = "textract"
         self.text_lines = text_lines
         self.client = boto3.client("textract")
         if self.text_lines:

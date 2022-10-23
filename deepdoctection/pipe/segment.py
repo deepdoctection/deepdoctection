@@ -463,7 +463,7 @@ class TableSegmentationService(PipelineComponent):
         self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
         self._item_names = [LayoutType.row, LayoutType.column]  # row names must be before column name
         self._sub_item_names = [CellType.row_number, CellType.column_number]
-        super().__init__(None)
+        super().__init__("table_segment")
 
     def serve(self, dp: Image) -> None:
         dp = stretch_items(

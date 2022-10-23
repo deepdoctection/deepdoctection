@@ -299,6 +299,7 @@ evaluator, we first have to provide a model wrapper
     
         def __init__(
             self,
+            name: str,
             path_config_json: str,
             path_d2_yaml: str,
             path_weights: str,
@@ -310,7 +311,8 @@ evaluator, we first have to provide a model wrapper
             if categories is None:
                 assert categories_semantics is not None
                 assert categories_bio is not None
-    
+
+            self.name = name
             self.path_config = path_config_json
             self.path_d2_yaml = path_d2_yaml
             self.path_weights = path_weights
@@ -391,6 +393,7 @@ evaluator, we first have to provide a model wrapper
     
         def clone(self) -> "HFLayoutLmWithImageFeaturesTokenClassifier":
             return self.__class__(
+                self.name,
                 self.path_config,
                 self.path_d2_yaml,
                 self.path_weights,
@@ -429,8 +432,9 @@ evaluator, we first have to provide a model wrapper
     
         metric = dd.get_metric("f1")
         metric.set_categories(sub_category_names={"WORD": ["TOKEN_TAG"]})
-        #language_model = dd.HFLayoutLmTokenClassifier(config,weights,categories=categories)
-        language_model = HFLayoutLmWithImageFeaturesTokenClassifier(config, path_yaml, weights, categories=categories)
+        #language_model = dd.HFLayoutLmTokenClassifier("layoutlmv1", config,weights,categories=categories)
+        language_model = HFLayoutLmWithImageFeaturesTokenClassifier("layoutlmv1",config, path_yaml, weights,
+                                                                     categories=categories)
         pipeline_component = dd.LMTokenClassifierService(tokenizer_fast, language_model, dd.image_to_layoutlm_features,
                                                          True)
         evaluator = dd.Evaluator(dataset_val, pipeline_component, metric, num_threads=2)

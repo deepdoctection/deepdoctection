@@ -32,12 +32,12 @@ image datapoints with layout objects and in particular tables.
         cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
         categories_cell = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL).categories
         assert categories_cell is not None
-        d_cell = dd.D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device="gpu")
+        d_cell = dd.D2FrcnnDetector("cell_d2", cell_config_path, cell_weights_path, categories_cell, device="gpu")
         item_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
         item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
         categories_item = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM).categories
         assert categories_item is not None
-        d_item = dd.D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device="gpu")
+        d_item = dd.D2FrcnnDetector("cell_d2", item_config_path, item_weights_path, categories_item, device="gpu")
 
         cell = dd.SubImageLayoutService(d_cell, "TABLE", {1: 6}, True)
         pipe_component_list.append(cell)

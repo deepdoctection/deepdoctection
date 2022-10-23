@@ -60,7 +60,7 @@ class FasttextLangDetector(LanguageDetector):
                            code.
         """
 
-        super().__init__()
+        self.name = "fasttest_lang_detector"
         self.path_weights = path_weights
         self.model = load_model(self.path_weights)
         self.categories = copy(categories)  # type: ignore

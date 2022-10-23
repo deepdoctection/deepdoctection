@@ -79,7 +79,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
-        super().__init__(tokenizer, mapping_to_lm_input_func)
+        super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
@@ -141,6 +141,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             ]
         )
 
+    def _get_name(self) -> str:
+        return f"lm_token_class_{self.language_model.name}"
+
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
 class LMSequenceClassifierService(LanguageModelPipelineComponent):
@@ -186,7 +189,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         :param mapping_to_lm_input_func: Function mapping image to layout language model features
         """
         self.language_model = language_model
-        super().__init__(tokenizer, mapping_to_lm_input_func)
+        super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
@@ -209,3 +212,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                 ("summaries", [PageType.document_type]),
             ]
         )
+
+    def _get_name(self) -> str:
+        return f"lm_sequence_class_{self.language_model.name}"
