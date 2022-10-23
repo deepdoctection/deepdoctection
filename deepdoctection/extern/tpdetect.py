@@ -53,13 +53,14 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/model-162000.data-00000-of-00001")
         categories = ModelCatalog.get_profile("item/model-162000.data-00000-of-00001").categories
 
-        tp_predictor = TPFrcnnDetector(config_path,weights_path,categories)
+        tp_predictor = TPFrcnnDetector("tp_frcnn", config_path,weights_path,categories)  # first argument is only a name
         detection_results = tp_predictor.predict(bgr_image_np_array)
 
     """
 
     def __init__(
         self,
+        name: str,
         path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -76,6 +77,8 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
         Mask-Mode could be used as well here provided the data structure is established.
 
+        :param name: name of the detector. The name will be passed to a pipeline component and is used to describe the
+                     service.
         :param path_yaml: The path to the yaml config
         :param path_weights: The path to the model checkpoint
         :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
@@ -85,6 +88,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
+        self.name = name
         self.path_yaml = path_yaml
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
@@ -149,5 +153,5 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(
-            self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
+            self.name, self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
         )

@@ -18,7 +18,6 @@
 """
 Module for layout pipeline component
 """
-from typing import Dict, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
@@ -49,13 +48,11 @@ class ImageLayoutService(PredictorPipelineComponent):
     def __init__(
         self,
         layout_detector: ObjectDetector,
-        category_id_mapping: Optional[Dict[int, int]] = None,
         to_image: bool = False,
         crop_image: bool = False,
     ):
         """
         :param layout_detector: object detector
-        :param category_id_mapping: Mapping of category IDs. Usually, the category ids start with 1.
         :param to_image: Generate an image for each detected block, e.g. populate :attr:`ImageAnnotation.image`. Useful,
                          if you want to process only some blocks in a subsequent pipeline component.
         :param crop_image: Do not only populate :attr:`ImageAnnotation.image` but also crop the detected block according
@@ -64,7 +61,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         """
         self.to_image = to_image
         self.crop_image = crop_image
-        super().__init__(layout_detector, category_id_mapping)
+        super().__init__(self._get_name(layout_detector.name), layout_detector)
 
     def serve(self, dp: Image) -> None:
         assert dp.image is not None
@@ -82,3 +79,7 @@ class ImageLayoutService(PredictorPipelineComponent):
                 ("summaries", []),
             ]
         )
+
+    @staticmethod
+    def _get_name(predictor_name: str) -> str:
+        return f"image_{predictor_name}"

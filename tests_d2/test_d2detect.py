@@ -69,7 +69,7 @@ class TestD2FrcnnDetector:
 
         # Arrange, Act & Assert
         with raises(ImportError):
-            D2FrcnnDetector(path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
+            D2FrcnnDetector("frcnn_detector", path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
 
     @staticmethod
     @mark.requires_pt
@@ -83,7 +83,7 @@ class TestD2FrcnnDetector:
         """
 
         # Arrange
-        frcnn = D2FrcnnDetector(path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
+        frcnn = D2FrcnnDetector("frcnn_detector",path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
         frcnn.d2_predictor = MagicMock(side_effect=get_mock_instances())
         # Act
         results = frcnn.predict(np_image)

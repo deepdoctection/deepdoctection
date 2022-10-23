@@ -5,6 +5,8 @@ UNAME_S := $(shell uname -s)
 
 PYTHON=python3
 
+black:
+	black --line-length 120 deepdoctection tests setup.py
 
 analyze:
 	mypy -p deepdoctection -p tests -p tests_d2
@@ -36,9 +38,7 @@ clean-test:
 
 format-and-qa: format qa
 
-format:
-	black --line-length 120 deepdoctection tests setup.py
-	isort  deepdoctection tests setup.py
+format: black isort
 
 install-dd-dev-pt: check-venv
 	@echo "--> Installing source-all-pt"
@@ -85,6 +85,9 @@ install-prodigy-setup: check-venv install-jupyterlab-setup
 	jupyter labextension list
 	@echo "--> Done installing Jupyter Lab Prodigy plugin"
 	@echo ""
+
+isort:
+	isort  deepdoctection tests setup.py
 
 lint:
 	pylint deepdoctection tests tests_d2

@@ -151,7 +151,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 group_categories_dict[group[1]].append(str(group[0]))
             group_categories = list(group_categories_dict.values())
             self.group_categories = group_categories
-        super().__init__(sub_image_detector, category_id_mapping)
+        super().__init__(self._get_name(sub_image_detector.name), sub_image_detector)
 
     def serve(self, dp: Image) -> None:
         """
@@ -216,3 +216,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 ("summaries", []),
             ]
         )
+
+    @staticmethod
+    def _get_name(predictor_name: str) -> str:
+        return f"sub_image_{predictor_name}"

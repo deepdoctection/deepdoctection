@@ -288,6 +288,7 @@ def train_faster_rcnn(
             metric = metric_registry.get(metric_name)
         categories = dataset_val.dataflow.categories.get_categories(filtered=True)
         detector = TPFrcnnDetector(
+            "tp_frcnn_detector",
             path_config_yaml,
             path_weights,
             categories,
