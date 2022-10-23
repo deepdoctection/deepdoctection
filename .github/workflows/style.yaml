@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e ".[source-pt]"
-          pip install -e ".[dev]"
+          pip install -e ".[dev, test]"
 
       - name: Run linter
         run: make lint
@@ -101,7 +101,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e ".[source-pt]"
-          pip install -e ".[dev]"
+          pip install -e ".[dev, test]"
 
       - name: Run mypy
         run: |
