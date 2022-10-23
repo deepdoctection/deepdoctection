@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python: [3.8]
-        dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu'
+        dll: ["torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu"]
     steps:
       - uses: actions/checkout@v2
 
