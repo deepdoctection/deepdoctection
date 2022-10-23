@@ -28,7 +28,7 @@ from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, PdfMiner
 
 if pdfplumber_available():
-    from pdfplumber.pdf import PDF  # type: ignore
+    from pdfplumber.pdf import PDF
 
 
 def _to_detect_result(word: Dict[str, str]) -> DetectionResult:
