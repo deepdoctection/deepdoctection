@@ -319,9 +319,12 @@ def train_hf_layoutlm(
             categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
                 categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
             )[LayoutType.word][WordType.token_tag]
-        dd_model = dd_model_cls("layoutlm",
-                                path_config_json=path_config_json,
-                                path_weights=path_weights, categories=categories, device="cuda"
+        dd_model = dd_model_cls(
+            "layoutlm",
+            path_config_json=path_config_json,
+            path_weights=path_weights,
+            categories=categories,
+            device="cuda",
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.sequence_classification:

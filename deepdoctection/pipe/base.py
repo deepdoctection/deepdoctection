@@ -288,8 +288,9 @@ class Pipeline(ABC):
 
         return pipeline_populations
 
-    def get_pipeline_info(self, position: Optional[int] = None, name: Optional[str] = None) \
-            -> Union[Mapping[int,str],str, int]:
+    def get_pipeline_info(
+        self, position: Optional[int] = None, name: Optional[str] = None
+    ) -> Union[Mapping[int, str], str, int]:
         """Get pipeline information: Returns a dictionary with a description of each pipeline component
         :param position: position of the pipeline component in the pipeline
         :param name: name of the pipeline component to search for

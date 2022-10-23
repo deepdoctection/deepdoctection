@@ -217,8 +217,9 @@ def train_d2_faster_rcnn(
         and pipeline_component_name is not None
     ):
         categories = dataset_val.dataflow.categories.get_categories(filtered=True)
-        detector = D2FrcnnDetector("d2_frcnn_detector", path_config_yaml, path_weights, categories, config_overwrite,
-                                   cfg.MODEL.DEVICE)
+        detector = D2FrcnnDetector(
+            "d2_frcnn_detector", path_config_yaml, path_weights, categories, config_overwrite, cfg.MODEL.DEVICE
+        )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
