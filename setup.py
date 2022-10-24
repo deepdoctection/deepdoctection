@@ -73,6 +73,7 @@ _DEPS = [
     "transformers",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
+    "jdeskew",
     "boto3",
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.13.0",
@@ -132,7 +133,7 @@ dist_deps = deps_list(
 
 
 # remaining dependencies to use models that neither require TF nor PyTorch
-additional_deps = deps_list("boto3", "pdfplumber", "fasttext")
+additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
 
 # Tensorflow dependencies
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr")
@@ -159,6 +160,7 @@ docs_deps = deps_list(
     "lxml",
     "lxml-stubs",
     "pycocotools",
+    "jdeskew",
 )
 
 

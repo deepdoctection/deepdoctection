@@ -144,6 +144,7 @@ _IMPORT_STRUCTURE = {
         "LanguageDetector",
         "InferenceResize",
         "D2FrcnnDetector",
+        "Jdeskewer",
         "DoctrTextlineDetector",
         "DoctrTextRecognizer",
         "FasttextLangDetector",
