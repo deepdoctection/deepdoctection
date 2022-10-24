@@ -9,6 +9,7 @@ on:
 
 jobs:
   lint:
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -36,6 +37,7 @@ jobs:
         run: make lint
 
   black:
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -56,6 +58,7 @@ jobs:
           make black
 
   isort:
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -78,6 +81,7 @@ jobs:
           if [ -n "$(git status --porcelain --untracked-files=no)" ]; then exit 1; else echo "All clear"; fi
 
   mypy:
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
