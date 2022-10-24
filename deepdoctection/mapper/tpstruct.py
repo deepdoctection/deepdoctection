@@ -19,7 +19,7 @@
 Module for mapping annotation for training environments
 """
 import os.path
-from typing import Optional, Union, Sequence
+from typing import Optional, Sequence, Union
 
 import numpy as np
 
@@ -30,10 +30,11 @@ from .maputils import curry
 
 
 @curry
-def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False,
-                               category_names: Optional[Union[str, ObjectTypes,
-                                                              Sequence[Union[str, ObjectTypes]]]] = None) \
-        -> Optional[JsonDict]:
+def image_to_tp_frcnn_training(
+    dp: Image,
+    add_mask: bool = False,
+    category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+) -> Optional[JsonDict]:
     """
     Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned
     dict will not suffice for training as gt for RPN and anchors still need to be created.
