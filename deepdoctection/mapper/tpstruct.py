@@ -19,23 +19,28 @@
 Module for mapping annotation for training environments
 """
 import os.path
-from typing import Optional
+from typing import Optional, Union, Sequence
 
 import numpy as np
 
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.settings import ObjectTypes
 from .maputils import curry
 
 
 @curry
-def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[JsonDict]:
+def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False,
+                               category_names: Optional[Union[str, ObjectTypes,
+                                                              Sequence[Union[str, ObjectTypes]]]] = None) \
+        -> Optional[JsonDict]:
     """
     Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned
     dict will not suffice for training as gt for RPN and anchors still need to be created.
 
     :param dp: Image
     :param add_mask: True is not implemented (yet).
+    :param category_names: A list of category names for training a model. Pass nothing to train with all annotations
     :return: Dict with 'image', 'gt_boxes', 'gt_labels' and 'file_name', provided there are some detected objects in the
              image
     """
@@ -43,7 +48,7 @@ def image_to_tp_frcnn_training(dp: Image, add_mask: bool = False) -> Optional[Js
     output: JsonDict = {}
     if dp.image is not None:
         output["image"] = dp.image.astype("float32")
-    anns = dp.get_annotation()
+    anns = dp.get_annotation(category_names=category_names)
     all_boxes = []
     all_categories = []
     if not anns:
