@@ -415,6 +415,25 @@ def scipy_available() -> bool:
     return bool(_SCIPY_AVAILABLE)
 
 
+# jdeskew dependency
+_JDESKEW_AVAILABLE = importlib.util.find_spec("jdeskew") is not None
+_JDESKEW_ERR_MSG = "jdeskew must be installed. >> pip install jdeskew"
+
+
+def jdeskew_available() -> bool:
+    """
+    Returns True if jdeskew is installed
+    """
+    return bool(_JDESKEW_AVAILABLE)
+
+
+def get_jdeskew_requirement() -> Requirement:
+    """
+    Returns jdeskew requirement.
+    """
+    return "jdeskew", jdeskew_available(), _JDESKEW_ERR_MSG
+
+
 # scikit-learn dependencies
 _SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
 _SKLEARN_ERR_MSG = "scikit-learn must be installed. >> pip install scikit-learn==1.0.2"
