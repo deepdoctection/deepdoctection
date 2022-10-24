@@ -21,7 +21,7 @@ Module for mapping annotations into standard Detectron2 dataset dict
 
 
 import os.path
-from typing import Dict, List, Optional, Union, Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 from detectron2.structures import BoxMode
 
@@ -32,10 +32,11 @@ from ..utils.settings import ObjectTypes
 
 
 @curry
-def image_to_d2_frcnn_training(dp: Image, add_mask: bool = False,
-                               category_names: Optional[Union[str, ObjectTypes,
-                                                              Sequence[Union[str, ObjectTypes]]]] = None) \
-        -> Optional[JsonDict]:
+def image_to_d2_frcnn_training(
+    dp: Image,
+    add_mask: bool = False,
+    category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+) -> Optional[JsonDict]:
     """
     Maps an image to a standard dataset dict as described in
     https://detectron2.readthedocs.io/en/latest/tutorials/datasets.html. It further checks if the image is physically
@@ -72,7 +73,7 @@ def image_to_d2_frcnn_training(dp: Image, add_mask: bool = False,
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": ann.bounding_box.to_list(mode="xyxy"),
-            "category_id": int(ann.category_id)-1,
+            "category_id": int(ann.category_id) - 1,
         }
         annotations.append(mapped_ann)
 
