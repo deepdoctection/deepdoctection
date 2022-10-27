@@ -15,11 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Testing module datasets.instances.funsd
+"""
+
+from unittest.mock import MagicMock, patch
+
 from pytest import mark
-from unittest.mock import patch, MagicMock
 
 from deepdoctection.datasets import Funsd
 from deepdoctection.utils.settings import WordType
+
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
 
@@ -28,7 +34,7 @@ from .conftest import get_white_image
 @patch("deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_white_image))
 def test_dataset_funsd_returns_image_and_annotations() -> None:
     """
-    test dataset publaynet returns image
+    test dataset funsd returns image and annotations
     """
 
     # Arrange
