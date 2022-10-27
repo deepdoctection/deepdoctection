@@ -88,7 +88,7 @@ def xfund_to_image(
 
         entities = dp.get("document", [])
 
-        if entities is None:
+        if not entities:
             entities = dp.get("form", [])
 
         for entity in entities:

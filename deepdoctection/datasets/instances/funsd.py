@@ -96,7 +96,7 @@ _SUB_CATEGORIES = {
             TokenClassWithTag.i_answer,
             TokenClassWithTag.i_header,
             TokenClassWithTag.i_question,
-            TokenClasses.other,
+            BioTag.outside,
         ],
     }
 }
