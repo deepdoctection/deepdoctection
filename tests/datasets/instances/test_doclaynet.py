@@ -33,10 +33,10 @@ def test_dataset_doclaynet_returns_image() -> None:
     """
 
     # Arrange
-    publaynet = DocLayNet()
-    publaynet.dataflow.get_workdir = get_test_path  # type: ignore
-    publaynet.dataflow.annotation_files = {"val": "test_file_doclay.json"}
-    df = publaynet.dataflow.build()
+    doclaynet = DocLayNet()
+    doclaynet.dataflow.get_workdir = get_test_path  # type: ignore
+    doclaynet.dataflow.annotation_files = {"val": "test_file_doclay.json"}
+    df = doclaynet.dataflow.build()
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
