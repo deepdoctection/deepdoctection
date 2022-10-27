@@ -167,7 +167,6 @@ class FunsdBuilder(DataFlowBaseBuilder):
             name_as_key=True,
         )[LayoutType.word][WordType.token_tag]
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
-        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,
