@@ -629,6 +629,8 @@ class Page:
             else:
                 text += "\n" + layout.text
 
+        return text
+
     @property
     def tables(self) -> List[Table]:
         """table from all layouts"""
