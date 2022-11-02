@@ -142,6 +142,7 @@ _IMPORT_STRUCTURE = {
         "LMTokenClassifier",
         "LMSequenceClassifier",
         "LanguageDetector",
+        "ImageTransformer",
         "InferenceResize",
         "D2FrcnnDetector",
         "Jdeskewer",
@@ -210,6 +211,7 @@ _IMPORT_STRUCTURE = {
         "PipelineComponent",
         "PredictorPipelineComponent",
         "LanguageModelPipelineComponent",
+        "ImageTransformPipelineComponent",
         "Pipeline",
         "DetectResultGenerator",
         "SubImageLayoutService",
@@ -228,6 +230,7 @@ _IMPORT_STRUCTURE = {
         "SegmentationResult",
         "TextExtractionService",
         "TextOrderService",
+        "SimpleTransformPipelineComponent",
     ],
     "train": ["D2Trainer", "train_d2_faster_rcnn", "LayoutLMTrainer", "train_hf_layoutlm", "train_faster_rcnn"],
     "utils": [
