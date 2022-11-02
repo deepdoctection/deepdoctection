@@ -613,17 +613,21 @@ class Page:
         kwargs["layouts"] = layout_list
         return cls(**kwargs)
 
-    def get_text(self) -> str:
+    def get_text(self, no_line_break: bool = False) -> str:
         """
         Get text of all layouts.
-
+        :param no_line_break: Text will receive a line break for every layout block. Setting argument to `True` will
+                              supress this behaviour
         :return: Text string
         """
         text: str = ""
         layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
         layouts_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
         for layout in layouts_with_order:
-            text += "\n" + layout.text
+            if no_line_break:
+                text += " " + layout.text
+            else:
+                text += "\n" + layout.text
 
         return text
 
