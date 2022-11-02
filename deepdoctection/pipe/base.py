@@ -26,7 +26,7 @@ from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Se
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer, ImageTransformer
 from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
@@ -183,6 +183,29 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
 
     @abstractmethod
     def clone(self) -> "LanguageModelPipelineComponent":
+        """
+        Clone an instance
+        """
+        raise NotImplementedError
+
+
+class ImageTransformPipelineComponent(PipelineComponent, ABC):
+    """
+    Abstract pipeline component class with one model to transform images. This component is meant to be used at the
+    beginning of a pipeline
+    """
+
+    def __init__(self, name: str, transform_predictor: ImageTransformer):
+        """
+        :param name: Will be passed to base class
+        :param transform_predictor: Am ImageTransformer for image transformation
+        """
+
+        self.transform_predictor=transform_predictor
+        super().__init__(name)
+
+    @abstractmethod
+    def clone(self) -> "ImageTransformPipelineComponent":
         """
         Clone an instance
         """
