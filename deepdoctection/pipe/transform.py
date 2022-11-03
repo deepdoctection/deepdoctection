@@ -51,7 +51,7 @@ class SimpleTransformService(ImageTransformPipelineComponent):
                 "%s has already received image with image annotations. These annotations will not "
                 "be transformed and might cause unexpected output in your pipeline.", self.name
             )
-        if dp.image:
+        if dp.image is not None:
             np_image_transform = self.transform_predictor.transform(dp.image)
             self.dp_manager.datapoint.clear_image(True)
             self.dp_manager.datapoint.image = np_image_transform
