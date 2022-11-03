@@ -21,20 +21,40 @@ on images (e.g. deskew, de-noising or more general GAN like operations.
 """
 
 from ..datapoint.image import Image
-from ..utils.detection_types import JsonDict
 from ..extern.base import ImageTransformer
+from ..utils.detection_types import JsonDict
+from ..utils.logger import logger
 from .base import ImageTransformPipelineComponent
 
 
 class SimpleTransformService(ImageTransformPipelineComponent):
+    """
+    Pipeline component for transforming an image. The service is designed for applying transform predictors that
+    take an image as numpy array as input and return the same. The service itself will change the underlying metadata
+    like height and width of the returned transform.
+
+    This component is meant to be used at the very first stage of a pipeline. If components have already returned image
+    annotations then this component will currently not re-calculate bounding boxes in terms of the transformed image.
+    It will raise a warning (at runtime) if image annotations have already been appended.
+    """
 
     def __init__(self, transform_predictor: ImageTransformer):
+        """
+
+        :param transform_predictor: image transformer
+        """
         super().__init__(self._get_name(transform_predictor.name), transform_predictor)
 
     def serve(self, dp: Image) -> None:
-        np_image_transform = self.transform_predictor.transform(dp.image)
-        self.dp_manager.datapoint.clear_image(True)
-        self.dp_manager.datapoint.image = np_image_transform
+        if dp.annotations:
+            logger.warning(
+                "%s has already received image with image annotations. These annotations will not "
+                "be transformed and might cause unexpected output in your pipeline.", self.name
+            )
+        if dp.image:
+            np_image_transform = self.transform_predictor.transform(dp.image)
+            self.dp_manager.datapoint.clear_image(True)
+            self.dp_manager.datapoint.image = np_image_transform
 
     def clone(self) -> "SimpleTransformService":
         return self.__class__(self.transform_predictor)

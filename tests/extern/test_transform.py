@@ -21,9 +21,9 @@ Testing module pipe.transform
 
 from unittest.mock import MagicMock
 
-from pytest import mark
 import numpy as np
 from numpy.testing import assert_array_equal
+from pytest import mark
 
 from deepdoctection.datapoint.image import Image
 from deepdoctection.extern.base import ImageTransformer
@@ -42,10 +42,10 @@ class TestSimpleTransformService:
 
         self._transform_predictor = MagicMock(spec=ImageTransformer)
         self._transform_predictor.name = "mock_transform"
-        self.simple_transform =  SimpleTransformService(self._transform_predictor)
+        self.simple_transform = SimpleTransformService(self._transform_predictor)
 
     @mark.basic
-    def test_pass_datapoint(self, dp_image: Image):
+    def test_pass_datapoint(self, dp_image: Image) -> None:
         """
         test pass_datapoint
         """
@@ -58,6 +58,6 @@ class TestSimpleTransformService:
         dp = self.simple_transform.pass_datapoint(dp_image)
 
         # Assert
-        assert_array_equal(dp.image, np_output_img)
+        assert_array_equal(dp.image, np_output_img)  # type: ignore
         assert dp.width == 596
         assert dp.height == 794
