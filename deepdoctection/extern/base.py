@@ -376,3 +376,19 @@ class LanguageDetector(PredictorBase):
         Returns a list of possible detectable languages
         """
         return list(self.categories.values())
+
+
+class ImageTransformer(PredictorBase):
+    """
+    Abstract base class for transforming an image. The :meth:`transform` accepts a numpy array and returns the same.
+    """
+
+    @abstractmethod
+    def transform(self, np_img: ImageType) -> ImageType:
+        """
+        Abstract method transform
+        """
+        raise NotImplementedError
+
+    def clone(self) -> PredictorBase:
+        return self.__class__()

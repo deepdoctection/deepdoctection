@@ -183,11 +183,18 @@ class Image:
         if not hasattr(self, "_pdf_bytes"):
             setattr(self, "_pdf_bytes", pdf_bytes)
 
-    def clear_image(self) -> None:
+    def clear_image(self, clear_bbox: bool = False) -> None:
         """
         Removes the :attr:`Image.image`. Useful, if the image must be a lightweight object.
+
+        :param clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
+                           if the image is going to be replaced with a transform. It will also remove the self
+                           embedding entry
         """
         self._image = None
+        if clear_bbox:
+            self._bbox = None
+            self.embeddings.pop(self.image_id)
 
     def get_image(self) -> "_Img":  # type: ignore
         """
