@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+jdeskew estimator and rotator to deskew images: https://github.com/phamquiluan/jdeskew
+"""
+
 from typing import List
 
 from jdeskew.estimator import get_angle
@@ -31,7 +35,7 @@ class Jdeskewer(ImageTransformer):
     up to 45 degrees and provides the corresponding rotation so that text lines range horizontally.
     """
 
-    def __init__(self, min_angle_rotation: float = 2.):
+    def __init__(self, min_angle_rotation: float = 2.0):
         self.name = "jdeskew_transform"
         self.min_angle_rotation = min_angle_rotation
 

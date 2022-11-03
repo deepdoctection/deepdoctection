@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Testing module extern.deskew
+"""
+
 from numpy.testing import assert_array_equal
 
 from deepdoctection.extern.deskew import Jdeskewer
@@ -43,8 +47,9 @@ class TestJdeskewer:
         deskewer = Jdeskewer()
 
         # Act
+        assert image
         output_image = deskewer.transform(image)
 
         # Assert
-        assert_array_equal(image_gt,output_image)
-
+        assert image_gt
+        assert_array_equal(image_gt, output_image)

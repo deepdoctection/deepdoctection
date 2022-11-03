@@ -26,7 +26,7 @@ from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Se
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer, ImageTransformer
+from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
 from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
@@ -201,7 +201,7 @@ class ImageTransformPipelineComponent(PipelineComponent, ABC):
         :param transform_predictor: Am ImageTransformer for image transformation
         """
 
-        self.transform_predictor=transform_predictor
+        self.transform_predictor = transform_predictor
         super().__init__(name)
 
     @abstractmethod
