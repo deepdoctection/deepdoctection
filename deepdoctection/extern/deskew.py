@@ -21,12 +21,14 @@ jdeskew estimator and rotator to deskew images: https://github.com/phamquiluan/j
 
 from typing import List
 
-from jdeskew.estimator import get_angle
-from jdeskew.utility import rotate
-
+from ..utils.file_utils import jdeskew_available
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_jdeskew_requirement
 from .base import ImageTransformer
+
+if jdeskew_available():
+    from jdeskew.estimator import get_angle
+    from jdeskew.utility import rotate
 
 
 class Jdeskewer(ImageTransformer):

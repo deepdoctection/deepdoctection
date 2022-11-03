@@ -19,6 +19,8 @@
 Testing module extern.deskew
 """
 
+from pytest import mark
+
 from numpy.testing import assert_array_equal
 
 from deepdoctection.extern.deskew import Jdeskewer
@@ -32,6 +34,7 @@ class TestJdeskewer:
     """
 
     @staticmethod
+    @mark.requires_tf_or_pt
     def test_deskewer_transforms_image() -> None:
         """
         Detector deskews image and rotates it accordingly
