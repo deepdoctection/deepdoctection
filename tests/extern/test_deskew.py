@@ -19,9 +19,8 @@
 Testing module extern.deskew
 """
 
-from pytest import mark
-
 from numpy.testing import assert_array_equal
+from pytest import mark
 
 from deepdoctection.extern.deskew import Jdeskewer
 from deepdoctection.utils.fs import load_image_from_file
@@ -50,9 +49,9 @@ class TestJdeskewer:
         deskewer = Jdeskewer()
 
         # Act
-        assert image
+        assert image is not None
         output_image = deskewer.transform(image)
 
         # Assert
-        assert image_gt
+        assert image_gt is not None
         assert_array_equal(image_gt, output_image)
