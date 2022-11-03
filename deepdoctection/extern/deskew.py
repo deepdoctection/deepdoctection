@@ -21,9 +21,8 @@ jdeskew estimator and rotator to deskew images: https://github.com/phamquiluan/j
 
 from typing import List
 
-from ..utils.file_utils import jdeskew_available
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_jdeskew_requirement
+from ..utils.file_utils import get_jdeskew_requirement, jdeskew_available
 from .base import ImageTransformer
 
 if jdeskew_available():
