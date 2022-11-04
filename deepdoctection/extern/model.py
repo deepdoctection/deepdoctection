@@ -30,7 +30,7 @@ from termcolor import colored
 
 from ..utils.fs import download
 from ..utils.logger import log_once, logger
-from ..utils.settings import Languages, LayoutType, ObjectTypes
+from ..utils.settings import Languages, LayoutType, ObjectTypes, CellType
 from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
@@ -389,6 +389,23 @@ class ModelCatalog:
             hf_config_file=["config.json","preprocessor_config.json"],
             categories={"1": LayoutType.table},
         ),
+        "microsoft/table-transformer-structure-recognition/pytorch_model.bin": ModelProfile(
+            name="microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+            description="Table Transformer (DETR) model trained on PubTables1M. It was introduced in the paper "
+                        "PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents by Smock et "
+                        "al. This model is devoted to table structure recognition and assumes to receive a cropped" 
+                        "table as input. It will predict rows, column and spanning cells",
+            size=[115509981],
+            tp_model=False,
+            config="microsoft/table-transformer-structure-recognition/config.json",
+            preprocessor_config="microsoft/table-transformer-structure-recognition/preprocessor_config.json",
+            hf_repo_id="microsoft/table-transformer-structure-recognition",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json", "preprocessor_config.json"],
+            categories={"1": LayoutType.table, "2": LayoutType.column, "3": LayoutType.row, "4": CellType.header,
+                        "5": CellType.row_header, "6": CellType.spanning},
+        ),
+
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",

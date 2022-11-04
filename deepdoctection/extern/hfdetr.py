@@ -19,7 +19,7 @@
 HF Detr model for object detection.
 """
 
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
+from typing import List, Literal, Mapping, Optional
 
 
 from .base import DetectionResult, ObjectDetector
@@ -29,7 +29,6 @@ from ..utils.detection_types import Requirement, ImageType
 from ..utils.file_utils import (
     get_pytorch_requirement,
     get_transformers_requirement,
-    pytorch_available,
     transformers_available,
 )
 from ..utils.settings import get_type, TypeOrStr, ObjectTypes
@@ -113,4 +112,3 @@ class HFDetrDerivedDetector(ObjectDetector):
                               self.path_feature_extractor_config,
                               self.categories,
                               self.device)
-
