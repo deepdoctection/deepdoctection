@@ -84,7 +84,7 @@ class TestLanguageDetectionService:
 
         # Assert
         assert dp.summary is not None
-        assert dp.summary.get_sub_category(PageType.language).category_name == "LANGUAGE"
+        assert dp.summary.get_sub_category(PageType.language).category_name == "language"
         container_ann = dp.summary.get_sub_category(PageType.language)
         assert isinstance(container_ann, ContainerAnnotation)
         assert container_ann.value == "eng"

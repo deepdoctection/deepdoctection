@@ -98,10 +98,10 @@ class TestHFLayoutLmTokenClassifier:
         )
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-HEADER"), get_type("I-HEADER")}
+        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-HEADER"), "2": get_type("I-HEADER"), "3": get_type("O")}
+        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
 
         # Act
         model = HFLayoutLmTokenClassifier("layoutlmv1", "path/to/json", "path/to/model", categories=categories_explicit)

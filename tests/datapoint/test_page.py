@@ -38,16 +38,16 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     """
     # Arrange
     dp_image = dp_image_with_layout_and_word_annotations
-    title_ann = dp_image.get_annotation(category_names=["TITLE"])[0]
+    title_ann = dp_image.get_annotation(category_names=["title"])[0]
     title_ann.dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
     )
-    text_ann = dp_image.get_annotation(category_names=["TEXT"])[0]
+    text_ann = dp_image.get_annotation(category_names=["text"])[0]
     text_ann.dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="2")
     )
 
-    word_anns = dp_image.get_annotation(category_names="WORD")
+    word_anns = dp_image.get_annotation(category_names="word")
 
     word_anns[0].dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
@@ -65,9 +65,9 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     # Act
     page = Page.from_image(
         dp_image,
-        "WORD",
-        ["TEXT", "TITLE", "LIST"],
-        ["TEXT", "TITLE", "LIST", "CELL"],
+        "word",
+        ["text", "title", "list"],
+        ["text", "title", "list", "cell"],
     )
 
     # Assert

@@ -24,10 +24,10 @@ SEGMENTATION:
   REMOVE_IOU_THRESHOLD_COLS: 0.001
 WORD_MATCHING:
   PARENTAL_CATEGORIES:
-    - TEXT
-    - TITLE
-    - CELL
-    - LIST
+    - text
+    - title
+    - cell
+    - list
   RULE: ioa
   IOU_THRESHOLD: 0.001
   IOA_THRESHOLD: 0.6
