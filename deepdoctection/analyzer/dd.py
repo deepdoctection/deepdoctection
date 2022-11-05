@@ -78,7 +78,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
-def _maybe_copy_config_to_cache(file_name: str) -> str:
+def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
     """
     Initial copying of config file from the package dir into the config cache.
 
@@ -88,7 +88,7 @@ def _maybe_copy_config_to_cache(file_name: str) -> str:
     absolute_path_source = os.path.join(get_package_path(), file_name)
     absolute_path = os.path.join(get_configs_dir_path(), os.path.join("dd", os.path.split(file_name)[1]))
     mkdir_p(os.path.split(absolute_path)[0])
-    if not os.path.isfile(absolute_path):
+    if not os.path.isfile(absolute_path) or force_copy:
         copyfile(absolute_path_source, absolute_path)
     return absolute_path
 
