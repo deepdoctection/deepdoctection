@@ -25,8 +25,8 @@ from pytest import mark
 
 from deepdoctection.datapoint.annotation import CategoryAnnotation
 from deepdoctection.datapoint.image import Image
-from deepdoctection.datapoint.page import Page
-from deepdoctection.utils.settings import Relationships
+from deepdoctection.datapoint.view import Page
+from deepdoctection.utils.settings import Relationships, LayoutType
 
 from ..test_utils import get_test_path
 
@@ -65,9 +65,8 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     # Act
     page = Page.from_image(
         dp_image,
-        "word",
-        ["text", "title", "list"],
-        ["text", "title", "list", "cell"],
+        LayoutType.word,
+        [LayoutType.text, LayoutType.title, LayoutType.list],
     )
 
     # Assert

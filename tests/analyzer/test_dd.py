@@ -44,7 +44,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12}
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
@@ -68,11 +68,10 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}
-    assert len(page.tables[0].items) == 10
     # first html for tp model, second for d2 model
     assert page.tables[0].html in {
         "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
@@ -104,13 +103,11 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.items) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}
-    assert len(page.tables[0].items) == 10
     # first html for tp model, second for d2 model
-    print(page.tables[0].html)
     assert page.tables[0].html in {
         "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
         "<td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergiitung</td>"

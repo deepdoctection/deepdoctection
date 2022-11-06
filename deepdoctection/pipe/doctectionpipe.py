@@ -44,8 +44,6 @@ class DoctectionPipe(Pipeline):
     See `deepdoctection.analyzer.dd` for a concrete implementation.
 
     See also the explanations in :class:`base.Pipeline`
-
-
     """
 
     def __init__(self, pipeline_component_list: List[PipelineComponent]):
@@ -55,7 +53,6 @@ class DoctectionPipe(Pipeline):
         else:
             self.page_parser = PageParsingService(
                 text_container=LayoutType.word,
-                floating_text_block_names=[LayoutType.text, LayoutType.title, LayoutType.list],
                 text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
             )
         assert all(

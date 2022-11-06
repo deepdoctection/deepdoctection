@@ -25,7 +25,7 @@ import os
 from ..dataflow.base import DataFlow
 from ..dataflow.common import MapData
 from ..dataflow.custom_serialize import SerializerJsonlines
-from ..datapoint.page import Page
+from ..datapoint.view import Page
 from ..utils.detection_types import Pathlike
 from ..utils.utils import is_file_extension
 
