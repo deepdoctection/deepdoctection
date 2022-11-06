@@ -25,7 +25,7 @@ import numpy as np
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..datapoint.page import Page
+from ..datapoint.view import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
@@ -152,37 +152,21 @@ class PageParsingService:
     def __init__(
         self,
         text_container: TypeOrStr,
-        floating_text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
         text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        text_containers_to_text_block: bool = False,
     ):
         """
-
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
-        :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
-                                          the highest hierarchy of text blocks that will ordered to generate a sensible
-                                          output of text
         :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
-        :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
-                                             hierarchy. However, if a text container is not assigned to a text block
-                                             you can add it to the text block ordering to ensure that the full text is
-                                             part of the subsequent sub process.
         """
-        if isinstance(floating_text_block_names, (str, ObjectTypes)):
-            floating_text_block_names = [floating_text_block_names]
-        elif floating_text_block_names is None:
-            floating_text_block_names = []
         if isinstance(text_block_names, (str, ObjectTypes)):
             text_block_names = [text_block_names]
         elif text_block_names is None:
             text_block_names = []
 
-        self._text_container = str(get_type(text_container).value)
-        self._floating_text_block_names = [str(get_type(text_block).value) for text_block in floating_text_block_names]
-        self._text_block_names = [str(get_type(text_block).value) for text_block in text_block_names]
-        self._text_container_to_text_block = text_containers_to_text_block
+        self._text_container = get_type(text_container)
+        self._text_block_names = [get_type(text_block) for text_block in text_block_names]
         self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
@@ -194,9 +178,7 @@ class PageParsingService:
         return Page.from_image(
             dp,
             self._text_container,
-            self._floating_text_block_names,
             self._text_block_names,
-            self._text_container_to_text_block,
         )
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
@@ -213,6 +195,3 @@ class PageParsingService:
             LayoutType.word,
             LayoutType.line,
         ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
-        assert set(self._floating_text_block_names) <= set(
-            self._text_block_names
-        ), "floating_text_block_names must be a subset of text_block_names"

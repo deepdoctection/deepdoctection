@@ -21,7 +21,7 @@ Module for language detection pipeline component
 from typing import List, Optional
 
 from ..datapoint.image import Image
-from ..datapoint.page import Page
+from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
