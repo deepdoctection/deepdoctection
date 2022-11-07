@@ -70,27 +70,4 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     )
 
     # Assert
-    assert page.get_text() == "\nhello world\nbye world"
-
-
-@mark.basic
-def test_page_from_page_dict() -> None:
-    """
-    test page gets generated from a page dict
-    """
-
-    # Arrange
-    path_json = get_test_path() / "sample_2_page_dict.json"
-
-    with open(path_json, "r", encoding="UTF-8") as file:
-        page_dict = json.load(file)
-
-    # Act
-    page = Page.from_dict(**page_dict)
-
-    # Assert
-    assert page.file_name == "sample_2.png"
-    assert len(page.items) == 12
-    assert len(page.tables) == 1
-    assert page.width == 1654
-    assert page.height == 2339
+    assert page.text == "\nhello world\nbye world"

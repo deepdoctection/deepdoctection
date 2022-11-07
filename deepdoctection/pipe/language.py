@@ -25,7 +25,7 @@ from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, PageType
+from ..utils.settings import LayoutType, PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -50,19 +50,17 @@ class LanguageDetectionService(PipelineComponent):
       .. code-block:: python
 
           lang_detector = FasttextLangDetector(path_weights,profile.categories)
-          component = LanguageDetectionService(lang_detector, text_container="WORD",
-                                               floating_text_block_names=["TEXT","TITLE"],
-                                               text_block_names=["TEXT","TITLE",TABLE"])
+          component = LanguageDetectionService(lang_detector, text_container="word",
+                                               text_block_names=["text","title","table"])
 
     """
 
     def __init__(
         self,
         language_detector: LanguageDetector,
-        text_container: str,
+        text_container: TypeOrStr,
         text_detector: Optional[ObjectDetector] = None,
-        floating_text_block_names: Optional[List[str]] = None,
-        text_block_names: Optional[List[str]] = None,
+        text_block_names: Optional[List[TypeOrStr]] = None,
     ):
         """
         :param language_detector: Detector to determine text
@@ -70,17 +68,14 @@ class LanguageDetectionService(PipelineComponent):
                                text detector.
         :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
 
-        :param floating_text_block_names: floating text blocks, needed for generating the reading order. Not necessary
-                                          when passing a text detector.
         :param text_block_names: text blocks, needed for generating the reading order. Not necessary
                                  when passing a text detector.
         """
 
         self.predictor = language_detector
         self.text_detector = text_detector
-        self._text_container = text_container
-        self._floating_text_block_names = floating_text_block_names
-        self._text_block_names = text_block_names
+        self.text_container = get_type(text_container)
+        self.text_block_names = [get_type(text_block) for text_block in text_block_names]
         self._init_sanity_checks()
         super().__init__(
             self._get_name(self.predictor.name)
@@ -88,8 +83,8 @@ class LanguageDetectionService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self._text_container, self._floating_text_block_names, self._text_block_names)
-            text = page.get_text(no_line_break=True)
+            page = Page.from_image(dp, self.text_container, self.text_block_names)
+            text = page.text_no_line_break
         else:
             if dp.image is None:
                 raise ValueError("dp.image cannot be None")
@@ -103,28 +98,23 @@ class LanguageDetectionService(PipelineComponent):
 
     def _init_sanity_checks(self) -> None:
         assert (
-            self.text_detector or self._text_container
+            self.text_detector or self.text_container
         ), "if no text_detector is provided a text container must be specified"
         if not self.text_detector:
-            assert self._text_container in [LayoutType.word, LayoutType.line], (
+            assert self.text_container in [LayoutType.word, LayoutType.line], (
                 f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
             )
-            assert set(self._floating_text_block_names) <= set(  # type: ignore
-                self._text_block_names  # type: ignore
-            ), "floating_text_block_names must be a subset of text_block_names"
-            if not self._floating_text_block_names and not self._text_block_names:
+            if not self.text_block_names:
                 logger.info(
-                    "floating_text_block_names and text_block_names are set to None and. "
-                    "This setting will return no reading order!"
+                    "text_block_names are set to None. This setting will return no reading order!"
                 )
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
             self.predictor,
-            self._text_container,
+            self.text_container,
             self.text_detector,
-            self._floating_text_block_names,
-            self._text_block_names,
+            self.text_block_names,
         )
 
     def get_meta_annotation(self) -> JsonDict:
