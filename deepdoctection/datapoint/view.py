@@ -15,8 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Union, Dict, Type, Set, overload, Sequence
+"""
+Subclasses for ImageAnnotation and Image objects with various properties. These classes
+simplify consumption
+"""
+
 from copy import copy
+from typing import Dict, List, Optional, Sequence, Set, Type, Union, overload
 
 import cv2
 import numpy as np
@@ -24,17 +29,37 @@ import numpy as np
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
-from ..utils.detection_types import ImageType
-from ..utils.settings import CellType, LayoutType, PageType, Relationships, TableType, WordType, ObjectTypes
+from ..utils.detection_types import ImageType, JsonDict
+from ..utils.settings import CellType, LayoutType, ObjectTypes, PageType, Relationships, TableType, WordType
 from ..utils.viz import draw_boxes, interactive_imshow
 
 
 class ImageAnnotationBaseView(ImageAnnotation):
+    """
+    Consumption class for having easier access to categories added to an ImageAnnotation.
+
+    ImageAnnotation is a generic class in the sense that different categories might have different
+    sub categories collected while running through a pipeline. In order to get properties for a specific
+    category one has to understand the internal data structure.
+
+    To circumvent this obstacle :class:`ImageAnnotationBaseView` provides the :meth:`__getattr__` so that
+    to gather values defined by :class:`ObjectTypes`. To be more precise: A sub class will have attributes either
+    defined explicitly by a `@property` or by the set of :meth:`get_attribute_names()` . Do not define any attribute
+    setter method and regard this class as a view to the super class.
+
+    The class does contain its base page, which mean, that it is possible to retrieve all annotations that have a
+    relation.
+
+    :param: base_page: `Page` class instantiated by the lowest hierarchy :class:`Image`
+    """
 
     base_page: Optional["Page"] = None
 
     @property
     def bbox(self) -> List[float]:
+        """
+        :return: Get the bounding box as list and in absolute coordinates of the base page.
+        """
         if self.image:
             bounding_box = self.image.get_embedding(self.base_page.image_id)
         else:
@@ -43,38 +68,76 @@ class ImageAnnotationBaseView(ImageAnnotation):
             bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
 
-    def __getattr__(self, item) -> Optional[Union[str,int]]:
+    def __getattr__(self, item) -> Optional[Union[str, int]]:
+        """
+        Get attributes defined by registered `self.get_attribute_names()` in a multi step process:
+
+        - Unregistered attributes will raise an `AttributeError`.
+        - Registered attribute will look for a corresponding sub category. If the sub category does not exist `Null`
+          will be returned.
+        - If the sub category exists it will return `category_name` provided that the attribute is not equal to the
+          `category_name` otherwise
+        - Check if the sub category is a `ContainerAnnotation` in which case the `value` will be returned otherwise
+          `category_id` will be returned.
+        :param item: attribute name
+        :return: value according to the logic described above
+        """
         if item not in self.get_attribute_names():
             raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
         if item in self.sub_categories:
             sub_cat = self.get_sub_category(item)
             if item != sub_cat.category_name:
                 return sub_cat.category_name
-            elif isinstance(sub_cat, ContainerAnnotation):
+            if isinstance(sub_cat, ContainerAnnotation):
                 return sub_cat.value
-            else:
-                return int(sub_cat.category_id)
+            return int(sub_cat.category_id)
         return None
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> Set[str]:  # pylint: disable=R0201
+        """
+        :return: A set of registered attributes. When sub classing modify this method accordingly.
+        """
         return {"bbox"}
+
+    @classmethod
+    @overload
+    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotationBaseView":
+        ...
+
+    @classmethod
+    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotationBaseView":
+        return super().from_dict(**kwargs)  # type: ignore
 
 
 class Word(ImageAnnotationBaseView):
+    """
+    Word specific sub class of `ImageAnnotationBaseView` modelled by `WordType`.
+    """
 
     def get_attribute_names(self):
-        return {word_attr for word_attr in WordType}\
-            .union(super().get_attribute_names())\
+        return (
+            set(WordType)
+            .union(super().get_attribute_names())
             .union({Relationships.reading_order})
+        )
 
 
 class Layout(ImageAnnotationBaseView):
+    """
+    Layout specific sub class of `ImageAnnotationBaseView`. In order check what ImageAnnotation will be wrapped
+    into :class:`Layout`, please consult `IMAGE_ANNOTATION_TO_LAYOUTS`.
 
+    :param: Pass the `LayoutObject` that is supposed to be used for :attr:`words`. It is possible that the
+            text_container is equal to `self.category_name`, in which case :attr:`words` returns `self`.
+    """
     text_container: Optional[ObjectTypes] = None
-    layout_types: List[ObjectTypes] = None
 
     @property
     def words(self) -> List[ImageAnnotationBaseView]:
+        """
+        Get a list of `ImageAnnotationBaseView` objects with `LayoutType` defined by `text_container`.
+        It will only select those among all annotations that have an entry in `Relationships.child` .
+        """
         if self.category_name != self.text_container:
             text_ids = self.get_relationship(Relationships.child)
             return self.base_page.get_annotation(annotation_ids=text_ids, category_names=self.text_container)
@@ -82,26 +145,36 @@ class Layout(ImageAnnotationBaseView):
 
     @property
     def text(self) -> str:
+        """
+        :return: Text captured within the instance respecting the reading order of each word.
+        """
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
         words_with_reading_order.sort(key=lambda x: x.reading_order)
         return " ".join([word.characters for word in words_with_reading_order])
 
     def get_attribute_names(self):
-        return {"words", "text"}\
-            .union(super().get_attribute_names())\
-            .union({Relationships.reading_order})
+        return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.reading_order})
 
 
 class Cell(Layout):
+    """
+    Cell specific sub class of `ImageAnnotationBaseView` modelled by `CellType`.
+    """
 
     def get_attribute_names(self):
-        return {cell_attr for cell_attr in CellType}.union(super().get_attribute_names())
+        return set(CellType).union(super().get_attribute_names())
 
 
 class Table(Layout):
+    """
+    Table specific sub class of `ImageAnnotationBaseView` modelled by `TableType`.
+    """
 
     @property
     def cells(self):
+        """
+        :return: A list of a table cells.
+        """
         all_relation_ids = self.get_relationship(Relationships.child)
         if self.image is not None:
             cell_anns = self.image.get_annotation(
@@ -112,6 +185,10 @@ class Table(Layout):
 
     @property
     def html(self):
+        """
+        :return: The html representation of the table
+        """
+
         html_list = []
         if TableType.html in self.sub_categories:
             ann = self.get_sub_category(TableType.html)
@@ -129,30 +206,50 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self):
-        return {table_attr for table_attr in TableType}.union(super().get_attribute_names()).union({"cell", "html"})
+        return set(TableType).union(super().get_attribute_names()).union({"cell", "html"})
 
 
-IMAGE_ANNOTATION_TO_LAYOUTS: Dict[LayoutType, Type[Union[Layout, Table, Word]]] = {**{i: Layout for i in LayoutType
-                                                                                      if (i not in {LayoutType.table,
-                                                                                                LayoutType.word,
-                                                                                                LayoutType.cell})},
-                                                                                   LayoutType.table: Table, LayoutType.word: Word, LayoutType.cell: Cell}
+IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
+    **{i: Layout for i in LayoutType if (i not in {LayoutType.table, LayoutType.word, LayoutType.cell})},
+    LayoutType.table: Table,
+    LayoutType.word: Word,
+    LayoutType.cell: Cell,
+}
 
 
-def ann_obj_view_factory(annotation, text_container, text_block_names) -> ImageAnnotationBaseView:
+def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectTypes) -> ImageAnnotationBaseView:
+    """
+    Create an `ImageAnnotationBaseView` sub class given the mapping `IMAGE_ANNOTATION_TO_LAYOUTS` .
+
+    :param annotation: The annotation to transform. Note, that we do not use the input annotation as base class
+                       but create a whole new instance.
+    :param text_container: `LayoutType` to create a list of `words` and eventually generate `text`
+    :return: Transformed annotation
+    """
+
     layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
     ann_dict = annotation.as_dict()
     layout = layout_class.from_dict(**ann_dict)
     if image_dict := ann_dict.get("image"):
         layout.image = Page.from_dict(**image_dict)
     layout.text_container = text_container
-    layout.layout_types = text_block_names
     return layout
 
 
 class Page(Image):
+    """
+    Consumer class for its super `Image` class. It comes with some handy `@property` as well as
+    custom :meth:`__getattr__` to give easier access to various information that are stored in the base class
+    as `ImageAnnotation` or `CategoryAnnotation`.
 
-    layout_types : List[ObjectTypes] = None
+    Its factory function `Page().from_image(image, text_container, text_block_names)` creates for every
+    `ImageAnnotation` a corresponding sub class of `ImageAnnotationBaseView` which drives the object towards
+    less generic classes with custom attributes that are controlled some `ObjectTypes`.
+
+    :param layout_types: Top level layout objects, e.g. `LayoutType.text` or `LayoutType.table`.
+    """
+
+    layout_types: List[ObjectTypes] = None
 
     @overload
     def get_annotation(
@@ -163,13 +260,13 @@ class Page(Image):
     ) -> List[ImageAnnotationBaseView]:
         ...
 
-    def get_annotation(
+    def get_annotation(  # pylint: disable=W0235
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
         annotation_types: Optional[Union[str, Sequence[str]]] = None,
     ) -> List[ImageAnnotationBaseView]:
-        return super().get_annotation(category_names,annotation_ids,annotation_types) # type: ignore
+        return super().get_annotation(category_names, annotation_ids, annotation_types)  # type: ignore
 
     def __getattr__(self, item):
         if item not in self.get_attribute_names():
@@ -179,26 +276,44 @@ class Page(Image):
                 sub_cat = self.summary.get_sub_category(item)
                 if item != sub_cat.category_name:
                     return sub_cat.category_name
-                elif isinstance(sub_cat, ContainerAnnotation):
+                if isinstance(sub_cat, ContainerAnnotation):
                     return sub_cat.value
-                else:
-                    return int(sub_cat.category_id)
+                return int(sub_cat.category_id)
         return None
 
     @property
     def layouts(self) -> List[ImageAnnotationBaseView]:
-        layouts = [layout for layout in self.layout_types if layout!=LayoutType.table]
+        """
+        :return: A list of a layouts.
+        """
+        layouts = [layout for layout in self.layout_types if layout != LayoutType.table]
         return self.get_annotation(category_names=layouts)
 
     @property
     def tables(self) -> List[ImageAnnotationBaseView]:
+        """
+        :return: A list of a tables.
+        """
         return self.get_annotation(category_names=LayoutType.table)
 
     @classmethod
-    def from_image(cls, image_orig: Image,
-                   text_container: ObjectTypes,
-                   text_block_names: List[ObjectTypes],
-                   base_page: Optional["Page"]=None):
+    def from_image(
+        cls,
+        image_orig: Image,
+        text_container: ObjectTypes,
+        text_block_names: List[ObjectTypes],
+        base_page: Optional["Page"] = None,
+    ):
+        """
+        Factory function for generating a `Page` instance from `image_orig` .
+
+        :param image_orig: `Image` instance to convert
+        :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
+        :param text_block_names: A list of top level layout objects
+        :param base_page: For top level objects that are images themselves, pass the page that encloses all objects.
+                          In doubt, do not populate this value.
+        :return:
+        """
         img_kwargs = image_orig.as_dict()
         page = cls(img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id"))
         page._image_id = img_kwargs.get("_image_id")
@@ -211,7 +326,7 @@ class Page(Image):
                 page.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
         for ann_dict in img_kwargs.get("annotations"):
             image_ann = ImageAnnotation.from_dict(**ann_dict)
-            layout_ann = ann_obj_view_factory(image_ann, text_container, text_block_names)
+            layout_ann = ann_obj_view_factory(image_ann, text_container)
             if "image" in ann_dict:
                 image_dict = ann_dict["image"]
                 if image_dict:
@@ -225,7 +340,7 @@ class Page(Image):
         return page
 
     def _order_layouts(self) -> List[ImageAnnotationBaseView]:
-        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
+        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]  # pylint: disable=E1133
         layouts_with_order.sort(key=lambda x: x.reading_order)
         return layouts_with_order
 
@@ -245,6 +360,12 @@ class Page(Image):
 
     @property
     def text_no_line_break(self) -> str:
+        """
+        Get text of all layouts. While :attr:`text` will do a line break for each layout block this here will return the
+        string in one single line.
+
+        :return: Text string
+        """
         text: str = ""
         layouts_with_order = self._order_layouts()
         for layout in layouts_with_order:
@@ -287,12 +408,12 @@ class Page(Image):
         box_stack = []
 
         if show_layouts:
-            for item in self.layouts:
+            for item in self.layouts:   # pylint: disable=E1133
                 box_stack.append(item.bounding_box)
                 category_names_list.append(item.layout_type)
 
         if show_tables:
-            for table in self.tables:
+            for table in self.tables:   # pylint: disable=E1133
                 box_stack.append(table.bounding_box)
                 category_names_list.append(LayoutType.table)
                 if show_cells:
@@ -306,7 +427,7 @@ class Page(Image):
 
         if show_words:
             all_words = []
-            for layout in self.layouts:
+            for layout in self.layouts:   # pylint: disable=E1133
                 all_words.extend(layout.words)
             for word in all_words:
                 box_stack.append(word.bounding_box)
@@ -331,4 +452,7 @@ class Page(Image):
 
     @staticmethod
     def get_attribute_names():
-        return {page_attr for page_attr in PageType}.union({"text", "tables", "layouts"})
+        """
+        :return: A set of registered attributes.
+        """
+        return set(PageType).union({"text", "tables", "layouts"})

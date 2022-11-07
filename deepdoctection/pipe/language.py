@@ -105,9 +105,7 @@ class LanguageDetectionService(PipelineComponent):
                 f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
             )
             if not self.text_block_names:
-                logger.info(
-                    "text_block_names are set to None. This setting will return no reading order!"
-                )
+                logger.info("text_block_names are set to None. This setting will return no reading order!")
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
