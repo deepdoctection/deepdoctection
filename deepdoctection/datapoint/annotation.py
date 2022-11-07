@@ -32,7 +32,10 @@ from .convert import as_dict
 
 
 @no_type_check
-def _ann_from_dict(cls, **kwargs):
+def ann_from_dict(cls, **kwargs):
+    """
+    A factory function to create sub classes of `Annotation` from a given dict
+    """
     ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
     ann.active = kwargs.get("active")
     ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
@@ -336,7 +339,7 @@ class CategoryAnnotation(Annotation):
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "CategoryAnnotation":
-        category_ann = _ann_from_dict(cls, **kwargs)
+        category_ann = ann_from_dict(cls, **kwargs)
         return category_ann
 
 
@@ -363,7 +366,7 @@ class ImageAnnotation(CategoryAnnotation):
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotation":
-        image_ann = _ann_from_dict(cls, **kwargs)
+        image_ann = ann_from_dict(cls, **kwargs)
         if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
         return image_ann
@@ -384,7 +387,7 @@ class SummaryAnnotation(CategoryAnnotation):
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
-        summary_ann = _ann_from_dict(cls, **kwargs)
+        summary_ann = ann_from_dict(cls, **kwargs)
         summary_ann.category_name = SummaryType.summary
         return summary_ann
 
@@ -405,6 +408,6 @@ class ContainerAnnotation(CategoryAnnotation):
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
-        container_ann = _ann_from_dict(cls, **kwargs)
+        container_ann = ann_from_dict(cls, **kwargs)
         container_ann.value = kwargs.get("value")
         return container_ann

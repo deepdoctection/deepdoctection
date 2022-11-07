@@ -18,7 +18,7 @@
 """
 Module for language detection pipeline component
 """
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from ..datapoint.image import Image
 from ..datapoint.view import Page
@@ -60,7 +60,7 @@ class LanguageDetectionService(PipelineComponent):
         language_detector: LanguageDetector,
         text_container: TypeOrStr,
         text_detector: Optional[ObjectDetector] = None,
-        text_block_names: Optional[List[TypeOrStr]] = None,
+        text_block_names: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
         :param language_detector: Detector to determine text
@@ -75,7 +75,10 @@ class LanguageDetectionService(PipelineComponent):
         self.predictor = language_detector
         self.text_detector = text_detector
         self.text_container = get_type(text_container)
-        self.text_block_names = [get_type(text_block) for text_block in text_block_names]
+        _text_block_names = []
+        if text_block_names:
+            _text_block_names = [get_type(text_block) for text_block in text_block_names]
+        self.text_block_names = _text_block_names
         self._init_sanity_checks()
         super().__init__(
             self._get_name(self.predictor.name)
