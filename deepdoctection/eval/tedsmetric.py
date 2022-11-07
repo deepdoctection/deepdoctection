@@ -226,13 +226,13 @@ class TedsMetric(MetricBase):
         gt_dict = defaultdict(list)
         pred_dict = defaultdict(list)
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            page_gt = cls.mapper(dp_gt, LayoutType.word, None, [LayoutType.table])
+            page_gt = cls.mapper(dp_gt, LayoutType.word,[LayoutType.table])  # type: ignore
             for table in page_gt.tables:
-                gt_dict[page_gt.uuid].append(table.html)
+                gt_dict[page_gt.image_id].append(table.html)
 
-            page_pred = cls.mapper(dp_pred, LayoutType.word, None, [LayoutType.table])
+            page_pred = cls.mapper(dp_pred, LayoutType.word, [LayoutType.table])  # type: ignore
             for table in page_pred.tables:
-                pred_dict[page_pred.uuid].append(table.html)
+                pred_dict[page_pred.image_id].append(table.html)
 
         gt_list = []
         pred_list = []
