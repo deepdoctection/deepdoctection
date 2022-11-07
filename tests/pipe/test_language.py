@@ -56,7 +56,6 @@ class TestLanguageDetectionService:
         self.language_detection_service = LanguageDetectionService(
             self._language_detector,
             text_container=LayoutType.word,
-            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
             text_block_names=[
                 LayoutType.title,
                 LayoutType.text,

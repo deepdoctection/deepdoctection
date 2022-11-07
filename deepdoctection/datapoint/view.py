@@ -15,39 +15,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-from dataclasses import asdict, dataclass
-from itertools import chain
-from pathlib import Path
-from typing import List, Optional, Union, no_type_check, Dict, Type
+from typing import List, Optional, Union, Dict, Type, Set, overload, Sequence
 from copy import copy
+
 import cv2
 import numpy as np
 
 from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
-from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils.detection_types import ImageType
 from ..utils.settings import CellType, LayoutType, PageType, Relationships, TableType, WordType, ObjectTypes
 from ..utils.viz import draw_boxes, interactive_imshow
-from .convert import convert_b64_to_np_array, convert_np_array_to_b64
 
 
 class ImageAnnotationBaseView(ImageAnnotation):
 
-    base_image: Optional[Image] = None
+    base_page: Optional["Page"] = None
 
     @property
     def bbox(self) -> List[float]:
         if self.image:
-            bounding_box = self.image.get_embedding(self.base_image.image_id)
+            bounding_box = self.image.get_embedding(self.base_page.image_id)
         else:
             bounding_box = self.bounding_box
         if not bounding_box.absolute_coords:
-            bounding_box = bounding_box.transform(self.base_image.width, self.base_image.height, absolute_coords=True)
+            bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
 
     def __getattr__(self, item) -> Optional[Union[str,int]]:
+        if item not in self.get_attribute_names():
+            raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
         if item in self.sub_categories:
             sub_cat = self.get_sub_category(item)
             if item != sub_cat.category_name:
@@ -58,22 +56,16 @@ class ImageAnnotationBaseView(ImageAnnotation):
                 return int(sub_cat.category_id)
         return None
 
+    def get_attribute_names(self) -> Set[str]:
+        return {"bbox"}
+
 
 class Word(ImageAnnotationBaseView):
 
-    @property
-    def text(self) -> str:
-        if WordType.characters in self.sub_categories:
-            ann = self.get_sub_category(WordType.characters)
-            if isinstance(ann, ContainerAnnotation):
-                return str(ann.value)
-        return ""
-
-    @property
-    def reading_order(self) -> Optional[int]:
-        if Relationships.reading_order in self.sub_categories:
-            return int(self.get_sub_category(Relationships.reading_order).category_id)
-        return None
+    def get_attribute_names(self):
+        return {word_attr for word_attr in WordType}\
+            .union(super().get_attribute_names())\
+            .union({Relationships.reading_order})
 
 
 class Layout(ImageAnnotationBaseView):
@@ -82,39 +74,28 @@ class Layout(ImageAnnotationBaseView):
     layout_types: List[ObjectTypes] = None
 
     @property
-    def reading_order(self) -> Optional[int]:
-        if Relationships.reading_order in self.sub_categories:
-            return int(self.get_sub_category(Relationships.reading_order).category_id)
-        return None
-
-    @property
     def words(self) -> List[ImageAnnotationBaseView]:
         if self.category_name != self.text_container:
             text_ids = self.get_relationship(Relationships.child)
-            if self.image:
-                word_anns = self.base_image.get_annotation(annotation_ids=text_ids, category_names=self.text_container)
-                layout_anns = []
-                for word_ann in word_anns:
-                    layout_ann = ann_obj_view_factory(word_ann, self.base_image, self.text_container, self.layout_types)
-                    layout_anns.append(layout_ann)
-                    ann_dict = word_ann.as_dict()
-                    if "image" in ann_dict:
-                        image_dict = ann_dict["image"]
-                        if image_dict:
-                            image = Image.from_dict(**image_dict)
-                            layout_ann.image = Page.from_image(image, self.text_container, self.layout_types)
-                return layout_anns
+            return self.base_page.get_annotation(annotation_ids=text_ids, category_names=self.text_container)
         return [self]
 
     @property
     def text(self) -> str:
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
         words_with_reading_order.sort(key=lambda x: x.reading_order)
-        return " ".join([word.text for word in words_with_reading_order])
+        return " ".join([word.characters for word in words_with_reading_order])
+
+    def get_attribute_names(self):
+        return {"words", "text"}\
+            .union(super().get_attribute_names())\
+            .union({Relationships.reading_order})
 
 
 class Cell(Layout):
-    pass
+
+    def get_attribute_names(self):
+        return {cell_attr for cell_attr in CellType}.union(super().get_attribute_names())
 
 
 class Table(Layout):
@@ -147,47 +128,52 @@ class Table(Layout):
 
         return "".join(html_list)
 
-    @property
-    def number_rows(self):
-        if self.image is not None:
-            if self.image.summary is not None:
-                if TableType.number_of_rows in self.image.summary.sub_categories:
-                    return int(self.image.summary.get_sub_category(TableType.number_of_rows).category_id)
-        return None
-
-    @property
-    def number_cols(self):
-        if self.image is not None:
-            if self.image.summary is not None:
-                if TableType.number_of_columns in self.image.summary.sub_categories:
-                    return int(self.image.summary.get_sub_category(TableType.number_of_columns).category_id)
-        return None
+    def get_attribute_names(self):
+        return {table_attr for table_attr in TableType}.union(super().get_attribute_names()).union({"cell", "html"})
 
 
-IMAGEANNOTATION_TO_LAYOUTS: Dict[LayoutType,Type[Union[Layout,Table,Word]]] = {**{i: Layout for i in LayoutType
-                                                                                  if (i not in {LayoutType.table,
+IMAGE_ANNOTATION_TO_LAYOUTS: Dict[LayoutType, Type[Union[Layout, Table, Word]]] = {**{i: Layout for i in LayoutType
+                                                                                      if (i not in {LayoutType.table,
                                                                                                 LayoutType.word,
                                                                                                 LayoutType.cell})},
-             LayoutType.table: Table, LayoutType.word: Word, LayoutType.cell: Cell}
+                                                                                   LayoutType.table: Table, LayoutType.word: Word, LayoutType.cell: Cell}
 
 
-def ann_obj_view_factory(annotation, image, text_container, text_block_names) -> ImageAnnotationBaseView:
-    layout_class = IMAGEANNOTATION_TO_LAYOUTS[annotation.category_name]
+def ann_obj_view_factory(annotation, text_container, text_block_names) -> ImageAnnotationBaseView:
+    layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
     ann_dict = annotation.as_dict()
     layout = layout_class.from_dict(**ann_dict)
     if image_dict := ann_dict.get("image"):
         layout.image = Page.from_dict(**image_dict)
-    layout.base_image = image
     layout.text_container = text_container
     layout.layout_types = text_block_names
-    return layout # type: ignore
+    return layout
 
 
 class Page(Image):
 
     layout_types : List[ObjectTypes] = None
 
+    @overload
+    def get_annotation(
+        self,
+        category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        annotation_types: Optional[Union[str, Sequence[str]]] = None,
+    ) -> List[ImageAnnotationBaseView]:
+        ...
+
+    def get_annotation(
+        self,
+        category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        annotation_types: Optional[Union[str, Sequence[str]]] = None,
+    ) -> List[ImageAnnotationBaseView]:
+        return super().get_annotation(category_names,annotation_ids,annotation_types) # type: ignore
+
     def __getattr__(self, item):
+        if item not in self.get_attribute_names():
+            raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
         if self.summary is not None:
             if item in self.summary.sub_categories:
                 sub_cat = self.summary.get_sub_category(item)
@@ -200,31 +186,19 @@ class Page(Image):
         return None
 
     @property
-    def language(self):
-        if self.summary:
-            if PageType.language in self.summary.sub_categories:
-                cat_ann = self.summary.get_sub_category(PageType.language)
-                if isinstance(cat_ann, ContainerAnnotation):
-                    return str(cat_ann.value)
-        return None
-
-    @property
-    def document_type(self):
-        if self.summary:
-            if PageType.document_type in self.summary.sub_categories:
-                return self.summary.get_sub_category(PageType.document_type).category_name
-
-    @property
-    def layouts(self) -> List[Layout]:
+    def layouts(self) -> List[ImageAnnotationBaseView]:
         layouts = [layout for layout in self.layout_types if layout!=LayoutType.table]
-        return self.get_annotation(category_names=layouts)  # type: ignore
+        return self.get_annotation(category_names=layouts)
 
     @property
-    def tables(self):
+    def tables(self) -> List[ImageAnnotationBaseView]:
         return self.get_annotation(category_names=LayoutType.table)
 
     @classmethod
-    def from_image(cls, image_orig: Image, text_container: ObjectTypes, text_block_names: List[ObjectTypes]):
+    def from_image(cls, image_orig: Image,
+                   text_container: ObjectTypes,
+                   text_block_names: List[ObjectTypes],
+                   base_page: Optional["Page"]=None):
         img_kwargs = image_orig.as_dict()
         page = cls(img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id"))
         page._image_id = img_kwargs.get("_image_id")
@@ -237,17 +211,23 @@ class Page(Image):
                 page.set_embedding(image_id, BoundingBox.from_dict(**box_dict))
         for ann_dict in img_kwargs.get("annotations"):
             image_ann = ImageAnnotation.from_dict(**ann_dict)
-            layout_ann = ann_obj_view_factory(image_ann, image_orig, text_container, text_block_names)
+            layout_ann = ann_obj_view_factory(image_ann, text_container, text_block_names)
             if "image" in ann_dict:
                 image_dict = ann_dict["image"]
                 if image_dict:
                     image = Image.from_dict(**image_dict)
-                    layout_ann.image = cls.from_image(image, text_container, text_block_names)
+                    layout_ann.image = cls.from_image(image, text_container, text_block_names, page)
+            layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
         page.layout_types = text_block_names
         return page
+
+    def _order_layouts(self) -> List[ImageAnnotationBaseView]:
+        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
+        layouts_with_order.sort(key=lambda x: x.reading_order)
+        return layouts_with_order
 
     @property
     def text(self) -> str:
@@ -257,10 +237,18 @@ class Page(Image):
         :return: Text string
         """
         text: str = ""
-        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
-        layouts_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
+        layouts_with_order = self._order_layouts()
         for layout in layouts_with_order:
             text += "\n" + layout.text
+
+        return text
+
+    @property
+    def text_no_line_break(self) -> str:
+        text: str = ""
+        layouts_with_order = self._order_layouts()
+        for layout in layouts_with_order:
+            text += " " + layout.text
 
         return text
 
@@ -299,7 +287,7 @@ class Page(Image):
         box_stack = []
 
         if show_layouts:
-            for item in self.items:
+            for item in self.layouts:
                 box_stack.append(item.bounding_box)
                 category_names_list.append(item.layout_type)
 
@@ -340,3 +328,7 @@ class Page(Image):
                 return None
             return img
         return None
+
+    @staticmethod
+    def get_attribute_names():
+        return {page_attr for page_attr in PageType}.union({"text", "tables", "layouts"})
