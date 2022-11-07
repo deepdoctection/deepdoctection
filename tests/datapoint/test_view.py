@@ -19,16 +19,12 @@
 Testing the module datapoint.page
 """
 
-import json
-
 from pytest import mark
 
 from deepdoctection.datapoint.annotation import CategoryAnnotation
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.view import Page
-from deepdoctection.utils.settings import Relationships, LayoutType
-
-from ..test_utils import get_test_path
+from deepdoctection.utils.settings import LayoutType, Relationships
 
 
 @mark.basic
