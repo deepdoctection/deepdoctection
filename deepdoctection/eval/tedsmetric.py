@@ -211,7 +211,7 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric  # type: ignore
-    mapper = Page.from_image
+    mapper = Page.from_image  # type: ignore
     structure_only = False
 
     @classmethod
