@@ -20,16 +20,19 @@ Subclasses for ImageAnnotation and Image objects with various properties. These 
 simplify consumption
 """
 
+import json
 from copy import copy
 from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
+from pathlib import Path
 
 import cv2
 import numpy as np
 
-from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
-from ..datapoint.box import BoundingBox
-from ..datapoint.image import Image
-from ..utils.detection_types import ImageType, JsonDict
+from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
+from .box import BoundingBox
+from .image import Image
+from .convert import convert_np_array_to_b64
+from ..utils.detection_types import ImageType, JsonDict, Pathlike
 from ..utils.logger import logger
 from ..utils.settings import CellType, LayoutType, ObjectTypes, PageType, Relationships, TableType, WordType, get_type
 from ..utils.viz import draw_boxes, interactive_imshow
@@ -80,6 +83,8 @@ class ImageAnnotationBaseView(ImageAnnotation):
           `category_name` otherwise
         - Check if the sub category is a `ContainerAnnotation` in which case the `value` will be returned otherwise
           `category_id` will be returned.
+        - If nothing works, look at `self.image.summary` if the item exist. Follow the same logic as for ordinary sub
+          categories.
         :param item: attribute name
         :return: value according to the logic described above
         """
@@ -92,6 +97,15 @@ class ImageAnnotationBaseView(ImageAnnotation):
             if isinstance(sub_cat, ContainerAnnotation):
                 return sub_cat.value
             return int(sub_cat.category_id)
+        if self.image is not None:
+            if self.image.summary is not None:
+                if item in self.image.summary.sub_categories:
+                    sub_cat = self.image.summary.get_sub_category(get_type(item))
+                    if item != sub_cat.category_name:
+                        return sub_cat.category_name
+                    if isinstance(sub_cat, ContainerAnnotation):
+                        return sub_cat.value
+                    return int(sub_cat.category_id)
         return None
 
     def get_attribute_names(self) -> Set[str]:  # pylint: disable=R0201
@@ -182,6 +196,28 @@ class Table(Layout):
         return cell_anns
 
     @property
+    def rows(self) -> List[ImageAnnotationBaseView]:
+        """
+        :return: A list of a table rows.
+        """
+        all_relation_ids = self.get_relationship(Relationships.child)
+        row_anns = self.base_page.get_annotation(
+            annotation_ids=all_relation_ids, category_names=[LayoutType.row]
+        )
+        return row_anns
+
+    @property
+    def columns(self) -> List[ImageAnnotationBaseView]:
+        """
+        :return: A list of a table columns.
+        """
+        all_relation_ids = self.get_relationship(Relationships.child)
+        col_anns = self.base_page.get_annotation(
+            annotation_ids=all_relation_ids, category_names=[LayoutType.column]
+        )
+        return col_anns
+
+    @property
     def html(self) -> str:
         """
         :return: The html representation of the table
@@ -204,7 +240,7 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> Set[str]:
-        return set(TableType).union(super().get_attribute_names()).union({"cell", "html"})
+        return set(TableType).union(super().get_attribute_names()).union({"cells", "rows", "columns", "html"})
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -249,6 +285,7 @@ class Page(Image):
     """
 
     layout_types: List[ObjectTypes]
+    image_orig: Image
 
     @no_type_check
     def get_annotation(
@@ -331,6 +368,9 @@ class Page(Image):
         page = cls(
             img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id")  # type: ignore
         )
+        page.image_orig = image_orig
+        if image_orig.image is not None:
+            page.image = image_orig.image # pass image explicitly so
         page._image_id = img_kwargs.get("_image_id")
         if b64_image := img_kwargs.get("_image"):
             page.image = b64_image
@@ -437,8 +477,13 @@ class Page(Image):
                         box_stack.append(cell.bbox)
                         category_names_list.append(None)
                 if show_table_structure:
-                    for segment_item in table.table_segments:
-                        box_stack.append(segment_item.bbox)
+                    rows = table.rows
+                    cols = table.columns
+                    for row in rows:
+                        box_stack.append(row.bbox)
+                        category_names_list.append(None)
+                    for col in cols:
+                        box_stack.append(col.bbox)
                         category_names_list.append(None)
 
         if show_words:
@@ -472,3 +517,36 @@ class Page(Image):
         :return: A set of registered attributes.
         """
         return set(PageType).union({"text", "tables", "layouts"})
+
+    def save(self,
+             image_to_json: bool = True,
+             highest_hierarchy_only: bool = False,
+             path: Optional[Pathlike] = None,
+             dry: bool = False
+             ) -> None:
+        """
+        Export image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
+        base64 encodings.
+        :param image_to_json: If True will save the image as b64 encoded string in output
+        :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
+        :param path: Path to save the .json file to
+        :param dry: Will run dry, i.e. without saving anything but returning the dict
+        :return: Dict that e.g. can be saved to a file.
+        """
+        if isinstance(path, str):
+            path = Path(path)
+        elif path is None:
+            path = Path(self.image_orig.location)
+        suffix = path.suffix
+        path_json = path.as_posix().replace(suffix, ".json")
+        if highest_hierarchy_only:
+            self.image_orig.remove_image_from_lower_hierachy()
+        export_dict = self.image_orig.as_dict()
+        export_dict["location"] = str(export_dict["location"])
+        export_dict["summary"] = export_dict.pop("_summary")
+        if image_to_json and self.image is not None:
+            export_dict["_image"] = convert_np_array_to_b64(self.image_orig.image)
+        if dry:
+            return None
+        with open(path_json, "w", encoding="UTF-8") as file:
+            json.dump(export_dict, file)

@@ -262,12 +262,12 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def clone(self) -> "HFLayoutLmTokenClassifier":
         return self.__class__(
-            self.name,
             self.path_config,
             self.path_weights,
             self.categories_semantics,
             self.categories_bio,
             self.categories,
+            self.device
         )
 
 
@@ -306,7 +306,6 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
 
     def __init__(
         self,
-        name: str,
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -360,4 +359,4 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> "HFLayoutLmSequenceClassifier":
-        return self.__class__(self.name, self.path_config, self.path_weights, self.categories)
+        return self.__class__(self.path_config, self.path_weights, self.categories, self.device)

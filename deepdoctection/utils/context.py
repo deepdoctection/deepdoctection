@@ -128,4 +128,4 @@ def timed_operation(message: str, log_start: bool = False) -> Generator[Any, Non
         logger.info("start task: %s ...", message)
     start = timer()
     yield
-    logger.info("%s finished, %s sec.", message, round(timer() - start, 4))
+    logger.info("%s total: %s sec.", message, round(timer() - start, 4))
