@@ -110,7 +110,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         categories_layout = profile.categories
         assert categories_layout is not None
         assert layout_weights_path is not None
-        d_layout = TPFrcnnDetector(profile.name, layout_config_path, layout_weights_path, categories_layout)
+        d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
     else:
         layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2LAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
@@ -119,7 +119,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         assert categories_layout is not None
         assert layout_weights_path is not None
         d_layout = D2FrcnnDetector(
-            profile.name, layout_config_path, layout_weights_path, categories_layout, device=cfg.DEVICE
+            layout_config_path, layout_weights_path, categories_layout, device=cfg.DEVICE
         )
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
     pipe_component_list.append(layout)
@@ -135,7 +135,6 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             categories_cell = profile.categories
             assert categories_cell is not None
             d_cell = TPFrcnnDetector(
-                profile.name,
                 cell_config_path,
                 cell_weights_path,
                 categories_cell,
@@ -145,7 +144,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             profile = ModelCatalog.get_profile(cfg.WEIGHTS.TPITEM)
             categories_item = profile.categories
             assert categories_item is not None
-            d_item = TPFrcnnDetector(profile.name, item_config_path, item_weights_path, categories_item)
+            d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         else:
             cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
@@ -153,7 +152,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             categories_cell = profile.categories
             assert categories_cell is not None
             d_cell = D2FrcnnDetector(
-                profile.name, cell_config_path, cell_weights_path, categories_cell, device=cfg.DEVICE
+                cell_config_path, cell_weights_path, categories_cell, device=cfg.DEVICE
             )
             item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
@@ -161,7 +160,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             categories_item = profile.categories
             assert categories_item is not None
             d_item = D2FrcnnDetector(
-                profile.name, item_config_path, item_weights_path, categories_item, device=cfg.DEVICE
+                item_config_path, item_weights_path, categories_item, device=cfg.DEVICE
             )
 
         cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, True)

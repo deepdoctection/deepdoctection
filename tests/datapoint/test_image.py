@@ -283,40 +283,7 @@ class TestImage:
         )
         assert cat_1.image.image.shape == (4, 10, 3)
 
-    @staticmethod
-    @mark.basic
-    def test_image_with_anns_can_be_exported(image: WhiteImage) -> None:
-        """
-        test meth: get_export returns a dictionary
-        """
 
-        # Arrange
-        test_image = Image(location=image.loc, file_name=image.file_name)
-        test_image.image = ones((24, 85, 3), dtype=float32)
-        cat_1 = ImageAnnotation(
-            category_name="FOO",
-            bounding_box=BoundingBox(ulx=15.0, uly=20.0, width=10.0, height=8.0, absolute_coords=True),
-        )
-        test_image.dump(cat_1)
-
-        # Act
-        output = test_image.get_export()
-
-        # Assert
-        assert "location" in output
-        assert "file_name" in output
-        assert "annotations" in output
-        assert "_image_id" in output
-        assert "embeddings" in output
-
-        assert len(output["annotations"]) == 1
-
-        ann = output["annotations"][0]
-        assert "active" in ann
-        assert "_annotation_id" in ann
-        assert "category_name" in ann
-        assert "category_id" in ann
-        assert "score" in ann
 
     @staticmethod
     @mark.basic

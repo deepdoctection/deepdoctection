@@ -20,11 +20,14 @@ Testing the module datapoint.page
 """
 
 from pytest import mark
+from numpy import float32, ones
 
-from deepdoctection.datapoint.annotation import CategoryAnnotation
+from deepdoctection.datapoint.annotation import CategoryAnnotation, ImageAnnotation
+from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.view import Page
 from deepdoctection.utils.settings import LayoutType, Relationships
+from .conftest import WhiteImage
 
 
 @mark.basic
@@ -67,3 +70,27 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
 
     # Assert
     assert page.text == "\nhello world\nbye world"
+
+
+@mark.basic
+def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
+    """
+    test meth: save does not raise any exception
+    """
+
+    # Arrange
+    test_image = Image(location=image.loc, file_name=image.file_name)
+    test_image.image = ones((24, 85, 3), dtype=float32)
+    cat_1 = ImageAnnotation(
+        category_name="table",
+        bounding_box=BoundingBox(ulx=15.0, uly=20.0, width=10.0, height=8.0, absolute_coords=True),
+    )
+    test_image.dump(cat_1)
+
+    # Act
+    page = Page.from_image(test_image, LayoutType.table, [LayoutType.table])
+
+    try:
+        page.save(dry=True)
+    except Exception as e:
+        assert False, f"{e}"
