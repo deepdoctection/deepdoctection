@@ -49,12 +49,12 @@ def fixture_annotation() -> List[ImageAnnotation]:
     row_anns = [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=100.0, lrx=60.0, lry=150.0, absolute_coords=True),
-            category_name="ROW",
+            category_name="row",
             category_id="1",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=200.0, lrx=70.0, lry=240.0, absolute_coords=True),
-            category_name="ROW",
+            category_name="row",
             category_id="1",
         ),
     ]
@@ -62,12 +62,12 @@ def fixture_annotation() -> List[ImageAnnotation]:
     col_anns = [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=50.0, lrx=20.0, lry=250.0, absolute_coords=True),
-            category_name="COLUMN",
+            category_name="column",
             category_id="2",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=20.0, lrx=50.0, lry=240.0, absolute_coords=True),
-            category_name="COLUMN",
+            category_name="column",
             category_id="2",
         ),
     ]
@@ -90,7 +90,7 @@ def fixture_categories() -> DatasetCategories:
     """
     categories
     """
-    return DatasetCategories(init_categories=[get_type("ROW"), get_type("COLUMN")])
+    return DatasetCategories(init_categories=[get_type("row"), get_type("column")])
 
 
 @fixture(name="detection_results")
@@ -99,9 +99,9 @@ def fixture_detection_results() -> List[DetectionResult]:
     detection results
     """
     detect_results_list = [
-        DetectionResult(box=[15.0, 100.0, 60.0, 150.0], score=0.9, class_id=1, class_name=get_type("ROW")),
-        DetectionResult(box=[15.0, 200.0, 70.0, 240.0], score=0.8, class_id=1, class_name=get_type("ROW")),
-        DetectionResult(box=[10.0, 50.0, 20.0, 250.0], score=0.7, class_id=2, class_name=get_type("COLUMN")),
+        DetectionResult(box=[15.0, 100.0, 60.0, 150.0], score=0.9, class_id=1, class_name=get_type("row")),
+        DetectionResult(box=[15.0, 200.0, 70.0, 240.0], score=0.8, class_id=1, class_name=get_type("row")),
+        DetectionResult(box=[10.0, 50.0, 20.0, 250.0], score=0.7, class_id=2, class_name=get_type("column")),
     ]
 
     return detect_results_list
