@@ -19,6 +19,7 @@
 HF Layoutlm model for diverse downstream tasks.
 """
 
+from pathlib import Path
 from copy import copy
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
 
@@ -147,7 +148,6 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
 
     def __init__(
         self,
-        name: str,
         path_config_json: str,
         path_weights: str,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
@@ -156,7 +156,6 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
-        :param name: name of the layoutlm model (e.g. LayoutLMv1)
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
                                      entities self. To be consistent with detectors use only values >0. Conversion will
                                      be done internally.
@@ -165,7 +164,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         """
 
-        self.name = name
+        self.name = "_".join(Path(path_weights).parts[-3:])
         if categories is None:
             if categories_semantics is None:
                 raise ValueError("If categories is None then categories_semantics cannot be None")
@@ -313,7 +312,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-        self.name = name
+        self.name = "_".join(Path(path_weights).parts[-3:])
         self.path_config = path_config_json
         self.path_weights = path_weights
         self.categories = copy(categories)  # type: ignore

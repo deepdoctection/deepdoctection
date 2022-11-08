@@ -94,7 +94,7 @@ class TestHFLayoutLmTokenClassifier:
 
         # Act
         model = HFLayoutLmTokenClassifier(
-            "layoutlmv1", "path/to/json", "path/to/model", categories_semantics, categories_bio
+            "path/to/json", "path/to/model", categories_semantics, categories_bio
         )
 
         # Assert
@@ -174,7 +174,7 @@ class TestHFLayoutLmSequenceClassifier:
 
         # Arrange
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
-        layoutlm = HFLayoutLmSequenceClassifier("layoutlmv1", "path/to/json", "path/to/model", categories)
+        layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 
         # Act
