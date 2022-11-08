@@ -19,6 +19,7 @@
 D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
+from pathlib import Path
 from copy import copy
 from typing import Dict, List, Literal, Mapping, Optional
 
@@ -128,7 +129,6 @@ class D2FrcnnDetector(ObjectDetector):
 
     def __init__(
         self,
-        name: str,
         path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -140,8 +140,7 @@ class D2FrcnnDetector(ObjectDetector):
 
         The configuration of the model uses the full stack of build model tools of D2. For more information
         please check https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config .
-        :param name: name of the predictor. The name will be passed to a pipeline component and is used to describe the
-                     service.
+
         :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
                           the highest level .yaml file.
         :param path_weights: The path to the model checkpoint.
@@ -153,7 +152,7 @@ class D2FrcnnDetector(ObjectDetector):
         :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
         """
 
-        self.name = name
+        self.name = "_".join(Path(path_weights).parts[-3:])
         self._categories_d2 = self._map_to_d2_categories(copy(categories))
         if config_overwrite is None:
             config_overwrite = []
