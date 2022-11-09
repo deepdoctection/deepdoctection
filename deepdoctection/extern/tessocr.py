@@ -32,10 +32,28 @@ from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import TesseractNotFound, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
-from ..utils.settings import LayoutType, ObjectTypes
+from ..utils.settings import LayoutType, ObjectTypes, Languages
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
+
+
+_LANG_CODE_TO_TESS_LANG_CODE = {"fre":"fra",
+                                "dut":"nld",
+                                "chi": "chi_sim",
+                                "cze": "ces",
+                                "per": "fas",
+                                "gre": "ell",
+                                "mac": "mkd",
+                                "rum": "ron",
+                                "arm": "hye",
+                                "geo": "kat",
+                                "war": "ceb",
+                                "glg":"gla",
+                                "slv": "slk",
+                                "alb":"nor",
+                                "nn": "eng",
+                                }
 
 
 class TesseractError(RuntimeError):
@@ -322,3 +340,8 @@ class TesseractOcrDetector(ObjectDetector):
         if self.config.LINES:
             return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]
+
+    def set_language(self, language: ObjectTypes) -> None:
+        self.config.LANGUAGES = _LANG_CODE_TO_TESS_LANG_CODE.get(language,language.value)
+
+
