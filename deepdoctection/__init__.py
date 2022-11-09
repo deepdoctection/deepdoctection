@@ -90,6 +90,7 @@ _IMPORT_STRUCTURE = {
         "DatasetAdapter",
         "DatasetBase",
         "MergeDataset",
+        "CustomDataset",
         "DataFlowBaseBuilder",
         "DatasetInfo",
         "DatasetCategories",
