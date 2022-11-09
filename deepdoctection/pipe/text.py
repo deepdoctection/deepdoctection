@@ -25,9 +25,10 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Relationships, TypeOrStr, WordType, get_type
+from ..utils.settings import LayoutType, Relationships, TypeOrStr, WordType, get_type, PageType
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -68,6 +69,7 @@ class TextExtractionService(PredictorPipelineComponent):
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
+        run_time_ocr_language_selection: bool = False
     ):
         """
         :param text_extract_detector: ObjectDetector
@@ -85,6 +87,11 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
                 raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
+        if run_time_ocr_language_selection:
+            assert isinstance(self.predictor, TesseractOcrDetector), "Only TesseractOcrDetector supports multiple " \
+                                                                     "languages"
+
+        self.run_time_ocr_language_selection = run_time_ocr_language_selection
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -96,6 +103,9 @@ class TextExtractionService(PredictorPipelineComponent):
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
             width, height = None, None
+            if self.run_time_ocr_language_selection:
+                if hasattr(self.predictor, "set_language"):
+                    self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)
             detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
