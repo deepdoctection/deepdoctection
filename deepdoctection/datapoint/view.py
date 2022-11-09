@@ -540,7 +540,6 @@ class Page(Image):
             self.image_orig.remove_image_from_lower_hierachy()
         export_dict = self.image_orig.as_dict()
         export_dict["location"] = str(export_dict["location"])
-        export_dict["summary"] = export_dict.pop("_summary")
         if image_to_json and self.image_orig.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image_orig.image)
         if dry:
