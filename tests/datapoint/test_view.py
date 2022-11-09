@@ -19,14 +19,15 @@
 Testing the module datapoint.page
 """
 
-from pytest import mark
 from numpy import float32, ones
+from pytest import mark
 
 from deepdoctection.datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.view import Page
 from deepdoctection.utils.settings import LayoutType, Relationships
+
 from .conftest import WhiteImage
 
 
@@ -92,5 +93,5 @@ def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
 
     try:
         page.save(dry=True)
-    except Exception as e:
-        assert False, f"{e}"
+    except Exception as exception:  # pylint: disable=W0703
+        assert False, f"{exception}"

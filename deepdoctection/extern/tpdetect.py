@@ -19,8 +19,8 @@
 TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
-from pathlib import Path
 from copy import copy
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 
 from ..utils.detection_types import ImageType, Requirement

@@ -19,8 +19,8 @@
 HF Layoutlm model for diverse downstream tasks.
 """
 
-from pathlib import Path
 from copy import copy
+from pathlib import Path
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
 
 from ..utils.detection_types import Requirement
@@ -267,7 +267,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
             self.categories_semantics,
             self.categories_bio,
             self.categories,
-            self.device
+            self.device,
         )
 
 

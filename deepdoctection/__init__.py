@@ -78,8 +78,7 @@ _IMPORT_STRUCTURE = {
         "box_to_point4",
         "point4_to_box",
         "as_dict",
-        "ImageAnnotationBaseView"
-        "Image",
+        "ImageAnnotationBaseView" "Image",
         "Word",
         "Layout",
         "Cell",

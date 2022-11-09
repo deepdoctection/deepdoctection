@@ -525,6 +525,6 @@ class Image:
                 if image_dict:
                     image_ann.image = cls.from_dict(**image_dict)
             image.dump(image_ann)
-        if summary_dict := kwargs.get("_summary",kwargs.get("summary")):
+        if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
         return image
