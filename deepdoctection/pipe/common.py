@@ -91,18 +91,28 @@ class MatchingService(PipelineComponent):
         child_categories: Union[TypeOrStr, List[TypeOrStr]],
         matching_rule: Literal["iou", "ioa"],
         threshold: float,
+        use_weighted_intersections: bool = False,
+        max_parent_only: bool = False,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
+        :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
+                                           the ioa_matrix it will use mat weighted ioa in order to take into account that
+                                           intersections with more cells will likely decrease the ioa value. By multiplying
+                                           the ioa with the number of all intersection for each child this value calibrate
+                                           the ioa.
+        :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
         self.parent_categories = parent_categories
         self.child_categories = child_categories
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
         self.threshold = threshold
+        self.use_weighted_intersections = use_weighted_intersections
+        self.max_parent_only = max_parent_only
         super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
@@ -118,7 +128,8 @@ class MatchingService(PipelineComponent):
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
             threshold=self.threshold,
-            max_parent_only=True,
+            use_weighted_intersections=self.use_weighted_intersections,
+            max_parent_only=self.max_parent_only,
         )
 
         with MappingContextManager(dp_name=dp.file_name):

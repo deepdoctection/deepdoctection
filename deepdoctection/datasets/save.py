@@ -28,7 +28,7 @@ from cv2 import imwrite
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils.detection_types import Pathlike, JsonDict
+from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.fs import mkdir_p
 
 
@@ -61,9 +61,11 @@ def dataflow_to_json(
     if not save_image_in_json:
         mkdir_p(path / "image")
     if highest_hierarchy_only:
+
         def _remove_hh(dp: Image) -> Image:
             dp.remove_image_from_lower_hierachy()
             return dp
+
         df = MapData(df, _remove_hh)
     df = MapData(df, lambda dp: dp.as_dict())
 
