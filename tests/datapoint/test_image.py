@@ -283,8 +283,6 @@ class TestImage:
         )
         assert cat_1.image.image.shape == (4, 10, 3)
 
-
-
     @staticmethod
     @mark.basic
     def test_load_image_from_dict() -> None:

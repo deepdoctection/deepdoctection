@@ -22,20 +22,20 @@ simplify consumption
 
 import json
 from copy import copy
-from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
 
 import cv2
 import numpy as np
 
-from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
-from .box import BoundingBox
-from .image import Image
-from .convert import convert_np_array_to_b64
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
 from ..utils.logger import logger
 from ..utils.settings import CellType, LayoutType, ObjectTypes, PageType, Relationships, TableType, WordType, get_type
 from ..utils.viz import draw_boxes, interactive_imshow
+from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
+from .box import BoundingBox
+from .convert import convert_np_array_to_b64
+from .image import Image
 
 
 class ImageAnnotationBaseView(ImageAnnotation):
@@ -201,9 +201,7 @@ class Table(Layout):
         :return: A list of a table rows.
         """
         all_relation_ids = self.get_relationship(Relationships.child)
-        row_anns = self.base_page.get_annotation(
-            annotation_ids=all_relation_ids, category_names=[LayoutType.row]
-        )
+        row_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.row])
         return row_anns
 
     @property
@@ -212,9 +210,7 @@ class Table(Layout):
         :return: A list of a table columns.
         """
         all_relation_ids = self.get_relationship(Relationships.child)
-        col_anns = self.base_page.get_annotation(
-            annotation_ids=all_relation_ids, category_names=[LayoutType.column]
-        )
+        col_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.column])
         return col_anns
 
     @property
@@ -370,7 +366,7 @@ class Page(Image):
         )
         page.image_orig = image_orig
         if image_orig.image is not None:
-            page.image = image_orig.image # pass image explicitly so
+            page.image = image_orig.image  # pass image explicitly so
         page._image_id = img_kwargs.get("_image_id")
         if b64_image := img_kwargs.get("_image"):
             page.image = b64_image
@@ -518,12 +514,13 @@ class Page(Image):
         """
         return set(PageType).union({"text", "tables", "layouts"})
 
-    def save(self,
-             image_to_json: bool = True,
-             highest_hierarchy_only: bool = False,
-             path: Optional[Pathlike] = None,
-             dry: bool = False
-             ) -> None:
+    def save(
+        self,
+        image_to_json: bool = True,
+        highest_hierarchy_only: bool = False,
+        path: Optional[Pathlike] = None,
+        dry: bool = False,
+    ) -> None:
         """
         Export image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
         base64 encodings.
@@ -544,7 +541,7 @@ class Page(Image):
         export_dict = self.image_orig.as_dict()
         export_dict["location"] = str(export_dict["location"])
         export_dict["summary"] = export_dict.pop("_summary")
-        if image_to_json and self.image is not None:
+        if image_to_json and self.image_orig.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image_orig.image)
         if dry:
             return None

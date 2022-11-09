@@ -19,8 +19,8 @@
 D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
-from pathlib import Path
 from copy import copy
+from pathlib import Path
 from typing import Dict, List, Literal, Mapping, Optional
 
 from ..utils.detection_types import ImageType, Requirement
@@ -239,9 +239,7 @@ class D2FrcnnDetector(ObjectDetector):
         return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
-        return self.__class__(
-            self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device
-        )
+        return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
 
     def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())
