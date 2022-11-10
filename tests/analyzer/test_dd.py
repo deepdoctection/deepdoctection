@@ -125,4 +125,4 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert page.height == 2339
     assert page.width == 1654
     # first number for tp model, second for pt model
-    assert len(page.text) in {4291, 4662, 4664, 5045}
+    assert len(page.text) in {5045}

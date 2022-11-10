@@ -23,7 +23,7 @@ simplify consumption
 import json
 from copy import copy
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check, Literal
 
 import cv2
 import numpy as np
@@ -282,6 +282,7 @@ class Page(Image):
 
     layout_types: List[ObjectTypes]
     image_orig: Image
+    text_container: ObjectTypes
 
     @no_type_check
     def get_annotation(
@@ -336,6 +337,10 @@ class Page(Image):
         return self.get_annotation(category_names=layouts)
 
     @property
+    def words(self) -> List[ImageAnnotationBaseView]:
+        return self.get_annotation(category_names=self.text_container)
+
+    @property
     def tables(self) -> List[ImageAnnotationBaseView]:
         """
         :return: A list of a tables.
@@ -388,12 +393,13 @@ class Page(Image):
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
         page.layout_types = text_block_names
+        page.text_container = text_container
         return page
 
-    def _order_layouts(self) -> List[ImageAnnotationBaseView]:
-        layouts_with_order = [layout for layout in self.layouts if layout.reading_order is not None]
-        layouts_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
-        return layouts_with_order
+    def _order(self, block: str) -> List[ImageAnnotationBaseView]:
+        blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
+        blocks_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
+        return blocks_with_order
 
     @property
     def text(self) -> str:
@@ -403,10 +409,12 @@ class Page(Image):
         :return: Text string
         """
         text: str = ""
-        layouts_with_order = self._order_layouts()
-        for layout in layouts_with_order:
-            text += "\n" + layout.text  # type: ignore
-
+        block = "layouts" if self.layouts else "words"
+        block_content = "text" if block=="layouts" else "characters"
+        block_with_order = self._order(block)
+        linebreak = "\n" if block == "layouts" else " "
+        for block in block_with_order:
+            text += f"{linebreak}{getattr(block, block_content)}"  # type: ignore
         return text
 
     @property
@@ -418,7 +426,7 @@ class Page(Image):
         :return: Text string
         """
         text: str = ""
-        layouts_with_order = self._order_layouts()
+        layouts_with_order = self._order("layouts")
         for layout in layouts_with_order:
             text += " " + layout.text  # type: ignore
 
@@ -512,7 +520,7 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union({"text", "tables", "layouts"})
+        return set(PageType).union({"text", "tables", "layouts", "words"})
 
     def save(
         self,
