@@ -58,7 +58,7 @@ class LanguageDetectionService(PipelineComponent):
     def __init__(
         self,
         language_detector: LanguageDetector,
-        text_container: TypeOrStr,
+        text_container: Optional[TypeOrStr] = None,
         text_detector: Optional[ObjectDetector] = None,
         text_block_names: Optional[Sequence[TypeOrStr]] = None,
     ):
@@ -74,7 +74,7 @@ class LanguageDetectionService(PipelineComponent):
 
         self.predictor = language_detector
         self.text_detector = text_detector
-        self.text_container = get_type(text_container)
+        self.text_container = get_type(text_container) if text_container is not None else text_container
         _text_block_names = []
         if text_block_names:
             _text_block_names = [get_type(text_block) for text_block in text_block_names]
