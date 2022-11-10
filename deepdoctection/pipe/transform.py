@@ -25,8 +25,10 @@ from ..extern.base import ImageTransformer
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
 from .base import ImageTransformPipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("SimpleTransformService")
 class SimpleTransformService(ImageTransformPipelineComponent):
     """
     Pipeline component for transforming an image. The service is designed for applying transform predictors that
