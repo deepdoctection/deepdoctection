@@ -64,7 +64,7 @@ class LanguageDetectionService(PipelineComponent):
     ):
         """
         :param language_detector: Detector to determine text
-        :param text_container: text container, needed for generating the reading order. Not necessary when passing a
+        :param text_container: text container, needed to generate the reading order. Not necessary when passing a
                                text detector.
         :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
 
@@ -86,7 +86,7 @@ class LanguageDetectionService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self.text_container, self.text_block_names)
+            page = Page.from_image(dp, self.text_container, self.text_block_names)  # type: ignore
             text = page.text_no_line_break
         else:
             if dp.image is None:
