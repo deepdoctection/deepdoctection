@@ -22,14 +22,14 @@ Module for the base class of datasets.
 import os
 import pprint
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Union, Mapping, Sequence, Type
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
-from ..utils.logger import logger
 from ..utils.detection_types import Pathlike
+from ..utils.logger import logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
@@ -331,19 +331,22 @@ class CustomDataset(DatasetBase):
     something that has to be left to the user for obvious reasons). Check the tutorial on how to approach the mapping
     problem.
     """
-    def __init__(self, name: str,
-                 dataset_type: TypeOrStr,
-                 location: Pathlike,
-                 init_categories: Sequence[ObjectTypes],
-                 dataflow_builder: Type[DataFlowBaseBuilder],
-                 init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
-                 annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None
-                 ):
+
+    def __init__(
+        self,
+        name: str,
+        dataset_type: TypeOrStr,
+        location: Pathlike,
+        init_categories: Sequence[ObjectTypes],
+        dataflow_builder: Type[DataFlowBaseBuilder],
+        init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
+        annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+    ):
         """
         :param name: Name of the dataset. It will not be used in the code, however it might be helpful, if several
                      custom datasets are in use.
-        :param dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describes for
-                     for what task the dataset is built for. You can get all registered types with
+        :param dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describe
+                     the machine learning task the dataset is built for. You can get all registered types with
 
                      .. code-block:: python
 
@@ -378,12 +381,15 @@ class CustomDataset(DatasetBase):
         self.type = get_type(dataset_type)
         self.location = location
         self.init_categories = init_categories
-        self.init_sub_categories = init_sub_categories
+        if init_sub_categories is None:
+            self.init_sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {}
+        else:
+            self.init_sub_categories = init_sub_categories
         self.annotation_files = annotation_files
         self.dataflow_builder = dataflow_builder(self.location, self.annotation_files)
 
-    def _info(self) -> DatasetInfo:
-        return DatasetInfo(name=self.name, type=self.type)
+    def _info(self) -> DatasetInfo:  # type: ignore  # pylint: disable=W0221
+        return DatasetInfo(name=self.name, type=self.type, description="", license="", url="", splits={})
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=self.init_categories, init_sub_categories=self.init_sub_categories)

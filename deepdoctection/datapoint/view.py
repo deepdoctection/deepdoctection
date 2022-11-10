@@ -23,7 +23,7 @@ simplify consumption
 import json
 from copy import copy
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check, Literal
+from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -338,6 +338,9 @@ class Page(Image):
 
     @property
     def words(self) -> List[ImageAnnotationBaseView]:
+        """
+        :return: A list of a words.
+        """
         return self.get_annotation(category_names=self.text_container)
 
     @property
@@ -398,7 +401,7 @@ class Page(Image):
 
     def _order(self, block: str) -> List[ImageAnnotationBaseView]:
         blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
-        blocks_with_order.sort(key=lambda x: x.reading_order)  # type: ignore
+        blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
 
     @property
@@ -410,11 +413,11 @@ class Page(Image):
         """
         text: str = ""
         block = "layouts" if self.layouts else "words"
-        block_content = "text" if block=="layouts" else "characters"
+        block_content = "text" if block == "layouts" else "characters"
         block_with_order = self._order(block)
         linebreak = "\n" if block == "layouts" else " "
-        for block in block_with_order:
-            text += f"{linebreak}{getattr(block, block_content)}"  # type: ignore
+        for block in block_with_order:  # type: ignore
+            text += f"{linebreak}{getattr(block, block_content)}"
         return text
 
     @property

@@ -100,10 +100,10 @@ class MatchingService(PipelineComponent):
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
         :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
-                                           the ioa_matrix it will use mat weighted ioa in order to take into account that
-                                           intersections with more cells will likely decrease the ioa value. By multiplying
-                                           the ioa with the number of all intersection for each child this value calibrate
-                                           the ioa.
+                                           the ioa_matrix it will use mat weighted ioa in order to take into account
+                                           that intersections with more cells will likely decrease the ioa value. By
+                                           multiplying the ioa with the number of all intersection for each child this
+                                           value calibrate the ioa.
         :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
         self.parent_categories = parent_categories

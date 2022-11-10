@@ -28,7 +28,7 @@ from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Relationships, TypeOrStr, WordType, get_type, PageType
+from ..utils.settings import LayoutType, PageType, Relationships, TypeOrStr, WordType, get_type
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -69,7 +69,7 @@ class TextExtractionService(PredictorPipelineComponent):
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
-        run_time_ocr_language_selection: bool = False
+        run_time_ocr_language_selection: bool = False,
     ):
         """
         :param text_extract_detector: ObjectDetector
@@ -88,8 +88,9 @@ class TextExtractionService(PredictorPipelineComponent):
             if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
                 raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
         if run_time_ocr_language_selection:
-            assert isinstance(self.predictor, TesseractOcrDetector), "Only TesseractOcrDetector supports multiple " \
-                                                                     "languages"
+            assert isinstance(self.predictor, TesseractOcrDetector), (
+                "Only TesseractOcrDetector supports multiple " "languages"
+            )
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
 
@@ -104,8 +105,7 @@ class TextExtractionService(PredictorPipelineComponent):
                 raise ValueError("predictor_input cannot be None")
             width, height = None, None
             if self.run_time_ocr_language_selection:
-                if hasattr(self.predictor, "set_language"):
-                    self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)
+                self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
             detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
@@ -454,16 +454,20 @@ class TextOrderService(PipelineComponent):
             if text_container_anns:
                 text_container_ann = text_container_anns[0]
                 if WordType.block and WordType.text_line in text_container_ann.sub_categories:
-                    text_container_position = [(int(ann.get_sub_category(WordType.block).category_id),
-                                                int(ann.get_sub_category(WordType.text_line).category_id),
-                                                ann.bounding_box.cx,
-                                                ann.annotation_id) for ann in text_container_anns]
-                    text_container_position.sort(key= lambda x: (x[0], x[1], x[2]))
+                    text_container_position = [
+                        (
+                            int(ann.get_sub_category(WordType.block).category_id),
+                            int(ann.get_sub_category(WordType.text_line).category_id),
+                            ann.bounding_box.cx,  # type: ignore
+                            ann.annotation_id,
+                        )
+                        for ann in text_container_anns
+                    ]
+                    text_container_position.sort(key=lambda x: (x[0], x[1], x[2]))
                     for position, element in enumerate(text_container_position):
-                        self.dp_manager.set_category_annotation(Relationships.reading_order,
-                                                                position,
-                                                                Relationships.reading_order,
-                                                                element[3])
+                        self.dp_manager.set_category_annotation(
+                            Relationships.reading_order, position, Relationships.reading_order, element[3]
+                        )
                 else:
                     # Last try. We only form lines without and define a reading from this
                     raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
@@ -472,7 +476,7 @@ class TextOrderService(PipelineComponent):
                             Relationships.reading_order,
                             raw_reading_order[0],
                             Relationships.reading_order,
-                            raw_reading_order[1]
+                            raw_reading_order[1],
                         )
 
     def clone(self) -> PipelineComponent:

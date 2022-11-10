@@ -112,7 +112,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "cell/model-1800000_inf_only.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000_inf_only.data-00000-of-00001",
@@ -124,7 +124,7 @@ class ModelCatalog:
             hf_model_name="model-1800000_inf_only",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(
             name="item/model-1620000_inf_only.data-00000-of-00001",
@@ -136,7 +136,7 @@ class ModelCatalog:
             hf_model_name="model-1620000_inf_only",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000.data-00000-of-00001": ModelProfile(
             name="item/model-1620000.data-00000-of-00001",
@@ -148,7 +148,7 @@ class ModelCatalog:
             hf_model_name="model-1620000",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "layout/model-800000.data-00000-of-00001": ModelProfile(
             name="layout/model-800000.data-00000-of-00001",
@@ -166,7 +166,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "cell/model-1800000.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000.data-00000-of-00001",
@@ -178,7 +178,7 @@ class ModelCatalog:
             hf_model_name="model-1800000",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
-            model_wrapper="TPFrcnnDetector"
+            model_wrapper="TPFrcnnDetector",
         ),
         "layout/d2_model-800000-layout.pkl": ModelProfile(
             name="layout/d2_model-800000-layout.pkl",
@@ -196,7 +196,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout_inf_only.pt": ModelProfile(
             name="layout/d2_model_0829999_layout_inf_only.pt",
@@ -214,7 +214,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout.pth": ModelProfile(
             name="layout/d2_model_0829999_layout.pth",
@@ -232,7 +232,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model-1800000-cell.pkl": ModelProfile(
             name="cell/d2_model-1800000-cell.pkl",
@@ -244,7 +244,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1800000-cell.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell_inf_only.pt": ModelProfile(
             name="cell/d2_model_1849999_cell_inf_only.pt",
@@ -256,7 +256,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1849999_cell_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell.pth": ModelProfile(
             name="cell/d2_model_1849999_cell.pth",
@@ -268,7 +268,7 @@ class ModelCatalog:
             hf_model_name="cell/d2_model_1849999_cell.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model-1620000-item.pkl": ModelProfile(
             name="item/d2_model-1620000-item.pkl",
@@ -280,7 +280,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1620000-item.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item.pth": ModelProfile(
             name="item/d2_model_1639999_item.pth",
@@ -292,7 +292,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item_inf_only.pt": ModelProfile(
             name="item/d2_model_1639999_item_inf_only.pt",
@@ -304,7 +304,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
-            model_wrapper="D2FrcnnDetector"
+            model_wrapper="D2FrcnnDetector",
         ),
         "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlm-base-uncased/pytorch_model.bin",
@@ -517,7 +517,7 @@ class ModelCatalog:
                 "__label__vep": Languages.not_defined,
                 "__label__tyv": Languages.not_defined,
             },
-            model_wrapper="FasttextLangDetector"
+            model_wrapper="FasttextLangDetector",
         ),
     }
 
