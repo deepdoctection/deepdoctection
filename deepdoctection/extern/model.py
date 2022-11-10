@@ -624,7 +624,7 @@ def get_tp_weight_names(name: str) -> List[str]:
     return weight_names
 
 
-def print_model_infos() -> None:
+def print_model_infos(add_description: bool =True, add_config: bool= True, add_categories: bool=True) -> None:
     """
     Prints a table with all registered model profiles and some of their attributes (name, description, config and
     categories)
@@ -634,10 +634,24 @@ def print_model_infos() -> None:
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        infos.append((profile.name, profile.description, profile.config, profile.categories))
+        tbl_input = [profile.name]
+        if add_description:
+            tbl_input.append(profile.description)
+        if add_config:
+            tbl_input.append(profile.config)
+        if add_categories:
+            tbl_input.append(profile.categories)
+        infos.append(tbl_input)
+    tbl_header = ["name"]
+    if add_description:
+        tbl_header.append("description")
+    if add_config:
+        tbl_header.append("config")
+    if add_categories:
+        tbl_header.append("categories")
     table = tabulate(
         infos,
-        headers=["name", "description", "config", "categories"] * (num_columns // 2),
+        headers=tbl_header * (num_columns // 2),
         tablefmt="fancy_grid",
         stralign="left",
         numalign="left",
@@ -677,10 +691,15 @@ class ModelDownloadManager:
             if profile.tp_model:
                 file_names = get_tp_weight_names(name)
             else:
-                hf_model_name = profile.hf_model_name
-                if hf_model_name is None:
-                    raise ValueError("hf_model_name cannot be None")
-                file_names.append(hf_model_name)
+                model_name = profile.hf_model_name
+                if model_name is None:
+                    # second try. Check if a url is provided
+                    if profile.urls is None:
+                        raise ValueError("hf_model_name and urls cannot be both None")
+                    for url in profile.urls:
+                        file_names.append(url.split("/")[-1])
+                else:
+                    file_names.append(model_name)
             if profile.hf_repo_id:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
                 absolute_path_configs = ModelCatalog.get_full_path_configs(name)
