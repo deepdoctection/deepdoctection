@@ -58,7 +58,7 @@ if lxml_available():
 _NAME = "pubtables1m"
 
 _DESCRIPTION = (
-    "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in \n"
+    "[excerpt from Brandon Smock et. all. PubTables-1M: Towards Comprehensive Table Extraction From Unstructured \n"
     "Documents] ...we release PubTables1M, a dataset of nearly one million tables from PubMed Central Open Access \n"
     " scientific articles, with complete bounding box annotations for both table detection and structure \n"
     "recognition. In addition to being the largest dataset of its kind, PubTables1M addresses issues such as \n"
