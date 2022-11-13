@@ -55,13 +55,13 @@ document classification or NER. **deep**doctection provides training scripts for
 developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
 datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
 formats like COCO and it has a dataset framework (akin to [**datasets**](https://github.com/huggingface/datasets) so that
- setting up training on a custom dataset becomes very easy. Check this  [**notebook**](./notebooks/Fine_Tune.ipynb) to
-  see, how you can easily train a model on a different domain.
+ setting up training on a custom dataset becomes very easy. [**This notebook**](notebooks/Datasets_and_Eval.ipynb)
+shows you how to do this.
    
 ## Evaluation
 
 **deep**doctection comes equipped with a framework that allows you to evaluate predictions of a single or multiple 
-models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
+models in a pipeline against some ground truth. Check again [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
 done.  
 
 ## Inference
