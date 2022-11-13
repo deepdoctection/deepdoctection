@@ -18,7 +18,7 @@
 """
 Module for cell detection pipeline component
 """
-
+from copy import deepcopy
 from collections import Counter, defaultdict
 from typing import Dict, List, Mapping, Optional, Union
 
@@ -141,7 +141,9 @@ class SubImageLayoutService(PredictorPipelineComponent):
             sub_image_names = [sub_image_names]
 
         self.sub_image_name = sub_image_names
+        self.add_dummy_detection = add_dummy_detection
         self.dummy_generator_cls = None
+        self.category_id_mapping = category_id_mapping
         if add_dummy_detection:
             if category_id_mapping is None:
                 raise ValueError("Using DetectResult dummy generator requires passing a category_id_mapping")
@@ -220,3 +222,11 @@ class SubImageLayoutService(PredictorPipelineComponent):
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"sub_image_{predictor_name}"
+
+    def clone(self) -> "PredictorPipelineComponent":
+        predictor = self.predictor.clone()
+        if not isinstance(predictor, ObjectDetector):
+            raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(predictor)}")
+        return self.__class__(predictor, deepcopy(self.sub_image_name),
+                              deepcopy(self.category_id_mapping),
+                              deepcopy(self.add_dummy_detection))

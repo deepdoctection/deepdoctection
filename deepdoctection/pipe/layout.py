@@ -83,3 +83,11 @@ class ImageLayoutService(PredictorPipelineComponent):
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"image_{predictor_name}"
+
+    def clone(self) -> "PredictorPipelineComponent":
+        predictor = self.predictor.clone()
+        if not isinstance(predictor, (ObjectDetector, PdfMiner)):
+            raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
+        return self.__class__(predictor,self.to_image,self.crop_image)
+
+

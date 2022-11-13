@@ -18,6 +18,7 @@
 """
 Module for language detection pipeline component
 """
+from copy import copy, deepcopy
 from typing import Optional, Sequence
 
 from ..datapoint.image import Image
@@ -112,10 +113,10 @@ class LanguageDetectionService(PipelineComponent):
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
-            self.predictor,
-            self.text_container,
-            self.text_detector,
-            self.text_block_names,
+            self.predictor.clone(),
+            copy(self.text_container),
+            deepcopy(self.text_detector),
+            deepcopy(self.text_block_names),
         )
 
     def get_meta_annotation(self) -> JsonDict:
