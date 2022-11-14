@@ -24,9 +24,13 @@ for creating datasets. Create an info card, a DataFlowBaseBuilder derived instan
 DatasetBase derived instance to create a data set.
 """
 
+from ..utils.file_utils import pytorch_available
+
 from .base import *
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import *
 from .instances import *
 from .registry import *
 from .save import *
+if pytorch_available():
+    from .adapter import *

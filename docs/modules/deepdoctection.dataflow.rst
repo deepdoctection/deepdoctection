@@ -1,12 +1,8 @@
 deepdoctection.dataflow
 =================================
 
-deepdoctection.dataflow.__init__
----------------------------------------
+.. automodule:: deepdoctection.dataflow
 
-.. automodule:: deepdoctection.dataflow.__init__
-   :members:
-   :undoc-members:
 
 deepdoctection.dataflow.common
 ---------------------------------------

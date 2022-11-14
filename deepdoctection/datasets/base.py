@@ -327,7 +327,7 @@ class MergeDataset(DatasetBase):
 class CustomDataset(DatasetBase):
     """
     A simple dataset interface that implements the boilerplate code and reduces complexity by merely leaving
-    the user to write a `DataFlowBaseBuilder` (mapping the annotation format into **deep**doctection data model is
+    the user to write a `DataFlowBaseBuilder` (mapping the annotation format into **deep**\doctection data model is
     something that has to be left to the user for obvious reasons). Check the tutorial on how to approach the mapping
     problem.
     """
