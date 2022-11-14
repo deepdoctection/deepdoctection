@@ -2,16 +2,16 @@ LayoutLM for token classification
 =================================
 
 This tutorial is dedicated to training, evaluation and setting up a
-pipeline for token classification with LayoutLM.
+pipeline for token classification model with LayoutLM.
 
 The individual steps differ only slightly from the tutorial on `sequence
 classification <https://github.com/deepdoctection/deepdoctection/blob/master/notebooks/Using_LayoutLM_for_sequence_classification.ipynb>`__
 . Only a few details need to be changed.
 
-We also show how to visualize the results.
+We also show how to visualize and display the results.
 
 For training and evaluation we use the Funsd dataset. To demonstrate the
-inference pipeline, we use form samples of the RVLCDIP dataset.
+inference pipeline, we use form samples from the RVLCDIP dataset.
 
 .. code:: ipython3
 
@@ -31,9 +31,9 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     
     metric = dd.get_metric("f1")
     
-    # Token classes are saved for each word as NER_TOKEN sub category. Here we let the metric know
+    # Token classes are saved for each word as token_tag sub category. Here we let the metric know
     # where to look at when collecting prediction and ground truth.  
-    metric.set_categories(sub_category_names={"WORD": ["NER_TOKEN"]})                                           
+    metric.set_categories(sub_category_names={"word": ["token_tag"]})
 
 .. code:: ipython3
 
@@ -41,7 +41,10 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     dd.train_hf_layoutlm(path_config_json,
                          dataset_train,
                          path_weights,
-                         config_overwrite=["max_steps=300","per_device_train_batch_size=8","eval_steps=100","save_steps=100"],
+                         config_overwrite=["max_steps=300",
+                                           "per_device_train_batch_size=8",
+                                           "eval_steps=100",
+                                           "save_steps=100"],
                          log_dir="/path/to/dir",
                          dataset_val=dataset_train,
                          build_val_config=["split=test"],
@@ -95,13 +98,13 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     [32m[0903 14:37.28 @accmetric.py:340][0m [32mINF[0m F1 results:
     |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.841791 | 821           |
-    | NER_TOKEN | 2             | 0.528455 | 122           |
-    | NER_TOKEN | 3             | 0.863985 | 1077          |
-    | NER_TOKEN | 4             | 0.814785 | 2544          |
-    | NER_TOKEN | 5             | 0.558923 | 257           |
-    | NER_TOKEN | 6             | 0.766207 | 1594          |
-    | NER_TOKEN | 7             | 0.769401 | 2558          |
+    | token_tag | 1             | 0.841791 | 821           |
+    | token_tag | 2             | 0.528455 | 122           |
+    | token_tag | 3             | 0.863985 | 1077          |
+    | token_tag | 4             | 0.814785 | 2544          |
+    | token_tag | 5             | 0.558923 | 257           |
+    | token_tag | 6             | 0.766207 | 1594          |
+    | token_tag | 7             | 0.769401 | 2558          |
 
     Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-100
     Configuration saved in /path/to/Tests/Token_classification/checkpoint-100/config.json
@@ -110,13 +113,13 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     [32m[0903 14:38.00 @accmetric.py:340] F1 results:
     |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.848989 | 821           |
-    | NER_TOKEN | 2             | 0.616541 | 122           |
-    | NER_TOKEN | 3             | 0.871966 | 1077          |
-    | NER_TOKEN | 4             | 0.818508 | 2544          |
-    | NER_TOKEN | 5             | 0.528363 | 257           |
-    | NER_TOKEN | 6             | 0.779874 | 1594          |
-    | NER_TOKEN | 7             | 0.754623 | 2558          |
+    | token_tag | 1             | 0.848989 | 821           |
+    | token_tag | 2             | 0.616541 | 122           |
+    | token_tag | 3             | 0.871966 | 1077          |
+    | token_tag | 4             | 0.818508 | 2544          |
+    | token_tag | 5             | 0.528363 | 257           |
+    | token_tag | 6             | 0.779874 | 1594          |
+    | token_tag | 7             | 0.754623 | 2558          |
 
 
 .. parsed-literal::
@@ -129,13 +132,13 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     [0903 14:38.32 @accmetric.py:340] F1 results:
     |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.856124 | 821           |
-    | NER_TOKEN | 2             | 0.606557 | 122           |
-    | NER_TOKEN | 3             | 0.87206  | 1077          |
-    | NER_TOKEN | 4             | 0.812651 | 2544          |
-    | NER_TOKEN | 5             | 0.543333 | 257           |
-    | NER_TOKEN | 6             | 0.772786 | 1594          |
-    | NER_TOKEN | 7             | 0.746672 | 2558          |
+    | token_tag | 1             | 0.856124 | 821           |
+    | token_tag | 2             | 0.606557 | 122           |
+    | token_tag | 3             | 0.87206  | 1077          |
+    | token_tag | 4             | 0.812651 | 2544          |
+    | token_tag | 5             | 0.543333 | 257           |
+    | token_tag | 6             | 0.772786 | 1594          |
+    | token_tag | 7             | 0.746672 | 2558          |
 
 
 .. parsed-literal::
@@ -149,13 +152,13 @@ inference pipeline, we use form samples of the RVLCDIP dataset.
     [0903 14:38.40 @accmetric.py:340] F1 results:
     |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.856124 | 821           |
-    | NER_TOKEN | 2             | 0.606557 | 122           |
-    | NER_TOKEN | 3             | 0.87206  | 1077          |
-    | NER_TOKEN | 4             | 0.812651 | 2544          |
-    | NER_TOKEN | 5             | 0.543333 | 257           |
-    | NER_TOKEN | 6             | 0.772786 | 1594          |
-    | NER_TOKEN | 7             | 0.746672 | 2558          |
+    | token_tag | 1             | 0.856124 | 821           |
+    | token_tag | 2             | 0.606557 | 122           |
+    | token_tag | 3             | 0.87206  | 1077          |
+    | token_tag | 4             | 0.812651 | 2544          |
+    | token_tag | 5             | 0.543333 | 257           |
+    | token_tag | 6             | 0.772786 | 1594          |
+    | token_tag | 7             | 0.746672 | 2558          |
 
 
 
@@ -168,23 +171,25 @@ trained model by using a confusion matrix.
     path_weights = "/path/to/dir/checkpoint-300/pytorch_model.bin"
     
     
-    categories = dataset_train.dataflow.categories.get_sub_categories(categories="WORD", 
-                                                                      sub_categories={"WORD": 
-                                                                                      ["NER_TOKEN"]}, 
-                                                                      keys=False)["WORD"]["NER_TOKEN"]
+    categories = dataset_train.dataflow.categories.get_sub_categories(categories="word",
+                                                                      sub_categories={"word":
+                                                                                      ["token_tag"]},
+                                                                      keys=False)["word"]["token_tag"]
     
     metric = dd.get_metric("confusion")
-    metric.set_categories(sub_category_names={dd.names.C.WORD: [dd.names.NER.TOK]})
+    metric.set_categories(sub_category_names={"word": ["token_tag"]})
     layoutlm_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
                                                        path_weights,
                                                        categories=categories)
     
     tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-    pipe_component = dd.LMTokenClassifierService(tokenizer_fast, layoutlm_classifier, dd.image_to_layoutlm_features,
-                                                     use_other_as_default_category=True)
+    pipe_component = dd.LMTokenClassifierService(tokenizer_fast,
+                                                 layoutlm_classifier,
+                                                 dd.image_to_layoutlm_features,
+                                                 use_other_as_default_category=True)
     
     evaluator = dd.Evaluator(dataset_train, pipe_component, metric)
-    _=evaluator.run(split="test")
+    _ = evaluator.run(split="test")
 
 .. parsed-literal::
 
@@ -213,17 +218,17 @@ Building a production pipeline
         text_line_predictor = dd.DoctrTextlineDetector()
         layout_component = dd.ImageLayoutService(text_line_predictor, to_image=True, crop_image=True)
         text_recognizer = dd.DoctrTextRecognizer()
-        text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="WORD")
+        text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
     
         layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier("layoutlmv1", path_config_json,
                                                               path_weights,
                                                               categories={
-                                                                  "1": "B-ANSWER",
-                                                                  "2": "B-HEAD",
-                                                                  "3": "B-QUESTION",
-                                                                  "4": "I-ANSWER",
-                                                                  "5": "I-HEAD",
-                                                                  "6": "I-QUESTION",
+                                                                  "1": "B-answer",
+                                                                  "2": "B-header",
+                                                                  "3": "B-question",
+                                                                  "4": "I-answer",
+                                                                  "5": "I-header",
+                                                                  "6": "I-question",
                                                                   "7": "O"
                                                               })
     
@@ -233,13 +238,13 @@ Building a production pipeline
                                                          dd.image_to_layoutlm_features)
         
         # adding a text order service to get an arrangment of words from top to bottom and left to right.
-        reading_order = dd.TextOrderService(text_container="WORD")
+        reading_order = dd.TextOrderService(text_container="word")
     
         return dd.DoctectionPipe(pipeline_component_list=[layout_component, text_component, layoutlm_component, reading_order])
 
 .. code:: ipython3
 
-    path = "/path/to/.cache/deepdoctection/datasets/rvlcdip/image"
+    path = "/path/to/.cache/deepdoctection/datasets/rvl/image"
     
     layoutlm_pipeline = get_layoutlm_pipeline()
     df = layoutlm_pipeline.analyze(path= path)
@@ -294,99 +299,99 @@ Building a production pipeline
 
     #              LABEL
     -------------  ----------
-    INSTITUTE      HEAD-I
-    TOBACCO        HEAD-I
-    THE            OTHER-O
-    REQUEST        HEAD-B
-    CHECK          HEAD-I
-    $15.96         ANSWER-B
-    AMOUNT:        QUESTION-B
-    1995           ANSWER-B
-    22,            ANSWER-B
-    November       ANSWER-B
-    DATE:          QUESTION-B
-    VENDOR         QUESTION-B
-    #:             QUESTION-I
-    DataTimes      QUESTION-I
-    TO:            QUESTION-B
-    PAY            QUESTION-B
-    99733          ANSWER-I
-    Box            ANSWER-I
-    P.O.           QUESTION-B
-    73199          ANSWER-B
-    City,          ANSWER-B
-    OK             ANSWER-I
-    Oklahoma       ANSWER-B
-    EXPLANATION:   QUESTION-B
-    subscription   QUESTION-B
-    Monthly        QUESTION-B
-    bill           QUESTION-B
-    CHARGES        QUESTION-B
-    DISTRIBUTION   QUESTION-B
-    OF             HEAD-I
-    PROJECT        QUESTION-B
-    ACCOUNT        QUESTION-B
-    COST           QUESTION-B
-    AMOUNT         QUESTION-B
-    TAX            QUESTION-B
-    USE            QUESTION-B
-    OR             QUESTION-I
-    1099           QUESTION-B
-    CODE           QUESTION-B
-    NUMBER         QUESTION-B
-    CENTER         QUESTION-B
-    NUMBER         QUESTION-B
-    $15.96         ANSWER-B
-    8001           ANSWER-B
-    1301           ANSWER-B
-    $15.96         ANSWER-B
-    TOTAL.         ANSWER-B
-    GRAND          ANSWER-B
-    Approyed       QUESTION-B
-    By:            QUESTION-I
-    Requested      QUESTION-B
-    by:            QUESTION-I
-    tatkuine       ANSWER-B
-    ye             OTHER-O
-    TIOK           OTHER-O
-    0000341        OTHER-O
-    yes            QUESTION-B
-    Return         QUESTION-B
-    n/a            QUESTION-B
-    To:            QUESTION-B
-    Check          QUESTION-B
-    Vendor:        QUESTION-B
-    to             QUESTION-B
-    Check          QUESTION-B
-    Mail           QUESTION-B
-    CONFIDENTIAL:  OTHER-O
-    11/28/95       ANSWER-B
-    LITIGATION     OTHER-O
-    TOBACCO        OTHER-O
-    Specify        QUESTION-B
-    mailed:        QUESTION-B
-    to             QUESTION-B
-    check          QUESTION-B
-    DATE           QUESTION-B
-    be             QUESTION-B
-    is             QUESTION-B
-    you            OTHER-O
-    send           OTHER-O
-    before         OTHER-O
-    Approved       OTHER-O
-    Requested      OTHER-O
-    to             OTHER-O
-    form           OTHER-O
-    this           OTHER-O
-    Fields         OTHER-O
-    By             OTHER-O
-    By             OTHER-O
-    must           OTHER-O
-    and            OTHER-O
-    the            OTHER-O
-    fill-in        OTHER-O
-    You            OTHER-O
-    accounting     OTHER-O
+    INSTITUTE      header-I
+    TOBACCO        header-I
+    THE            other-O
+    REQUEST        header-B
+    CHECK          header-I
+    $15.96         answer-B
+    AMOUNT:        question-B
+    1995           answer-B
+    22,            answer-B
+    November       answer-B
+    DATE:          question-B
+    VENDOR         question-B
+    #:             question-I
+    DataTimes      question-I
+    TO:            question-B
+    PAY            question-B
+    99733          answer-I
+    Box            answer-I
+    P.O.           question-B
+    73199          answer-B
+    City,          answer-B
+    OK             answer-I
+    Oklahoma       answer-B
+    EXPLANATION:   question-B
+    subscription   question-B
+    Monthly        question-B
+    bill           question-B
+    CHARGES        question-B
+    DISTRIBUTION   question-B
+    OF             header-I
+    PROJECT        question-B
+    ACCOUNT        question-B
+    COST           question-B
+    AMOUNT         question-B
+    TAX            question-B
+    USE            question-B
+    OR             question-I
+    1099           question-B
+    CODE           question-B
+    NUMBER         question-B
+    CENTER         question-B
+    NUMBER         question-B
+    $15.96         answer-B
+    8001           answer-B
+    1301           answer-B
+    $15.96         answer-B
+    TOTAL.         answer-B
+    GRAND          answer-B
+    Approyed       question-B
+    By:            question-I
+    Requested      question-B
+    by:            question-I
+    tatkuine       answer-B
+    ye             other-O
+    TIOK           other-O
+    0000341        other-O
+    yes            question-B
+    Return         question-B
+    n/a            question-B
+    To:            question-B
+    Check          question-B
+    Vendor:        question-B
+    to             question-B
+    Check          question-B
+    Mail           question-B
+    CONFIDENTIAL:  other-O
+    11/28/95       answer-B
+    LITIGATION     other-O
+    TOBACCO        other-O
+    Specify        question-B
+    mailed:        question-B
+    to             question-B
+    check          question-B
+    DATE           question-B
+    be             question-B
+    is             question-B
+    you            other-O
+    send           other-O
+    before         other-O
+    Approved       other-O
+    Requested      other-O
+    to             other-O
+    form           other-O
+    this           other-O
+    Fields         other-O
+    By             other-O
+    By             other-O
+    must           other-O
+    and            other-O
+    the            other-O
+    fill-in        other-O
+    You            other-O
+    accounting     other-O
 
 
 .. code:: ipython3
@@ -438,79 +443,79 @@ Building a production pipeline
 
     #             LABEL
     ------------  ----------
-    ISTITUTE      OTHER-O
-    TOBACCO       OTHER-O
-    THE           OTHER-O
-    w             OTHER-O
-    ili           OTHER-O
-    r/"           OTHER-O
-    REQUEST       HEAD-B
-    CHECK         HEAD-I
-    Traas         OTHER-O
-    Amount:       QUESTION-B
-    $3.750        ANSWER-B
-    Date.         QUESTION-B
-    1984          ANSWER-B
-    6,            ANSWER-B
-    December      ANSWER-B
-    Pay           QUESTION-B
-    To:           QUESTION-I
-    Nance         ANSWER-B
-    Ken           ANSWER-B
-    Explanation   OTHER-O
-    1984          ANSWER-B
-    A             ANSWER-B
-    -             ANSWER-B
-    Ocrohar1.     ANSWER-B
-    of            ANSWER-I
-    Rerainad      ANSWER-I
-    1985          ANSWER-B
-    for           ANSWER-B
-    lobbyist      ANSWER-I
-    Nev           ANSWER-B
-    paymant       QUESTION-I
-    IEPIRNE       ANSWER-B
-    198A          ANSWER-B
-    for           ANSWER-B
-    k             ANSWER-B
-    fes           ANSWER-B
-    This          OTHER-O
-    CHARGES       QUESTION-B
-    DISTRIBUTION  QUESTION-B
-    OF            QUESTION-I
-    Account       QUESTION-B
-    Center        QUESTION-B
-    Cost          QUESTION-B
-    Number        QUESTION-B
-    Amount        QUESTION-B
-    Explanation   QUESTION-B
-    Number        QUESTION-B
-    $3,750.00     OTHER-O
-    6000          ANSWER-B
-    1401          ANSWER-B
-    Approved      QUESTION-B
-    by:           QUESTION-B
-    Requested     QUESTION-B
-    Hurst         ANSWER-B
-    A             OTHER-O
-    me            QUESTION-B
-    tranamittal   QUESTION-B
-    to            QUESTION-B
-    check         QUESTION-B
-    Return        QUESTION-B
-    mail          QUESTION-B
-    check         QUESTION-B
-    for           QUESTION-B
-    In            QUESTION-B
-    Put           QUESTION-B
-    a             OTHER-O
-    D             ANSWER-B
-    Ehg           OTHER-O
-    by:           QUESTION-B
-    Need          QUESTION-B
-    asap          OTHER-O
-    TIOK          OTHER-O
-    0027860       OTHER-O
+    ISTITUTE      other-O
+    TOBACCO       other-O
+    THE           other-O
+    w             other-O
+    ili           other-O
+    r/"           other-O
+    REQUEST       header-B
+    CHECK         header-I
+    Traas         other-O
+    Amount:       question-B
+    $3.750        answer-B
+    Date.         question-B
+    1984          answer-B
+    6,            answer-B
+    December      answer-B
+    Pay           question-B
+    To:           question-I
+    Nance         answer-B
+    Ken           answer-B
+    Explanation   other-O
+    1984          answer-B
+    A             answer-B
+    -             answer-B
+    Ocrohar1.     answer-B
+    of            answer-I
+    Rerainad      answer-I
+    1985          answer-B
+    for           answer-B
+    lobbyist      answer-I
+    Nev           answer-B
+    paymant       question-I
+    IEPIRNE       answer-B
+    198A          answer-B
+    for           answer-B
+    k             answer-B
+    fes           answer-B
+    This          other-O
+    CHARGES       question-B
+    DISTRIBUTION  question-B
+    OF            question-I
+    Account       question-B
+    Center        question-B
+    Cost          question-B
+    Number        question-B
+    Amount        question-B
+    Explanation   question-B
+    Number        question-B
+    $3,750.00     other-O
+    6000          answer-B
+    1401          answer-B
+    Approved      question-B
+    by:           question-B
+    Requested     question-B
+    Hurst         answer-B
+    A             other-O
+    me            question-B
+    tranamittal   question-B
+    to            question-B
+    check         question-B
+    Return        question-B
+    mail          question-B
+    check         question-B
+    for           question-B
+    In            question-B
+    Put           question-B
+    a             other-O
+    D             answer-B
+    Ehg           other-O
+    by:           question-B
+    Need          question-B
+    asap          other-O
+    TIOK          other-O
+    0027860       other-O
 
 
 

@@ -182,12 +182,12 @@ Setting up training script
     funsd = dd.get_dataset("funsd")
     dataset_type = funsd.dataset_info.type
     categories_dict_name_as_key = funsd.dataflow.categories.get_sub_categories(
-        categories="WORD",
-        sub_categories={"WORD": ["TOKEN_TAG"]},
+        categories="word",
+        sub_categories={"word": ["token_tag"]},
         keys=False,
         values_as_dict=True,
         name_as_key=True,
-        )["WORD"]["TOKEN_TAG"]
+        )["word"]["token_tag"]
     
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
     
@@ -244,12 +244,12 @@ Setting up training script
       "hidden_dropout_prob": 0.1,
       "hidden_size": 768,
       "id2label": {
-        "0": "B-ANSWER",
-        "1": "B-HEAD",
-        "2": "B-QUESTION",
-        "3": "I-ANSWER",
-        "4": "I-HEAD",
-        "5": "I-QUESTION",
+        "0": "B-answer",
+        "1": "B-header",
+        "2": "B-question",
+        "3": "I-answer",
+        "4": "I-header",
+        "5": "I-question",
         "6": "O"
       },
       "initializer_range": 0.02,
@@ -427,14 +427,14 @@ evaluator, we first have to provide a model wrapper
         dataset_val = dd.get_dataset("funsd")
     
         categories = dataset_val.dataflow.categories.get_sub_categories(
-            categories="WORD", sub_categories={"WORD": ["TOKEN_TAG"]}, keys=False
-        )["WORD"]["TOKEN_TAG"]
+            categories="token_tag", sub_categories={"word": ["token_tag"]}, keys=False
+        )["word"]["token_tag"]
     
         metric = dd.get_metric("f1")
-        metric.set_categories(sub_category_names={"WORD": ["TOKEN_TAG"]})
-        #language_model = dd.HFLayoutLmTokenClassifier("layoutlmv1", config,weights,categories=categories)
-        language_model = HFLayoutLmWithImageFeaturesTokenClassifier("layoutlmv1",config, path_yaml, weights,
-                                                                     categories=categories)
+        metric.set_categories(sub_category_names={"word": ["token_tag"]})
+        #language_model = dd.HFLayoutLmTokenClassifier(config,weights,categories=categories)
+        language_model = HFLayoutLmWithImageFeaturesTokenClassifier(config, path_yaml, weights,
+                                                                    categories=categories)
         pipeline_component = dd.LMTokenClassifierService(tokenizer_fast, language_model, dd.image_to_layoutlm_features,
                                                          True)
         evaluator = dd.Evaluator(dataset_val, pipeline_component, metric, num_threads=2)
@@ -449,13 +449,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 12:59.44 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.830211 | 821           |
-    | NER_TOKEN | 2             | 0.460674 | 122           |
-    | NER_TOKEN | 3             | 0.871058 | 1077          |
-    | NER_TOKEN | 4             | 0.815841 | 2544          |
-    | NER_TOKEN | 5             | 0.52505  | 257           |
-    | NER_TOKEN | 6             | 0.755478 | 1594          |
-    | NER_TOKEN | 7             | 0.759437 | 2558          |[0m
+    | token_tag | 1             | 0.830211 | 821           |
+    | token_tag | 2             | 0.460674 | 122           |
+    | token_tag | 3             | 0.871058 | 1077          |
+    | token_tag | 4             | 0.815841 | 2544          |
+    | token_tag | 5             | 0.52505  | 257           |
+    | token_tag | 6             | 0.755478 | 1594          |
+    | token_tag | 7             | 0.759437 | 2558          |[0m
 
 
     mean f1 score: 0.7838230791255405
@@ -466,13 +466,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 12:59.54 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.848272 | 821           |
-    | NER_TOKEN | 2             | 0.592058 | 122           |
-    | NER_TOKEN | 3             | 0.881132 | 1077          |
-    | NER_TOKEN | 4             | 0.830082 | 2544          |
-    | NER_TOKEN | 5             | 0.516229 | 257           |
-    | NER_TOKEN | 6             | 0.76908  | 1594          |
-    | NER_TOKEN | 7             | 0.755625 | 2558          |[0m
+    | token_tag | 1             | 0.848272 | 821           |
+    | token_tag | 2             | 0.592058 | 122           |
+    | token_tag | 3             | 0.881132 | 1077          |
+    | token_tag | 4             | 0.830082 | 2544          |
+    | token_tag | 5             | 0.516229 | 257           |
+    | token_tag | 6             | 0.76908  | 1594          |
+    | token_tag | 7             | 0.755625 | 2558          |[0m
 
 
     mean f1 score: 0.7935855779424233
@@ -484,13 +484,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:00.05 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.845103 | 821           |
-    | NER_TOKEN | 2             | 0.579592 | 122           |
-    | NER_TOKEN | 3             | 0.87699  | 1077          |
-    | NER_TOKEN | 4             | 0.812662 | 2544          |
-    | NER_TOKEN | 5             | 0.560403 | 257           |
-    | NER_TOKEN | 6             | 0.7667   | 1594          |
-    | NER_TOKEN | 7             | 0.740614 | 2558          |[0m
+    | token_tag | 1             | 0.845103 | 821           |
+    | token_tag | 2             | 0.579592 | 122           |
+    | token_tag | 3             | 0.87699  | 1077          |
+    | token_tag | 4             | 0.812662 | 2544          |
+    | token_tag | 5             | 0.560403 | 257           |
+    | token_tag | 6             | 0.7667   | 1594          |
+    | token_tag | 7             | 0.740614 | 2558          |[0m
 
     mean f1 score: 0.78425321409946
 
@@ -500,13 +500,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:00.17 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.845203 | 821           |
-    | NER_TOKEN | 2             | 0.625    | 122           |
-    | NER_TOKEN | 3             | 0.863345 | 1077          |
-    | NER_TOKEN | 4             | 0.81896  | 2544          |
-    | NER_TOKEN | 5             | 0.575139 | 257           |
-    | NER_TOKEN | 6             | 0.767656 | 1594          |
-    | NER_TOKEN | 7             | 0.759337 | 2558          |[0m
+    | token_tag | 1             | 0.845203 | 821           |
+    | token_tag | 2             | 0.625    | 122           |
+    | token_tag | 3             | 0.863345 | 1077          |
+    | token_tag | 4             | 0.81896  | 2544          |
+    | token_tag | 5             | 0.575139 | 257           |
+    | token_tag | 6             | 0.767656 | 1594          |
+    | token_tag | 7             | 0.759337 | 2558          |[0m
 
     mean f1 score: 0.7909570408298823
 
@@ -519,13 +519,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:00.28 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.856803 | 821           |
-    | NER_TOKEN | 2             | 0.622407 | 122           |
-    | NER_TOKEN | 3             | 0.878758 | 1077          |
-    | NER_TOKEN | 4             | 0.824247 | 2544          |
-    | NER_TOKEN | 5             | 0.548951 | 257           |
-    | NER_TOKEN | 6             | 0.780972 | 1594          |
-    | NER_TOKEN | 7             | 0.758919 | 2558          |[0m
+    | token_tag | 1             | 0.856803 | 821           |
+    | token_tag | 2             | 0.622407 | 122           |
+    | token_tag | 3             | 0.878758 | 1077          |
+    | token_tag | 4             | 0.824247 | 2544          |
+    | token_tag | 5             | 0.548951 | 257           |
+    | token_tag | 6             | 0.780972 | 1594          |
+    | token_tag | 7             | 0.758919 | 2558          |[0m
 
     mean f1 score: 0.7968284393763414
 
@@ -536,13 +536,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:00.39 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.856265 | 821           |
-    | NER_TOKEN | 2             | 0.601562 | 122           |
-    | NER_TOKEN | 3             | 0.875    | 1077          |
-    | NER_TOKEN | 4             | 0.826446 | 2544          |
-    | NER_TOKEN | 5             | 0.512077 | 257           |
-    | NER_TOKEN | 6             | 0.773773 | 1594          |
-    | NER_TOKEN | 7             | 0.764029 | 2558          |[0m
+    | token_tag | 1             | 0.856265 | 821           |
+    | token_tag | 2             | 0.601562 | 122           |
+    | token_tag | 3             | 0.875    | 1077          |
+    | token_tag | 4             | 0.826446 | 2544          |
+    | token_tag | 5             | 0.512077 | 257           |
+    | token_tag | 6             | 0.773773 | 1594          |
+    | token_tag | 7             | 0.764029 | 2558          |[0m
 
     mean f1 score: 0.795789744453888
 
@@ -553,13 +553,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:00.51 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.862768 | 821           |
-    | NER_TOKEN | 2             | 0.626506 | 122           |
-    | NER_TOKEN | 3             | 0.871551 | 1077          |
-    | NER_TOKEN | 4             | 0.8082   | 2544          |
-    | NER_TOKEN | 5             | 0.521452 | 257           |
-    | NER_TOKEN | 6             | 0.754504 | 1594          |
-    | NER_TOKEN | 7             | 0.755716 | 2558          |[0m
+    | token_tag | 1             | 0.862768 | 821           |
+    | token_tag | 2             | 0.626506 | 122           |
+    | token_tag | 3             | 0.871551 | 1077          |
+    | token_tag | 4             | 0.8082   | 2544          |
+    | token_tag | 5             | 0.521452 | 257           |
+    | token_tag | 6             | 0.754504 | 1594          |
+    | token_tag | 7             | 0.755716 | 2558          |[0m
 
     mean f1 score: 0.7856123499985105
 
@@ -570,13 +570,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.01 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.862418 | 821           |
-    | NER_TOKEN | 2             | 0.644351 | 122           |
-    | NER_TOKEN | 3             | 0.879236 | 1077          |
-    | NER_TOKEN | 4             | 0.829003 | 2544          |
-    | NER_TOKEN | 5             | 0.57041  | 257           |
-    | NER_TOKEN | 6             | 0.782462 | 1594          |
-    | NER_TOKEN | 7             | 0.766997 | 2558          |[0m
+    | token_tag | 1             | 0.862418 | 821           |
+    | token_tag | 2             | 0.644351 | 122           |
+    | token_tag | 3             | 0.879236 | 1077          |
+    | token_tag | 4             | 0.829003 | 2544          |
+    | token_tag | 5             | 0.57041  | 257           |
+    | token_tag | 6             | 0.782462 | 1594          |
+    | token_tag | 7             | 0.766997 | 2558          |[0m
 
     mean f1 score: 0.8022285304592011
 
@@ -588,13 +588,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.13 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.863362 | 821           |
-    | NER_TOKEN | 2             | 0.609442 | 122           |
-    | NER_TOKEN | 3             | 0.880717 | 1077          |
-    | NER_TOKEN | 4             | 0.807097 | 2544          |
-    | NER_TOKEN | 5             | 0.565836 | 257           |
-    | NER_TOKEN | 6             | 0.778129 | 1594          |
-    | NER_TOKEN | 7             | 0.756757 | 2558          |[0m
+    | token_tag | 1             | 0.863362 | 821           |
+    | token_tag | 2             | 0.609442 | 122           |
+    | token_tag | 3             | 0.880717 | 1077          |
+    | token_tag | 4             | 0.807097 | 2544          |
+    | token_tag | 5             | 0.565836 | 257           |
+    | token_tag | 6             | 0.778129 | 1594          |
+    | token_tag | 7             | 0.756757 | 2558          |[0m
 
     mean f1 score: 0.7919870785780183
 
@@ -605,13 +605,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.24 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.859044 | 821           |
-    | NER_TOKEN | 2             | 0.598291 | 122           |
-    | NER_TOKEN | 3             | 0.880114 | 1077          |
-    | NER_TOKEN | 4             | 0.818494 | 2544          |
-    | NER_TOKEN | 5             | 0.561151 | 257           |
-    | NER_TOKEN | 6             | 0.784038 | 1594          |
-    | NER_TOKEN | 7             | 0.766191 | 2558          |[0m
+    | token_tag | 1             | 0.859044 | 821           |
+    | token_tag | 2             | 0.598291 | 122           |
+    | token_tag | 3             | 0.880114 | 1077          |
+    | token_tag | 4             | 0.818494 | 2544          |
+    | token_tag | 5             | 0.561151 | 257           |
+    | token_tag | 6             | 0.784038 | 1594          |
+    | token_tag | 7             | 0.766191 | 2558          |[0m
 
     mean f1 score: 0.798204199723473
 
@@ -622,13 +622,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.35 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.872072 | 821           |
-    | NER_TOKEN | 2             | 0.606635 | 122           |
-    | NER_TOKEN | 3             | 0.88227  | 1077          |
-    | NER_TOKEN | 4             | 0.825581 | 2544          |
-    | NER_TOKEN | 5             | 0.582031 | 257           |
-    | NER_TOKEN | 6             | 0.790148 | 1594          |
-    | NER_TOKEN | 7             | 0.775231 | 2558          |[0m
+    | token_tag | 1             | 0.872072 | 821           |
+    | token_tag | 2             | 0.606635 | 122           |
+    | token_tag | 3             | 0.88227  | 1077          |
+    | token_tag | 4             | 0.825581 | 2544          |
+    | token_tag | 5             | 0.582031 | 257           |
+    | token_tag | 6             | 0.790148 | 1594          |
+    | token_tag | 7             | 0.775231 | 2558          |[0m
 
     mean f1 score: 0.8060384049708412
 
@@ -639,13 +639,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.46 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.864702 | 821           |
-    | NER_TOKEN | 2             | 0.622222 | 122           |
-    | NER_TOKEN | 3             | 0.882974 | 1077          |
-    | NER_TOKEN | 4             | 0.820471 | 2544          |
-    | NER_TOKEN | 5             | 0.613936 | 257           |
-    | NER_TOKEN | 6             | 0.774738 | 1594          |
-    | NER_TOKEN | 7             | 0.771018 | 2558          |[0m
+    | token_tag | 1             | 0.864702 | 821           |
+    | token_tag | 2             | 0.622222 | 122           |
+    | token_tag | 3             | 0.882974 | 1077          |
+    | token_tag | 4             | 0.820471 | 2544          |
+    | token_tag | 5             | 0.613936 | 257           |
+    | token_tag | 6             | 0.774738 | 1594          |
+    | token_tag | 7             | 0.771018 | 2558          |[0m
 
     mean f1 score: 0.8011870771317523
 
@@ -656,13 +656,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:01.57 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.850519 | 821           |
-    | NER_TOKEN | 2             | 0.639344 | 122           |
-    | NER_TOKEN | 3             | 0.888574 | 1077          |
-    | NER_TOKEN | 4             | 0.820766 | 2544          |
-    | NER_TOKEN | 5             | 0.575188 | 257           |
-    | NER_TOKEN | 6             | 0.777989 | 1594          |
-    | NER_TOKEN | 7             | 0.761813 | 2558          |[0m
+    | token_tag | 1             | 0.850519 | 821           |
+    | token_tag | 2             | 0.639344 | 122           |
+    | token_tag | 3             | 0.888574 | 1077          |
+    | token_tag | 4             | 0.820766 | 2544          |
+    | token_tag | 5             | 0.575188 | 257           |
+    | token_tag | 6             | 0.777989 | 1594          |
+    | token_tag | 7             | 0.761813 | 2558          |[0m
 
     mean f1 score: 0.7977212918133954
 
@@ -673,13 +673,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:02.09 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.851942 | 821           |
-    | NER_TOKEN | 2             | 0.594378 | 122           |
-    | NER_TOKEN | 3             | 0.881822 | 1077          |
-    | NER_TOKEN | 4             | 0.813532 | 2544          |
-    | NER_TOKEN | 5             | 0.574627 | 257           |
-    | NER_TOKEN | 6             | 0.781488 | 1594          |
-    | NER_TOKEN | 7             | 0.765437 | 2558          |[0m
+    | token_tag | 1             | 0.851942 | 821           |
+    | token_tag | 2             | 0.594378 | 122           |
+    | token_tag | 3             | 0.881822 | 1077          |
+    | token_tag | 4             | 0.813532 | 2544          |
+    | token_tag | 5             | 0.574627 | 257           |
+    | token_tag | 6             | 0.781488 | 1594          |
+    | token_tag | 7             | 0.765437 | 2558          |[0m
 
     mean f1 score: 0.7960172594005404
 
@@ -690,13 +690,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:02.21 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.8568   | 821           |
-    | NER_TOKEN | 2             | 0.597701 | 122           |
-    | NER_TOKEN | 3             | 0.875969 | 1077          |
-    | NER_TOKEN | 4             | 0.82385  | 2544          |
-    | NER_TOKEN | 5             | 0.551724 | 257           |
-    | NER_TOKEN | 6             | 0.777209 | 1594          |
-    | NER_TOKEN | 7             | 0.765081 | 2558          |[0m
+    | token_tag | 1             | 0.8568   | 821           |
+    | token_tag | 2             | 0.597701 | 122           |
+    | token_tag | 3             | 0.875969 | 1077          |
+    | token_tag | 4             | 0.82385  | 2544          |
+    | token_tag | 5             | 0.551724 | 257           |
+    | token_tag | 6             | 0.777209 | 1594          |
+    | token_tag | 7             | 0.765081 | 2558          |[0m
 
     mean f1 score: 0.7972124336953419
 
@@ -707,13 +707,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:02.32 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.854277 | 821           |
-    | NER_TOKEN | 2             | 0.577982 | 122           |
-    | NER_TOKEN | 3             | 0.878002 | 1077          |
-    | NER_TOKEN | 4             | 0.824099 | 2544          |
-    | NER_TOKEN | 5             | 0.577154 | 257           |
-    | NER_TOKEN | 6             | 0.782979 | 1594          |
-    | NER_TOKEN | 7             | 0.756447 | 2558          |[0m
+    | token_tag | 1             | 0.854277 | 821           |
+    | token_tag | 2             | 0.577982 | 122           |
+    | token_tag | 3             | 0.878002 | 1077          |
+    | token_tag | 4             | 0.824099 | 2544          |
+    | token_tag | 5             | 0.577154 | 257           |
+    | token_tag | 6             | 0.782979 | 1594          |
+    | token_tag | 7             | 0.756447 | 2558          |[0m
 
     mean f1 score: 0.7963200667654791
 
@@ -724,13 +724,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:02.43 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.863095 | 821           |
-    | NER_TOKEN | 2             | 0.581197 | 122           |
-    | NER_TOKEN | 3             | 0.880189 | 1077          |
-    | NER_TOKEN | 4             | 0.822634 | 2544          |
-    | NER_TOKEN | 5             | 0.56391  | 257           |
-    | NER_TOKEN | 6             | 0.777485 | 1594          |
-    | NER_TOKEN | 7             | 0.757907 | 2558          |[0m
+    | token_tag | 1             | 0.863095 | 821           |
+    | token_tag | 2             | 0.581197 | 122           |
+    | token_tag | 3             | 0.880189 | 1077          |
+    | token_tag | 4             | 0.822634 | 2544          |
+    | token_tag | 5             | 0.56391  | 257           |
+    | token_tag | 6             | 0.777485 | 1594          |
+    | token_tag | 7             | 0.757907 | 2558          |[0m
 
     mean f1 score: 0.7960786308650052
 
@@ -741,13 +741,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:02.54 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.846291 | 821           |
-    | NER_TOKEN | 2             | 0.590717 | 122           |
-    | NER_TOKEN | 3             | 0.871154 | 1077          |
-    | NER_TOKEN | 4             | 0.818693 | 2544          |
-    | NER_TOKEN | 5             | 0.56102  | 257           |
-    | NER_TOKEN | 6             | 0.774107 | 1594          |
-    | NER_TOKEN | 7             | 0.75607  | 2558          |[0m
+    | token_tag | 1             | 0.846291 | 821           |
+    | token_tag | 2             | 0.590717 | 122           |
+    | token_tag | 3             | 0.871154 | 1077          |
+    | token_tag | 4             | 0.818693 | 2544          |
+    | token_tag | 5             | 0.56102  | 257           |
+    | token_tag | 6             | 0.774107 | 1594          |
+    | token_tag | 7             | 0.75607  | 2558          |[0m
 
     mean f1 score: 0.7912620719466341
 
@@ -759,13 +759,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:03.05 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.848665 | 821           |
-    | NER_TOKEN | 2             | 0.575107 | 122           |
-    | NER_TOKEN | 3             | 0.874046 | 1077          |
-    | NER_TOKEN | 4             | 0.820722 | 2544          |
-    | NER_TOKEN | 5             | 0.563071 | 257           |
-    | NER_TOKEN | 6             | 0.776621 | 1594          |
-    | NER_TOKEN | 7             | 0.759802 | 2558          |[0m
+    | token_tag | 1             | 0.848665 | 821           |
+    | token_tag | 2             | 0.575107 | 122           |
+    | token_tag | 3             | 0.874046 | 1077          |
+    | token_tag | 4             | 0.820722 | 2544          |
+    | token_tag | 5             | 0.563071 | 257           |
+    | token_tag | 6             | 0.776621 | 1594          |
+    | token_tag | 7             | 0.759802 | 2558          |[0m
 
     mean f1 score: 0.7937586962016544
 
@@ -775,13 +775,13 @@ evaluator, we first have to provide a model wrapper
     [32m[0912 13:03.16 @accmetric.py:346][0m [32mINF[0m F1 results:
      [36m|    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
-    | NER_TOKEN | 1             | 0.856124 | 821           |
-    | NER_TOKEN | 2             | 0.591093 | 122           |
-    | NER_TOKEN | 3             | 0.879245 | 1077          |
-    | NER_TOKEN | 4             | 0.822911 | 2544          |
-    | NER_TOKEN | 5             | 0.558719 | 257           |
-    | NER_TOKEN | 6             | 0.777032 | 1594          |
-    | NER_TOKEN | 7             | 0.756508 | 2558          |[0m
+    | token_tag | 1             | 0.856124 | 821           |
+    | token_tag | 2             | 0.591093 | 122           |
+    | token_tag | 3             | 0.879245 | 1077          |
+    | token_tag | 4             | 0.822911 | 2544          |
+    | token_tag | 5             | 0.558719 | 257           |
+    | token_tag | 6             | 0.777032 | 1594          |
+    | token_tag | 7             | 0.756508 | 2558          |[0m
 
     mean f1 score: 0.7949125349027464
 
