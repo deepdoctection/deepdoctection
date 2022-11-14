@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for Deep-Doctection Analyzer
+Module for **deep**doctection analyzer.
 """
 
 import os
@@ -224,17 +224,17 @@ def get_dd_analyzer(
     tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
 ) -> DoctectionPipe:
     """
-    Factory function for creating the built-in **Deep-Doctection Analyzer**.
+    Factory function for creating the built-in **deep**doctection analyzer.
 
     The Standard Analyzer is a pipeline that comprises the following analysis components:
 
     - Document analysis with object recognition and classification of:
 
-        * TITLE
-        * TEXT
-        * LIST
-        * TABLE
-        * FIGURE
+        * title
+        * text
+        * list
+        * table
+        * figure
 
     - Table recognition including line and column segmentation as well as detection of cells that run over several
       rows or columns.

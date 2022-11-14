@@ -2,9 +2,9 @@ Various topics around LayoutLM part 1
 =====================================
 
 These records form a disjointed collection of topics that may be
-helpful, or at least interesting, for fine-tuning LayoutLM. In addition,
+helpful for fine-tuning LayoutLM. In addition,
 the code provided should serve as an aid on how to deal with other
-topics with the DeepDoctection.
+topics with the **deep**\doctection.
 
 How does LayoutLM work on newer date documents?
 -----------------------------------------------
@@ -59,11 +59,11 @@ Generating raw corpus from PDF documents
 
 .. code:: ipython3
 
-    # This step requires Doclaynet to be downloaded. Similar to the LayoutLM primer we select four categories FINANCIAL_REPORTS, 
-    # GOVERNMENT_TENDERS, MANUALS, LAWS_AND_REGULATIONS and generate a raw dataset corpus with extrated text and bounding boxes.  
+    # This step requires Doclaynet to be downloaded. Similar to the LayoutLM primer we select four categories financial_report,
+    # government_tenders, manuals, laws_and_regulations and generate a raw dataset corpus with extrated text and bounding boxes.
     
     doclaynet_seq = dd.get_dataset("doclaynet-seq")
-    doclaynet_seq.dataflow.categories.filter_categories({"FINANCIAL_REPORTS"})
+    doclaynet_seq.dataflow.categories.filter_categories({"financial_reports"})
     pdf_miner_pipe = get_pdf_miner()
     
     df = doclaynet_seq.dataflow.build()
@@ -89,7 +89,10 @@ Defining deepdoctection dataset
             return dd.DatasetInfo(name="doclaynet-seq", description="", license="", url="", splits={}, type="SEQUENCE_CLASSIFICATION")
     
         def _categories(self) -> dd.DatasetCategories:
-            return dd.DatasetCategories(init_categories=["FINANCIAL_REPORTS", "GOVERNMENT_TENDERS","MANUALS", "LAWS_AND_REGULATIONS"])
+            return dd.DatasetCategories(init_categories=["financial_report",
+                                                         "government_tenders",
+                                                         "manuals",
+                                                         "laws_and_regulations"])
     
         def _builder(self) -> "DocBuilder":
             return DocBuilder(location="doclaynet_img")
@@ -118,11 +121,11 @@ Defining deepdoctection dataset
                     return None
                 for ann in dp.get_annotation():
                     try:
-                        ann.get_sub_category(dd.names.C.CHARS) # Sometime pdfplumber hangs and generates boxes without text. Will the filter the 
+                        ann.get_sub_category("characters") # Sometime pdfplumber hangs and generates boxes without text. Will the filter the
                                                                # complete sample
                     except KeyError:
                         return None
-                sub_cat = dp.summary.get_sub_category(dd.names.C.DOC)
+                sub_cat = dp.summary.get_sub_category("document_type")
                 sub_cat.category_id = cats[sub_cat.category_name]
                 return dp
             df = dd.MapData(df, map_to_img(categories))
@@ -152,7 +155,7 @@ Displaying some samples
 .. code:: ipython3
 
     dp = next(df_iter)
-    page = dd.Page.from_image(dp,text_container="WORD")
+    page = dd.Page.from_image(dp,text_container="word")
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(page.viz())
@@ -170,14 +173,14 @@ Displaying some samples
 
 .. parsed-literal::
 
-    'LAWS_AND_REGULATIONS'
+    'laws_and_regulations'
 
 
 
 .. code:: ipython3
 
     dp = next(df_iter)
-    page = dd.Page.from_image(dp,text_container="WORD")
+    page = dd.Page.from_image(dp,text_container="word")
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(page.viz())
@@ -195,7 +198,7 @@ Displaying some samples
 
 .. parsed-literal::
 
-    'MANUALS'
+    'manuals'
 
 
 
@@ -218,7 +221,7 @@ Displaying some samples
 
 .. parsed-literal::
 
-    'FINANCIAL_REPORTS'
+    'financial_report'
 
 
 
@@ -251,7 +254,7 @@ Fine tuning
     dataset_val = merge
     
     metric = dd.get_metric("confusion")
-    metric.set_categories(summary_sub_category_names="DOC_CLASS")
+    metric.set_categories(summary_sub_category_names="document_type")
     
     dd.train_hf_layoutlm(path_config_json,
                          dataset_train,
@@ -375,7 +378,7 @@ total data set.
     dataset_val = merge
     
     metric = dd.get_metric("confusion")
-    metric.set_categories(summary_sub_category_names="DOC_CLASS")
+    metric.set_categories(summary_sub_category_names="document_type")
     
     path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
     path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
@@ -418,4 +421,5 @@ Conclusion:
 ~~~~~~~~~~~
 
 We stop the training after 100 iterations because the first evaluation
-with Confusion Matrix already shows that the results are excellent.
+with Confusion Matrix already shows that the results are excellent. We want to emphasize that we have not looked at
+examples, therefore we cannot rule out that there might be a trivial reason why the score is that high.
