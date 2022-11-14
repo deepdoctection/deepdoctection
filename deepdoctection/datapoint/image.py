@@ -383,6 +383,7 @@ class Image:
         """
 
         img_dict = as_dict(self, dict_factory=dict)
+        img_dict["_image"] = convert_np_array_to_b64(self.image)
         return img_dict
 
     @staticmethod
@@ -391,7 +392,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["_image"]
+        return []
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """

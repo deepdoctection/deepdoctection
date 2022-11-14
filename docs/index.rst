@@ -10,14 +10,14 @@
 Introduction
 ==============================
 
-**deep**\doctection is a Python package that supports the extraction of visual rich documents.
+**deep**\doctection is a Python library that orchestrates document extraction and document layout analysis tasks using
+deep learning models. It does not implement models but enables you to build pipelines using highly acknowledged
+libraries for object detection, OCR and selected NLP tasks and provides an integrated frameworks for fine-tuning,
+evaluating and running models. For more specific text processing tasks use one of the many other great NLP libraries.
 
-Extracting from documents is difficult because they generally have a complex visual structure, but the information they
-contain is not tagged. **deep**\doctection is a tool box that is intended to facilitate entry into this topic.
+**deep**\doctection focuses on applications and is made for those who want to solve real world problems related to
+document extraction from PDFs or scans in various image formats.
 
-The focus should be on application. **deep**\doctection is made for data scientists who are tasked with supporting
-departments in process optimization. For analysts who have to investigate into large sets of documents. And also maybe
-for researchers who would like to see how well their new model fits into an extraction pipeline.
 
 **deep**\doctection has a modular structure that allows you to combine individual pipelines and thus quickly try out
 different approaches. Read more about :ref:`Why deepdoctection ?`
@@ -31,7 +31,7 @@ different approaches. Read more about :ref:`Why deepdoctection ?`
    manual/install.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Notebooks and Tutorials
 
    tutorials/index

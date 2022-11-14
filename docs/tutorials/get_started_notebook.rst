@@ -7,53 +7,16 @@ Getting started
 **deep**\ doctection is a package that can be used to extract text from
 complex structured documents. These can be native PDFs but also scans.
 In contrast to various text miners **deep**\ doctection makes use of
-deep learning models either for solving OCR, vision or language
-embedding problems. Neural networks and object detectors have proven to
-not only identify objects on images, but also to detect structures like
-titles, tables, figures or lists. Another advantage is that deep
-learning models can be trained on your own data to improve accuracy.
+deep learning models from powerful third party libraries for solving
+OCR, vision or language embedding problems.
 
-This introductory notebook showcases the **deep**\ doctection analyzer.
-The analyzer is an example of a built-in pipeline, which offers a
-rudimentary framework to identify layout structures in documents and to
-extract text and tables. We will be starting with a text extraction task
-of business document.
-
-Before starting, however, we have to say:
-
-All models used when invoking the analyzer were trained on publicly
-available data sets for document layout analysis (Publaynet, Pubtabnet).
-These datasets contain document pages and tables from medical research
-articles. This means that there is already a bias in the training data
-set and it is not to be expected that layout analysis would deliver
-precise results on documents of different domains. To improve precision
-we refer to the **Fine Tuning Tutorial**, where we deal with improving
-the parsing results of business reports.
-
-Check also this `Huggingface
-space <https://huggingface.co/spaces/deepdoctection/deepdoctection>`__
-where models have been trained on a more diverse data set.
-
-Choosing the kernel
--------------------
-
-We assume that the installation was carried out as described in the
-guidelines. If a virtual environment and a kernel have been created, the
-deep-doc kernel can be chosen using the kernel selection at the upper
-right corner.
-
-.. figure:: ./pics/dd_kernel.png
-   :alt: title
-
-   title
-
-You can check if the installation was successful by activating the next
-cell.
+This notebook will give you a quick tour so that you can get started
+straight away.
 
 .. code:: ipython3
 
-    import os
     import cv2
+    from pathlib import Path
     from matplotlib import pyplot as plt
     from IPython.core.display import HTML
     
@@ -62,13 +25,13 @@ cell.
 Sample
 ------
 
-Let’s first look at a sample page we want to process. (You will probably
-need to change ``image_path``.)
+Take an image (e.g. .png, .jpg, …). If you take the example below you’ll
+maybe need to change ``image_path``.
 
 .. code:: ipython3
 
-    image_path = os.path.join(dd.get_package_path(),"notebooks/pics/samples/sample_2/sample_2.png")
-    image = cv2.imread(image_path)
+    image_path = Path(dd.get_package_path()) / "notebooks/pics/samples/sample_2/sample_2.png"
+    image = cv2.imread(image_path.as_posix())
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(image)
@@ -81,120 +44,129 @@ need to change ``image_path``.)
 Analyzer
 --------
 
-We now start by introducing the **deep**\ doctection analyzer. There is
-a factory function ``get_dd_analyzer`` for that outputs a pre-configured
-version.
+Next, we instantiate the **deep**\ doctection analyzer. There is a
+built-in pipeline you can use. The analyzer is an example of a pipeline
+that can be built depending on the problem you want to tackle. This
+particular pipeline is built from various building blocks as shown in
+the diagram.
 
-Knowing the language in advance will increase the text output
-significantly. As the language is german, we will pass:
-``language='deu'``.
+There is a lot going on under the hood. The analyzer calls three object
+detectors to structure the page and an OCR engine to extract the text.
+However, this is clearly not enough. On top of that, words have to be
+mapped to layout structures and a reading order has to be inferred.
+
+.. figure:: ./pics/dd_pipeline.png
+   :alt: title
 
 .. code:: ipython3
 
     analyzer = dd.get_dd_analyzer(language='deu')
 
-Pipeline components
--------------------
-
-The analyzer is an example of a pipeline that can be built depending on
-the problem you want to tackle. The pipeline is made up of the building
-blocks as described in the diagram
-
-.. figure:: ./pics/dd_pipeline.png
-   :alt: title
-
-   title
-
-The default setting performs layout recognition, table segmentation and
-OCR extraction. You can turn table segmentation and OCR off in order to
-get less but quicker results.
-
-Beside detection and OCR tasks, some other components are needed
-e.g. text matching and reading order. Text matching for instance tries
-to match words to detected layout regions by measuring intersection over
-area.
-
-Both matching and reading order are purely rule based components.
+The language of the sample is german and passing the argument
+``language='deu'`` will use a Tesseract model that has been trained on a
+german corpus giving much better result than the default english
+version.
 
 Analyze methods
 ---------------
 
-The ``analyze`` method has various transfer parameters. The ``path``
-parameter can be used to transfer a path to a directory to the analyzer
-or to a PDF document. If the path points to a directory, all individual
-pages can processed successively provided they have a file name suffix
-‘.png’, ‘.jpg’ or ‘.tif’. If your path points to a PDF document with
-multiple pages the analyzer will work iteratively through all document
-pages.
+Now, that once all models have been loaded, we can process single pages
+or documents. You can either set ``path=path/to/dir`` if you have a
+folder of scans or ``path=path/to/my/doc.pdf`` if you have a single pdf
+document.
 
 .. code:: ipython3
 
-    path = os.path.join(dd.get_package_path(),"notebooks/pics/samples/sample_2")
+    path = Path(dd.get_package_path()) / "notebooks/pics/samples/sample_2"
+    
     df = analyzer.analyze(path=path)
-    df.reset_state()
+    df.reset_state()  # This method must be called just before starting the iteration. It is part of the API.
 
-You can see when activating the cell that not much has happened. Indeed,
-the ``analyze`` method returns a generator and you need to create an
-iterator so you can loop over the pages you wan to process.
 
-We use the ``iter`` / ``next`` method here. The image is only processed
-when the ``next`` function is called.
+You can see when activating the cell that not much has happened yet. The
+reason is that ``analyze`` is a generator function. We need a ``for``
+loop or ``next`` to start the process.
 
 .. code:: ipython3
 
     doc=iter(df)
     page = next(doc)
 
-Page object
------------
+Page
+----
 
-A Page object is returned, which has some handy tools for vizualising a
-retrieving the detected results. There are some attributes that store
-meta data about the input.
+Let’s see what we got back. We start with some header information about
+the page. With ``get_attribute_names()`` you get a list of all
+attributes.
 
 .. code:: ipython3
 
-    page.height, page.width, page.file_name
+    page.height, page.width, page.file_name, page.location
 
 
 
 
 .. parsed-literal::
 
-    (2339, 1654, 'sample_2.png')
+    (2339.0,
+     1654.0,
+     'sample_2.png',
+     '/home/janis/Public/deepdoctection_pt/deepdoctection/notebooks/pics/samples/sample_2/sample_2.png')
 
 
+
+.. code:: ipython3
+
+    page.get_attribute_names()
+
+
+
+
+.. parsed-literal::
+
+    {<PageType.document_type>, <PageType.language>, 'layouts', 'tables', 'text'}
+
+
+
+``page.document_type`` returns None. The reason is that this pipeline is
+not built for document classification. You can easily build a pipeline
+containing a document classifier, though. Check the docs for further
+information.
+
+.. code:: ipython3
+
+    print(page.document_type)
+
+
+.. parsed-literal::
+
+    None
+
+
+We can visualize the detected segments. If you set ``interactive=True``
+a viewer will pop up. Use + and - to zoom out/in. Use q to close the
+page.
+
+Alternatively, you can visualize the output with matplotlib.
 
 .. code:: ipython3
 
     image = page.viz()
-
-The viz method draws the identified layout bounding box components into
-the image. These can be visualized with matplotlib.
-
-The layout analysis reproduces the title, text and tables. In addition,
-lists and figures, if any, are identified. We can see here that a table
-with table cells was recognized on the page. In addition, the
-segmentations such as rows and columns were framed. The row and column
-positions can be seen in the cell names.
-
-.. code:: ipython3
-
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(image)
 
-.. figure:: ./pics/output_16_1.png
+.. figure:: https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/output_16_1.png
    :alt: title
 
-   title
-
-We can use the ``get_text`` method to output the running text only.
-Table content is not included in the output.
+Let’s have a look at other attributes. We can use the ``text`` property
+to get the content of the document. You will notice that the table is
+not included. You can therefore filter tables from the other content. In
+fact you can even filter on every layout.
 
 .. code:: ipython3
 
-    print(page.get_text())
+    print(page.text)
 
 
 .. parsed-literal::
@@ -214,41 +186,72 @@ Table content is not included in the output.
     \ Vergütungsdaten für Delegierte, die die Gesellschaft Portfolio- oder Risikomanagementaufgaben übertragen hat, sind nicht der Tabelle erfasst. an in Unter Berücksichtigung diverser Vergütungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeiträge) oder Nicht-(direkte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergütungen für Fahrzeuge, Mobiltelefone, usw.) umfassen 3 „Senior Management” umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfüllt die Definition als Führungskräfte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Führungskräfte identifiziert.
 
 
+.. code:: ipython3
+
+    for layout in page.layouts:
+        if layout.category_name=="title":
+            print(f"Title: {layout.text}")
+
+
+.. parsed-literal::
+
+    Title: Identifi ierung von Risikoträgern
+    Title: Vergütung für das Jahr 2018
+    Title: Festlegung der VV und angemessene Risikoadjustierung
+
+
 Tables are stored in ``page.tables`` which is a python list of table
-objects. Obviously, only one table has been detected.
+objects. Obviously, only one table has been detected. Let’s have a
+closer look at the table. Most attributes are hopefully self explained.
+If you ``print(page.tables)`` you will get a very cryptic ``__repr__``
+output.
 
 .. code:: ipython3
 
     len(page.tables)
-
-
-
 
 .. parsed-literal::
 
     1
 
 
-
 .. code:: ipython3
 
-    page.tables[0].text
-
-
+    table = page.tables[0]
+    table.get_attribute_names()
 
 
 .. parsed-literal::
 
-    ' Jahresdurchschnitt der Mitarbeiterzahl 139\n Gesamtvergütung ? EUR 15.315.952\n Fixe Vergütung EUR 13.151.856\n Variable Vergütung EUR 2.164.096\n davon: Carried Interest EURO\n Gesamtvergütung für Senior Management ® EUR 1.468.434\n Gesamtvergütung für sonstige Risikoträger EUR 324.229\n Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen EUR 554.046\n'
+    {'bbox',
+     'cells',
+     'columns',
+     <TableType.html>,
+     <TableType.item>,
+     <TableType.max_col_span>,
+     <TableType.max_row_span>,
+     <TableType.number_of_columns>,
+     <TableType.number_of_rows>,
+     <Relationships.reading_order>,
+     'rows',
+     'text',
+     'words'}
 
 
-
-In addition, an HTML version is generated that visually reproduces the
-recognized structure.
 
 .. code:: ipython3
 
-    HTML(page.tables[0].html)
+    table.number_of_rows, table.number_of_columns
+
+
+.. parsed-literal::
+
+    (8, 2)
+
+
+.. code:: ipython3
+
+    HTML(table.html)
 
 
 
@@ -259,19 +262,124 @@ recognized structure.
 
 
 
-Finally, you can save the full results to a JSON file.
+Let’s go deeper into the rabbit hole. A ``Table`` has cells and we can
+even get the text of one particular cell. Note that the output list is
+not sorted by row or column. You have to do it yourself.
 
 .. code:: ipython3
 
-    page.save(image_path)
+    cell = table.cells[0]
+    cell.get_attribute_names()
 
-How to continue
----------------
 
-In this notebook we have shown how to use the built-in analyzer for text
-extraction from image/PDF documents.
 
-We recommend that the next step is to explore the notebook
-**Custom_Pipeline**. Here we go into more detail about the composition
-of pipelines and explain with an example how you can build a pipeline
-yourself.
+
+.. parsed-literal::
+
+    {'bbox',
+     <CellType.body>,
+     <CellType.column_number>,
+     <CellType.column_span>,
+     <CellType.header>,
+     <Relationships.reading_order>,
+     <CellType.row_number>,
+     <CellType.row_span>,
+     'text',
+     'words'}
+
+
+
+.. code:: ipython3
+
+    cell.column_number, cell.row_number, cell.text, cell.annotation_id  # every object comes with a unique annotation_id
+
+
+
+
+.. parsed-literal::
+
+    (1,
+     8,
+     'Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen',
+     'afb3c667-5d58-3689-a82b-69a8a5f71cbd')
+
+
+
+Still not down yet, we have a list of words that is responsible to
+generate the text string.
+
+.. code:: ipython3
+
+    word = cell.words[0]
+    word.get_attribute_names()
+
+
+
+
+.. parsed-literal::
+
+    {'bbox',
+     <WordType.block>,
+     <WordType.characters>,
+     <Relationships.reading_order>,
+     <WordType.tag>,
+     <WordType.text_line>,
+     <WordType.token_class>,
+     <WordType.token_tag>}
+
+
+
+The reading order determines the string position. OCR engines generally
+provide a some heuristics to infer a reading order. This library,
+however, follows the apporach to disentangle every processing step.
+
+.. code:: ipython3
+
+    word.characters, word.reading_order, word.token_class
+
+
+
+
+.. parsed-literal::
+
+    ('Gesamtvergütung', 1, None)
+
+
+
+The ``Page`` object is read-only and even though you can change the
+value it will not be persited.
+
+.. code:: ipython3
+
+    word.token_class = "ORG"
+
+.. code:: ipython3
+
+    word #  __repr__ of the base object does carry <WordType.token_class> information.  
+
+
+
+
+.. parsed-literal::
+
+    Word(active=True, _annotation_id='f35f5c53-8af3-3ed9-971a-4cd65c0a37ce', category_name=<LayoutType.word>, _category_name=<LayoutType.word>, category_id='1', score=0.91, sub_categories={<WordType.characters>: ContainerAnnotation(active=True, _annotation_id='fa28e8c0-5883-392f-b23b-92adb8537b8a', category_name=<WordType.characters>, _category_name=<WordType.characters>, category_id='None', score=0.91, sub_categories={}, relationships={}, value='Gesamtvergütung'), <WordType.block>: CategoryAnnotation(active=True, _annotation_id='8a40178f-1dff-3a02-81be-2b5f5b6d6250', category_name=<WordType.block>, _category_name=<WordType.block>, category_id='47', score=None, sub_categories={}, relationships={}), <WordType.text_line>: CategoryAnnotation(active=True, _annotation_id='34bd3cdf-0048-3647-af75-b43532688418', category_name=<WordType.text_line>, _category_name=<WordType.text_line>, category_id='1', score=None, sub_categories={}, relationships={}), <Relationships.reading_order>: CategoryAnnotation(active=True, _annotation_id='a266ac1d-2a35-3321-9f25-f5d05adef331', category_name=<Relationships.reading_order>, _category_name=<Relationships.reading_order>, category_id='1', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=146, uly=1481, lrx=277, lry=1496, height=15, width=131))
+
+
+
+You can save your result in a big ``.json`` file. The default ``save``
+configuration will store the image as b64 string, so be aware: The
+``.json`` file with that image has a size of 6,2 MB!
+
+.. code:: ipython3
+
+    page.save()
+
+Having saved the results you can easily parse the file into the ``Page``
+format.
+
+.. code:: ipython3
+
+    path = Path(dd.get_package_path()) / "notebooks/pics/samples/sample_2/sample_2.json"
+    
+    df = dd.SerializerJsonlines.load(path)
+    page = dd.Page.from_dict(**next(iter(df)))

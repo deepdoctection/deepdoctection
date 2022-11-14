@@ -376,7 +376,7 @@ class CustomDataset(DatasetBase):
 
                                        annotation_file = {"train": "train_file.json", "test": "test_file.json"}
         """
-        super().__init__()
+
         self.name = name
         self.type = get_type(dataset_type)
         self.location = location
@@ -387,6 +387,7 @@ class CustomDataset(DatasetBase):
             self.init_sub_categories = init_sub_categories
         self.annotation_files = annotation_files
         self.dataflow_builder = dataflow_builder(self.location, self.annotation_files)
+        super().__init__()
 
     def _info(self) -> DatasetInfo:  # type: ignore  # pylint: disable=W0221
         return DatasetInfo(name=self.name, type=self.type, description="", license="", url="", splits={})
