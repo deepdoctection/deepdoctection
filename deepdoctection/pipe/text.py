@@ -18,7 +18,7 @@
 """
 Module for text extraction pipeline component
 """
-from copy import deepcopy, copy
+from copy import copy, deepcopy
 from itertools import chain
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -207,7 +207,7 @@ class TextExtractionService(PredictorPipelineComponent):
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
-        return self.__class__(predictor,deepcopy(self.extract_from_category),self.run_time_ocr_language_selection)
+        return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
 
 
 def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:

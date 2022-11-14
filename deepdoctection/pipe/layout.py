@@ -88,6 +88,4 @@ class ImageLayoutService(PredictorPipelineComponent):
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner)):
             raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
-        return self.__class__(predictor,self.to_image,self.crop_image)
-
-
+        return self.__class__(predictor, self.to_image, self.crop_image)
