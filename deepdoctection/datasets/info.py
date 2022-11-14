@@ -80,8 +80,8 @@ class DatasetInfo:
     :attr:`splits`: A dict of splits. The value must store the relative path, where the split can be found.
 
     :attr:`type`: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
-                  sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification
-                  ('TOKEN_CLASSIFICATION'). Optionally, pass nothing.
+    sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification ('TOKEN_CLASSIFICATION').
+    Optionally, pass `None`.
     """
 
     name: str
@@ -119,8 +119,13 @@ class DatasetCategories:
 
     **Example:**
 
-        An annotation file hast the category/sub-category combinations for three datapoints: (cat1,s1),(cat1,s2),
-        (cat2,s2). You must list :attr:`init_categories`, :attr:`init_sub_categories` as follows:
+        An annotation file hast the category/sub-category combinations for three datapoints:
+
+        .. code-block:: python
+
+            (cat1,s1),(cat1,s2), (cat2,s2).
+
+        You must list :attr:`init_categories`, :attr:`init_sub_categories` as follows:
 
         .. code-block:: python
 
@@ -345,7 +350,7 @@ class DatasetCategories:
 
     def is_cat_to_sub_cat(self) -> bool:
         """
-        returns "True" if a category is replaced with sub categories
+        returns `True` if a category is replaced with sub categories
         """
         if self._cat_to_sub_cat is not None:
             return True
@@ -353,7 +358,7 @@ class DatasetCategories:
 
     def is_filtered(self) -> bool:
         """
-        return "True" if categories are filtered
+        return `True` if categories are filtered
         """
         if hasattr(self, "_categories_filter_update"):
             return True
@@ -366,16 +371,16 @@ class DatasetCategories:
 
 def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     """
-    Given a set of DatasetCategories a DatasetCategories instance will be returned that summarize the category
+    Given a set of `DatasetCategories`, a `DatasetCategories` instance will be returned that summarize the category
     properties of merged dataset. This means it will save the union of all possible categories as its init categories.
     Regarding sub categories, only those will be accessible if and only if they are a sub category of a category for all
-    merged datasets. E.g. if dataset A has category "foo" with sub category "foo":"bak" and dataset B has category "foo"
+    merged datasets. E.g. if dataset A has category `foo` with sub category `foo`:`bak` and dataset B has category `foo`
     as well but no sub category than the merged dataset will have no sub categories at all. Whereas in a similar setting
-    dataset B has sub category "foo":"bak", then "bak" will be an optional sub category for the merged dataset as well.
+    dataset B has sub category `foo`:`bak`, then `bak` will be an optional sub category for the merged dataset as well.
 
 
     :param categories: A tuple/list of dataset categories
-    :return: An instance of DatasetCategories to be used as DatasetCategories for merged datasets
+    :return: An instance of `DatasetCategories` to be used as `DatasetCategories` for merged datasets
     """
 
     # working with lists is not possible as the order of categories is important here

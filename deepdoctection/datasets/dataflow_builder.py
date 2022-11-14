@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for DataflowBase class.
+Module for DataFlowBaseBuilder class.
 """
 
 from abc import ABC, abstractmethod

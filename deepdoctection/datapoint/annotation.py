@@ -34,7 +34,7 @@ from .convert import as_dict
 @no_type_check
 def ann_from_dict(cls, **kwargs):
     """
-    A factory function to create sub classes of `Annotation` from a given dict
+    A factory function to create sub classes of annotations from a given dict
     """
     ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
     ann.active = kwargs.get("active")
@@ -68,7 +68,7 @@ class Annotation(ABC):
     on the defining attributes (key and value pairs) as specified in the return value of
     :meth:`get_defining_attributes`.
 
-    :attr:`active`: Always set to "True". You can change the value using :meth:`deactivate` .
+    :attr:`active`: Always set to `True`. You can change the value using :meth:`deactivate` .
 
     :attr:`external_id`: A string or integer value for generating an annotation id. Note, that the resulting annotation
     id will not depend on the defining attributes.
@@ -173,7 +173,9 @@ class Annotation(ABC):
     def from_dict(cls, **kwargs: JsonDict) -> "Annotation":
         """
         Method to initialize a derived class from dict.
-        :param kwargs: dict with  :class:`Annotation` attributes
+
+        :param kwargs: dict with `Annotation` attributes
+
         :return: Annotation instance
         """
         raise NotImplementedError
@@ -352,10 +354,10 @@ class ImageAnnotation(CategoryAnnotation):
     image_ann_to_image`, which naturally populates this attribute.
 
     :attr:`bounding_box`: Regarding the coordinate system, if you have to define a prediction, use the system of the
-                          image where the object has been detected.
+    image where the object has been detected.
 
     :attr:`image`: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
-                   :meth:`Image.image_ann_to_image`.
+    :meth:`Image.image_ann_to_image`.
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
