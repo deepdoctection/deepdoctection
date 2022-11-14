@@ -107,12 +107,10 @@ def match_anns_by_intersection(
 
     # second try, if ann has empty image
     n_dim = child_ann_boxes.ndim
-    if n_dim!=2:
+    if n_dim != 2:
         child_ann_boxes = np.array(
             [
-                ann.bounding_box
-                .transform(dp.width, dp.height, absolute_coords=True)
-                .to_list(mode="xyxy")
+                ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
                 for ann in child_anns
             ]
         )
@@ -130,12 +128,10 @@ def match_anns_by_intersection(
 
     # same for parent
     n_dim = parent_ann_boxes.ndim
-    if n_dim!=2:
+    if n_dim != 2:
         parent_ann_boxes = np.array(
             [
-                ann.bounding_box
-                .transform(dp.width, dp.height, absolute_coords=True)
-                .to_list(mode="xyxy")
+                ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
                 for ann in parent_anns
             ]
         )

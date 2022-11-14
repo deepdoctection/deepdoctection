@@ -624,7 +624,7 @@ def get_tp_weight_names(name: str) -> List[str]:
     return weight_names
 
 
-def print_model_infos(add_description: bool =True, add_config: bool= True, add_categories: bool=True) -> None:
+def print_model_infos(add_description: bool = True, add_config: bool = True, add_categories: bool = True) -> None:
     """
     Prints a table with all registered model profiles and some of their attributes (name, description, config and
     categories)

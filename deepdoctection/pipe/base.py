@@ -158,8 +158,6 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         raise NotImplementedError
 
 
-
-
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
     """
     Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .

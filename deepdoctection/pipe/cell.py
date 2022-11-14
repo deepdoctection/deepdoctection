@@ -18,8 +18,8 @@
 """
 Module for cell detection pipeline component
 """
-from copy import deepcopy
 from collections import Counter, defaultdict
+from copy import deepcopy
 from typing import Dict, List, Mapping, Optional, Union
 
 from ..datapoint.image import Image
@@ -227,6 +227,9 @@ class SubImageLayoutService(PredictorPipelineComponent):
         predictor = self.predictor.clone()
         if not isinstance(predictor, ObjectDetector):
             raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(predictor)}")
-        return self.__class__(predictor, deepcopy(self.sub_image_name),
-                              deepcopy(self.category_id_mapping),
-                              deepcopy(self.add_dummy_detection))
+        return self.__class__(
+            predictor,
+            deepcopy(self.sub_image_name),
+            deepcopy(self.category_id_mapping),
+            deepcopy(self.add_dummy_detection),
+        )
