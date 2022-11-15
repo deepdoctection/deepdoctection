@@ -112,8 +112,11 @@ class LanguageDetectionService(PipelineComponent):
                 logger.info("text_block_names are set to None. This setting will return no reading order!")
 
     def clone(self) -> PipelineComponent:
+        predictor = self.predictor.clone()
+        if not isinstance(predictor, LanguageDetector):
+            raise ValueError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
         return self.__class__(
-            self.predictor.clone(),
+            predictor,
             copy(self.text_container),
             deepcopy(self.text_detector),
             deepcopy(self.text_block_names),
