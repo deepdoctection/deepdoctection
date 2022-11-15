@@ -376,8 +376,9 @@ class Page(Image):
         if image_orig.image is not None:
             page.image = image_orig.image  # pass image explicitly so
         page._image_id = img_kwargs.get("_image_id")
-        if b64_image := img_kwargs.get("_image"):
-            page.image = b64_image
+        if page.image is None:
+            if b64_image := img_kwargs.get("_image"):
+                page.image = b64_image
         if box_kwargs := img_kwargs.get("_bbox"):
             page._bbox = BoundingBox.from_dict(**box_kwargs)
         if embeddings := img_kwargs.get("embeddings"):

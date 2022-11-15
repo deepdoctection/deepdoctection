@@ -111,7 +111,7 @@ def match_anns_by_intersection(
         child_ann_boxes = np.array(
             [
                 ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
-                for ann in child_anns
+                for ann in child_anns if ann.bounding_box is not None
             ]
         )
 
@@ -132,7 +132,7 @@ def match_anns_by_intersection(
         parent_ann_boxes = np.array(
             [
                 ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
-                for ann in parent_anns
+                for ann in parent_anns if ann.bounding_box is not None
             ]
         )
 

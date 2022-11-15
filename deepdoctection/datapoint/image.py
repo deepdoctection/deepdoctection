@@ -383,7 +383,10 @@ class Image:
         """
 
         img_dict = as_dict(self, dict_factory=dict)
-        img_dict["_image"] = convert_np_array_to_b64(self.image)
+        if self.image is not None:
+            img_dict["_image"] = convert_np_array_to_b64(self.image)
+        else:
+            img_dict["_image"] = None
         return img_dict
 
     @staticmethod
@@ -513,8 +516,9 @@ class Image:
         """
         image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
         image._image_id = kwargs.get("_image_id")
-        if b64_image := kwargs.get("_image"):
-            image.image = b64_image
+        _image = kwargs.get("_image")
+        if _image is not None:
+            image.image = _image
         if box_kwargs := kwargs.get("_bbox"):
             image._bbox = BoundingBox.from_dict(**box_kwargs)
         for image_id, box_dict in kwargs.get("embeddings").items():
