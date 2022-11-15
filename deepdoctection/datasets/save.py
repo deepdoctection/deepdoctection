@@ -27,7 +27,8 @@ from cv2 import imwrite
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
-from ..utils.detection_types import Pathlike
+from ..datapoint.image import Image
+from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.fs import mkdir_p
 
 
@@ -37,7 +38,6 @@ def dataflow_to_json(
     single_files: bool = False,
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,
-    save_image: bool = False,
     save_image_in_json: bool = True,
     highest_hierarchy_only: bool = False,
 ) -> None:
@@ -51,8 +51,6 @@ def dataflow_to_json(
                          dumped into a single jsonl file.
     :param file_name: file name, only needed for jsonl files
     :param max_datapoints: Will stop saving after dumping max_datapoint images.
-    :param save_image: Will save the image. It can be saved separately in a sub folder "image" or in the .json file.
-                       The choice can be customized by the next parameter.
     :param save_image_in_json: Will save the image to the JSON object
     :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
     """
@@ -62,8 +60,20 @@ def dataflow_to_json(
         mkdir_p(path)
     if not save_image_in_json:
         mkdir_p(path / "image")
+    if highest_hierarchy_only:
 
-    df = MapData(df, lambda dp: dp.get_export(save_image, highest_hierarchy_only))
+        def _remove_hh(dp: Image) -> Image:
+            dp.remove_image_from_lower_hierachy()
+            return dp
+
+        df = MapData(df, _remove_hh)
+    df = MapData(df, lambda dp: dp.as_dict())
+
+    def _path_to_str(dp: JsonDict) -> JsonDict:
+        dp["location"] = str(dp["location"])
+        return dp
+
+    df = MapData(df, _path_to_str)
     df.reset_state()
     if single_files:
         for idx, dp in enumerate(df):

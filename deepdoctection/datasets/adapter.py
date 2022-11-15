@@ -22,17 +22,19 @@ Module for wrapping datasets into a pytorch dataset framework.
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
-from torch.utils.data import IterableDataset
-
 from ..dataflow import CustomDataFromList, MapData, RepeatedData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
+from ..utils.file_utils import pytorch_available
 from ..utils.logger import log_once, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
+
+if pytorch_available():
+    from torch.utils.data import IterableDataset
 
 
 class DatasetAdapter(IterableDataset):  # type: ignore

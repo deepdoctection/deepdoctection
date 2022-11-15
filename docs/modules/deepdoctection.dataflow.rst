@@ -1,6 +1,9 @@
 deepdoctection.dataflow
 =================================
 
+.. automodule:: deepdoctection.dataflow
+
+
 deepdoctection.dataflow.common
 ---------------------------------------
 

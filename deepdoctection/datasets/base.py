@@ -22,13 +22,15 @@ Module for the base class of datasets.
 import os
 import pprint
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
+from ..utils.detection_types import Pathlike
 from ..utils.logger import logger
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
@@ -320,3 +322,78 @@ class MergeDataset(DatasetBase):
 
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
+
+
+class CustomDataset(DatasetBase):
+    """
+    A simple dataset interface that implements the boilerplate code and reduces complexity by merely leaving
+    the user to write a `DataFlowBaseBuilder` (mapping the annotation format into deepdoctection data model is
+    something that has to be left to the user for obvious reasons). Check the tutorial on how to approach the mapping
+    problem.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        dataset_type: TypeOrStr,
+        location: Pathlike,
+        init_categories: Sequence[ObjectTypes],
+        dataflow_builder: Type[DataFlowBaseBuilder],
+        init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
+        annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+    ):
+        """
+        :param name: Name of the dataset. It will not be used in the code, however it might be helpful, if several
+                     custom datasets are in use.
+        :param dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describe
+                     the machine learning task the dataset is built for. You can get all registered types with
+
+                     .. code-block:: python
+
+                            types = dd.object_types_registry.get("DatasetType")
+                            print({t for t in types})
+
+        :param location: Datasets should be stored a sub folder of name `location` in the local cache
+                         `get_dataset_dir_path()`. There are good reasons to use `name`.
+        :param init_categories: A list of all available categories in this dataset. You must use a list as the order
+                                of the categories must always be preserved: they determine the category id that in turn
+                                will be used for model training.
+        :param dataflow_builder: A sub class of `DataFlowBaseBuilder`. Do not instantiate the class by yourself.
+        :param init_sub_categories: A dict mapping main categories to sub categories, if there are any available.
+                                    Suppose an object `LayoutType.cell` has two additional information in the annotation
+                                    file: `CellType.header, CellType.body`. You can then write:
+
+                                    .. code-block:: python
+
+                                        {LayoutType.cell: {CellType.header: [CellType.header, CellType.body]}
+
+                                    This setting assumes that later in the mapping the `ImageAnnotation` with
+                                    `category_name=LayoutType.cell` will have a sub category of key `CellType.header`
+                                    and one of the two values `CellType.header, CellType.body`
+        :param annotation_files: A mapping to one or more annotation files, e.g.
+
+                                   .. code-block:: python
+
+                                       annotation_file = {"train": "train_file.json", "test": "test_file.json"}
+        """
+
+        self.name = name
+        self.type = get_type(dataset_type)
+        self.location = location
+        self.init_categories = init_categories
+        if init_sub_categories is None:
+            self.init_sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {}
+        else:
+            self.init_sub_categories = init_sub_categories
+        self.annotation_files = annotation_files
+        self.dataflow_builder = dataflow_builder(self.location, self.annotation_files)
+        super().__init__()
+
+    def _info(self) -> DatasetInfo:  # type: ignore  # pylint: disable=W0221
+        return DatasetInfo(name=self.name, type=self.type, description="", license="", url="", splits={})
+
+    def _categories(self) -> DatasetCategories:
+        return DatasetCategories(init_categories=self.init_categories, init_sub_categories=self.init_sub_categories)
+
+    def _builder(self) -> DataFlowBaseBuilder:
+        return self.dataflow_builder

@@ -18,16 +18,17 @@
 """
 Module for text extraction pipeline component
 """
-from copy import deepcopy
+from copy import copy, deepcopy
 from itertools import chain
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
-from ..utils.settings import LayoutType, Relationships, TypeOrStr, WordType, get_type
+from ..utils.settings import LayoutType, PageType, Relationships, TypeOrStr, WordType, get_type
 from .base import PipelineComponent, PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -68,6 +69,7 @@ class TextExtractionService(PredictorPipelineComponent):
         self,
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
+        run_time_ocr_language_selection: bool = False,
     ):
         """
         :param text_extract_detector: ObjectDetector
@@ -85,6 +87,12 @@ class TextExtractionService(PredictorPipelineComponent):
         if self.extract_from_category:
             if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
                 raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
+        if run_time_ocr_language_selection:
+            assert isinstance(self.predictor, TesseractOcrDetector), (
+                "Only TesseractOcrDetector supports multiple " "languages"
+            )
+
+        self.run_time_ocr_language_selection = run_time_ocr_language_selection
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -96,6 +104,8 @@ class TextExtractionService(PredictorPipelineComponent):
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
             width, height = None, None
+            if self.run_time_ocr_language_selection:
+                self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
             detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
             if isinstance(self.predictor, PdfMiner):
                 width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
@@ -192,6 +202,12 @@ class TextExtractionService(PredictorPipelineComponent):
     @staticmethod
     def _get_name(text_detector_name: str) -> str:
         return f"text_extract_{text_detector_name}"
+
+    def clone(self) -> "PredictorPipelineComponent":
+        predictor = self.predictor.clone()
+        if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
+            raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
+        return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
 
 
 def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
@@ -377,7 +393,9 @@ class TextOrderService(PipelineComponent):
         :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
                                               hierarchy. However, if a text container is not assigned to a text block
                                               you can add it to the text block ordering to ensure that the full text is
-                                              part of the subsequent sub process.
+                                              part of the subsequent sub process. Note however, that if the text
+                                              container is on word level rather than line level, the results will not be
+                                              very convincing
         """
         if isinstance(floating_text_block_names, str):
             floating_text_block_names = [floating_text_block_names]
@@ -399,7 +417,7 @@ class TextOrderService(PipelineComponent):
         # select all text blocks that are considered to be relevant for page text. This does not include some layout
         # items that have to be considered independently (e.g. tables). Order the blocks by column wise reading order
         text_block_anns = dp.get_annotation(category_names=self._floating_text_block_names)
-
+        number_text_block_anns_orig = len(text_block_anns)
         # maybe add all text containers that are not mapped to a text block
         if self._text_containers_to_text_block:
             text_ann_ids = list(
@@ -409,11 +427,16 @@ class TextOrderService(PipelineComponent):
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
             text_block_anns.extend(text_container_anns)
 
-        raw_reading_order_list = _reading_columns(dp, text_block_anns, 0.05, 2.0)
-        for raw_reading_order in raw_reading_order_list:
-            self.dp_manager.set_category_annotation(
-                Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
-            )
+        # estimating reading columns. We will only do this if we have some text blocks that are no text_containers
+        # (number_text_block_anns_orig >0) or if the text container is not a word. Otherwise, we will have to skip that
+        # part
+        if self._text_container != LayoutType.word or number_text_block_anns_orig:
+            raw_reading_order_list = _reading_columns(dp, text_block_anns, 0.05, 2.0)
+
+            for raw_reading_order in raw_reading_order_list:
+                self.dp_manager.set_category_annotation(
+                    Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
+                )
 
         # next we select all blocks that might contain text. We sort all text within these blocks
         block_anns = dp.get_annotation(category_names=self._text_block_names)
@@ -432,18 +455,42 @@ class TextOrderService(PipelineComponent):
         # this is the setting where we order words without having text blocks
         if not block_anns:
             text_container_anns = dp.get_annotation(category_names=self._text_container)
-            raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
-            for raw_reading_order in raw_reading_order_list:
-                self.dp_manager.set_category_annotation(
-                    Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
-                )
+            # some OCR systems return textline and blocks. If they are available we will sort first by block, then by
+            # line and finally by center x coord.
+            if text_container_anns:
+                text_container_ann = text_container_anns[0]
+                if WordType.block and WordType.text_line in text_container_ann.sub_categories:
+                    text_container_position = [
+                        (
+                            int(ann.get_sub_category(WordType.block).category_id),
+                            int(ann.get_sub_category(WordType.text_line).category_id),
+                            ann.bounding_box.cx,  # type: ignore
+                            ann.annotation_id,
+                        )
+                        for ann in text_container_anns
+                    ]
+                    text_container_position.sort(key=lambda x: (x[0], x[1], x[2]))
+                    for position, element in enumerate(text_container_position):
+                        self.dp_manager.set_category_annotation(
+                            Relationships.reading_order, position, Relationships.reading_order, element[3]
+                        )
+                else:
+                    # Last try. We only form lines without and define a reading from this
+                    raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
+                    for raw_reading_order in raw_reading_order_list:
+                        self.dp_manager.set_category_annotation(
+                            Relationships.reading_order,
+                            raw_reading_order[0],
+                            Relationships.reading_order,
+                            raw_reading_order[1],
+                        )
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
-            self._text_container,
-            self._floating_text_block_names,
-            self._text_block_names,
-            self._text_containers_to_text_block,
+            copy(self._text_container),
+            deepcopy(self._floating_text_block_names),
+            deepcopy(self._text_block_names),
+            deepcopy(self._text_containers_to_text_block),
         )
 
     def _init_sanity_checks(self) -> None:

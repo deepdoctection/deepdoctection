@@ -30,7 +30,7 @@ from .base import DataFlow, ProxyDataFlow
 
 class MeanFromDataFlow(ProxyDataFlow):
     """
-    Gets the mean of some dataflow. Takes a component from a dataflow and calculates iteratively the mean.
+    Get the mean of some dataflow. Takes a component from a dataflow and calculates iteratively the mean.
 
     **Example:**
 

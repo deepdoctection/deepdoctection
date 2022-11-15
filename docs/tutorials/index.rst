@@ -21,7 +21,6 @@ certain adjustments are worthwhile from the point of view of cost-benefit analys
   get_started_notebook
   custom_pipeline_notebook
   datasets_and_eval_notebook
-  fine_tune_notebook
   using_layoutlm_for_sequence_classification
 
 .. toctree::

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for Deep-Doctection Analyzer
+Module for **deep**doctection analyzer.
 """
 
 import os
@@ -78,7 +78,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
-def _maybe_copy_config_to_cache(file_name: str) -> str:
+def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
     """
     Initial copying of config file from the package dir into the config cache.
 
@@ -88,7 +88,7 @@ def _maybe_copy_config_to_cache(file_name: str) -> str:
     absolute_path_source = os.path.join(get_package_path(), file_name)
     absolute_path = os.path.join(get_configs_dir_path(), os.path.join("dd", os.path.split(file_name)[1]))
     mkdir_p(os.path.split(absolute_path)[0])
-    if not os.path.isfile(absolute_path):
+    if not os.path.isfile(absolute_path) or force_copy:
         copyfile(absolute_path_source, absolute_path)
     return absolute_path
 
@@ -110,7 +110,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         categories_layout = profile.categories
         assert categories_layout is not None
         assert layout_weights_path is not None
-        d_layout = TPFrcnnDetector(profile.name, layout_config_path, layout_weights_path, categories_layout)
+        d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
     else:
         layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2LAYOUT)
         layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
@@ -118,9 +118,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         categories_layout = profile.categories
         assert categories_layout is not None
         assert layout_weights_path is not None
-        d_layout = D2FrcnnDetector(
-            profile.name, layout_config_path, layout_weights_path, categories_layout, device=cfg.DEVICE
-        )
+        d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=cfg.DEVICE)
     layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
     pipe_component_list.append(layout)
 
@@ -135,7 +133,6 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             categories_cell = profile.categories
             assert categories_cell is not None
             d_cell = TPFrcnnDetector(
-                profile.name,
                 cell_config_path,
                 cell_weights_path,
                 categories_cell,
@@ -145,24 +142,20 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             profile = ModelCatalog.get_profile(cfg.WEIGHTS.TPITEM)
             categories_item = profile.categories
             assert categories_item is not None
-            d_item = TPFrcnnDetector(profile.name, item_config_path, item_weights_path, categories_item)
+            d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
         else:
             cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
             cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
             profile = ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL)
             categories_cell = profile.categories
             assert categories_cell is not None
-            d_cell = D2FrcnnDetector(
-                profile.name, cell_config_path, cell_weights_path, categories_cell, device=cfg.DEVICE
-            )
+            d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=cfg.DEVICE)
             item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
             item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
             profile = ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM)
             categories_item = profile.categories
             assert categories_item is not None
-            d_item = D2FrcnnDetector(
-                profile.name, item_config_path, item_weights_path, categories_item, device=cfg.DEVICE
-            )
+            d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=cfg.DEVICE)
 
         cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, True)
         pipe_component_list.append(cell)
@@ -231,17 +224,17 @@ def get_dd_analyzer(
     tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
 ) -> DoctectionPipe:
     """
-    Factory function for creating the built-in **Deep-Doctection Analyzer**.
+    Factory function for creating the built-in **deep**doctection analyzer.
 
     The Standard Analyzer is a pipeline that comprises the following analysis components:
 
     - Document analysis with object recognition and classification of:
 
-        * TITLE
-        * TEXT
-        * LIST
-        * TABLE
-        * FIGURE
+        * title
+        * text
+        * list
+        * table
+        * figure
 
     - Table recognition including line and column segmentation as well as detection of cells that run over several
       rows or columns.

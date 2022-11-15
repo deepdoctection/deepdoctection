@@ -6,7 +6,7 @@ Regardless of whether you use data to fine-tune a task, carry out an evaluation 
 dataset provides a way to make data available in a standard format so that it can be processed through components
 of the library.
 
-Document Layout Analysis and Visual Document Understanding require image datasets most of the time.
+Document Layout Analysis and Visual Document Understanding require image datasets.
 This in turn means that they cannot be loaded into memory. Instead one has a small file with
 annotations and links that can be used as a hook to load additional material like images or text data when it is needed.
 
@@ -21,46 +21,114 @@ In Pytorch you can iterate over samples like:
 
     dp = next(iter(MyPytorchDataset))
 
-In **deep**doctection, data sets have a :meth:`build` method in the :class:`DataFlowBuilder` attribute that
-returns a :class:`Dataflow`. The :meth:`build` accepts arguments, so that you can change the representation of
+DatasetInfo, DatasetCategories and DataFlowBuilder
+--------------------------------------------------
+
+In **deep**\doctection, data sets have a :meth:`build` method in the :class:`DataFlowBuilder` attribute that
+returns a :class:`DataFlow`. The :meth:`build` accepts arguments, so that you can change the representation of
 datapoints up to some degree or so that you can filter some unwanted samples or reduce the size of the dataset.
 
-A data set consists of three components modelled as attributes: :class:`DatasetInfos`, :class:`DatasetCategories` and a
-:class:`Dataflowbuilder` class that have to be implemented individually. :meth:`build` of
-:class:`Dataflowbuilder` returns a generator, a :class:`Dataflow` instance from which data points can be streamed.
-
-A paradigm of **deep**\doctection is that data points, if they are streamed via the :meth:`build`, are not returned in the
-raw annotation format of the annotation file, but in :class:`Image` format. An :class:`Image` is a class in which
-annotations from common Document-AI tasks can be mapped in a standardized manner. This uniform mapping may seem
-redundant at first, but once having standard data point formats, it is relatively simple to try out different components
-of the **deep**\doctection framework or to merge datasets.
-First of all, an :class:`Image` contains information about the image sample itself. This includes metadata such as
-storage location or pixel width and height. The image sample itself can also be saved as a numpy array. However, for the
-reasons mentioned above, one should not initially save the image sample when loading annotations, but only provide the
-location. While training or evaluation, the image itself is loaded from its storage location just when needed, that is
-just before it is loaded into the model to perform a forward path. After that it will be immediately removed from memory.
-
-An :class:`Image` contains the information about the annotations of an image in the :class:`ImageAnnotations`.
-:class:`ImageAnnotation` is a class that allows storing bounding boxes, category names, but also subcategories and
-relations.
-
-As far as mapping is concerned, there are already some important mapping functions that convert datapoints from a raw
-annotation format into an :class:`Image`. It's a good idea to look at a mapping function like :func:`coco_to_image`,
-where a data point in coco format is mapped into an :class:`Image`.
+A data set consists of three components modelled as attributes: :class:`DatasetInfo`, :class:`DatasetCategories` and a
+:class:`DataFlowBuilder` class that have to be implemented individually. :meth:`build` of
+:class:`DataFlowBuilder` returns a generator, a :class:`DataFlow` instance from which data points can be streamed.
 
 
-Custom Data set
----------------
+Custom dataset
+--------------
 
-The easiest way is to physically store a dataset in the .cache directory of **deep**doctection (usually this is
-~/.cache/deepdoctection/datasets). If you pass the argument
+As of version 0.18, there is a client :class:`CustomDataset` that helps you to create quickly a dataset without
+implementing an large overhead. Basically, you have to write a :class:`DataFlowBuilder` and you have to instantiate
+a :class:`CustomDataset`.
+
+The easiest way is to physically store a dataset in the .cache directory of **deep**\doctection (usually this is
+~/.cache/deepdoctection/datasets). Create a sub folder "custom_dataset" and store you dataset in this sub folder.
+
+If you set
 
 .. code:: python
 
-    location = "custom_dataset"
+    my_custom_dataset = CustomDataset(...,location = "custom_dataset",..)
 
-in the dataflow builder, it is assumed that the dataset was physically stored in the "custom_dataset" sub directory of
-datasets. We assume that in "custom_dataset" the data set was physically placed following the structure:
+then
+
+.. code:: python
+
+   my_custom_dataset.dataflow.get_workdir()
+
+will point to the sub folder "custom_dataset". Moreover, you have to map every dataset to a  `dataset_type`. This must
+be one of the members of the `DatasetType`. The most crucial part is to build a :class:`DataFlowBaseBuilder`.
+
+.. code:: python
+
+    class CustomDataflow(DataFlowBaseBuilder):
+
+        def build(**kwargs):
+
+            path =  self.get_workdir() / annotation_file.jsonl
+            df = SerializerJsonLines.load(path)                      # will stream every .json linewise
+            ...
+
+Note, that :meth:`build` must yield an :class:`Image`. It it therefore crucial to map the data structure of the
+annotation file into an :class:`Image`. Fortunately, there are already some mappings made available. For COCO-style
+annotation, you can simply do:
+
+.. code:: python
+
+    class CustomDataflow(DataFlowBaseBuilder):
+
+        def build(**kwargs):
+
+            path =  self.get_workdir() / annotation_file.json
+            df = SerializerCoco.load(path)                    # will load a coco style annotation file and combine
+                                                              # image and their annotations.
+
+
+            # a callable with some configuration (mapping category ids and category names/ skipping the image loading)
+            coco_mapper = coco_to_image(self.categories.get_categories(init=True),
+                                         load_image= False)
+            df = MapData(df, coco_mapper)
+            return df
+
+If you need a custom mapping, please consult the section :ref:`Datapoint` . This dataflow has a very basic behaviour.
+You can add some more functionalities like filtering some categories.
+
+
+.. code:: python
+
+        class CustomDataflow(DataFlowBaseBuilder):
+
+            def build(**kwargs):
+                ...
+                df = MapData(df, coco_mapper)
+
+                if self.categories.is_filtered():
+                    df = MapData(df, filter_cat(self.categories.get_categories(as_dict=False, filtered=True),
+                                                self.categories.get_categories(as_dict=False, filtered=False),
+                                 ),
+                    )
+
+Having added this to your dataflow, you can now customize your categories:
+
+.. code:: python
+
+    my_custom_dataset = CustomDataset("train_data",
+                                       DatasetType.object_detection,
+                                       "custom_dataset_location",
+                                       [LayoutType.text, LayoutType.title, LayoutType.table],
+                                       CustomDataflow("custom_dataset_location",{"train": "annotation_file.json"}))
+
+    my_custom_dataset.dataflow.categories.filter_categories(categories="table")
+
+    df = my_custom_dataset.dataflow.build()
+    df.reset_state()
+    for dp in df:
+        ... # dp has now only 'table' labels. 'text' and 'title' has been filtered out.
+
+
+How to build datasets the long way
+----------------------------------
+
+We assume that in "custom_dataset" the data set was physically placed in the following the structure:
 
 
 |    custom_dataset

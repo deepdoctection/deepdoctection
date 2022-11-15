@@ -320,7 +320,6 @@ def train_hf_layoutlm(
                 categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
             )[LayoutType.word][WordType.token_tag]
         dd_model = dd_model_cls(
-            "layoutlm",
             path_config_json=path_config_json,
             path_weights=path_weights,
             categories=categories,

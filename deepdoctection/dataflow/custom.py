@@ -38,8 +38,15 @@ class CacheData(ProxyDataFlow):
     """
     Completely cache the first pass of a DataFlow in memory,
     and produce from the cache thereafter.
+
     NOTE: The user should not stop the iterator before it has reached the end.
     Otherwise, the cache may be incomplete.
+
+    **Example:**
+
+        .. code-block:: python
+
+            df_list = CacheData(df).get_cache()   # buffers the whole dataflow and return a list of all datapoints
     """
 
     def __init__(self, df: DataFlow, shuffle: bool = False) -> None:

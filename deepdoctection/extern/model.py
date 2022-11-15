@@ -22,7 +22,7 @@ Module for ModelCatalog and ModelDownloadManager
 import os
 from copy import copy
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
@@ -53,6 +53,7 @@ class ModelProfile:
     hf_config_file: Optional[List[str]] = field(default=None)
     urls: Optional[List[str]] = field(default=None)
     categories: Optional[Dict[str, ObjectTypes]] = field(default=None)
+    model_wrapper: Optional[str] = field(default=None)
 
     def as_dict(self) -> Dict[str, Any]:
         """
@@ -111,6 +112,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            model_wrapper="TPFrcnnDetector",
         ),
         "cell/model-1800000_inf_only.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000_inf_only.data-00000-of-00001",
@@ -122,6 +124,7 @@ class ModelCatalog:
             hf_model_name="model-1800000_inf_only",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
+            model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(
             name="item/model-1620000_inf_only.data-00000-of-00001",
@@ -133,6 +136,7 @@ class ModelCatalog:
             hf_model_name="model-1620000_inf_only",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000.data-00000-of-00001": ModelProfile(
             name="item/model-1620000.data-00000-of-00001",
@@ -144,6 +148,7 @@ class ModelCatalog:
             hf_model_name="model-1620000",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            model_wrapper="TPFrcnnDetector",
         ),
         "layout/model-800000.data-00000-of-00001": ModelProfile(
             name="layout/model-800000.data-00000-of-00001",
@@ -161,6 +166,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            model_wrapper="TPFrcnnDetector",
         ),
         "cell/model-1800000.data-00000-of-00001": ModelProfile(
             name="cell/model-1800000.data-00000-of-00001",
@@ -172,6 +178,7 @@ class ModelCatalog:
             hf_model_name="model-1800000",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
+            model_wrapper="TPFrcnnDetector",
         ),
         "layout/d2_model-800000-layout.pkl": ModelProfile(
             name="layout/d2_model-800000-layout.pkl",
@@ -189,6 +196,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout_inf_only.pt": ModelProfile(
             name="layout/d2_model_0829999_layout_inf_only.pt",
@@ -206,6 +214,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout.pth": ModelProfile(
             name="layout/d2_model_0829999_layout.pth",
@@ -223,6 +232,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model-1800000-cell.pkl": ModelProfile(
             name="cell/d2_model-1800000-cell.pkl",
@@ -234,6 +244,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1800000-cell.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell_inf_only.pt": ModelProfile(
             name="cell/d2_model_1849999_cell_inf_only.pt",
@@ -245,6 +256,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1849999_cell_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell.pth": ModelProfile(
             name="cell/d2_model_1849999_cell.pth",
@@ -256,6 +268,7 @@ class ModelCatalog:
             hf_model_name="cell/d2_model_1849999_cell.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model-1620000-item.pkl": ModelProfile(
             name="item/d2_model-1620000-item.pkl",
@@ -267,6 +280,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1620000-item.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item.pth": ModelProfile(
             name="item/d2_model_1639999_item.pth",
@@ -278,6 +292,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item_inf_only.pt": ModelProfile(
             name="item/d2_model_1639999_item_inf_only.pt",
@@ -289,6 +304,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            model_wrapper="D2FrcnnDetector",
         ),
         "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlm-base-uncased/pytorch_model.bin",
@@ -501,6 +517,7 @@ class ModelCatalog:
                 "__label__vep": Languages.not_defined,
                 "__label__tyv": Languages.not_defined,
             },
+            model_wrapper="FasttextLangDetector",
         ),
     }
 
@@ -607,7 +624,7 @@ def get_tp_weight_names(name: str) -> List[str]:
     return weight_names
 
 
-def print_model_infos() -> None:
+def print_model_infos(add_description: bool = True, add_config: bool = True, add_categories: bool = True) -> None:
     """
     Prints a table with all registered model profiles and some of their attributes (name, description, config and
     categories)
@@ -617,10 +634,24 @@ def print_model_infos() -> None:
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        infos.append((profile.name, profile.description, profile.config, profile.categories))
+        tbl_input: List[Union[Mapping[str, ObjectTypes], str]] = [profile.name]
+        if add_description:
+            tbl_input.append(profile.description)
+        if add_config:
+            tbl_input.append(profile.config if profile.config else "")
+        if add_categories:
+            tbl_input.append(profile.categories if profile.categories else {})
+        infos.append(tbl_input)
+    tbl_header = ["name"]
+    if add_description:
+        tbl_header.append("description")
+    if add_config:
+        tbl_header.append("config")
+    if add_categories:
+        tbl_header.append("categories")
     table = tabulate(
         infos,
-        headers=["name", "description", "config", "categories"] * (num_columns // 2),
+        headers=tbl_header * (num_columns // 2),
         tablefmt="fancy_grid",
         stralign="left",
         numalign="left",
@@ -660,10 +691,15 @@ class ModelDownloadManager:
             if profile.tp_model:
                 file_names = get_tp_weight_names(name)
             else:
-                hf_model_name = profile.hf_model_name
-                if hf_model_name is None:
-                    raise ValueError("hf_model_name cannot be None")
-                file_names.append(hf_model_name)
+                model_name = profile.hf_model_name
+                if model_name is None:
+                    # second try. Check if a url is provided
+                    if profile.urls is None:
+                        raise ValueError("hf_model_name and urls cannot be both None")
+                    for url in profile.urls:
+                        file_names.append(url.split("/")[-1])
+                else:
+                    file_names.append(model_name)
             if profile.hf_repo_id:
                 ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
                 absolute_path_configs = ModelCatalog.get_full_path_configs(name)

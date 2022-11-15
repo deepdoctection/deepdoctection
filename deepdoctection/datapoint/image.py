@@ -383,6 +383,10 @@ class Image:
         """
 
         img_dict = as_dict(self, dict_factory=dict)
+        if self.image is not None:
+            img_dict["_image"] = convert_np_array_to_b64(self.image)
+        else:
+            img_dict["_image"] = None
         return img_dict
 
     @staticmethod
@@ -391,7 +395,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["_image"]
+        return []
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -493,23 +497,6 @@ class Image:
             )
             ann.image.dump(sub_image)
 
-    def get_export(self, save_image: bool = False, highest_hierarchy_only: bool = False) -> Dict[str, Any]:
-        """
-        Exporting image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
-        base64 encodings.
-        :param save_image: If True will save the image as b64 encoded string in output
-        :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
-        :return: Dict that e.g. can be saved to a file.
-        """
-        if highest_hierarchy_only:
-            self.remove_image_from_lower_hierachy()
-        export_dict = self.as_dict()
-        export_dict["location"] = str(export_dict["location"])
-        export_dict["summary"] = export_dict.pop("_summary")
-        if save_image and self.image is not None:
-            export_dict["_image"] = convert_np_array_to_b64(self.image)
-        return export_dict
-
     def remove_image_from_lower_hierachy(self) -> None:
         """Will remove all images from image annotations."""
         for ann in self.annotations:
@@ -529,8 +516,9 @@ class Image:
         """
         image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
         image._image_id = kwargs.get("_image_id")
-        if b64_image := kwargs.get("_image"):
-            image.image = b64_image
+        _image = kwargs.get("_image")
+        if _image is not None:
+            image.image = _image
         if box_kwargs := kwargs.get("_bbox"):
             image._bbox = BoundingBox.from_dict(**box_kwargs)
         for image_id, box_dict in kwargs.get("embeddings").items():
@@ -542,6 +530,6 @@ class Image:
                 if image_dict:
                     image_ann.image = cls.from_dict(**image_dict)
             image.dump(image_ann)
-        if summary_dict := kwargs.get("summary"):
+        if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
         return image

@@ -153,11 +153,9 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         self.predictor = predictor
         super().__init__(name)
 
+    @abstractmethod
     def clone(self) -> "PredictorPipelineComponent":
-        predictor = self.predictor.clone()
-        if not isinstance(predictor, (ObjectDetector, PdfMiner)):
-            raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
-        return self.__class__(self.name, predictor)
+        raise NotImplementedError
 
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):

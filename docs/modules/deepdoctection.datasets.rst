@@ -5,7 +5,7 @@ deepdoctection.datasets
 .. automodule:: deepdoctection.datasets
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    deepdoctection.datasets.instances
 
@@ -15,8 +15,6 @@ deepdoctection.datasets.adapter
 .. automodule:: deepdoctection.datasets.adapter
    :members:
    :undoc-members:
-   :show-inheritance:
-
 
 deepdoctection.datasets.base
 -------------------------------------
@@ -54,6 +52,5 @@ deepdoctection.datasets.save
 -------------------------------------
 
 .. automodule:: deepdoctection.datasets.save
-   :members:
    :undoc-members:
-   :show-inheritance:
+   :members:

@@ -25,7 +25,7 @@ import numpy as np
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..datapoint.page import Page
+from ..datapoint.view import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
@@ -91,18 +91,28 @@ class MatchingService(PipelineComponent):
         child_categories: Union[TypeOrStr, List[TypeOrStr]],
         matching_rule: Literal["iou", "ioa"],
         threshold: float,
+        use_weighted_intersections: bool = False,
+        max_parent_only: bool = False,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
+        :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
+                                           the ioa_matrix it will use mat weighted ioa in order to take into account
+                                           that intersections with more cells will likely decrease the ioa value. By
+                                           multiplying the ioa with the number of all intersection for each child this
+                                           value calibrate the ioa.
+        :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
         self.parent_categories = parent_categories
         self.child_categories = child_categories
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
         self.threshold = threshold
+        self.use_weighted_intersections = use_weighted_intersections
+        self.max_parent_only = max_parent_only
         super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
@@ -118,7 +128,8 @@ class MatchingService(PipelineComponent):
             child_ann_category_names=self.child_categories,
             matching_rule=self.matching_rule,
             threshold=self.threshold,
-            max_parent_only=True,
+            use_weighted_intersections=self.use_weighted_intersections,
+            max_parent_only=self.max_parent_only,
         )
 
         with MappingContextManager(dp_name=dp.file_name):
@@ -152,37 +163,21 @@ class PageParsingService:
     def __init__(
         self,
         text_container: TypeOrStr,
-        floating_text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
         text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        text_containers_to_text_block: bool = False,
     ):
         """
-
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
-        :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
-                                          the highest hierarchy of text blocks that will ordered to generate a sensible
-                                          output of text
         :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
-        :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
-                                             hierarchy. However, if a text container is not assigned to a text block
-                                             you can add it to the text block ordering to ensure that the full text is
-                                             part of the subsequent sub process.
         """
-        if isinstance(floating_text_block_names, (str, ObjectTypes)):
-            floating_text_block_names = [floating_text_block_names]
-        elif floating_text_block_names is None:
-            floating_text_block_names = []
         if isinstance(text_block_names, (str, ObjectTypes)):
             text_block_names = [text_block_names]
         elif text_block_names is None:
             text_block_names = []
 
-        self._text_container = str(get_type(text_container).value)
-        self._floating_text_block_names = [str(get_type(text_block).value) for text_block in floating_text_block_names]
-        self._text_block_names = [str(get_type(text_block).value) for text_block in text_block_names]
-        self._text_container_to_text_block = text_containers_to_text_block
+        self._text_container = get_type(text_container)
+        self._text_block_names = [get_type(text_block) for text_block in text_block_names]
         self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
@@ -194,9 +189,7 @@ class PageParsingService:
         return Page.from_image(
             dp,
             self._text_container,
-            self._floating_text_block_names,
             self._text_block_names,
-            self._text_container_to_text_block,
         )
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
@@ -213,6 +206,3 @@ class PageParsingService:
             LayoutType.word,
             LayoutType.line,
         ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
-        assert set(self._floating_text_block_names) <= set(
-            self._text_block_names
-        ), "floating_text_block_names must be a subset of text_block_names"

@@ -56,120 +56,120 @@ object_types_registry = catalogue.create("deepdoctection", "settings", entry_poi
 class DefaultType(ObjectTypes):
     """Type for default member"""
 
-    default_type = "DEFAULT_TYPE"
+    default_type = "default_type"
 
 
 @object_types_registry.register("PageType")
 class PageType(ObjectTypes):
     """Type for document page properties"""
 
-    document_type = "DOC_CLASS"
-    language = "LANGUAGE"
+    document_type = "document_type"
+    language = "language"
 
 
 @object_types_registry.register("SummaryType")
 class SummaryType(ObjectTypes):
     """Summary type member"""
 
-    summary = "SUMMARY"
+    summary = "summary"
 
 
 @object_types_registry.register("DocumentType")
 class DocumentType(ObjectTypes):
     """Document types"""
 
-    letter = "LETTER"
-    form = "FORM"
-    email = "EMAIL"
-    handwritten = "HANDWRITTEN"
-    advertisement = "ADVERTISEMENT"
-    scientific_report = "SCIENTIFIC REPORT"
-    scientific_publication = "SCIENTIFIC PUBLICATION"
-    specification = "SPECIFICATION"
-    file_folder = "FILE FOLDER"
-    news_article = "NEWS ARTICLE"
-    budget = "BUDGET"
-    invoice = "INVOICE"
-    presentation = "PRESENTATION"
-    questionnaire = "QUESTIONNAIRE"
-    resume = "RESUME"
-    memo = "MEMO"
-    financial_report = "FINANCIAL_REPORT"
-    laws_and_regulations = "LAWS_AND_REGULATIONS"
-    government_tenders = "GOVERNMENT_TENDERS"
-    manuals = "MANUALS"
-    patents = "PATENTS"
+    letter = "letter"
+    form = "form"
+    email = "email"
+    handwritten = "handwritten"
+    advertisement = "advertisement"
+    scientific_report = "scientific_report"
+    scientific_publication = "scientific_publication"
+    specification = "specification"
+    file_folder = "file_folder"
+    news_article = "news_article"
+    budget = "budget"
+    invoice = "invoice"
+    presentation = "presentation"
+    questionnaire = "questionnaire"
+    resume = "resume"
+    memo = "memo"
+    financial_report = "financial_report"
+    laws_and_regulations = "laws_and_regulations"
+    government_tenders = "government_tenders"
+    manuals = "manuals"
+    patents = "patents"
 
 
 @object_types_registry.register("LayoutType")
 class LayoutType(ObjectTypes):
     """Layout types"""
 
-    table = "TABLE"
-    figure = "FIGURE"
-    list = "LIST"
-    text = "TEXT"
-    title = "TITLE"  # type: ignore
-    logo = "LOGO"
-    signature = "SIGNATURE"
-    caption = "CAPTION"
-    footnote = "FOOTNOTE"
-    formula = "FORMULA"
-    page_footer = "PAGE-FOOTER"
-    page_header = "PAGE-HEADER"
-    section_header = "SECTION_HEADER"
-    page = "PAGE"
-    cell = "CELL"
-    row = "ROW"
-    column = "COLUMN"
-    word = "WORD"
-    line = "LINE"
+    table = "table"
+    figure = "figure"
+    list = "list"
+    text = "text"
+    title = "title"  # type: ignore
+    logo = "logo"
+    signature = "signature"
+    caption = "caption"
+    footnote = "footnote"
+    formula = "formula"
+    page_footer = "page_footer"
+    page_header = "page_header"
+    section_header = "section_header"
+    page = "page"
+    cell = "cell"
+    row = "row"
+    column = "column"
+    word = "word"
+    line = "line"
 
 
 @object_types_registry.register("TableType")
 class TableType(ObjectTypes):
     """Types for table properties"""
 
-    item = "ITEM"
-    number_of_rows = "NUMBER_OF_ROWS"
-    number_of_columns = "NUMBER_OF_COLUMNS"
-    max_row_span = "MAX_ROW_SPAN"
-    max_col_span = "MAX_COL_SPAN"
-    html = "HTML"
+    item = "item"
+    number_of_rows = "number_of_rows"
+    number_of_columns = "number_of_columns"
+    max_row_span = "max_row_span"
+    max_col_span = "max_col_span"
+    html = "html"
 
 
 @object_types_registry.register("CellType")
 class CellType(ObjectTypes):
     """Types for cell properties"""
 
-    header = "HEADER"
-    body = "BODY"
-    row_number = "ROW_NUMBER"
-    column_number = "COLUMN_NUMBER"
-    row_span = "ROW_SPAN"
-    column_span = "COLUMN_SPAN"
+    header = "header"
+    body = "body"
+    row_number = "row_number"
+    column_number = "column_number"
+    row_span = "row_span"
+    column_span = "column_span"
 
 
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):
     """Types for word properties"""
 
-    characters = "CHARS"
-    block = "BLOCK"
-    token_class = "TOKEN_CLASS"
-    tag = "BIO_TAG"
-    token_tag = "TOKEN_TAG"
-    text_line = "TEXT_LINE"
+    characters = "characters"
+    block = "block"
+    token_class = "token_class"
+    tag = "tag"
+    token_tag = "token_tag"
+    text_line = "text_line"
 
 
 @object_types_registry.register("TokenClasses")
 class TokenClasses(ObjectTypes):
     """Types for token classes"""
 
-    header = "HEADER"
-    question = "QUESTION"
-    answer = "ANSWER"
-    other = "OTHER"
+    header = "header"
+    question = "question"
+    answer = "answer"
+    other = "other"
 
 
 @object_types_registry.register("BioTag")
@@ -185,27 +185,27 @@ class BioTag(ObjectTypes):
 class TokenClassWithTag(ObjectTypes):
     """Types for token classes with tags, e.g. B-ANSWER"""
 
-    b_answer = "B-ANSWER"
-    b_header = "B-HEADER"
-    b_question = "B-QUESTION"
-    e_answer = "E-ANSWER"
-    e_header = "E-HEADER"
-    e_question = "E-QUESTION"
-    i_answer = "I-ANSWER"
-    i_header = "I-HEADER"
-    i_question = "I-QUESTION"
-    s_answer = "S-ANSWER"
-    s_header = "S-HEADER"
-    s_question = "S-QUESTION"
+    b_answer = "B-answer"
+    b_header = "B-header"
+    b_question = "B-question"
+    e_answer = "E-answer"
+    e_header = "E-header"
+    e_question = "E-question"
+    i_answer = "I-answer"
+    i_header = "I-header"
+    i_question = "I-question"
+    s_answer = "S-answer"
+    s_header = "S-header"
+    s_question = "S-question"
 
 
 @object_types_registry.register("Relationships")
 class Relationships(ObjectTypes):
     """Types for describing relationships between types"""
 
-    child = "CHILD"
-    reading_order = "READING_ORDER"
-    semantic_entity_link = "SEMANTIC_ENTITY_LINK"
+    child = "child"
+    reading_order = "reading_order"
+    semantic_entity_link = "semantic_entity_link"
 
 
 @object_types_registry.register("Languages")
@@ -277,10 +277,10 @@ class Languages(ObjectTypes):
 class DatasetType(ObjectTypes):
     """Dataset types"""
 
-    object_detection = "OBJECT_DETECTION"
-    sequence_classification = "SEQUENCE_CLASSIFICATION"
-    token_classification = "TOKEN_CLASSIFICATION"
-    publaynet = "PUBLAYNET"
+    object_detection = "object_detection"
+    sequence_classification = "sequence_classification"
+    token_classification = "token_classification"
+    publaynet = "publaynet"
 
 
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {

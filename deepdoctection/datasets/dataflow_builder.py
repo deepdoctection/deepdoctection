@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for DataflowBase class.
+Module for DataFlowBaseBuilder class.
 """
 
 from abc import ABC, abstractmethod
@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
 from ..dataflow import DataFlow
+from ..utils.detection_types import Pathlike
 from ..utils.systools import get_dataset_dir_path
 from .info import DatasetCategories
 
@@ -43,7 +44,7 @@ class DataFlowBaseBuilder(ABC):
 
     def __init__(
         self,
-        location: str,
+        location: Pathlike,
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
     ):
         """
