@@ -57,8 +57,9 @@ class SerializerJsonlines:
         .. code-block:: python
 
             df = SerializerJsonlines.load("path/to/file.jsonl")
-
-        will yield each json object of the file.
+            df.reset_state()
+            for dp in df:
+               ... # is a dict
     """
 
     @staticmethod
@@ -229,7 +230,6 @@ class CocoParser:
 
     :param annotation_file (str): location of annotation file
     :param image_folder (str): location to the folder that hosts images.
-    :return:
     """
 
     def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
@@ -334,14 +334,14 @@ class CocoParser:
     def get_cat_ids(
         self,
         category_names: Optional[Union[str, Sequence[str]]] = None,
-        supercategory_names: Optional[Union[str, Sequence[str]]] = None,
+        super_category_names: Optional[Union[str, Sequence[str]]] = None,
         category_ids: Optional[Union[int, Sequence[int]]] = None,
     ) -> Sequence[int]:
         """
         Filtering parameters. default skips that filter.
 
         :param category_names: get cats for given cat names
-        :param supercategory_names: get cats for given supercategory names
+        :param super_category_names: get cats for given super category names
         :param category_ids: get cats for given cat ids
 
         :return: ids: integer array of cat ids
@@ -349,24 +349,24 @@ class CocoParser:
 
         if category_names is None:
             category_names = []
-        if supercategory_names is None:
-            supercategory_names = []
+        if super_category_names is None:
+            super_category_names = []
         if category_ids is None:
             category_ids = []
 
         category_names = [category_names] if isinstance(category_names, str) else category_names
-        supercategory_names = [supercategory_names] if isinstance(supercategory_names, str) else supercategory_names
+        super_category_names = [super_category_names] if isinstance(super_category_names, str) else super_category_names
         category_ids = [category_ids] if isinstance(category_ids, int) else category_ids
 
-        if len(category_names) == len(supercategory_names) == len(category_ids) == 0:
+        if len(category_names) == len(super_category_names) == len(category_ids) == 0:
             cats = self.dataset["categories"]
         else:
             cats = self.dataset["categories"]
             cats = cats if len(category_names) == 0 else [cat for cat in cats if cat["name"] in category_names]
             cats = (
                 cats
-                if len(supercategory_names) == 0
-                else [cat for cat in cats if cat["supercategory"] in supercategory_names]
+                if len(super_category_names) == 0
+                else [cat for cat in cats if cat["supercategory"] in super_category_names]
             )
             cats = cats if len(category_ids) == 0 else [cat for cat in cats if cat["id"] in category_ids]
         ids = [cat["id"] for cat in cats]

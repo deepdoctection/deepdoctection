@@ -20,6 +20,7 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
+from pathlib import Path
 from typing import List, Mapping, Optional, Union
 
 from ..utils.detection_types import ImageType, Requirement
@@ -60,7 +61,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     def __init__(
         self,
-        name: str,
         path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -77,8 +77,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
         Mask-Mode could be used as well here provided the data structure is established.
 
-        :param name: name of the detector. The name will be passed to a pipeline component and is used to describe the
-                     service.
         :param path_yaml: The path to the yaml config
         :param path_weights: The path to the model checkpoint
         :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
@@ -88,7 +86,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
-        self.name = name
+        self.name = "_".join(Path(path_weights).parts[-3:])
         self.path_yaml = path_yaml
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
@@ -153,5 +151,5 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(
-            self.name, self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
+            self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
         )

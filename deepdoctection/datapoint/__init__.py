@@ -37,4 +37,4 @@ from .annotation import *
 from .box import *
 from .convert import *
 from .image import Image
-from .page import *
+from .view import *

@@ -38,7 +38,12 @@ MOCK_MODULES = ['h5py','lmdb','tensorflow.python.training.monitored_session','te
 
 
 # Pytorch
-MOCK_MODULES.extend(['torch','torch.cuda','torch.utils', 'torch.nn.functional','torch.nn'])
+MOCK_MODULES.extend(['torch',
+                     'torch.cuda',
+                     'torch.utils',
+                     'torch.nn.functional',
+                     'torch.nn',
+                     'torch.utils.data.IterableDataset'])
 
 # Detectron2
 MOCK_MODULES.extend(['detectron2',
@@ -118,6 +123,10 @@ exclude_patterns = []
 #
 html_theme = 'sphinx_rtd_theme'
 
+html_theme_options = {
+    'logo_only': True,
+    'display_version': True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

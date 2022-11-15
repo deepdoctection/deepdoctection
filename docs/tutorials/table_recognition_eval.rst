@@ -25,24 +25,24 @@ image datapoints with layout objects and in particular tables.
         cfg = dd.set_config_by_yaml("/home/janis/.cache/deepdoctection/configs/dd/conf_dd_one.yaml")
         pipe_component_list: List[PipelineComponent] = []
 
-        crop = dd.ImageCroppingService(category_names="TABLE")
+        crop = dd.ImageCroppingService(category_names="table")
         pipe_component_list.append(crop)
 
         cell_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
         cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
         categories_cell = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL).categories
         assert categories_cell is not None
-        d_cell = dd.D2FrcnnDetector("cell_d2", cell_config_path, cell_weights_path, categories_cell, device="gpu")
+        d_cell = dd.D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device="gpu")
         item_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
         item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
         categories_item = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM).categories
         assert categories_item is not None
-        d_item = dd.D2FrcnnDetector("cell_d2", item_config_path, item_weights_path, categories_item, device="gpu")
+        d_item = dd.D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device="gpu")
 
-        cell = dd.SubImageLayoutService(d_cell, "TABLE", {1: 6}, True)
+        cell = dd.SubImageLayoutService(d_cell, "table", {1: 6}, True)
         pipe_component_list.append(cell)
 
-        item = dd.SubImageLayoutService(d_item, "TABLE", {1: 7, 2: 8}, True)
+        item = dd.SubImageLayoutService(d_item, "table", {1: 7, 2: 8}, True)
         pipe_component_list.append(item)
 
         table_segmentation = dd.TableSegmentationService(
@@ -74,9 +74,9 @@ image datapoints with layout objects and in particular tables.
         )
         pipe_component_list.append(match)
         order = dd.TextOrderService(
-            text_container="WORD",
-            floating_text_block_names=["TITLE", "TEXT", "LIST"],
-            text_block_names=["TITLE", "TEXT", "LIST", "CELL", "HEAD", "BODY"],
+            text_container="word",
+            floating_text_block_names=["title", "text", "list"],
+            text_block_names=["title", "text", "list", "cell", "head", "body"],
         )
         pipe_component_list.append(order)
         return dd.DoctectionPipe(pipeline_component_list=pipe_component_list)

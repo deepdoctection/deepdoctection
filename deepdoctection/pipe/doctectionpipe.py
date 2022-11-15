@@ -43,21 +43,35 @@ class DoctectionPipe(Pipeline):
 
     See `deepdoctection.analyzer.dd` for a concrete implementation.
 
-    See also the explanations in :class:`base.Pipeline`
+    See also the explanations in :class:`base.Pipeline`.
+
+    By default, :class:`DoctectionPipe` will instantiate a default `PageParsingService`
+
+    .. code-block:: python
+
+        PageParsingService(text_container=LayoutType.word,
+                           text_block_names=[LayoutType.title,
+                                             LayoutType.text,
+                                             LayoutType.list,
+                                             LayoutType.table])
+
+    but you can overwrite the current setting:
+
+    **Example:**
+
+        .. code-block:: python
+
+            pipe = DoctectionPipe([comp_1, com_2])
+            pipe.page_parser =  PageParsingService(text_container= my_custom_setting)
 
 
     """
 
-    def __init__(self, pipeline_component_list: List[PipelineComponent]):
-        self.page_parser: PageParsingService
-        if isinstance(pipeline_component_list[-1], PageParsingService):
-            self.page_parser = pipeline_component_list.pop()
-        else:
-            self.page_parser = PageParsingService(
-                text_container=LayoutType.word,
-                floating_text_block_names=[LayoutType.text, LayoutType.title, LayoutType.list],
-                text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
-            )
+    def __init__(self, pipeline_component_list: List[Union[PipelineComponent]]):
+        self.page_parser = PageParsingService(
+            text_container=LayoutType.word,
+            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
+        )
         assert all(
             isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
         )

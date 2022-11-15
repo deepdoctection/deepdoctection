@@ -94,7 +94,7 @@ class MapData(ProxyDataFlow):
            unless you're certain it's safe.
         2. If you discard some datapoints, `len(MapData(ds))` will be incorrect.
 
-    Example:
+    **Example:**
 
         .. code-block:: python
 
@@ -121,12 +121,16 @@ class MapData(ProxyDataFlow):
 class MapDataComponent(MapData):
     """
     Apply a mapper/filter on a datapoint component.
+
     Note:
         1. This dataflow itself doesn't modify the datapoints.
            But please make sure func doesn't modify its arguments in place,
            unless you're certain it's safe.
         2. If you discard some datapoints, ``len(MapDataComponent(ds, ..))`` will be incorrect.
-    Example:
+
+
+    **Example:**
+
         .. code-block:: python
 
             df = ... # some dataflow each datapoint is [img, label]
@@ -158,7 +162,7 @@ class MapDataComponent(MapData):
 class RepeatedData(ProxyDataFlow):
     """Take data points from another DataFlow and produce them until
     it's exhausted for certain amount of times. i.e.:
-    dp1, dp2, .... dpn, dp1, dp2, ....dpn
+    `dp1`, `dp2`, .... `dpn`, `dp1`, `dp2`, ....`dpn`.
     """
 
     def __init__(self, df: DataFlow, num: int) -> None:
@@ -192,7 +196,15 @@ class ConcatData(DataFlow):
     """
     Concatenate several DataFlow.
     Produce datapoints from each DataFlow and start the next when one
-    DataFlow is exhausted.
+    DataFlow is exhausted. Use this dataflow to process several .pdf in one step.
+
+    **Example:**
+
+        .. code-block:: python
+
+           df_1 = analyzer.analyze(path=path/to/pdf_1.pdf")
+           df_2 = analyzer.analyze(path=path/to/pdf_2.pdf")
+           df = ConcatData([df_1,df_2])
     """
 
     def __init__(self, df_lists: List[DataFlow]) -> None:

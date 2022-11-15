@@ -37,10 +37,10 @@ deepdoctection.datapoint.image
    :undoc-members:
    :show-inheritance:
 
-deepdoctection.datapoint.page
+deepdoctection.datapoint.view
 ---------------------------------------
 
-.. automodule:: deepdoctection.datapoint.page
+.. automodule:: deepdoctection.datapoint.view
    :members:
    :undoc-members:
    :show-inheritance:

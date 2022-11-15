@@ -9,7 +9,7 @@
 
 **deep**doctection is a Python library that orchestrates document extraction and document layout analysis tasks using deep learning models. It does 
 not implement models but enables you to build pipelines using highly acknowledged libraries for object detection, OCR 
-and selected NLP tasks and provides an integrated frameworks for fine-tuning, evaluating and running models. For more
+and selected NLP tasks and provides an integrated framework for fine-tuning, evaluating and running models. For more
  specific text processing tasks use one of the many other great NLP libraries.
 
 **deep**doctection focuses on applications and is made for those who want to solve real world problems related to 
@@ -55,13 +55,13 @@ document classification or NER. **deep**doctection provides training scripts for
 developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
 datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
 formats like COCO and it has a dataset framework (akin to [**datasets**](https://github.com/huggingface/datasets) so that
- setting up training on a custom dataset becomes very easy. Check this  [**notebook**](./notebooks/Fine_Tune.ipynb) to
-  see, how you can easily train a model on a different domain.
+ setting up training on a custom dataset becomes very easy. [**This notebook**](notebooks/Datasets_and_Eval.ipynb)
+shows you how to do this.
    
 ## Evaluation
 
 **deep**doctection comes equipped with a framework that allows you to evaluate predictions of a single or multiple 
-models in a pipeline against some ground truth. Check [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
+models in a pipeline against some ground truth. Check again [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
 done.  
 
 ## Inference
@@ -69,7 +69,7 @@ done.
 Having set up a pipeline it takes you a few lines of code to instantiate the pipeline and after a for loop all pages will 
 be processed through the pipeline. 
 
-```
+```python
 import deepdoctection as dd
 from IPython.core.display import HTML
 from matplotlib import pyplot as plt

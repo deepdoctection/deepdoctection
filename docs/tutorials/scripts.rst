@@ -12,7 +12,7 @@ from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
 .. code:: ipython3
 
     pubtabnet = dd.get_dataset("pubtabnet")
-    pubtabnet.dataflow.categories.filter_categories(categories="CELL")
+    pubtabnet.dataflow.categories.filter_categories(categories="cell")
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
     path_weights = "/path/to/dir/model-3540000.data-00000-of-00001"
@@ -47,8 +47,8 @@ from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
 .. code:: ipython3
 
     pubtabnet = dd.get_dataset("pubtabnet")
-    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"ITEM":"ITEM"})
-    pubtabnet.dataflow.categories.filter_categories(["ROW","COLUMN"])
+    pubtabnet.dataflow.categories.set_cat_to_sub_cat({"item":"item"})
+    pubtabnet.dataflow.categories.filter_categories(["row","column"])
     
     path_config_yaml=os.path.join(get_configs_dir_path(),"tp/rows/conf_frcnn_rows.yaml")
     path_weights = os.path.join(get_weights_dir_path(),"item/model-1750000.data-00000-of-00001")

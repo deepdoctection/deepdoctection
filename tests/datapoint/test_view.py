@@ -19,16 +19,16 @@
 Testing the module datapoint.page
 """
 
-import json
-
+from numpy import float32, ones
 from pytest import mark
 
-from deepdoctection.datapoint.annotation import CategoryAnnotation
+from deepdoctection.datapoint.annotation import CategoryAnnotation, ImageAnnotation
+from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.datapoint.image import Image
-from deepdoctection.datapoint.page import Page
-from deepdoctection.utils.settings import Relationships
+from deepdoctection.datapoint.view import Page
+from deepdoctection.utils.settings import LayoutType, Relationships
 
-from ..test_utils import get_test_path
+from .conftest import WhiteImage
 
 
 @mark.basic
@@ -38,16 +38,16 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     """
     # Arrange
     dp_image = dp_image_with_layout_and_word_annotations
-    title_ann = dp_image.get_annotation(category_names=["TITLE"])[0]
+    title_ann = dp_image.get_annotation(category_names=["title"])[0]
     title_ann.dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
     )
-    text_ann = dp_image.get_annotation(category_names=["TEXT"])[0]
+    text_ann = dp_image.get_annotation(category_names=["text"])[0]
     text_ann.dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="2")
     )
 
-    word_anns = dp_image.get_annotation(category_names="WORD")
+    word_anns = dp_image.get_annotation(category_names="word")
 
     word_anns[0].dump_sub_category(
         Relationships.reading_order, CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
@@ -65,33 +65,33 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     # Act
     page = Page.from_image(
         dp_image,
-        "WORD",
-        ["TEXT", "TITLE", "LIST"],
-        ["TEXT", "TITLE", "LIST", "CELL"],
+        LayoutType.word,
+        [LayoutType.text, LayoutType.title, LayoutType.list],
     )
 
     # Assert
-    assert page.get_text() == "\nhello world\nbye world"
+    assert page.text == "\nhello world\nbye world"
 
 
 @mark.basic
-def test_page_from_page_dict() -> None:
+def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
     """
-    test page gets generated from a page dict
+    test meth: save does not raise any exception
     """
 
     # Arrange
-    path_json = get_test_path() / "sample_2_page_dict.json"
-
-    with open(path_json, "r", encoding="UTF-8") as file:
-        page_dict = json.load(file)
+    test_image = Image(location=image.loc, file_name=image.file_name)
+    test_image.image = ones((24, 85, 3), dtype=float32)
+    cat_1 = ImageAnnotation(
+        category_name="table",
+        bounding_box=BoundingBox(ulx=15.0, uly=20.0, width=10.0, height=8.0, absolute_coords=True),
+    )
+    test_image.dump(cat_1)
 
     # Act
-    page = Page.from_dict(**page_dict)
+    page = Page.from_image(test_image, LayoutType.table, [LayoutType.table])
 
-    # Assert
-    assert page.file_name == "sample_2.png"
-    assert len(page.items) == 12
-    assert len(page.tables) == 1
-    assert page.width == 1654
-    assert page.height == 2339
+    try:
+        page.save(dry=True)
+    except Exception as exception:  # pylint: disable=W0703
+        assert False, f"{exception}"

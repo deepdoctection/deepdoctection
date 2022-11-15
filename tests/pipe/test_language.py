@@ -56,7 +56,6 @@ class TestLanguageDetectionService:
         self.language_detection_service = LanguageDetectionService(
             self._language_detector,
             text_container=LayoutType.word,
-            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
             text_block_names=[
                 LayoutType.title,
                 LayoutType.text,
@@ -84,7 +83,7 @@ class TestLanguageDetectionService:
 
         # Assert
         assert dp.summary is not None
-        assert dp.summary.get_sub_category(PageType.language).category_name == "LANGUAGE"
+        assert dp.summary.get_sub_category(PageType.language).category_name == "language"
         container_ann = dp.summary.get_sub_category(PageType.language)
         assert isinstance(container_ann, ContainerAnnotation)
         assert container_ann.value == "eng"

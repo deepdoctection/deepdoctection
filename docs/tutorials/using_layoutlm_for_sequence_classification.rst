@@ -1,5 +1,5 @@
-LayoutLM for sequence classification
-====================================
+Using LayoutLM for sequence classification
+==========================================
 
 `LayoutLM <https://arxiv.org/abs/1912.13318>`__ developed by Microsoft
 Research Asia has become a very popular model for document understanding
@@ -23,9 +23,9 @@ model. We divide the task into the following steps:
    document type label for each scan. We use the labels as ground truth
    for training the classifier.
 
--  We build a **deep**\ doctection data set for the sub data set. We
-   wrap the data set into a special class to create a training, eval and
-   test split.
+-  We build a custom **deep**\ doctection data set for the sub data set.
+   We wrap the data set into a special class to create a training, eval
+   and test split.
 
 -  We download pre-trained base models from the Huggingface hub.
 
@@ -39,11 +39,7 @@ model. We divide the task into the following steps:
 -  At the last step we show how to build a **deep**\ doctection pipeline
    with an OCR model and how to use the trained model in practise.
 
-This notebook is not intended as an introduction into the
-**deep**\ doctection. We are therefore sparse with explanation and
-assume that the user will look into the
-`documentation <https://deepdoctection.readthedocs.io/en/latest/>`__ for
-further information. PyTorch framework is required.
+This notebook requires the PyTorch framework.
 
 .. code:: ipython3
 
@@ -64,7 +60,7 @@ the OCR task into two parts: text line detection and text recognition.
         text_line_predictor = dd.DoctrTextlineDetector()
         layout = dd.ImageLayoutService(text_line_predictor,to_image=True, crop_image=True)
         text_recognizer = dd.DoctrTextRecognizer()
-        text = dd.TextExtractionService(text_recognizer, extract_from_roi="WORD")
+        text = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
         analyzer = dd.DoctectionPipe(pipeline_component_list=[layout, text])
     
         return analyzer
@@ -81,59 +77,57 @@ label.
     # samples with each label individually, pass them to the OCR-pipeline and save the OCR result for every image in 
     # a folder with one JSON file.  
     
-    path_to_save_samples =  "/path/to/dir"
+    path_to_save_samples =  "/home/janis/.cache/deepdoctection/datasets/rvl"
     
     rvlcdip = dd.get_dataset("rvl-cdip")
-    rvlcdip.dataflow.categories.filter_categories({"BUDGET"})
+    rvlcdip.dataflow.categories.filter_categories({"budget"})
     pipeline = get_doctr_pipe()
     
     df = rvlcdip.dataflow.build(split="train", load_image=True)
     df = pipeline.analyze(dataset_dataflow=df, output="image")
-    dd.dataflow_to_json(df, path_to_save_samples, single_files=True, max_datapoints=1000, save_image=True,
-                        save_image_in_json=False, highest_hierarchy_only=True)
+    dd.dataflow_to_json(df, path_to_save_samples,
+                        single_files=True,
+                        file_name=None,
+                        max_datapoints=1000,
+                        save_image_in_json=False,
+                        highest_hierarchy_only=True)
     
     rvlcdip = dd.get_dataset("rvl-cdip")
-    rvlcdip.dataflow.categories.filter_categories({"INVOICE"})
+    rvlcdip.dataflow.categories.filter_categories({"invoice"})
     pipeline = get_doctr_pipe()
     
     df = rvlcdip.dataflow.build(split="train", load_image=True)
     df = pipeline.analyze(dataset_dataflow=df, output="image")
-    dd.dataflow_to_json(df, path_to_save_samples, single_files=True, max_datapoints=1000, save_image=True,
-                        save_image_in_json=False, highest_hierarchy_only=True)
+    dd.dataflow_to_json(df, path_to_save_samples,
+                        single_files=True,
+                        file_name=None,
+                        max_datapoints=1000,
+                        save_image_in_json=False,
+                        highest_hierarchy_only=True)
     
     rvlcdip = dd.get_dataset("rvl-cdip")
-    rvlcdip.dataflow.categories.filter_categories({"FORM"})
+    rvlcdip.dataflow.categories.filter_categories({"form"})
     pipeline = get_doctr_pipe()
     
     df = rvlcdip.dataflow.build(split="train", load_image=True)
     df = pipeline.analyze(dataset_dataflow=df, output="image")
-    dd.dataflow_to_json(df, path_to_save_samples, single_files=True, max_datapoints=1000, save_image=True,
-                        save_image_in_json=False, highest_hierarchy_only=True)
+    dd.dataflow_to_json(df, path_to_save_samples,
+                        single_files=True,
+                        file_name=None,
+                        max_datapoints=1000,
+                        save_image_in_json=False,
+                        highest_hierarchy_only=True)
 
 Defining a data set
 -------------------
 
 Having generated a dataset with features and labels at
 ``/path/to/rvlcdip`` we now copy the folder into the
-**deep**\ doctection cache and define a data set for sequence
-classification. For convenience we register the dataset.
+**deep**\ doctection cache and define a custom data set for sequence
+classification.
 
 .. code:: ipython3
 
-    @dd.dataset_registry.register("rvl")
-    class RVL(dd.DatasetBase):
-    
-        @classmethod
-        def _info(cls) -> dd.DatasetInfo:
-            return dd.DatasetInfo(name="rvl", description="", license="", url="", splits={}, type="SEQUENCE_CLASSIFICATION")
-    
-        def _categories(self) -> dd.DatasetCategories:
-            return dd.DatasetCategories(init_categories=[dd.DocumentType.form, dd.DocumentType.invoice,dd.DocumentType.budget])
-    
-        def _builder(self) -> "RvlBuilder":
-            return RvlBuilder(location="rvlcdip")
-    
-    
     class RvlBuilder(dd.DataFlowBaseBuilder):
     
         def build(self, **kwargs) -> dd.DataFlow:
@@ -142,8 +136,8 @@ classification. For convenience we register the dataset.
             ann_files_dir = self.get_workdir()
             image_dir = self.get_workdir() / "image"
     
-            df = dd.SerializerFiles.load(ann_files_dir,".json")
-            df = dd.MapData(df, dd.load_json)
+            df = dd.SerializerFiles.load(ann_files_dir,".json")   # get a stream of .json files
+            df = dd.MapData(df, dd.load_json)   # load .json file
             categories = self.categories.get_categories(name_as_key=True)
     
             @dd.curry
@@ -157,17 +151,18 @@ classification. For convenience we register the dataset.
                     return None
                 sub_cat = dp.summary.get_sub_category(dd.PageType.document_type)
                 sub_cat.category_id = cats[sub_cat.category_name]
-                return dp
-            df = dd.MapData(df, map_to_img(categories))
-    
-            def _maybe_load_image(dp):
                 if load_image:
                     dp.image = dd.load_image_from_file(dp.location)
                 return dp
-    
-            df = dd.MapData(df, _maybe_load_image)
+            df = dd.MapData(df, map_to_img(categories))
     
             return df
+        
+    rvlcdip = dd.CustomDataset(name = "rvl",
+                     dataset_type=dd.DatasetType.sequence_classification,
+                     location="rvl",
+                     init_categories=[dd.DocumentType.form, dd.DocumentType.invoice,dd.DocumentType.budget],
+                     dataflow_builder=RvlBuilder)
 
 Downloading the LayoutLM base model
 -----------------------------------
@@ -208,33 +203,18 @@ It does not mean that the train split contains exactly 90%!
 
 .. code:: ipython3
 
-    rvl = dd.get_dataset("rvl")
-    
-    merge = dd.MergeDataset(rvl)
+    merge = dd.MergeDataset(rvlcdip)
     merge.buffer_datasets()
     merge.split_datasets(ratio=0.1)
 
 
 .. parsed-literal::
 
-    [32m[0920 12:19.29 @base.py:218][0m [32mINF[0m Will use the same build setting for all dataflows
-    [32m[0920 12:19.29 @common.py:250][0m [32mINF[0m [JoinData] Size check failed for the list of dataflow to be joined!
-
-
-.. parsed-literal::
-
-    |                                                                                                                                                                                             |2983/?[00:00<00:00,52685.34it/s]
-    |                                                                                                                                                                                               |2862/?[00:14<00:00,191.94it/s]
-
-.. parsed-literal::
-
-    [32m[0920 12:19.44 @base.py:270][0m [32mINF[0m ___________________ Number of datapoints per split ___________________
-    [32m[0920 12:19.44 @base.py:271][0m [32mINF[0m {'test': 131, 'train': 2600, 'val': 131}
-
-
-.. parsed-literal::
-
-    
+    [32m[1114 13:58.18 @base.py:220][0m  [32mINF[0m  [37mWill use the same build setting for all dataflows[0m
+    |                                                                                                                                                                                             |2983/?[00:00<00:00,70340.91it/s]
+    |                                                                                                                                                                                               |2862/?[00:13<00:00,204.54it/s]
+    [32m[1114 13:58.32 @base.py:275][0m  [32mINF[0m  [37m___________________ Number of datapoints per split ___________________[0m
+    [32m[1114 13:58.32 @base.py:276][0m  [32mINF[0m  [37m{'test': 149, 'train': 2563, 'val': 150}[0m
 
 
 Training
@@ -260,12 +240,12 @@ constraints.
     dataset_val = merge
     
     metric = dd.get_metric("accuracy")
-    metric.set_categories(summary_sub_category_names="DOC_CLASS")
+    metric.set_categories(summary_sub_category_names="document_type")
     
     dd.train_hf_layoutlm(path_config_json,
                          dataset_train,
                          path_weights,
-                         log_dir="/path/to/traindir",
+                         log_dir="/path/to/Sequence_classification",
                          dataset_val= dataset_val,
                          metric=metric,
                          pipeline_component_name="LMSequenceClassifierService")
@@ -310,10 +290,10 @@ conventional tokenizer will not work.
 
 .. code:: ipython3
 
-    path_config_json = "/path/to/traindir/checkpoint-2500/config.json"
-    path_weights = "/path/to/traindir/checkpoint-2500/pytorch_model.bin"
+    path_config_json = "/home/janis/Tests/Sequence_classification/checkpoint-2500/config.json"
+    path_weights = "/home/janis/Tests/Sequence_classification/checkpoint-2500/pytorch_model.bin"
     
-    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier("layoutlmv1", path_config_json,
+    layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
                                                           path_weights,
                                                           merge.dataflow.categories.get_categories(as_dict=True))
     
@@ -331,7 +311,7 @@ We get an accuracy score of 0.89 on the test set.
 
 .. code:: sh
 
-   [{'key': 'DOC_CLASS', 'val': 0.8851351351351351, 'num_samples': 148}]
+   [{'key': 'document_type', 'val': 0.8851351351351351, 'num_samples': 148}]
 
 Building a pipeline for production
 ----------------------------------
@@ -346,12 +326,12 @@ followed by the LMSequenceClassifierService.
         text_line_predictor = dd.DoctrTextlineDetector()
         layout_component = dd.ImageLayoutService(text_line_predictor,to_image=True, crop_image=True)
         text_recognizer = dd.DoctrTextRecognizer()
-        text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="WORD")
+        text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
         
         
-        layoutlm_classifier = dd.HFLayoutLmSequenceClassifier("layoutlmv1", path_config_json,
+        layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
                                                               path_weights,
-                                                              {'1': 'FORM', '2': 'INVOICE', '3': 'BUDGET'})
+                                                              {'1': 'form', '2': 'invoice', '3': 'budget'})
         
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
         layoutlm_component = dd.LMSequenceClassifierService(tokenizer_fast,
@@ -368,7 +348,7 @@ demonstrate how it works.
 
 .. code:: ipython3
 
-    path = "/home/janis/.cache/deepdoctection/datasets/rvlcdip/image"
+    path = "/path/to/.cache/deepdoctection/rvl/image"
     
     doc_classifier = get_layoutlm_pipeline()
     
@@ -397,7 +377,16 @@ demonstrate how it works.
     [32m[0920 12:21.05 @context.py:131][0m [32mINF[0m LMSequenceClassifierService finished, 0.0202 sec.
 
 
-.. image:: ./pics/output_26_2.png
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x7f9e3e30cc70>
+
+
+
+
+.. image:: output_26_2.png
 
 
 .. code:: ipython3
@@ -433,7 +422,16 @@ demonstrate how it works.
     plt.imshow(dp.viz())
 
 
-.. image:: ./pics/output_29_1.png
+
+
+.. parsed-literal::
+
+    <matplotlib.image.AxesImage at 0x7ff62e516a60>
+
+
+
+
+.. image:: output_29_1.png
 
 
 .. code:: ipython3

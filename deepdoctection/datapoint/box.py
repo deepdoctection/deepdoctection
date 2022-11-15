@@ -243,8 +243,9 @@ class BoundingBox:
 
         :param mode: * "xyxy" for upper left/lower right point representation,
                      * "xywh" for upper left and width/height representation or
-                     * "poly" for full eight coordinate polygon representation. x,y coordinates will be returned in
-                        counter-clockwise order.
+                     * "poly" for full eight coordinate polygon representation. x,y coordinates will be
+                     returned in counter-clockwise order.
+
         :param scale_x: rescale the x coordinate. Defaults to 1
         :param scale_y: rescale the y coordinate. Defaults to 1
         :return: box coordinates
@@ -270,7 +271,8 @@ class BoundingBox:
         :param mode: * "xyxy" for upper left/lower right point representation,
                      * "xywh" for upper left and width/height representation or
                      * "poly" for full four-point polygon representation. Points will be returned in counter-clockwise
-                        order
+                       order
+
         :param scale_x: rescale the x coordinate. Defaults to 1
         :param scale_y: rescale the y coordinate. Defaults to 1
         :return: box coordinates
@@ -364,19 +366,19 @@ def intersection_box(
     box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
 ) -> BoundingBox:
     """
-    Returns the intersection bounding box of two boxes. Will raise a ValueError if the intersection is empty.
+    Returns the intersection bounding box of two boxes. Will raise a `ValueError` if the intersection is empty.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
     coordinates as the box induces from :func:`crop_box_from_image`
 
     :param box_1: bounding box
     :param box_2: bounding box
-    :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of box_1 and
-                  box_2 are not equal.
+    :param width: Total width of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
+                  and `box_2` are not equal.
+    :param height: Total height of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
+                   and `box_2` are not equal.
 
-    :param height:Total height of image. This optional parameter is needed if the value of absolute_coords of box_1 and
-                  box_2 are not equal.
-
-    :return: bounding box. Will have same absolute_coords as box_2, if absolute_coords of box_1 and box_2 are note same
+    :return: bounding box. Will have same `absolute_coords` as `box_2`, if absolute_coords of `box_1` and `box_2` are
+             not equal
     """
 
     if box_1.absolute_coords != box_2.absolute_coords:

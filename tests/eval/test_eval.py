@@ -63,7 +63,6 @@ class TestEvaluator:
         self._dataset.dataset_info.type = DatasetType.object_detection
 
         self._layout_detector = TPFrcnnDetector(
-            "tp_frcnn_detector",
             path_yaml=path_to_tp_frcnn_yaml,
             path_weights="",
             categories=categories.get_categories(),

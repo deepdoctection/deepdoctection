@@ -630,7 +630,7 @@ _SAMPLE_PRODIGY = {
     "text": "99999984_310518_J_1_150819_page_252.png",
     "spans": [
         {
-            "label": "TABLE",
+            "label": "table",
             "x": 100,
             "y": 223.7,
             "w": 1442,
@@ -639,7 +639,7 @@ _SAMPLE_PRODIGY = {
             "points": [[1, 2.7], [1, 29], [15, 29], [15, 2.7]],
         },
         {
-            "label": "TITLE",
+            "label": "title",
             "x": 1181.6,
             "y": 99.2,
             "w": 364.6,
@@ -1794,19 +1794,19 @@ class DatapointXfund:
         "header": TokenClasses.header,
     }
     categories_dict_name_as_key = {
-        get_type("B-ANSWER"): "1",
-        get_type("B-HEADER"): "2",
-        get_type("B-QUESTION"): "3",
-        get_type("E-ANSWER"): "4",
-        get_type("E-HEADER"): "5",
-        get_type("E-QUESTION"): "6",
-        get_type("I-ANSWER"): "7",
-        get_type("I-HEADER"): "8",
-        get_type("I-QUESTION"): "9",
+        get_type("B-answer"): "1",
+        get_type("B-header"): "2",
+        get_type("B-question"): "3",
+        get_type("E-answer"): "4",
+        get_type("E-header"): "5",
+        get_type("E-question"): "6",
+        get_type("I-answer"): "7",
+        get_type("I-header"): "8",
+        get_type("I-question"): "9",
         get_type("O"): "10",
-        get_type("S-ANSWER"): "11",
-        get_type("S-HEADER"): "12",
-        get_type("S-QUESTION"): "13",
+        get_type("S-answer"): "11",
+        get_type("S-header"): "12",
+        get_type("S-question"): "13",
     }
     ner_token_to_id_mapping = {
         TokenClassWithTag.b_answer: "1",

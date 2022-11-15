@@ -81,7 +81,7 @@ class TestTPFrcnnDetector:
         """
         # Arrange, Act & Assert
         with raises(AssertionError):
-            TPFrcnnDetector("tp_detector", path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
+            TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
 
     @staticmethod
     @mark.requires_tf
@@ -91,7 +91,7 @@ class TestTPFrcnnDetector:
         TP FRCNN builds RestNetFPN model is construction is successful.
         """
         # Arrange, Act
-        frcnn = TPFrcnnDetector("tp_detector", path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
+        frcnn = TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
 
         # Assert
         assert isinstance(frcnn._model, ResNetFPNModel)  # pylint: disable=W0212
@@ -110,7 +110,7 @@ class TestTPFrcnnDetector:
         """
 
         # Arrange
-        frcnn = TPFrcnnDetector("tp_detector", path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
+        frcnn = TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
 
         # Act
         results = frcnn.predict(np_image)

@@ -25,8 +25,10 @@ from ..extern.base import ImageTransformer
 from ..utils.detection_types import JsonDict
 from ..utils.logger import logger
 from .base import ImageTransformPipelineComponent
+from .registry import pipeline_component_registry
 
 
+@pipeline_component_registry.register("SimpleTransformService")
 class SimpleTransformService(ImageTransformPipelineComponent):
     """
     Pipeline component for transforming an image. The service is designed for applying transform predictors that
@@ -49,7 +51,8 @@ class SimpleTransformService(ImageTransformPipelineComponent):
         if dp.annotations:
             logger.warning(
                 "%s has already received image with image annotations. These annotations will not "
-                "be transformed and might cause unexpected output in your pipeline.", self.name
+                "be transformed and might cause unexpected output in your pipeline.",
+                self.name,
             )
         if dp.image is not None:
             np_image_transform = self.transform_predictor.transform(dp.image)

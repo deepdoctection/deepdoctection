@@ -20,6 +20,7 @@ D2 Faster Frcnn model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
+from pathlib import Path
 from typing import Dict, List, Literal, Mapping, Optional
 
 from ..utils.detection_types import ImageType, Requirement
@@ -128,7 +129,6 @@ class D2FrcnnDetector(ObjectDetector):
 
     def __init__(
         self,
-        name: str,
         path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
@@ -140,8 +140,7 @@ class D2FrcnnDetector(ObjectDetector):
 
         The configuration of the model uses the full stack of build model tools of D2. For more information
         please check https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config .
-        :param name: name of the predictor. The name will be passed to a pipeline component and is used to describe the
-                     service.
+
         :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
                           the highest level .yaml file.
         :param path_weights: The path to the model checkpoint.
@@ -153,7 +152,7 @@ class D2FrcnnDetector(ObjectDetector):
         :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
         """
 
-        self.name = name
+        self.name = "_".join(Path(path_weights).parts[-3:])
         self._categories_d2 = self._map_to_d2_categories(copy(categories))
         if config_overwrite is None:
             config_overwrite = []
@@ -240,9 +239,7 @@ class D2FrcnnDetector(ObjectDetector):
         return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
-        return self.__class__(
-            self.name, self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device
-        )
+        return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
 
     def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())

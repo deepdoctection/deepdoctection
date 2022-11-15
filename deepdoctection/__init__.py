@@ -52,6 +52,7 @@ _IMPORT_STRUCTURE = {
         "StdFromDataFlow",
     ],
     "datapoint": [
+        "ann_from_dict",
         "Annotation",
         "CategoryAnnotation",
         "ImageAnnotation",
@@ -77,6 +78,7 @@ _IMPORT_STRUCTURE = {
         "box_to_point4",
         "point4_to_box",
         "as_dict",
+        "ImageAnnotationBaseView",
         "Image",
         "Word",
         "Layout",
@@ -88,6 +90,7 @@ _IMPORT_STRUCTURE = {
         "DatasetAdapter",
         "DatasetBase",
         "MergeDataset",
+        "CustomDataset",
         "DataFlowBaseBuilder",
         "DatasetInfo",
         "DatasetCategories",
