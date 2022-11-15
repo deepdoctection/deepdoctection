@@ -22,7 +22,7 @@ Module for ModelCatalog and ModelDownloadManager
 import os
 from copy import copy
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Union, Mapping
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
@@ -634,7 +634,7 @@ def print_model_infos(add_description: bool = True, add_config: bool = True, add
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        tbl_input: List[Union[Mapping[str, ObjectTypes],str]] = [profile.name]
+        tbl_input: List[Union[Mapping[str, ObjectTypes], str]] = [profile.name]
         if add_description:
             tbl_input.append(profile.description)
         if add_config:
