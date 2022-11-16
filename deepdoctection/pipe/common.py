@@ -163,21 +163,28 @@ class PageParsingService:
     def __init__(
         self,
         text_container: TypeOrStr,
+        top_level_text_block_names: Union[TypeOrStr, Sequence[TypeOrStr]],
         text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
+        :param top_level_text_block_names: name of image annotation that have a relation with text containers (or which
+                                           might be text containers themselves).
         :param text_block_names: name of image annotation that have a relation with text containers (or which might be
-                                 text containers themselves).
+                                 text containers themselves). This is only necessary, when residual text_container (e.g.
+                                 words that have not been assigned to any text block) should be displayed in `page.text`
         """
+        if isinstance(top_level_text_block_names, (str, ObjectTypes)):
+            top_level_text_block_names = [top_level_text_block_names]
         if isinstance(text_block_names, (str, ObjectTypes)):
             text_block_names = [text_block_names]
-        elif text_block_names is None:
-            text_block_names = []
+        if text_block_names is not None:
+            text_block_names = [get_type(text_block) for text_block in text_block_names]
 
         self._text_container = get_type(text_container)
-        self._text_block_names = [get_type(text_block) for text_block in text_block_names]
+        self._top_level_text_block_names = [get_type(text_block) for text_block in top_level_text_block_names]
+        self._text_block_names = text_block_names
         self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
@@ -187,9 +194,7 @@ class PageParsingService:
         :return: Page
         """
         return Page.from_image(
-            dp,
-            self._text_container,
-            self._text_block_names,
+            dp, self._text_container, self._top_level_text_block_names, self._text_block_names  # type: ignore
         )
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:

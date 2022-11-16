@@ -70,7 +70,7 @@ class DoctectionPipe(Pipeline):
     def __init__(self, pipeline_component_list: List[Union[PipelineComponent]]):
         self.page_parser = PageParsingService(
             text_container=LayoutType.word,
-            text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
+            top_level_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
         )
         assert all(
             isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
