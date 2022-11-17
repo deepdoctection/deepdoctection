@@ -22,6 +22,7 @@ simplify consumption
 
 import json
 from copy import copy
+from itertools import chain
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
 
@@ -277,10 +278,11 @@ class Page(Image):
     `ImageAnnotation` a corresponding sub class of `ImageAnnotationBaseView` which drives the object towards
     less generic classes with custom attributes that are controlled some `ObjectTypes`.
 
-    :param layout_types: Top level layout objects, e.g. `LayoutType.text` or `LayoutType.table`.
+    :param top_level_text_block_names: Top level layout objects, e.g. `LayoutType.text` or `LayoutType.table`.
     """
 
-    layout_types: List[ObjectTypes]
+    top_level_text_block_names: List[ObjectTypes]
+    text_block_names: Optional[List[ObjectTypes]]
     image_orig: Image
     text_container: ObjectTypes
 
@@ -333,7 +335,7 @@ class Page(Image):
         """
         :return: A list of a layouts.
         """
-        layouts = [layout for layout in self.layout_types if layout != LayoutType.table]
+        layouts = [layout for layout in self.top_level_text_block_names if layout != LayoutType.table]
         return self.get_annotation(category_names=layouts)
 
     @property
@@ -342,6 +344,22 @@ class Page(Image):
         :return: A list of a words.
         """
         return self.get_annotation(category_names=self.text_container)
+
+    @property
+    def residual_words(self) -> List[ImageAnnotationBaseView]:
+        """
+        :return: A list of a words that have not been assigned to any text block but have a reading order.
+                 Words having this property appear, once `text_containers_to_text_block=True`.
+        """
+        if self.text_block_names is None:
+            return []
+        text_block_anns = self.get_annotation(category_names=self.text_block_names)
+        text_ann_ids = list(
+            chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
+        )
+        text_container_anns = self.get_annotation(category_names=self.text_container)
+        residual_words = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
+        return residual_words
 
     @property
     def tables(self) -> List[ImageAnnotationBaseView]:
@@ -355,7 +373,8 @@ class Page(Image):
         cls,
         image_orig: Image,
         text_container: ObjectTypes,
-        text_block_names: List[ObjectTypes],
+        top_level_text_block_names: List[ObjectTypes],
+        text_block_names: Optional[List[ObjectTypes]] = None,
         base_page: Optional["Page"] = None,
     ) -> "Page":
         """
@@ -363,7 +382,10 @@ class Page(Image):
 
         :param image_orig: `Image` instance to convert
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
-        :param text_block_names: A list of top level layout objects
+        :param top_level_text_block_names: A list of top level layout objects
+        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
+                                 text containers themselves). This is only necessary, when residual text_container (e.g.
+                                 words that have not been assigned to any text block) should be displayed in `page.text`
         :param base_page: For top level objects that are images themselves, pass the page that encloses all objects.
                           In doubt, do not populate this value.
         :return:
@@ -391,17 +413,22 @@ class Page(Image):
                 image_dict = ann_dict["image"]
                 if image_dict:
                     image = Image.from_dict(**image_dict)
-                    layout_ann.image = cls.from_image(image, text_container, text_block_names, page)
+                    layout_ann.image = cls.from_image(
+                        image, text_container, top_level_text_block_names, text_block_names, page
+                    )
             layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
-        page.layout_types = text_block_names
+        page.top_level_text_block_names = top_level_text_block_names
+        page.text_block_names = text_block_names
         page.text_container = text_container
         return page
 
     def _order(self, block: str) -> List[ImageAnnotationBaseView]:
         blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
+        if self.residual_words:
+            blocks_with_order.extend(self.residual_words)
         blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
 
@@ -413,12 +440,12 @@ class Page(Image):
         :return: Text string
         """
         text: str = ""
-        block = "layouts" if self.layouts else "words"
-        block_content = "text" if block == "layouts" else "characters"
-        block_with_order = self._order(block)
-        linebreak = "\n" if block == "layouts" else " "
-        for block in block_with_order:  # type: ignore
-            text += f"{linebreak}{getattr(block, block_content)}"
+        block_name = "layouts" if self.layouts else "words"
+        block_with_order = self._order(block_name)
+        linebreak = "\n" if block_name == "layouts" else " "
+        for block in block_with_order:
+            block_attr = "text" if block.category_name != LayoutType.word else "characters"
+            text += f"{linebreak}{getattr(block, block_attr)}"
         return text
 
     @property
@@ -524,7 +551,7 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union({"text", "tables", "layouts", "words"})
+        return set(PageType).union({"text", "tables", "layouts", "words", "residual_words"})
 
     def save(
         self,

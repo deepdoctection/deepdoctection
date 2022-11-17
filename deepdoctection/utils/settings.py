@@ -22,7 +22,7 @@ Module for funcs and constants that maintain general settings
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import catalogue  # type: ignore
 
@@ -183,7 +183,7 @@ class BioTag(ObjectTypes):
 
 @object_types_registry.register("TokenClassWithTag")
 class TokenClassWithTag(ObjectTypes):
-    """Types for token classes with tags, e.g. B-ANSWER"""
+    """Types for token classes with tags, e.g. B-answer"""
 
     b_answer = "B-answer"
     b_header = "B-header"
@@ -335,6 +335,41 @@ def update_all_types_dict() -> None:
         _ALL_TYPES_DICT.update({e.value: e for e in obj})
 
 
+_OLD_TO_NEW_OBJ_TYPE: Dict[str, str] = {
+    "DOC_CLASS": "document_type",
+    "CHARS": "characters",
+    "BIO_TAG": "tag",
+    "B-ANSWER": "B-answer",
+    "B-HEADER": "B-header",
+    "B-QUESTION": "B-question",
+    "E-ANSWER": "E-answer",
+    "E-HEADER": "E-header",
+    "E-QUESTION": "E-question",
+    "I-ANSWER": "I-answer",
+    "I-HEADER": "I-header",
+    "I-QUESTION": "I-question",
+    "S-ANSWER": "S-answer",
+    "S-HEADER": "S-header",
+    "S-QUESTION": "S-question",
+}
+
+
+def _get_new_obj_type_str(obj_type: str) -> str:
+    return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
+
+
+_BLACK_LIST: List[str] = ["B", "I", "O"]
+
+
+def _get_black_list() -> List[str]:
+    return _BLACK_LIST
+
+
+def update_black_list(item: str) -> None:
+    """Updates the black list, i.e. set of elements that must not be lowered"""
+    _BLACK_LIST.append(item)
+
+
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
     """Get an object type property from a given string. Does nothing if an ObjectType is passed
 
@@ -343,6 +378,11 @@ def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
     """
     if isinstance(obj_type, ObjectTypes):
         return obj_type
+    obj_type = _get_new_obj_type_str(obj_type)
+    if obj_type.startswith(("B-", "E-", "I-", "S-")):
+        obj_type = obj_type[:2] + obj_type[2:].lower()
+    elif obj_type not in _get_black_list():
+        obj_type = obj_type.lower()
     return_value = _ALL_TYPES_DICT.get(obj_type)
     if return_value is None:
         raise KeyError(f"String {obj_type} does not correspond to a registered ObjectType")

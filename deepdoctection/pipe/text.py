@@ -416,22 +416,23 @@ class TextOrderService(PipelineComponent):
     def serve(self, dp: Image) -> None:
         # select all text blocks that are considered to be relevant for page text. This does not include some layout
         # items that have to be considered independently (e.g. tables). Order the blocks by column wise reading order
-        text_block_anns = dp.get_annotation(category_names=self._floating_text_block_names)
-        number_text_block_anns_orig = len(text_block_anns)
-        # maybe add all text containers that are not mapped to a text block
+        floating_text_block_anns = dp.get_annotation(category_names=self._floating_text_block_names)
+        number_floating_text_block_anns_orig = len(floating_text_block_anns)
+        # maybe add all text containers that are not mapped to any text block
         if self._text_containers_to_text_block:
+            text_block_anns = dp.get_annotation(category_names=self._text_block_names)
             text_ann_ids = list(
                 chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
             )
             text_container_anns = dp.get_annotation(category_names=self._text_container)
             text_container_anns = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
-            text_block_anns.extend(text_container_anns)
+            floating_text_block_anns.extend(text_container_anns)
 
         # estimating reading columns. We will only do this if we have some text blocks that are no text_containers
         # (number_text_block_anns_orig >0) or if the text container is not a word. Otherwise, we will have to skip that
         # part
-        if self._text_container != LayoutType.word or number_text_block_anns_orig:
-            raw_reading_order_list = _reading_columns(dp, text_block_anns, 0.05, 2.0)
+        if self._text_container != LayoutType.word or number_floating_text_block_anns_orig:
+            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns, 0.05, 2.0)
 
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
