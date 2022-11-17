@@ -45,6 +45,7 @@ from deepdoctection.utils.settings import (
     WordType,
     object_types_registry,
     update_all_types_dict,
+    update_black_list,
 )
 from deepdoctection.utils.systools import get_package_path
 
@@ -492,3 +493,5 @@ def pytest_sessionstart() -> None:
     """Pre configuration before testing starts"""
     object_types_registry.register("TestType", func=TestType)
     update_all_types_dict()
+    for item in TestType:
+        update_black_list(item.value)

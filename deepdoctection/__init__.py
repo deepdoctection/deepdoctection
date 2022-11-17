@@ -320,6 +320,7 @@ _IMPORT_STRUCTURE = {
         "Relationships",
         "Languages",
         "DatasetType",
+        "update_all_types_dict",
         "get_type",
         "sub_path",
         "get_package_path",
