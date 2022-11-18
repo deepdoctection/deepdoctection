@@ -256,7 +256,7 @@ def train_hf_layoutlm(
     dataset = DatasetAdapter(
         dataset_train,
         True,
-        image_to_raw_layoutlm_features(categories_dict_name_as_key, dataset_type),
+        image_to_raw_layoutlm_features(dataset_type),
         **build_train_dict,
     )
 

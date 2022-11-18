@@ -27,9 +27,8 @@ from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.mapper.laylmstruct import image_to_layoutlm, image_to_layoutlm_features
+from deepdoctection.mapper.laylmstruct import image_to_layoutlm_features
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
-from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
 from deepdoctection.utils.settings import BioTag, PageType, TokenClasses, WordType
 
@@ -41,61 +40,6 @@ class TestLMTokenClassifierService:
     """
     Test LMTokenClassifierService
     """
-
-    @staticmethod
-    @mark.requires_pt
-    def test_pass_datapoint(
-        dp_image_with_layout_and_word_annotations: Image,
-        layoutlm_input: JsonDict,
-        token_class_result: List[TokenClassResult],
-    ) -> None:
-        """
-        Testing pass_datapoint
-        """
-
-        # Arrange
-        tokenizer_output = {
-            "input_ids": layoutlm_input["input_ids"],
-            "attention_mask": layoutlm_input["attention_mask"],
-            "token_type_ids": layoutlm_input["token_type_ids"],
-        }
-        tokenizer = MagicMock(return_value=tokenizer_output)
-        word_output = copy(layoutlm_input["tokens"])
-        word_output.pop(0)
-        word_output.pop(-1)
-
-        word_output = [word_output[0], word_output[1], word_output[2], word_output[3]]
-        tokenizer.tokenize = MagicMock(side_effect=word_output)
-        tokenizer.cls_token_id = 101
-        tokenizer.sep_token_id = 102
-        tokenizer.pad_token_id = 0
-        tokenizer.max_model_input_sizes = {"microsoft/layoutlm-base-uncased": 512}
-
-        lm = MagicMock()  # pylint: disable=C0103
-        lm.predict = MagicMock(return_value=token_class_result)
-        lm_service = LMTokenClassifierService(tokenizer, lm, image_to_layoutlm)
-
-        dp = dp_image_with_layout_and_word_annotations
-
-        # Act
-        dp = lm_service.pass_datapoint(dp)
-
-        # Assert
-        words = dp.get_annotation(annotation_ids="7e79459d-0cf9-3954-802c-6d8c4d017792")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
-
-        words = dp.get_annotation(annotation_ids="08e645c4-f28d-30e6-befe-ab22dc53da92")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
-
-        words = dp.get_annotation(annotation_ids="224d479a-77e1-3c7a-9cd1-08430c61f020")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
-
-        words = dp.get_annotation(annotation_ids="841c74d7-45b2-3e0d-a8d5-7be3391685d6")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
 
     @staticmethod
     @mark.requires_pt
