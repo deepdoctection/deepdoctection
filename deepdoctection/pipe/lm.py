@@ -19,7 +19,8 @@
 Module for token classification pipeline
 """
 from copy import copy
-from typing import Any, Callable, List, Optional
+import inspect
+from typing import Any, Callable, List, Optional, Literal
 
 from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
@@ -46,9 +47,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmTokenClassifier(categories= ['B-ANSWER', 'B-HEAD', 'B-QUESTION', 'E-ANSWER',
-                                                               'E-HEAD', 'E-QUESTION', 'I-ANSWER', 'I-HEAD',
-                                                               'I-QUESTION', 'O', 'S-ANSWER', 'S-HEAD', 'S-QUESTION'])
+            layoutlm = HFLayoutLmTokenClassifier(categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                               'E-header', 'E-question', 'I-answer', 'I-header',
+                                                               'I-question', 'O', 'S-answer', 'S-header', 'S-question'])
 
             # token classification service
             layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm,image_to_layoutlm)
@@ -67,22 +68,53 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         tokenizer: Any,
         language_model: LMTokenClassifier,
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+        padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
+        truncation: bool = True,
+        return_overflowing_tokens: bool = False,
         use_other_as_default_category: bool = False,
     ) -> None:
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: language model token classifier
         :param mapping_to_lm_input_func: Function mapping image to layout language model features
+        :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
+                        `do_not_pad`.
+        :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
+                           maximum acceptable input length for the model if that argument is not provided. This will
+                           truncate token by token, removing a token from the longest sequence in the pair if a pair of
+                           sequences (or a batch of pairs) is provided.
+                           If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
+                           model maximum admissible input size).
+        :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
+                           can be returned as an additional batch element. Not that in this case, the number of input
+                           batch samples will be smaller than the output batch samples.
+        :param use_other_as_default_category: When predicting token classes, it might be possible that some words might
+                                              not get sent to the model because they are categorized as not eligible
+                                              token (e.g. empty string). If set to `True` it will assign all words
+                                              without token the `BioTag.outside` token.
         """
         self.language_model = language_model
         self.use_other_as_default_category = use_other_as_default_category
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
+        parameters = inspect.signature(mapping_to_lm_input_func).parameters
+        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
+                           "return_tensors"}
+        for kwarg in required_kwargs:
+            if kwarg not in parameters:
+                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
+        self.padding = padding
+        self.truncation = truncation
+        self.return_overflowing_tokens = return_overflowing_tokens
         super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer)(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer,
+                                                 padding=self.padding,
+                                                 truncation=self.truncation,
+                                                 return_overflowing_tokens= self.return_overflowing_tokens,
+                                                 return_tensors="pt")(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -128,6 +160,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             copy(self.tokenizer),
             self.language_model.clone(),
             copy(self.mapping_to_lm_input_func),
+            self.padding,
+            self.truncation,
+            self.return_overflowing_tokens,
             self.use_other_as_default_category,
         )
 
@@ -162,7 +197,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             # hf tokenizer and token classifier
             tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
             layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                     categories=["HANDWRITTEN", "PRESENTATION", "RESUME"])
+                                                     categories=["handwritten", "presentation", "resume"])
 
             # token classification service
             layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
@@ -182,17 +217,44 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         tokenizer: Any,
         language_model: LMSequenceClassifier,
         mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+        padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
+        truncation: bool = True,
+        return_overflowing_tokens: bool = False,
     ) -> None:
         """
         :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
         :param language_model: language model sequence classifier
         :param mapping_to_lm_input_func: Function mapping image to layout language model features
+        :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
+                        `do_not_pad`.
+        :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
+                           maximum acceptable input length for the model if that argument is not provided. This will
+                           truncate token by token, removing a token from the longest sequence in the pair if a pair of
+                           sequences (or a batch of pairs) is provided.
+                           If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
+                           model maximum admissible input size).
+        :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
+                           can be returned as an additional batch element. Not that in this case, the number of input
+                           batch samples will be smaller than the output batch samples.
         """
         self.language_model = language_model
+        parameters = inspect.signature(mapping_to_lm_input_func).parameters
+        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
+                           "return_tensors"}
+        for kwarg in required_kwargs:
+            if kwarg not in parameters:
+                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
+        self.padding = padding
+        self.truncation = truncation
+        self.return_overflowing_tokens = return_overflowing_tokens
         super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer, return_tensors="pt")(dp)
+        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer,
+                                                 padding=self.padding,
+                                                 truncation=self.truncation,
+                                                 return_overflowing_tokens=self.return_overflowing_tokens,
+                                                 return_tensors="pt")(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -201,7 +263,12 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         )
 
     def clone(self) -> "LMSequenceClassifierService":
-        return self.__class__(copy(self.tokenizer), self.language_model.clone(), copy(self.mapping_to_lm_input_func))
+        return self.__class__(copy(self.tokenizer),
+                              self.language_model.clone(),
+                              copy(self.mapping_to_lm_input_func),
+                              self.padding,
+                              self.truncation,
+                              self.return_overflowing_tokens)
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

@@ -259,8 +259,12 @@ class DatasetCategories:
                 if category not in sub_categories:
                     continue
                 sub_cat_tmp: Dict[str, Union[Dict[str, str], Sequence[str]]] = {}
+                if isinstance(sub_categories[category], ObjectTypes):
+                    sub_categories_list = [sub_categories[category]]
+                else:
+                    sub_categories_list = sub_categories[category]
                 for sub_cat_key in value:
-                    if sub_cat_key not in sub_categories[category]:
+                    if sub_cat_key not in sub_categories_list:
                         continue
                     if values_as_dict:
                         if not name_as_key:

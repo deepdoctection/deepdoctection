@@ -45,6 +45,7 @@ from deepdoctection.utils.settings import (
     TableType,
     TokenClasses,
     TokenClassWithTag,
+    WordType,
     get_type,
 )
 from tests.data import TestType
@@ -1808,15 +1809,21 @@ class DatapointXfund:
         get_type("S-header"): "12",
         get_type("S-question"): "13",
     }
-    ner_token_to_id_mapping = {
-        TokenClassWithTag.b_answer: "1",
-        TokenClassWithTag.b_header: "2",
-        TokenClassWithTag.b_question: "3",
-        TokenClassWithTag.i_answer: "4",
-        TokenClassWithTag.i_header: "5",
-        TokenClassWithTag.i_question: "6",
-        BioTag.outside: "7",
-    }
+    ner_token_to_id_mapping = {LayoutType.word: {WordType.token_class:
+        {TokenClasses.other: '1',
+         TokenClasses.question: '2',
+         TokenClasses.answer: '3',
+         TokenClasses.header: '4'},
+        WordType.tag: {BioTag.inside: '1',
+                       BioTag.outside: '2',
+                       BioTag.begin: '3'},
+        WordType.token_tag: {TokenClassWithTag.b_answer: '1',
+                             TokenClassWithTag.b_header: '2',
+                             TokenClassWithTag.b_question: '3',
+                             TokenClassWithTag.i_answer: '4',
+                             TokenClassWithTag.i_header: '5',
+                             TokenClassWithTag.i_question: '6',
+                             BioTag.outside: '7'}}}
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
         "width": [1000],

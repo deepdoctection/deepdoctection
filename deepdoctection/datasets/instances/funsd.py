@@ -161,11 +161,11 @@ class FunsdBuilder(DataFlowBaseBuilder):
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
             categories=LayoutType.word,
-            sub_categories={LayoutType.word: [WordType.token_tag]},
+            sub_categories={LayoutType.word: [WordType.token_tag, WordType.tag, WordType.token_class]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,
-        )[LayoutType.word][WordType.token_tag]
+        )
         df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
