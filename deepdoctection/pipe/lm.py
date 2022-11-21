@@ -72,6 +72,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
         use_other_as_default_category: bool = False,
+        sliding_window_stride: int = 0
     ) -> None:
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
@@ -95,12 +96,13 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         """
         self.language_model = language_model
         self.use_other_as_default_category = use_other_as_default_category
+        self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
         parameters = inspect.signature(mapping_to_lm_input_func).parameters
         required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
-                           "return_tensors"}
+                           "return_tensors","sliding_window_stride"}
         for kwarg in required_kwargs:
             if kwarg not in parameters:
                 raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
@@ -114,7 +116,8 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                                                  padding=self.padding,
                                                  truncation=self.truncation,
                                                  return_overflowing_tokens= self.return_overflowing_tokens,
-                                                 return_tensors="pt")(dp)
+                                                 return_tensors="pt",
+                                                 sliding_window_stride=self.sliding_window_stride)(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -240,7 +243,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.language_model = language_model
         parameters = inspect.signature(mapping_to_lm_input_func).parameters
         required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
-                           "return_tensors"}
+                           "return_tensors","sliding_window_stride"}
         for kwarg in required_kwargs:
             if kwarg not in parameters:
                 raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")

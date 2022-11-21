@@ -179,6 +179,8 @@ class BioTag(ObjectTypes):
     begin = "B"
     inside = "I"
     outside = "O"
+    single = "S"
+    end = "E"
 
 
 @object_types_registry.register("TokenClassWithTag")
@@ -286,10 +288,16 @@ class DatasetType(ObjectTypes):
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
     (TokenClasses.header, BioTag.begin): TokenClassWithTag.b_header,
     (TokenClasses.header, BioTag.inside): TokenClassWithTag.i_header,
+    (TokenClasses.header, BioTag.end): TokenClassWithTag.e_header,
+    (TokenClasses.header, BioTag.single): TokenClassWithTag.s_header,
     (TokenClasses.answer, BioTag.begin): TokenClassWithTag.b_answer,
     (TokenClasses.answer, BioTag.inside): TokenClassWithTag.i_answer,
+    (TokenClasses.answer, BioTag.end): TokenClassWithTag.e_answer,
+    (TokenClasses.answer, BioTag.single): TokenClassWithTag.s_answer,
     (TokenClasses.question, BioTag.begin): TokenClassWithTag.b_question,
     (TokenClasses.question, BioTag.inside): TokenClassWithTag.i_question,
+    (TokenClasses.question, BioTag.end): TokenClassWithTag.e_question,
+    (TokenClasses.question, BioTag.single): TokenClassWithTag.s_question,
     (TokenClasses.other, BioTag.outside): BioTag.outside,
     (TokenClasses.header, BioTag.outside): BioTag.outside,
     (TokenClasses.answer, BioTag.outside): BioTag.outside,
@@ -358,7 +366,7 @@ def _get_new_obj_type_str(obj_type: str) -> str:
     return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
 
 
-_BLACK_LIST: List[str] = ["B", "I", "O"]
+_BLACK_LIST: List[str] = ["B", "I", "O", "E", "S"]
 
 
 def _get_black_list() -> List[str]:
