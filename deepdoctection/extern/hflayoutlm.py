@@ -22,6 +22,7 @@ HF Layoutlm model for diverse downstream tasks.
 from copy import copy
 from pathlib import Path
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
+from collections import defaultdict
 
 from ..utils.detection_types import Requirement
 from ..utils.file_utils import (
@@ -52,12 +53,12 @@ if transformers_available():
 
 
 def predict_token_classes(
-    uuids: List[str],
+    uuids: List[List[str]],
     input_ids: "Tensor",
     attention_mask: "Tensor",
     token_type_ids: "Tensor",
     boxes: "Tensor",
-    tokens: List[str],
+    tokens: List[List[str]],
     model: "LayoutLMForTokenClassification",
     images: Optional[List["Tensor"]] = None,
 ) -> List[TokenClassResult]:
@@ -78,13 +79,28 @@ def predict_token_classes(
         outputs = model(
             input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids, images=images
         )
-    score = torch.max(F.softmax(outputs.logits.squeeze(), dim=1), dim=1)
-    token_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
-    input_ids_list = input_ids.squeeze().tolist()
-    return [
-        TokenClassResult(uuid=out[0], token_id=out[1], class_id=out[2], token=out[3], score=out[4].tolist())
-        for out in zip(uuids, input_ids_list, token_class_predictions, tokens, score[0])
-    ]
+    soft_max = F.softmax(outputs.logits, dim=2)
+    score = torch.max(soft_max, dim=2)[0].tolist()
+    token_class_predictions_ = outputs.logits.argmax(-1).tolist()
+    input_ids_list_ = input_ids.tolist()
+
+    all_results = defaultdict(list)
+    for idx, uuid_list in enumerate(uuids):
+        for pos, token in enumerate(uuid_list):
+            all_results[token].append((input_ids_list_[idx][pos],
+                                       token_class_predictions_[idx][pos],
+                                       tokens[idx][pos],
+                                       score[idx][pos]))
+    all_token_classes = []
+    for uuid, res in all_results.items():
+        res.sort(key=lambda x: x[3], reverse=True)
+        output = res[0]
+        all_token_classes.append(TokenClassResult(uuid=uuid,
+                                                  token_id=output[0],
+                                                  class_id=output[1],
+                                                  token=output[2],
+                                                  score=output[3]))
+    return all_token_classes
 
 
 def predict_sequence_classes(
@@ -211,6 +227,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         :return: A list of TokenClassResults
         """
 
+        image_ids = encodings.get("image_ids")
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
@@ -219,8 +236,8 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         tokens = encodings.get("tokens")
 
         assert isinstance(ann_ids, list), type(ann_ids)
-        if len(ann_ids) > 1:
-            raise ValueError("HFLayoutLmTokenClassifier accepts for inference only batch size of 1")
+        if len(set(image_ids)) > 1:
+            raise ValueError("HFLayoutLmTokenClassifier accepts for inference only one image.")
         assert isinstance(input_ids, torch.Tensor), type(input_ids)
         assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
         assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
@@ -233,7 +250,7 @@ class HFLayoutLmTokenClassifier(LMTokenClassifier):
         boxes = boxes.to(self.device)
 
         results = predict_token_classes(
-            ann_ids[0], input_ids, attention_mask, token_type_ids, boxes, tokens[0], self.model, None
+            ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
         )
 
         return self._map_category_names(results)
