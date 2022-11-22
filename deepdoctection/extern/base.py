@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils.detection_types import ImageType, Requirement, JsonDict
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 
@@ -305,6 +305,14 @@ class LMTokenClassifier(PredictorBase):
         Clone an instance
         """
         raise NotImplementedError
+
+    @staticmethod
+    def default_arguments_for_input_mapping() -> JsonDict:
+        """
+        Add some default arguments that might be necessary when preparing a sample. Overwrite this method
+        for some custom setting.
+        """
+        return {}
 
 
 class LMSequenceClassifier(PredictorBase):

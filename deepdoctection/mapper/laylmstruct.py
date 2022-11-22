@@ -199,9 +199,11 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
     if "images" in features:
-        features["images"] = [
-            torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
-        ]
+        features["images"] = torch.tensor([image.astype("float32").transpose(2, 0, 1) for image in features["images"]]
+                                          ,dtype=torch.float32)
+        #features["images"] = [
+        #    torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
+        #]
     return features
 
 

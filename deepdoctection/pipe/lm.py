@@ -95,29 +95,30 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                                               without token the `BioTag.outside` token.
         """
         self.language_model = language_model
+        self.padding = padding
+        self.truncation = truncation
+        self.return_overflowing_tokens = return_overflowing_tokens
         self.use_other_as_default_category = use_other_as_default_category
         self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
-        parameters = inspect.signature(mapping_to_lm_input_func).parameters
-        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
-                           "return_tensors","sliding_window_stride"}
-        for kwarg in required_kwargs:
-            if kwarg not in parameters:
-                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
-        self.padding = padding
-        self.truncation = truncation
-        self.return_overflowing_tokens = return_overflowing_tokens
         super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
+        parameters = inspect.signature(mapping_to_lm_input_func).parameters
+        self.required_kwargs = {"tokenizer": self.tokenizer,
+                                "padding": self.padding,
+                                "truncation": self.truncation,
+                                "return_overflowing_tokens": self.return_overflowing_tokens,
+                                "return_tensors": "pt",
+                                "sliding_window_stride": self.sliding_window_stride}
+        self.required_kwargs.update(self.language_model.default_arguments_for_input_mapping())
+        for kwarg in self.required_kwargs:
+            if kwarg not in parameters:
+                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
+
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer,
-                                                 padding=self.padding,
-                                                 truncation=self.truncation,
-                                                 return_overflowing_tokens= self.return_overflowing_tokens,
-                                                 return_tensors="pt",
-                                                 sliding_window_stride=self.sliding_window_stride)(dp)
+        lm_input = self.mapping_to_lm_input_func(**self.required_kwargs)(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -243,7 +244,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.language_model = language_model
         parameters = inspect.signature(mapping_to_lm_input_func).parameters
         required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
-                           "return_tensors","sliding_window_stride"}
+                           "return_tensors"}
         for kwarg in required_kwargs:
             if kwarg not in parameters:
                 raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
