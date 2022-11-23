@@ -207,11 +207,16 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     return features
 
 
-def _tokenize_with_sliding_window(raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]],
+def _tokenize_with_sliding_window(raw_features: List[RawLayoutLMFeatures],
                                   tokenizer: "PreTrainedTokenizerFast",
                                   sliding_window_stride: int,
                                   return_tensors: Optional[Literal["pt"]] = None):
-
+    """
+    Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
+    If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
+    from raw tokenized outputs we run the tokenizer a second time without truncating and build the sliding windows from
+    this second output.
+    """
     # first try: we require return_overflowing_tokens=True. If the number of raw features is equal to
     # overflow_to_sample_mapping then there is nothing more to do because the sample has less than max_length
     # tokens
@@ -289,10 +294,10 @@ def _tokenize_with_sliding_window(raw_features: Union[RawLayoutLMFeatures, List[
                 word_ids.append(None)
                 all_word_ids.append(word_ids)
             else:
-                # last sliding window. We have to pad the end to have equal length along all windows.
+                # last sliding window. We have to pad the end in order to have equal length along all windows.
                 tokens = tokens_orig[start:end]
                 tokens.insert(0,"[CLS]")
-                pads = ["[PAD]" for _ in range(pad_last+1) ]
+                pads = ["[PAD]" for _ in range(pad_last+1)]
                 tokens.extend(pads)
                 all_tokens.append(tokens)
                 input_ids = input_ids_orig[start:end]
@@ -364,6 +369,10 @@ def raw_features_to_layoutlm_features(
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
     :param remove_columns_for_training: Will remove all superfluous columns that are not required for training.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
+                                  will be created with each window having max_length sequence input. When using
+                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                                  with windows shifted `sliding_window_stride` to the right.
     :return: dictionary with the following arguments:  `image_ids, width, height, ann_ids, input_ids,
              token_type_ids, attention_mask, bbox, labels`.
     """
