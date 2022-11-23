@@ -133,40 +133,7 @@ def predict_sequence_classes(
 
 
 class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
-    """
-    A wrapper class for :class:`transformers.LayoutLMForTokenClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
-    Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
-    classification and other things please use another model of the family.
 
-    **Example**
-
-        .. code-block:: python
-
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
-
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
-                                                               'E-header', 'E-question', 'I-answer', 'I-header',
-                                                               'I-question', 'O', 'S-answer', 'S-header',
-                                                               'S-question'])
-
-            # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
-
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
-
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
-    """
     model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification]
 
     def __init__(
@@ -179,12 +146,15 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
         :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
                                      entities self. To be consistent with detectors use only values >0. Conversion will
                                      be done internally.
         :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
                                consistent with detectors use only values>0. Conversion will be done internally.
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
+        :param device: The device (cpu,"cuda"), where to place the model.
         """
 
         self.name = "_".join(Path(path_weights).parts[-3:])
@@ -276,6 +246,40 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
+    """
+    A wrapper class for :class:`transformers.LayoutLMForTokenClassification` to use within a pipeline component.
+    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
+    classification and other things please use another model of the family.
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                               'E-header', 'E-question', 'I-answer', 'I-header',
+                                                               'I-question', 'O', 'S-answer', 'S-header',
+                                                               'S-question'])
+
+            # token classification service
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
     def __init__(
         self,
         path_config_json: str,
@@ -285,6 +289,17 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        """
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
+                                     entities self. To be consistent with detectors use only values >0. Conversion will
+                                     be done internally.
+        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
+                               consistent with detectors use only values>0. Conversion will be done internally.
+        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
+        :param device: The device (cpu,"cuda"), where to place the model.
+        """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
@@ -315,6 +330,42 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
 
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
+    """
+    A wrapper class for :class:`transformers.LayoutLMv2ForTokenClassification` to use within a pipeline component.
+    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
+    classification and other things please use another model of the family.
+
+    Note, that you must use `LayoutLMTokenizerFast` as tokenizer. `LayoutLMv2TokenizerFast` will not be accepted.
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmv2TokenClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                               'E-header', 'E-question', 'I-answer', 'I-header',
+                                                               'I-question', 'O', 'S-answer', 'S-header',
+                                                               'S-question'])
+
+            # token classification service
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
     def __init__(
             self,
             path_config_json: str,
@@ -324,6 +375,17 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
             categories: Optional[Mapping[str, TypeOrStr]] = None,
             device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        """
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
+                                     entities self. To be consistent with detectors use only values >0. Conversion will
+                                     be done internally.
+        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
+                               consistent with detectors use only values>0. Conversion will be done internally.
+        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
+        :param device: The device (cpu,"cuda"), where to place the model.
+        """
         config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMv2ForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
@@ -355,7 +417,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def default_arguments_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_input_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.

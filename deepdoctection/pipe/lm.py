@@ -26,9 +26,14 @@ from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
 from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import transformers_available
 from ..utils.settings import BioTag, LayoutType, PageType, TokenClasses, WordType
 from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry
+
+if transformers_available():
+    from transformers import LayoutLMv2TokenizerFast
+
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
@@ -104,18 +109,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
         super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
-
-        parameters = inspect.signature(mapping_to_lm_input_func).parameters
-        self.required_kwargs = {"tokenizer": self.tokenizer,
-                                "padding": self.padding,
-                                "truncation": self.truncation,
-                                "return_overflowing_tokens": self.return_overflowing_tokens,
-                                "return_tensors": "pt",
-                                "sliding_window_stride": self.sliding_window_stride}
-        self.required_kwargs.update(self.language_model.default_arguments_for_input_mapping())
-        for kwarg in self.required_kwargs:
-            if kwarg not in parameters:
-                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
+        self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(**self.required_kwargs)(dp)
@@ -168,6 +162,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             self.truncation,
             self.return_overflowing_tokens,
             self.use_other_as_default_category,
+            self.sliding_window_stride
         )
 
     def get_meta_annotation(self) -> JsonDict:
@@ -182,6 +177,21 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
     def _get_name(self) -> str:
         return f"lm_token_class_{self.language_model.name}"
+
+    def _init_sanity_checks(self) -> None:
+        if isinstance(self.tokenizer, LayoutLMv2TokenizerFast):
+            raise ValueError("LayoutLMv2TokenizerFast cannot be used for tokenizing. Please use LayoutLMTokenizerFast")
+        parameters = inspect.signature(self.mapping_to_lm_input_func).parameters
+        self.required_kwargs = {"tokenizer": self.tokenizer,
+                                "padding": self.padding,
+                                "truncation": self.truncation,
+                                "return_overflowing_tokens": self.return_overflowing_tokens,
+                                "return_tensors": "pt",
+                                "sliding_window_stride": self.sliding_window_stride}
+        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        for kwarg in self.required_kwargs:
+            if kwarg not in parameters:
+                raise TypeError(f"{self.mapping_to_lm_input_func} requires argument {kwarg}")
 
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
