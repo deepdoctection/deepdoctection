@@ -45,7 +45,8 @@ def xfund_to_image(
     dp: JsonDict,
     load_image: bool,
     fake_score: bool,
-    category_names_mapping: Mapping[str, str],
+    categories_dict_name_as_key: Mapping[str, str],
+    token_class_names_mapping: Mapping[str, str],
     ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes,Mapping[ObjectTypes, str]]],
 ) -> Optional[Image]:
     """
@@ -56,7 +57,8 @@ def xfund_to_image(
     :param load_image: If 'True' it will load image to attr:`Image.image`
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
                        will be added.
-    :param category_names_mapping: A dictionary, mapping original label names to normalized category names
+    :param categories_dict_name_as_key:
+    :param token_class_names_mapping: A dictionary, mapping original label names to normalized category names
     :param ner_token_to_id_mapping: A dictionary, mapping token classes with bio tags (i.e. token tags) into their
                                     category ids.
     :return: Image
@@ -96,6 +98,18 @@ def xfund_to_image(
             entities = dp.get("form", [])
 
         for entity in entities:
+            box = list(map(float, entity["box"]))
+            bbox = BoundingBox(absolute_coords=True, ulx=box[0], uly=box[1], lrx=box[2], lry=box[3])
+            score = maybe_get_fake_score(fake_score)
+            entity_ann = ImageAnnotation(category_name=LayoutType.text,
+                                         bounding_box=bbox,
+                                         category_id=categories_dict_name_as_key[LayoutType.text], score=score)
+            category_name = token_class_names_mapping[entity["label"]]
+            sub_cat_semantic = CategoryAnnotation(category_name=category_name,
+                                                  category_id=token_class_to_id_mapping[get_type(category_name)])
+            entity_ann.dump_sub_category(WordType.token_class, sub_cat_semantic)
+            image.dump(entity_ann)
+
             words = entity.get("words")
 
             for idx, word in enumerate(words):
@@ -103,9 +117,12 @@ def xfund_to_image(
                 bbox = BoundingBox(absolute_coords=True, ulx=box[0], uly=box[1], lrx=box[2], lry=box[3])
 
                 score = maybe_get_fake_score(fake_score)
-                category_name = category_names_mapping[entity["label"]]
-                ann = ImageAnnotation(category_name=LayoutType.word, bounding_box=bbox, category_id="1", score=score)
+
+                ann = ImageAnnotation(category_name=LayoutType.word,
+                                      bounding_box=bbox,
+                                      category_id=categories_dict_name_as_key[LayoutType.word], score=score)
                 image.dump(ann)
+                entity_ann.dump_relationship(Relationships.child,ann.annotation_id)
                 sub_cat_semantic = CategoryAnnotation(category_name=category_name,
                                                       category_id=token_class_to_id_mapping[get_type(category_name)])
                 ann.dump_sub_category(WordType.token_class, sub_cat_semantic)
@@ -157,7 +174,7 @@ def xfund_to_image(
             entity_id_to_entity_link_id[entity["id"]].extend(entity["linking"])
 
         # now populating semantic links
-        word_anns = image.get_annotation()
+        word_anns = image.get_annotation(category_names=LayoutType.word)
         for word in word_anns:
             entity_id = ann_id_to_entity_id[word.annotation_id]
             all_linked_entities = list(chain(*entity_id_to_entity_link_id[entity_id]))

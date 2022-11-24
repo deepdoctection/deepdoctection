@@ -21,7 +21,7 @@ HF Layoutlm model for diverse downstream tasks.
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union, Tuple, Any
 from collections import defaultdict
 
 from ..utils.detection_types import Requirement, JsonDict
@@ -54,7 +54,8 @@ if transformers_available():
         LayoutLMForTokenClassification,
         PretrainedConfig,
         LayoutLMv2Config,
-        LayoutLMv2ForTokenClassification
+        LayoutLMv2ForTokenClassification,
+        LayoutLMv2ForSequenceClassification
     )
 
 
@@ -88,12 +89,12 @@ def predict_token_classes(
     soft_max = F.softmax(outputs.logits, dim=2)
     score = torch.max(soft_max, dim=2)[0].tolist()
     token_class_predictions_ = outputs.logits.argmax(-1).tolist()
-    input_ids_list_ = input_ids.tolist()
+    input_ids_list = input_ids.tolist()
 
     all_results = defaultdict(list)
     for idx, uuid_list in enumerate(uuids):
         for pos, token in enumerate(uuid_list):
-            all_results[token].append((input_ids_list_[idx][pos],
+            all_results[token].append((input_ids_list[idx][pos],
                                        token_class_predictions_[idx][pos],
                                        tokens[idx][pos],
                                        score[idx][pos]))
@@ -115,6 +116,7 @@ def predict_sequence_classes(
     token_type_ids: "Tensor",
     boxes: "Tensor",
     model: "LayoutLMForSequenceClassification",
+    images: Optional[List["Tensor"]] = None,
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -122,10 +124,16 @@ def predict_sequence_classes(
     :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
     :param boxes: Torch tensor of bounding boxes of type 'xyxy'
     :param model: layoutlm model for token classification
+    :param images: A list of torch image tensors or None
     :return: SequenceClassResult
     """
+    if images is None:
+        outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    else:
+        outputs = model(
+            input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids, image=images
+        )
 
-    outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
     score = torch.max(F.softmax(outputs.logits)).tolist()
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
@@ -210,7 +218,13 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             result.class_id += 1
         return token_results
 
-    def _validate_encodings(self, **encodings: Union[List[List[str]], "torch.Tensor"]):
+    def _validate_encodings(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> Tuple[List[List[str]],
+                                                                                                List[str],
+                                                                                                "torch.Tensor",
+                                                                                                "torch.Tensor",
+                                                                                                "torch.Tensor",
+                                                                                                "torch.Tensor",
+                                                                                                List[str]]:
         image_ids = encodings.get("image_ids")
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
@@ -426,7 +440,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
                 "image_height": 224}
 
 
-class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
+class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
     """
     A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
     Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
@@ -458,6 +472,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
             for dp in df:
                 ...
     """
+    model: Union[LayoutLMForSequenceClassification, LayoutLMv2ForSequenceClassification]
 
     def __init__(
         self,
@@ -470,10 +485,7 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
         self.path_config = path_config_json
         self.path_weights = path_weights
         self.categories = copy(categories)  # type: ignore
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+
         if device is not None:
             self.device = device
         else:
@@ -513,5 +525,155 @@ class HFLayoutLmSequenceClassifier(LMSequenceClassifier):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def clone(self) -> "HFLayoutLmSequenceClassifier":
+    def clone(self) -> "HFLayoutLmSequenceClassifierBase":
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
+
+    def _validate_encodings(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> Tuple["torch.Tensor",
+                                                                                                "torch.Tensor",
+                                                                                                "torch.Tensor",
+                                                                                                "torch.Tensor"]:
+
+        input_ids = encodings.get("input_ids")
+        attention_mask = encodings.get("attention_mask")
+        token_type_ids = encodings.get("token_type_ids")
+        boxes = encodings.get("bbox")
+
+        assert isinstance(input_ids, torch.Tensor), type(input_ids)
+        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
+        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
+        assert isinstance(boxes, torch.Tensor), type(boxes)
+
+        input_ids = input_ids.to(self.device)
+        attention_mask = attention_mask.to(self.device)
+        token_type_ids = token_type_ids.to(self.device)
+        boxes = boxes.to(self.device)
+        return input_ids, attention_mask, token_type_ids, boxes
+
+
+
+class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
+    """
+    A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
+    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
+    classification and other things please use another model of the family.
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories=["handwritten", "presentation", "resume"])
+
+            # token classification service
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
+
+    def __init__(
+        self,
+        path_config_json: str,
+        path_weights: str,
+        categories: Mapping[str, TypeOrStr],
+        device: Optional[Literal["cpu", "cuda"]] = None,
+    ):
+
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        self.model = LayoutLMForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
+        super().__init__(path_config_json, path_weights, categories, device)
+
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+        input_ids,attention_mask,token_type_ids,boxes = self._validate_encodings(**encodings)
+
+        result = predict_sequence_classes(
+            input_ids,
+            attention_mask,
+            token_type_ids,
+            boxes,
+            self.model,
+        )
+
+        result.class_id += 1
+        result.class_name = self.categories[str(result.class_id)]
+        return result
+
+
+class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
+    """
+    A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
+    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
+    classification and other things please use another model of the family.
+
+    **Example**
+
+        .. code-block:: python
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmv2SequenceClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories=["handwritten", "presentation", "resume"])
+
+            # token classification service
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
+
+    def __init__(
+        self,
+        path_config_json: str,
+        path_weights: str,
+        categories: Mapping[str, TypeOrStr],
+        device: Optional[Literal["cpu", "cuda"]] = None,
+    ):
+
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        self.model = LayoutLMv2ForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
+        super().__init__(path_config_json, path_weights, categories, device)
+
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+        input_ids,attention_mask,token_type_ids,boxes = self._validate_encodings(**encodings)
+        images = encodings.get("images")
+        images = images.to(self.device)
+        result = predict_sequence_classes(
+            input_ids,
+            attention_mask,
+            token_type_ids,
+            boxes,
+            self.model,
+            images
+        )
+
+        result.class_id += 1
+        result.class_name = self.categories[str(result.class_id)]
+        return result

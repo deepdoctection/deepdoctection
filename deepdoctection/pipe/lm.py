@@ -35,7 +35,6 @@ if transformers_available():
     from transformers import LayoutLMv2TokenizerFast
 
 
-
 @pipeline_component_registry.register("LMTokenClassifierService")
 class LMTokenClassifierService(LanguageModelPipelineComponent):
     """
