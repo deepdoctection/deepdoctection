@@ -214,12 +214,28 @@ def fixture_xfund_category_names() -> Mapping[str, ObjectTypes]:
     return DatapointXfund().get_category_names_mapping()
 
 
+@fixture(name="xfund_category_dict")
+def fixture_xfund_category_dict_name_as_key() -> Mapping[ObjectTypes, str]:
+    """
+    Xfund category dict name as key
+    """
+    return DatapointXfund().get_categories_dict()
+
+
 @fixture(name="layoutlm_input")
 def fixture_layoutlm_input() -> JsonDict:
     """
     Layoutlm input
     """
     return DatapointXfund().get_layout_input()
+
+
+@fixture(name="layoutlm_v2_input")
+def fixture_layoutlm_input() -> JsonDict:
+    """
+    Layoutlm_v2 input
+    """
+    return DatapointXfund().get_layout_v2_input()
 
 
 @fixture(name="raw_layoutlm_features")

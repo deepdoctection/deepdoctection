@@ -37,6 +37,14 @@ def fixture_layoutlm_input() -> JsonDict:
     return DatapointXfund().get_layout_input()
 
 
+@fixture(name="layoutlm_v2_input")
+def fixture_layoutlm_input() -> JsonDict:
+    """
+    Layoutlm_v2 input
+    """
+    return DatapointXfund().get_layout_v2_input()
+
+
 @fixture(name="categories_semantics")
 def fixture_categories_semantics() -> List[str]:
     """
