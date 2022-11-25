@@ -334,6 +334,21 @@ class ModelCatalog:
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
         ),
+        "microsoft/layoutlmv2-base-uncased/pytorch_model.bin": ModelProfile(
+            name="microsoft/layoutlmv2-base-uncased/pytorch_model.bin",
+            description="LayoutLMv2 is an improved version of LayoutLM with new pre-training tasks to model the"
+                        " interaction among text, layout, and image in a single multi-modal framework. It outperforms"
+                        " strong baselines and achieves new state-of-the-art results on a wide variety of downstream"
+                        " visually-rich document understanding tasks, including , including FUNSD (0.7895 → 0.8420),"
+                        " CORD (0.9493 → 0.9601), SROIE (0.9524 → 0.9781), Kleister-NDA (0.834 → 0.852), RVL-CDIP"
+                        " (0.9443 → 0.9564), and DocVQA (0.7295 → 0.8672). The license is cc-by-nc-sa-4.0",
+            size=[1361845448],
+            tp_model=False,
+            config="microsoft/layoutlmv2-base-uncased/config.json",
+            hf_repo_id="microsoft/layoutlmv2-base-uncased",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json"],
+        ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",

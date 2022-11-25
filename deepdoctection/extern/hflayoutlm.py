@@ -218,13 +218,13 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             result.class_id += 1
         return token_results
 
-    def _validate_encodings(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> Tuple[List[List[str]],
+    def _validate_encodings(self, **encodings: Union[List[List[str]], List[str], "torch.Tensor"]) -> Tuple[List[List[str]],
                                                                                                 List[str],
                                                                                                 "torch.Tensor",
                                                                                                 "torch.Tensor",
                                                                                                 "torch.Tensor",
                                                                                                 "torch.Tensor",
-                                                                                                List[str]]:
+                                                                                                List[List[str]]]:
         image_ids = encodings.get("image_ids")
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
@@ -246,7 +246,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         attention_mask = attention_mask.to(self.device)
         token_type_ids = token_type_ids.to(self.device)
         boxes = boxes.to(self.device)
-        return image_ids, ann_ids, input_ids, attention_mask, token_type_ids,  boxes, tokens
+        return ann_ids, image_ids, input_ids, attention_mask, token_type_ids,  boxes, tokens
 
     def clone(self) -> "HFLayoutLmTokenClassifierBase":
         return self.__class__(
@@ -333,8 +333,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :return: A list of TokenClassResults
         """
 
-        image_ids, ann_ids, \
-            input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
+        ann_ids, image_ids, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
         results = predict_token_classes(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
@@ -419,8 +418,8 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :return: A list of TokenClassResults
         """
 
-        image_ids, ann_ids, \
-            input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
+        ann_ids, image_ids, \
+        input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
         images = encodings.get("images")
         images = images.to(self.device)
@@ -550,7 +549,6 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
         return input_ids, attention_mask, token_type_ids, boxes
 
 
-
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
     """
     A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
@@ -655,7 +653,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
 
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMv2ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
         )

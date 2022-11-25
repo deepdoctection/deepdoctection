@@ -231,7 +231,7 @@ def _tokenize_with_sliding_window(raw_features: List[RawLayoutLMFeatures],
     if len(raw_features) == len(tokenized_inputs["overflow_to_sample_mapping"]):
         return tokenized_inputs
 
-    # now we tokenize without truncation nor padding and build sliding windows.
+    # now we tokenize with neither truncation nor padding and build sliding windows.
     tokenized_inputs = tokenizer(
         [dp["words"] for dp in raw_features],
         padding="do_not_pad",
@@ -264,8 +264,8 @@ def _tokenize_with_sliding_window(raw_features: List[RawLayoutLMFeatures],
         multiplier, remainder = divmod_result
         total_length = len(tokens_orig)
         # suppose the sample has total_length= 525 tokens:
-        #  [[CLS],1,...,523,[SEP]]. With sliding_window_stride = 8 we need to build windows as follows:
-        # [[CLS],1,..,510,[SEP]], [[CLS],8,..,518,[SEP]], [[CLS],16,..,523,[SEP],[PAD],[PAD],[PAD]]
+        #  [[CLS],1,...,523,[SEP]]. With sliding_window_stride = 8 we build windows as follows:
+        # [[CLS],1,..,510,[SEP]], [[CLS],8,..,517,[SEP]], [[CLS],16,..,523,[SEP],[PAD],[PAD],[PAD]]
         # Here, we have a multiplier = 1,
         for k in range(multiplier+2):
             start = max(k*sliding_window_stride,1)

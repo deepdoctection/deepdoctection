@@ -35,7 +35,7 @@ from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
 
-from deepdoctection.utils.settings import DatasetType, WordType
+from deepdoctection.utils.settings import DatasetType, WordType, ObjectTypes
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
@@ -46,6 +46,7 @@ if transformers_available():
 def test_image_to_raw_layoutlm_features_for_token_data(
     datapoint_xfund: JsonDict,
     xfund_category_names: Dict[str, str],
+    xfund_category_dict: Dict[ObjectTypes, str],
     raw_layoutlm_features: JsonDict,
     ner_token_to_id_mapping: JsonDict,
 ) -> None:
@@ -54,7 +55,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
+    image = xfund_to_image(True, False, xfund_category_dict, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
 
     # Act
     raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(
@@ -78,6 +79,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
 def test_image_to_raw_layoutlm_features_for_inference(
     datapoint_xfund: JsonDict,
     xfund_category_names: Dict[str, str],
+    xfund_category_dict: Dict[ObjectTypes, str],
     raw_layoutlm_features: JsonDict,
     ner_token_to_id_mapping: JsonDict,
 ) -> None:
@@ -87,7 +89,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
     """
 
     # Arrange
-    image = xfund_to_image(True, False, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
+    image = xfund_to_image(True, False, xfund_category_dict, xfund_category_names, ner_token_to_id_mapping)(datapoint_xfund)
 
     assert image is not None
 

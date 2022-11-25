@@ -19,6 +19,7 @@
 Some datapoint samples in a separate module
 """
 
+from copy import deepcopy
 from collections import namedtuple
 from dataclasses import dataclass
 from typing import Dict, List, Mapping, Optional, Union
@@ -1787,7 +1788,7 @@ class DatapointXfund:
     """
 
     dp = _SAMPLE_XFUND["documents"][0]
-
+    categories_dict = {LayoutType.word: "1", LayoutType.text: "2"}
     category_names_mapping = {
         "other": TokenClasses.other,
         "question": TokenClasses.question,
@@ -1823,7 +1824,11 @@ class DatapointXfund:
                              TokenClassWithTag.i_answer: '4',
                              TokenClassWithTag.i_header: '5',
                              TokenClassWithTag.i_question: '6',
-                             BioTag.outside: '7'}}}
+                             BioTag.outside: '7'}},
+                               LayoutType.text: {WordType.token_class: {TokenClasses.other: '1',
+                                                                        TokenClasses.question: '2',
+                                                                        TokenClasses.answer: '3',
+                                                                        TokenClasses.header: '4'}}}
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
         "width": [1000],
@@ -1940,11 +1945,22 @@ class DatapointXfund:
         """
         return self.category_names_mapping
 
+    def get_categories_dict(self) -> Mapping[ObjectTypes,str]:
+        """
+        categories_dict
+        """
+        return self.categories_dict
+
     def get_layout_input(self) -> JsonDict:
         """
         layout_input
         """
         return self.layout_input
+
+    def get_layout_v2_input(self) -> JsonDict:
+        layout_v2_input = deepcopy(self.layout_input)
+        layout_v2_input["images"] = [np.ones((3, 224, 224), dtype=np.int32) * 255]
+        return layout_v2_input
 
     def get_raw_layoutlm_features(self) -> JsonDict:
         """

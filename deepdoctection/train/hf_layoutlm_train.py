@@ -18,6 +18,7 @@
 """
 Module for training Huggingface implementation of LayoutLm
 """
+
 import copy
 import json
 import pprint
@@ -29,6 +30,8 @@ from transformers import (
     IntervalStrategy,
     LayoutLMForSequenceClassification,
     LayoutLMForTokenClassification,
+    LayoutLMv2ForSequenceClassification,
+    LayoutLMv2ForTokenClassification,
     LayoutLMTokenizerFast,
     PretrainedConfig,
     PreTrainedModel,
@@ -51,16 +54,24 @@ from ..utils.utils import string_to_dict
 _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": LayoutLMForTokenClassification,
     "LayoutLMForSequenceClassification": LayoutLMForSequenceClassification,
+    "LayoutLMv2ForTokenClassification":  LayoutLMv2ForTokenClassification,
+    "LayoutLMv2ForSequenceClassification": LayoutLMv2ForSequenceClassification,
 }
+
 _ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    "LayoutLMv2ForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    "LayoutLMv2ForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
 }
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
     ("layoutlm", DatasetType.sequence_classification): LayoutLMForSequenceClassification,
     ("layoutlm", DatasetType.token_classification): LayoutLMForTokenClassification,
+    ("layoutlmv2", DatasetType.sequence_classification): LayoutLMv2ForSequenceClassification,
+    ("layoutlmv2", DatasetType.token_classification): LayoutLMv2ForTokenClassification,
 }
-_MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
+_MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+                            "layoutlmv2": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
 _DS_TYPE_TO_DD_LM_CLASS: Mapping[ObjectTypes, Any] = {
     DatasetType.token_classification: HFLayoutLmTokenClassifier,
     DatasetType.sequence_classification: HFLayoutLmSequenceClassifier,
