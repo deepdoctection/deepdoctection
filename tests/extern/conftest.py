@@ -29,8 +29,8 @@ from ..mapper.data import DatapointXfund
 from .data import PDF_BYTES, PDF_BYTES_2
 
 
-@fixture(name="layoutlm_input")
-def fixture_layoutlm_input() -> JsonDict:
+@fixture(name="layoutlm_input_for_predictor")
+def fixture_layoutlm_input_for_predictor() -> JsonDict:
     """
     Layoutlm input
     """

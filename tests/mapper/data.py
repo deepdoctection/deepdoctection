@@ -1959,7 +1959,7 @@ class DatapointXfund:
 
     def get_layout_v2_input(self) -> JsonDict:
         layout_v2_input = deepcopy(self.layout_input)
-        layout_v2_input["images"] = [np.ones((3, 224, 224), dtype=np.int32) * 255]
+        layout_v2_input["image"] = [np.ones((3, 224, 224), dtype=np.int32) * 255]
         return layout_v2_input
 
     def get_raw_layoutlm_features(self) -> JsonDict:

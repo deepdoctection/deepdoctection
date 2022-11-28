@@ -21,7 +21,7 @@ https://github.com/NielsRogge/Transformers-Tutorials
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, Mapping, NewType, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Union
 
 import numpy as np
 from cv2 import INTER_LINEAR
@@ -30,16 +30,12 @@ from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import (
-    BioTag,
     DatasetType,
     LayoutType,
-    ObjectTypes,
     PageType,
     WordType,
-    token_class_tag_to_token_class_with_tag,
 )
 from ..utils.transform import ResizeTransform
 from .maputils import curry
@@ -48,7 +44,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import PreTrainedTokenizerFast, BatchEncoding  # pylint: disable = W0611
+    from transformers import PreTrainedTokenizerFast # pylint: disable = W0611
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -198,8 +194,8 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
-    if "images" in features:
-        features["images"] = torch.tensor([image.astype("float32").transpose(2, 0, 1) for image in features["images"]]
+    if "image" in features:
+        features["image"] = torch.tensor([image.astype("float32").transpose(2, 0, 1) for image in features["image"]]
                                           ,dtype=torch.float32)
         #features["images"] = [
         #    torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
@@ -485,7 +481,7 @@ def raw_features_to_layoutlm_features(
 
     # will only add the image to features if it has been passed as raw feature
     if images:
-        input_dict["images"] = images
+        input_dict["image"] = images
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
@@ -533,6 +529,7 @@ class LayoutLMDataCollator:
     truncation: bool = field(default=True)
     return_overflowing_tokens: bool = field(default=False)
     return_tensors: Optional[Literal["pt"]] = field(default=None)
+    sliding_window_stride: int = field(default=0)
 
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
@@ -557,6 +554,7 @@ class LayoutLMDataCollator:
             self.return_overflowing_tokens,
             self.return_tensors,
             True,
+            self.sliding_window_stride
         )
 
 
@@ -612,6 +610,10 @@ def image_to_layoutlm_features(
     :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
                          whereas the image has to be resized to a different height. This input will only resize the
                          `image` height.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
+                                  will be created with each window having max_length sequence input. When using
+                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                                  with windows shifted `sliding_window_stride` to the right.
     :return: A dict of layoutlm features
     """
     raw_features = image_to_raw_layoutlm_features(None, input_width, input_height, image_width, image_height)(dp)
