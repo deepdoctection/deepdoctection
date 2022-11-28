@@ -18,6 +18,7 @@
 """
 HF Layoutlm model for diverse downstream tasks.
 """
+
 from abc import ABC
 from copy import copy
 from pathlib import Path
@@ -421,7 +422,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         ann_ids, image_ids, \
         input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
-        images = encodings.get("images")
+        images = encodings.get("image")
         images = images.to(self.device)
         results = predict_token_classes(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, images
@@ -661,7 +662,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
         input_ids,attention_mask,token_type_ids,boxes = self._validate_encodings(**encodings)
-        images = encodings.get("images")
+        images = encodings.get("image")
         images = images.to(self.device)
         result = predict_sequence_classes(
             input_ids,

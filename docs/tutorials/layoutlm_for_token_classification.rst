@@ -28,7 +28,8 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
     path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
         
     dataset_train = dd.get_dataset("funsd")
-    
+    dataset_train.dataflow.categories.filter_categories(categories=dd.LayoutType.word)
+
     metric = dd.get_metric("f1")
     
     # Token classes are saved for each word as token_tag sub category. Here we let the metric know
@@ -220,7 +221,7 @@ Building a production pipeline
         text_recognizer = dd.DoctrTextRecognizer()
         text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
     
-        layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier("layoutlmv1", path_config_json,
+        layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
                                                               path_weights,
                                                               categories={
                                                                   "1": "B-answer",

@@ -342,7 +342,7 @@ class ModelCatalog:
                         " visually-rich document understanding tasks, including , including FUNSD (0.7895 → 0.8420),"
                         " CORD (0.9493 → 0.9601), SROIE (0.9524 → 0.9781), Kleister-NDA (0.834 → 0.852), RVL-CDIP"
                         " (0.9443 → 0.9564), and DocVQA (0.7295 → 0.8672). The license is cc-by-nc-sa-4.0",
-            size=[1361845448],
+            size=[802243295],
             tp_model=False,
             config="microsoft/layoutlmv2-base-uncased/config.json",
             hf_repo_id="microsoft/layoutlmv2-base-uncased",

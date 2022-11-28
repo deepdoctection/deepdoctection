@@ -41,7 +41,7 @@ if pytorch_available():
 
 
 def get_token_class_results(  # type: ignore
-    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model, images  # pylint: disable=W0613
+    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model, images= None  # pylint: disable=W0613
 ) -> List[TokenClassResult]:
     """
     token class result list
@@ -50,7 +50,7 @@ def get_token_class_results(  # type: ignore
 
 
 def get_sequence_class_result(  # type: ignore
-    input_ids, attention_mask, token_type_ids, boxes, model,  images  # pylint: disable=W0613
+    input_ids, attention_mask, token_type_ids, boxes, model,  images= None  # pylint: disable=W0613
 ) -> SequenceClassResult:
     """
     sequence class result
@@ -118,7 +118,7 @@ class TestHFLayoutLmTokenClassifier:
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
-        layoutlm_input: JsonDict,
+        layoutlm_input_for_predictor: JsonDict,
         categories_semantics: List[str],
         categories_bio: List[str],
         token_class_names: List[str],
@@ -135,15 +135,15 @@ class TestHFLayoutLmTokenClassifier:
 
         # Act
         inputs = {
-            "image_ids": layoutlm_input["image_ids"],
-            "width": layoutlm_input["width"],
-            "height": layoutlm_input["height"],
-            "ann_ids": layoutlm_input["ann_ids"],
-            "tokens": layoutlm_input["tokens"],
-            "bbox": torch.tensor(layoutlm_input["bbox"]),
-            "input_ids": torch.tensor(layoutlm_input["input_ids"]),
-            "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
-            "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
+            "image_ids": layoutlm_input_for_predictor["image_ids"],
+            "width": layoutlm_input_for_predictor["width"],
+            "height": layoutlm_input_for_predictor["height"],
+            "ann_ids": layoutlm_input_for_predictor["ann_ids"],
+            "tokens": layoutlm_input_for_predictor["tokens"],
+            "bbox": torch.tensor(layoutlm_input_for_predictor["bbox"]),
+            "input_ids": torch.tensor(layoutlm_input_for_predictor["input_ids"]),
+            "attention_mask": torch.tensor(layoutlm_input_for_predictor["attention_mask"]),
+            "token_type_ids": torch.tensor(layoutlm_input_for_predictor["token_type_ids"]),
         }
 
         results = layoutlm.predict(**inputs)
@@ -240,7 +240,7 @@ class TestHFLayoutLmv2TokenClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "images": torch.tensor(layoutlm_v2_input["images"])
+            "image": torch.tensor(layoutlm_v2_input["image"])
         }
 
         results = layoutlm_v2.predict(**inputs)
@@ -264,7 +264,7 @@ class TestHFLayoutLmSequenceClassifier:
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result)
     )
     def test_hf_layout_lm_predicts_sequence_class(
-        layoutlm_input: JsonDict,
+        layoutlm_input_for_predictor: JsonDict,
     ) -> None:
         """
         HFLayoutLmTokenClassifier calls predict_sequence_classes and post processes SequenceClassResult correctly
@@ -277,15 +277,15 @@ class TestHFLayoutLmSequenceClassifier:
 
         # Act
         inputs = {
-            "image_ids": layoutlm_input["image_ids"],
-            "width": layoutlm_input["width"],
-            "height": layoutlm_input["height"],
-            "ann_ids": layoutlm_input["ann_ids"],
-            "tokens": layoutlm_input["tokens"],
-            "bbox": torch.tensor(layoutlm_input["bbox"]),
-            "input_ids": torch.tensor(layoutlm_input["input_ids"]),
-            "attention_mask": torch.tensor(layoutlm_input["attention_mask"]),
-            "token_type_ids": torch.tensor(layoutlm_input["token_type_ids"]),
+            "image_ids": layoutlm_input_for_predictor["image_ids"],
+            "width": layoutlm_input_for_predictor["width"],
+            "height": layoutlm_input_for_predictor["height"],
+            "ann_ids": layoutlm_input_for_predictor["ann_ids"],
+            "tokens": layoutlm_input_for_predictor["tokens"],
+            "bbox": torch.tensor(layoutlm_input_for_predictor["bbox"]),
+            "input_ids": torch.tensor(layoutlm_input_for_predictor["input_ids"]),
+            "attention_mask": torch.tensor(layoutlm_input_for_predictor["attention_mask"]),
+            "token_type_ids": torch.tensor(layoutlm_input_for_predictor["token_type_ids"]),
         }
 
         results = layoutlm.predict(**inputs)
@@ -329,7 +329,7 @@ class TestHFLayoutLmv2SequenceClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "images": torch.tensor(layoutlm_v2_input["images"])
+            "image": torch.tensor(layoutlm_v2_input["image"])
         }
 
         results = layoutlm_v2.predict(**inputs)

@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.datasets import Funsd
-from deepdoctection.utils.settings import WordType
+from deepdoctection.utils.settings import WordType, LayoutType
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 from .conftest import get_white_image
@@ -48,8 +48,11 @@ def test_dataset_funsd_returns_image_and_annotations() -> None:
     df_list = collect_datapoint_from_dataflow(df)
     assert len(df_list) == 3  # the first three images coming from files not related to funsd data
     dp = df_list[2]
-    word = dp.get_annotation()[0]
+    word = dp.get_annotation(category_names=LayoutType.word)[0]
     assert word.get_sub_category(WordType.token_class) is not None
     assert word.get_sub_category(WordType.characters) is not None
     assert word.get_sub_category(WordType.tag) is not None
     assert word.get_sub_category(WordType.token_tag) is not None
+
+    text = dp.get_annotation(category_names=LayoutType.text)[0]
+    assert text.get_sub_category(WordType.token_class) is not None

@@ -19,14 +19,14 @@
 Testing module mapper.xfundstruct
 """
 
-from typing import Dict
+from typing import Dict, Mapping
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.settings import CellType, TokenClasses, WordType
+from deepdoctection.utils.settings import CellType, TokenClasses, WordType, ObjectTypes, LayoutType
 
 from .conftest import get_always_pubtabnet_white_image
 
@@ -36,24 +36,31 @@ from .conftest import get_always_pubtabnet_white_image
     "deepdoctection.mapper.xfundstruct.load_image_from_file", MagicMock(side_effect=get_always_pubtabnet_white_image)
 )
 def test_xfund_to_image(
-    datapoint_xfund: JsonDict, xfund_category_names: Dict[str, str], ner_token_to_id_mapping: JsonDict
+    datapoint_xfund: JsonDict, xfund_category_dict: Mapping[ObjectTypes, str], xfund_category_names: Dict[str, str], ner_token_to_id_mapping: JsonDict
 ) -> None:
     """
     testing xfund_to_image is mapping correctly
     """
 
     # Act
-    xfund_to_image_func = xfund_to_image(False, False, xfund_category_names, ner_token_to_id_mapping)
+    xfund_to_image_func = xfund_to_image(False, False,  xfund_category_dict, xfund_category_names, ner_token_to_id_mapping)
     img = xfund_to_image_func(datapoint_xfund)
 
     # Assert
     assert img
-    image_anns = img.get_annotation()
-    words = [ann.get_sub_category(WordType.characters).value for ann in image_anns]  # type: ignore
+    word_anns = img.get_annotation(category_names=LayoutType.word)
+    words = [ann.get_sub_category(WordType.characters).value for ann in word_anns]  # type: ignore
     assert words == ["Akademisches", "Auslandsamt", "Bewerbungsformular"]
 
-    sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in image_anns]
+    sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in word_anns]
     assert sub_cats_category_names == [TokenClasses.other, TokenClasses.other, CellType.header]
 
-    sub_cats_ner_tags = [ann.get_sub_category(WordType.tag).category_name for ann in image_anns]
+    sub_cats_ner_tags = [ann.get_sub_category(WordType.tag).category_name for ann in word_anns]
     assert sub_cats_ner_tags == ["O", "O", "B"]
+
+    text_anns = img.get_annotation(category_names=LayoutType.text)
+    sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in text_anns]
+    assert sub_cats_category_names == [TokenClasses.other, TokenClasses.header]
+
+
+

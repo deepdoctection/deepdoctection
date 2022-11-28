@@ -290,8 +290,8 @@ conventional tokenizer will not work.
 
 .. code:: ipython3
 
-    path_config_json = "/home/janis/Tests/Sequence_classification/checkpoint-2500/config.json"
-    path_weights = "/home/janis/Tests/Sequence_classification/checkpoint-2500/pytorch_model.bin"
+    path_config_json = "/path/to/Sequence_classification/checkpoint-2500/config.json"
+    path_weights = "/path/to/Sequence_classification/checkpoint-2500/pytorch_model.bin"
     
     layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
                                                           path_weights,
