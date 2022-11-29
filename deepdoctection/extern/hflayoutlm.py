@@ -455,7 +455,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     Abstract base class for wrapping LayoutLM models  for sequence classification into the deepdoctection framework.
     """
 
-    model: Union[LayoutLMForSequenceClassification, LayoutLMv2ForSequenceClassification]
+    model: Union["LayoutLMForSequenceClassification", "LayoutLMv2ForSequenceClassification"]
 
     def __init__(
         self,
