@@ -143,7 +143,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
     """
 
-    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification]
+    model: Union["LayoutLMForTokenClassification", "LayoutLMv2ForTokenClassification"]
 
     def __init__(
         self,
