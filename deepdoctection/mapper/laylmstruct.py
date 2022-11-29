@@ -201,7 +201,7 @@ def _tokenize_with_sliding_window(
     tokenizer: "PreTrainedTokenizerFast",
     sliding_window_stride: int,
     return_tensors: Optional[Literal["pt"]] = None,
-) -> Union[JsonDict, BatchEncoding]:
+) -> Union[JsonDict, "BatchEncoding"]:
     """
     Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
     If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
