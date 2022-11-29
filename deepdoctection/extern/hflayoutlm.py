@@ -20,12 +20,12 @@ HF Layoutlm model for diverse downstream tasks.
 """
 
 from abc import ABC
+from collections import defaultdict
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Union, Tuple, Any
-from collections import defaultdict
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
-from ..utils.detection_types import Requirement, JsonDict
+from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import (
     get_pytorch_requirement,
     get_transformers_requirement,
@@ -53,10 +53,10 @@ if transformers_available():
     from transformers import (
         LayoutLMForSequenceClassification,
         LayoutLMForTokenClassification,
-        PretrainedConfig,
         LayoutLMv2Config,
+        LayoutLMv2ForSequenceClassification,
         LayoutLMv2ForTokenClassification,
-        LayoutLMv2ForSequenceClassification
+        PretrainedConfig,
     )
 
 
@@ -68,7 +68,7 @@ def predict_token_classes(
     boxes: "Tensor",
     tokens: List[List[str]],
     model: "LayoutLMForTokenClassification",
-    images: Optional[List["Tensor"]] = None,
+    images: Optional["Tensor"] = None,
 ) -> List[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token
@@ -95,19 +95,16 @@ def predict_token_classes(
     all_results = defaultdict(list)
     for idx, uuid_list in enumerate(uuids):
         for pos, token in enumerate(uuid_list):
-            all_results[token].append((input_ids_list[idx][pos],
-                                       token_class_predictions_[idx][pos],
-                                       tokens[idx][pos],
-                                       score[idx][pos]))
+            all_results[token].append(
+                (input_ids_list[idx][pos], token_class_predictions_[idx][pos], tokens[idx][pos], score[idx][pos])
+            )
     all_token_classes = []
     for uuid, res in all_results.items():
         res.sort(key=lambda x: x[3], reverse=True)
         output = res[0]
-        all_token_classes.append(TokenClassResult(uuid=uuid,
-                                                  token_id=output[0],
-                                                  class_id=output[1],
-                                                  token=output[2],
-                                                  score=output[3]))
+        all_token_classes.append(
+            TokenClassResult(uuid=uuid, token_id=output[0], class_id=output[1], token=output[2], score=output[3])
+        )
     return all_token_classes
 
 
@@ -117,7 +114,7 @@ def predict_sequence_classes(
     token_type_ids: "Tensor",
     boxes: "Tensor",
     model: "LayoutLMForSequenceClassification",
-    images: Optional[List["Tensor"]] = None,
+    images: Optional["Tensor"] = None,
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -142,6 +139,9 @@ def predict_sequence_classes(
 
 
 class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
+    """
+    Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
+    """
 
     model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification]
 
@@ -219,14 +219,12 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             result.class_id += 1
         return token_results
 
-    def _validate_encodings(self, **encodings: Union[List[List[str]], List[str], "torch.Tensor"]) -> Tuple[List[List[str]],
-                                                                                                List[str],
-                                                                                                "torch.Tensor",
-                                                                                                "torch.Tensor",
-                                                                                                "torch.Tensor",
-                                                                                                "torch.Tensor",
-                                                                                                List[List[str]]]:
-        image_ids = encodings.get("image_ids")
+    def _validate_encodings(
+        self, **encodings: Any
+    ) -> Tuple[
+        List[List[str]], List[str], "torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor", List[List[str]]
+    ]:
+        image_ids = encodings.get("image_ids", [])
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
@@ -237,17 +235,26 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         assert isinstance(ann_ids, list), type(ann_ids)
         if len(set(image_ids)) > 1:
             raise ValueError("HFLayoutLmTokenClassifier accepts for inference only one image.")
-        assert isinstance(input_ids, torch.Tensor), type(input_ids)
-        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
-        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
-        assert isinstance(boxes, torch.Tensor), type(boxes)
-        assert isinstance(tokens, list), type(tokens)
+        if isinstance(input_ids, torch.Tensor):
+            input_ids = input_ids.to(self.device)
+        else:
+            raise ValueError(f"input_ids must be list but is {type(input_ids)}")
+        if isinstance(attention_mask, torch.Tensor):
+            attention_mask = attention_mask.to(self.device)
+        else:
+            raise ValueError(f"attention_mask must be list but is {type(attention_mask)}")
+        if isinstance(token_type_ids, torch.Tensor):
+            token_type_ids = token_type_ids.to(self.device)
+        else:
+            raise ValueError(f"token_type_ids must be list but is {type(token_type_ids)}")
+        if isinstance(boxes, torch.Tensor):
+            boxes = boxes.to(self.device)
+        else:
+            raise ValueError(f"boxes must be list but is {type(boxes)}")
+        if not isinstance(tokens, list):
+            raise ValueError(f"tokens must be list but is {type(tokens)}")
 
-        input_ids = input_ids.to(self.device)
-        attention_mask = attention_mask.to(self.device)
-        token_type_ids = token_type_ids.to(self.device)
-        boxes = boxes.to(self.device)
-        return ann_ids, image_ids, input_ids, attention_mask, token_type_ids,  boxes, tokens
+        return ann_ids, image_ids, input_ids, attention_mask, token_type_ids, boxes, tokens
 
     def clone(self) -> "HFLayoutLmTokenClassifierBase":
         return self.__class__(
@@ -295,6 +302,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
             for dp in df:
                 ...
     """
+
     def __init__(
         self,
         path_config_json: str,
@@ -334,7 +342,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :return: A list of TokenClassResults
         """
 
-        ann_ids, image_ids, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
+        ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
         results = predict_token_classes(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
@@ -346,8 +354,8 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
     """
     A wrapper class for :class:`transformers.LayoutLMv2ForTokenClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
-    Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
+    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2  for documentation of the model
+    itself. Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
     Note, that you must use `LayoutLMTokenizerFast` as tokenizer. `LayoutLMv2TokenizerFast` will not be accepted.
@@ -380,14 +388,15 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
             for dp in df:
                 ...
     """
+
     def __init__(
-            self,
-            path_config_json: str,
-            path_weights: str,
-            categories_semantics: Optional[Sequence[TypeOrStr]] = None,
-            categories_bio: Optional[Sequence[TypeOrStr]] = None,
-            categories: Optional[Mapping[str, TypeOrStr]] = None,
-            device: Optional[Literal["cpu", "cuda"]] = None,
+        self,
+        path_config_json: str,
+        path_weights: str,
+        categories_semantics: Optional[Sequence[TypeOrStr]] = None,
+        categories_bio: Optional[Sequence[TypeOrStr]] = None,
+        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        device: Optional[Literal["cpu", "cuda"]] = None,
     ):
         """
         :param path_config_json: path to .json config file
@@ -419,11 +428,13 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :return: A list of TokenClassResults
         """
 
-        ann_ids, image_ids, \
-        input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
+        ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
         images = encodings.get("image")
-        images = images.to(self.device)
+        if isinstance(images, torch.Tensor):
+            images = images.to(self.device)
+        else:
+            raise ValueError(f"images must be list but is {type(images)}")
         results = predict_token_classes(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, images
         )
@@ -436,42 +447,14 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
         """
-        return {"image_width": 224,
-                "image_height": 224}
+        return {"image_width": 224, "image_height": 224}
 
 
-class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
+class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     """
-    A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
-    Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
-    classification and other things please use another model of the family.
-
-    **Example**
-
-        .. code-block:: python
-
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
-
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories=["handwritten", "presentation", "resume"])
-
-            # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
-
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
-
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+    Abstract base class for wrapping LayoutLM models  for sequence classification into the deepdoctection framework.
     """
+
     model: Union[LayoutLMForSequenceClassification, LayoutLMv2ForSequenceClassification]
 
     def __init__(
@@ -499,15 +482,22 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
         token_type_ids = encodings.get("token_type_ids")
         boxes = encodings.get("bbox")
 
-        assert isinstance(input_ids, torch.Tensor), type(input_ids)
-        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
-        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
-        assert isinstance(boxes, torch.Tensor), type(boxes)
-
-        input_ids = input_ids.to(self.device)
-        attention_mask = attention_mask.to(self.device)
-        token_type_ids = token_type_ids.to(self.device)
-        boxes = boxes.to(self.device)
+        if isinstance(input_ids, torch.Tensor):
+            input_ids = input_ids.to(self.device)
+        else:
+            raise ValueError(f"input_ids must be list but is {type(input_ids)}")
+        if isinstance(attention_mask, torch.Tensor):
+            attention_mask = attention_mask.to(self.device)
+        else:
+            raise ValueError(f"attention_mask must be list but is {type(attention_mask)}")
+        if isinstance(token_type_ids, torch.Tensor):
+            token_type_ids = token_type_ids.to(self.device)
+        else:
+            raise ValueError(f"token_type_ids must be list but is {type(token_type_ids)}")
+        if isinstance(boxes, torch.Tensor):
+            boxes = boxes.to(self.device)
+        else:
+            raise ValueError(f"boxes must be list but is {type(boxes)}")
 
         result = predict_sequence_classes(
             input_ids,
@@ -528,20 +518,31 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
     def clone(self) -> "HFLayoutLmSequenceClassifierBase":
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
 
-    def _validate_encodings(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> Tuple["torch.Tensor",
-                                                                                                "torch.Tensor",
-                                                                                                "torch.Tensor",
-                                                                                                "torch.Tensor"]:
+    def _validate_encodings(
+        self, **encodings: Union[List[List[str]], "torch.Tensor"]
+    ) -> Tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor"]:
 
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
         boxes = encodings.get("bbox")
 
-        assert isinstance(input_ids, torch.Tensor), type(input_ids)
-        assert isinstance(attention_mask, torch.Tensor), type(attention_mask)
-        assert isinstance(token_type_ids, torch.Tensor), type(token_type_ids)
-        assert isinstance(boxes, torch.Tensor), type(boxes)
+        if isinstance(input_ids, torch.Tensor):
+            input_ids = input_ids.to(self.device)
+        else:
+            raise ValueError(f"input_ids must be list but is {type(input_ids)}")
+        if isinstance(attention_mask, torch.Tensor):
+            attention_mask = attention_mask.to(self.device)
+        else:
+            raise ValueError(f"attention_mask must be list but is {type(attention_mask)}")
+        if isinstance(token_type_ids, torch.Tensor):
+            token_type_ids = token_type_ids.to(self.device)
+        else:
+            raise ValueError(f"token_type_ids must be list but is {type(token_type_ids)}")
+        if isinstance(boxes, torch.Tensor):
+            boxes = boxes.to(self.device)
+        else:
+            raise ValueError(f"boxes must be list but is {type(boxes)}")
 
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
@@ -550,7 +551,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier):
         return input_ids, attention_mask, token_type_ids, boxes
 
 
-class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
+class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
     A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
     Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
@@ -598,7 +599,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
         super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
-        input_ids,attention_mask,token_type_ids,boxes = self._validate_encodings(**encodings)
+        input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
             input_ids,
@@ -615,10 +616,10 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
 
 class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
     """
-    A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
-    Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
-    classification and other things please use another model of the family.
+    A wrapper class for :class:`transformers.LayoutLMv2ForSequenceClassification` to use within a pipeline component.
+    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2 for documentation of the model
+    itself. Note that this model is equipped with a head that is only useful for classifying the input sequence. For
+    token classification and other things please use another model of the family.
 
     **Example**
 
@@ -661,17 +662,14 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase, ABC):
         super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
-        input_ids,attention_mask,token_type_ids,boxes = self._validate_encodings(**encodings)
+        input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("image")
-        images = images.to(self.device)
-        result = predict_sequence_classes(
-            input_ids,
-            attention_mask,
-            token_type_ids,
-            boxes,
-            self.model,
-            images
-        )
+        if isinstance(images, torch.Tensor):
+            images = images.to(self.device)
+        else:
+            raise ValueError(f"images must be list but is {type(images)}")
+
+        result = predict_sequence_classes(input_ids, attention_mask, token_type_ids, boxes, self.model, images)
 
         result.class_id += 1
         result.class_name = self.categories[str(result.class_id)]

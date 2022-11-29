@@ -99,8 +99,9 @@ _SUB_CATEGORIES = {
             BioTag.outside,
         ],
     },
-    LayoutType.text: {WordType.token_class: [TokenClasses.other,
-                                             TokenClasses.question, TokenClasses.answer, TokenClasses.header]}
+    LayoutType.text: {
+        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header]
+    },
 }
 
 
@@ -169,11 +170,10 @@ class FunsdBuilder(DataFlowBaseBuilder):
             values_as_dict=True,
             name_as_key=True,
         )
-        df = MapData(df, xfund_to_image(load_image,
-                                        False,
-                                        categories_name_as_key,
-                                        category_names_mapping,
-                                        ner_token_to_id_mapping))
+        df = MapData(
+            df,
+            xfund_to_image(load_image, False, categories_name_as_key, category_names_mapping, ner_token_to_id_mapping),
+        )
         if self.categories.is_filtered():
             df = MapData(
                 df,

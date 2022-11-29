@@ -28,7 +28,7 @@ from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmSequenceClassifier,
     HFLayoutLmTokenClassifier,
     HFLayoutLmv2SequenceClassifier,
-    HFLayoutLmv2TokenClassifier
+    HFLayoutLmv2TokenClassifier,
 )
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
@@ -40,8 +40,16 @@ if pytorch_available():
     import torch
 
 
+# pylint: disable=W0613
 def get_token_class_results(  # type: ignore
-    uuids: List[str], input_ids, attention_mask, token_type_ids, boxes, tokens, model, images= None  # pylint: disable=W0613
+    uuids: List[str],
+    input_ids,
+    attention_mask,
+    token_type_ids,
+    boxes,
+    tokens,
+    model,
+    images=None,
 ) -> List[TokenClassResult]:
     """
     token class result list
@@ -49,8 +57,11 @@ def get_token_class_results(  # type: ignore
     return DatapointXfund().get_token_class_results()
 
 
+# pylint: enable=W0613
+
+
 def get_sequence_class_result(  # type: ignore
-    input_ids, attention_mask, token_type_ids, boxes, model,  images= None  # pylint: disable=W0613
+    input_ids, attention_mask, token_type_ids, boxes, model, images=None  # pylint: disable=W0613
 ) -> SequenceClassResult:
     """
     sequence class result
@@ -234,13 +245,13 @@ class TestHFLayoutLmv2TokenClassifier:
             "image_ids": layoutlm_v2_input["image_ids"],
             "width": layoutlm_v2_input["width"],
             "height": layoutlm_v2_input["height"],
-            "ann_ids":layoutlm_v2_input["ann_ids"],
+            "ann_ids": layoutlm_v2_input["ann_ids"],
             "tokens": layoutlm_v2_input["tokens"],
             "bbox": torch.tensor(layoutlm_v2_input["bbox"]),
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "image": torch.tensor(layoutlm_v2_input["image"])
+            "image": torch.tensor(layoutlm_v2_input["image"]),
         }
 
         results = layoutlm_v2.predict(**inputs)
@@ -329,7 +340,7 @@ class TestHFLayoutLmv2SequenceClassifier:
             "input_ids": torch.tensor(layoutlm_v2_input["input_ids"]),
             "attention_mask": torch.tensor(layoutlm_v2_input["attention_mask"]),
             "token_type_ids": torch.tensor(layoutlm_v2_input["token_type_ids"]),
-            "image": torch.tensor(layoutlm_v2_input["image"])
+            "image": torch.tensor(layoutlm_v2_input["image"]),
         }
 
         results = layoutlm_v2.predict(**inputs)

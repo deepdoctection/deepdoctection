@@ -30,12 +30,12 @@ from ..utils.fs import load_image_from_file
 from ..utils.settings import (
     BioTag,
     LayoutType,
+    ObjectTypes,
     Relationships,
     TokenClasses,
     WordType,
     get_type,
     token_class_tag_to_token_class_with_tag,
-    ObjectTypes
 )
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
@@ -47,7 +47,7 @@ def xfund_to_image(
     fake_score: bool,
     categories_dict_name_as_key: Mapping[str, str],
     token_class_names_mapping: Mapping[str, str],
-    ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes,Mapping[ObjectTypes, str]]],
+    ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes, Mapping[ObjectTypes, str]]],
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from xfund or funsd dataset in to an Image structure
@@ -101,12 +101,16 @@ def xfund_to_image(
             box = list(map(float, entity["box"]))
             bbox = BoundingBox(absolute_coords=True, ulx=box[0], uly=box[1], lrx=box[2], lry=box[3])
             score = maybe_get_fake_score(fake_score)
-            entity_ann = ImageAnnotation(category_name=LayoutType.text,
-                                         bounding_box=bbox,
-                                         category_id=categories_dict_name_as_key[LayoutType.text], score=score)
+            entity_ann = ImageAnnotation(
+                category_name=LayoutType.text,
+                bounding_box=bbox,
+                category_id=categories_dict_name_as_key[LayoutType.text],
+                score=score,
+            )
             category_name = token_class_names_mapping[entity["label"]]
-            sub_cat_semantic = CategoryAnnotation(category_name=category_name,
-                                                  category_id=token_class_to_id_mapping[get_type(category_name)])
+            sub_cat_semantic = CategoryAnnotation(
+                category_name=category_name, category_id=token_class_to_id_mapping[get_type(category_name)]
+            )
             entity_ann.dump_sub_category(WordType.token_class, sub_cat_semantic)
             image.dump(entity_ann)
 
@@ -118,19 +122,24 @@ def xfund_to_image(
 
                 score = maybe_get_fake_score(fake_score)
 
-                ann = ImageAnnotation(category_name=LayoutType.word,
-                                      bounding_box=bbox,
-                                      category_id=categories_dict_name_as_key[LayoutType.word], score=score)
+                ann = ImageAnnotation(
+                    category_name=LayoutType.word,
+                    bounding_box=bbox,
+                    category_id=categories_dict_name_as_key[LayoutType.word],
+                    score=score,
+                )
                 image.dump(ann)
-                entity_ann.dump_relationship(Relationships.child,ann.annotation_id)
-                sub_cat_semantic = CategoryAnnotation(category_name=category_name,
-                                                      category_id=token_class_to_id_mapping[get_type(category_name)])
+                entity_ann.dump_relationship(Relationships.child, ann.annotation_id)
+                sub_cat_semantic = CategoryAnnotation(
+                    category_name=category_name, category_id=token_class_to_id_mapping[get_type(category_name)]
+                )
                 ann.dump_sub_category(WordType.token_class, sub_cat_semantic)
                 sub_cat_chars = ContainerAnnotation(category_name=WordType.characters, value=word["text"])
                 ann.dump_sub_category(WordType.characters, sub_cat_chars)
                 if sub_cat_semantic.category_name == TokenClasses.other:
-                    sub_cat_tag = CategoryAnnotation(category_name=BioTag.outside,
-                                                     category_id=tag_to_id_mapping[BioTag.outside])
+                    sub_cat_tag = CategoryAnnotation(
+                        category_name=BioTag.outside, category_id=tag_to_id_mapping[BioTag.outside]
+                    )
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     # populating ner token to be used for training and evaluation
                     sub_cat_ner_tok = CategoryAnnotation(
@@ -138,8 +147,9 @@ def xfund_to_image(
                     )
                     ann.dump_sub_category(WordType.token_tag, sub_cat_ner_tok)
                 elif not idx:
-                    sub_cat_tag = CategoryAnnotation(category_name=BioTag.begin,
-                                                     category_id=tag_to_id_mapping[BioTag.begin])
+                    sub_cat_tag = CategoryAnnotation(
+                        category_name=BioTag.begin, category_id=tag_to_id_mapping[BioTag.begin]
+                    )
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     sub_cat_ner_tok = CategoryAnnotation(
                         category_name=token_class_tag_to_token_class_with_tag(
@@ -153,8 +163,9 @@ def xfund_to_image(
                     )
                     ann.dump_sub_category(WordType.token_tag, sub_cat_ner_tok)
                 else:
-                    sub_cat_tag = CategoryAnnotation(category_name=BioTag.inside,
-                                                     category_id=tag_to_id_mapping[BioTag.inside])
+                    sub_cat_tag = CategoryAnnotation(
+                        category_name=BioTag.inside, category_id=tag_to_id_mapping[BioTag.inside]
+                    )
                     ann.dump_sub_category(WordType.tag, sub_cat_tag)
                     sub_cat_ner_tok = CategoryAnnotation(
                         category_name=token_class_tag_to_token_class_with_tag(

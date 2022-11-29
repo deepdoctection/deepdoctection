@@ -83,10 +83,11 @@ _SUB_CATEGORIES = {
             TokenClassWithTag.i_header,
             TokenClassWithTag.i_question,
             BioTag.outside,
-        ]
+        ],
     },
-    LayoutType.text: {WordType.token_class: [TokenClasses.other,
-                                             TokenClasses.question, TokenClasses.answer, TokenClasses.header]}
+    LayoutType.text: {
+        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header]
+    },
 }
 
 _LANGUAGES = ["de", "es", "fr", "it", "ja", "pt", "zh"]
@@ -169,7 +170,7 @@ class XfundBuilder(DataFlowBaseBuilder):
             return dp
 
         df = MapData(df, replace_filename)
-        categories_name_as_key = self.categories.get_categories(init=True, name_as_key = True)
+        categories_name_as_key = self.categories.get_categories(init=True, name_as_key=True)
         token_class_names_mapping = {
             "other": TokenClasses.other,
             "question": TokenClasses.question,
@@ -183,11 +184,12 @@ class XfundBuilder(DataFlowBaseBuilder):
             values_as_dict=True,
             name_as_key=True,
         )
-        df = MapData(df, xfund_to_image(load_image,
-                                        False,
-                                        categories_name_as_key,
-                                        token_class_names_mapping,
-                                        ner_token_to_id_mapping))
+        df = MapData(
+            df,
+            xfund_to_image(
+                load_image, False, categories_name_as_key, token_class_names_mapping, ner_token_to_id_mapping
+            ),
+        )
         if self.categories.is_filtered():
             df = MapData(
                 df,

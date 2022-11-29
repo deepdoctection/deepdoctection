@@ -31,12 +31,7 @@ from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import (
-    DatasetType,
-    LayoutType,
-    PageType,
-    WordType,
-)
+from ..utils.settings import DatasetType, LayoutType, PageType, WordType
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
@@ -44,7 +39,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import PreTrainedTokenizerFast # pylint: disable = W0611
+    from transformers import BatchEncoding, PreTrainedTokenizerFast
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -79,7 +74,7 @@ def image_to_raw_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
-    use_token_tag: bool = True
+    use_token_tag: bool = True,
 ) -> Optional[RawLayoutLMFeatures]:
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
@@ -142,10 +137,7 @@ def image_to_raw_layoutlm_features(
             else:
                 all_labels.append(int(ann.get_sub_category(WordType.token_class).category_id) - 1)
 
-    if (
-        dp.summary is not None
-        and dataset_type == DatasetType.sequence_classification
-    ):
+    if dp.summary is not None and dataset_type == DatasetType.sequence_classification:
         all_labels.append(int(dp.summary.get_sub_category(PageType.document_type).category_id) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
@@ -157,7 +149,7 @@ def image_to_raw_layoutlm_features(
     resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
 
     if dp.image is not None:
-        if image_width!=input_width or image_height!=input_height:
+        if image_width != input_width or image_height != input_height:
             image_only_resizer = ResizeTransform(dp.height, dp.width, image_height, image_width, INTER_LINEAR)
             image = image_only_resizer.apply_image(dp.image)
         else:
@@ -195,18 +187,21 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
     if "image" in features:
-        features["image"] = torch.tensor([image.astype("float32").transpose(2, 0, 1) for image in features["image"]]
-                                          ,dtype=torch.float32)
-        #features["images"] = [
+        features["image"] = torch.tensor(
+            [image.astype("float32").transpose(2, 0, 1) for image in features["image"]], dtype=torch.float32
+        )
+        # features["images"] = [
         #    torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
-        #]
+        # ]
     return features
 
 
-def _tokenize_with_sliding_window(raw_features: List[RawLayoutLMFeatures],
-                                  tokenizer: "PreTrainedTokenizerFast",
-                                  sliding_window_stride: int,
-                                  return_tensors: Optional[Literal["pt"]] = None):
+def _tokenize_with_sliding_window(
+    raw_features: List[RawLayoutLMFeatures],
+    tokenizer: "PreTrainedTokenizerFast",
+    sliding_window_stride: int,
+    return_tensors: Optional[Literal["pt"]] = None,
+) -> Union[JsonDict, BatchEncoding]:
     """
     Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
     If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
@@ -237,94 +232,99 @@ def _tokenize_with_sliding_window(raw_features: List[RawLayoutLMFeatures],
         return_tensors=None,
     )
     max_length = tokenizer.max_len_single_sentence  # here 510 (512 minus [CLS] and [SEP]
-    sliding_windows_remainder= [divmod(len(sample.ids) - max_length,sliding_window_stride)
-                                for sample in tokenized_inputs.encodings]  # list of (multiplier, remainder) per sample
+    sliding_windows_remainder = [
+        divmod(len(sample.ids) - max_length, sliding_window_stride) for sample in tokenized_inputs.encodings
+    ]  # list of (multiplier, remainder) per sample
     all_input_ids = []
     all_token_type_ids = []
     all_attention_mask = []
     all_word_ids = []
     all_tokens = []
     overflow_to_sample_mapping = []
-    for idx, outputs in enumerate(zip(tokenized_inputs.encodings,
-                                      tokenized_inputs.data["input_ids"],
-                                      tokenized_inputs.data["token_type_ids"],
-                                      tokenized_inputs.data["attention_mask"],
-                                      sliding_windows_remainder)):
-        encodings= outputs[0]
+    for idx, outputs in enumerate(
+        zip(
+            tokenized_inputs.encodings,
+            tokenized_inputs.data["input_ids"],
+            tokenized_inputs.data["token_type_ids"],
+            tokenized_inputs.data["attention_mask"],
+            sliding_windows_remainder,
+        )
+    ):
+        encodings = outputs[0]
         input_ids_orig = outputs[1]
-        token_type_ids_orig= outputs[2]
+        token_type_ids_orig = outputs[2]
         attention_mask_orig = outputs[3]
         divmod_result = outputs[4]
         tokens_orig = encodings.tokens
         word_ids_orig = encodings.word_ids
-        multiplier, remainder = divmod_result
+        multiplier, _ = divmod_result
         total_length = len(tokens_orig)
         # suppose the sample has total_length= 525 tokens:
         #  [[CLS],1,...,523,[SEP]]. With sliding_window_stride = 8 we build windows as follows:
         # [[CLS],1,..,510,[SEP]], [[CLS],8,..,517,[SEP]], [[CLS],16,..,523,[SEP],[PAD],[PAD],[PAD]]
         # Here, we have a multiplier = 1,
-        for k in range(multiplier+2):
-            start = max(k*sliding_window_stride,1)
-            end = min(max_length+start, total_length)
-            pad_last = max(max_length+start - end, 0)
+        for k in range(multiplier + 2):
+            start = max(k * sliding_window_stride, 1)
+            end = min(max_length + start, total_length)
+            pad_last = max(max_length + start - end, 0)
             overflow_to_sample_mapping.append(idx)
             if not pad_last:
                 tokens = tokens_orig[start:end]
-                tokens.insert(0,"[CLS]")
+                tokens.insert(0, "[CLS]")
                 tokens.append("[SEP]")
                 all_tokens.append(tokens)
                 input_ids = input_ids_orig[start:end]
-                input_ids.insert(0,101)
+                input_ids.insert(0, 101)
                 input_ids.append(102)
                 all_input_ids.append(input_ids)
                 token_type_ids = token_type_ids_orig[start:end]
-                token_type_ids.insert(0,0)
+                token_type_ids.insert(0, 0)
                 token_type_ids.append(0)
                 all_token_type_ids.append(token_type_ids)
                 attention_mask = attention_mask_orig[start:end]
-                attention_mask.insert(0,1)
+                attention_mask.insert(0, 1)
                 attention_mask.append(1)
                 all_attention_mask.append(attention_mask)
                 word_ids = word_ids_orig[start:end]
-                word_ids.insert(0,None)
+                word_ids.insert(0, None)
                 word_ids.append(None)
                 all_word_ids.append(word_ids)
             else:
                 # last sliding window. We have to pad the end in order to have equal length along all windows.
                 tokens = tokens_orig[start:end]
-                tokens.insert(0,"[CLS]")
-                pads = ["[PAD]" for _ in range(pad_last+1)]
+                tokens.insert(0, "[CLS]")
+                pads = ["[PAD]" for _ in range(pad_last + 1)]
                 tokens.extend(pads)
                 all_tokens.append(tokens)
                 input_ids = input_ids_orig[start:end]
-                input_ids.insert(0,101)
-                pad_ids = [0 for _ in range(pad_last+1)]
+                input_ids.insert(0, 101)
+                pad_ids = [0 for _ in range(pad_last + 1)]
                 input_ids.extend(pad_ids)
                 all_input_ids.append(input_ids)
                 token_type_ids = token_type_ids_orig[start:end]
-                token_type_ids.insert(0,0)
-                pad_ids = [0 for _ in range(pad_last+1)]
+                token_type_ids.insert(0, 0)
+                pad_ids = [0 for _ in range(pad_last + 1)]
                 token_type_ids.extend(pad_ids)
                 all_token_type_ids.append(token_type_ids)
                 attention_mask = attention_mask_orig[start:end]
-                attention_mask.insert(0,1)
-                pad_ids = [1 for _ in range(pad_last+1)]
+                attention_mask.insert(0, 1)
+                pad_ids = [1 for _ in range(pad_last + 1)]
                 attention_mask.extend(pad_ids)
                 all_attention_mask.append(attention_mask)
                 word_ids = word_ids_orig[start:end]
                 word_ids.insert(0, None)
-                pad_ids = [None for _ in range(pad_last+1)]
-                word_ids.extend(pad_ids)
+                pad_none = [None for _ in range(pad_last + 1)]
+                word_ids.extend(pad_none)
                 all_word_ids.append(word_ids)
 
-    slided_tokenized_inputs: Dict[str, Union[List[Union[str,int]],torch.Tensor]] = {}
+    slided_tokenized_inputs: Dict[str, Union[List[Union[str, int]], torch.Tensor]] = {}
     if return_tensors == "pt":
         slided_tokenized_inputs["overflow_to_sample_mapping"] = torch.tensor(overflow_to_sample_mapping)
         slided_tokenized_inputs["input_ids"] = torch.tensor(all_input_ids)
         slided_tokenized_inputs["token_type_ids"] = torch.tensor(all_token_type_ids)
         slided_tokenized_inputs["attention_mask"] = torch.tensor(all_attention_mask)
     else:
-        slided_tokenized_inputs["overflow_to_sample_mapping"] = overflow_to_sample_mapping
+        slided_tokenized_inputs["overflow_to_sample_mapping"] = overflow_to_sample_mapping  # type: ignore
         slided_tokenized_inputs["input_ids"] = all_input_ids
         slided_tokenized_inputs["token_type_ids"] = all_token_type_ids
         slided_tokenized_inputs["attention_mask"] = all_attention_mask
@@ -341,7 +341,7 @@ def raw_features_to_layoutlm_features(
     return_overflowing_tokens: bool = False,
     return_tensors: Optional[Literal["pt"]] = None,
     remove_columns_for_training: bool = False,
-    sliding_window_stride: int = 0
+    sliding_window_stride: int = 0,
 ) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
@@ -554,7 +554,7 @@ class LayoutLMDataCollator:
             self.return_overflowing_tokens,
             self.return_tensors,
             True,
-            self.sliding_window_stride
+            self.sliding_window_stride,
         )
 
 
@@ -570,7 +570,7 @@ def image_to_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
-    sliding_window_stride: int = 0
+    sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
     """
     Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
@@ -619,11 +619,13 @@ def image_to_layoutlm_features(
     raw_features = image_to_raw_layoutlm_features(None, input_width, input_height, image_width, image_height)(dp)
     if raw_features is None:
         return None
-    features = raw_features_to_layoutlm_features(raw_features,
-                                                 tokenizer,
-                                                 padding,
-                                                 truncation,
-                                                 return_overflowing_tokens,
-                                                 return_tensors=return_tensors,
-                                                 sliding_window_stride= sliding_window_stride)
+    features = raw_features_to_layoutlm_features(
+        raw_features,
+        tokenizer,
+        padding,
+        truncation,
+        return_overflowing_tokens,
+        return_tensors=return_tensors,
+        sliding_window_stride=sliding_window_stride,
+    )
     return features
