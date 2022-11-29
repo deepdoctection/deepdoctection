@@ -22,7 +22,7 @@ Module for funcs and constants that maintain general settings
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 import catalogue  # type: ignore
 
@@ -319,7 +319,9 @@ def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes
     raise TypeError("Token must be of type TokenClasses and tag must be of type BioTag")
 
 
-def token_class_with_tag_to_token_class_and_tag(token_class_with_tag: ObjectTypes) -> Optional[Tuple[ObjectTypes, ObjectTypes]]:
+def token_class_with_tag_to_token_class_and_tag(
+    token_class_with_tag: ObjectTypes,
+) -> Optional[Tuple[ObjectTypes, ObjectTypes]]:
     """
     This is the reverse mapping from TokenClassWithTag members to TokenClasses and BioTag
 

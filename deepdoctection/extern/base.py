@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from ..utils.detection_types import ImageType, Requirement, JsonDict
+from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 

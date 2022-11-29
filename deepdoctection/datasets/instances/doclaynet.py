@@ -37,7 +37,7 @@ from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.detection_types import JsonDict
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType
+from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, TypeOrStr
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -268,7 +268,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
             )
 
             @curry
-            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[ObjectTypes, str]) -> Image:
+            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
                 if dp.summary:
                     if PageType.document_type in dp.summary.sub_categories:
                         summary_cat = dp.summary.get_sub_category(PageType.document_type)

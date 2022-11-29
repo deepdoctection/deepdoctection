@@ -40,7 +40,7 @@ from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, PageType, ObjectTypes
+from ...utils.settings import DatasetType, DocumentType, PageType, TypeOrStr
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -160,7 +160,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             )
 
             @curry
-            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[ObjectTypes, str]) -> Image:
+            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
                 if dp.summary:
                     if PageType.document_type in dp.summary.sub_categories:
                         summary_cat = dp.summary.get_sub_category(PageType.document_type)

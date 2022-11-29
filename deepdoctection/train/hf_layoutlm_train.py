@@ -30,12 +30,12 @@ from transformers import (
     IntervalStrategy,
     LayoutLMForSequenceClassification,
     LayoutLMForTokenClassification,
+    LayoutLMTokenizerFast,
+    LayoutLMv2Config,
     LayoutLMv2ForSequenceClassification,
     LayoutLMv2ForTokenClassification,
-    LayoutLMTokenizerFast,
     PretrainedConfig,
     PreTrainedModel,
-    LayoutLMv2Config
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -48,7 +48,7 @@ from ..extern.hflayoutlm import (
     HFLayoutLmSequenceClassifier,
     HFLayoutLmTokenClassifier,
     HFLayoutLmv2SequenceClassifier,
-    HFLayoutLmv2TokenClassifier
+    HFLayoutLmv2TokenClassifier,
 )
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_features, image_to_raw_layoutlm_features
 from ..pipe.base import LanguageModelPipelineComponent
@@ -59,25 +59,55 @@ from ..utils.utils import string_to_dict
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": (LayoutLMForTokenClassification, HFLayoutLmTokenClassifier, PretrainedConfig),
-    "LayoutLMForSequenceClassification": (LayoutLMForSequenceClassification,HFLayoutLmSequenceClassifier, PretrainedConfig),
-    "LayoutLMv2ForTokenClassification":  (LayoutLMv2ForTokenClassification, HFLayoutLmv2TokenClassifier, LayoutLMv2Config),
-    "LayoutLMv2ForSequenceClassification": (LayoutLMv2ForSequenceClassification, HFLayoutLmv2SequenceClassifier, LayoutLMv2Config)
+    "LayoutLMForSequenceClassification": (
+        LayoutLMForSequenceClassification,
+        HFLayoutLmSequenceClassifier,
+        PretrainedConfig,
+    ),
+    "LayoutLMv2ForTokenClassification": (
+        LayoutLMv2ForTokenClassification,
+        HFLayoutLmv2TokenClassifier,
+        LayoutLMv2Config,
+    ),
+    "LayoutLMv2ForSequenceClassification": (
+        LayoutLMv2ForSequenceClassification,
+        HFLayoutLmv2SequenceClassifier,
+        LayoutLMv2Config,
+    ),
 }
 
 _ARCHITECTURES_TO_TOKENIZER = {
     "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     "LayoutLMv2ForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    "LayoutLMv2ForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+    "LayoutLMv2ForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
 }
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
-    ("layoutlm", DatasetType.sequence_classification): (LayoutLMForSequenceClassification,HFLayoutLmSequenceClassifier, PretrainedConfig),
-    ("layoutlm", DatasetType.token_classification): (LayoutLMForTokenClassification,HFLayoutLmTokenClassifier, PretrainedConfig),
-    ("layoutlmv2", DatasetType.sequence_classification): (LayoutLMv2ForSequenceClassification, HFLayoutLmv2SequenceClassifier, LayoutLMv2Config),
-    ("layoutlmv2", DatasetType.token_classification): (LayoutLMv2ForTokenClassification, HFLayoutLmv2TokenClassifier, LayoutLMv2Config),
+    ("layoutlm", DatasetType.sequence_classification): (
+        LayoutLMForSequenceClassification,
+        HFLayoutLmSequenceClassifier,
+        PretrainedConfig,
+    ),
+    ("layoutlm", DatasetType.token_classification): (
+        LayoutLMForTokenClassification,
+        HFLayoutLmTokenClassifier,
+        PretrainedConfig,
+    ),
+    ("layoutlmv2", DatasetType.sequence_classification): (
+        LayoutLMv2ForSequenceClassification,
+        HFLayoutLmv2SequenceClassifier,
+        LayoutLMv2Config,
+    ),
+    ("layoutlmv2", DatasetType.token_classification): (
+        LayoutLMv2ForTokenClassification,
+        HFLayoutLmv2TokenClassifier,
+        LayoutLMv2Config,
+    ),
 }
-_MODEL_TYPE_TO_TOKENIZER = {"layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-                            "layoutlmv2": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")}
+_MODEL_TYPE_TO_TOKENIZER = {
+    "layoutlm": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    "layoutlmv2": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+}
 
 
 class LayoutLMTrainer(Trainer):
@@ -158,10 +188,10 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: ObjectTy
     model_type = config_json.get("model_type")
 
     if architectures := config_json.get("architectures"):
-        model_cls, model_wrapper_cls, config_cls = _ARCHITECTURES_TO_MODEL_CLASS.get(architectures[0])
+        model_cls, model_wrapper_cls, config_cls = _ARCHITECTURES_TO_MODEL_CLASS[architectures[0]]
         tokenizer_fast = _ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
     elif model_type:
-        model_cls, model_wrapper_cls, config_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS.get((model_type, dataset_type))
+        model_cls, model_wrapper_cls, config_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS[(model_type, dataset_type)]
         tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
     else:
         raise KeyError("model_type and architectures not available in configs")
@@ -266,7 +296,9 @@ def train_hf_layoutlm(
     else:
         raise ValueError("Dataset type not supported for training")
 
-    config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(path_config_json, dataset_type)
+    config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
+        path_config_json, dataset_type
+    )
     image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type}
     image_to_raw_layoutlm_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
     dataset = DatasetAdapter(
@@ -342,8 +374,9 @@ def train_hf_layoutlm(
         if dataset_type == DatasetType.sequence_classification:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features)
         else:
-            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, image_to_layoutlm_features,
-                                                        use_other_as_default_category=True)
+            pipeline_component = pipeline_component_cls(
+                tokenizer_fast, dd_model, image_to_layoutlm_features, use_other_as_default_category=True
+            )
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

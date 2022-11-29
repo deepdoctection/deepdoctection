@@ -18,9 +18,9 @@
 """
 Module for token classification pipeline
 """
-from copy import copy
 import inspect
-from typing import Any, Callable, List, Optional, Literal
+from copy import copy
+from typing import Any, Callable, List, Literal, Optional
 
 from ..datapoint.image import Image
 from ..extern.base import LMSequenceClassifier, LMTokenClassifier
@@ -76,7 +76,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
         use_other_as_default_category: bool = False,
-        sliding_window_stride: int = 0
+        sliding_window_stride: int = 0,
     ) -> None:
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
@@ -161,7 +161,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             self.truncation,
             self.return_overflowing_tokens,
             self.use_other_as_default_category,
-            self.sliding_window_stride
+            self.sliding_window_stride,
         )
 
     def get_meta_annotation(self) -> JsonDict:
@@ -181,12 +181,14 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         if isinstance(self.tokenizer, LayoutLMv2TokenizerFast):
             raise ValueError("LayoutLMv2TokenizerFast cannot be used for tokenizing. Please use LayoutLMTokenizerFast")
         parameters = inspect.signature(self.mapping_to_lm_input_func).parameters
-        self.required_kwargs = {"tokenizer": self.tokenizer,
-                                "padding": self.padding,
-                                "truncation": self.truncation,
-                                "return_overflowing_tokens": self.return_overflowing_tokens,
-                                "return_tensors": "pt",
-                                "sliding_window_stride": self.sliding_window_stride}
+        self.required_kwargs = {
+            "tokenizer": self.tokenizer,
+            "padding": self.padding,
+            "truncation": self.truncation,
+            "return_overflowing_tokens": self.return_overflowing_tokens,
+            "return_tensors": "pt",
+            "sliding_window_stride": self.sliding_window_stride,
+        }
         self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
         for kwarg in self.required_kwargs:
             if kwarg not in parameters:
@@ -252,8 +254,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         """
         self.language_model = language_model
         parameters = inspect.signature(mapping_to_lm_input_func).parameters
-        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens",
-                           "return_tensors"}
+        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens", "return_tensors"}
         for kwarg in required_kwargs:
             if kwarg not in parameters:
                 raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
@@ -263,11 +264,13 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(tokenizer=self.tokenizer,
-                                                 padding=self.padding,
-                                                 truncation=self.truncation,
-                                                 return_overflowing_tokens=self.return_overflowing_tokens,
-                                                 return_tensors="pt")(dp)
+        lm_input = self.mapping_to_lm_input_func(
+            tokenizer=self.tokenizer,
+            padding=self.padding,
+            truncation=self.truncation,
+            return_overflowing_tokens=self.return_overflowing_tokens,
+            return_tensors="pt",
+        )(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -276,12 +279,14 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         )
 
     def clone(self) -> "LMSequenceClassifierService":
-        return self.__class__(copy(self.tokenizer),
-                              self.language_model.clone(),
-                              copy(self.mapping_to_lm_input_func),
-                              self.padding,
-                              self.truncation,
-                              self.return_overflowing_tokens)
+        return self.__class__(
+            copy(self.tokenizer),
+            self.language_model.clone(),
+            copy(self.mapping_to_lm_input_func),
+            self.padding,
+            self.truncation,
+            self.return_overflowing_tokens,
+        )
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(
