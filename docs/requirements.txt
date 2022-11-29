@@ -85,7 +85,7 @@ pdfminer-six==20220319
     # via pdfplumber
 pdfplumber==0.6.2
     # via deepdoctection (setup.py)
-pillow==9.1.0
+pillow==9.3.0
     # via
     #   matplotlib
     #   pdfplumber
