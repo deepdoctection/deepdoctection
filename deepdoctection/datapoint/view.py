@@ -559,7 +559,7 @@ class Page(Image):
         highest_hierarchy_only: bool = False,
         path: Optional[Pathlike] = None,
         dry: bool = False,
-    ) -> None:
+    ) -> Optional[JsonDict]:
         """
         Export image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
         base64 encodings.
@@ -567,7 +567,7 @@ class Page(Image):
         :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
         :param path: Path to save the .json file to
         :param dry: Will run dry, i.e. without saving anything but returning the dict
-        :return: Dict that e.g. can be saved to a file.
+        :return: optional dict
         """
         if isinstance(path, str):
             path = Path(path)
@@ -582,6 +582,7 @@ class Page(Image):
         if image_to_json and self.image_orig.image is not None:
             export_dict["_image"] = convert_np_array_to_b64(self.image_orig.image)
         if dry:
-            return None
+            return export_dict
         with open(path_json, "w", encoding="UTF-8") as file:
             json.dump(export_dict, file)
+        return None
