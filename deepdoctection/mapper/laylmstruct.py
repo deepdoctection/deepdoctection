@@ -39,7 +39,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import BatchEncoding, PreTrainedTokenizerFast
+    from transformers import PreTrainedTokenizerFast
 
 __all__ = [
     "image_to_raw_layoutlm_features",

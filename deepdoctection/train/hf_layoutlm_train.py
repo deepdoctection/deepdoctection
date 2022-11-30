@@ -36,6 +36,7 @@ from transformers import (
     LayoutLMv2ForTokenClassification,
     PretrainedConfig,
     PreTrainedModel,
+    XLMRobertaTokenizerFast,
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -77,10 +78,18 @@ _ARCHITECTURES_TO_MODEL_CLASS = {
 }
 
 _ARCHITECTURES_TO_TOKENIZER = {
-    "LayoutLMForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    "LayoutLMForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    "LayoutLMv2ForTokenClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    "LayoutLMv2ForSequenceClassification": LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    ("LayoutLMForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+    ("LayoutLMv2ForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
 }
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
     ("layoutlm", DatasetType.sequence_classification): (
@@ -181,7 +190,9 @@ class LayoutLMTrainer(Trainer):
         return scores
 
 
-def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: ObjectTypes) -> Tuple[Any, Any, Any, Any]:
+def _get_model_class_and_tokenizer(
+    path_config_json: str, dataset_type: ObjectTypes, use_xlm_tokenizer: bool
+) -> Tuple[Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
@@ -189,7 +200,7 @@ def _get_model_class_and_tokenizer(path_config_json: str, dataset_type: ObjectTy
 
     if architectures := config_json.get("architectures"):
         model_cls, model_wrapper_cls, config_cls = _ARCHITECTURES_TO_MODEL_CLASS[architectures[0]]
-        tokenizer_fast = _ARCHITECTURES_TO_TOKENIZER.get(architectures[0])
+        tokenizer_fast = _ARCHITECTURES_TO_TOKENIZER[(architectures[0], use_xlm_tokenizer)]
     elif model_type:
         model_cls, model_wrapper_cls, config_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS[(model_type, dataset_type)]
         tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[model_type]
@@ -213,25 +224,30 @@ def train_hf_layoutlm(
     build_val_config: Optional[Sequence[str]] = None,
     metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
+    use_xlm_tokenizer: bool = False,
 ) -> None:
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
-    classification using HF Trainer and custom evaluation. The theoretical foundation can be taken from
+    classification using HF Trainer and custom evaluation. It currently supports LayoutLM, LayoutLMv2 and LayoutXLM.
+    The theoretical foundation can be taken from
 
     https://arxiv.org/abs/1912.13318
 
     This is not the pre-training script.
 
-    In order to remain within the framework of this library, the basic LayoutLM model must be downloaded from the HF-hub
-    in a first step for fine-tuning. Two models are available for this, which are registered in the ModelCatalog:
+    In order to remain within the framework of this library, the base and uncased LayoutLM model must be downloaded
+    from the HF-hub in a first step for fine-tuning.  Models are available for this, which are registered in the
+    ModelCatalog. It is possible to choose one of the following options:
 
     "microsoft/layoutlm-base-uncased/pytorch_model.bin"
+    "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
+    "microsoft/layoutxlm-base/pytorch_model.bin"
 
      and
 
      "microsoft/layoutlm-large-uncased/pytorch_model.bin"
 
-
+    (You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download yourself.)
     .. code-block:: python
 
         ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
@@ -261,6 +277,8 @@ def train_hf_layoutlm(
     :param metric: A metric to choose for validation.
     :param pipeline_component_name: A pipeline component name to use for validation (e.g. LMSequenceClassifierService or
                                     LMTokenClassifierService.
+    :param use_xlm_tokenizer: This is only necessary if you pass weights of layoutxlm. The config cannot distinguish
+                              between Layoutlmv2 and Layoutxlm, so you need to pass this info explicitly.
     """
 
     build_train_dict: Dict[str, str] = {}
@@ -297,7 +315,7 @@ def train_hf_layoutlm(
         raise ValueError("Dataset type not supported for training")
 
     config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
-        path_config_json, dataset_type
+        path_config_json, dataset_type, use_xlm_tokenizer
     )
     image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type}
     image_to_raw_layoutlm_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
