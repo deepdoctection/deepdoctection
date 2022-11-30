@@ -567,6 +567,7 @@ class Page(Image):
         :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
         :param path: Path to save the .json file to
         :param dry: Will run dry, i.e. without saving anything but returning the dict
+
         :return: optional dict
         """
         if isinstance(path, str):
