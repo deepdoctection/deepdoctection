@@ -349,6 +349,25 @@ class ModelCatalog:
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
         ),
+        "microsoft/layoutxlm-base/pytorch_model.bin": ModelProfile(
+            name="microsoft/layoutxlm-base/pytorch_model.bin",
+            description="Multimodal pre-training with text, layout, and image has achieved SOTA performance for "
+            "visually-rich document understanding tasks recently, which demonstrates the great potential"
+            " for joint learning across different modalities. In this paper, we present LayoutXLM, a"
+            " multimodal pre-trained model for multilingual document understanding, which aims to bridge"
+            " the language barriers for visually-rich document understanding. To accurately evaluate"
+            " LayoutXLM, we also introduce a multilingual form understanding benchmark dataset named XFUN,"
+            " which includes form understanding samples in 7 languages (Chinese, Japanese, Spanish, French,"
+            " Italian, German, Portuguese), and key-value pairs are manually labeled for each language."
+            " Experiment results show that the LayoutXLM model has significantly outperformed the existing"
+            " SOTA cross-lingual pre-trained models on the XFUN dataset. The license is cc-by-nc-sa-4.0",
+            size=[1476537178],
+            tp_model=False,
+            config="microsoft/layoutxlm-base/config.json",
+            hf_repo_id="microsoft/layoutxlm-base",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json"],
+        ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",
@@ -788,6 +807,7 @@ class ModelDownloadManager:
             force_filename=file_name,
             force_download=force_download,
             use_auth_token=use_auth_token,
+            legacy_cache_layout=True,
         )
         stat_info = os.stat(f_path)
         size = stat_info.st_size
