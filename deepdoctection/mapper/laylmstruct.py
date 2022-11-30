@@ -39,7 +39,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import PreTrainedTokenizerFast, BatchEncoding  # pylint: disable=W0611
+    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
 
 __all__ = [
     "image_to_raw_layoutlm_features",
