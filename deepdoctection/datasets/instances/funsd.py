@@ -38,7 +38,7 @@ from typing import Dict, List, Mapping, Union
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
-from ...mapper.cats import cat_to_sub_cat
+from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.fs import load_json
@@ -83,7 +83,7 @@ _TYPE = DatasetType.token_classification
 _LOCATION = "funsd"
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "annotations", "test": "annotations"}
 
-_INIT_CATEGORIES = [LayoutType.word]
+_INIT_CATEGORIES = [LayoutType.word, LayoutType.text]
 _SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.word: {
@@ -98,7 +98,10 @@ _SUB_CATEGORIES = {
             TokenClassWithTag.i_question,
             BioTag.outside,
         ],
-    }
+    },
+    LayoutType.text: {
+        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header]
+    },
 }
 
 
@@ -153,6 +156,7 @@ class FunsdBuilder(DataFlowBaseBuilder):
         df = MapData(df, load_file)
 
         # Map
+        categories_name_as_key = self.categories.get_categories(init=True, name_as_key=True)
         category_names_mapping = {
             "other": TokenClasses.other,
             "question": TokenClasses.question,
@@ -161,12 +165,23 @@ class FunsdBuilder(DataFlowBaseBuilder):
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
             categories=LayoutType.word,
-            sub_categories={LayoutType.word: [WordType.token_tag]},
+            sub_categories={LayoutType.word: [WordType.token_tag, WordType.tag, WordType.token_class]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,
-        )[LayoutType.word][WordType.token_tag]
-        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
+        )
+        df = MapData(
+            df,
+            xfund_to_image(load_image, False, categories_name_as_key, category_names_mapping, ner_token_to_id_mapping),
+        )
+        if self.categories.is_filtered():
+            df = MapData(
+                df,
+                filter_cat(  # pylint: disable=E1120
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
+                ),
+            )
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,

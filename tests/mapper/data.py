@@ -20,8 +20,9 @@ Some datapoint samples in a separate module
 """
 
 from collections import namedtuple
+from copy import deepcopy
 from dataclasses import dataclass
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import numpy as np
 
@@ -45,6 +46,7 @@ from deepdoctection.utils.settings import (
     TableType,
     TokenClasses,
     TokenClassWithTag,
+    WordType,
     get_type,
 )
 from tests.data import TestType
@@ -1786,7 +1788,7 @@ class DatapointXfund:
     """
 
     dp = _SAMPLE_XFUND["documents"][0]
-
+    categories_dict = {LayoutType.word: "1", LayoutType.text: "2"}
     category_names_mapping = {
         "other": TokenClasses.other,
         "question": TokenClasses.question,
@@ -1809,13 +1811,32 @@ class DatapointXfund:
         get_type("S-question"): "13",
     }
     ner_token_to_id_mapping = {
-        TokenClassWithTag.b_answer: "1",
-        TokenClassWithTag.b_header: "2",
-        TokenClassWithTag.b_question: "3",
-        TokenClassWithTag.i_answer: "4",
-        TokenClassWithTag.i_header: "5",
-        TokenClassWithTag.i_question: "6",
-        BioTag.outside: "7",
+        LayoutType.word: {
+            WordType.token_class: {
+                TokenClasses.other: "1",
+                TokenClasses.question: "2",
+                TokenClasses.answer: "3",
+                TokenClasses.header: "4",
+            },
+            WordType.tag: {BioTag.inside: "1", BioTag.outside: "2", BioTag.begin: "3"},
+            WordType.token_tag: {
+                TokenClassWithTag.b_answer: "1",
+                TokenClassWithTag.b_header: "2",
+                TokenClassWithTag.b_question: "3",
+                TokenClassWithTag.i_answer: "4",
+                TokenClassWithTag.i_header: "5",
+                TokenClassWithTag.i_question: "6",
+                BioTag.outside: "7",
+            },
+        },
+        LayoutType.text: {
+            WordType.token_class: {
+                TokenClasses.other: "1",
+                TokenClasses.question: "2",
+                TokenClasses.answer: "3",
+                TokenClasses.header: "4",
+            }
+        },
     }
     layout_input = {
         "image_ids": ["t74dfkh3-12gr-17d9-8e41-c4d134c0uzo4"],
@@ -1933,11 +1954,25 @@ class DatapointXfund:
         """
         return self.category_names_mapping
 
+    def get_categories_dict(self) -> Mapping[LayoutType, str]:
+        """
+        categories_dict
+        """
+        return self.categories_dict
+
     def get_layout_input(self) -> JsonDict:
         """
         layout_input
         """
         return self.layout_input
+
+    def get_layout_v2_input(self) -> JsonDict:
+        """
+        layout_v2_input
+        """
+        layout_v2_input = deepcopy(self.layout_input)
+        layout_v2_input["image"] = [np.ones((3, 224, 224), dtype=np.int32) * 255]
+        return layout_v2_input
 
     def get_raw_layoutlm_features(self) -> JsonDict:
         """
@@ -2009,9 +2044,9 @@ class DatapointXfund:
         """categories dict names as key"""
         return self.categories_dict_name_as_key
 
-    def get_net_token_to_id_mapping(self) -> Dict[ObjectTypes, str]:
+    def get_net_token_to_id_mapping(self) -> Dict[ObjectTypes, Any]:
         """token to id mapping"""
-        return self.ner_token_to_id_mapping
+        return self.ner_token_to_id_mapping  # type: ignore
 
 
 @dataclass
