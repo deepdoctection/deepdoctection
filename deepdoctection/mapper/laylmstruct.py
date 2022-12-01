@@ -21,7 +21,7 @@ https://github.com/NielsRogge/Transformers-Tutorials
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, Mapping, NewType, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Union
 
 import numpy as np
 from cv2 import INTER_LINEAR
@@ -30,17 +30,8 @@ from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.develop import deprecated
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import (
-    BioTag,
-    DatasetType,
-    LayoutType,
-    ObjectTypes,
-    PageType,
-    WordType,
-    token_class_tag_to_token_class_with_tag,
-)
+from ..utils.settings import DatasetType, LayoutType, PageType, WordType
 from ..utils.transform import ResizeTransform
 from .maputils import curry
 
@@ -48,11 +39,9 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast  # pylint: disable = W0611
-
+    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
 
 __all__ = [
-    "image_to_layoutlm",
     "image_to_raw_layoutlm_features",
     "raw_features_to_layoutlm_features",
     "LayoutLMDataCollator",
@@ -77,122 +66,15 @@ _CLS_BOX = [0.0, 0.0, 1000.0, 1000.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 
 
-@deprecated("Use image_to_raw_layoutlm_features and LayoutLMDataCollator instead", "2022-07-12")
-@curry
-def image_to_layoutlm(
-    dp: Image,
-    tokenizer: "PreTrainedTokenizer",
-    categories_dict_name_as_key: Optional[Dict[ObjectTypes, str]] = None,
-    input_width: int = 1000,
-    input_height: int = 1000,
-) -> LayoutLMFeatures:
-    """
-    Maps an image to a dict that can be consumed by a tokenizer and ultimately be passed
-    to a LayoutLM language model.
-
-    :param dp: Image
-    :param tokenizer: A tokenizer aligned with the following layout model
-    :param input_width: Model image input width. Will resize the image and the bounding boxes
-    :param input_height: Model image input height. Will resize the image and the bounding boxes
-    :param categories_dict_name_as_key: Only necessary for training. It will convert either token category names or
-                                        sequence category names according to the given dict to their corresponding id.
-                                        Note, that for token classification you maybe need to pass the mapping of the
-                                        token classification model.
-    """
-
-    output: JsonDict = {}
-
-    anns = dp.get_annotation_iter(category_names=LayoutType.word)
-    all_tokens = []
-    all_boxes = []
-    all_ann_ids = []
-    words: List[str] = []
-    all_input_ids = []
-    for ann in anns:
-        char_cat = ann.get_sub_category(WordType.characters)
-        if not isinstance(char_cat, ContainerAnnotation):
-            raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
-        word = char_cat.value
-        if not isinstance(word, str):
-            raise ValueError(f"word must be of type str but is of type {type(word)}")
-        words.append(word)
-        word_tokens = tokenizer.tokenize(word)
-        all_input_ids.extend(tokenizer.convert_tokens_to_ids(word_tokens))
-
-        all_tokens.extend(word_tokens)
-        if ann.image is not None:
-            box = ann.image.get_embedding(dp.image_id)
-        else:
-            box = ann.bounding_box
-        assert box is not None, box
-        if not box.absolute_coords:
-            box = box.transform(dp.width, dp.height, absolute_coords=True)
-        box = box.to_list(mode="xyxy")
-
-        if word_tokens:
-            all_boxes.extend([box] * len(word_tokens))
-            all_ann_ids.extend([ann.annotation_id] * len(word_tokens))
-
-        if (
-            WordType.token_class in ann.sub_categories
-            and WordType.tag in ann.sub_categories
-            and categories_dict_name_as_key is not None
-        ):
-            semantic_label = ann.get_sub_category(WordType.token_class).category_name
-            bio_tag = ann.get_sub_category(WordType.tag).category_name
-            category_name: Union[ObjectTypes, BioTag]
-            if bio_tag is BioTag.outside:
-                category_name = BioTag.outside
-            else:
-                # category_name = bio_tag + "-" + semantic_label
-                category_name = token_class_tag_to_token_class_with_tag(semantic_label, bio_tag)  # type: ignore
-            output["label"] = int(categories_dict_name_as_key[category_name])
-
-        if dp.summary is not None and categories_dict_name_as_key is not None:
-            summary_cat_name = dp.summary.get_sub_category(PageType.document_type).category_name
-            output["label"] = int(categories_dict_name_as_key[summary_cat_name])  # type: ignore
-
-    all_boxes = [_CLS_BOX] + all_boxes + [_SEP_BOX]
-    all_ann_ids = ["CLS"] + all_ann_ids + ["SEP"]
-    all_tokens = ["CLS"] + all_tokens + ["SEP"]
-
-    max_length = tokenizer.max_model_input_sizes["microsoft/layoutlm-base-uncased"]
-    encoding = tokenizer(" ".join(words), return_tensors="pt", max_length=max_length)
-
-    if len(all_ann_ids) > max_length:
-        all_ann_ids = all_ann_ids[: max_length - 1] + ["SEP"]
-        all_boxes = all_boxes[: max_length - 1] + [_SEP_BOX]
-        all_tokens = all_tokens[: max_length - 1] + ["SEP"]
-
-    boxes = np.asarray(all_boxes, dtype="float32")
-    boxes = box_to_point4(boxes)
-
-    resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
-    if dp.image is not None:
-        image = resizer.apply_image(dp.image)
-        output["image"] = image
-
-    boxes = resizer.apply_coords(boxes)
-    boxes = point4_to_box(boxes)
-    pt_boxes = torch.clamp(torch.round(torch.tensor([boxes.tolist()])), min=0.0, max=1000.0).int()
-
-    output["ids"] = all_ann_ids
-    output["boxes"] = pt_boxes
-    output["tokens"] = all_tokens
-    output["input_ids"] = encoding["input_ids"]
-    output["attention_mask"] = encoding["attention_mask"]
-    output["token_type_ids"] = encoding["token_type_ids"]
-
-    return LayoutLMFeatures(output)
-
-
 @curry
 def image_to_raw_layoutlm_features(
     dp: Image,
-    categories_dict_name_as_key: Optional[Mapping[str, str]] = None,
-    dataset_type: Optional[Literal["SEQUENCE_CLASSIFICATION", "TOKEN_CLASSIFICATION"]] = None,
+    dataset_type: Optional[Literal["sequence_classification", "token_classification"]] = None,
     input_width: int = 1000,
     input_height: int = 1000,
+    image_width: int = 1000,
+    image_height: int = 1000,
+    use_token_tag: bool = True,
 ) -> Optional[RawLayoutLMFeatures]:
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
@@ -201,21 +83,19 @@ def image_to_raw_layoutlm_features(
 
 
     :param dp: Image
-    :param categories_dict_name_as_key: categories with names and ids. In comparison with arguments of the same name in
-                                        other functions the categories must be the categories of the model.
-                                        For SEQUENCE_CLASSIFICATION type datasets this will be the various document
-                                        classes and can be created by e.g. using
-                                        sequence_dataset.dataflow.categories.get_categories(as_dict=True,
-                                        name_as_key=True).
-                                        For TOKEN_CLASSIFICATION you will have to generate a dict of categories of type
-                                        "B-ANSWER","I-ANSWER","B-QUESTION","I-QUESTION","O" depending on what token
-                                        classes the model has been trained, resp. should be trained.
-                                        When using a TOKEN_CLASSIFICATION dataset note that all possible token classes
-                                        are generated by concatenating SEMANTIC_ENTITY with NER_TAG, where the OTHER
-                                        class is a stand-alone class with no NER_TAG.
     :param dataset_type: Either SEQUENCE_CLASSIFICATION or TOKEN_CLASSIFICATION. When using a built-in dataset use
-    :param input_width: target width of the image. Under the hood, it will transform all box coordinates accordingly.
-    :param input_height: target width of the image. Under the hood, it will transform all box coordinates accordingly.
+    :param input_width: max width of box coordinates. Under the hood, it will transform the image and all box
+                        coordinates accordingly.
+    :param input_height: target height of box coordinates. Under the hood, it will transform the image and all box
+                        coordinates accordingly.
+    :param image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_width, whereas
+                        the image has to be resized to a different width. This input will only resize the `image` width.
+    :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
+                         whereas the image has to be resized to a different height. This input will only resize the
+                         `image` height.
+    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
+                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
+                          `WordType.token_class`.
     :return: dictionary with the following arguments:
             'image_id', 'width', 'height', 'ann_ids', 'words', 'bbox' and 'dataset_type'.
     """
@@ -249,18 +129,16 @@ def image_to_raw_layoutlm_features(
 
         if (
             WordType.token_tag in ann.sub_categories
-            and categories_dict_name_as_key is not None
+            and WordType.token_class in ann.sub_categories
             and dataset_type == DatasetType.token_classification
         ):
-            all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
+            if use_token_tag:
+                all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
+            else:
+                all_labels.append(int(ann.get_sub_category(WordType.token_class).category_id) - 1)
 
-    if (
-        dp.summary is not None
-        and categories_dict_name_as_key is not None
-        and dataset_type == DatasetType.sequence_classification
-    ):
-        category_name = dp.summary.get_sub_category(PageType.document_type).category_name
-        all_labels.append(int(categories_dict_name_as_key[category_name]) - 1)
+    if dp.summary is not None and dataset_type == DatasetType.sequence_classification:
+        all_labels.append(int(dp.summary.get_sub_category(PageType.document_type).category_id) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -271,7 +149,11 @@ def image_to_raw_layoutlm_features(
     resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
 
     if dp.image is not None:
-        image = resizer.apply_image(dp.image)
+        if image_width != input_width or image_height != input_height:
+            image_only_resizer = ResizeTransform(dp.height, dp.width, image_height, image_width, INTER_LINEAR)
+            image = image_only_resizer.apply_image(dp.image)
+        else:
+            image = resizer.apply_image(dp.image)
         raw_features["image"] = image  # pylint: disable=E1137  #3162
 
     boxes = resizer.apply_coords(boxes)
@@ -289,7 +171,7 @@ def image_to_raw_layoutlm_features(
     raw_features["bbox"] = boxes
     raw_features["dataset_type"] = dataset_type
 
-    if categories_dict_name_as_key:
+    if all_labels:
         raw_features["labels"] = all_labels
     # pylint: enable=E1137
     return raw_features
@@ -304,11 +186,151 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
-    if "images" in features:
-        features["images"] = [
-            torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
-        ]
+    if "image" in features:
+        features["image"] = torch.tensor(
+            [image.astype("float32").transpose(2, 0, 1) for image in features["image"]], dtype=torch.float32
+        )
+        # features["images"] = [
+        #    torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
+        # ]
     return features
+
+
+def _tokenize_with_sliding_window(
+    raw_features: List[RawLayoutLMFeatures],
+    tokenizer: "PreTrainedTokenizerFast",
+    sliding_window_stride: int,
+    return_tensors: Optional[Literal["pt"]] = None,
+) -> Union[JsonDict, "BatchEncoding"]:
+    """
+    Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
+    If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
+    from raw tokenized outputs we run the tokenizer a second time without truncating and build the sliding windows from
+    this second output.
+    """
+    # first try: we require return_overflowing_tokens=True. If the number of raw features is equal to
+    # overflow_to_sample_mapping then there is nothing more to do because the sample has less than max_length
+    # tokens
+    tokenized_inputs = tokenizer(
+        [dp["words"] for dp in raw_features],
+        padding="max_length",
+        truncation=True,
+        return_overflowing_tokens=True,
+        is_split_into_words=True,
+        return_tensors=return_tensors,
+    )
+    if len(raw_features) == len(tokenized_inputs["overflow_to_sample_mapping"]):
+        return tokenized_inputs
+
+    # now we tokenize with neither truncation nor padding and build sliding windows.
+    tokenized_inputs = tokenizer(
+        [dp["words"] for dp in raw_features],
+        padding="do_not_pad",
+        truncation=False,
+        return_overflowing_tokens=False,
+        is_split_into_words=True,
+        return_tensors=None,
+    )
+    max_length = tokenizer.max_len_single_sentence  # here 510 (512 minus [CLS] and [SEP]
+    sliding_windows_remainder = [
+        divmod(len(sample.ids) - max_length, sliding_window_stride) for sample in tokenized_inputs.encodings
+    ]  # list of (multiplier, remainder) per sample
+    all_input_ids = []
+    all_token_type_ids = []
+    all_attention_mask = []
+    all_word_ids = []
+    all_tokens = []
+    overflow_to_sample_mapping = []
+    for idx, outputs in enumerate(
+        zip(
+            tokenized_inputs.encodings,
+            tokenized_inputs.data["input_ids"],
+            tokenized_inputs.data["token_type_ids"],
+            tokenized_inputs.data["attention_mask"],
+            sliding_windows_remainder,
+        )
+    ):
+        encodings = outputs[0]
+        input_ids_orig = outputs[1]
+        token_type_ids_orig = outputs[2]
+        attention_mask_orig = outputs[3]
+        divmod_result = outputs[4]
+        tokens_orig = encodings.tokens
+        word_ids_orig = encodings.word_ids
+        multiplier, _ = divmod_result
+        total_length = len(tokens_orig)
+        # suppose the sample has total_length= 525 tokens:
+        #  [[CLS],1,...,523,[SEP]]. With sliding_window_stride = 8 we build windows as follows:
+        # [[CLS],1,..,510,[SEP]], [[CLS],8,..,517,[SEP]], [[CLS],16,..,523,[SEP],[PAD],[PAD],[PAD]]
+        # Here, we have a multiplier = 1,
+        for k in range(multiplier + 2):
+            start = max(k * sliding_window_stride, 1)
+            end = min(max_length + start, total_length)
+            pad_last = max(max_length + start - end, 0)
+            overflow_to_sample_mapping.append(idx)
+            if not pad_last:
+                tokens = tokens_orig[start:end]
+                tokens.insert(0, "[CLS]")
+                tokens.append("[SEP]")
+                all_tokens.append(tokens)
+                input_ids = input_ids_orig[start:end]
+                input_ids.insert(0, 101)
+                input_ids.append(102)
+                all_input_ids.append(input_ids)
+                token_type_ids = token_type_ids_orig[start:end]
+                token_type_ids.insert(0, 0)
+                token_type_ids.append(0)
+                all_token_type_ids.append(token_type_ids)
+                attention_mask = attention_mask_orig[start:end]
+                attention_mask.insert(0, 1)
+                attention_mask.append(1)
+                all_attention_mask.append(attention_mask)
+                word_ids = word_ids_orig[start:end]
+                word_ids.insert(0, None)
+                word_ids.append(None)
+                all_word_ids.append(word_ids)
+            else:
+                # last sliding window. We have to pad the end in order to have equal length along all windows.
+                tokens = tokens_orig[start:end]
+                tokens.insert(0, "[CLS]")
+                pads = ["[PAD]" for _ in range(pad_last + 1)]
+                tokens.extend(pads)
+                all_tokens.append(tokens)
+                input_ids = input_ids_orig[start:end]
+                input_ids.insert(0, 101)
+                pad_ids = [0 for _ in range(pad_last + 1)]
+                input_ids.extend(pad_ids)
+                all_input_ids.append(input_ids)
+                token_type_ids = token_type_ids_orig[start:end]
+                token_type_ids.insert(0, 0)
+                pad_ids = [0 for _ in range(pad_last + 1)]
+                token_type_ids.extend(pad_ids)
+                all_token_type_ids.append(token_type_ids)
+                attention_mask = attention_mask_orig[start:end]
+                attention_mask.insert(0, 1)
+                pad_ids = [1 for _ in range(pad_last + 1)]
+                attention_mask.extend(pad_ids)
+                all_attention_mask.append(attention_mask)
+                word_ids = word_ids_orig[start:end]
+                word_ids.insert(0, None)
+                pad_none = [None for _ in range(pad_last + 1)]
+                word_ids.extend(pad_none)
+                all_word_ids.append(word_ids)
+
+    slided_tokenized_inputs: Dict[str, Union[List[Union[str, int]], torch.Tensor]] = {}
+    if return_tensors == "pt":
+        slided_tokenized_inputs["overflow_to_sample_mapping"] = torch.tensor(overflow_to_sample_mapping)
+        slided_tokenized_inputs["input_ids"] = torch.tensor(all_input_ids)
+        slided_tokenized_inputs["token_type_ids"] = torch.tensor(all_token_type_ids)
+        slided_tokenized_inputs["attention_mask"] = torch.tensor(all_attention_mask)
+    else:
+        slided_tokenized_inputs["overflow_to_sample_mapping"] = overflow_to_sample_mapping  # type: ignore
+        slided_tokenized_inputs["input_ids"] = all_input_ids
+        slided_tokenized_inputs["token_type_ids"] = all_token_type_ids
+        slided_tokenized_inputs["attention_mask"] = all_attention_mask
+    slided_tokenized_inputs["word_ids"] = all_word_ids
+    slided_tokenized_inputs["tokens"] = all_tokens
+    return slided_tokenized_inputs
 
 
 def raw_features_to_layoutlm_features(
@@ -319,6 +341,7 @@ def raw_features_to_layoutlm_features(
     return_overflowing_tokens: bool = False,
     return_tensors: Optional[Literal["pt"]] = None,
     remove_columns_for_training: bool = False,
+    sliding_window_stride: int = 0,
 ) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
@@ -342,6 +365,10 @@ def raw_features_to_layoutlm_features(
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
     :param remove_columns_for_training: Will remove all superfluous columns that are not required for training.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
+                                  will be created with each window having max_length sequence input. When using
+                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                                  with windows shifted `sliding_window_stride` to the right.
     :return: dictionary with the following arguments:  `image_ids, width, height, ann_ids, input_ids,
              token_type_ids, attention_mask, bbox, labels`.
     """
@@ -359,14 +386,19 @@ def raw_features_to_layoutlm_features(
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
 
-    tokenized_inputs = tokenizer(
-        [dp["words"] for dp in raw_features],
-        padding=padding,
-        truncation=truncation,
-        return_overflowing_tokens=return_overflowing_tokens,
-        is_split_into_words=True,
-        return_tensors=return_tensors,
-    )
+    if sliding_window_stride:
+        return_overflowing_tokens = True
+        tokenized_inputs = _tokenize_with_sliding_window(raw_features, tokenizer, sliding_window_stride, return_tensors)
+
+    else:
+        tokenized_inputs = tokenizer(
+            [dp["words"] for dp in raw_features],
+            padding=padding,
+            truncation=truncation,
+            return_overflowing_tokens=return_overflowing_tokens,
+            is_split_into_words=True,
+            return_tensors=return_tensors,
+        )
 
     image_ids = []
     images = []
@@ -394,8 +426,13 @@ def raw_features_to_layoutlm_features(
         boxes = raw_features[batch_index_orig]["bbox"]
         if _has_token_labels:
             labels = raw_features[batch_index_orig]["labels"]
-        word_ids = tokenized_inputs.word_ids(batch_index=batch_index)
-        token_batch = tokenized_inputs.tokens(batch_index=batch_index)
+
+        if isinstance(tokenized_inputs, dict):
+            word_ids = tokenized_inputs["word_ids"][batch_index]
+            token_batch = tokenized_inputs["tokens"][batch_index]
+        else:
+            word_ids = tokenized_inputs.word_ids(batch_index=batch_index)
+            token_batch = tokenized_inputs.tokens(batch_index=batch_index)
 
         token_batch_ann_ids = []
         token_batch_boxes = []
@@ -444,7 +481,7 @@ def raw_features_to_layoutlm_features(
 
     # will only add the image to features if it has been passed as raw feature
     if images:
-        input_dict["images"] = images
+        input_dict["image"] = images
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
@@ -492,6 +529,7 @@ class LayoutLMDataCollator:
     truncation: bool = field(default=True)
     return_overflowing_tokens: bool = field(default=False)
     return_tensors: Optional[Literal["pt"]] = field(default=None)
+    sliding_window_stride: int = field(default=0)
 
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
@@ -516,6 +554,7 @@ class LayoutLMDataCollator:
             self.return_overflowing_tokens,
             self.return_tensors,
             True,
+            self.sliding_window_stride,
         )
 
 
@@ -523,9 +562,15 @@ class LayoutLMDataCollator:
 def image_to_layoutlm_features(
     dp: Image,
     tokenizer: "PreTrainedTokenizerFast",
+    padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
+    truncation: bool = True,
+    return_overflowing_tokens: bool = False,
     return_tensors: Optional[Literal["pt"]] = "pt",
     input_width: int = 1000,
     input_height: int = 1000,
+    image_width: int = 1000,
+    image_height: int = 1000,
+    sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
     """
     Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
@@ -543,16 +588,44 @@ def image_to_layoutlm_features(
 
     :param dp: Image datapoint
     :param tokenizer: Tokenizer compatible with the language model
+    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
+                    `do_not_pad`.
+    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
+                       maximum acceptable input length for the model if that argument is not provided. This will
+                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
+                       sequences (or a batch of pairs) is provided.
+                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
+                       model maximum admissible input size).
+    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
+                                      can be returned as an additional batch element. Not that in this case, the number
+                                      of input batch samples will be smaller than the output batch samples.
     :param return_tensors: Output tensor features. Either 'pt' for PyTorch models or None, if features should be
                            returned in list objects.
     :param input_width: Standard input size for image coordinates. All LayoutLM models require input features to be
                         normalized to an image width equal to 1000.
     :param input_height: Standard input size for image coordinates. All LayoutLM models require input features to be
                          normalized to an image height equal to 1000.
+    :param image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_width, whereas
+                        the image has to be resized to a different width. This input will only resize the `image` width.
+    :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
+                         whereas the image has to be resized to a different height. This input will only resize the
+                         `image` height.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
+                                  will be created with each window having max_length sequence input. When using
+                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                                  with windows shifted `sliding_window_stride` to the right.
     :return: A dict of layoutlm features
     """
-    raw_features = image_to_raw_layoutlm_features(None, None, input_width, input_height)(dp)
+    raw_features = image_to_raw_layoutlm_features(None, input_width, input_height, image_width, image_height)(dp)
     if raw_features is None:
         return None
-    features = raw_features_to_layoutlm_features(raw_features, tokenizer, return_tensors=return_tensors)
+    features = raw_features_to_layoutlm_features(
+        raw_features,
+        tokenizer,
+        padding,
+        truncation,
+        return_overflowing_tokens,
+        return_tensors=return_tensors,
+        sliding_window_stride=sliding_window_stride,
+    )
     return features

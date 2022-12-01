@@ -25,7 +25,7 @@ from pytest import fixture
 
 from deepdoctection.datapoint import Image
 from deepdoctection.utils.detection_types import ImageType, JsonDict
-from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.settings import LayoutType, ObjectTypes
 
 from .data import (
     DatapointCoco,
@@ -214,12 +214,28 @@ def fixture_xfund_category_names() -> Mapping[str, ObjectTypes]:
     return DatapointXfund().get_category_names_mapping()
 
 
+@fixture(name="xfund_category_dict")
+def fixture_xfund_category_dict_name_as_key() -> Mapping[LayoutType, str]:
+    """
+    Xfund category dict name as key
+    """
+    return DatapointXfund().get_categories_dict()
+
+
 @fixture(name="layoutlm_input")
 def fixture_layoutlm_input() -> JsonDict:
     """
     Layoutlm input
     """
     return DatapointXfund().get_layout_input()
+
+
+@fixture(name="layoutlm_v2_input")
+def fixture_layoutlm_v2_input() -> JsonDict:
+    """
+    Layoutlm_v2 input
+    """
+    return DatapointXfund().get_layout_v2_input()
 
 
 @fixture(name="raw_layoutlm_features")
@@ -239,7 +255,7 @@ def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, str]:
 
 
 @fixture(name="ner_token_to_id_mapping")
-def fixture_ner_token_to_id_mapping() -> Mapping[ObjectTypes, str]:
+def fixture_ner_token_to_id_mapping() -> Mapping[ObjectTypes, Any]:
     """
     ner_token_to_id_mapping
     """

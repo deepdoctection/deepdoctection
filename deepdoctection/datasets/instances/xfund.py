@@ -34,7 +34,7 @@ from typing import Mapping, Sequence, Union
 
 from ...dataflow import CustomDataFromList, DataFlow, MapData
 from ...datasets.info import DatasetInfo
-from ...mapper.cats import cat_to_sub_cat
+from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
@@ -69,7 +69,7 @@ _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     ],
     "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
 }
-_INIT_CATEGORIES = [LayoutType.word]
+_INIT_CATEGORIES = [LayoutType.word, LayoutType.text]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
     LayoutType.word: {
@@ -84,7 +84,10 @@ _SUB_CATEGORIES = {
             TokenClassWithTag.i_question,
             BioTag.outside,
         ],
-    }
+    },
+    LayoutType.text: {
+        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header]
+    },
 }
 
 _LANGUAGES = ["de", "es", "fr", "it", "ja", "pt", "zh"]
@@ -167,7 +170,8 @@ class XfundBuilder(DataFlowBaseBuilder):
             return dp
 
         df = MapData(df, replace_filename)
-        category_names_mapping = {
+        categories_name_as_key = self.categories.get_categories(init=True, name_as_key=True)
+        token_class_names_mapping = {
             "other": TokenClasses.other,
             "question": TokenClasses.question,
             "answer": TokenClasses.answer,
@@ -175,12 +179,25 @@ class XfundBuilder(DataFlowBaseBuilder):
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
             categories=LayoutType.word,
-            sub_categories={LayoutType.word: [WordType.token_tag]},
+            sub_categories={LayoutType.word: [WordType.token_tag, WordType.tag, WordType.token_class]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,
-        )[LayoutType.word][WordType.token_tag]
-        df = MapData(df, xfund_to_image(load_image, False, category_names_mapping, ner_token_to_id_mapping))
+        )
+        df = MapData(
+            df,
+            xfund_to_image(
+                load_image, False, categories_name_as_key, token_class_names_mapping, ner_token_to_id_mapping
+            ),
+        )
+        if self.categories.is_filtered():
+            df = MapData(
+                df,
+                filter_cat(  # pylint: disable=E1120
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
+                ),
+            )
 
         if self.categories.is_cat_to_sub_cat():
             df = MapData(

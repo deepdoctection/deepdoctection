@@ -29,12 +29,20 @@ from ..mapper.data import DatapointXfund
 from .data import PDF_BYTES, PDF_BYTES_2
 
 
-@fixture(name="layoutlm_input")
-def fixture_layoutlm_input() -> JsonDict:
+@fixture(name="layoutlm_input_for_predictor")
+def fixture_layoutlm_input_for_predictor() -> JsonDict:
     """
     Layoutlm input
     """
     return DatapointXfund().get_layout_input()
+
+
+@fixture(name="layoutlm_v2_input")
+def fixture_layoutlm_input() -> JsonDict:
+    """
+    Layoutlm_v2 input
+    """
+    return DatapointXfund().get_layout_v2_input()
 
 
 @fixture(name="categories_semantics")
