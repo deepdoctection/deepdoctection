@@ -56,9 +56,13 @@ def image_to_tp_frcnn_training(
         return None
 
     for ann in anns:
-        if ann.bounding_box is None:
-            raise ValueError("ann.bounding_box cannot be None")
-        all_boxes.append(ann.bounding_box.to_list(mode="xyxy"))
+        if ann.image is not None:
+            box = ann.image.get_embedding(dp.image_id)
+        else:
+            box = ann.bounding_box
+        if box is None:
+            raise ValueError("BoundingBox cannot be None")
+        all_boxes.append(box.to_list(mode="xyxy"))
         all_categories.append(ann.category_id)
 
         if add_mask:
