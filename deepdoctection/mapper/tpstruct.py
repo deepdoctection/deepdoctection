@@ -62,7 +62,7 @@ def image_to_tp_frcnn_training(
             box = ann.bounding_box
         if box is None:
             raise ValueError("BoundingBox cannot be None")
-        all_boxes.append(ann.bounding_box.to_list(mode="xyxy"))
+        all_boxes.append(box.to_list(mode="xyxy"))
         all_categories.append(ann.category_id)
 
         if add_mask:

@@ -76,7 +76,7 @@ def image_to_d2_frcnn_training(
             raise ValueError("BoundingBox cannot be None")
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
-            "bbox": ann.bounding_box.to_list(mode="xyxy"),
+            "bbox": box.to_list(mode="xyxy"),
             "category_id": int(ann.category_id) - 1,
         }
         annotations.append(mapped_ann)
