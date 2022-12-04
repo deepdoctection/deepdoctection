@@ -68,7 +68,11 @@ def image_to_d2_frcnn_training(
     annotations = []
 
     for ann in anns:
-        if ann.bounding_box is None:
+        if ann.image is not None:
+            box = ann.image.get_embedding(dp.image_id)
+        else:
+            box = ann.bounding_box
+        if box is None:
             raise ValueError("BoundingBox cannot be None")
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
