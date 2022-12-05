@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. image:: ../notebooks/pics/dd_logo.png
+.. image:: ./tutorials/pics/dd_logo.png
    :align: center
 
 Introduction

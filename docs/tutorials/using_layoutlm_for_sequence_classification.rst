@@ -386,7 +386,7 @@ demonstrate how it works.
 
 
 
-.. image:: output_26_2.png
+.. image:: ./pics/output_26_2.png
 
 
 .. code:: ipython3
@@ -431,7 +431,7 @@ demonstrate how it works.
 
 
 
-.. image:: output_29_1.png
+.. image:: ./pics/output_29_1.png
 
 
 .. code:: ipython3
