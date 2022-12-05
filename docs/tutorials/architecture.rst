@@ -2,7 +2,7 @@ Architecture
 ========================================
 
 
-.. image:: ../../notebooks/pics/dd_architecture.png
+.. image:: ./pics/dd_architecture.png
    :align: center
 
 
