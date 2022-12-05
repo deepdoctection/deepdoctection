@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/notebooks/pics/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   A Document AI Package
   </h3>
@@ -40,7 +40,8 @@ pipelines. Its core function does not depend on any specific deep learning libra
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
 into contiguous text. You will get an output in JSON format that you can customize even further by yourself. 
      
-Have a look at the [**introduction notebook**](./notebooks/Get_Started.ipynb) for an easy start.
+Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb) in the 
+[notebook repo](https://github.com/deepdoctection/notebooks) for an easy start.
 
 
 ## Models    
@@ -57,13 +58,13 @@ document classification or NER. **deep**doctection provides training scripts for
 developed from the library that hosts the model code. Moreover, **deep**doctection hosts code to some well established 
 datasets like **Publaynet** that makes it easy to experiment. It also contains mappings from widely used data 
 formats like COCO and it has a dataset framework (akin to [**datasets**](https://github.com/huggingface/datasets) so that
- setting up training on a custom dataset becomes very easy. [**This notebook**](notebooks/Datasets_and_Eval.ipynb)
+ setting up training on a custom dataset becomes very easy. [**This notebook**](https://github.com/deepdoctection/notebooks/blob/main/Datasets_and_Eval.ipynb)
 shows you how to do this.
    
 ## Evaluation
 
 **deep**doctection comes equipped with a framework that allows you to evaluate predictions of a single or multiple 
-models in a pipeline against some ground truth. Check again [**here**](notebooks/Datasets_and_Eval.ipynb) how it is 
+models in a pipeline against some ground truth. Check again [**here**](https://github.com/deepdoctection/notebooks/blob/main/Datasets_and_Eval.ipynb) how it is 
 done.  
 
 ## Inference
@@ -90,20 +91,20 @@ plt.axis('off')
 plt.imshow(image)
 ```
 
-![text](./notebooks/pics/dd_rm_sample.png)
+![text](./docs/tutorials/pics/dd_rm_sample.png)
 
 ```
 HTML(page.tables[0].html)
 ```
 
-![table](./notebooks/pics/dd_rm_table.png)
+![table](./docs/tutorials/pics/dd_rm_table.png)
 
 
 ```
 print(page.get_text())
 ```
 
-![table](./notebooks/pics/dd_rm_text.png)
+![table](./docs/tutorials/pics/dd_rm_text.png)
  
 
 ## Documentation
@@ -117,7 +118,7 @@ documentation.
 
 ## Requirements
 
-![requirements](./notebooks/pics/requirements_deepdoctection.jpg)
+![requirements](./docs/tutorials/pics/requirements_deepdoctection.jpg)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 

@@ -156,7 +156,7 @@ Alternatively, you can visualize the output with matplotlib.
     plt.axis('off')
     plt.imshow(image)
 
-.. figure:: https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/output_16_1.png
+.. figure:: ./pics/output_16_1.png
    :alt: title
 
 Let’s have a look at other attributes. We can use the ``text`` property
