@@ -39,7 +39,7 @@ def get_integration_test_path() -> Path:
     """
     fixture integration test path
     """
-    return get_package_path() / "notebooks" / "pics" / "samples" / "sample_2"
+    return get_test_path() / "sample_2"
 
 
 def collect_datapoint_from_dataflow(
