@@ -25,7 +25,6 @@ from typing import Any, Iterable, Iterator, List, Optional, Union
 
 from deepdoctection.dataflow import DataFlow
 from deepdoctection.datapoint import Annotation
-from deepdoctection.utils.systools import get_package_path
 
 
 def get_test_path() -> Path:
