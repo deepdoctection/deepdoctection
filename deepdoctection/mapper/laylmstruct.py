@@ -24,6 +24,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Union
 
 import numpy as np
+import numpy.typing as npt
+
 from cv2 import INTER_LINEAR
 
 from ..datapoint.annotation import ContainerAnnotation
@@ -32,7 +34,7 @@ from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import DatasetType, LayoutType, PageType, WordType
-from ..utils.transform import ResizeTransform
+from ..utils.transform import ResizeTransform, normalize_image
 from .maputils import curry
 
 if pytorch_available():
@@ -74,6 +76,9 @@ def image_to_raw_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
+    color_mode: Literal["BGR","RGB"] = "BGR",
+    pixel_mean: Optional[npt.NDArray[np.float32]] = None,
+    pixel_std:  Optional[npt.NDArray[np.float32]] = None,
     use_token_tag: bool = True,
 ) -> Optional[RawLayoutLMFeatures]:
     """
@@ -93,6 +98,10 @@ def image_to_raw_layoutlm_features(
     :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
                          whereas the image has to be resized to a different height. This input will only resize the
                          `image` height.
+    :param color_mode: Either "BGR" or "RGB". Note, that LayoutLMv2 uses "BGR" because of Detectron2 backbone, whereas
+                       LayoutLMv3 uses "RGB".
+    :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
+    :param pixel_std: (3,) array for "BGR" resp. "RGB" std
     :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
                           labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
                           `WordType.token_class`.
@@ -154,6 +163,11 @@ def image_to_raw_layoutlm_features(
             image = image_only_resizer.apply_image(dp.image)
         else:
             image = resizer.apply_image(dp.image)
+        if color_mode=="RGB":
+            image = image[...,::-1]
+        if pixel_mean is not None and pixel_std is not None:
+            image = normalize_image(image, pixel_mean, pixel_std)
+
         raw_features["image"] = image  # pylint: disable=E1137  #3162
 
     boxes = resizer.apply_coords(boxes)
