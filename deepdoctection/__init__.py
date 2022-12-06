@@ -333,6 +333,7 @@ _IMPORT_STRUCTURE = {
         "get_tqdm_default_kwargs",
         "ResizeTransform",
         "InferenceResize",
+        "normalize_image",
         "delete_keys_from_dict",
         "split_string",
         "string_to_dict",
