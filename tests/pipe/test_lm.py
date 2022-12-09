@@ -100,7 +100,7 @@ class TestLMSequenceClassifierService:
 
         language_model = MagicMock()
         language_model.predict = MagicMock(return_value=sequence_class_result)
-        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
+        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model)
 
         dp = dp_image_with_layout_and_word_annotations
 

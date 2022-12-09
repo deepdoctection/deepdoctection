@@ -353,6 +353,14 @@ class LMSequenceClassifier(PredictorBase):
         """
         raise NotImplementedError
 
+    @staticmethod
+    def default_kwargs_for_input_mapping() -> JsonDict:
+        """
+        Add some default arguments that might be necessary when preparing a sample. Overwrite this method
+        for some custom setting. :meth:`default_arguments_for_input_mapping` in `LMTokenClassifierService`.
+        """
+        return {}
+
 
 class LanguageDetector(PredictorBase):
     """

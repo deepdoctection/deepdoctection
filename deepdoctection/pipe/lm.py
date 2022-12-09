@@ -23,8 +23,9 @@ from copy import copy
 from typing import Any, Callable, List, Literal, Optional
 
 from ..datapoint.image import Image
-from ..extern.base import LMSequenceClassifier, LMTokenClassifier
-from ..mapper.laylmstruct import LayoutLMFeatures
+from ..extern.base import  LMTokenClassifier
+from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
+from ..mapper.laylmstruct import LayoutLMFeatures, image_to_layoutlm_features
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import transformers_available
 from ..utils.settings import BioTag, LayoutType, PageType, TokenClasses, WordType
@@ -32,8 +33,40 @@ from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry
 
 if transformers_available():
-    from transformers import LayoutLMv2TokenizerFast
+    from transformers import (
+        LayoutLMv2TokenizerFast,
+        LayoutLMTokenizerFast,
+        XLMRobertaTokenizerFast,
+        RobertaTokenizerFast
+    )
 
+_ARCHITECTURES_TO_TOKENIZER = {
+    ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
+    ("LayoutLMForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+        "microsoft/layoutlm-base-uncased"
+    ),
+    ("LayoutLMv2ForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+    ("LayoutLMv2ForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+    ("LayoutLMv3ForSequenceClassification", False): RobertaTokenizerFast.from_pretrained("roberta-base",add_prefix_space=True),
+    ("LayoutLMv3ForTokenClassification", False): RobertaTokenizerFast.from_pretrained("roberta-base",add_prefix_space=True)
+}
+
+def get_tokenizer_from_architecture(architecture_name: str, use_xlm_tokenizer: bool):
+    """
+    We do not use the tokenizer for a particular model that the transformer library provides. Thie mapping therefore
+    returns the tokenizer that should be used for a particular model.
+
+    :param architecture_name: The model as stated in the transformer library.
+    :param use_xlm_tokenizer: True if one uses the LayoutXLM. (The model cannot be distinguished from LayoutLMv2).
+    :return: Tokenizer instance to use.
+    """
+    return _ARCHITECTURES_TO_TOKENIZER[(architecture_name, use_xlm_tokenizer)]
 
 @pipeline_component_registry.register("LMTokenClassifierService")
 class LMTokenClassifierService(LanguageModelPipelineComponent):
@@ -56,7 +89,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                                                                'I-question', 'O', 'S-answer', 'S-header', 'S-question'])
 
             # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm,image_to_layoutlm)
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -70,8 +103,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LMTokenClassifier,
-        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+        language_model: HFLayoutLmTokenClassifierBase,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -81,7 +113,6 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         """
         :param tokenizer: Token classifier, typing allows currently anything. This will be changed in the future
         :param language_model: language model token classifier
-        :param mapping_to_lm_input_func: Function mapping image to layout language model features
         :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
                         `do_not_pad`.
         :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
@@ -107,7 +138,16 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
             self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
-        super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
+        super().__init__(self._get_name(), tokenizer, image_to_layoutlm_features)
+        self.required_kwargs = {
+            "tokenizer": self.tokenizer,
+            "padding": self.padding,
+            "truncation": self.truncation,
+            "return_overflowing_tokens": self.return_overflowing_tokens,
+            "return_tensors": "pt",
+            "sliding_window_stride": self.sliding_window_stride,
+        }
+        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
@@ -156,7 +196,6 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         return self.__class__(
             copy(self.tokenizer),
             self.language_model.clone(),
-            copy(self.mapping_to_lm_input_func),
             self.padding,
             self.truncation,
             self.return_overflowing_tokens,
@@ -178,21 +217,15 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         return f"lm_token_class_{self.language_model.name}"
 
     def _init_sanity_checks(self) -> None:
-        if isinstance(self.tokenizer, LayoutLMv2TokenizerFast):
-            raise ValueError("LayoutLMv2TokenizerFast cannot be used for tokenizing. Please use LayoutLMTokenizerFast")
-        parameters = inspect.signature(self.mapping_to_lm_input_func).parameters
-        self.required_kwargs = {
-            "tokenizer": self.tokenizer,
-            "padding": self.padding,
-            "truncation": self.truncation,
-            "return_overflowing_tokens": self.return_overflowing_tokens,
-            "return_tensors": "pt",
-            "sliding_window_stride": self.sliding_window_stride,
-        }
-        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
-        for kwarg in self.required_kwargs:
-            if kwarg not in parameters:
-                raise TypeError(f"{self.mapping_to_lm_input_func} requires argument {kwarg}")
+        tokenizer_class = self.language_model.model.config.tokenizer_class
+        use_xlm_tokenizer = False
+        if tokenizer_class is not None:
+            use_xlm_tokenizer = True
+        tokenizer_reference = get_tokenizer_from_architecture(self.language_model.model.__class__.__name__,
+                                                              use_xlm_tokenizer)
+        if not isinstance(self.tokenizer, tokenizer_reference):
+            raise ValueError(f"You want to use {type(self.tokenizer)} but you should use {type(tokenizer_reference)} "
+                             f"in this framework")
 
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
@@ -215,7 +248,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                                                      categories=["handwritten", "presentation", "resume"])
 
             # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -230,8 +263,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: LMSequenceClassifier,
-        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+        language_model: HFLayoutLmSequenceClassifierBase,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -239,7 +271,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         """
         :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
         :param language_model: language model sequence classifier
-        :param mapping_to_lm_input_func: Function mapping image to layout language model features
         :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
                         `do_not_pad`.
         :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
@@ -253,24 +284,20 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                            batch samples will be smaller than the output batch samples.
         """
         self.language_model = language_model
-        parameters = inspect.signature(mapping_to_lm_input_func).parameters
-        required_kwargs = {"tokenizer", "padding", "truncation", "return_overflowing_tokens", "return_tensors"}
-        for kwarg in required_kwargs:
-            if kwarg not in parameters:
-                raise TypeError(f"{mapping_to_lm_input_func} requires argument {kwarg}")
         self.padding = padding
         self.truncation = truncation
         self.return_overflowing_tokens = return_overflowing_tokens
-        super().__init__(self._get_name(), tokenizer, mapping_to_lm_input_func)
+        super().__init__(self._get_name(), tokenizer, image_to_layoutlm_features)
+        self.required_kwargs = {"tokenizer": self.tokenizer,
+                                "padding": self.padding,
+                                "truncation": self.truncation,
+                                "return_overflowing_tokens": self.return_overflowing_tokens,
+                                "return_tensors": "pt"}
+        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
-        lm_input = self.mapping_to_lm_input_func(
-            tokenizer=self.tokenizer,
-            padding=self.padding,
-            truncation=self.truncation,
-            return_overflowing_tokens=self.return_overflowing_tokens,
-            return_tensors="pt",
-        )(dp)
+        lm_input = self.mapping_to_lm_input_func(**self.required_kwargs)(dp)
         if lm_input is None:
             return
         lm_output = self.language_model.predict(**lm_input)
@@ -282,7 +309,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         return self.__class__(
             copy(self.tokenizer),
             self.language_model.clone(),
-            copy(self.mapping_to_lm_input_func),
             self.padding,
             self.truncation,
             self.return_overflowing_tokens,
@@ -300,3 +326,14 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
 
     def _get_name(self) -> str:
         return f"lm_sequence_class_{self.language_model.name}"
+
+    def _init_sanity_checks(self) -> None:
+        tokenizer_class = self.language_model.model.config.tokenizer_class
+        use_xlm_tokenizer = False
+        if tokenizer_class is not None:
+            use_xlm_tokenizer = True
+        tokenizer_reference = get_tokenizer_from_architecture(self.language_model.model.__class__.__name__,
+                                                              use_xlm_tokenizer)
+        if not isinstance(self.tokenizer, type(tokenizer_reference)):
+            raise ValueError(f"You want to use {type(self.tokenizer)} but you should use {type(tokenizer_reference)} "
+                             f"in this framework")
