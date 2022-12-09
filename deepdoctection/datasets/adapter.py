@@ -22,7 +22,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
-from ..dataflow import CustomDataFromList, MapData, RepeatedData
+from ..dataflow import CustomDataFromList, MapData, RepeatedData, CacheData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
@@ -130,10 +130,18 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             if _data_statistics:
                 summarizer.print_summary_histogram()
             self.number_datapoints = len(datapoints)
+
             df = CustomDataFromList(datapoints, shuffle=True)
-            df = RepeatedData(df, -1)
+            if not image_to_framework_func:
+                df = RepeatedData(df, -1)
+
         if image_to_framework_func:
             df = MapData(df, image_to_framework_func)
+            if cache_dataset:
+                df_list = CacheData(df).get_cache()
+                df = CustomDataFromList(df_list, shuffle=True)
+            df = RepeatedData(df, -1)
+
         self.df = df
         self.df.reset_state()
 
