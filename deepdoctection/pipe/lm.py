@@ -137,7 +137,11 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
             categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
-            self.other_name_as_key = {BioTag.outside: categories_name_as_key[BioTag.outside]}
+            if BioTag.outside in categories_name_as_key:
+                self.default_key =  BioTag.outside
+            else:
+                self.default_key = TokenClasses.other
+            self.other_name_as_key = {self.default_key: categories_name_as_key[self.default_key]}
         super().__init__(self._get_name(), tokenizer, image_to_layoutlm_features)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
@@ -168,7 +172,11 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         words_populated: List[str] = []
         for token in lm_output:
             if token.uuid not in words_populated:
-                self.dp_manager.set_category_annotation(token.semantic_name, None, WordType.token_class, token.uuid)
+                if token.class_name == token.semantic_name:
+                    token_class_name_id = token.class_id
+                else:
+                    token_class_name_id = None
+                self.dp_manager.set_category_annotation(token.semantic_name, token_class_name_id, WordType.token_class, token.uuid)
                 self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.tag, token.uuid)
                 self.dp_manager.set_category_annotation(
                     token.class_name, token.class_id, WordType.token_tag, token.uuid
@@ -180,14 +188,15 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             for word in word_anns:
                 if WordType.token_class not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        TokenClasses.other, None, WordType.token_class, word.annotation_id
+                        TokenClasses.other, self.other_name_as_key[self.default_key],
+                        WordType.token_class, word.annotation_id
                     )
                 if WordType.tag not in word.sub_categories:
                     self.dp_manager.set_category_annotation(BioTag.outside, None, WordType.tag, word.annotation_id)
                 if WordType.token_tag not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        BioTag.outside,
-                        self.other_name_as_key[BioTag.outside],
+                        self.default_key,
+                        self.other_name_as_key[self.default_key],
                         WordType.token_tag,
                         word.annotation_id,
                     )
@@ -223,7 +232,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             use_xlm_tokenizer = True
         tokenizer_reference = get_tokenizer_from_architecture(self.language_model.model.__class__.__name__,
                                                               use_xlm_tokenizer)
-        if not isinstance(self.tokenizer, tokenizer_reference):
+        if not isinstance(self.tokenizer, type(tokenizer_reference)):
             raise ValueError(f"You want to use {type(self.tokenizer)} but you should use {type(tokenizer_reference)} "
                              f"in this framework")
 

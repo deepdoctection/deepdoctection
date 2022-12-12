@@ -231,6 +231,8 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
                 token_class, tag = output
                 result.semantic_name = token_class
                 result.bio_tag = tag
+            else:
+                result.semantic_name = result.class_name
             result.class_id += 1
         return token_results
 
