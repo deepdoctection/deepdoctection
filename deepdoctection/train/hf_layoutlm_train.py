@@ -234,6 +234,8 @@ def train_hf_layoutlm(
     metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
     use_xlm_tokenizer: bool = False,
+    use_token_tag: bool = True,
+    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
 ) -> None:
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
@@ -288,6 +290,13 @@ def train_hf_layoutlm(
                                     LMTokenClassifierService.
     :param use_xlm_tokenizer: This is only necessary if you pass weights of layoutxlm. The config cannot distinguish
                               between Layoutlmv2 and Layoutxlm, so you need to pass this info explicitly.
+    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
+                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
+                          `WordType.token_class`.
+    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+                              Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
+                              the layout segments need to have a child-relationship with words. If a word does not
+                              appear as child, it will use the word bounding box.
     """
 
     build_train_dict: Dict[str, str] = {}
@@ -313,25 +322,37 @@ def train_hf_layoutlm(
     if dataset_type == DatasetType.sequence_classification:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
     elif dataset_type == DatasetType.token_classification:
-        categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-            categories=LayoutType.word,
-            sub_categories={LayoutType.word: [WordType.token_tag]},
-            keys=False,
-            values_as_dict=True,
-            name_as_key=True,
-        )[LayoutType.word][WordType.token_tag]
+        if use_token_tag:
+            categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
+                categories=LayoutType.word,
+                sub_categories={LayoutType.word: [WordType.token_tag]},
+                keys=False,
+                values_as_dict=True,
+                name_as_key=True,
+            )[LayoutType.word][WordType.token_tag]
+        else:
+            categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(  # type: ignore
+                categories=LayoutType.word,
+                sub_categories={LayoutType.word: [WordType.token_class]},
+                keys=False,
+                values_as_dict = True,
+                name_as_key = True,
+            )[LayoutType.word][WordType.token_class]
     else:
         raise ValueError("Dataset type not supported for training")
 
     config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
         path_config_json, dataset_type, use_xlm_tokenizer
     )
-    image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type}
+    image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
+    if segment_positions:
+        image_to_raw_layoutlm_kwargs["segment_positions"] = segment_positions
     image_to_raw_layoutlm_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
     dataset = DatasetAdapter(
         dataset_train,
         True,
         image_to_raw_layoutlm_features(**image_to_raw_layoutlm_kwargs),
+        use_token_tag,
         **build_train_dict,
     )
 
@@ -385,9 +406,16 @@ def train_hf_layoutlm(
         if dataset_type == DatasetType.sequence_classification:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
-            categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
-            )[LayoutType.word][WordType.token_tag]
+            if use_token_tag:
+                categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
+                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
+                )[LayoutType.word][WordType.token_tag]
+                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_tag"]})
+            else:
+                categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
+                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
+                )[LayoutType.word][WordType.token_class]
+                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_class"]})
         dd_model = model_wrapper_cls(
             path_config_json=path_config_json,
             path_weights=path_weights,
@@ -399,8 +427,7 @@ def train_hf_layoutlm(
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model)
         else:
             pipeline_component = pipeline_component_cls(
-                tokenizer_fast, dd_model, image_to_layoutlm_features, use_other_as_default_category=True
-            )
+                tokenizer_fast, dd_model, use_other_as_default_category=True)
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

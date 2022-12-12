@@ -53,6 +53,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         name_or_dataset: Union[str, DatasetBase],
         cache_dataset: bool,
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
+        use_token_tag: bool = True,
         **build_kwargs: str,
     ) -> None:
         """
@@ -60,6 +61,9 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         :param cache_dataset: If set to true, it will cache the dataset (without loading images). If possible,
                               some statistics, e.g. number of specific labels will be printed.
         :param image_to_framework_func: A mapping function that converts image datapoints into the framework format
+        :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
+                              labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
+                              `WordType.token_class`.
         :param build_kwargs: optional parameters for defining the dataflow.
         """
         if isinstance(name_or_dataset, str):
@@ -76,12 +80,17 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
                 categories = self.dataset.dataflow.categories.get_categories(filtered=True)
             elif self.dataset.dataset_info.type in (DatasetType.token_classification,):
-                categories = self.dataset.dataflow.categories.get_sub_categories(
+                if use_token_tag:
+                    categories = self.dataset.dataflow.categories.get_sub_categories(
                     categories=LayoutType.word,
                     sub_categories={LayoutType.word: [WordType.token_tag]},
                     keys=False,
                     values_as_dict=True,
-                )[LayoutType.word][WordType.token_tag]
+                    )[LayoutType.word][WordType.token_tag]
+                else:
+                    categories = self.dataset.dataflow.categories.get_sub_categories(  # type: ignore
+                        categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
+                    )[LayoutType.word][WordType.token_class]
             else:
                 logger.info(
                     "dataset is of type %s. Cannot generate statistics for this type of dataset",
@@ -119,7 +128,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
                     elif self.dataset.dataset_info.type == DatasetType.token_classification:
                         anns = dp.get_annotation()
-                        cat_ids = [ann.get_sub_category(WordType.token_tag).category_id for ann in anns]
+                        if use_token_tag:
+                            cat_ids = [ann.get_sub_category(WordType.token_tag).category_id for ann in anns]
+                        else:
+                            cat_ids = [ann.get_sub_category(WordType.token_class).category_id for ann in anns]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)

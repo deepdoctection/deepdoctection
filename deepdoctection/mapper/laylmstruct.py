@@ -155,7 +155,7 @@ def image_to_raw_layoutlm_features(
         assert box is not None, box
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
-        all_boxes.append(word_id_to_segment_box.get(ann.annotation_id,box.to_list(mode="xyxy")))
+        all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
             WordType.token_tag in ann.sub_categories
@@ -615,7 +615,6 @@ def image_to_layoutlm_features(
     color_mode: Literal["BGR", "RGB"] = "BGR",
     pixel_mean: Optional[npt.NDArray[np.float32]] = None,
     pixel_std: Optional[npt.NDArray[np.float32]] = None,
-    use_token_tag: bool = True,
     segment_positions: Union[LayoutType, Sequence[LayoutType]] = None,
     sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
@@ -662,9 +661,6 @@ def image_to_layoutlm_features(
                        LayoutLMv3 uses "RGB".
     :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
     :param pixel_std: (3,) array for "BGR" resp. "RGB" std
-    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
-                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
-                          `WordType.token_class`.
     :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
                               Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
                               the layout segments need to have a child-relationship with words. If a word does not
@@ -683,7 +679,6 @@ def image_to_layoutlm_features(
                                                   color_mode,
                                                   pixel_mean,
                                                   pixel_std,
-                                                  use_token_tag,
                                                   segment_positions)(dp)
     if raw_features is None:
         return None
