@@ -26,7 +26,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
 
 from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import (
@@ -53,6 +52,7 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
+    from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
     from transformers import (
         LayoutLMForSequenceClassification,
         LayoutLMForTokenClassification,
