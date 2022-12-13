@@ -34,26 +34,28 @@ from .registry import pipeline_component_registry
 if transformers_available():
     from transformers import LayoutLMTokenizerFast, RobertaTokenizerFast, XLMRobertaTokenizerFast
 
-_ARCHITECTURES_TO_TOKENIZER = {
-    ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    ("LayoutLMForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
-        "microsoft/layoutlm-base-uncased"
-    ),
-    ("LayoutLMv2ForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
-        "microsoft/layoutlm-base-uncased"
-    ),
-    ("LayoutLMv2ForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
-        "microsoft/layoutlm-base-uncased"
-    ),
-    ("LayoutLMv2ForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
-    ("LayoutLMv2ForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
-    ("LayoutLMv3ForSequenceClassification", False): RobertaTokenizerFast.from_pretrained(
-        "roberta-base", add_prefix_space=True
-    ),
-    ("LayoutLMv3ForTokenClassification", False): RobertaTokenizerFast.from_pretrained(
-        "roberta-base", add_prefix_space=True
-    ),
-}
+    _ARCHITECTURES_TO_TOKENIZER = {
+        ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LayoutLMv2ForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LayoutLMv3ForSequenceClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
+        ("LayoutLMv3ForTokenClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
+    }
 
 
 def get_tokenizer_from_architecture(architecture_name: str, use_xlm_tokenizer: bool) -> Any:
