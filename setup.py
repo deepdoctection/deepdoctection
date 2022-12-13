@@ -105,7 +105,7 @@ def deps_list(*pkgs: str):
     return [deps[pkg] for pkg in pkgs]
 
 
-# pyp-pi dependencies without considering DL models specific dependencies
+# pypi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
     "apted",
     "catalogue",
