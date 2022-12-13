@@ -22,7 +22,7 @@ Module for wrapping datasets into a pytorch dataset framework.
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
-from ..dataflow import CustomDataFromList, MapData, RepeatedData, CacheData
+from ..dataflow import CacheData, CustomDataFromList, MapData, RepeatedData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
@@ -82,10 +82,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             elif self.dataset.dataset_info.type in (DatasetType.token_classification,):
                 if use_token_tag:
                     categories = self.dataset.dataflow.categories.get_sub_categories(
-                    categories=LayoutType.word,
-                    sub_categories={LayoutType.word: [WordType.token_tag]},
-                    keys=False,
-                    values_as_dict=True,
+                        categories=LayoutType.word,
+                        sub_categories={LayoutType.word: [WordType.token_tag]},
+                        keys=False,
+                        values_as_dict=True,
                     )[LayoutType.word][WordType.token_tag]
                 else:
                     categories = self.dataset.dataflow.categories.get_sub_categories(  # type: ignore
@@ -146,13 +146,13 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             df = CustomDataFromList(datapoints, shuffle=True)
             if not image_to_framework_func:
                 df = RepeatedData(df, -1)
+            else:
+                df_list = CacheData(df).get_cache()
+                df = CustomDataFromList(df_list, shuffle=True)
+                df = RepeatedData(df, -1)
 
         if image_to_framework_func:
             df = MapData(df, image_to_framework_func)
-            if cache_dataset:
-                df_list = CacheData(df).get_cache()
-                df = CustomDataFromList(df_list, shuffle=True)
-            df = RepeatedData(df, -1)
 
         self.df = df
         self.df.reset_state()

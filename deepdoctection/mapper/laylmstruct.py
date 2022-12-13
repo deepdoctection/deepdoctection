@@ -21,11 +21,10 @@ https://github.com/NielsRogge/Transformers-Tutorials
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Union, Sequence
+from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
-
 from cv2 import INTER_LINEAR
 
 from ..datapoint.annotation import ContainerAnnotation
@@ -33,16 +32,20 @@ from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import DatasetType, LayoutType, PageType, WordType, Relationships
+from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
 from ..utils.transform import ResizeTransform, normalize_image
 from .maputils import curry
-
 
 if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import BatchEncoding, PreTrainedTokenizerFast, RobertaTokenizerFast, XLMRobertaTokenizerFast  # pylint: disable=W0611
+    from transformers import (  # pylint: disable=W0611
+        BatchEncoding,
+        PreTrainedTokenizerFast,
+        RobertaTokenizerFast,
+        XLMRobertaTokenizerFast,
+    )
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -77,11 +80,11 @@ def image_to_raw_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
-    color_mode: Literal["BGR","RGB"] = "BGR",
+    color_mode: Literal["BGR", "RGB"] = "BGR",
     pixel_mean: Optional[npt.NDArray[np.float32]] = None,
-    pixel_std:  Optional[npt.NDArray[np.float32]] = None,
+    pixel_std: Optional[npt.NDArray[np.float32]] = None,
     use_token_tag: bool = True,
-    segment_positions: Union[LayoutType,Sequence[LayoutType]] = None
+    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
 ) -> Optional[RawLayoutLMFeatures]:
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
@@ -135,8 +138,9 @@ def image_to_raw_layoutlm_features(
                 bounding_box = segm_ann.bounding_box
             if not bounding_box.absolute_coords:
                 bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
-            word_id_to_segment_box.update({word_ann:bounding_box for word_ann in
-                                           segm_ann.get_relationship(Relationships.child)})
+            word_id_to_segment_box.update(
+                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.child)}
+            )
 
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
@@ -185,8 +189,8 @@ def image_to_raw_layoutlm_features(
         else:
             image = resizer.apply_image(dp.image)
         image_key = "image"
-        if color_mode=="RGB":
-            image = image[...,::-1]
+        if color_mode == "RGB":
+            image = image[..., ::-1]
             image_key = "pixel_values"
         if pixel_mean is not None and pixel_std is not None:
             image = normalize_image(image, pixel_mean, pixel_std)
@@ -261,7 +265,6 @@ def _tokenize_with_sliding_window(
     if len(raw_features) == len(tokenized_inputs["overflow_to_sample_mapping"]):
         return tokenized_inputs
 
-    return_tensors = return_tensors,
     # now we tokenize with neither truncation nor padding and build sliding windows.
     tokenized_inputs = tokenizer(
         [dp["words"] for dp in raw_features],
@@ -373,6 +376,7 @@ def _tokenize_with_sliding_window(
     slided_tokenized_inputs["tokens"] = all_tokens
     return slided_tokenized_inputs
 
+
 def raw_features_to_layoutlm_features(
     raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]],
     tokenizer: "PreTrainedTokenizerFast",
@@ -432,7 +436,8 @@ def raw_features_to_layoutlm_features(
         tokenized_inputs = _tokenize_with_sliding_window(raw_features, tokenizer, sliding_window_stride, return_tensors)
 
     else:
-        tokenized_inputs = tokenizer([dp["words"] for dp in raw_features],
+        tokenized_inputs = tokenizer(
+            [dp["words"] for dp in raw_features],
             padding=padding,
             truncation=truncation,
             return_overflowing_tokens=return_overflowing_tokens,
@@ -615,7 +620,7 @@ def image_to_layoutlm_features(
     color_mode: Literal["BGR", "RGB"] = "BGR",
     pixel_mean: Optional[npt.NDArray[np.float32]] = None,
     pixel_std: Optional[npt.NDArray[np.float32]] = None,
-    segment_positions: Union[LayoutType, Sequence[LayoutType]] = None,
+    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
     sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
     """
@@ -665,21 +670,15 @@ def image_to_layoutlm_features(
                               Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
                               the layout segments need to have a child-relationship with words. If a word does not
                               appear as child, it will use the word bounding box.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
-                                  will be created with each window having max_length sequence input. When using
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length a sliding
+                                  windows will be created with each window having max_length sequence input. When using
                                   `sliding_window_stride=0` no strides will be created, otherwise it will create slides
                                   with windows shifted `sliding_window_stride` to the right.
     :return: A dict of layoutlm features
     """
-    raw_features = image_to_raw_layoutlm_features(None,
-                                                  input_width,
-                                                  input_height,
-                                                  image_width,
-                                                  image_height,
-                                                  color_mode,
-                                                  pixel_mean,
-                                                  pixel_std,
-                                                  segment_positions)(dp)
+    raw_features = image_to_raw_layoutlm_features(
+        None, input_width, input_height, image_width, image_height, color_mode, pixel_mean, pixel_std, segment_positions
+    )(dp)
     if raw_features is None:
         return None
     features = raw_features_to_layoutlm_features(

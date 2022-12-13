@@ -32,22 +32,22 @@ from transformers import (
     LayoutLMForTokenClassification,
     LayoutLMTokenizerFast,
     LayoutLMv2Config,
-    LayoutLMv3Config,
     LayoutLMv2ForSequenceClassification,
     LayoutLMv2ForTokenClassification,
+    LayoutLMv3Config,
     LayoutLMv3ForSequenceClassification,
     LayoutLMv3ForTokenClassification,
     PretrainedConfig,
     PreTrainedModel,
-    XLMRobertaTokenizerFast,
     RobertaTokenizerFast,
+    XLMRobertaTokenizerFast,
 )
 from transformers.trainer import Trainer, TrainingArguments
 
 from ..datasets.adapter import DatasetAdapter
 from ..datasets.base import DatasetBase
 from ..datasets.registry import get_dataset
-from ..eval.base import MetricBase
+from ..eval.accmetric import ClassificationMetric
 from ..eval.eval import Evaluator
 from ..extern.hflayoutlm import (
     HFLayoutLmSequenceClassifier,
@@ -57,18 +57,16 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv3SequenceClassifier,
     HFLayoutLmv3TokenClassifier,
 )
-from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_layoutlm_features, image_to_raw_layoutlm_features
+from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features
 from ..pipe.base import LanguageModelPipelineComponent
-from ..pipe.registry import pipeline_component_registry
 from ..pipe.lm import get_tokenizer_from_architecture
+from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
 from ..utils.utils import string_to_dict
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
-    "LayoutLMForTokenClassification": (LayoutLMForTokenClassification,
-                                       HFLayoutLmTokenClassifier,
-                                       PretrainedConfig),
+    "LayoutLMForTokenClassification": (LayoutLMForTokenClassification, HFLayoutLmTokenClassifier, PretrainedConfig),
     "LayoutLMForSequenceClassification": (
         LayoutLMForSequenceClassification,
         HFLayoutLmSequenceClassifier,
@@ -85,7 +83,6 @@ _ARCHITECTURES_TO_MODEL_CLASS = {
         LayoutLMv2Config,
     ),
 }
-
 
 
 _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
@@ -124,7 +121,7 @@ _MODEL_TYPE_TO_TOKENIZER = {
     ("layoutlm", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     ("layoutlmv2", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
     ("layoutlmv2", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base", add_prefix_space=True),
-    ("layoutlmv3", False):  RobertaTokenizerFast.from_pretrained("roberta-base", add_prefix_space=True),
+    ("layoutlmv3", False): RobertaTokenizerFast.from_pretrained("roberta-base", add_prefix_space=True),
 }
 
 
@@ -154,7 +151,7 @@ class LayoutLMTrainer(Trainer):
         self,
         dataset_val: DatasetBase,
         pipeline_component: LanguageModelPipelineComponent,
-        metric: Union[Type[MetricBase], MetricBase],
+        metric: Union[Type[ClassificationMetric], ClassificationMetric],
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
@@ -231,7 +228,7 @@ def train_hf_layoutlm(
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
-    metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
+    metric: Optional[Union[Type[ClassificationMetric], ClassificationMetric]] = None,
     pipeline_component_name: Optional[str] = None,
     use_xlm_tokenizer: bool = False,
     use_token_tag: bool = True,
@@ -331,12 +328,12 @@ def train_hf_layoutlm(
                 name_as_key=True,
             )[LayoutType.word][WordType.token_tag]
         else:
-            categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(  # type: ignore
+            categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
                 categories=LayoutType.word,
                 sub_categories={LayoutType.word: [WordType.token_class]},
                 keys=False,
-                values_as_dict = True,
-                name_as_key = True,
+                values_as_dict=True,
+                name_as_key=True,
             )[LayoutType.word][WordType.token_class]
     else:
         raise ValueError("Dataset type not supported for training")
@@ -403,6 +400,7 @@ def train_hf_layoutlm(
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
+        assert metric is not None  # silence mypy
         if dataset_type == DatasetType.sequence_classification:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
@@ -426,8 +424,7 @@ def train_hf_layoutlm(
         if dataset_type == DatasetType.sequence_classification:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model)
         else:
-            pipeline_component = pipeline_component_cls(
-                tokenizer_fast, dd_model, use_other_as_default_category=True)
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, use_other_as_default_category=True)
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore

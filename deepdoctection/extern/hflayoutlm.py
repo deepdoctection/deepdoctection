@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from timm.data.constants import IMAGENET_DEFAULT_STD, IMAGENET_DEFAULT_MEAN
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
 
 from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import (
@@ -59,10 +59,10 @@ if transformers_available():
         LayoutLMv2Config,
         LayoutLMv2ForSequenceClassification,
         LayoutLMv2ForTokenClassification,
-        PretrainedConfig,
         LayoutLMv3Config,
         LayoutLMv3ForSequenceClassification,
         LayoutLMv3ForTokenClassification,
+        PretrainedConfig,
     )
 
 
@@ -119,9 +119,11 @@ def predict_sequence_classes(
     attention_mask: "Tensor",
     token_type_ids: "Tensor",
     boxes: "Tensor",
-    model: Union["LayoutLMForSequenceClassification",
-                 "LayoutLMv2ForSequenceClassification",
-                 "LayoutLMv3ForSequenceClassification"],
+    model: Union[
+        "LayoutLMForSequenceClassification",
+        "LayoutLMv2ForSequenceClassification",
+        "LayoutLMv3ForSequenceClassification",
+    ],
     images: Optional["Tensor"] = None,
 ) -> SequenceClassResult:
     """
@@ -141,11 +143,14 @@ def predict_sequence_classes(
         )
     elif isinstance(model, LayoutLMv3ForSequenceClassification):
         outputs = model(
-            input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids, pixel_values=images
+            input_ids=input_ids,
+            bbox=boxes,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            pixel_values=images,
         )
     else:
         raise ValueError(f"Cannot call model {type(model)}")
-
 
     score = torch.max(F.softmax(outputs.logits)).tolist()
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
@@ -466,6 +471,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         return {"image_width": 224, "image_height": 224}
 
+
 class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
     """
     A wrapper class for :class:`transformers.LayoutLMv3ForTokenClassification` to use within a pipeline component.
@@ -562,11 +568,13 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
         """
-        return {"image_width": 224,
-                "image_height": 224,
-                "color_mode": "RGB",
-                "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN,dtype=np.float32),
-                "pixel_std": np.array(IMAGENET_DEFAULT_STD,dtype=np.float32)}
+        return {
+            "image_width": 224,
+            "image_height": 224,
+            "color_mode": "RGB",
+            "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN, dtype=np.float32),
+            "pixel_std": np.array(IMAGENET_DEFAULT_STD, dtype=np.float32),
+        }
 
 
 class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
@@ -802,6 +810,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         return {"image_width": 224, "image_height": 224}
 
+
 class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
     A wrapper class for :class:`transformers.LayoutLMv3ForSequenceClassification` to use within a pipeline component.
@@ -869,9 +878,10 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
         """
-        return {"image_width": 224,
-                "image_height": 224,
-                "color_mode": "RGB",
-                "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN,dtype=np.float32),
-                "pixel_std": np.array(IMAGENET_DEFAULT_STD,dtype=np.float32)}
-
+        return {
+            "image_width": 224,
+            "image_height": 224,
+            "color_mode": "RGB",
+            "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN, dtype=np.float32),
+            "pixel_std": np.array(IMAGENET_DEFAULT_STD, dtype=np.float32),
+        }

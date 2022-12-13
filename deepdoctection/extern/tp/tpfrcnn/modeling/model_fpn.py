@@ -191,7 +191,7 @@ def multilevel_rpn_losses(
 
 
 @under_name_scope()
-def generate_fpn_proposals(  # pylint: disable =R0913
+def generate_fpn_proposals(
     multilevel_pred_boxes,
     multilevel_label_logits,
     image_shape2d,
