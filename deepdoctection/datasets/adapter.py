@@ -88,7 +88,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                         values_as_dict=True,
                     )[LayoutType.word][WordType.token_tag]
                 else:
-                    categories = self.dataset.dataflow.categories.get_sub_categories(  # type: ignore
+                    categories = self.dataset.dataflow.categories.get_sub_categories(
                         categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
                     )[LayoutType.word][WordType.token_class]
             else:
