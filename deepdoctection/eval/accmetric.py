@@ -40,6 +40,7 @@ from .base import MetricBase
 from .registry import metric_registry
 
 __all__ = [
+    "ClassificationMetric",
     "AccuracyMetric",
     "ConfusionMetric",
     "PrecisionMetric",

@@ -128,6 +128,7 @@ class InferenceResize:
         new_h = int(new_h + 0.5)
         return ResizeTransform(h, w, new_h, new_w, self.interp)
 
+
 def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_std: npt.NDArray[float32]) -> ImageType:
     """
     Preprocess pixel values of an image by rescaling.
@@ -136,4 +137,4 @@ def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_st
     :param pixel_mean: (3,) array
     :param pixel_std: (3,) array
     """
-    return  (image - pixel_mean) * (1.0 / pixel_std)
+    return (image - pixel_mean) * (1.0 / pixel_std)

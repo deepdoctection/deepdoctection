@@ -530,7 +530,7 @@ class Page(Image):
             for word in all_words:
                 box_stack.append(word.bbox)
                 if show_token_class:
-                    category_names_list.append(str(word.token_class).replace("TokenClasses",""))
+                    category_names_list.append(str(word.token_class).replace("TokenClasses", ""))
                 else:
                     category_names_list.append(str(word.token_tag))
 
@@ -538,7 +538,14 @@ class Page(Image):
             if box_stack:
                 boxes = np.vstack(box_stack)
                 if show_words:
-                    img = draw_boxes(self.image, boxes, category_names_list, font_scale=0.4, rectangle_thickness=1)
+                    img = draw_boxes(
+                        self.image,
+                        boxes,
+                        category_names_list,
+                        color=(255, 222, 173),
+                        font_scale=0.25,
+                        rectangle_thickness=1,
+                    )
                 else:
                     img = draw_boxes(self.image, boxes, category_names_list)
                 img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)

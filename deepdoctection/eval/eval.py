@@ -32,12 +32,12 @@ from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
+from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..pipe.common import PageParsingService
+from ..utils.detection_types import ImageType
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType
-from ..utils.detection_types import ImageType
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
@@ -238,12 +238,16 @@ class Evaluator:
         df_pr = MapData(df_pr, deepcopy)
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
 
-        page_parsing_component = PageParsingService(text_container=LayoutType.word,
-                                                    top_level_text_block_names=[LayoutType.title, LayoutType.text,
-                                                                                LayoutType.list,
-                                                                                LayoutType.table,
-                                                                                LayoutType.figure],
-                                                    )
+        page_parsing_component = PageParsingService(
+            text_container=LayoutType.word,
+            top_level_text_block_names=[
+                LayoutType.title,
+                LayoutType.text,
+                LayoutType.list,
+                LayoutType.table,
+                LayoutType.figure,
+            ],
+        )
         df_gt = page_parsing_component.predict_dataflow(df_gt)
 
         if self.pipe_component:
@@ -251,8 +255,10 @@ class Evaluator:
             df_pr = pipe_component.predict_dataflow(df_pr)
             df_pr = page_parsing_component.predict_dataflow(df_pr)
 
-        else:
+        elif self.pipe:
             df_pr = self.pipe.analyze(dataset_dataflow=df_pr)
+        else:
+            raise ValueError("Neither pipe_component nor pipe has been defined")
 
         df_pr.reset_state()
         df_gt.reset_state()
@@ -263,3 +269,4 @@ class Evaluator:
                 interactive_imshow(img_concat)
             else:
                 return img_concat
+        return None

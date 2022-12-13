@@ -371,11 +371,11 @@ class ModelCatalog:
         "microsoft/layoutlmv3-base/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlmv3-base/pytorch_model.bin",
             description="LayoutLMv3 is a pre-trained multimodal Transformer for Document AI with unified text and"
-                        " image masking. The simple unified architecture and training objectives make LayoutLMv3 a"
-                        " general-purpose pre-trained model. For example, LayoutLMv3 can be fine-tuned for both"
-                        " text-centric tasks, including form understanding, receipt understanding, and document"
-                        " visual question answering, and image-centric tasks such as document image classification"
-                        " and document layout analysis. The license is cc-by-nc-sa-4.0",
+            " image masking. The simple unified architecture and training objectives make LayoutLMv3 a"
+            " general-purpose pre-trained model. For example, LayoutLMv3 can be fine-tuned for both"
+            " text-centric tasks, including form understanding, receipt understanding, and document"
+            " visual question answering, and image-centric tasks such as document image classification"
+            " and document layout analysis. The license is cc-by-nc-sa-4.0",
             size=[501380823],
             tp_model=False,
             config="microsoft/layoutlmv3-base/config.json",
