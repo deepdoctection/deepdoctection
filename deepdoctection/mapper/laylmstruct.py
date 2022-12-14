@@ -677,7 +677,8 @@ def image_to_layoutlm_features(
     :return: A dict of layoutlm features
     """
     raw_features = image_to_raw_layoutlm_features(
-        None, input_width, input_height, image_width, image_height, color_mode, pixel_mean, pixel_std, segment_positions
+        None, input_width, input_height, image_width, image_height, color_mode, pixel_mean, pixel_std, True,
+        segment_positions
     )(dp)
     if raw_features is None:
         return None
