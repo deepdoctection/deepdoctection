@@ -26,13 +26,12 @@ from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.mapper.laylmstruct import image_to_layoutlm_features
 from deepdoctection.pipe import LMSequenceClassifierService, LMTokenClassifierService
 from deepdoctection.utils.file_utils import transformers_available
 from deepdoctection.utils.settings import BioTag, PageType, TokenClasses, WordType
 
 if transformers_available():
-    from transformers import LayoutLMTokenizerFast
+    from transformers import LayoutLMForSequenceClassification, LayoutLMForTokenClassification, LayoutLMTokenizerFast
 
 
 class TestLMTokenClassifierService:
@@ -47,7 +46,7 @@ class TestLMTokenClassifierService:
         token_class_result: List[TokenClassResult],
     ) -> None:
         """
-        Testing pass_datapoint with new mapping functions and fast tokenizer
+        Testing pass_datapoint with fast tokenizer
         """
 
         # Arrange
@@ -55,7 +54,12 @@ class TestLMTokenClassifierService:
 
         language_model = MagicMock()
         language_model.predict = MagicMock(return_value=token_class_result)
-        lm_service = LMTokenClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
+        language_model.name = "test"
+        language_model.default_kwargs_for_input_mapping = MagicMock(return_value={})
+        language_model.model = MagicMock(spec=LayoutLMForTokenClassification)
+        language_model.model.config = MagicMock()
+        language_model.model.config.tokenizer_class = None
+        lm_service = LMTokenClassifierService(tokenizer_fast, language_model)
 
         dp = dp_image_with_layout_and_word_annotations
 
@@ -99,8 +103,11 @@ class TestLMSequenceClassifierService:
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
 
         language_model = MagicMock()
+        language_model.model = MagicMock(spec=LayoutLMForSequenceClassification)
+        language_model.model.config = MagicMock()
+        language_model.model.config.tokenizer_class = None
         language_model.predict = MagicMock(return_value=sequence_class_result)
-        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model, image_to_layoutlm_features)
+        lm_service = LMSequenceClassifierService(tokenizer_fast, language_model)
 
         dp = dp_image_with_layout_and_word_annotations
 

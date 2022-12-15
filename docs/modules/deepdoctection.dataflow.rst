@@ -3,6 +3,12 @@ deepdoctection.dataflow
 
 .. automodule:: deepdoctection.dataflow
 
+deepdoctection.dataflow.base
+---------------------------------------
+
+.. automodule:: deepdoctection.dataflow.base
+   :members:
+   :undoc-members:
 
 deepdoctection.dataflow.common
 ---------------------------------------

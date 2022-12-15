@@ -471,6 +471,7 @@ class Page(Image):
         show_cells: bool = True,
         show_table_structure: bool = True,
         show_words: bool = False,
+        show_token_class: bool = True,
         interactive: bool = False,
     ) -> Optional[ImageType]:
         """
@@ -490,6 +491,7 @@ class Page(Image):
         :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
         :param show_table_structure: Will display rows and columns
         :param show_words: Will display bounding boxes around words labeled with token class and bio tag (experimental)
+        :param show_token_class: Will display token class instead of token tags (i.e. token classes with tags)
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
         :return: If interactive will return nothing else a numpy array.
@@ -527,13 +529,23 @@ class Page(Image):
                 all_words.extend(layout.words)
             for word in all_words:
                 box_stack.append(word.bbox)
-                category_names_list.append(str(word.tag) + "-" + str(word.token_class))
+                if show_token_class:
+                    category_names_list.append(str(word.token_class).replace("TokenClasses", ""))
+                else:
+                    category_names_list.append(str(word.token_tag))
 
         if self.image is not None:
             if box_stack:
                 boxes = np.vstack(box_stack)
                 if show_words:
-                    img = draw_boxes(self.image, boxes, category_names_list, font_scale=0.4, rectangle_thickness=1)
+                    img = draw_boxes(
+                        self.image,
+                        boxes,
+                        category_names_list,
+                        color=(255, 222, 173),
+                        font_scale=0.25,
+                        rectangle_thickness=1,
+                    )
                 else:
                     img = draw_boxes(self.image, boxes, category_names_list)
                 img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)

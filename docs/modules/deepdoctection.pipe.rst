@@ -65,6 +65,14 @@ deepdoctection.pipe.layout
    :undoc-members:
    :show-inheritance:
 
+deepdoctection.pipe.lm
+---------------------------------
+
+.. automodule:: deepdoctection.pipe.lm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 deepdoctection.pipe.refine
 -----------------------------------
 
@@ -94,15 +102,6 @@ deepdoctection.pipe.text
 ---------------------------------
 
 .. automodule:: deepdoctection.pipe.text
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-deepdoctection.pipe.tokenclass
----------------------------------
-
-.. automodule:: deepdoctection.pipe.lm
    :members:
    :undoc-members:
    :show-inheritance:

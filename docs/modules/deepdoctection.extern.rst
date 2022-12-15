@@ -15,18 +15,18 @@ deepdoctection.extern.base
    :undoc-members:
    :show-inheritance:
 
-deepdoctection.extern.common
------------------------------------
-
-.. automodule:: deepdoctection.extern.common
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 deepdoctection.extern.d2detect
 -----------------------------------
 
 .. automodule:: deepdoctection.extern.d2detect
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+deepdoctection.extern.deskew
+-----------------------------------
+
+.. automodule:: deepdoctection.extern.deskew
    :members:
    :undoc-members:
    :show-inheritance:

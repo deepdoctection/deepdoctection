@@ -70,6 +70,7 @@ _DEPS = [
     "protobuf==3.20.1",
     "tensorpack",
     # PyTorch related dependencies
+    "timm",
     "transformers",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
@@ -104,7 +105,7 @@ def deps_list(*pkgs: str):
     return [deps[pkg] for pkg in pkgs]
 
 
-# pyp-pi dependencies without considering DL models specific dependencies
+# pypi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
     "apted",
     "catalogue",
@@ -139,7 +140,7 @@ additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr")
 
 # PyTorch dependencies
-pt_deps = deps_list("transformers", "python-doctr")
+pt_deps = deps_list("timm", "transformers", "python-doctr")
 source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
 
 # Putting all together
