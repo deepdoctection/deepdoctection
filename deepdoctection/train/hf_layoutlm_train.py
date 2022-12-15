@@ -236,7 +236,10 @@ def train_hf_layoutlm(
 ) -> None:
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
-    classification using HF Trainer and custom evaluation. It currently supports LayoutLM, LayoutLMv2 and LayoutXLM.
+    classification using HF Trainer and custom evaluation. It currently supports LayoutLM, LayoutLMv2, LayoutLMv3 and
+    LayoutXLM. Training similar but different models like LILT https://arxiv.org/abs/2202.13669 can done by changing a
+    few lines of code regarding the selection of the tokenizer.
+
     The theoretical foundation can be taken from
 
     https://arxiv.org/abs/1912.13318
@@ -250,12 +253,14 @@ def train_hf_layoutlm(
     "microsoft/layoutlm-base-uncased/pytorch_model.bin"
     "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
     "microsoft/layoutxlm-base/pytorch_model.bin"
+    "microsoft/layoutlmv3-base/pytorch_model.bin"
 
      and
 
      "microsoft/layoutlm-large-uncased/pytorch_model.bin"
 
     (You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download yourself.)
+
     .. code-block:: python
 
         ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
