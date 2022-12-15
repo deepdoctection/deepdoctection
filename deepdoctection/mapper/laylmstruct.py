@@ -21,9 +21,10 @@ https://github.com/NielsRogge/Transformers-Tutorials
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
+import numpy.typing as npt
 from cv2 import INTER_LINEAR
 
 from ..datapoint.annotation import ContainerAnnotation
@@ -31,15 +32,20 @@ from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
-from ..utils.settings import DatasetType, LayoutType, PageType, WordType
-from ..utils.transform import ResizeTransform
+from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
+from ..utils.transform import ResizeTransform, normalize_image
 from .maputils import curry
 
 if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
+    from transformers import (  # pylint: disable=W0611
+        BatchEncoding,
+        PreTrainedTokenizerFast,
+        RobertaTokenizerFast,
+        XLMRobertaTokenizerFast,
+    )
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -74,7 +80,11 @@ def image_to_raw_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
+    color_mode: Literal["BGR", "RGB"] = "BGR",
+    pixel_mean: Optional[npt.NDArray[np.float32]] = None,
+    pixel_std: Optional[npt.NDArray[np.float32]] = None,
     use_token_tag: bool = True,
+    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
 ) -> Optional[RawLayoutLMFeatures]:
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
@@ -93,9 +103,17 @@ def image_to_raw_layoutlm_features(
     :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
                          whereas the image has to be resized to a different height. This input will only resize the
                          `image` height.
+    :param color_mode: Either "BGR" or "RGB". Note, that LayoutLMv2 uses "BGR" because of Detectron2 backbone, whereas
+                       LayoutLMv3 uses "RGB".
+    :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
+    :param pixel_std: (3,) array for "BGR" resp. "RGB" std
     :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
                           labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
                           `WordType.token_class`.
+    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+                              Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
+                              the layout segments need to have a child-relationship with words. If a word does not
+                              appear as child, it will use the word bounding box.
     :return: dictionary with the following arguments:
             'image_id', 'width', 'height', 'ann_ids', 'words', 'bbox' and 'dataset_type'.
     """
@@ -107,6 +125,22 @@ def image_to_raw_layoutlm_features(
     all_labels: List[int] = []
 
     anns = dp.get_annotation_iter(category_names=LayoutType.word)
+
+    word_id_to_segment_box = {}
+    if segment_positions:
+        if isinstance(segment_positions, LayoutType):
+            segment_positions = [segment_positions]
+        segment_anns = dp.get_annotation(category_names=segment_positions)
+        for segm_ann in segment_anns:
+            if segm_ann.image is not None:
+                bounding_box = segm_ann.image.get_embedding(dp.image_id)
+            else:
+                bounding_box = segm_ann.bounding_box
+            if not bounding_box.absolute_coords:
+                bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
+            word_id_to_segment_box.update(
+                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.child)}
+            )
 
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
@@ -125,7 +159,7 @@ def image_to_raw_layoutlm_features(
         assert box is not None, box
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
-        all_boxes.append(box.to_list(mode="xyxy"))
+        all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
             WordType.token_tag in ann.sub_categories
@@ -154,7 +188,13 @@ def image_to_raw_layoutlm_features(
             image = image_only_resizer.apply_image(dp.image)
         else:
             image = resizer.apply_image(dp.image)
-        raw_features["image"] = image  # pylint: disable=E1137  #3162
+        image_key = "image"
+        if color_mode == "RGB":
+            image = image[..., ::-1]
+            image_key = "pixel_values"
+        if pixel_mean is not None and pixel_std is not None:
+            image = normalize_image(image, pixel_mean, pixel_std)
+        raw_features[image_key] = image  # pylint: disable=E1137  #3162
 
     boxes = resizer.apply_coords(boxes)
     boxes = point4_to_box(boxes)
@@ -183,12 +223,14 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     :param features: LayoutLMFeatures
     :return: LayoutLMFeatures
     """
+
+    _image_key = "pixel_values" if "pixel_values" in features else "image"
     features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
-    if "image" in features:
-        features["image"] = torch.tensor(
-            [image.astype("float32").transpose(2, 0, 1) for image in features["image"]], dtype=torch.float32
+    if _image_key in features:
+        features[_image_key] = torch.tensor(
+            [image.astype("float32").transpose(2, 0, 1) for image in features[_image_key]], dtype=torch.float32
         )
         # features["images"] = [
         #    torch.as_tensor(image.astype("float32").transpose(2, 0, 1)) for image in features["images"]
@@ -215,6 +257,7 @@ def _tokenize_with_sliding_window(
         [dp["words"] for dp in raw_features],
         padding="max_length",
         truncation=True,
+        return_token_type_ids=True,
         return_overflowing_tokens=True,
         is_split_into_words=True,
         return_tensors=return_tensors,
@@ -227,6 +270,7 @@ def _tokenize_with_sliding_window(
         [dp["words"] for dp in raw_features],
         padding="do_not_pad",
         truncation=False,
+        return_token_type_ids=True,
         return_overflowing_tokens=False,
         is_split_into_words=True,
         return_tensors=None,
@@ -270,8 +314,8 @@ def _tokenize_with_sliding_window(
             overflow_to_sample_mapping.append(idx)
             if not pad_last:
                 tokens = tokens_orig[start:end]
-                tokens.insert(0, "[CLS]")
-                tokens.append("[SEP]")
+                tokens.insert(0, tokenizer.cls_token)
+                tokens.append(tokenizer.sep_token)
                 all_tokens.append(tokens)
                 input_ids = input_ids_orig[start:end]
                 input_ids.insert(0, 101)
@@ -292,8 +336,8 @@ def _tokenize_with_sliding_window(
             else:
                 # last sliding window. We have to pad the end in order to have equal length along all windows.
                 tokens = tokens_orig[start:end]
-                tokens.insert(0, "[CLS]")
-                pads = ["[PAD]" for _ in range(pad_last + 1)]
+                tokens.insert(0, tokenizer.cls_token)
+                pads = [tokenizer.pad_token for _ in range(pad_last + 1)]
                 tokens.extend(pads)
                 all_tokens.append(tokens)
                 input_ids = input_ids_orig[start:end]
@@ -385,6 +429,7 @@ def raw_features_to_layoutlm_features(
         and raw_features[0].get("labels") is not None
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
+    _image_key = "pixel_values" if "pixel_values" in raw_features[0] else "image"
 
     if sliding_window_stride:
         return_overflowing_tokens = True
@@ -396,6 +441,7 @@ def raw_features_to_layoutlm_features(
             padding=padding,
             truncation=truncation,
             return_overflowing_tokens=return_overflowing_tokens,
+            return_token_type_ids=True,
             is_split_into_words=True,
             return_tensors=return_tensors,
         )
@@ -410,14 +456,15 @@ def raw_features_to_layoutlm_features(
     sequence_labels = []
     token_ann_ids = []
     tokens = []
+
     for batch_index in range(len(tokenized_inputs["input_ids"])):
         batch_index_orig = batch_index
         if return_overflowing_tokens:
             # we might get more batches when we allow to get returned overflowing tokens
             batch_index_orig = tokenized_inputs["overflow_to_sample_mapping"][batch_index]
 
-        if "image" in raw_features[batch_index_orig]:
-            images.append(raw_features[batch_index_orig]["image"])
+        if _image_key in raw_features[batch_index_orig]:
+            images.append(raw_features[batch_index_orig][_image_key])
         image_ids.append(raw_features[batch_index_orig]["image_id"])
         widths.append(raw_features[batch_index_orig]["width"])
         heights.append(raw_features[batch_index_orig]["height"])
@@ -441,15 +488,15 @@ def raw_features_to_layoutlm_features(
             # Special tokens have a word id that is None. We make a lookup for the specific token and append a dummy
             # bounding box accordingly
             if word_id is None:
-                if token_batch[idx] == "[CLS]":
+                if token_batch[idx] == tokenizer.cls_token:
                     token_batch_boxes.append(_CLS_BOX)
-                    token_batch_ann_ids.append("[CLS]")
-                elif token_batch[idx] in ("[SEP]", "[PAD]"):
+                    token_batch_ann_ids.append(tokenizer.cls_token)
+                elif token_batch[idx] in (tokenizer.sep_token, tokenizer.pad_token):
                     token_batch_boxes.append(_SEP_BOX)
-                    if token_batch[idx] == "[SEP]":
-                        token_batch_ann_ids.append("[SEP]")
+                    if token_batch[idx] == tokenizer.sep_token:
+                        token_batch_ann_ids.append(tokenizer.sep_token)
                     else:
-                        token_batch_ann_ids.append("[PAD]")
+                        token_batch_ann_ids.append(tokenizer.pad_token)
                 else:
                     raise ValueError(f"Special token {token_batch[idx]} not allowed")
                 if _has_token_labels:
@@ -481,7 +528,7 @@ def raw_features_to_layoutlm_features(
 
     # will only add the image to features if it has been passed as raw feature
     if images:
-        input_dict["image"] = images
+        input_dict[_image_key] = images
 
     if _has_labels:
         input_dict["labels"] = token_labels if _has_token_labels else sequence_labels
@@ -570,20 +617,25 @@ def image_to_layoutlm_features(
     input_height: int = 1000,
     image_width: int = 1000,
     image_height: int = 1000,
+    color_mode: Literal["BGR", "RGB"] = "BGR",
+    pixel_mean: Optional[npt.NDArray[np.float32]] = None,
+    pixel_std: Optional[npt.NDArray[np.float32]] = None,
+    segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
     sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
     """
     Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
     :class:`LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
-    with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM.
+    with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
+    used internally in :class:`LMTokenClassifierService`.
 
     .. code-block:: python
 
             tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
             layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories_explicit= ['B-ANSWER', 'B-QUESTION', 'O'])
+                                                  categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
 
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
 
     :param dp: Image datapoint
@@ -610,13 +662,24 @@ def image_to_layoutlm_features(
     :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
                          whereas the image has to be resized to a different height. This input will only resize the
                          `image` height.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
-                                  will be created with each window having max_length sequence input. When using
+    :param color_mode: Either "BGR" or "RGB". Note, that LayoutLMv2 uses "BGR" because of Detectron2 backbone, whereas
+                       LayoutLMv3 uses "RGB".
+    :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
+    :param pixel_std: (3,) array for "BGR" resp. "RGB" std
+    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+                              Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
+                              the layout segments need to have a child-relationship with words. If a word does not
+                              appear as child, it will use the word bounding box.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length a sliding
+                                  windows will be created with each window having max_length sequence input. When using
                                   `sliding_window_stride=0` no strides will be created, otherwise it will create slides
                                   with windows shifted `sliding_window_stride` to the right.
     :return: A dict of layoutlm features
     """
-    raw_features = image_to_raw_layoutlm_features(None, input_width, input_height, image_width, image_height)(dp)
+    raw_features = image_to_raw_layoutlm_features(
+        None, input_width, input_height, image_width, image_height, color_mode, pixel_mean, pixel_std, True,
+        segment_positions
+    )(dp)
     if raw_features is None:
         return None
     features = raw_features_to_layoutlm_features(

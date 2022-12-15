@@ -25,15 +25,20 @@ __all__ = ["Evaluator"]
 from copy import deepcopy
 from typing import Dict, List, Literal, Optional, Type, Union, overload
 
+import numpy as np
+
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
+from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
+from ..utils.detection_types import ImageType
 from ..utils.logger import logger
-from ..utils.settings import DatasetType
+from ..utils.settings import DatasetType, LayoutType
+from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
 
@@ -214,3 +219,54 @@ class Evaluator:
             raise NotImplementedError
 
         return df_pr
+
+    def compare(self, interactive: bool = False, **dataflow_build_kwargs: Union[str, int]) -> Optional[ImageType]:
+        """
+        Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
+        and concat the prediction image (with predicted bounding boxes) with ground truth image.
+
+        :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
+                            can be displayed differently (e.g. matplotlib). Note that, if the interactive mode is being
+                            used, more than one sample can be iteratively be displayed.
+        :param dataflow_build_kwargs: Dataflow configs for displaying specific image splits
+        :return: Image as numpy array
+        """
+        df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
+        df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
+        df_gt = MapData(df_gt, maybe_load_image)
+        df_pr = MapData(df_pr, maybe_load_image)
+        df_pr = MapData(df_pr, deepcopy)
+        df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
+
+        page_parsing_component = PageParsingService(
+            text_container=LayoutType.word,
+            top_level_text_block_names=[
+                LayoutType.title,
+                LayoutType.text,
+                LayoutType.list,
+                LayoutType.table,
+                LayoutType.figure,
+            ],
+        )
+        df_gt = page_parsing_component.predict_dataflow(df_gt)
+
+        if self.pipe_component:
+            pipe_component = self.pipe_component.pipe_components[0]
+            df_pr = pipe_component.predict_dataflow(df_pr)
+            df_pr = page_parsing_component.predict_dataflow(df_pr)
+
+        elif self.pipe:
+            df_pr = self.pipe.analyze(dataset_dataflow=df_pr)
+        else:
+            raise ValueError("Neither pipe_component nor pipe has been defined")
+
+        df_pr.reset_state()
+        df_gt.reset_state()
+        for dp_gt, dp_pred in zip(df_gt, df_pr):
+            img_gt, img_pred = dp_gt.viz(), dp_pred.viz()
+            img_concat = np.concatenate((img_gt, img_pred), axis=1)
+            if interactive:
+                interactive_imshow(img_concat)
+            else:
+                return img_concat
+        return None
