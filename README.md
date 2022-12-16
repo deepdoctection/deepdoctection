@@ -30,11 +30,10 @@ pipelines. Its core function does not depend on any specific deep learning libra
    (Tensorflow and PyTorch implementations available) and a wrapper to an API for a commercial solution, 
  - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
- - Document and token classification with [LayoutLM](https://github.com/microsoft/unilm) provided by the 
-   [**Transformer**](https://github.com/huggingface/transformers) library. (Yes, you can use LayoutLM with any one of
-    the provided OCR-or pdfplumber tools straight away!)
- - [**new!**] Deskewing and rotating images with jdeskew.
- - [**new!**] New API for analyzing document pages.
+ - Deskewing and rotating images with jdeskew. 
+ - [**new!**] Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
+   provided by the [**Transformer**](https://github.com/huggingface/transformers) library. 
+   (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!) 
    
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
@@ -43,6 +42,7 @@ into contiguous text. You will get an output in JSON format that you can customi
 Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb) in the 
 [notebook repo](https://github.com/deepdoctection/notebooks) for an easy start.
 
+Check the [**release notes**](https://github.com/deepdoctection/deepdoctection/releases) for recent updates.
 
 ## Models    
 
