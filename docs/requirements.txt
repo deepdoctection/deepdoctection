@@ -4,6 +4,8 @@
 #
 #    pip-compile --extra=docs --output-file=docs/requirements.txt setup.py
 #
+apted==1.0.3
+    # via deepdoctection (setup.py)
 attrs==21.4.0
     # via jsonlines
 boto3==1.23.1
@@ -18,14 +20,16 @@ certifi==2021.10.8
     # via requests
 cffi==1.15.0
     # via cryptography
-chardet==4.0.0
-    # via pdfminer-six
 charset-normalizer==2.0.12
-    # via requests
+    # via
+    #   pdfminer-six
+    #   requests
 cryptography==37.0.2
     # via pdfminer-six
 cycler==0.11.0
     # via matplotlib
+distance==0.1.3
+    # via deepdoctection (setup.py)
 filelock==3.7.0
     # via
     #   huggingface-hub
@@ -40,6 +44,8 @@ idna==3.3
     # via requests
 importlib-metadata==4.11.3
     # via deepdoctection (setup.py)
+jdeskew==0.2.0
+    # via deepdoctection (setup.py)
 jmespath==1.0.0
     # via
     #   boto3
@@ -48,7 +54,7 @@ jsonlines==3.0.0
     # via deepdoctection (setup.py)
 kiwisolver==1.4.2
     # via matplotlib
-lxml==4.8.0
+lxml==4.9.2
     # via deepdoctection (setup.py)
 lxml-stubs==0.4.0
     # via deepdoctection (setup.py)
@@ -67,6 +73,7 @@ networkx==2.8
 numpy==1.22.3
     # via
     #   deepdoctection (setup.py)
+    #   jdeskew
     #   matplotlib
     #   msgpack-numpy
     #   opencv-python
@@ -74,16 +81,18 @@ numpy==1.22.3
     #   tensorpack
     #   transformers
 opencv-python==4.5.4.60
-    # via deepdoctection (setup.py)
+    # via
+    #   deepdoctection (setup.py)
+    #   jdeskew
 packaging==21.3
     # via
     #   deepdoctection (setup.py)
     #   huggingface-hub
     #   matplotlib
     #   transformers
-pdfminer-six==20220319
+pdfminer-six==20221105
     # via pdfplumber
-pdfplumber==0.6.2
+pdfplumber==0.7.6
     # via deepdoctection (setup.py)
 pillow==9.3.0
     # via
@@ -159,7 +168,7 @@ urllib3==1.26.9
     # via
     #   botocore
     #   requests
-wand==0.6.7
+wand==0.6.10
     # via pdfplumber
 zipp==3.8.0
     # via importlib-metadata
