@@ -18,21 +18,21 @@
 """
 Module for IIITar13K dataset. Install the dataset following the folder structure
 
-|    iiitar13K
-|    ├── test_images
-|    │ ├── ar_alphabet_2004_eng_38.jpg
-|    │ ├── ar_alphabet_2004_eng_39.jpg
-|    ├── test_xml
-|    │ ├── ar_alphabet_2004_eng_38.xml
-|    │ ├── ar_alphabet_2004_eng_39.xml
-|    ├── training_images
-|    │ ├── ...
-|    ├── training_xml
-|    │ ├── ...
-|    ├── validation_images
-|    │ ├── ...
-|    ├── validation_xml
-|    │ ├── ...
+    iiitar13K
+    ├── test_images
+    │ ├── ar_alphabet_2004_eng_38.jpg
+    │ ├── ar_alphabet_2004_eng_39.jpg
+    ├── test_xml
+    │ ├── ar_alphabet_2004_eng_38.xml
+    │ ├── ar_alphabet_2004_eng_39.xml
+    ├── training_images
+    │ ├── ...
+    ├── training_xml
+    │ ├── ...
+    ├── validation_images
+    │ ├── ...
+    ├── validation_xml
+    │ ├── ...
 
 """
 

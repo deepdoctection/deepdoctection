@@ -45,7 +45,7 @@ class PdfPlumberTextDetector(PdfMiner):
     Text miner based on the pdfminer.six engine. To convert pdfminers result, especially group character to get word
     level results we use pdfplumber.
 
-    .. code-block:: python
+    
 
         pdf_plumber = PdfPlumberTextDetector()
 
@@ -56,7 +56,7 @@ class PdfPlumberTextDetector(PdfMiner):
 
     To use it in a more integrated way:
 
-    .. code-block:: python
+    
 
         pdf_plumber = PdfPlumberTextDetector()
         text_extract = TextExtractionService(pdf_plumber)

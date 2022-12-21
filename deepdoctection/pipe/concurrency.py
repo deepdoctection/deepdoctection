@@ -37,7 +37,7 @@ from .base import LanguageModelPipelineComponent, PipelineComponent, PredictorPi
 class MultiThreadPipelineComponent:
     """
     Running a pipeline component in multiple thread to increase through put. Datapoints will be queued
-    and processed once calling the meth:`start`.
+    and processed once calling the `start`.
 
     The number of threads is derived from the list of pipeline components. It makes no sense to create the various
     components.
@@ -50,7 +50,7 @@ class MultiThreadPipelineComponent:
 
     Note that the order in the dataflow and when returning lists is generally is no longer retained.
 
-    .. code-block:: python
+    
 
         some_component = SubImageLayoutService(some_predictor, some_category)
         some_component:clone = some_component.clone()
@@ -75,7 +75,7 @@ class MultiThreadPipelineComponent:
 
         """
         :param pipeline_components: list of identical pipeline component. Number of threads created is determined by
-                                    :func:`len`
+                                    `len`
         :param pre_proc_func: pass a function, that reads and returns an image. Will execute before entering the pipe
                               component
         :param post_proc_func: pass a function, that reads and returns an image. Will execute after entering the pipe
@@ -91,7 +91,7 @@ class MultiThreadPipelineComponent:
 
     def put_task(self, df: Union[DataFlow, List[Image]]) -> None:
         """
-        Put a dataflow or a list of datapoints to the queue. Note, that the process will not start before :meth:`start`
+        Put a dataflow or a list of datapoints to the queue. Note, that the process will not start before `start`
         is called. If you do not know how many datapoints will be cached, use max_datapoint to ensure no oom.
 
         :param df: A list or a dataflow of Image

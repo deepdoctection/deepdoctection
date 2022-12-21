@@ -49,7 +49,7 @@ class TestTextExtractionService:
         self, dp_image_fully_segmented_fully_tiled: Image, word_detect_result: List[DetectionResult]
     ) -> None:
         """
-        Integration test through calling :meth:`pass_datapoint` of pipeline component
+        Integration test through calling `pass_datapoint` of pipeline component
         """
 
         # Arrange
@@ -85,7 +85,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
         self, dp_image_fully_segmented_fully_tiled: Image, word_detect_result: List[DetectionResult]
     ) -> None:
         """
-        Integration test through calling :meth:`pass_datapoint` of pipeline component
+        Integration test through calling `pass_datapoint` of pipeline component
         """
 
         # Arrange
@@ -144,7 +144,7 @@ class TestTextExtractionServiceWithSubImage:
         word_box_global: List[BoundingBox],
     ) -> None:
         """
-        integration test through calling meth: serve of pipeline component
+        integration test through calling  serve of pipeline component
         """
 
         # Arrange

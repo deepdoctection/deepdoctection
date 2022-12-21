@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Adding some methods that convert incoming data to dataflows.
+Methods that convert incoming data to dataflows.
 """
 
 import itertools
@@ -53,8 +53,6 @@ class SerializerJsonlines:
     Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of JSON objects to a .jsonl file.
 
     **Example:**
-
-        .. code-block:: python
 
             df = SerializerJsonlines.load("path/to/file.jsonl")
             df.reset_state()
@@ -110,8 +108,6 @@ class SerializerTabsepFiles:
     to a .txt file.
 
     **Example**:
-
-        .. code-block:: python
 
             df = SerializerTabsepFiles.load("path/to/file.txt")
 
@@ -228,8 +224,7 @@ class CocoParser:
     A simplified version of the Microsoft COCO helper class for reading  annotations. It currently supports only
     bounding box annotations
 
-    :param annotation_file (str): location of annotation file
-    :param image_folder (str): location to the folder that hosts images.
+    :param annotation_file: location of annotation file
     """
 
     def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
@@ -451,7 +446,7 @@ class SerializerCoco:
     Class for serializing annotation files in Coco format. Coco comes in JSON format which is a priori not
     serialized. This class implements only the very basic methods to generate a dataflow. It wraps the coco class
     from pycocotools and assembles annotations that belong to the image. Note, that the conversion into the core
-    :class:`Image` has to be done by yourself.
+    `Image` has to be done by yourself.
     """
 
     @staticmethod
@@ -461,14 +456,10 @@ class SerializerCoco:
 
         **Example:**
 
-            .. code-block:: python
-
                 {'images':[img1,img2,...], 'annotations':[ann1,ann2,...],...}
 
             it will generate a dataflow with datapoints
 
-
-            .. code-block:: python
 
                 {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
 
@@ -511,13 +502,9 @@ class SerializerPdfDoc:
 
     **Example:**
 
-        .. code-block:: python
-
             df = SerializerPdfDoc.load("path/to/document.pdf")
 
         will yield datapoints:
-
-        .. code-block:: python
 
             {"path": "path/to/document.pdf", "file_name" document_page_1.pdf, "pdf_bytes": b"some-bytes"}
     """
@@ -550,7 +537,7 @@ class SerializerPdfDoc:
     @staticmethod
     def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:
         """
-        Split a Document into single pages.
+        Split a document into single pages.
         """
         if path_target is None:
             path_target, _ = os.path.split(path)

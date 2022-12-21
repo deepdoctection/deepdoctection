@@ -53,8 +53,6 @@ class TextExtractionService(PredictorPipelineComponent):
     categories are taken into account during processing. ROIs that are not selected are not presented to the
     detector.
 
-    .. code-block:: python
-
         textract_predictor = TextractOcrDetector()
         text_extract = TextExtractionService(textract_predictor)
 
@@ -152,10 +150,10 @@ class TextExtractionService(PredictorPipelineComponent):
         self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
     ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]]]]:
         """
-        Return raw input for a given text_roi. This can be a numpy array or pdf bytes and depends on the chosen
+        Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
 
-        :param text_roi: Image or ImageAnnotation
+        :param text_roi: `Image` or `ImageAnnotation`
         :return: pdf bytes or numpy array
         """
 
@@ -344,7 +342,7 @@ class TextOrderService(PipelineComponent):
     """
     Reading order of words within floating text blocks as well as reading order of blocks within simple text blocks.
     To understand the difference between floating text blocks and simple text blocks consider a page containing an
-    article and a table. Table Cells are text blocks that contain words which must be sorted.
+    article and a table. Table cells are text blocks that contain words which must be sorted.
     However, they do not belong to floating text that encircle a table. They are rather an element that is supposed to
     be read independently.
 
@@ -365,9 +363,9 @@ class TextOrderService(PipelineComponent):
     A category annotation per word is generated, which fixes the order per word in the block, as well as a category
     annotation per block, which saves the reading order of the block per page.
 
-    The blocks are defined in :attr:`_floating_text_block_names` and text blocks in :attr:`_floating_text_block_names`.
+    The blocks are defined in `_floating_text_block_names` and text blocks in `_floating_text_block_names`.
 
-    .. code-block:: python
+    
 
         order = TextOrderService(text_container=names.C.WORD,
                                  floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],

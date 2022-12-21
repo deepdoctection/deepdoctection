@@ -68,13 +68,13 @@ class ModelCatalog:
 
     To get an overview of all registered models
 
-    .. code-block:: python
+    
 
         print(ModelCatalog.get_model_list())
 
     To get a model card for some specific model:
 
-    .. code-block:: python
+    
 
         profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
         print(profile.description)
@@ -82,14 +82,14 @@ class ModelCatalog:
     Some models will have their weights and configs stored in the cache. To instantiate predictors one will sometimes
     need their path. Use
 
-    .. code-block:: python
+    
 
         path_weights = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
         path_configs = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
 
     To register a new model
 
-    .. code-block:: python
+    
 
         ModelCatalog.get_full_path_configs("my_new_model")
 
@@ -622,7 +622,7 @@ class ModelCatalog:
         Checks if some weights belong to a registered model
 
         :param path_weights: relative or absolute path
-        :return: True if the weights are registered in :class:`ModelCatalog`
+        :return: True if the weights are registered in `ModelCatalog`
         """
         if (ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_model_list()) or (
             path_weights in ModelCatalog.get_model_list()
@@ -713,7 +713,7 @@ class ModelDownloadManager:
     Class for organizing downloads of config files and weights from various sources. Internally, it will use model
     profiles to know where things are stored.
 
-    .. code-block:: python
+    
 
         # if you are not sure about the model name use the ModelCatalog
         ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")
@@ -766,7 +766,7 @@ class ModelDownloadManager:
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
 
-        :param profile: Profile according to :func:`ModelCatalog.get_profile(path_weights)`
+        :param profile: Profile according to `ModelCatalog.get_profile(path_weights)`
         :param absolute_path: Absolute path (incl. file name) of target file
         :param file_names: Optionally, replace the file name of the ModelCatalog. This is necessary e.g. for Tensorpack
                            models
@@ -799,7 +799,7 @@ class ModelDownloadManager:
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
 
-        :param profile: Profile according to :func:`ModelCatalog.get_profile(path_weights)`
+        :param profile: Profile according to `ModelCatalog.get_profile(path_weights)`
         :param absolute_path:  Absolute path (incl. file name) of target file
         """
 

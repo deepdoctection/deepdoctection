@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-jdeskew estimator and rotator to deskew images: https://github.com/phamquiluan/jdeskew
+jdeskew estimator and rotator to deskew images: <https://github.com/phamquiluan/jdeskew>
 """
 
 from typing import List
@@ -32,7 +32,7 @@ if jdeskew_available():
 
 class Jdeskewer(ImageTransformer):
     """
-    Deskew an image following https://phamquiluan.github.io/files/paper2.pdf . It allows to determine that deskew angle
+    Deskew an image following <https://phamquiluan.github.io/files/paper2.pdf>. It allows to determine that deskew angle
     up to 45 degrees and provides the corresponding rotation so that text lines range horizontally.
     """
 

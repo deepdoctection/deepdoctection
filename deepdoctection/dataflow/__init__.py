@@ -9,7 +9,7 @@ DataFlow classes into deepdoctection in order to avoid installing the package se
 
 Further information (including several tutorials about performance) can be found in the excellent documentation:
 
-https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.html
+<https://tensorpack.readthedocs.io/en/latest/tutorial/dataflow.html>
 """
 
 

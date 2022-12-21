@@ -65,10 +65,10 @@ class TensorpackPredictor(ABC):
 
     Two abstract methods need to be implemented:
 
-        - :meth:`set_model` generates a ModelDescWithConfig from the input .yaml file and possible manual adaptions of
+        - `set_model` generates a ModelDescWithConfig from the input .yaml file and possible manual adaptions of
           the configuration.
 
-        - :meth:`predict` the interface of this class for calling the OfflinePredictor and returning the results. This
+        - `predict` the interface of this class for calling the OfflinePredictor and returning the results. This
           method will be used throughout in the context of pipeline components. If there are some pre- or
           post-processing steps, you can place them here. However, do not convert the returned results into DD objects
           as there is an explicit class available for this.
@@ -111,14 +111,14 @@ class TensorpackPredictor(ABC):
     ) -> ModelDescWithConfig:
         """
         Implement the config generation, its modification and instantiate a version of the model. See
-        :class:`pipe.tpfrcnn.TPFrcnnDetector` for an example
+        `pipe.tpfrcnn.TPFrcnnDetector` for an example
         """
         raise NotImplementedError
 
     @abstractmethod
     def predict(self, np_img: Any) -> Any:
         """
-        Implement, how :attr:`self.tp_predictor` is invoked and raw prediction results are generated. Do use only raw
+        Implement, how `self.tp_predictor` is invoked and raw prediction results are generated. Do use only raw
         objects and nothing, which is related to the DD API.
         """
         raise NotImplementedError

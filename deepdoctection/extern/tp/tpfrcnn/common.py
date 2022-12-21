@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py>
 """
 
 

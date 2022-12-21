@@ -19,15 +19,15 @@
 """
 Module for Publaynet dataset. Place the dataset as follows
 
-|    rvl-cdip
-|    ├── images
-|    │ ├── imagesa
-|    │ ├── ...
-|    │ ├── imagesa
-|    ├── label
-|    │ ├── test.txt
-|    │ ├── train.txt
-|    │ ├── val.txt
+    rvl-cdip
+    ├── images
+    │ ├── imagesa
+    │ ├── ...
+    │ ├── imagesa
+    ├── label
+    │ ├── test.txt
+    │ ├── train.txt
+    │ ├── val.txt
 """
 
 import os

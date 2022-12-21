@@ -18,14 +18,14 @@
 """
 Module for Pubtabnet dataset. Place the dataset as follows
 
-|    pubtabnet
-|    ├── test
-|    │ ├── PMC1.png
-|    ├── train
-|    │ ├── PMC2.png
-|    ├── val
-|    │ ├── PMC3.png
-|    ├── PubTabNet_2.0.0.jsonl
+    pubtabnet
+    ├── test
+    │ ├── PMC1.png
+    ├── train
+    │ ├── PMC2.png
+    ├── val
+    │ ├── PMC3.png
+    ├── PubTabNet_2.0.0.jsonl
 """
 
 from typing import Dict, List, Mapping, Union

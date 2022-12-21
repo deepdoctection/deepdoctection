@@ -18,21 +18,21 @@
 """
 Module for PubTables1M-Detection-PASCAL-VOC dataset. Install the dataset following the folder structure
 
-|    PubTables1M-Detection-PASCAL-VOC
-|    ├── images
-|    │ ├── PMC5700015_4.jpg
-|    │ ├── PMC5700016_4.jpg
-|    ├── test
-|    │ ├── PMC512281_8.xml
-|    │ ├── PMC512281_9.xml
-|    ├── train
-|    │ ├── ...
-|    ├── val
-|    │ ├── ...
-|    ├── images_filelist.txt
-|    ├── test_filelist.txt
-|    ├── train_filelist.txt
-|    ├── val_filelist.txt
+    PubTables1M-Detection-PASCAL-VOC
+    ├── images
+    │ ├── PMC5700015_4.jpg
+    │ ├── PMC5700016_4.jpg
+    ├── test
+    │ ├── PMC512281_8.xml
+    │ ├── PMC512281_9.xml
+    ├── train
+    │ ├── ...
+    ├── val
+    │ ├── ...
+    ├── images_filelist.txt
+    ├── test_filelist.txt
+    ├── train_filelist.txt
+    ├── val_filelist.txt
 """
 
 import os

@@ -77,7 +77,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -267,7 +267,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")

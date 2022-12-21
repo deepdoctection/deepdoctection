@@ -155,7 +155,7 @@ def config_to_cli_str(config: AttrDict, *exclude: str) -> str:
     Transform an AttrDict to a string that can be passed to a cli. Add optionally keys of the config that should not be
     added to the string.
 
-    :param config: An :class:`AttrDict`
+    :param config: An `AttrDict`
     :param exclude: keys of the AttrDict
     :return: A string that can be passed to a cli
     """

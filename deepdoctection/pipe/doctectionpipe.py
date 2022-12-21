@@ -43,11 +43,11 @@ class DoctectionPipe(Pipeline):
 
     See `deepdoctection.analyzer.dd` for a concrete implementation.
 
-    See also the explanations in :class:`base.Pipeline`.
+    See also the explanations in `base.Pipeline`.
 
-    By default, :class:`DoctectionPipe` will instantiate a default `PageParsingService`
+    By default, `DoctectionPipe` will instantiate a default `PageParsingService`
 
-    .. code-block:: python
+    
 
         PageParsingService(text_container=LayoutType.word,
                            text_block_names=[LayoutType.title,
@@ -59,7 +59,7 @@ class DoctectionPipe(Pipeline):
 
     **Example:**
 
-        .. code-block:: python
+        
 
             pipe = DoctectionPipe([comp_1, com_2])
             pipe.page_parser =  PageParsingService(text_container= my_custom_setting)

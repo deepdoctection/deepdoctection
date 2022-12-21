@@ -40,11 +40,11 @@ class FasttextLangDetector(LanguageDetector):
         models
 
     The models are distributed under the Creative Commons Attribution-Share-Alike License 3.0.
-    (https://creativecommons.org/licenses/by-sa/3.0/)
+    (<https://creativecommons.org/licenses/by-sa/3.0/>)
 
     When loading the models via the ModelCatalog, the original and unmodified models are used.
 
-    .. code-block:: python
+    
 
         path_weights = ModelCatalog.get_full_path_weights("fasttext/lid.176.bin")
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")

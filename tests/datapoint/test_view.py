@@ -76,7 +76,7 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
 @mark.basic
 def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
     """
-    test meth: save does not raise any exception
+    test  save does not raise any exception
     """
 
     # Arrange

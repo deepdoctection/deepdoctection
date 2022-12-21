@@ -42,7 +42,7 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
     """
     Manager for time handling while some process being called
 
-    .. code-block:: python
+    
 
        with timeout_manager(some_process,60) as timeout:
            ...
@@ -78,7 +78,7 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
     """
     Save image temporarily and handle the clean-up once not necessary anymore
 
-    .. code-block:: python
+    
 
         with save_tmp_file(some_np_image,"tmp") as (tmp_name, input_file_name):
             ....

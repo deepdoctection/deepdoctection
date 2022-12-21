@@ -87,11 +87,11 @@ class DoctrTextlineDetector(ObjectDetector):
     DBNet as described in “Real-time Scene Text Detection with Differentiable Binarization”, using a ResNet-50 backbone.
     and can be used in either Tensorflow or PyTorch.
 
-    Regarding the model we refer to the documentation https://mindee.github.io/doctr/models.html#
+    Regarding the model we refer to the documentation <https://mindee.github.io/doctr/models.html>
 
     **Example:**
 
-         .. code-block:: python
+         
 
                  path = "/path/to/image_dir"
                  det = DoctrTextlineDetector()
@@ -145,11 +145,11 @@ class DoctrTextRecognizer(TextRecognizer):
     “An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene
     Text Recognition” and can be used in either Tensorflow or PyTorch.
 
-    Regarding the model we refer to the documentation https://mindee.github.io/doctr/models.html#
+    Regarding the model we refer to the documentation <https://mindee.github.io/doctr/models.html>
 
     **Example:**
 
-         .. code-block:: python
+         
 
                  path = "/path/to/image_dir"
                  det = DoctrTextlineDetector()

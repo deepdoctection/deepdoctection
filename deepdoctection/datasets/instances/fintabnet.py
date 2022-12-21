@@ -18,17 +18,17 @@
 """
 Module for Fintabnet dataset. Place the dataset as follows
 
-|    fintabnet
-|    ├── pdf
-|    │ ├── A
-|    │ │├── 2003
-|    │ │ ...
-|    ├── FinTabNet_1.0.0_cell_test.jsonl
-|    ├── FinTabNet_1.0.0_cell_train.jsonl
-|    ├── FinTabNet_1.0.0_cell_val.jsonl
-|    ├── FinTabNet_1.0.0_table_test.jsonl
-|    ├── FinTabNet_1.0.0_table_train.jsonl
-|    ├── FinTabNet_1.0.0_table_val.jsonl
+    fintabnet
+    ├── pdf
+    │ ├── A
+    │ │├── 2003
+    │ │ ...
+    ├── FinTabNet_1.0.0_cell_test.jsonl
+    ├── FinTabNet_1.0.0_cell_train.jsonl
+    ├── FinTabNet_1.0.0_cell_val.jsonl
+    ├── FinTabNet_1.0.0_table_test.jsonl
+    ├── FinTabNet_1.0.0_table_train.jsonl
+    ├── FinTabNet_1.0.0_table_val.jsonl
 """
 
 from pathlib import Path

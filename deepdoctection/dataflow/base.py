@@ -7,7 +7,7 @@
 """
 This file replaces relevant parts of the Dataflow package. Most of the code has been taken from
 
-- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/base.py
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/base.py>
 """
 
 import threading
@@ -20,7 +20,7 @@ from ..utils.utils import get_rng
 class DataFlowTerminated(BaseException):
     """
     An exception indicating that the DataFlow is unable to produce any more
-    data, i.e. something wrong happened so that calling :meth:`__iter__`
+    data, i.e. something wrong happened so that calling `__iter__`
     cannot give a valid iterator anymore.
     In most DataFlow this will never be raised.
     """
@@ -28,7 +28,7 @@ class DataFlowTerminated(BaseException):
 
 class DataFlowResetStateNotCalled(BaseException):
     """
-    An exception indicating that :meth:`reset_state()` has not been called before starting
+    An exception indicating that `reset_state()` has not been called before starting
     iteration.
     """
 
@@ -39,7 +39,7 @@ class DataFlowResetStateNotCalled(BaseException):
 class DataFlowReentrantGuard:
     """
     A tool to enforce non-reentrancy.
-    Mostly used on DataFlow whose :meth:`get_data` is stateful,
+    Mostly used on DataFlow whose `get_data` is stateful,
     so that multiple instances of the iterator cannot co-exist.
     """
 
@@ -63,15 +63,15 @@ class DataFlow:
     @abstractmethod
     def __iter__(self) -> Iterator[Any]:
         """
-        * A dataflow is an iterable. The :meth:`__iter__` method should yield a list or dict each time.
+        * A dataflow is an iterable. The `__iter__` method should yield a list or dict each time.
           Note that dict is **partially** supported at the moment: certain dataflow does not support dict.
-        * The :meth:`__iter__` method can be either finite (will stop iteration) or infinite
-          (will not stop iteration). For a finite dataflow, :meth:`__iter__` can be called
+        * The `__iter__` method can be either finite (will stop iteration) or infinite
+          (will not stop iteration). For a finite dataflow, `__iter__` can be called
           again immediately after the previous call returned.
-        * For many dataflow, the :meth:`__iter__` method is non-reentrant, which means for an dataflow
-          instance ``df``, :meth:`df.__iter__` cannot be called before the previous
-          :meth:`df.__iter__` call has finished (iteration has stopped).
-          When a dataflow is non-reentrant, :meth:`df.__iter__` should throw an exception if
+        * For many dataflow, the `__iter__` method is non-reentrant, which means for an dataflow
+          instance ``df``, `df.__iter__` cannot be called before the previous
+          `df.__iter__` call has finished (iteration has stopped).
+          When a dataflow is non-reentrant, `df.__iter__` should throw an exception if
           called before the previous call has finished.
           For such non-reentrant dataflows, if you need to use the same dataflow in two places,
           you need to create two dataflow instances.
@@ -81,13 +81,13 @@ class DataFlow:
 
     def __len__(self) -> int:
         """
-        * A dataflow can optionally implement :meth:`__len__`. If not implemented, it will
-          throw :class:`NotImplementedError`.
+        * A dataflow can optionally implement `__len__`. If not implemented, it will
+          throw `NotImplementedError`.
         * It returns an integer representing the size of the dataflow.
           The return value **may not be accurate or meaningful** at all.
           When saying the length is "accurate", it means that
-          :meth:`__iter__` will always yield this many of datapoints before it stops iteration.
-        * There could be many reasons why :meth:`__len__` is inaccurate.
+          `__iter__` will always yield this many of datapoints before it stops iteration.
+        * There could be many reasons why `__len__` is inaccurate.
           For example, some dataflow has dynamic size, if it throws away datapoints on the fly.
           Some dataflow mixes the datapoints between consecutive passes over
           the dataset, due to parallelism and buffering.
@@ -98,32 +98,32 @@ class DataFlow:
           + A default ``steps_per_epoch`` in training, but you probably want to customize
             it yourself, especially when using data-parallel trainer.
           + The length of progress bar when processing a dataflow.
-          + Used by :class:`InferenceRunner` to get the number of iterations in inference.
-            In this case users are **responsible** for making sure that :meth:`__len__` is "accurate".
+          + Used by `InferenceRunner` to get the number of iterations in inference.
+            In this case users are **responsible** for making sure that `__len__` is "accurate".
             This is to guarantee that inference is run on a fixed set of images.
         Returns:
             int: rough size of this dataflow.
         Raises:
-            :class:`NotImplementedError` if this DataFlow doesn't have a size.
+            `NotImplementedError` if this DataFlow doesn't have a size.
         """
         raise NotImplementedError
 
     def reset_state(self) -> None:
         """
-        * The caller must guarantee that :meth:`reset_state` should be called **once and only once**
-          by the **process that uses the dataflow** before :meth:`__iter__` is called.
+        * The caller must guarantee that `reset_state` should be called **once and only once**
+          by the **process that uses the dataflow** before `__iter__` is called.
           The caller thread of this method should stay alive to keep this dataflow alive.
         * It is meant for certain initialization that involves processes,
           e.g., initialize random number generators (RNG), create worker processes.
           Because it's very common to use RNG in data processing,
-          developers of dataflow can also subclass :class:`RNGDataFlow` to have easier access to
+          developers of dataflow can also subclass `RNGDataFlow` to have easier access to
           a properly-initialized RNG.
-        * A dataflow is not fork-safe after :meth:`reset_state` is called (because this will violate the guarantee).
+        * A dataflow is not fork-safe after `reset_state` is called (because this will violate the guarantee).
           There are a few other dataflows that are not fork-safe anytime, which will be mentioned in the docs.
         * You should take the responsibility and follow the above guarantee if you're the caller of a dataflow yourself
           (either when you're using dataflow outside tensorpack, or if you're writing a wrapper dataflow).
-        * Tensorpack's built-in forking dataflows (:class:`MultiProcessRunner`, :class:`MultiProcessMapData`, etc)
-          and other component that uses dataflows (:class:`InputSource`)
+        * Tensorpack's built-in forking dataflows (`MultiProcessRunner`, `MultiProcessMapData`, etc)
+          and other component that uses dataflows (`InputSource`)
           already take care of the responsibility of calling this method.
         """
         raise NotImplementedError

@@ -121,7 +121,7 @@ def _run_tesseract(tesseract_args: List[str]) -> None:
 
 def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
-    This is more or less :func:pytesseract.image_to_data with a dict as returned value.
+    This is more or less pytesseract.image_to_data with a dict as returned value.
     What happens under the hood is:
 
     - saving an image file
@@ -263,7 +263,7 @@ class TesseractOcrDetector(ObjectDetector):
     All configuration options that are available via pytesseract can be given via the configuration. The best overview
     can be found at https://pypi.org/project/pytesseract/.
 
-    .. code-block:: python
+    
 
         tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
         ocr_detector = TesseractOcrDetector(tesseract_config_path)
@@ -272,7 +272,7 @@ class TesseractOcrDetector(ObjectDetector):
 
     To use it within a pipeline
 
-    .. code-block:: python
+    
 
         tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
         ocr_detector = TesseractOcrDetector(tesseract_config_path)

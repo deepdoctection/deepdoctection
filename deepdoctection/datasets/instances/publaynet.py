@@ -18,15 +18,15 @@
 """
 Module for Publaynet dataset. Place the dataset as follows
 
-|    publaynet
-|    ├── test
-|    │ ├── PMC_1.png
-|    ├── train
-|    │ ├── PMC_2.png
-|    ├── val
-|    │ ├── PMC_3.png
-|    ├── train.json
-|    ├── val.json
+    publaynet
+    ├── test
+    │ ├── PMC_1.png
+    ├── train
+    │ ├── PMC_2.png
+    ├── val
+    │ ├── PMC_3.png
+    ├── train.json
+    ├── val.json
 """
 
 

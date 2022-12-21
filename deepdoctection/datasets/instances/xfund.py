@@ -18,14 +18,14 @@
 """
 Module for XFUND dataset. Install the dataset following the folder structure
 
-|    xfund
-|    ├── de_train
-|    │ ├── de_train_0.jpg
-|    │ ├── de_train_1.jpg
-|    ├── de.train.json
-|    ├── de_val
-|    │ ├── de_val_0.jpg
-|    ├── es_train
+    xfund
+    ├── de_train
+    │ ├── de_train_0.jpg
+    │ ├── de_train_1.jpg
+    ├── de.train.json
+    ├── de_val
+    │ ├── de_val_0.jpg
+    ├── es_train
 """
 
 import json

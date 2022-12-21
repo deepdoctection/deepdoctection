@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-D2 Faster Frcnn model as predictor for deepdoctection pipeline
+D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 """
 
 from copy import copy
@@ -114,9 +114,9 @@ class D2FrcnnDetector(ObjectDetector):
 
     There are no adjustment to the original implementation of Detectron2. Only one post-processing step is followed by
     the standard D2 output that takes into account of the situation that detected objects are disjoint. For more infos
-    on this topic, see https://github.com/facebookresearch/detectron2/issues/978 .
+    on this topic, see <https://github.com/facebookresearch/detectron2/issues/978> .
 
-    .. code-block:: python
+    
 
         config_path = ModelCatalog.get_full_path_configs("dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model-800000-layout.pkl")
@@ -139,7 +139,7 @@ class D2FrcnnDetector(ObjectDetector):
         Set up the predictor.
 
         The configuration of the model uses the full stack of build model tools of D2. For more information
-        please check https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config .
+        please check <https://detectron2.readthedocs.io/en/latest/tutorials/models.html#build-models-from-yacs-config>.
 
         :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
                           the highest level .yaml file.

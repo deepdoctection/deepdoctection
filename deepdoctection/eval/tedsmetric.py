@@ -13,7 +13,7 @@
 # Apache 2.0 License for more details.
 
 """
-Tree distance similarity metric taken from https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py
+Tree distance similarity metric taken from <https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py>
 """
 
 import statistics
@@ -47,7 +47,7 @@ if distance_available() and lxml_available() and apted_available():
 
 class TableTree(Tree):
     """
-    TableTree is derived class from :class:`APTED.helpers.Tree`.
+    TableTree is derived class from `APTED.helpers.Tree`.
     """
 
     def __init__(  # pylint: disable=W0231
@@ -182,7 +182,7 @@ def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: boo
     """
     Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
     approach to measure similarity of tables by means of their html representation has been adovacated in
-    https://arxiv.org/abs/1911.10683 .
+    <https://arxiv.org/abs/1911.10683> .
 
     """
     teds = TEDS(structure_only=structure_only)
@@ -207,7 +207,7 @@ def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: boo
 @metric_registry.register("teds")
 class TedsMetric(MetricBase):
     """
-    Metric induced by :func:`teds`
+    Metric induced by `teds`
     """
 
     metric = teds_metric  # type: ignore

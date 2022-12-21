@@ -22,12 +22,12 @@ A **fundamental architectural decision** in the deep doctection framework is to 
 datasets or the predictions from the pipelines, into a **standardized format**. This procedure leads to the following
 simplifications:
 
-    - Data of the training environment can be transported in the production environment (i.e. through the pipelines)
-      without further adjustments.
+- Data of the training environment can be transported in the production environment (i.e. through the pipelines)
+  without further adjustments.
 
-    - Datasets of different origins can be merged quickly, so that training data with greater variability arise.
+- Datasets of different origins can be merged quickly, so that training data with greater variability arise.
 
-    - Pipeline environment components can be executed one after the other without conversion measures.
+- Pipeline environment components can be executed one after the other without conversion measures.
 
 The disadvantage of carrying out any redundant transformations and thus experiencing a loss of performance is accepted.
 After all, the point here is not to provide an optimal processing environment.

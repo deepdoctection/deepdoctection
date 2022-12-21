@@ -72,15 +72,15 @@ def deprecated(
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
 
-    :param text: same as :func:`log_deprecated`.
-    :param eos: same as :func:`log_deprecated`.
-    :param max_num_warnings: same as :func:`log_deprecated`.
+    :param text: same as `log_deprecated`.
+    :param eos: same as `log_deprecated`.
+    :param max_num_warnings: same as `log_deprecated`.
 
     :return: A decorator which deprecates the function.
 
     **Example:**
 
-        .. code-block:: python
+        
 
             @deprecated("Explanation of what to do instead.", "2017-11-4")
             def foo(...):
