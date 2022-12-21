@@ -5,11 +5,13 @@
 # Licensed under the Apache License, Version 2.0 (the "License")
 
 """
-This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/box_ops.py
+Taken from
 
-This file is modified from
-https://github.com/tensorflow/models/blob/master/object_detection/core/box_list_ops.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/box_ops.py>
+
+and
+
+<https://github.com/tensorflow/models/blob/master/object_detection/core/box_list_ops.py>
 """
 
 # pylint: disable=import-error

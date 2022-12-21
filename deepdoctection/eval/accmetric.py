@@ -75,7 +75,7 @@ def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]) -> NDAr
 def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None) -> float:
     """
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
-    :func:`sklearn.metrics.accuracy_score`
+    `sklearn.metrics.accuracy_score`
 
     :param label_gt: List of ground truth labels
     :param label_predictions: List of predictions. Must have the same length as label_gt
@@ -206,7 +206,7 @@ def f1_score(
 
 class ClassificationMetric(MetricBase):
     """
-    Metric induced by :func:`accuracy`
+    Metric induced by `accuracy`
     """
 
     mapper = image_to_cat_id
@@ -288,8 +288,6 @@ class ClassificationMetric(MetricBase):
         **Example:**
 
             You want to evaluate sub_cat1, sub_cat2 of cat1 and sub_cat3 of cat2. Set
-
-            .. code-block:: python
 
                  sub_category_names = {cat1: [sub_cat1, sub_cat2], cat2: sub_cat3}
 
@@ -378,7 +376,7 @@ class ClassificationMetric(MetricBase):
 @metric_registry.register("accuracy")
 class AccuracyMetric(ClassificationMetric):
     """
-    Metric induced by :func:`accuracy`
+    Metric induced by `accuracy`
     """
 
     name = "Accuracy"
@@ -388,7 +386,7 @@ class AccuracyMetric(ClassificationMetric):
 @metric_registry.register("confusion")
 class ConfusionMetric(ClassificationMetric):
     """
-    Metric induced by :func:`confusion`
+    Metric induced by `confusion`
     """
 
     name = "Confusion"
@@ -436,7 +434,7 @@ class ConfusionMetric(ClassificationMetric):
 @metric_registry.register("precision")
 class PrecisionMetric(ClassificationMetric):
     """
-    Metric induced by :func:`precision`. Will calculate the precision per category
+    Metric induced by `precision`. Will calculate the precision per category
     """
 
     name = "Precision"
@@ -469,7 +467,7 @@ class PrecisionMetric(ClassificationMetric):
 @metric_registry.register("recall")
 class RecallMetric(PrecisionMetric):
     """
-    Metric induced by :func:`recall`. Will calculate the recall per category
+    Metric induced by `recall`. Will calculate the recall per category
     """
 
     name = "Recall"
@@ -479,7 +477,7 @@ class RecallMetric(PrecisionMetric):
 @metric_registry.register("f1")
 class F1Metric(PrecisionMetric):
     """
-    Metric induced by :func:`f1_score`. Will calculate the f1 per category
+    Metric induced by `f1_score`. Will calculate the f1 per category
     """
 
     name = "F1"
@@ -489,7 +487,7 @@ class F1Metric(PrecisionMetric):
 @metric_registry.register("precision_micro")
 class PrecisionMetricMicro(ClassificationMetric):
     """
-    Metric induced by :func:`precision`. Will calculate the micro average precision
+    Metric induced by `precision`. Will calculate the micro average precision
     """
 
     name = "Micro Precision "
@@ -519,7 +517,7 @@ class PrecisionMetricMicro(ClassificationMetric):
 @metric_registry.register("recall_micro")
 class RecallMetricMicro(PrecisionMetricMicro):
     """
-    Metric induced by :func:`recall`. Will calculate the micro average recall
+    Metric induced by `recall`. Will calculate the micro average recall
     """
 
     name = "Micro Recall"
@@ -529,7 +527,7 @@ class RecallMetricMicro(PrecisionMetricMicro):
 @metric_registry.register("f1_micro")
 class F1MetricMicro(PrecisionMetricMicro):
     """
-    Metric induced by :func:`f1_score`. Will calculate the micro average f1
+    Metric induced by `f1_score`. Will calculate the micro average f1
     """
 
     name = "Micro F1"

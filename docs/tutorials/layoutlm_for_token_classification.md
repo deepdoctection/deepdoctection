@@ -1,28 +1,27 @@
-LayoutLM for token classification
-=================================
+# LayoutLM for token classification
 
-This tutorial is dedicated to training, evaluation and setting up a
+This tutorial is devoted to training, evaluation and setting up a
 pipeline for token classification model with LayoutLM.
 
-The individual steps differ only slightly from the tutorial on `sequence
-classification <https://github.com/deepdoctection/deepdoctection/blob/master/notebooks/Using_LayoutLM_for_sequence_classification.ipynb>`__
-. Only a few details need to be changed.
+The individual steps differ only slightly from the tutorial on 
+[LayoutLM for sequence classification](https://github.com/deepdoctection/notebooks/blob/main/Using_LayoutLM_for_sequence_classification.ipynb). 
+Only a few details need to be changed.
 
 We also show how to visualize and display the results.
 
-For training and evaluation we use the Funsd dataset. To demonstrate the
-inference pipeline, we use form samples from the RVLCDIP dataset.
+For training and evaluation we use the [Funsd][deepdoctection.datasets.instances.funsd] dataset. To demonstrate the
+inference pipeline, we use form samples from the [RVLCDIP][deepdoctection.datasets.instances.rvlcdip] dataset.
 
-.. code:: ipython3
+```python
 
     from transformers import LayoutLMTokenizerFast
     from matplotlib import pyplot as plt
     from tabulate import tabulate
     
     import deepdoctection as dd
+```
 
-
-.. code:: ipython3
+```python
 
     path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
     path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
@@ -35,8 +34,9 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
     # Token classes are saved for each word as token_tag sub category. Here we let the metric know
     # where to look at when collecting prediction and ground truth.  
     metric.set_categories(sub_category_names={"word": ["token_tag"]})
+```
 
-.. code:: ipython3
+```python
 
     # decreasing batch size while increasing max steps will not change the model performance significantly
     dd.train_hf_layoutlm(path_config_json,
@@ -51,11 +51,12 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
                          build_val_config=["split=test"],
                          metric=metric,
                          pipeline_component_name="LMTokenClassifierService")
+```
 
-.. parsed-literal::
+```
 
-    [32m[0903 14:36.53 @maputils.py:205] Ground-Truth category distribution:
-     [36m|  category  | #box   |  category  | #box   |  category  | #box   |
+    [0903 14:36.53 @maputils.py:205] Ground-Truth category distribution:
+    |  category  | #box   |  category  | #box   |  category  | #box   |
     |:----------:|:-------|:----------:|:-------|:----------:|:-------|
     |  B-ANSWER  | 2802   |   B-HEAD   | 441    | B-QUESTION | 3266   |
     |  I-ANSWER  | 6924   |   I-HEAD   | 1044   | I-QUESTION | 4064   |
@@ -121,9 +122,10 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
     | token_tag | 5             | 0.528363 | 257           |
     | token_tag | 6             | 0.779874 | 1594          |
     | token_tag | 7             | 0.754623 | 2558          |
+```
 
 
-.. parsed-literal::
+```
 
     Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-200
     Configuration saved in /path/to/Tests/Token_classification/checkpoint-200/config.json
@@ -140,9 +142,9 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
     | token_tag | 5             | 0.543333 | 257           |
     | token_tag | 6             | 0.772786 | 1594          |
     | token_tag | 7             | 0.746672 | 2558          |
+```
 
-
-.. parsed-literal::
+```
 
     Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-300
     Configuration saved in /path/to/Tests/Token_classification/checkpoint-300/config.json
@@ -160,13 +162,13 @@ inference pipeline, we use form samples from the RVLCDIP dataset.
     | token_tag | 5             | 0.543333 | 257           |
     | token_tag | 6             | 0.772786 | 1594          |
     | token_tag | 7             | 0.746672 | 2558          |
-
+```
 
 
 To get more information of the distribution output we evaluate the
 trained model by using a confusion matrix.
 
-.. code:: ipython3
+```python
 
     path_config_json = "/path/to/dir/checkpoint-300/config.json"
     path_weights = "/path/to/dir/checkpoint-300/pytorch_model.bin"
@@ -192,10 +194,12 @@ trained model by using a confusion matrix.
     evaluator = dd.Evaluator(dataset_train, pipe_component, metric)
     _ = evaluator.run(split="test")
 
-.. parsed-literal::
+```
 
-    [32m[0903 14:40.58 @accmetric.py:397][0m [32mINF[0m Confusion matrix: 
-    [36m|    predictions ->  |   1 |   2 |   3 |    4 |   5 |    6 |    7 |
+```
+
+    Confusion matrix: 
+    |    predictions ->  |   1 |   2 |   3 |    4 |   5 |    6 |    7 |
     |     ground truth | |     |     |     |      |     |      |      |
     |                  v |     |     |     |      |     |      |      |
     |-------------------:|----:|----:|----:|-----:|----:|-----:|-----:|
@@ -205,13 +209,12 @@ trained model by using a confusion matrix.
     |                  4 |  55 |   0 |  10 | 2017 |   9 |  102 |  351 |
     |                  5 |   2 |   7 |   1 |   12 | 163 |   29 |   43 |
     |                  6 |   1 |   0 |  22 |   99 |  30 | 1187 |  255 |
-    |                  7 |  44 |  15 |  30 |  245 | 128 |  133 | 1963 |[0m
+    |                  7 |  44 |  15 |  30 |  245 | 128 |  133 | 1963 |
+```
 
+## Building a production pipeline
 
-Building a production pipeline
-------------------------------
-
-.. code:: ipython3
+```python
 
     def get_layoutlm_pipeline():
         path_config_json = "/path/to/Tests/Token_classification/checkpoint-300/config.json"
@@ -242,50 +245,51 @@ Building a production pipeline
         reading_order = dd.TextOrderService(text_container="word")
     
         return dd.DoctectionPipe(pipeline_component_list=[layout_component, text_component, layoutlm_component, reading_order])
+```
 
-.. code:: ipython3
+```python
 
     path = "/path/to/.cache/deepdoctection/datasets/rvl/image"
     
     layoutlm_pipeline = get_layoutlm_pipeline()
     df = layoutlm_pipeline.analyze(path= path)
     df_iter = iter(df)
+```
 
-
-.. code:: ipython3
+```python
 
     dp = next(df_iter)
+```
 
+```
+    [0903 14:56.12 @doctectionpipe.py:101]processing 00000341_00000343.png
+    [0903 14:56.13 @context.py:131]ImageLayoutService finished, 0.8441 sec.
+    [0903 14:56.13 @context.py:131]TextExtractionService finished, 0.5459 sec.
+    [0903 14:56.13 @context.py:131]LMTokenClassifierService finished, 0.0309 sec.
+    [0903 14:56.13 @context.py:131]TextOrderService finished, 0.0023 sec.
+```
 
-.. parsed-literal::
-
-    [32m[0903 14:56.12 @doctectionpipe.py:101][0m [32mINF[0m processing 00000341_00000343.png
-    [32m[0903 14:56.13 @context.py:131][0m [32mINF[0m ImageLayoutService finished, 0.8441 sec.
-    [32m[0903 14:56.13 @context.py:131][0m [32mINF[0m TextExtractionService finished, 0.5459 sec.
-    [32m[0903 14:56.13 @context.py:131][0m [32mINF[0m LMTokenClassifierService finished, 0.0309 sec.
-    [32m[0903 14:56.13 @context.py:131][0m [32mINF[0m TextOrderService finished, 0.0023 sec.
-
-
-.. code:: ipython3
+```python
 
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(dp.viz())
+```
 
-.. image:: ./pics/output_10_1.png
+![](./_imgs/output_10_1.png)
 
 
-.. code:: ipython3
+```python
 
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(dp.viz(show_words=True))
+```
+
+![](./_imgs/output_11_1.png)
 
 
-.. image:: ./pics/output_11_1.png
-
-
-.. code:: ipython3
+```python
 
     word_list = dp.items[0].words
     word_list.sort(key=lambda x: x.reading_order) 
@@ -294,9 +298,9 @@ Building a production pipeline
         output.append([word.text, word.token_class + "-" + word.tag])
     
     print(tabulate(output, headers="firstrow"))
+```
 
-
-.. parsed-literal::
+```
 
     #              LABEL
     -------------  ----------
@@ -393,43 +397,42 @@ Building a production pipeline
     fill-in        other-O
     You            other-O
     accounting     other-O
+```
 
-
-.. code:: ipython3
+```python
 
     dp = next(df_iter)
+```
 
+```
+    [0903 14:58.46 @doctectionpipe.py:101]processing 00001057.png
+    [0903 14:58.46 @context.py:131]ImageLayoutService finished, 0.8165 sec.
+    [0903 14:58.47 @context.py:131]TextExtractionService finished, 0.37 sec.
+    [0903 14:58.47 @context.py:131]LMTokenClassifierService finished, 0.0289 sec.
+    [0903 14:58.47 @context.py:131]TextOrderService finished, 0.0018 sec.
+```
 
-.. parsed-literal::
-
-    [32m[0903 14:58.46 @doctectionpipe.py:101][0m [32mINF[0m processing 00001057.png
-    [32m[0903 14:58.46 @context.py:131][0m [32mINF[0m ImageLayoutService finished, 0.8165 sec.
-    [32m[0903 14:58.47 @context.py:131][0m [32mINF[0m TextExtractionService finished, 0.37 sec.
-    [32m[0903 14:58.47 @context.py:131][0m [32mINF[0m LMTokenClassifierService finished, 0.0289 sec.
-    [32m[0903 14:58.47 @context.py:131][0m [32mINF[0m TextOrderService finished, 0.0018 sec.
-
-
-.. code:: ipython3
+```python
 
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(dp.viz())
+```
+
+[](./_imgs/output_14_1.png)
 
 
-.. image:: ./pics/output_14_1.png
-
-
-.. code:: ipython3
+```python
 
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(dp.viz(show_words=True))
+```
+
+[](./_imgs/output_15_1.png)
 
 
-.. image:: ./pics/output_15_1.png
-
-
-.. code:: ipython3
+```python
 
     word_list = dp.items[0].words
     word_list.sort(key=lambda x: x.reading_order) 
@@ -438,9 +441,9 @@ Building a production pipeline
         output.append([word.text, word.token_class + "-" + word.tag])
     
     print(tabulate(output, headers="firstrow"))
+```
 
-
-.. parsed-literal::
+```
 
     #             LABEL
     ------------  ----------
@@ -517,6 +520,6 @@ Building a production pipeline
     asap          other-O
     TIOK          other-O
     0027860       other-O
-
+```
 
 

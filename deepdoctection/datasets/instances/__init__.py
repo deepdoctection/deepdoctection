@@ -18,15 +18,13 @@
 """
 Init file for instances package. Place all datasets in a directory using the structure
 
-|    Deep-Doctection
-|    ├── datasets
-|    │ ├── dataset_1
-|    │ ├── dataset_2
-|    │ ├── dataset_3
+    deepdoctection
+    ├── datasets
+    │ ├── dataset_1
+    │ ├── dataset_2
+    │ ├── dataset_3
 
 If not sure use
-
-.. code:: python
 
     print(dataset_instance.dataflow.get_workdir())
 """

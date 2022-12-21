@@ -68,11 +68,11 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         :param dataset: dataset
         :param category_names: String or list of category names
         :param sub_categories: Dict of categories/sub-categories or categories/list of sub-categories. See also
-                               :class:`eval.Evaluator`
+                               `eval.Evaluator`
         :param metric: metric
         :param pipeline_component: Pipeline component with a detector.
         :param in_names: Specify tensor input names.
-                         E.g. :meth:`extern.tp.tpfrcnn.GeneralizedRCNN.get_inference_tensor_names`
+                         E.g. `extern.tp.tpfrcnn.GeneralizedRCNN.get_inference_tensor_names`
         :param out_names: Specify tensor output names.
         :param build_eval_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split",
                                   "build_mode", "max_datapoints" etc.

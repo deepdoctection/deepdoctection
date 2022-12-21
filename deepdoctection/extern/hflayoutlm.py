@@ -291,14 +291,14 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMForTokenClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    A wrapper class for `transformers.LayoutLMForTokenClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/model_doc/layoutlm> for documentation of the model itself.
     Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -375,8 +375,8 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMv2ForTokenClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2  for documentation of the model
+    A wrapper class for `transformers.LayoutLMv2ForTokenClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2>  for documentation of the model
     itself. Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
@@ -384,7 +384,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -474,8 +474,8 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
 class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMv3ForTokenClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv3  for documentation of the model
+    A wrapper class for `transformers.LayoutLMv3ForTokenClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv3>  for documentation of the model
     itself. Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
@@ -483,7 +483,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -680,14 +680,14 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/model_doc/layoutlm for documentation of the model itself.
+    A wrapper class for `transformers.LayoutLMForSequenceClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/model_doc/layoutlm> for documentation of the model itself.
     Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
     classification and other things please use another model of the family.
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -743,14 +743,14 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
 class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMv2ForSequenceClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2 for documentation of the model
+    A wrapper class for `transformers.LayoutLMv2ForSequenceClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv2> for documentation of the model
     itself. Note that this model is equipped with a head that is only useful for classifying the input sequence. For
     token classification and other things please use another model of the family.
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -813,14 +813,14 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
 class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
-    A wrapper class for :class:`transformers.LayoutLMv3ForSequenceClassification` to use within a pipeline component.
-    Check https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv3 for documentation of the model
+    A wrapper class for `transformers.LayoutLMv3ForSequenceClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/v4.24.0/en/model_doc/layoutlmv3> for documentation of the model
     itself. Note that this model is equipped with a head that is only useful for classifying the input sequence. For
     token classification and other things please use another model of the family.
 
     **Example**
 
-        .. code-block:: python
+        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")

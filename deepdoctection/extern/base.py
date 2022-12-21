@@ -68,25 +68,25 @@ class DetectionResult:
     """
     Simple mutable storage for detection results.
 
-    :attr:`box`: [ulx,uly,lrx,lry]
+    `box`: [ulx,uly,lrx,lry]
 
-    :attr:`class_id`: category id
+    `class_id`: category id
 
-    :attr:`score`: prediction score
+    `score`: prediction score
 
-    :attr:`mask`: binary mask
+    `mask`: binary mask
 
-    :attr:`absolute_coords` : absolute coordinates
+    `absolute_coords` : absolute coordinates
 
-    :attr:`class_name`: category name
+    `class_name`: category name
 
-    :attr:`text`: text string. Used for OCR predictors
+    `text`: text string. Used for OCR predictors
 
-    :attr:`block`: block number. For reading order from some ocr predictors
+    `block`: block number. For reading order from some ocr predictors
 
-    :attr:`line`: line number. For reading order from some ocr predictors
+    `line`: line number. For reading order from some ocr predictors
 
-    :attr:`uuid`: uuid. For assigning detection result (e.g. text to image annotations)
+    `uuid`: uuid. For assigning detection result (e.g. text to image annotations)
     """
 
     box: Optional[List[float]] = None
@@ -108,11 +108,11 @@ class ObjectDetector(PredictorBase):
 
     **Example:**
 
-        .. code-block:: python
+        
 
             MyFancyTensorpackPredictor(TensorpackPredictor,ObjectDetector)
 
-    and implement the :meth:`predict`.
+    and implement the `predict`.
     """
 
     _categories: Mapping[str, ObjectTypes]
@@ -137,7 +137,7 @@ class ObjectDetector(PredictorBase):
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in :meth:`predict`
+        whether to accept batches in `predict`
         """
         return False
 
@@ -188,7 +188,7 @@ class PdfMiner(PredictorBase):
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in :meth:`predict`
+        whether to accept batches in `predict`
         """
         return False
 
@@ -201,8 +201,8 @@ class PdfMiner(PredictorBase):
 
 class TextRecognizer(PredictorBase):
     """
-    Abstract base class for text recognition. In contrast to ObjectDetector one assumes that :meth:`predict` accepts
-    batches of numpy arrays. More precisely, when using :meth:`predict` pass a list of tuples with uuids (e.g. image_id,
+    Abstract base class for text recognition. In contrast to ObjectDetector one assumes that `predict` accepts
+    batches of numpy arrays. More precisely, when using `predict` pass a list of tuples with uuids (e.g. image_id,
     or annotation_id) or numpy arrays.
     """
 
@@ -216,7 +216,7 @@ class TextRecognizer(PredictorBase):
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in :meth:`predict`
+        whether to accept batches in `predict`
         """
         return True
 
@@ -226,21 +226,21 @@ class TokenClassResult:
     """
     Simple mutable storage for token classification results
 
-     :attr:`id`: uuid of token (not unique)
+     `id`: uuid of token (not unique)
 
-     :attr:`token_id`: token id
+     `token_id`: token id
 
-     :attr:`token`: token
+     `token`: token
 
-     :attr:`class_id`: category id
+     `class_id`: category id
 
-     :attr:`class_name`: category name
+     `class_name`: category name
 
-     :attr:`semantic_name`: semantic name
+     `semantic_name`: semantic name
 
-     :attr:`bio_tag`: bio tag
+     `bio_tag`: bio tag
 
-     :attr:`score`: prediction score
+     `score`: prediction score
     """
 
     uuid: str
@@ -258,9 +258,9 @@ class SequenceClassResult:
     """
     Storage for sequence classification results
 
-    :attr:`class_id`: category id
-    :attr:`class_name`: category name
-    :attr:`score`: prediction score
+    `class_id`: category id
+    `class_name`: category name
+    `score`: prediction score
     """
 
     class_id: int
@@ -310,7 +310,7 @@ class LMTokenClassifier(PredictorBase):
     def default_kwargs_for_input_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
-        for some custom setting. :meth:`default_arguments_for_input_mapping` in `LMTokenClassifierService`.
+        for some custom setting. `default_arguments_for_input_mapping` in `LMTokenClassifierService`.
         """
         return {}
 
@@ -318,7 +318,7 @@ class LMTokenClassifier(PredictorBase):
 class LMSequenceClassifier(PredictorBase):
     """
     Abstract base class for sequence classification. If you want to connect external sequence classifiers with
-    Deepdoctection predictors, wrap them into a class derived from this class.
+    deepdoctection predictors, wrap them into a class derived from this class.
     """
 
     _categories: Mapping[str, ObjectTypes]
@@ -357,14 +357,14 @@ class LMSequenceClassifier(PredictorBase):
     def default_kwargs_for_input_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
-        for some custom setting. :meth:`default_arguments_for_input_mapping` in `LMTokenClassifierService`.
+        for some custom setting. `default_arguments_for_input_mapping` in `LMTokenClassifierService`.
         """
         return {}
 
 
 class LanguageDetector(PredictorBase):
     """
-    Abstract base class for language detectors. The :meth:`predict` accepts a string of arbitrary length and returns an
+    Abstract base class for language detectors. The `predict` accepts a string of arbitrary length and returns an
     ISO-639 code for the detected language.
     """
 
@@ -396,7 +396,7 @@ class LanguageDetector(PredictorBase):
 
 class ImageTransformer(PredictorBase):
     """
-    Abstract base class for transforming an image. The :meth:`transform` accepts a numpy array and returns the same.
+    Abstract base class for transforming an image. The `transform` accepts and returns a numpy array
     """
 
     @abstractmethod

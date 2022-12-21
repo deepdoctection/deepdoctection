@@ -18,19 +18,19 @@
 """
 Module for Funsd dataset.  Install the dataset following the folder structure
 
-|    funsd
-|    ├── testing_data
-|    │ ├── annotations
-|    │ │ ├── 82092117.json
-|    │ │ ├── 82092117_0338.json
-|    │ ├── images
-|    │ │ ├── 82092117.png
-|    │ │ ├── 82092117_0338.png
-|    ├── training_data
-|    │ ├── annotations
-|    │ │ ├── ...
-|    │ ├── images
-|    │ │ ├── ...
+    funsd
+    ├── testing_data
+    │ ├── annotations
+    │ │ ├── 82092117.json
+    │ │ ├── 82092117_0338.json
+    │ ├── images
+    │ │ ├── 82092117.png
+    │ │ ├── 82092117_0338.png
+    ├── training_data
+    │ ├── annotations
+    │ │ ├── ...
+    │ ├── images
+    │ │ ├── ...
 """
 
 import os

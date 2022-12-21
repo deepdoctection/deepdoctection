@@ -1,26 +1,22 @@
-Various topics around LayoutLM part 2
-=====================================
+# Various topics around LayoutLM part 2
 
-Adding a CNN backbone for fine-tuning
--------------------------------------
+## Adding a CNN backbone for fine-tuning
 
-In a fine tuning experiment of the original `LayoutLM
-paper <https://arxiv.org/pdf/1912.13318.pdf>`__, a CNN backbone was
+In a fine-tuning experiment of the original [LayoutLM](https://arxiv.org/pdf/1912.13318.pdf), a CNN backbone was
 added for additional features. The ResNet-101 was pre-trained on the
 Visual-Genome Dataset, a dataset with real-world images.
 
 The aim here is to examine the extent to which F1 results differ when a
 backbone that is pre-trained on a document layout tasks.
 
-Here we use the Detectron2 CNN backbone from the **deep**\ doctection
+Here we use the Detectron2 CNN backbone from the **deep**doctection
 cell detector. Compared to the paper, it is a Resnext-50 backbone with
 FPN features.
 
-We also refer to this
-`notebook <https://github.com/NielsRogge/Transformers-Tutorials/blob/master/LayoutLM/Add_image_embeddings_to_LayoutLM.ipynb>`__
+We also refer to this [notebook](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/LayoutLM/Add_image_embeddings_to_LayoutLM.ipynb)
 in which the design specification is fully included.
 
-.. code:: ipython3
+```python
 
     from typing import Optional, Union, Tuple
     
@@ -44,11 +40,13 @@ in which the design specification is fully included.
     import deepdoctection as dd
     from deepdoctection.datasets.adapter import DatasetAdapter
     from deepdoctection.train.hf_layoutlm_train import LayoutLMTrainer
+```
 
-Defining the LayoutLMv1 model with visual backbone
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython3
+## Defining the LayoutLMv1 model with visual backbone
+
+
+```python
 
     class LayoutLMWithImageFeaturesForTokenClassification(LayoutLMPreTrainedModel):
     
@@ -162,11 +160,12 @@ Defining the LayoutLMv1 model with visual backbone
     
         def _reorder_cache(self, past, beam_idx):
             pass
+```
 
-Setting up training script
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Setting up training script
 
-.. code:: ipython3
+
+```python
 
     # Config and weights for LayoutLM
     config_path = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
@@ -232,9 +231,9 @@ Setting up training script
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
     
     trainer.train()
+```
 
-
-.. parsed-literal::
+```
 
     You are using a model of type layoutlm to instantiate a model of type . This is not supported for all configurations of models and can yield errors.
     Model config PretrainedConfig {
@@ -269,31 +268,27 @@ Setting up training script
     }
 
 
-.. parsed-literal::
-
-    [32m[0912 11:43.24 @maputils.py:205][0m [32mINF[0m Ground-Truth category distribution:
-     [36m|  category  | #box   |  category  | #box   |  category  | #box   |
+    [0912 11:43.24 @maputils.py:205]Ground-Truth category distribution:
+    |  category  | #box   |  category  | #box   |  category  | #box   |
     |:----------:|:-------|:----------:|:-------|:----------:|:-------|
     |  B-ANSWER  | 2802   |   B-HEAD   | 441    | B-QUESTION | 3266   |
     |  I-ANSWER  | 6924   |   I-HEAD   | 1044   | I-QUESTION | 4064   |
     |     O      | 3971   |            |        |            |        |
-    |   total    | 22512  |            |        |            |        |[0m
-    [32m[0912 11:43.24 @custom.py:133][0m [32mINF[0m Make sure to call .reset_state() for the dataflow otherwise an error will be raised
+    |   total    | 22512  |            |        |            |        |
+    [0912 11:43.24 @custom.py:133][0m Make sure to call .reset_state() for the dataflow otherwise an error will be raised
+```
 
+## Setting up evaluation
 
-Setting up evaluation
-~~~~~~~~~~~~~~~~~~~~~
 
 In order to pass the model to a pipeline component and hence to the
 evaluator, we first have to provide a model wrapper
 
-.. code:: ipython3
+```python
 
     from copy import copy
     
     from typing import Sequence, Mapping,  Literal, List
-
-.. code:: ipython3
 
     class HFLayoutLmWithImageFeaturesTokenClassifier(dd.HFLayoutLmTokenClassifier):
     
@@ -401,8 +396,9 @@ evaluator, we first have to provide a model wrapper
                 self.categories_bio,
                 self.categories,
             )
+```
 
-.. code:: ipython3
+```python
 
     def mean_f1_score(f1_per_label):
         total = 0.
@@ -412,8 +408,9 @@ evaluator, we first have to provide a model wrapper
             sum+=res["num_samples"]
         
         return total/sum
+```
 
-.. code:: ipython3
+```python
 
     config = "/path/to/dir/Vis_backbone/checkpoint-200/config.json"
     
@@ -440,14 +437,14 @@ evaluator, we first have to provide a model wrapper
         evaluator = dd.Evaluator(dataset_val, pipeline_component, metric, num_threads=2)
         f1_per_label = evaluator.run()
         print(f"mean f1 score: {mean_f1_score(f1_per_label)}")
+```
 
-
-.. parsed-literal::
+```
 
    /path/to/dir/Vis_backbone/checkpoint-200/pytorch_model.bin
 
-    [32m[0912 12:59.44 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 12:59.44 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.830211 | 821           |
     | token_tag | 2             | 0.460674 | 122           |
@@ -455,16 +452,16 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.815841 | 2544          |
     | token_tag | 5             | 0.52505  | 257           |
     | token_tag | 6             | 0.755478 | 1594          |
-    | token_tag | 7             | 0.759437 | 2558          |[0m
+    | token_tag | 7             | 0.759437 | 2558          |
 
 
     mean f1 score: 0.7838230791255405
 
-.. parsed-literal::
+
    /path/to/dir/Vis_backbone/checkpoint-400/pytorch_model.bin
 
-    [32m[0912 12:59.54 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 12:59.54 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.848272 | 821           |
     | token_tag | 2             | 0.592058 | 122           |
@@ -472,17 +469,16 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.830082 | 2544          |
     | token_tag | 5             | 0.516229 | 257           |
     | token_tag | 6             | 0.76908  | 1594          |
-    | token_tag | 7             | 0.755625 | 2558          |[0m
+    | token_tag | 7             | 0.755625 | 2558          |
 
 
     mean f1 score: 0.7935855779424233
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-600/pytorch_model.bin
 
-    [32m[0912 13:00.05 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:00.05 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.845103 | 821           |
     | token_tag | 2             | 0.579592 | 122           |
@@ -490,15 +486,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.812662 | 2544          |
     | token_tag | 5             | 0.560403 | 257           |
     | token_tag | 6             | 0.7667   | 1594          |
-    | token_tag | 7             | 0.740614 | 2558          |[0m
+    | token_tag | 7             | 0.740614 | 2558          |
 
     mean f1 score: 0.78425321409946
 
 .. parsed-literal::
    /path/to/dir/Vis_backbone/checkpoint-800/pytorch_model.bin
 
-    [32m[0912 13:00.17 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:00.17 @accmetric.py:346] F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.845203 | 821           |
     | token_tag | 2             | 0.625    | 122           |
@@ -506,18 +502,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.81896  | 2544          |
     | token_tag | 5             | 0.575139 | 257           |
     | token_tag | 6             | 0.767656 | 1594          |
-    | token_tag | 7             | 0.759337 | 2558          |[0m
+    | token_tag | 7             | 0.759337 | 2558          |
 
     mean f1 score: 0.7909570408298823
 
 
-
-.. parsed-literal::
-
     /path/to/dir/Vis_backbone/checkpoint-1000/pytorch_model.bin
 
-    [32m[0912 13:00.28 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:00.28 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.856803 | 821           |
     | token_tag | 2             | 0.622407 | 122           |
@@ -525,16 +518,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.824247 | 2544          |
     | token_tag | 5             | 0.548951 | 257           |
     | token_tag | 6             | 0.780972 | 1594          |
-    | token_tag | 7             | 0.758919 | 2558          |[0m
+    | token_tag | 7             | 0.758919 | 2558          |
 
     mean f1 score: 0.7968284393763414
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-1200/pytorch_model.bin
 
-    [32m[0912 13:00.39 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:00.39 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.856265 | 821           |
     | token_tag | 2             | 0.601562 | 122           |
@@ -542,16 +534,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.826446 | 2544          |
     | token_tag | 5             | 0.512077 | 257           |
     | token_tag | 6             | 0.773773 | 1594          |
-    | token_tag | 7             | 0.764029 | 2558          |[0m
+    | token_tag | 7             | 0.764029 | 2558          |
 
     mean f1 score: 0.795789744453888
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-1400/pytorch_model.bin
 
-    [32m[0912 13:00.51 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:00.51 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.862768 | 821           |
     | token_tag | 2             | 0.626506 | 122           |
@@ -559,16 +550,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.8082   | 2544          |
     | token_tag | 5             | 0.521452 | 257           |
     | token_tag | 6             | 0.754504 | 1594          |
-    | token_tag | 7             | 0.755716 | 2558          |[0m
+    | token_tag | 7             | 0.755716 | 2558          |
 
     mean f1 score: 0.7856123499985105
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-1600/pytorch_model.bin
 
-    [32m[0912 13:01.01 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.01 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.862418 | 821           |
     | token_tag | 2             | 0.644351 | 122           |
@@ -576,17 +566,16 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.829003 | 2544          |
     | token_tag | 5             | 0.57041  | 257           |
     | token_tag | 6             | 0.782462 | 1594          |
-    | token_tag | 7             | 0.766997 | 2558          |[0m
+    | token_tag | 7             | 0.766997 | 2558          |
 
     mean f1 score: 0.8022285304592011
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-1800/pytorch_model.bin
 
-    [32m[0912 13:01.11 @eval.py:157][0m [32mINF[0m Starting evaluation...
-    [32m[0912 13:01.13 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.11 @eval.py:157] Starting evaluation...
+    [0912 13:01.13 @accmetric.py:346] F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.863362 | 821           |
     | token_tag | 2             | 0.609442 | 122           |
@@ -594,16 +583,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.807097 | 2544          |
     | token_tag | 5             | 0.565836 | 257           |
     | token_tag | 6             | 0.778129 | 1594          |
-    | token_tag | 7             | 0.756757 | 2558          |[0m
+    | token_tag | 7             | 0.756757 | 2558          |
 
     mean f1 score: 0.7919870785780183
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-2000/pytorch_model.bin
 
-    [32m[0912 13:01.24 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.24 @accmetric.py:346] F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.859044 | 821           |
     | token_tag | 2             | 0.598291 | 122           |
@@ -611,16 +599,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.818494 | 2544          |
     | token_tag | 5             | 0.561151 | 257           |
     | token_tag | 6             | 0.784038 | 1594          |
-    | token_tag | 7             | 0.766191 | 2558          |[0m
+    | token_tag | 7             | 0.766191 | 2558          |
 
     mean f1 score: 0.798204199723473
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-2200/pytorch_model.bin
 
-    [32m[0912 13:01.35 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.35 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.872072 | 821           |
     | token_tag | 2             | 0.606635 | 122           |
@@ -628,7 +615,7 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.825581 | 2544          |
     | token_tag | 5             | 0.582031 | 257           |
     | token_tag | 6             | 0.790148 | 1594          |
-    | token_tag | 7             | 0.775231 | 2558          |[0m
+    | token_tag | 7             | 0.775231 | 2558          |
 
     mean f1 score: 0.8060384049708412
 
@@ -636,8 +623,8 @@ evaluator, we first have to provide a model wrapper
 
     /path/to/dir/Vis_backbone/checkpoint-2400/pytorch_model.bin
 
-    [32m[0912 13:01.46 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.46 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.864702 | 821           |
     | token_tag | 2             | 0.622222 | 122           |
@@ -645,16 +632,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.820471 | 2544          |
     | token_tag | 5             | 0.613936 | 257           |
     | token_tag | 6             | 0.774738 | 1594          |
-    | token_tag | 7             | 0.771018 | 2558          |[0m
+    | token_tag | 7             | 0.771018 | 2558          |
 
     mean f1 score: 0.8011870771317523
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-2600/pytorch_model.bin
 
-    [32m[0912 13:01.57 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:01.57 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.850519 | 821           |
     | token_tag | 2             | 0.639344 | 122           |
@@ -662,16 +648,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.820766 | 2544          |
     | token_tag | 5             | 0.575188 | 257           |
     | token_tag | 6             | 0.777989 | 1594          |
-    | token_tag | 7             | 0.761813 | 2558          |[0m
+    | token_tag | 7             | 0.761813 | 2558          |
 
     mean f1 score: 0.7977212918133954
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-2800/pytorch_model.bin
 
-    [32m[0912 13:02.09 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:02.09 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.851942 | 821           |
     | token_tag | 2             | 0.594378 | 122           |
@@ -679,16 +664,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.813532 | 2544          |
     | token_tag | 5             | 0.574627 | 257           |
     | token_tag | 6             | 0.781488 | 1594          |
-    | token_tag | 7             | 0.765437 | 2558          |[0m
+    | token_tag | 7             | 0.765437 | 2558          |
 
     mean f1 score: 0.7960172594005404
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-3000/pytorch_model.bin
 
-    [32m[0912 13:02.21 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:02.21 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.8568   | 821           |
     | token_tag | 2             | 0.597701 | 122           |
@@ -696,16 +680,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.82385  | 2544          |
     | token_tag | 5             | 0.551724 | 257           |
     | token_tag | 6             | 0.777209 | 1594          |
-    | token_tag | 7             | 0.765081 | 2558          |[0m
+    | token_tag | 7             | 0.765081 | 2558          |
 
     mean f1 score: 0.7972124336953419
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-3200/pytorch_model.bin
 
-    [32m[0912 13:02.32 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:02.32 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.854277 | 821           |
     | token_tag | 2             | 0.577982 | 122           |
@@ -713,16 +696,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.824099 | 2544          |
     | token_tag | 5             | 0.577154 | 257           |
     | token_tag | 6             | 0.782979 | 1594          |
-    | token_tag | 7             | 0.756447 | 2558          |[0m
+    | token_tag | 7             | 0.756447 | 2558          |
 
     mean f1 score: 0.7963200667654791
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-3400/pytorch_model.bin
 
-    [32m[0912 13:02.43 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:02.43 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.863095 | 821           |
     | token_tag | 2             | 0.581197 | 122           |
@@ -730,16 +712,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.822634 | 2544          |
     | token_tag | 5             | 0.56391  | 257           |
     | token_tag | 6             | 0.777485 | 1594          |
-    | token_tag | 7             | 0.757907 | 2558          |[0m
+    | token_tag | 7             | 0.757907 | 2558          |
 
     mean f1 score: 0.7960786308650052
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-3600/pytorch_model.bin
 
-    [32m[0912 13:02.54 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:02.54 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.846291 | 821           |
     | token_tag | 2             | 0.590717 | 122           |
@@ -747,17 +728,16 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.818693 | 2544          |
     | token_tag | 5             | 0.56102  | 257           |
     | token_tag | 6             | 0.774107 | 1594          |
-    | token_tag | 7             | 0.75607  | 2558          |[0m
+    | token_tag | 7             | 0.75607  | 2558          |
 
     mean f1 score: 0.7912620719466341
 
-.. parsed-literal::
 
     /path/to/dir/Vis_backbone/checkpoint-3800/pytorch_model.bin
 
-    [32m[0912 13:03.04 @eval.py:157][0m [32mINF[0m Starting evaluation...
-    [32m[0912 13:03.05 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:03.04 @eval.py:157]Starting evaluation...
+    [0912 13:03.05 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.848665 | 821           |
     | token_tag | 2             | 0.575107 | 122           |
@@ -765,15 +745,15 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.820722 | 2544          |
     | token_tag | 5             | 0.563071 | 257           |
     | token_tag | 6             | 0.776621 | 1594          |
-    | token_tag | 7             | 0.759802 | 2558          |[0m
+    | token_tag | 7             | 0.759802 | 2558          |
 
     mean f1 score: 0.7937586962016544
 
 
     /path/to/dir/Vis_backbone/checkpoint-4000/pytorch_model.bin
 
-    [32m[0912 13:03.16 @accmetric.py:346][0m [32mINF[0m F1 results:
-     [36m|    key    | category_id   | val      | num_samples   |
+    [0912 13:03.16 @accmetric.py:346]F1 results:
+    |    key    | category_id   | val      | num_samples   |
     |:---------:|:--------------|:---------|:--------------|
     | token_tag | 1             | 0.856124 | 821           |
     | token_tag | 2             | 0.591093 | 122           |
@@ -781,10 +761,10 @@ evaluator, we first have to provide a model wrapper
     | token_tag | 4             | 0.822911 | 2544          |
     | token_tag | 5             | 0.558719 | 257           |
     | token_tag | 6             | 0.777032 | 1594          |
-    | token_tag | 7             | 0.756508 | 2558          |[0m
+    | token_tag | 7             | 0.756508 | 2558          |
 
     mean f1 score: 0.7949125349027464
-
+```
 
 We get a top score after 2.4K iterations with a mean f1 score: 0.806
 which is slightly better as the result mentioned in the paper (which was

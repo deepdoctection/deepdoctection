@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for training Tensorpack Mask R-CNN
+Module for training Tensorpack `GeneralizedRCNN`
 """
 
 import os
@@ -73,7 +73,7 @@ __all__ = ["train_faster_rcnn"]
 
 class LoadAugmentAddAnchors:
     """
-    A helper class for default mapping func: load_augment_add_anchors.
+    A helper class for default mapping `load_augment_add_anchors`.
     """
 
     def __init__(self, config: AttrDict) -> None:
@@ -89,7 +89,7 @@ def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> Optional[JsonDic
     the network for training.
 
     :param dp: A dict with 'file_name', 'gt_boxes', 'gt_labels' and optional 'image'
-    :param config: An AttrDict with a TP frcnn config
+    :param config: An `AttrDict` with a TP frcnn config
     :return: An dict with all necessary keys for feeding the graph
     """
     cfg = config
@@ -127,8 +127,8 @@ def get_train_dataflow(
     the model, as the augmentation is part of the data preparation.
 
     :param dataset: A dataset for object detection
-    :param config: An :class:`AttrDict` with a TP Frcnn config
-    :param use_multi_proc_for_train: If set to True will use multi processes for augmenting
+    :param config: An `AttrDict` with a TP Frcnn config
+    :param use_multi_proc_for_train: If set to `True` will use multi processes for augmenting
     :param build_train_kwargs: build configuration of the dataflow.
     :return: A dataflow
     """
@@ -203,7 +203,8 @@ def train_faster_rcnn(
 
     Tensorpack provides a training API under TF1. Training runs under a TF2 installation if TF2 behavior is deactivated.
 
-    :param path_config_yaml: path to TP config file. Check /Deep-Doctection/configs/tp for various settings.
+    :param path_config_yaml: path to TP config file. Check the
+                             [deepdoctection.extern.tp.tpfrcnn.config.config.py][] for various settings.
     :param dataset_train: the dataset to use for training.
     :param path_weights: path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
                          nothing is passed.

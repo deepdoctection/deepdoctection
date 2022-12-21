@@ -16,8 +16,8 @@
 # limitations under the License.
 
 """
-Init file for pipe package. Contains pipeline components that can be plugged into each other and predictors that are
-invoked by their respective component.
+Contains pipeline components that can be plugged into each other and predictors that are invoked by their
+ respective component.
 """
 
 from .anngen import *

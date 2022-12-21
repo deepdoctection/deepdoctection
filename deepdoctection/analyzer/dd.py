@@ -17,6 +17,10 @@
 
 """
 Module for **deep**doctection analyzer.
+
+-factory build_analyzer for a given config
+
+-user factory with a reduced config setting
 """
 
 import os

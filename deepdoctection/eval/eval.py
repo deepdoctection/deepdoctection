@@ -17,7 +17,7 @@
 
 
 """
-Module for :class:`Evaluator`
+Module for `Evaluator`
 """
 
 __all__ = ["Evaluator"]
@@ -48,14 +48,14 @@ class Evaluator:
     a given metric, this class will stream the dataset, call the predictor(s) and will evaluate the predictions against
     the ground truth with respect to the given metric.
 
-    After initializing the evaluator the process itself will start after calling the meth:`run`.
+    After initializing the evaluator the process itself will start after calling the `run`.
 
     The following takes place under the hood:
 
-    Setup of the dataflow according to the build- and split inputs. The meth:`datasets.DataFlowBaseBuilder.build` will
+    Setup of the dataflow according to the build- and split inputs. The `datasets.DataFlowBaseBuilder.build` will
     be invoked twice as one dataflow must be kept with its ground truth while the other must go through an annotation
     erasing process and after that passing the predictor. Predicted and gt datapoints will be converted into the
-    required metric input format and dumped into lists. Both lists will be passed to :meth:`MetricBase.get_distance`.
+    required metric input format and dumped into lists. Both lists will be passed to `MetricBase.get_distance`.
 
     **Example:**
 
@@ -63,7 +63,7 @@ class Evaluator:
         the coco metric all predicted objects that are not in the set of filtered objects will be not taken into
         account.
 
-        .. code-block:: python
+        
 
             publaynet = get_dataset("publaynet")
             publaynet.dataflow.categories.filter_categories(categories=["TEXT","TITLE"])

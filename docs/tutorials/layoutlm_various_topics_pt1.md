@@ -1,13 +1,12 @@
-Various topics around LayoutLM part 1
-=====================================
+# Various topics around LayoutLM part 1
+
 
 These records form a disjointed collection of topics that may be
 helpful for fine-tuning LayoutLM. In addition,
 the code provided should serve as an aid on how to deal with other
-topics with the **deep**\doctection.
+topics with the **deep**doctection.
 
-How does LayoutLM work on newer date documents?
------------------------------------------------
+## How does LayoutLM work on newer date documents?
 
 LayoutLM was pre-trained on the CDIP (Complex Document Information
 Processing) dataset, a corpus of various types of documents disclosed by
@@ -27,18 +26,17 @@ set.
 
 We use PDF Plumber to extract the text from the native PDF documents.
 
-Generating raw corpus from PDF documents
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Generating raw corpus from PDF documents
 
-.. code:: ipython3
+```python
 
     import deepdoctection as dd
     import os
     from matplotlib import pyplot as plt
     from transformers import LayoutLMTokenizerFast
+```
 
-
-.. code:: ipython3
+```python
 
     def get_pdf_miner():
         pdf_miner = dd.PdfPlumberTextDetector()
@@ -56,8 +54,9 @@ Generating raw corpus from PDF documents
         dp.image = dd.convert_pdf_bytes_to_np_array_v2(pdf_bytes, dpi=100)
         dp.pdf_bytes = pdf_bytes
         return dp
+```
 
-.. code:: ipython3
+```python
 
     # This step requires Doclaynet to be downloaded. Similar to the LayoutLM primer we select four categories financial_report,
     # government_tenders, manuals, laws_and_regulations and generate a raw dataset corpus with extrated text and bounding boxes.
@@ -75,11 +74,12 @@ Generating raw corpus from PDF documents
     df = pdf_miner_pipe.analyze(dataset_dataflow= df,output="image")
     dd.dataflow_to_json(df, "/path/to/dir/doclaynet_img", single_files=True, max_datapoints=1000, save_image=True,
                         save_image_in_json=False, highest_hierarchy_only=True)
+```
 
-Defining deepdoctection dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Defining deepdoctection dataset
 
-.. code:: ipython3
+
+```python
 
     @dd.dataset_registry.register("doclaynet-seq")
     class Doclaynet(dd.DatasetBase):
@@ -138,117 +138,118 @@ Defining deepdoctection dataset
             df = dd.MapData(df, _maybe_load_image)
     
             return df
+```
 
-.. code:: ipython3
+```python
 
     doclaynet = dd.get_dataset("doclaynet-seq")
     
     df = doclaynet.dataflow.build(load_image=True)
     df.reset_state()
     df_iter = iter(df)
+```
 
 
+## Displaying some samples
 
-Displaying some samples
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: ipython3
+```python
 
     dp = next(df_iter)
     page = dd.Page.from_image(dp,text_container="word")
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(page.viz())
+```
+
+![](./_imgs/output_8_1.png)
 
 
-.. image:: ./pics/output_8_1.png
-
-
-.. code:: ipython3
+```python
 
     page.document_type
+```
 
 
 
-
-.. parsed-literal::
+```
 
     'laws_and_regulations'
+```
 
 
-
-.. code:: ipython3
+```python
 
     dp = next(df_iter)
     page = dd.Page.from_image(dp,text_container="word")
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(page.viz())
+```
+
+![](./_imgs/output_1_1.png)
 
 
-.. image:: ./pics/output_1_1.png
-
-
-.. code:: ipython3
+```python
 
     page.document_type
+```
 
 
 
-
-.. parsed-literal::
+```
 
     'manuals'
+```
 
 
-
-.. code:: ipython3
+```python
 
     dp = next(df_iter)
     page = dd.Page.from_image(dp,text_container="WORD")
     plt.figure(figsize = (25,17))
     plt.axis('off')
     plt.imshow(page.viz())
+```
+
+![](./_imgs/output_12_1.png)
 
 
-.. image:: ./pics/output_12_1.png
-
-
-.. code:: ipython3
+```python
 
     page.document_type
+```
 
 
-.. parsed-literal::
-
+```
     'financial_report'
+```
 
 
+## Fine tuning
 
-Fine tuning
-~~~~~~~~~~~
 
-.. code:: ipython3
+```python
 
     path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
     path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
+```
 
-.. code:: ipython3
+```python
 
     doclaynet = dd.get_dataset("doclaynet-seq")
     
     merge = dd.MergeDataset(doclaynet)
     merge.buffer_datasets()
     merge.split_datasets(ratio=0.1)
+```
 
+```
 
-.. parsed-literal::
+    [0906 15:16.46 @base.py:270] ___________________ Number of datapoints per split ___________________
+    [0906 15:16.46 @base.py:271] {'test': 161, 'train': 2989, 'val': 161}
+```
 
-    [32m[0906 15:16.46 @base.py:270][0m [32mINF[0m ___________________ Number of datapoints per split ___________________
-    [32m[0906 15:16.46 @base.py:271][0m [32mINF[0m {'test': 161, 'train': 2989, 'val': 161}
-
-
-.. code:: ipython3
+```python
 
     dataset_train = merge
     dataset_val = merge
@@ -263,43 +264,37 @@ Fine tuning
                          dataset_val= dataset_val,
                          metric=metric,
                          pipeline_component_name="LMSequenceClassifierService")
+```
 
+```
 
-.. parsed-literal::
-
-    [32m[0906 15:16.46 @maputils.py:205][0m [32mINF[0m Ground-Truth category distribution:
-     [36m|       category       | #box   |      category      | #box   |  category  | #box   |
+    [0906 15:16.46 @maputils.py:205]Ground-Truth category distribution:
+    |       category       | #box   |      category      | #box   |  category  | #box   |
     |:--------------------:|:-------|:------------------:|:-------|:----------:|:-------|
     |  FINANCIAL_REPORTS   | 877    | GOVERNMENT_TENDERS | 301    |  MANUALS   | 901    |
     | LAWS_AND_REGULATIONS | 910    |                    |        |            |        |
-    |        total         | 2989   |                    |        |            |        |[0m
-    [32m[0906 15:16.46 @custom.py:133][0m [32mINF[0m Make sure to call .reset_state() for the dataflow
+    |        total         | 2989   |                    |        |            |        |
+    [0906 15:16.46 @custom.py:133]Make sure to call .reset_state() for the dataflow
     otherwise an error will be raised
-
-
-.. parsed-literal::
 
     
     Saving model checkpoint to /path/to/dir/Seq_Doclaynet/checkpoint-2000
     Configuration saved in /path/to/dir/Seq_Doclaynet/checkpoint-2000/config.json
     Model weights saved in /path/to/dir/Seq_Doclaynet/checkpoint-2000/pytorch_model.bin
 
-
-.. parsed-literal::
-
-    [32m[0906 15:27.46 @eval.py:157][0m [32mINF[0m Starting evaluation...
-    [32m[0906 15:27.46 @accmetric.py:404][0m [32mINF[0m Confusion matrix: 
-     [36m|    predictions ->  |   1 |   2 |   3 |   4 |
+    [0906 15:27.46 @eval.py:157]Starting evaluation...
+    [0906 15:27.46 @accmetric.py:404]Confusion matrix: 
+    |    predictions ->  |   1 |   2 |   3 |   4 |
     |     ground truth | |     |     |     |     |
     |                  v |     |     |     |     |
     |-------------------:|----:|----:|----:|----:|
     |                  1 |  63 |   0 |   0 |   0 |
     |                  2 |   0 |  15 |   0 |   0 |
     |                  3 |   0 |   0 |  43 |   0 |
-    |                  4 |   0 |   0 |   1 |  39 |[0m
+    |                  4 |   0 |   0 |   1 |  39 |
+```
 
-
-.. code:: ipython3
+```python
 
     path_config_json = "/path/to/dir/Seq_Doclaynet/checkpoint-2000/config.json"
     path_weights = "/path/to/dir/Seq_Doclaynet/checkpoint-2000/pytorch_model.bin"
@@ -321,30 +316,29 @@ Fine tuning
     
     All the weights of LayoutLMForSequenceClassification were initialized from the model checkpoint at /home/janis/Tests/Seq_Doclaynet/checkpoint-2000/pytorch_model.bin.
     If your task is similar to the task the model of the checkpoint was trained on, you can already use LayoutLMForSequenceClassification for predictions without further training.
+```
 
+```
 
-.. parsed-literal::
-
-    [32m[0906 15:29.45 @eval.py:157][0m [32mINF[0m Starting evaluation...
-    [32m[0906 15:29.45 @accmetric.py:404][0m [32mINF[0m Confusion matrix: 
-     [36m|    predictions ->  |   1 |   2 |   3 |   4 |
+    [0906 15:29.45 @eval.py:157]Starting evaluation...
+    [0906 15:29.45 @accmetric.py:404]Confusion matrix: 
+    |    predictions ->  |   1 |   2 |   3 |   4 |
     |     ground truth | |     |     |     |     |
     |                  v |     |     |     |     |
     |-------------------:|----:|----:|----:|----:|
     |                  1 |  45 |   0 |   0 |   0 |
     |                  2 |   0 |  17 |   0 |   0 |
     |                  3 |   0 |   0 |  56 |   0 |
-    |                  4 |   0 |   0 |   0 |  43 |[0m
+    |                  4 |   0 |   0 |   0 |  43 |
+```
 
+## Conclusion
 
-Conclusion
-~~~~~~~~~~
 
 LayoutLM delivers excellent results when classifying documents from
 other domains.
 
-Follow up:
-~~~~~~~~~~
+## Follow up:
 
 Can you reduce the training set?
 
@@ -357,22 +351,21 @@ of effort.
 We choose a distribution where training data is only about 10% of the
 total data set.
 
-.. code:: ipython3
+```python
 
     doclaynet = dd.get_dataset("doclaynet-seq")
     
     merge = dd.MergeDataset(doclaynet)
     merge.buffer_datasets()
     merge.split_datasets(ratio=0.9)
+```
 
 
-.. parsed-literal::
-
-    [32m[0906 15:43.46 @base.py:270][0m [32mINF[0m ___________________ Number of datapoints per split ___________________
-    [32m[0906 15:43.46 @base.py:271][0m [32mINF[0m {'test': 1494, 'train': 322, 'val': 1495}
+    [0906 15:43.46 @base.py:270][0m ___________________ Number of datapoints per split ___________________
+    [0906 15:43.46 @base.py:271][0m {'test': 1494, 'train': 322, 'val': 1495}
 
 
-.. code:: ipython3
+```python
 
     dataset_train = merge
     dataset_val = merge
@@ -390,35 +383,32 @@ total data set.
                          dataset_val= dataset_val,
                          metric=metric,
                          pipeline_component_name="LMSequenceClassifierService")
+```
 
+```
 
-.. parsed-literal::
-
-    [32m[0906 15:43.59 @maputils.py:205][0m [32mINF[0m Ground-Truth category distribution:
-     [36m|       category       | #box   |      category      | #box   |  category  | #box   |
+    [0906 15:43.59 @maputils.py:205]Ground-Truth category distribution:
+    |       category       | #box   |      category      | #box   |  category  | #box   |
     |:--------------------:|:-------|:------------------:|:-------|:----------:|:-------|
     |  FINANCIAL_REPORTS   | 108    | GOVERNMENT_TENDERS | 32     |  MANUALS   | 99     |
     | LAWS_AND_REGULATIONS | 83     |                    |        |            |        |
-    |        total         | 322    |                    |        |            |        |[0m
-    [32m[0906 15:43.59 @custom.py:133][0m [32mINF[0m Make sure to call .reset_state() for the dataflow otherwise an error will be raised
+    |        total         | 322    |                    |        |            |        |
+    [0906 15:43.59 @custom.py:133][0m Make sure to call .reset_state() for the dataflow otherwise an error will be raised
 
-
-.. parsed-literal::
-
-    [32m[0906 15:45.13 @accmetric.py:404][0m [32mINF[0m Confusion matrix: 
-     [36m|    predictions ->  |   1 |   2 |   3 |   4 |
+    [0906 15:45.13 @accmetric.py:404]Confusion matrix: 
+    |    predictions ->  |   1 |   2 |   3 |   4 |
     |     ground truth | |     |     |     |     |
     |                  v |     |     |     |     |
     |-------------------:|----:|----:|----:|----:|
     |                  1 | 436 |   0 |   3 |  11 |
     |                  2 |   4 | 139 |   0 |   4 |
     |                  3 |   0 |   0 | 436 |   4 |
-    |                  4 |   2 |   0 |   0 | 456 |[0m
+    |                  4 |   2 |   0 |   0 | 456 |
+```
 
 
+## Conclusion:
 
-Conclusion:
-~~~~~~~~~~~
 
 We stop the training after 100 iterations because the first evaluation
 with Confusion Matrix already shows that the results are excellent. We want to emphasize that we have not looked at

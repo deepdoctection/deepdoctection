@@ -20,8 +20,10 @@
 Operations for [N, 4] numpy arrays representing bounding boxes.
 
 Example box operations that are supported:
-  * Areas: compute bounding box areas
-  * IOU: pairwise intersection-over-union scores
+
+-  Areas: compute bounding box areas
+
+-  IOU: pairwise intersection-over-union scores
 """
 
 import numpy as np

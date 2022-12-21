@@ -18,12 +18,12 @@
 """
 Module for DocLayNet dataset. Place the dataset as follows
 
-|    DocLayNet_core
-|    ├── COCO
-|    │ ├── test.json
-|    │ ├── val.json
-|    ├── PNG
-|    │ ├── 0a0d43e301facee9e99cc33b9b16e732dd207135f4027e75f6aea2bf117535a2.png
+    DocLayNet_core
+    ├── COCO
+    │ ├── test.json
+    │ ├── val.json
+    ├── PNG
+    │ ├── 0a0d43e301facee9e99cc33b9b16e732dd207135f4027e75f6aea2bf117535a2.png
 """
 
 import os

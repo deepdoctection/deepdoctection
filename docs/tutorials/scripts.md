@@ -1,15 +1,12 @@
-Some Tensorpack trainings scripts
----------------------------------
+# Some Tensorpack trainings scripts
 
 Script to train a model for cell detection on Pubtabnet. Use `TRAIN.LR_SCHEDULE=2x` to train
 from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
 
-.. code:: ipython3
+```python
 
     import os
     import deepdoctection as dd
-
-.. code:: ipython3
 
     pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.filter_categories(categories="cell")
@@ -39,12 +36,13 @@ from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
                          metric=coco_metric,
                          pipeline_component_name="ImageLayoutService"
                          )
+```
 
 Script to train a model for row/column detection on Pubtabnet. Use `TRAIN.LR_SCHEDULE=2x` to train
 from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
 
 
-.. code:: ipython3
+```python
 
     pubtabnet = dd.get_dataset("pubtabnet")
     pubtabnet.dataflow.categories.set_cat_to_sub_cat({"item":"item"})
@@ -75,3 +73,4 @@ from scratch else `TRAIN.LR_SCHEDULE=1x` to train from the last checkpoint.
                          metric_name="coco",
                          pipeline_component_name="ImageLayoutService"
                          )
+```

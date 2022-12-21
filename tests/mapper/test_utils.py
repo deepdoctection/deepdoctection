@@ -37,7 +37,7 @@ class TestDefaultMapper:
     @mark.basic
     def test_func_is_called_with_default_arguments() -> None:
         """
-        Function in DefaultMapper is called with first argument of default_mapper meth: __call__ argument and all other
+        Function in DefaultMapper is called with first argument of default_mapper  __call__ argument and all other
         arguments from DefaultMapper attributes.
         """
 

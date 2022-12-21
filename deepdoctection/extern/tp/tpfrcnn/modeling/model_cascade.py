@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_cascade.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_cascade.py>
 """
 
 # pylint: disable=import-error

@@ -3,7 +3,7 @@
 
 ## Requirements
 
-![test](../tutorials/pics/requirements_deepdoctection.jpg)
+![](./tutorials/_imgs/requirements_deepdoctection.jpg)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 by the user. 
@@ -13,7 +13,7 @@ by the user.
 - [Poppler](https://poppler.freedesktop.org/)
 - PyTorch >= 1.8 **or** Tensorflow >=2.8 and CUDA
 
-With respect to the Deep Learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
+With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).
 
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
@@ -29,7 +29,7 @@ In many applications Tesseract is used to ocr documents. Check the [installation
 instruction.
 
 
-### Install with pip
+## Install with pip
 
 We recommend using a virtual environment. You can install **deep**doctection via pip or from source. Bug fixes or 
 enhancements will be deployed to PyPi every 4 to 6 weeks.
@@ -54,15 +54,15 @@ pip install deepdoctection[pt]
 This will install **deep**doctection with all dependencies listed in the dependency diagram above the **deep**doctection 
 layer. This includes:
 
-- DocTr, an OCR library as alternative to Tesseract
-- Pdfplumber, a PDF text miner based on Pdfminer.six
-- Fasttext, a library for efficient learning of word representations and sentence classification. Used for language
+- **DocTr**, an OCR library as alternative to Tesseract
+- **Pdfplumber**, a PDF text miner based on Pdfminer.six
+- **Fasttext**, a library for efficient learning of word representations and sentence classification. Used for language
   recognition only.
-- Boto3, the AWS SDK for Python to provide an API to AWS Textract (only OCR service). This is a paid service and 
+- **Boto3**, the AWS SDK for Python to provide an API to AWS Textract (only OCR service). This is a paid service and 
   requires an AWS account.
-- Tensorpack, if the Tensorflow setting has been installed. Tensorpack is a library for training models and also 
+- **Tensorpack**, if the Tensorflow setting has been installed. Tensorpack is a library for training models and also 
   provides many examples. We only use the object detection model.
-- Transformers, if the PyTorch setting has been installed. The library provides a lot of different models in various
+- **Transformers**, if the PyTorch setting has been installed. The library provides a lot of different models in various
   frameworks. We currently only provide some PyTorch model wrappers. 
     
 

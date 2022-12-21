@@ -48,8 +48,8 @@ __all__ = [
 
 def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
     """
-    custom func: as_dict to use instead of :func:`dataclasses.asdict` . It also checks if a dataclass has a
-    :meth:'remove_keys' and will remove all attributes that are returned. Ensures that private attributes are not taken
+    custom func: as_dict to use instead of `dataclasses.asdict` . It also checks if a dataclass has a
+    'remove_keys' and will remove all attributes that are returned. Ensures that private attributes are not taken
     into account when generating a dict.
 
     :param obj: Object to convert into a dict.
@@ -119,7 +119,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     this case rather small.
 
     :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
-                      :func:`utils.fs.load_bytes_from_pdf_file`
+                      `utils.fs.load_bytes_from_pdf_file`
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
     :return: Image as numpy array.
     """
@@ -153,7 +153,7 @@ def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None
     directly.
 
     :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
-                      :func:`utils.fs.load_bytes_from_pdf_file`
+                      `utils.fs.load_bytes_from_pdf_file`
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
     :return: Image as numpy array.
     """

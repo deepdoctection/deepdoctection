@@ -1,25 +1,26 @@
-Evaluation of table recognition
-===============================
+# Evaluation of table recognition
 
-The following script demonstrates how to setup a table recognition pipeline and how to evaluate predicted results
+
+The following script demonstrates how to set up a table recognition pipeline and how to evaluate predicted results
 on a subset of the Pubtabnet validation set. We compare html representations from the evaluation set
-and the predictions using TEDS metric as described in https://arxiv.org/abs/1911.10683 . We evaluate the html structure
+and the predictions using TEDS metric as described in [Zhong et. all](https://arxiv.org/abs/1911.10683) . We evaluate the html structure
 only and ignore text, because many open source tools perform very poorly on text from images with low resolution as
 given by Pubtabnet.
 
 
-.. code:: ipython3
+```python
 
     import os
     from typing import List
 
     import deepdoctection as dd
+```
 
 The table recognizer is identical with the table recognizing part of the dd-Analyzer. As input it expects
 image datapoints with layout objects and in particular tables.
 
 
-.. code:: ipython3
+```python
 
     def get_table_recognizer():
         cfg = dd.set_config_by_yaml("/home/janis/.cache/deepdoctection/configs/dd/conf_dd_one.yaml")
@@ -80,9 +81,9 @@ image datapoints with layout objects and in particular tables.
         )
         pipe_component_list.append(order)
         return dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
+```
 
-
-.. code:: ipython3
+```python
 
     pubtabnet = dd.Pubtabnet()
     teds = dd.metric_registry.get("teds")
@@ -95,4 +96,4 @@ image datapoints with layout objects and in particular tables.
     # out [{'teds_score': 0.810958120214249, 'num_samples': 441}]
     # Many samples need to be filtered before evaluation due to the fact, that OCR performs so poorly
     # (invalid string generation) such that the returned html cannot be parsed.
-
+```

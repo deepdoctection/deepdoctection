@@ -47,15 +47,15 @@ class ImageAnnotationBaseView(ImageAnnotation):
     sub categories collected while running through a pipeline. In order to get properties for a specific
     category one has to understand the internal data structure.
 
-    To circumvent this obstacle :class:`ImageAnnotationBaseView` provides the :meth:`__getattr__` so that
-    to gather values defined by :class:`ObjectTypes`. To be more precise: A sub class will have attributes either
-    defined explicitly by a `@property` or by the set of :meth:`get_attribute_names()` . Do not define any attribute
+    To circumvent this obstacle `ImageAnnotationBaseView` provides the `__getattr__` so that
+    to gather values defined by `ObjectTypes`. To be more precise: A sub class will have attributes either
+    defined explicitly by a `@property` or by the set of `get_attribute_names()` . Do not define any attribute
     setter method and regard this class as a view to the super class.
 
     The class does contain its base page, which mean, that it is possible to retrieve all annotations that have a
     relation.
 
-    :param: base_page: `Page` class instantiated by the lowest hierarchy :class:`Image`
+    :param: base_page: `Page` class instantiated by the lowest hierarchy `Image`
     """
 
     base_page: "Page"
@@ -139,10 +139,10 @@ class Word(ImageAnnotationBaseView):
 class Layout(ImageAnnotationBaseView):
     """
     Layout specific sub class of `ImageAnnotationBaseView`. In order check what ImageAnnotation will be wrapped
-    into :class:`Layout`, please consult `IMAGE_ANNOTATION_TO_LAYOUTS`.
+    into `Layout`, please consult `IMAGE_ANNOTATION_TO_LAYOUTS`.
 
-    :param: Pass the `LayoutObject` that is supposed to be used for :attr:`words`. It is possible that the
-            text_container is equal to `self.category_name`, in which case :attr:`words` returns `self`.
+    :param: Pass the `LayoutObject` that is supposed to be used for `words`. It is possible that the
+            text_container is equal to `self.category_name`, in which case `words` returns `self`.
     """
 
     text_container: Optional[ObjectTypes] = None
@@ -271,7 +271,7 @@ def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectType
 class Page(Image):
     """
     Consumer class for its super `Image` class. It comes with some handy `@property` as well as
-    custom :meth:`__getattr__` to give easier access to various information that are stored in the base class
+    custom `__getattr__` to give easier access to various information that are stored in the base class
     as `ImageAnnotation` or `CategoryAnnotation`.
 
     Its factory function `Page().from_image(image, text_container, text_block_names)` creates for every
@@ -451,7 +451,7 @@ class Page(Image):
     @property
     def text_no_line_break(self) -> str:
         """
-        Get text of all layouts. While :attr:`text` will do a line break for each layout block this here will return the
+        Get text of all layouts. While `text` will do a line break for each layout block this here will return the
         string in one single line.
 
         :return: Text string
@@ -479,7 +479,7 @@ class Page(Image):
 
         **Example:**
 
-            .. code-block:: python
+            
 
                 from matplotlib import pyplot as plt
 
@@ -573,7 +573,7 @@ class Page(Image):
         dry: bool = False,
     ) -> Optional[JsonDict]:
         """
-        Export image as dictionary. As numpy array cannot be serialized :attr:`image` values will be converted into
+        Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
         base64 encodings.
         :param image_to_json: If True will save the image as b64 encoded string in output
         :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations

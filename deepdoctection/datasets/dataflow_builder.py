@@ -33,13 +33,13 @@ class DataFlowBaseBuilder(ABC):
     """
     Abstract base class for building the dataflow of a dataset.
 
-    DataFlowBase has an abstract :meth:`build` that returns the dataflow of a dataset. The dataflow should be
+    DataFlowBase has an abstract `build` that returns the dataflow of a dataset. The dataflow should be
     designed in such a way that each data point is already mapped in the form of the core data model and thus
-    corresponds to a :class:`datapoint.Image` instance. Any characteristics can be passed as arguments and implemented,
-    which influence the return of the dataflow. These include, for example, the "split", "max_datapoints" but also
+    corresponds to a `datapoint.Image` instance. Any characteristics can be passed as arguments and implemented,
+    which influence the return of the dataflow. These include, for example, the `split`, `max_datapoints` but also
     specific further transformations, such as cutting and returning an annotation as a sub image. Within this method,
     checks and consistency checks should also be carried out so that a curated data flow is available as return value.
-    Such specific transformations should be implemented by transferring a value of the argument "build_mode".
+    Such specific transformations should be implemented by transferring a value of the argument `build_mode`.
     """
 
     def __init__(
@@ -105,7 +105,7 @@ class DataFlowBaseBuilder(ABC):
     @abstractmethod
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
-        Consult the docstring w.r.t :class:`DataFlowBaseBuilder`.
+        Consult the docstring w.r.t `DataFlowBaseBuilder`.
 
         :param kwargs: A custom set of arguments/values
         :return: dataflow

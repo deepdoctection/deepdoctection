@@ -57,7 +57,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
 
 def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
     """
-    Calls AWS Textract client (:meth:`detect_document_text`) and returns plain OCR results.
+    Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
 
     :param client: botocore textract client
@@ -77,18 +77,18 @@ class TextractOcrDetector(ObjectDetector):
     """
     Text object detector based on AWS Textract OCR engine. Note that an AWS account as well as some additional
     installations are required, i.e AWS CLI and boto3. Note further, that the service is not free of charge. Additional
-    information can be found at: https://docs.aws.amazon.com/textract/?id=docs_gateway .
+    information can be found at: <https://docs.aws.amazon.com/textract/?id=docs_gateway> .
 
     The detector only calls the base OCR engine and does not return additional Textract document analysis features.
 
-    .. code-block:: python
+    
 
         textract_predictor = TextractOcrDetector()
         detection_result = textract_predictor.predict(bgr_image_as_np_array)
 
     or
 
-    .. code-block:: python
+    
 
         textract_predictor = TextractOcrDetector()
         text_extract = TextExtractionService(textract_predictor)

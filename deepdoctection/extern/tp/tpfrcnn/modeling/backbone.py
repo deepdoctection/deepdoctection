@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/backbone.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/backbone.py>
 """
 
 from contextlib import ExitStack, contextmanager
@@ -26,7 +26,7 @@ from tensorpack.tfutils.varreplace import custom_getter_scope, freeze_variables
 @layer_register(log_shape=True)
 def GroupNorm(x, group=32, gamma_initializer=tf.constant_initializer(1.0)):
     """
-    More code that reproduces the paper can be found at https://github.com/ppwwyyxx/GroupNorm-reproduce/.
+    More code that reproduces the paper can be found at <https://github.com/ppwwyyxx/GroupNorm-reproduce/>.
     """
     shape = x.get_shape().as_list()
     ndims = len(shape)
@@ -197,7 +197,7 @@ def resnet_bottleneck(l, ch_out, stride, cfg):
 
 def resnext32x4d_bottleneck(l, ch_out, stride, cfg):
     """
-    Defining Resnext bottleneck https://arxiv.org/abs/1611.05431
+    Defining Resnext bottleneck <https://arxiv.org/abs/1611.05431>
 
     :param l: tf.Tensor
     :param ch_out: number of output features

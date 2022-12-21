@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_frcnn.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_frcnn.py>
 """
 # pylint: disable=import-error
 import tensorflow as tf

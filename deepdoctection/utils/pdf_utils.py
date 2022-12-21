@@ -46,7 +46,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
     generates a copy and decrypts the copy using qpdf. The result is saved as the original
     document.
 
-    qpdf: http://qpdf.sourceforge.net/
+    qpdf: <http://qpdf.sourceforge.net/>
 
     Note, that this is decryption does not work, if the pdf has a readable protection, in which case we do not
     provide any solution.
@@ -73,7 +73,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
 def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
-    encrypted. (See :func:`decrypt_pdf_document` to understand what is meant with "decrypt").
+    encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
 
     :param path: A path to a pdf document
     :return: A file reader object from which you can iterate through the document.
@@ -106,7 +106,7 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
 
 def get_pdf_file_writer() -> PdfFileWriter:
     """
-    PdfFileWriter instance
+    `PdfFileWriter` instance
     """
     return PdfFileWriter()
 
@@ -118,7 +118,7 @@ class PDFStreamer:
 
     **Example:**
 
-         .. code-block:: python
+         
 
              df = dataflow.DataFromIterable.PDFStreamer(path=path)
              df.reset_state()
@@ -209,7 +209,7 @@ def _run_poppler(poppler_args: List[str]) -> None:
 def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> ImageType:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
-    file and then call poppler via pdftoppm resp. pdftocairo if the former is not available.
+    file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.
 
     :param pdf_bytes: Bytes representing the PDF file
     :param size: Size of the resulting image(s), uses (width, height) standard

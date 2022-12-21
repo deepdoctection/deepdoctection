@@ -18,11 +18,11 @@
 """
 Module for Testlayout dataset. Install the dataset following the folder structure
 
-|    testlayout
-|    ├── predict
-|    │ ├── xrf_layout_test_predict.jsonl
-|    ├── test
-|    │ ├── xrf_layout_test.jsonl
+    testlayout
+    ├── predict
+    │ ├── xrf_layout_test_predict.jsonl
+    ├── test
+    │ ├── xrf_layout_test.jsonl
 """
 
 from typing import Mapping, Union

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for training Detectron2 GeneralizedRCNN
+Module for training Detectron2 `GeneralizedRCNN`
 """
 
 
@@ -54,7 +54,7 @@ def _set_config(path_config_yaml: str, conf_list: List[str]) -> CfgNode:
 
 class D2Trainer(DefaultTrainer):
     """
-    Detectron2 DefaultTrainer with some custom method for handling datasets and running evaluation. The setting is made
+    Detectron2 `DefaultTrainer` with some custom method for handling datasets and running evaluation. The setting is made
     to train standard models in detectron2.
     """
 
@@ -66,7 +66,7 @@ class D2Trainer(DefaultTrainer):
 
     def build_train_loader(self, cfg: CfgNode) -> DataLoader[Any]:  # pylint: disable=W0221
         """
-        Overwritten method from DefaultTrainer.
+        Overwritten method from `DefaultTrainer`.
 
         :param cfg: Configuration
         :return: The data loader for a given dataset adapter, mapper.
@@ -77,7 +77,7 @@ class D2Trainer(DefaultTrainer):
 
     def eval_with_dd_evaluator(self, **build_eval_kwargs: str) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
-        Running the Evaluator. This method will be called from the EvalHook
+        Running the Evaluator. This method will be called from the `EvalHook`
 
         :param build_eval_kwargs: dataflow eval config kwargs of the underlying dataset
         :return: A dict of evaluation results
@@ -129,16 +129,14 @@ def train_d2_faster_rcnn(
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
-    Adaptation of https://github.com/facebookresearch/detectron2/blob/main/tools/train_net.py for training Detectron2
+    Adaptation of <https://github.com/facebookresearch/detectron2/blob/main/tools/train_net.py> for training Detectron2
     standard models
 
-    Train Detectron2 from Scratch or fine-tune a model using this API. Compared to Tensorpack this framework trains much
-    faster, e.g. https://detectron2.readthedocs.io/en/latest/notes/benchmarks.html .
+    Train Detectron2 from scratch or fine-tune a model using this API. Compared to Tensorpack this framework trains much
+    faster, e.g. <https://detectron2.readthedocs.io/en/latest/notes/benchmarks.html> .
 
     This training script is devoted to the case where one cluster with one GPU is available. To run on several machines
-    with more than one GPU use :func:`detectron2.engine.launch` .
-
-    .. code-block:: python
+    with more than one GPU use `detectron2.engine.launch` .
 
         if __name__ == "__main__":
 

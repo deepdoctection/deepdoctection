@@ -37,7 +37,7 @@ from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
 class DatasetBase(ABC):
     """
-    Base class for a dataset. Requires to implementing :meth:`_categories` :meth:`_info` and :meth:`_builder` by
+    Base class for a dataset. Requires to implementing `_categories` `_info` and `_builder` by
     yourself. These methods must return a DatasetCategories, a DatasetInfo and a DataFlow_Builder instance, which
     together give a complete description of the dataset. Compare some specific dataset cards in the :mod:`instance` .
     """
@@ -133,7 +133,7 @@ class MergeDataset(DatasetBase):
     guarantee flexibility it is possible to pass customized dataflows explicitly to maybe reduce the dataflow size from
     one dataset or to use different splits from different datasets.
 
-    When yielding datapoint from :meth::build(), note that one dataset will pass all its samples successively which
+    When yielding datapoint from :build(), note that one dataset will pass all its samples successively which
     might reduce randomness for training, especially when using datasets from the same domain. Buffering all datasets
     (without loading heavy components like images) is therefore possible and the merged dataset can be shuffled.
 
@@ -147,8 +147,6 @@ class MergeDataset(DatasetBase):
 
     **Example:**
 
-        .. code-block:: python
-
             dataset_1 = get_dataset("dataset_1")
             dataset_2 = get_dataset("dataset_2")
 
@@ -158,8 +156,6 @@ class MergeDataset(DatasetBase):
 
 
     **Example:**
-
-        .. code-block:: python
 
             dataset_1 = get_dataset("dataset_1")
             dataset_2 = get_dataset("dataset_2")
@@ -207,9 +203,9 @@ class MergeDataset(DatasetBase):
                 Building the dataflow of merged datasets. No argument will affect the stream if the dataflows have
                 been explicitly passed. Otherwise, all kwargs will be passed to all dataflows. Note that each dataflow
                 will iterate until it is exhausted. To guarantee randomness across different datasets cache all
-                datapoints and shuffle them afterwards (e.g. use :meth::buffer_dataset() ).
+                datapoints and shuffle them afterwards (e.g. use :buffer_dataset() ).
 
-                :param kwargs: arguments for :meth::build()
+                :param kwargs: arguments for :build()
                 :return: Dataflow
                 """
                 df_list = []
@@ -247,7 +243,7 @@ class MergeDataset(DatasetBase):
         """
         Buffer datasets with given configs. If dataflows are passed explicitly it will cache their streamed output.
 
-        :param kwargs: arguments for :meth::build()
+        :param kwargs: arguments for :build()
         :return: Dataflow
         """
         df = self.dataflow.build(**kwargs)
@@ -348,8 +344,6 @@ class CustomDataset(DatasetBase):
         :param dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describe
                      the machine learning task the dataset is built for. You can get all registered types with
 
-                     .. code-block:: python
-
                             types = dd.object_types_registry.get("DatasetType")
                             print({t for t in types})
 
@@ -363,7 +357,7 @@ class CustomDataset(DatasetBase):
                                     Suppose an object `LayoutType.cell` has two additional information in the annotation
                                     file: `CellType.header, CellType.body`. You can then write:
 
-                                    .. code-block:: python
+                                    
 
                                         {LayoutType.cell: {CellType.header: [CellType.header, CellType.body]}
 
@@ -372,7 +366,7 @@ class CustomDataset(DatasetBase):
                                     and one of the two values `CellType.header, CellType.body`
         :param annotation_files: A mapping to one or more annotation files, e.g.
 
-                                   .. code-block:: python
+                                   
 
                                        annotation_file = {"train": "train_file.json", "test": "test_file.json"}
         """

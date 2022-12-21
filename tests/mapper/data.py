@@ -1812,7 +1812,7 @@ class DatapointXfund:
     }
     ner_token_to_id_mapping = {
         LayoutType.word: {
-            WordType.token_class: {
+            WordType.token_ {
                 TokenClasses.other: "1",
                 TokenClasses.question: "2",
                 TokenClasses.answer: "3",
@@ -1830,7 +1830,7 @@ class DatapointXfund:
             },
         },
         LayoutType.text: {
-            WordType.token_class: {
+            WordType.token_ {
                 TokenClasses.other: "1",
                 TokenClasses.question: "2",
                 TokenClasses.answer: "3",

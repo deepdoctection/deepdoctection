@@ -18,7 +18,7 @@
 """
 Module for deterministic image transformations and the sometimes necessary recalculation
 of coordinates. Most have the ideas have been taken from
-https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/transform.py .
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/transform.py> .
 """
 
 from abc import ABC, abstractmethod
@@ -37,7 +37,7 @@ __all__ = ["ResizeTransform", "InferenceResize"]
 class BaseTransform(ABC):
     """
     A deterministic image transformation. This class is also the place to provide a default implementation to any
-    :meth:`apply_xxx` method. The current default is to raise NotImplementedError in any such methods.
+    `apply_xxx` method. The current default is to raise NotImplementedError in any such methods.
     All subclasses should implement `apply_image`. The image should be of type uint8 in range [0, 255], or
     floating point images in range [0, 1] or [0, 255]. Some subclasses may implement `apply_coords`, when applicable.
     It should take and return a numpy array of Nx2, where each row is the (x, y) coordinate.
@@ -94,7 +94,7 @@ class ResizeTransform(BaseTransform):
 class InferenceResize:
     """
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size. This is
-    the inference version of :class:`extern.tp.frcnn.common.CustomResize` .
+    the inference version of `extern.tp.frcnn.common.CustomResize` .
     """
 
     def __init__(self, short_edge_length: int, max_size: int, interp: str = cv2.INTER_LINEAR) -> None:

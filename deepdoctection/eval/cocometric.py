@@ -114,7 +114,7 @@ if cocotools_available():
 @metric_registry.register("coco")
 class CocoMetric(MetricBase):
     """
-    Metric induced by :class:`pycocotools.cocoeval.COCOeval`.
+    Metric induced by `pycocotools.cocoeval.COCOeval`.
     """
 
     name = "mAP and mAR"
