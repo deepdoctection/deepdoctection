@@ -44,8 +44,10 @@ fonttools==4.38.0
     # via matplotlib
 ghp-import==2.1.0
     # via mkdocs
-griffe==0.25.1
-    # via mkdocstrings-python
+griffe==0.25.0
+    # via
+    #   deepdoctection (setup.py)
+    #   mkdocstrings-python
 huggingface-hub==0.10.1
     # via
     #   deepdoctection (setup.py)
