@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_url: https://example.com/
+site_name: deepdoctection
+repo_url: https://github.com/deepdoctection/deepdoctection
+edit_uri: blob/main/docs
+site_description: A Document AI package
+
+theme:
+  name: material
+  palette:
+    primary: blue
+  logo: ./tutorials/_imgs/dd_logo_only.png
+  features:
+    - navigation.tabs
+    - navigation.indexes
+
+nav:
+    - Deepdoctection: index.md
+    - About: why.md
+    - Install: install.md
+    - Tutorials:
+        - Overview: ./tutorials/tutorials.md
+        - Get started: ./tutorials/get_started_notebook.md
+        - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
+        - Datasets and evaluation: ./tutorials/datasets_and_eval_notebook.md
+        - LayoutLM for sequence classification: ./tutorials/using_layoutlm_for_sequence_classification_notebook.md
+    - Deep dive tutorials:
+        - Architecture: ./tutorials/architecture.md
+        - Datasets: ./tutorials/datasets.md
+        - Customized parsing: ./tutorials/layout_parsing_structure.md
+        - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
+    - Notes:
+        - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
+        - Various topics around LayoutLMv1 - part II: ./tutorials/layoutlm_various_topics_pt2.md
+    - Scripts:
+        - Evaluation Tensorpack vs. Detectron2: ./tutorials/eval_tp_vs_d2.md
+        - Various scripts: ./tutorials/table_recognition_eval.md
+        - Evaluation of table recognition: ./tutorials/table_recognition_eval.md
+        - Tensorpack training scripts: ./tutorials/scripts.md
+    - API:
+        - deepdoctection.analyzer: ./modules/deepdoctection.analyzer.md
+        - deepdoctection.dataflow: ./modules/deepdoctection.dataflow.md
+        - deepdoctection.datapoint: ./modules/deepdoctection.datapoint.md
+        - deepdoctection.datasets: ./modules/deepdoctection.datasets.md
+        - deepdoctection.datasets.instances: ./modules/deepdoctection.datasets.instances.md
+        - deepdoctection.eval: ./modules/deepdoctection.eval.md
+        - deepdoctection.extern: ./modules/deepdoctection.extern.md
+        - deepdoctection.extern.pt: ./modules/deepdoctection.extern.pt.md
+        - deepdoctection.extern.tp: ./modules/deepdoctection.extern.tp.md
+        - deepdoctection.mapper: ./modules/deepdoctection.mapper.md
+        - deepdoctection.pipe: ./modules/deepdoctection.pipe.md
+        - deepdoctection.train: ./modules/deepdoctection.train.md
+        - deepdoctection.utils: ./modules/deepdoctection.utils.md
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          line_length: 120
+          docstring_style: sphinx
+          merge_init_into_class: True
+watch:
+    - deepdoctection
