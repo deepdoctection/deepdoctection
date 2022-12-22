@@ -44,8 +44,6 @@ class FasttextLangDetector(LanguageDetector):
 
     When loading the models via the ModelCatalog, the original and unmodified models are used.
 
-    
-
         path_weights = ModelCatalog.get_full_path_weights("fasttext/lid.176.bin")
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
         lang_detector = FasttextLangDetector(path_weights,profile.categories)

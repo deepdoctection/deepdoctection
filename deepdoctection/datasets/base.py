@@ -357,16 +357,12 @@ class CustomDataset(DatasetBase):
                                     Suppose an object `LayoutType.cell` has two additional information in the annotation
                                     file: `CellType.header, CellType.body`. You can then write:
 
-                                    
-
                                         {LayoutType.cell: {CellType.header: [CellType.header, CellType.body]}
 
                                     This setting assumes that later in the mapping the `ImageAnnotation` with
                                     `category_name=LayoutType.cell` will have a sub category of key `CellType.header`
                                     and one of the two values `CellType.header, CellType.body`
         :param annotation_files: A mapping to one or more annotation files, e.g.
-
-                                   
 
                                        annotation_file = {"train": "train_file.json", "test": "test_file.json"}
         """

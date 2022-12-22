@@ -50,11 +50,8 @@ class MultiThreadPipelineComponent:
 
     Note that the order in the dataflow and when returning lists is generally is no longer retained.
 
-    
-
         some_component = SubImageLayoutService(some_predictor, some_category)
         some_component:clone = some_component.clone()
-
 
         multi_thread_comp = MultiThreadPipelineComponent(pipeline_components=[some_component,some_component_clone],
                                                          pre_proc_func=maybe_load_image,

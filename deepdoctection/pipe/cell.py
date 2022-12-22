@@ -114,8 +114,6 @@ class SubImageLayoutService(PredictorPipelineComponent):
 
     **Example**
 
-        
-
             d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
             item_component = SubImageLayoutService(d_items, names.C.TAB, {1: 6}, True)
     """

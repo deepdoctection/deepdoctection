@@ -112,9 +112,7 @@ def enable_death_signal(_warn: bool = True) -> None:
         # is SIGHUP a good choice?
         prctl.set_pdeathsig(signal.SIGHUP)
 
-
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py
-
 
 @no_type_check
 def start_proc_mask_signal(proc):

@@ -44,8 +44,6 @@ class CacheData(ProxyDataFlow):
 
     **Example:**
 
-        
-
             df_list = CacheData(df).get_cache()   # buffers the whole dataflow and return a list of all datapoints
     """
 

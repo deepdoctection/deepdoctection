@@ -369,8 +369,6 @@ class TableSegmentationRefinementService(PipelineComponent):
 
     **Example**
 
-        
-
             layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
             cell = SubImageLayoutService(cell_detector, "TABLE")
             row_col = SubImageLayoutService(row_col_detector, "TABLE")

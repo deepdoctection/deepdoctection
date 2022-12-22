@@ -108,8 +108,6 @@ class ObjectDetector(PredictorBase):
 
     **Example:**
 
-        
-
             MyFancyTensorpackPredictor(TensorpackPredictor,ObjectDetector)
 
     and implement the `predict`.

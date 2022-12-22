@@ -63,8 +63,6 @@ class Evaluator:
         the coco metric all predicted objects that are not in the set of filtered objects will be not taken into
         account.
 
-        
-
             publaynet = get_dataset("publaynet")
             publaynet.dataflow.categories.filter_categories(categories=["TEXT","TITLE"])
             coco_metric = metric_registry.get("coco")

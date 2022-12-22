@@ -116,8 +116,6 @@ class D2FrcnnDetector(ObjectDetector):
     the standard D2 output that takes into account of the situation that detected objects are disjoint. For more infos
     on this topic, see <https://github.com/facebookresearch/detectron2/issues/978> .
 
-    
-
         config_path = ModelCatalog.get_full_path_configs("dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model-800000-layout.pkl")
         categories = ModelCatalog.get_profile("item/d2_model-800000-layout.pkl").categories
