@@ -55,8 +55,6 @@ nav:
 
 plugins:
 - mkdocstrings:
-    extras:
-      - "python"
     handlers:
       python:
         options:
