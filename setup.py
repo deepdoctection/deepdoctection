@@ -88,6 +88,8 @@ _DEPS = [
     "mypy==0.942",
     # docs
     "jinja2==3.0.3",
+    "mkdocs-material",
+    "mkdocstrings",
     # test
     "pytest",
     "pytest-cov",
@@ -160,7 +162,9 @@ docs_deps = deps_list(
     "lxml-stubs",
     "pycocotools",
     "jdeskew",
-    "jinja2"
+    "jinja2",
+    "mkdocs-material",
+    "mkdocstrings"
 )
 
 

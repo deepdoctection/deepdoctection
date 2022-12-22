@@ -24,6 +24,8 @@ charset-normalizer==2.1.1
     # via
     #   pdfminer-six
     #   requests
+click==8.1.3
+    # via mkdocs
 contourpy==1.0.6
     # via matplotlib
 cryptography==38.0.4
@@ -38,6 +40,8 @@ filelock==3.8.2
     #   transformers
 fonttools==4.38.0
     # via matplotlib
+ghp-import==2.1.0
+    # via mkdocs
 huggingface-hub==0.10.1
     # via
     #   deepdoctection (setup.py)
@@ -45,11 +49,18 @@ huggingface-hub==0.10.1
 idna==3.4
     # via requests
 importlib-metadata==5.2.0
-    # via deepdoctection (setup.py)
+    # via
+    #   deepdoctection (setup.py)
+    #   markdown
+    #   mkdocs
 jdeskew==0.2.0
     # via deepdoctection (setup.py)
 jinja2==3.0.3
-    # via deepdoctection (setup.py)
+    # via
+    #   deepdoctection (setup.py)
+    #   mkdocs
+    #   mkdocs-material
+    #   mkdocstrings
 jmespath==1.0.1
     # via
     #   boto3
@@ -62,10 +73,34 @@ lxml==4.9.2
     # via deepdoctection (setup.py)
 lxml-stubs==0.4.0
     # via deepdoctection (setup.py)
+markdown==3.3.7
+    # via
+    #   mkdocs
+    #   mkdocs-autorefs
+    #   mkdocs-material
+    #   mkdocstrings
+    #   pymdown-extensions
 markupsafe==2.1.1
-    # via jinja2
+    # via
+    #   jinja2
+    #   mkdocstrings
 matplotlib==3.6.2
     # via pycocotools
+mergedeep==1.3.4
+    # via mkdocs
+mkdocs==1.4.2
+    # via
+    #   mkdocs-autorefs
+    #   mkdocs-material
+    #   mkdocstrings
+mkdocs-autorefs==0.4.1
+    # via mkdocstrings
+mkdocs-material==8.5.11
+    # via deepdoctection (setup.py)
+mkdocs-material-extensions==1.1.1
+    # via mkdocs-material
+mkdocstrings==0.19.1
+    # via deepdoctection (setup.py)
 mock==4.0.3
     # via deepdoctection (setup.py)
 msgpack==1.0.4
@@ -96,6 +131,7 @@ packaging==21.3
     #   deepdoctection (setup.py)
     #   huggingface-hub
     #   matplotlib
+    #   mkdocs
     #   transformers
 pdfminer-six==20221105
     # via pdfplumber
@@ -111,6 +147,12 @@ pycocotools==2.0.6
     # via deepdoctection (setup.py)
 pycparser==2.21
     # via cffi
+pygments==2.13.0
+    # via mkdocs-material
+pymdown-extensions==9.9
+    # via
+    #   mkdocs-material
+    #   mkdocstrings
 pyparsing==3.0.9
     # via
     #   matplotlib
@@ -120,12 +162,17 @@ pypdf2==2.10.0
 python-dateutil==2.8.2
     # via
     #   botocore
+    #   ghp-import
     #   matplotlib
 pyyaml==6.0
     # via
     #   deepdoctection (setup.py)
     #   huggingface-hub
+    #   mkdocs
+    #   pyyaml-env-tag
     #   transformers
+pyyaml-env-tag==0.1
+    # via mkdocs
 pyzmq==24.0.1
     # via
     #   deepdoctection (setup.py)
@@ -135,6 +182,7 @@ regex==2022.10.31
 requests==2.28.1
     # via
     #   huggingface-hub
+    #   mkdocs-material
     #   transformers
 s3transfer==0.6.0
     # via boto3
@@ -179,5 +227,7 @@ urllib3==1.26.13
     #   requests
 wand==0.6.10
     # via pdfplumber
+watchdog==2.2.0
+    # via mkdocs
 zipp==3.11.0
     # via importlib-metadata
