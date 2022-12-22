@@ -8,8 +8,8 @@ version: 2
 # Set the version of Python and other tools you might need
 build:
   os: ubuntu-20.04
-  tools:
-    python: "3.8"
+  #tools:
+  #  python: "3.8"
 
 # Build documentation in the docs/ directory with Mkdocs
 mkdocs:
@@ -19,7 +19,7 @@ mkdocs:
 # Optionally declare the Python requirements required to build your docs
 # RTD does not support installation of prctl which is a requirement for the package. To update requirements_.txt in docs/
 # do (1) uncomment line 47,48 in setup, in up-req-files. Do not forget do undo (1) once finished generating the file.
-#python:
-#  version: 3.8
-#  install:
-#    - requirements: docs/requirements_.txt
+python:
+  version: 3.8
+  install:
+    - requirements: docs/requirements_.txt
