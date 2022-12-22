@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_box.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_box.py>
 """
 from collections import namedtuple
 

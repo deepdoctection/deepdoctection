@@ -39,7 +39,7 @@ def image_to_d2_frcnn_training(
 ) -> Optional[JsonDict]:
     """
     Maps an image to a standard dataset dict as described in
-    https://detectron2.readthedocs.io/en/latest/tutorials/datasets.html. It further checks if the image is physically
+    <https://detectron2.readthedocs.io/en/latest/tutorials/datasets.html>. It further checks if the image is physically
     available, for otherwise the annotation will be filtered.
     Note, that the returned dict will not suffice for training as gt for RPN and anchors still need to be created.
 

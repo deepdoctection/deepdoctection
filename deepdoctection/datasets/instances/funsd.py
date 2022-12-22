@@ -18,19 +18,19 @@
 """
 Module for Funsd dataset.  Install the dataset following the folder structure
 
-|    funsd
-|    ├── testing_data
-|    │ ├── annotations
-|    │ │ ├── 82092117.json
-|    │ │ ├── 82092117_0338.json
-|    │ ├── images
-|    │ │ ├── 82092117.png
-|    │ │ ├── 82092117_0338.png
-|    ├── training_data
-|    │ ├── annotations
-|    │ │ ├── ...
-|    │ ├── images
-|    │ │ ├── ...
+    funsd
+    ├── testing_data
+    │ ├── annotations
+    │ │ ├── 82092117.json
+    │ │ ├── 82092117_0338.json
+    │ ├── images
+    │ │ ├── 82092117.png
+    │ │ ├── 82092117_0338.png
+    ├── training_data
+    │ ├── annotations
+    │ │ ├── ...
+    │ ├── images
+    │ │ ├── ...
 """
 
 import os
@@ -134,9 +134,9 @@ class FunsdBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. "train" and "test" is available
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
+        `split:` Split of the dataset. "train" and "test" is available
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
 
         :return: Dataflow
         """

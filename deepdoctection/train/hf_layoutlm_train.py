@@ -131,7 +131,7 @@ class LayoutLMTrainer(Trainer):
     to use dd Evaluator. Train setting is not defined in the trainer itself but in config setting as
     defined in `TrainingArguments`. Please check the Transformer documentation
 
-    https://huggingface.co/docs/transformers/main_classes/trainer
+    <https://huggingface.co/docs/transformers/main_classes/trainer>
 
     for custom training setting.
     """
@@ -177,7 +177,7 @@ class LayoutLMTrainer(Trainer):
         metric_key_prefix: str = "eval",
     ) -> Dict[str, float]:
         """
-        Overwritten method from :class:`Trainer`. Arguments will not be used.
+        Overwritten method from `Trainer`. Arguments will not be used.
         """
         assert self.evaluator is not None
         assert self.evaluator.pipe_component is not None
@@ -237,12 +237,12 @@ def train_hf_layoutlm(
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
     classification using HF Trainer and custom evaluation. It currently supports LayoutLM, LayoutLMv2, LayoutLMv3 and
-    LayoutXLM. Training similar but different models like LILT https://arxiv.org/abs/2202.13669 can done by changing a
-    few lines of code regarding the selection of the tokenizer.
+    LayoutXLM. Training similar but different models like LILT <https://arxiv.org/abs/2202.13669> can be done by
+    changing a few lines of code regarding the selection of the tokenizer.
 
     The theoretical foundation can be taken from
 
-    https://arxiv.org/abs/1912.13318
+    <https://arxiv.org/abs/1912.13318>
 
     This is not the pre-training script.
 
@@ -250,18 +250,16 @@ def train_hf_layoutlm(
     from the HF-hub in a first step for fine-tuning.  Models are available for this, which are registered in the
     ModelCatalog. It is possible to choose one of the following options:
 
-    "microsoft/layoutlm-base-uncased/pytorch_model.bin"
-    "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
-    "microsoft/layoutxlm-base/pytorch_model.bin"
-    "microsoft/layoutlmv3-base/pytorch_model.bin"
+        "microsoft/layoutlm-base-uncased/pytorch_model.bin"
+        "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
+        "microsoft/layoutxlm-base/pytorch_model.bin"
+        "microsoft/layoutlmv3-base/pytorch_model.bin"
 
      and
 
-     "microsoft/layoutlm-large-uncased/pytorch_model.bin"
+         "microsoft/layoutlm-large-uncased/pytorch_model.bin"
 
     (You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download yourself.)
-
-    .. code-block:: python
 
         ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
 

@@ -8,7 +8,7 @@
 """
 Some DataFlow classes for transforming and processing datapoints. Many classes have been taken from
 
-- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
 """
 import itertools
 from copy import copy
@@ -67,14 +67,10 @@ class FlattenData(ProxyDataFlow):
 
     **Example:**
 
-        .. code-block:: python
-
             dp_1 = ['a','b']
             dp_2 = ['c','d']
 
         will yield
-
-        .. code-block:: python
 
             ['a'], ['b'], ['c'], ['d'].
     """
@@ -95,8 +91,6 @@ class MapData(ProxyDataFlow):
         2. If you discard some datapoints, `len(MapData(ds))` will be incorrect.
 
     **Example:**
-
-        .. code-block:: python
 
             df = ... # some dataflow each datapoint is [img, label]
             ds = MapData(ds, lambda dp: [dp[0] * 255, dp[1]])
@@ -130,8 +124,6 @@ class MapDataComponent(MapData):
 
 
     **Example:**
-
-        .. code-block:: python
 
             df = ... # some dataflow each datapoint is [img, label]
             ds = MapDataComponent(ds, lambda img: img * 255, 0)  # map the 0th component
@@ -177,7 +169,7 @@ class RepeatedData(ProxyDataFlow):
     def __len__(self) -> int:
         """
         Raises:
-            :class:`ValueError` when num == -1.
+            `ValueError` when num == -1.
         """
         if self.num == -1:
             raise NotImplementedError("__len__() is unavailable for infinite dataflow")
@@ -199,8 +191,6 @@ class ConcatData(DataFlow):
     DataFlow is exhausted. Use this dataflow to process several .pdf in one step.
 
     **Example:**
-
-        .. code-block:: python
 
            df_1 = analyzer.analyze(path=path/to/pdf_1.pdf")
            df_2 = analyzer.analyze(path=path/to/pdf_2.pdf")
@@ -232,11 +222,10 @@ class JoinData(DataFlow):
 
     **Example:**
 
-    .. code-block:: python
-
         df1 produces: [[c1], [c2]]
         df2 produces: [[c3], [c4]]
         joined: [[c1, c3], [c2, c4]]
+
         df1 produces: {"a":c1, "b":c2}
         df2 produces: {"c":c3}
         joined: {"a":c1, "b":c2, "c":c3}

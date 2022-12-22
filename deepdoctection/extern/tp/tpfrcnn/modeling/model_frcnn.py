@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_frcnn.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_frcnn.py>
 """
 # pylint: disable=import-error
 import tensorflow as tf
@@ -263,8 +263,6 @@ def fastrcnn_2fc_head(feature, cfg):
 
     :param feature: (any shape)
     :param cfg: The configuration instance as an AttrDict
-
-    :return 2D head feature
     """
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
@@ -282,8 +280,6 @@ def fastrcnn_Xconv1fc_head(feature, num_convs, norm=None, **kwargs):  # pylint: 
     :param  feature: The configuration instance as an AttrDict (NCHW)
     :param  num_convs: number of conv layers
     :param  norm: either None or 'GN'
-
-    :return: 2D head feature
     """
 
     cfg = kwargs["cfg"]

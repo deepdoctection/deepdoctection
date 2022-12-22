@@ -37,8 +37,6 @@ def get_dataset(name: str) -> DatasetBase:
 
     **Example:**
 
-        .. code-block:: python
-
             dataset = get_dataset("some_name")
             dataset.dataflow.categories.filter_categories(["cat1","cat2"])
             df = dataset.dataflow.build(split="train")

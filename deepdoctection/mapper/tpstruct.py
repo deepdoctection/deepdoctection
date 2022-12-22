@@ -42,7 +42,7 @@ def image_to_tp_frcnn_training(
     :param dp: Image
     :param add_mask: True is not implemented (yet).
     :param category_names: A list of category names for training a model. Pass nothing to train with all annotations
-    :return: Dict with 'image', 'gt_boxes', 'gt_labels' and 'file_name', provided there are some detected objects in the
+    :return: Dict with `image`, `gt_boxes`, `gt_labels` and `file_name`, provided there are some detected objects in the
              image
     """
 

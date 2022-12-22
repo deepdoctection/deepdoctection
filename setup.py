@@ -87,9 +87,10 @@ _DEPS = [
     "pylint==2.13.4",
     "mypy==0.942",
     # docs
-    "sphinx",
-    "sphinx_rtd_theme",
-    "recommonmark",
+    "jinja2==3.0.3",
+    "mkdocs-material",
+    "mkdocstrings-python",
+    "griffe==0.25.0",
     # test
     "pytest",
     "pytest-cov",
@@ -162,6 +163,10 @@ docs_deps = deps_list(
     "lxml-stubs",
     "pycocotools",
     "jdeskew",
+    "jinja2",
+    "mkdocs-material",
+    "mkdocstrings-python",
+    "griffe"
 )
 
 

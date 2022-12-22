@@ -5,10 +5,10 @@
 # Licensed under the Apache License, Version 2.0 (the "License")
 
 """
-This file replaces relevant parts of the Dataflow package. Most of the functions have been taken from
+Replaces relevant parts of the Dataflow package. Most of the functions have been taken from
 
- - https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel.py
- - https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel_map.py
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel.py>
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel_map.py>
 
 """
 
@@ -156,10 +156,10 @@ class _ParallelMapData(ProxyDataFlow, ABC):
 
 class MultiThreadMapData(_ParallelMapData):
     """
-    Same as :class:`MapData`, but start threads to run the mapping function.
+    Same as `MapData`, but start threads to run the mapping function.
     This is useful when the mapping function is the bottleneck, but you don't
     want to start processes for the entire dataflow pipeline.
-    The semantics of this class is **identical** to :class:`MapData` except for the ordering.
+    The semantics of this class is **identical** to `MapData` except for the ordering.
     Threads run in parallel and can take different time to run the
     mapping function. Therefore, the order of datapoints won't be preserved.
     When ``strict=True``, ``MultiThreadMapData(df, ...)``
@@ -172,7 +172,7 @@ class MultiThreadMapData(_ParallelMapData):
     datapoints from the second pass of ``df.__iter__``.
     Note:
         1. You should avoid starting many threads in your main process to reduce GIL contention.
-           The threads will only start in the process which calls :meth:`reset_state()`.
+           The threads will only start in the process which calls `reset_state()`.
            Therefore you can use ``MultiProcessRunnerZMQ(MultiThreadMapData(...), 1)``
            to reduce GIL contention.
     """
@@ -331,9 +331,9 @@ def _bind_guard(sock, name):
 
 class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
     """
-    Same as :class:`MapData`, but start processes to run the mapping function,
+    Same as `MapData`, but start processes to run the mapping function,
     and communicate with ZeroMQ pipe.
-    The semantics of this class is **identical** to :class:`MapData` except for the ordering.
+    The semantics of this class is **identical** to `MapData` except for the ordering.
     Processes run in parallel and can take different time to run the
     mapping function. Therefore, the order of datapoints won't be preserved.
     When ``strict=True``, ``MultiProcessMapData(df, ...)``
@@ -379,10 +379,9 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         strict: bool = False,
     ) -> None:
         """
-        :param ds: the dataflow to map
+        :param df: the dataflow to map
         :param num_proc: number of threads to use
         :param map_func: datapoint -> datapoint | None. Return None to
-        :param discard/skip the datapoint.
         :param buffer_size: number of datapoints in the buffer
         :param strict: use "strict mode", see notes above.
         """

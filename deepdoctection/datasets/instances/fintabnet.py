@@ -18,17 +18,17 @@
 """
 Module for Fintabnet dataset. Place the dataset as follows
 
-|    fintabnet
-|    ├── pdf
-|    │ ├── A
-|    │ │├── 2003
-|    │ │ ...
-|    ├── FinTabNet_1.0.0_cell_test.jsonl
-|    ├── FinTabNet_1.0.0_cell_train.jsonl
-|    ├── FinTabNet_1.0.0_cell_val.jsonl
-|    ├── FinTabNet_1.0.0_table_test.jsonl
-|    ├── FinTabNet_1.0.0_table_train.jsonl
-|    ├── FinTabNet_1.0.0_table_val.jsonl
+    fintabnet
+    ├── pdf
+    │ ├── A
+    │ │├── 2003
+    │ │ ...
+    ├── FinTabNet_1.0.0_cell_test.jsonl
+    ├── FinTabNet_1.0.0_cell_train.jsonl
+    ├── FinTabNet_1.0.0_cell_val.jsonl
+    ├── FinTabNet_1.0.0_table_test.jsonl
+    ├── FinTabNet_1.0.0_table_train.jsonl
+    ├── FinTabNet_1.0.0_table_val.jsonl
 """
 
 from pathlib import Path
@@ -144,20 +144,26 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
-        :param build_mode: Returns the full image or crops a table according to the table bounding box. Pass "table"
+        `split:` Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+
+        `build_mode:` Returns the full image or crops a table according to the table bounding box. Pass `table`
                            if you only want the cropped table. Default: ""
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param rows_and_cols: Will add a "ITEM" image annotations that either represent a row or a column of a table.
+
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+
+        `rows_and_cols:` Will add a 'item' image annotations that either represent a row or a column of a table.
                               Note, that the type of the item (i.e. being a row or a column) can be inferred from the
-                              sub category added. Note further, that "ITEM" are not originally part of the annotations
-                              and are inferred from cell positions and their associated table semantic. Default: True
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param use_multi_proc: As the original files are stored as pdf conversion into a numpy array is time-consuming.
-                               When setting use_multi_proc to True is will use several processes depending on the number
-                               of CPUs available.
-        :param use_multi_proc_strict: Will use strict mode in multiprocessing.
-        :param fake_score: Will add a fake score so that annotations look like predictions
+                              sub category added. Note further, that "item" are not originally part of the annotations
+                              and are inferred from cell positions and their associated table semantic. Default: `True`
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+
+        `use_multi_proc:` As the original files are stored as pdf conversion into a numpy array is time-consuming.
+                        When setting use_multi_proc to True is will use several processes depending on the number
+                        of CPUs available.
+
+        `use_multi_proc_strict:` Will use strict mode in multiprocessing.
+
+        `fake_score:` Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """

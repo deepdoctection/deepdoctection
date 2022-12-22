@@ -38,8 +38,8 @@ class MetricBase(ABC):
         - A mapping function that transforms an image datapoint into a valid input format ready to ingest by the metric
           function.
 
-    Using :meth:`get_distance`, ground truth and prediction dataflow can be read in and evaluated.
-    :meth:`dump` is a helper method that is often called via :meth:`get_distance`. Here, the dataflows should be
+    Using `get_distance`, ground truth and prediction dataflow can be read in and evaluated.
+    `dump` is a helper method that is often called via `get_distance`. Here, the dataflows should be
     executed and the results should be saved in separate lists.
     """
 
@@ -89,7 +89,7 @@ class MetricBase(ABC):
     ) -> Tuple[Any, Any]:
         """
         Dump the dataflow with ground truth annotations and predictions. Use it as auxiliary method and call it from
-        :meth:`get_distance`.
+        `get_distance`.
 
         :param dataflow_gt: Dataflow with ground truth annotations.
         :param dataflow_predictions: Dataflow with predictions.
@@ -100,7 +100,7 @@ class MetricBase(ABC):
     @classmethod
     def result_list_to_dict(cls, results: List[JsonDict]) -> JsonDict:
         """
-        Converts the result from :meth:`get_distance` to a dict. It concatenates all keys of the inner dict and uses
+        Converts the result from `get_distance` to a dict. It concatenates all keys of the inner dict and uses
         the metric result 'val' as value.
 
         :param results: List of dict as input

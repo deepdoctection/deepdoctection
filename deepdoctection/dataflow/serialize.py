@@ -7,7 +7,7 @@
 """
 Some DataFlow classes for serialization. Many classes have been taken from
 
-- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/raw.py
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/raw.py>
 """
 
 import pickle
@@ -52,8 +52,7 @@ class DataFromIterable(DataFlow):
 
     def __init__(self, iterable: Iterable[Any]) -> None:
         """
-        Args:
-            iterable: an iterable object
+        :param iterable: an iterable object
         """
         self._itr = iterable
         self._len: Optional[int] = None

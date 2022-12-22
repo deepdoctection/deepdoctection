@@ -47,7 +47,7 @@ class MappingContextManager:
     ) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
-        :param filter_level: Indicates if the :class:`MappingContextManager` is use on datapoint level,
+        :param filter_level: Indicates if the `MappingContextManager` is use on datapoint level,
                              annotation level etc. Filter level will only be used for logging
         """
         self.dp_name = dp_name if dp_name is not None else ""
@@ -98,7 +98,7 @@ class DefaultMapper:
     A class that wraps a function and places some pre-defined values starting from the second argument  once the
     function is invoked.
 
-    https://stackoverflow.com/questions/36314/what-is-currying
+    <https://stackoverflow.com/questions/36314/what-is-currying>
     """
 
     def __init__(self, func: Callable[[DP, S], T], *args: Any, **kwargs: Any) -> None:
@@ -121,16 +121,14 @@ class DefaultMapper:
 
 def curry(func: Callable[..., T]) -> Callable[..., Callable[[DP], T]]:
     """
-    Decorator for converting functions that map
+    Decorator for converting functions that maps
 
-    dps: Union[JsonDict,Image]  -> Union[JsonDict,Image]
+        dps: Union[JsonDict,Image]  -> Union[JsonDict,Image]
 
-    to DefaultMappers. They will be initialized with all arguments except dp and can be called later with only the
+    to `DefaultMapper`s. They will be initialized with all arguments except dp and can be called later with only the
     datapoint as argument. This setting is useful when incorporating the function within a dataflow.
 
     **Example:**
-
-        .. code-block:: python
 
             @curry
             def json_to_image(dp, config_arg_1, config_arg_2,...) -> Image:
@@ -138,12 +136,10 @@ def curry(func: Callable[..., T]) -> Callable[..., Callable[[DP], T]]:
 
         can be applied like:
 
-        .. code-block:: python
-
             df = ...
             df = MapData(df,json_to_image(config_arg_1=val_1,config_arg_2=val_2))
 
-    :param func: A callable [[:class:`Image`],[Any]] -> [:class:`Image`]
+    :param func: A callable [[`Image`],[Any]] -> [`Image`]
     :return: A DefaultMapper
     """
 
@@ -169,8 +165,6 @@ def maybe_get_fake_score(add_fake_score: bool) -> Optional[float]:
 class LabelSummarizer:
     """
     A class for generating label statistics. Useful, when mapping and generating a SummaryAnnotation.
-
-    .. code-block:: python
 
         summarizer = LabelSummarizer({"1": "label_1","2":"label_2"})
 

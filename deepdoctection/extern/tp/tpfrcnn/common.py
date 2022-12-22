@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/common.py>
 """
 
 
@@ -27,8 +27,9 @@ class CustomResize(ImageAugmentor):
 
     def __init__(self, short_edge_length, max_size, interp=cv2.INTER_LINEAR):
         """
-        :param short_edge_length ([int, int]): a [min, max] interval from which to sample the shortest edge length.
-        :param max_size (int): maximum allowed longest edge length.
+        :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
+        :param max_size: maximum allowed longest edge length.
+        :param interp: cv2 interpolation mode
         """
         super().__init__()
         if isinstance(short_edge_length, int):
@@ -119,6 +120,6 @@ def np_iou(box_a, box_b):
         box[:, 3] -= box[:, 1]
         return box
 
-    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))
+    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=bool))
     # can accelerate even more, if using float32
     return ret.astype("float32")

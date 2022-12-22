@@ -18,21 +18,21 @@
 """
 Module for IIITar13K dataset. Install the dataset following the folder structure
 
-|    iiitar13K
-|    ├── test_images
-|    │ ├── ar_alphabet_2004_eng_38.jpg
-|    │ ├── ar_alphabet_2004_eng_39.jpg
-|    ├── test_xml
-|    │ ├── ar_alphabet_2004_eng_38.xml
-|    │ ├── ar_alphabet_2004_eng_39.xml
-|    ├── training_images
-|    │ ├── ...
-|    ├── training_xml
-|    │ ├── ...
-|    ├── validation_images
-|    │ ├── ...
-|    ├── validation_xml
-|    │ ├── ...
+    iiitar13K
+    ├── test_images
+    │ ├── ar_alphabet_2004_eng_38.jpg
+    │ ├── ar_alphabet_2004_eng_39.jpg
+    ├── test_xml
+    │ ├── ar_alphabet_2004_eng_38.xml
+    │ ├── ar_alphabet_2004_eng_39.xml
+    ├── training_images
+    │ ├── ...
+    ├── training_xml
+    │ ├── ...
+    ├── validation_images
+    │ ├── ...
+    ├── validation_xml
+    │ ├── ...
 
 """
 
@@ -113,10 +113,13 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the return
         values of the dataflow:
 
-        :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param fake_score: Will add a fake score so that annotations look like predictions
+        `split:` Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+
+        `fake_score:` Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """

@@ -36,13 +36,13 @@ def cat_to_sub_cat(
     cat_to_sub_cat_dict: Optional[Dict[TypeOrStr, TypeOrStr]] = None,
 ) -> Image:
     """
-    Replace some category with its affiliated sub category of CategoryAnnotations. Suppose your category name is 'foo'
-    and comes along with sub_category_annotations 'foo_1' and 'foo_2' then this adapter will replace 'foo' with
-    'foo_1' or 'foo_2', respectively.
+    Replace some category with its affiliated sub category of CategoryAnnotations. Suppose your category name is `foo`
+    and comes along with sub_category_annotations `foo_1` and `foo_2` then this adapter will replace `foo` with
+    `foo_1` or `foo_2`, respectively.
 
     :param dp: Image datapoint
     :param categories_dict_names_as_key: A dict of all possible categories and their ids
-    :param cat_to_sub_cat_dict: e.g. {"foo": "sub_cat_1", "bak":"sub_cat_2"}
+    :param cat_to_sub_cat_dict: e.g. {'foo': 'sub_cat_1', 'bak': 'sub_cat_2'}
     :return: Image with updated Annotations
     """
 
@@ -63,9 +63,9 @@ def cat_to_sub_cat(
 @curry
 def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[TypeOrStr, str]) -> Image:
     """
-    Re-assigning category ids is sometimes necessary to align with categories of the :class:`DatasetCategories` . E.g.
+    Re-assigning category ids is sometimes necessary to align with categories of the `DatasetCategories` . E.g.
     consider the situation where some categories are filtered. In order to guarantee alignment of category ids of the
-    :class:`DatasetCategories` the ids in the annotation have to be re-assigned.
+    `DatasetCategories` the ids in the annotation have to be re-assigned.
 
     Annotations that as not in the dictionary provided will removed from the image.
 
@@ -159,8 +159,6 @@ def image_to_cat_id(
 
         dp contains image annotations
 
-        .. code-block:: python
-
             ImageAnnotation(category_name='foo',category_id='1',...),
             ImageAnnotation(category_name='bak',category_id='2',...),
             ImageAnnotation(category_name='baz',category_id='3',...),
@@ -168,13 +166,9 @@ def image_to_cat_id(
 
         Then
 
-        .. code-block:: python
-
              image_to_cat_id(category_names=['foo', 'bak', 'baz'])(dp)
 
         will return
-
-        .. code-block:: python
 
             ({'foo':['1', '1'], 'bak':[ '2'], 'baz':['3']}, image_id)
 
@@ -183,19 +177,12 @@ def image_to_cat_id(
 
         dp contains image annotations as given in Example 1. Moreover, the 'foo' image annotation have sub categories:
 
-        .. code-block:: python
-
             foo_sub_1: CategoryAnnotation(category_name='sub_1', category_id='4')
             foo_sub_1: CategoryAnnotation(category_name='sub_1', category_id='5')
-
-
-        .. code-block:: python
 
             image_to_cat_id(sub_categories={'foo':'foo_sub_1'})
 
         will return
-
-        .. code-block:: python
 
             ({'foo_sub_1':['5', '6']}, image_id)
 

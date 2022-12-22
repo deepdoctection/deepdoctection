@@ -49,28 +49,26 @@ def match_anns_by_intersection(
 
     **Example:**
 
-    Let p_i, c_j be annotations ids of parent and children according to some category names.
+    Let `p_i, c_j` be annotations ids of parent and children according to some category names.
 
-    +-------+-------+-------+
     |**ioa**|**c_1**|**c_2**|
-    +-------+-------+-------+
+    |-------|-------|-------|
     |**p_1**|  0.3  |  0.8  |
-    +-------+-------+-------+
     |**p_2**|  0.4  |  0.1  |
-    +-------+-------+-------+
     |**p_3**|  1.   |  0.4  |
-    +-------+-------+-------+
 
-    With ioa_threshold = 0.5 it will return `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
+    With `ioa_threshold = 0.5` it will return:
+
+     `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
 
     For each child the sum of all ioas with all parents sum up to 1. Hence, the ioa with one parent will in general
     decrease if one child intersects with more parents. Take two childs one matching two parents with an ioa of 0.5 each
     while the second matching four parents with an ioa of 0.25 each. In this situation it is difficult to assign
     children according to a given threshold and one also has to take into account the number of parental intersection
-    for each child. Setting use_weighted_intersections to True will multiply each ioa with the number of intersection
+    for each child. Setting `use_weighted_intersections` to True will multiply each ioa with the number of intersection
     making it easier to work with an absolute threshold.
 
-    In some situation you want to assign to each child at most one parent. Setting max_parent_only to True it will
+    In some situation you want to assign to each child at most one parent. Setting `max_parent_only` to `True` it will
     select the parent with the highest ioa. Note, there is currently no implementation for iou.
 
     :param dp: image datapoint

@@ -68,18 +68,18 @@ class DatasetInfo:
     """
     DatasetInfo is a simple dataclass that stores some meta-data information about a dataset.
 
-    :attr:`name`: Name of the dataset. Using the name you can retrieve the dataset from the
-    :class:`registry.DatasetRegistry`.
+    `name`: Name of the dataset. Using the name you can retrieve the dataset from the
+    `registry.DatasetRegistry`.
 
-    :attr:`description`: Short description of the dataset.
+    `description`: Short description of the dataset.
 
-    :attr:`license`: License to the dataset.
+    `license`: License to the dataset.
 
-    :attr:`url`: url, where the dataset can be downloaded from.
+    `url`: url, where the dataset can be downloaded from.
 
-    :attr:`splits`: A dict of splits. The value must store the relative path, where the split can be found.
+    `splits`: A dict of splits. The value must store the relative path, where the split can be found.
 
-    :attr:`type`: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
+    `type`: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
     sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification ('TOKEN_CLASSIFICATION').
     Optionally, pass `None`.
     """
@@ -111,28 +111,24 @@ class DatasetCategories:
     for the index/category name relationship and guarantees that a sequence of natural numbers for the categories
     is always returned as the category-id even after replacing and/or filtering.
 
-    :attr:`init_categories`: A list of category names. The list must include all categories that can occur within the
+    `init_categories`: A list of category names. The list must include all categories that can occur within the
     annotations.
 
-    :attr:`init_sub_categories`: A dict of categories/sub-categories. Each sub-category that can appear in the
+    `init_sub_categories`: A dict of categories/sub-categories. Each sub-category that can appear in the
     annotations in combination with a category must be listed.
 
     **Example:**
 
         An annotation file hast the category/sub-category combinations for three datapoints:
 
-        .. code-block:: python
-
             (cat1,s1),(cat1,s2), (cat2,s2).
 
-        You must list :attr:`init_categories`, :attr:`init_sub_categories` as follows:
-
-        .. code-block:: python
+        You must list `init_categories`, `init_sub_categories` as follows:
 
             init_categories = [cat1,cat2]
             init_sub_categories = {cat1: [s1,s2],cat2: [s2]}
 
-    Use :meth:`filter_categories` or :meth:`set_cat_to_sub_cat` to filter or swap categories with sub-categories.
+    Use `filter_categories` or `set_cat_to_sub_cat` to filter or swap categories with sub-categories.
     """
 
     init_categories: Sequence[ObjectTypes] = field(default_factory=list)
@@ -300,8 +296,6 @@ class DatasetCategories:
 
         **Example:**
 
-            .. code-block:: python
-
                   cat_to_sub_cat={cat1: sub_cat1}
 
             will replace cat1 with sub_cat1 as category. This will also be respected when returning datapoints.
@@ -384,7 +378,6 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     merged datasets. E.g. if dataset A has category `foo` with sub category `foo`:`bak` and dataset B has category `foo`
     as well but no sub category than the merged dataset will have no sub categories at all. Whereas in a similar setting
     dataset B has sub category `foo`:`bak`, then `bak` will be an optional sub category for the merged dataset as well.
-
 
     :param categories: A tuple/list of dataset categories
     :return: An instance of `DatasetCategories` to be used as `DatasetCategories` for merged datasets

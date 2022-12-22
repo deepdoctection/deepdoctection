@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_mrcnn.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_mrcnn.py>
 """
 
 # pylint: disable=import-error

@@ -18,14 +18,14 @@
 """
 Module for XFUND dataset. Install the dataset following the folder structure
 
-|    xfund
-|    ├── de_train
-|    │ ├── de_train_0.jpg
-|    │ ├── de_train_1.jpg
-|    ├── de.train.json
-|    ├── de_val
-|    │ ├── de_val_0.jpg
-|    ├── es_train
+    xfund
+    ├── de_train
+    │ ├── de_train_0.jpg
+    │ ├── de_train_1.jpg
+    ├── de.train.json
+    ├── de_val
+    │ ├── de_val_0.jpg
+    ├── es_train
 """
 
 import json
@@ -122,11 +122,14 @@ class XfundBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. "train" and "val" is available
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param languages: Will select only samples of selected languages. Available languages: de, es, fr, it, ja , pt,
-                          zh. If default will take any language.
+        `split:` Split of the dataset. `train` and `val` is available
+
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+
+        `languages:` Will select only samples of selected languages. Available languages: `de`, `es`, `fr`, `it`, `ja` ,
+                     `pt`, `zh`. If default will take any language.
         :return: Dataflow
         """
 

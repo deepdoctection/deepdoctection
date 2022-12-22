@@ -32,7 +32,7 @@ from .registry import pipeline_component_registry
 
 class DetectResultGenerator:
     """
-    Use: class: `DetectResultGenerator` to refine raw detection results.
+    Use:  `DetectResultGenerator` to refine raw detection results.
 
     Certain pipeline components depend on, for example, at least one object being detected. If this is not the
     case, the generator can generate a DetectResult with a default setting. If no object was discovered for a
@@ -113,8 +113,6 @@ class SubImageLayoutService(PredictorPipelineComponent):
     If no objects are discovered, artificial objects can be added by means of a refinement process.
 
     **Example**
-
-        .. code-block:: python
 
             d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
             item_component = SubImageLayoutService(d_items, names.C.TAB, {1: 6}, True)

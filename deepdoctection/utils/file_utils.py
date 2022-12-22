@@ -6,7 +6,7 @@
 
 """
 Utilities for maintaining dependencies and dealing with external library packages. Parts of this file is adapted from
-https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py
+<https://github.com/huggingface/transformers/blob/master/src/transformers/file_utils.py>
 """
 import importlib.util
 import multiprocessing as mp
@@ -33,7 +33,7 @@ try:
 except ValueError:
     pass
 
-_TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: https://www.tensorflow.org/install/gpu"
+_TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: <https://www.tensorflow.org/install/gpu>"
 
 
 def tf_available() -> bool:

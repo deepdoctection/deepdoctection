@@ -55,7 +55,7 @@ class TestDatasetCategories:
     @pytest.mark.basic
     def test_set_cat_to_subcat_and_check_categories_case_1() -> None:
         """
-        Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
+        Categories are dumped and annotation ids are correctly assigned and  is_cat_to_sub_cat works properly.
         """
 
         # Arrange
@@ -77,7 +77,7 @@ class TestDatasetCategories:
     @pytest.mark.basic
     def test_set_cat_to_subcat_and_check_categories_case_2() -> None:
         """
-        Categories are dumped and annotation ids are correctly assigned and meth: is_cat_to_sub_cat works properly.
+        Categories are dumped and annotation ids are correctly assigned and  is_cat_to_sub_cat works properly.
         """
 
         # Arrange
@@ -100,7 +100,7 @@ class TestDatasetCategories:
     @pytest.mark.basic
     def test_filter_and_check_categories() -> None:
         """
-        Categories are filtered and meth: is_filtered works properly
+        Categories are filtered and  is_filtered works properly
         """
 
         # Arrange
@@ -260,7 +260,7 @@ class TestMergeDatasetCategories:
     @pytest.mark.basic
     def test_merge_categories_cannot_update_or_filter() -> None:
         """
-        Calling :meth::`filter_categories` or :meth::`set_cat_to_sub_cat` is not allowed
+        Calling :`filter_categories` or :`set_cat_to_sub_cat` is not allowed
         """
 
         # Arrange

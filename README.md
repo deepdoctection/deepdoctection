@@ -91,20 +91,20 @@ plt.axis('off')
 plt.imshow(image)
 ```
 
-![text](./docs/tutorials/pics/dd_rm_sample.png)
+![text](./docs/tutorials/_imgs/dd_rm_sample.png)
 
 ```
 HTML(page.tables[0].html)
 ```
 
-![table](./docs/tutorials/pics/dd_rm_table.png)
+![table](./docs/tutorials/_imgs/dd_rm_table.png)
 
 
 ```
 print(page.get_text())
 ```
 
-![table](./docs/tutorials/pics/dd_rm_text.png)
+![table](./docs/tutorials/_imgs/dd_rm_text.png)
  
 
 ## Documentation
@@ -118,7 +118,7 @@ documentation.
 
 ## Requirements
 
-![requirements](./docs/tutorials/pics/requirements_deepdoctection.jpg)
+![requirements](./docs/tutorials/_imgs/requirements_deepdoctection.jpg)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 

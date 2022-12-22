@@ -5,11 +5,13 @@
 # Licensed under the Apache License, Version 2.0 (the "License")
 
 """
-This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/box_ops.py
+Taken from
 
-This file is modified from
-https://github.com/tensorflow/models/blob/master/object_detection/core/box_list_ops.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/utils/box_ops.py>
+
+and
+
+<https://github.com/tensorflow/models/blob/master/object_detection/core/box_list_ops.py>
 """
 
 # pylint: disable=import-error
@@ -24,7 +26,7 @@ def area(boxes):
     """
     :param boxes: nx4 floatbox
 
-    :return n
+    :return: n
     """
 
     x_min, y_min, x_max, y_max = tf.split(boxes, 4, axis=1)
@@ -38,7 +40,7 @@ def pairwise_intersection(boxlist1, boxlist2):
     :param boxlist1: Nx4 floatbox
     :param boxlist2: Mx4
 
-    :return A tensor with shape [N, M] representing pairwise intersections
+    :return: A tensor with shape [N, M] representing pairwise intersections
     """
 
     x_min1, y_min1, x_max1, y_max1 = tf.split(boxlist1, 4, axis=1)
@@ -59,7 +61,7 @@ def pairwise_iou(boxlist1, boxlist2):
     :param boxlist1: Nx4 floatbox
     :param boxlist2: Mx4
 
-    :return A tensor with shape [N, M] representing pairwise iou scores.
+    :return: A tensor with shape [N, M] representing pairwise iou scores.
     """
 
     intersections = pairwise_intersection(boxlist1, boxlist2)

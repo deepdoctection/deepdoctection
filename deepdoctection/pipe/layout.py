@@ -39,8 +39,6 @@ class ImageLayoutService(PredictorPipelineComponent):
 
     **Example**
 
-        .. code-block:: python
-
             d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
             item_component = ImageLayoutService(d_items)
     """
@@ -53,11 +51,11 @@ class ImageLayoutService(PredictorPipelineComponent):
     ):
         """
         :param layout_detector: object detector
-        :param to_image: Generate an image for each detected block, e.g. populate :attr:`ImageAnnotation.image`. Useful,
+        :param to_image: Generate an image for each detected block, e.g. populate `ImageAnnotation.image`. Useful,
                          if you want to process only some blocks in a subsequent pipeline component.
-        :param crop_image: Do not only populate :attr:`ImageAnnotation.image` but also crop the detected block according
+        :param crop_image: Do not only populate `ImageAnnotation.image` but also crop the detected block according
                            to its bounding box and populate the resulting sub image to
-                           :attr:`ImageAnnotation.image.image`.
+                           `ImageAnnotation.image.image`.
         """
         self.to_image = to_image
         self.crop_image = crop_image

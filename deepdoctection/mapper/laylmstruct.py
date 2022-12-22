@@ -17,7 +17,7 @@
 
 """
 Module for mapping annotations from image to layout lm input structure. Heavily inspired by the notebooks
-https://github.com/NielsRogge/Transformers-Tutorials
+<https://github.com/NielsRogge/Transformers-Tutorials>
 """
 
 from dataclasses import dataclass, field
@@ -61,7 +61,7 @@ LayoutLMFeatures = NewType("LayoutLMFeatures", JsonDict)
 InputDataClass = NewType("InputDataClass", JsonDict)
 
 """
-https://github.com/huggingface/transformers/src/transformers/data/data_collator.py
+<https://github.com/huggingface/transformers/src/transformers/data/data_collator.py>
 A DataCollator is a function that takes a list of samples from a Dataset and collate them into a batch, as a dictionary
 of PyTorch/TensorFlow tensors or NumPy arrays.
 """
@@ -89,7 +89,7 @@ def image_to_raw_layoutlm_features(
     """
     Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
     can be used for sequence or token classification as well as for inference. To generate input features for the model
-    please :func:`use raw_features_to_layoutlm_features`.
+    please `use raw_features_to_layoutlm_features`.
 
 
     :param dp: Image
@@ -566,9 +566,6 @@ class LayoutLMDataCollator:
                                   batch samples will be smaller than the output batch samples.
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
-
-    :return: dictionary with the following arguments:  `image_ids, width, height, ann_ids, input_ids,
-             token_type_ids, attention_masks, boxes, labels`.
     """
 
     tokenizer: "PreTrainedTokenizerFast"
@@ -591,7 +588,8 @@ class LayoutLMDataCollator:
         Calling the DataCollator to form model inputs for training and inference. Takes a single raw
         :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
                              boxes, dataset_type`.
-        :return: LayoutLMFeatures
+        :return: LayoutLMFeatures with arguments `image_ids, width, height, ann_ids, input_ids,
+                 token_type_ids, attention_masks, boxes, labels`.
         """
         return raw_features_to_layoutlm_features(
             raw_features,
@@ -625,18 +623,15 @@ def image_to_layoutlm_features(
 ) -> Optional[LayoutLMFeatures]:
     """
     Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
-    :class:`LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
+    `LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
     with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
-    used internally in :class:`LMTokenClassifierService`.
-
-    .. code-block:: python
+    used internally in `LMTokenClassifierService`.
 
             tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
             layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
                                                   categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
 
             layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
-
 
     :param dp: Image datapoint
     :param tokenizer: Tokenizer compatible with the language model

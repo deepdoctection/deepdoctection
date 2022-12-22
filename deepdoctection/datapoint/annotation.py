@@ -34,7 +34,7 @@ from .convert import as_dict
 @no_type_check
 def ann_from_dict(cls, **kwargs):
     """
-    A factory function to create sub classes of annotations from a given dict
+    A factory function to create subclasses of annotations from a given dict
     """
     ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
     ann.active = kwargs.get("active")
@@ -66,14 +66,14 @@ class Annotation(ABC):
     Note that otherwise ids will be generated automatically if the annotation object is dumped in a parent container,
     either an image or annotation (e.g. sub-category). If no id is supplied, the annotation id is created depending
     on the defining attributes (key and value pairs) as specified in the return value of
-    :meth:`get_defining_attributes`.
+    `get_defining_attributes`.
 
-    :attr:`active`: Always set to `True`. You can change the value using :meth:`deactivate` .
+    `active`: Always set to `True`. You can change the value using `deactivate` .
 
-    :attr:`external_id`: A string or integer value for generating an annotation id. Note, that the resulting annotation
+    `external_id`: A string or integer value for generating an annotation id. Note, that the resulting annotation
     id will not depend on the defining attributes.
 
-    :attr:`_annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
+    `_annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
     """
 
     active: bool = field(default=True, init=False, repr=True)
@@ -120,7 +120,7 @@ class Annotation(ABC):
     @abstractmethod
     def get_defining_attributes(self) -> List[str]:
         """
-        Defining attributes of an Annotation instance are attributes, of which you think that they uniquely
+        Defining attributes of an annotation instance are attributes, of which you think that they uniquely
         describe the annotation object. If you do not provide an external id, only the defining attributes will be used
         for generating the annotation id.
 
@@ -136,7 +136,7 @@ class Annotation(ABC):
     @staticmethod
     def set_annotation_id(annotation: "CategoryAnnotation", *container_id_context: Optional[str]) -> str:
         """
-        Defines the annotation_id by attributes of the annotation class as well as by external parameters given by a
+        Defines the `annotation_id` by attributes of the annotation class as well as by external parameters given by a
         tuple or list of container id contexts.
 
         :param annotation: The annotation instance for which the id should be generated.
@@ -152,8 +152,8 @@ class Annotation(ABC):
 
     def as_dict(self) -> Dict[str, Any]:
         """
-        Returning the full dataclass as dict. Uses the custom :func:`convert.as_dict` to disregard attributes defined by
-        :meth:`remove_keys`.
+        Returning the full dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes defined by
+        `remove_keys`.
 
         :return: A custom dict.
         """
@@ -164,7 +164,7 @@ class Annotation(ABC):
 
     def deactivate(self) -> None:
         """
-        Sets :attr:`active` to False. When calling :meth:`Image.get_annotations` it will be filtered.
+        Sets `active` to False. When calling `Image.get_annotations()` it will be filtered.
         """
         self.active = False
 
@@ -187,24 +187,24 @@ class CategoryAnnotation(Annotation):
     A general class for storing categories (labels/classes) as well as sub categories (sub-labels/subclasses),
     relationships and prediction scores.
 
-    Subcategories and relationships are stored in a dict, which are populated via the :meth:`dum_sub_category` or
-    :meth:`dump_relationship`. If a key is already available as a sub-category, it must be explicitly removed using the
-    :meth:`remove_sub_category` before replacing the sub-category.
+    Sub-categories and relationships are stored in a dict, which are populated via the `dum_sub_category` or
+    `dump_relationship`. If a key is already available as a sub-category, it must be explicitly removed using the
+    `remove_sub_category` before replacing the sub-category.
 
     Note that subcategories are only accepted as category annotations. Relationships, on the other hand, are only
     managed by passing the annotation id.
 
-    :attr:`category_name`: String will be used for selecting specific annotations. Use upper case strings.
+    `category_name`: String will be used for selecting specific annotations. Use upper case strings.
 
-    :attr:`category_id`: When setting a value will accept strings and ints. Will be stored as string.
+    `category_id`: When setting a value will accept strings and ints. Will be stored as string.
 
-    :attr:`score`: Score of a prediction.
+    `score`: Score of a prediction.
 
-    :attr:`sub_categories`: Do not access the dict directly. Rather use the access :meth:`get_sub_category` resp.
-    :meth:`dump_sub_category`.
+    `sub_categories`: Do not access the dict directly. Rather use the access `get_sub_category` resp.
+    `dump_sub_category`.
 
-    :attr:`relationships`: Do not access the dict directly either. Use :meth:`get_relationship` or
-    :meth:`dump_relationship` instead.
+    `relationships`: Do not access the dict directly either. Use `get_relationship` or
+    `dump_relationship` instead.
     """
 
     category_name: TypeOrStr = field(default=DefaultType.default_type)
@@ -280,7 +280,7 @@ class CategoryAnnotation(Annotation):
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """
-        Dumps an annotation id to a given key, in order to store relations between annotations. Note, that the
+        Dumps an `annotation_id` to a given key, in order to store relations between annotations. Note, that the
         referenced annotation must be stored elsewhere.
 
         :param key: The key, where to place the annotation id.
@@ -350,14 +350,14 @@ class ImageAnnotation(CategoryAnnotation):
     """
     A general class for storing annotations related to object detection tasks. In addition to the inherited attributes,
     the class contains a bounding box and an image attribute. The image attribute is optional and is suitable for
-    generating an image from the annotation and then saving it there. Compare with the method :meth:`image.Image.
+    generating an image from the annotation and then saving it there. Compare with the method `image.Image.
     image_ann_to_image`, which naturally populates this attribute.
 
-    :attr:`bounding_box`: Regarding the coordinate system, if you have to define a prediction, use the system of the
+    `bounding_box`: Regarding the coordinate system, if you have to define a prediction, use the system of the
     image where the object has been detected.
 
-    :attr:`image`: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
-    :meth:`Image.image_ann_to_image`.
+    `image`: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
+    `Image.image_ann_to_image`.
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
@@ -379,7 +379,7 @@ class SummaryAnnotation(CategoryAnnotation):
     """
     A dataclass for adding summaries. The various summaries can be stored as sub categories.
 
-    Summary annotations should be stored in the attribute provided: :attr:`image.Image.summary`  and should not be
+    Summary annotations should be stored in the attribute provided: `image.Image.summary`  and should not be
     dumped as a category.
     """
 
@@ -400,7 +400,7 @@ class ContainerAnnotation(CategoryAnnotation):
     A dataclass for transporting values along with categorical attributes. Use these types of annotations as special
     types of sub categories.
 
-    :attr value: Attribute to store the value. Use strings.
+     value: Attribute to store the value. Use strings.
     """
 
     value: Optional[Union[List[str], str]] = field(default=None)
