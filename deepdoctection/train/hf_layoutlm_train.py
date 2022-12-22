@@ -250,18 +250,16 @@ def train_hf_layoutlm(
     from the HF-hub in a first step for fine-tuning.  Models are available for this, which are registered in the
     ModelCatalog. It is possible to choose one of the following options:
 
-    "microsoft/layoutlm-base-uncased/pytorch_model.bin"
-    "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
-    "microsoft/layoutxlm-base/pytorch_model.bin"
-    "microsoft/layoutlmv3-base/pytorch_model.bin"
+        "microsoft/layoutlm-base-uncased/pytorch_model.bin"
+        "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
+        "microsoft/layoutxlm-base/pytorch_model.bin"
+        "microsoft/layoutlmv3-base/pytorch_model.bin"
 
      and
 
-     "microsoft/layoutlm-large-uncased/pytorch_model.bin"
+         "microsoft/layoutlm-large-uncased/pytorch_model.bin"
 
     (You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download yourself.)
-
-    
 
         ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
 
