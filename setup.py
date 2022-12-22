@@ -90,6 +90,7 @@ _DEPS = [
     "jinja2==3.0.3",
     "mkdocs-material",
     "mkdocstrings-python",
+    "griffe==0.25.0",
     # test
     "pytest",
     "pytest-cov",
