@@ -134,9 +134,9 @@ class FunsdBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. "train" and "test" is available
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
+        `split:` Split of the dataset. "train" and "test" is available
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
 
         :return: Dataflow
         """

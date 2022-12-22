@@ -263,8 +263,6 @@ def fastrcnn_2fc_head(feature, cfg):
 
     :param feature: (any shape)
     :param cfg: The configuration instance as an AttrDict
-
-    :return 2D head feature
     """
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
@@ -282,8 +280,6 @@ def fastrcnn_Xconv1fc_head(feature, num_convs, norm=None, **kwargs):  # pylint: 
     :param  feature: The configuration instance as an AttrDict (NCHW)
     :param  num_convs: number of conv layers
     :param  norm: either None or 'GN'
-
-    :return: 2D head feature
     """
 
     cfg = kwargs["cfg"]

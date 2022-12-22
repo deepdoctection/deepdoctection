@@ -118,20 +118,17 @@ class PDFStreamer:
 
     **Example:**
 
-         
-
              df = dataflow.DataFromIterable.PDFStreamer(path=path)
              df.reset_state()
 
              for page in df:
                 ... # do whatever you like
 
-
     """
 
     def __init__(self, path: Pathlike) -> None:
         """
-        :param path to a pdf.
+        :param path: to a pdf.
         """
         self.file_reader = get_pdf_file_reader(path)
         self.file_writer = PdfFileWriter()

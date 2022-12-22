@@ -96,10 +96,13 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. Only "test" is for this small sample available
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param fake_score: Will add a fake score so that annotations look like predictions
+        `split:` Split of the dataset. Only "test" is for this small sample available
+
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+
+        `fake_score:` Will add a fake score so that annotations look like predictions
 
         :return: Dataflow
         """

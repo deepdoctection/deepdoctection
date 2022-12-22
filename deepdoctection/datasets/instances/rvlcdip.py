@@ -116,9 +116,11 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param load_image: Will load the image for each datapoint.  Default: False
+        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+
+        max_datapoints: Will stop iterating after max_datapoints. Default: `None`
+
+        load_image: Will load the image for each datapoint.  Default: `False`
 
         :return: dataflow
         """

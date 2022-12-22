@@ -355,11 +355,15 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
-        :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-        :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-        :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-        :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-        :param tokens: List of original tokens taken from LayoutLMTokenizer
+        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+
+        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+
+        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
+
+        `boxes:` Torch tensor of bounding boxes of type 'xyxy'
+
+        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
 
         :return: A list of TokenClassResults
         """
@@ -441,11 +445,15 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
-        :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-        :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-        :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-        :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-        :param tokens: List of original tokens taken from LayoutLMTokenizer
+        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+
+        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+
+        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
+
+        `boxes:` Torch tensor of bounding boxes of type `xyxy`
+
+        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
 
         :return: A list of TokenClassResults
         """
@@ -540,11 +548,11 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
-        :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-        :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-        :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-        :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-        :param tokens: List of original tokens taken from LayoutLMTokenizer
+        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
+        `boxes:` Torch tensor of bounding boxes of type 'xyxy'
+        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
 
         :return: A list of TokenClassResults
         """

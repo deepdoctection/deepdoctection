@@ -189,7 +189,7 @@ arises, if you have annotations with categories and sub-categories in the datase
 with their sub-category name instead of their category name.
 
 `DatasetCategories` takes as argument a list of init_categories, with category names. Category names must be
-members of an `Enum` class that must be derived from [`ObjectTypes`][deepdoctection.datasets.settings.ObjectTypes]. 
+members of an `Enum` class that must be derived from [`ObjectTypes`][deepdoctection.utils.settings.ObjectTypes]. 
 If there are sub-categories, `init_sub_categories` returns a dict with category names as key and a list of subcategory
 names as value.
 

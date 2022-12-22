@@ -3,20 +3,21 @@
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
-version: 1
+version: 2
 
 # Set the version of Python and other tools you might need
 build:
   os: ubuntu-20.04
 
-# Build documentation in the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/conf.py
+# Build documentation in the docs/ directory with Mkdocs
+mkdocs:
+  configuration: mkdocs.yml
+  fail_on_warning: false
 
 # Optionally declare the Python requirements required to build your docs
 # RTD does not support installation of prctl which is a requirement for the package. To update requirements_.txt in docs/
 # do (1) uncomment line 47,48 in setup, in up-req-files. Do not forget do undo (1) once finished generating the file.
-python:
-  version: 3.8
-  install:
-    - requirements: docs/requirements_.txt
+#python:
+#  version: 3.8
+#  install:
+#    - requirements: docs/requirements_.txt
