@@ -32,7 +32,7 @@ from ..utils.utils import is_file_extension
 
 def load_page(path: Pathlike) -> Page:
     """
-    Load a json file and generate a page object.
+    Load a `json` file and generate a page object.
 
     :param path: Path to load from
     :return: A page object
@@ -50,9 +50,9 @@ def load_page(path: Pathlike) -> Page:
 
 def load_document(path: Pathlike) -> DataFlow:
     """
-    Load a parsed document from a .jsonl file and generate a DataFlow that can be streamed.
+    Load a parsed document from a `jsonl` file and generate a DataFlow that can be streamed.
 
-    :param path: Path to a .jsonl file
+    :param path: Path to a `jsonl` file
     :return: DataFlow
     """
     df: DataFlow
