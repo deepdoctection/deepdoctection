@@ -89,7 +89,7 @@ _DEPS = [
     # docs
     "jinja2==3.0.3",
     "mkdocs-material",
-    "mkdocstrings[python]",
+    "mkdocstrings-python",
     # test
     "pytest",
     "pytest-cov",
@@ -164,7 +164,7 @@ docs_deps = deps_list(
     "jdeskew",
     "jinja2",
     "mkdocs-material",
-    "mkdocstrings[python]"
+    "mkdocstrings-python"
 )
 
 
