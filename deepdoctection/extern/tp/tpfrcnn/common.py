@@ -120,6 +120,6 @@ def np_iou(box_a, box_b):
         box[:, 3] -= box[:, 1]
         return box
 
-    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=np.bool))
+    ret = coco_mask.iou(to_xywh(box_a), to_xywh(box_b), np.zeros((len(box_b),), dtype=bool))
     # can accelerate even more, if using float32
     return ret.astype("float32")
