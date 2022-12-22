@@ -52,8 +52,8 @@ nav:
         - deepdoctection.train: ./modules/deepdoctection.train.md
         - deepdoctection.utils: ./modules/deepdoctection.utils.md
 
+
 plugins:
-- search
 - mkdocstrings:
     handlers:
       python:
@@ -61,5 +61,7 @@ plugins:
           line_length: 120
           docstring_style: sphinx
           merge_init_into_class: True
-watch:
-    - deepdoctection
+
+# to watch lib files in mkdocs server. Uncomment, if update docs locally
+#watch:
+#    - deepdoctection
