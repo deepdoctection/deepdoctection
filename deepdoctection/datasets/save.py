@@ -42,7 +42,7 @@ def dataflow_to_json(
     highest_hierarchy_only: bool = False,
 ) -> None:
     """
-    Save a dataflow consisting of :class:`datapoint.Image` to a jsonl file. Each image will be dumped into a separate
+    Save a dataflow consisting of `datapoint.Image` to a jsonl file. Each image will be dumped into a separate
     JSON object.
 
     :param df: Input dataflow

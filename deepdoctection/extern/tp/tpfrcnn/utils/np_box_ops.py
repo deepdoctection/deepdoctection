@@ -20,8 +20,10 @@
 Operations for [N, 4] numpy arrays representing bounding boxes.
 
 Example box operations that are supported:
-  * Areas: compute bounding box areas
-  * IOU: pairwise intersection-over-union scores
+
+-  Areas: compute bounding box areas
+
+-  IOU: pairwise intersection-over-union scores
 """
 
 import numpy as np
@@ -33,7 +35,7 @@ def area(boxes):
 
     :param boxes: Numpy array with shape [N, 4] holding N boxes
 
-    :return A numpy array with shape [N*1] representing box areas
+    :return: A numpy array with shape [N*1] representing box areas
     """
     return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
 
@@ -45,7 +47,7 @@ def intersection(boxes1, boxes2):
     :param boxes1: a numpy array with shape [N, 4] holding N boxes
     :param boxes2: a numpy array with shape [M, 4] holding M boxes
 
-    :return A numpy array with shape [N*M] representing pairwise intersection area
+    :return: A numpy array with shape [N*M] representing pairwise intersection area
     """
 
     [y_min1, x_min1, y_max1, x_max1] = np.split(boxes1, 4, axis=1)  # pylint: disable=W0632
@@ -71,7 +73,7 @@ def iou(boxes1, boxes2):
     :param boxes1: a numpy array with shape [N, 4] holding N boxes.
     :param boxes2: a numpy array with shape [M, 4] holding M boxes.
 
-    :return A numpy array with shape [N, M] representing pairwise iou scores.
+    :return: A numpy array with shape [N, M] representing pairwise iou scores.
     """
 
     intersect = intersection(boxes1, boxes2)
@@ -92,7 +94,7 @@ def ioa(boxes1, boxes2):
     :param boxes1: a numpy array with shape [N, 4] holding N boxes.
     :param boxes2: a numpy array with shape [M, 4] holding N boxes.
 
-    :return A numpy array with shape [N, M] representing pairwise ioa scores.
+    :return: A numpy array with shape [N, M] representing pairwise ioa scores.
     """
 
     intersect = intersection(boxes1, boxes2)

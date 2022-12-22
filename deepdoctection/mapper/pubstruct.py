@@ -200,7 +200,7 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
     """
     Infers absolute rows and columns for every cell from the tiling of a table.
 
-    :param tiling: A list of list of tiling of a table as returned from the :meth:`_tile_table`
+    :param tiling: A list of list of tiling of a table as returned from the `_tile_table`
     :return: A list of 3-tuples with row number, column number and cell id.
     """
     indices = sorted(
@@ -280,11 +280,11 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
-    https://github.com/ibm-aur-nlp/PubTabNet
+    <https://github.com/ibm-aur-nlp/PubTabNet>
 
     :param dp: A datapoint in serialized coco format.
     :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
-    :param load_image: If 'True' it will load image to :attr:`Image.image`
+    :param load_image: If 'True' it will load image to `Image.image`
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
                        will be added.
     :param rows_and_cols: If set to True, synthetic "ITEM" ImageAnnotations will be added.  Each item has a

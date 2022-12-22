@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/1a79d595f7eda9dc9dc8428f4461680ed2222ab6/examples/FasterRCNN/data.py
+<https://github.com/tensorpack/tensorpack/blob/1a79d595f7eda9dc9dc8428f4461680ed2222ab6/examples/FasterRCNN/data.py>
 """
 
 from typing import Any, List, Optional, Tuple

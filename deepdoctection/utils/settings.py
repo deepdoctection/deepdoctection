@@ -383,7 +383,7 @@ def update_black_list(item: str) -> None:
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
     """Get an object type property from a given string. Does nothing if an ObjectType is passed
 
-    :param: obj_type: String or ObjectTypes
+    :param obj_type: String or ObjectTypes
     :return: ObjectType
     """
     if isinstance(obj_type, ObjectTypes):

@@ -34,8 +34,6 @@ class MeanFromDataFlow(ProxyDataFlow):
 
     **Example:**
 
-        .. code-block:: python
-
             df: some dataflow
             MeanFromDataFlow(df).start() if you want to put MeanFromDataFlow at the end of a dataflow
             df: some dataflow
@@ -56,8 +54,6 @@ class MeanFromDataFlow(ProxyDataFlow):
         :param axis: The axis along which to calculate the mean. It will always calculate the mean along
                      the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
                      use
-
-                     .. code-block:: python
 
                          MeanFromDataFlow(df,key="image",axis=(0,1,2)).start()
 
@@ -156,14 +152,10 @@ class StdFromDataFlow(ProxyDataFlow):
 
     **Example:**
 
-        .. code-block:: python
-
             df= ...
             StdFromDataFlow(df).start()
 
         if you want to put  StdFromDataFlow at the end of a dataflow
-
-         .. code-block:: python
 
             df: some dataflow
             df = StdFromDataFlow(df)
@@ -183,8 +175,6 @@ class StdFromDataFlow(ProxyDataFlow):
         :param axis: The axis along which to calculate the mean. It will always calculate the std along
                      the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
                      use
-
-                     .. code-block:: python
 
                          StdFromDataFlow(df,key="image",axis=(0,1,2)).start()
 

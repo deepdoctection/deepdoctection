@@ -258,7 +258,7 @@ class TestImage:
     @mark.basic
     def test_image_ann_to_image(image: WhiteImage) -> None:
         """
-        test meth: image_ann_to_image add attr: image to ImageAnnotation and generates Image instance correctly
+        test  image_ann_to_image add attr: image to ImageAnnotation and generates Image instance correctly
         """
 
         # Arrange
@@ -287,7 +287,7 @@ class TestImage:
     @mark.basic
     def test_load_image_from_dict() -> None:
         """
-        test class meth: from_dict returns a image
+        test class  from_dict returns a image
         """
         df: DataFlow
         df = SerializerJsonlines.load(get_test_path() / "test_image.jsonl")

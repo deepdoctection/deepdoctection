@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_fpn.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_fpn.py>
 """
 
 import itertools
@@ -159,7 +159,6 @@ def multilevel_rpn_losses(
     :param multilevel_anchors: #lvl RPNAnchors
     :param multilevel_label_logits: #lvl tensors of shape HxWxA
     :param multilevel_box_logits: #lvl tensors of shape HxWxAx4
-    :param cfg: The configuration instance as an AttrDict
     :param rpn_batch_per_im: RPN batch per image
     :param fpn_anchor_strides: FPN anchor strides
     :return: label_loss, box_loss
@@ -209,7 +208,6 @@ def generate_fpn_proposals(
     """
     generate fpn proposals
 
-    :param cfg: The configuration instance as an AttrDict
     :param multilevel_pred_boxes: #lvl HxWxAx4 boxes
     :param multilevel_label_logits: #lvl tensors of shape HxWxA
     :param image_shape2d: image shape 2d

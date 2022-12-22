@@ -277,7 +277,7 @@ def stretch_items(
     remove_iou_threshold_cols: float,
 ) -> Image:
     """
-    Stretch rows and columns from item detector to full table length and width. See :func:`stretch_item_per_table`
+    Stretch rows and columns from item detector to full table length and width. See `stretch_item_per_table`
 
     :param dp: Image
     :param table_name: category name for a table category ann.
@@ -426,7 +426,7 @@ class TableSegmentationService(PipelineComponent):
       col span result from the number of matched rows and columns.
 
     It should be noted that this method means that cell positions can be assigned multiple times by different cells.
-    If this should be excluded, class:`TableSegmentationRefinementService` can be used to merge cells.
+    If this should be excluded, `TableSegmentationRefinementService` can be used to merge cells.
     """
 
     def __init__(
@@ -447,7 +447,7 @@ class TableSegmentationService(PipelineComponent):
                                       the adjacent row. Will do a similar shifting with columns.
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-        :param stretch_rule: Check the description in :func:`tile_tables_with_items_per_table`
+        :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
         """
         assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
         assert stretch_rule in ("left", "equal"), "stretch rule must be either 'left' or 'equal'"

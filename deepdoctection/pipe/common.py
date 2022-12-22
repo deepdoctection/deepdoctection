@@ -38,7 +38,7 @@ from .registry import pipeline_component_registry
 class ImageCroppingService(PipelineComponent):
     """
     Crop sub images given by bounding boxes of some annotations. This service is not necessary for
-    :class::`ImageLayoutService` and is more intended for saved files where sub images are
+    `ImageLayoutService` and is more intended for saved files where sub images are
     generally not stored.
     """
 
@@ -71,9 +71,7 @@ class MatchingService(PipelineComponent):
     The parent object class (based on its category) and the child object class are defined for the service. A child
     relation is created in the parent class if the conditions are met.
 
-    Either iou (intersection-over-union) or ioa (intersection-over-area) can be selected as the matching rule.
-
-        .. code-block:: python
+    Either `iou` (intersection-over-union) or `ioa` (intersection-over-area) can be selected as the matching rule.
 
             # the following will assign word annotations to text and title annotation, provided that their ioa-threshold
             # is above 0.7. words below that threshold will not be assigned.
@@ -156,8 +154,8 @@ class MatchingService(PipelineComponent):
 @pipeline_component_registry.register("PageParsingService")
 class PageParsingService:
     """
-    A "pseudo" pipeline component that can be added to a pipeline to convert Images into Page formats. It allows a
-    custom parsing depending on customizing options of other pipeline components
+    A "pseudo" pipeline component that can be added to a pipeline to convert `Image`s into `Page` formats. It allows a
+    custom parsing depending on customizing options of other pipeline components.
     """
 
     def __init__(
@@ -199,7 +197,7 @@ class PageParsingService:
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
-        Mapping a datapoint via :meth:`pass_datapoint` within a dataflow pipeline
+        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
 
         :param df: An input dataflow
         :return: A output dataflow

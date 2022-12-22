@@ -140,7 +140,7 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
 
 
 class BoundingBoxError(BaseException):
-    """Special exception only for :class:`BoundingBox`"""
+    """Special exception only for `BoundingBox`"""
 
 
 @dataclass
@@ -153,19 +153,19 @@ class BoundingBox:
     ='False'. A bounding box is a disposable object. Do not change the coordinates once the have been set but define
     a new box.
 
-    :attr:`absolute_coords` indicates, whether given coordinates are in absolute or in relative terms
+    `absolute_coords` indicates, whether given coordinates are in absolute or in relative terms
 
-    :attr:`ulx`: upper left x
+    `ulx`: upper left x
 
-    :attr:`uly`: upper left y
+    `uly`: upper left y
 
-    :attr:`lrx`: lower right x
+    `lrx`: lower right x
 
-    :attr:`lry`: lower right y
+    `lry`: lower right y
 
-    :attr:`height`: height
+    `height`: height
 
-    :attr:`width`: width
+    `width`: width
     """
 
     absolute_coords: bool
@@ -241,10 +241,11 @@ class BoundingBox:
         """
         Returns the coordinates as numpy array.
 
-        :param mode: * "xyxy" for upper left/lower right point representation,
-                     * "xywh" for upper left and width/height representation or
-                     * "poly" for full eight coordinate polygon representation. x,y coordinates will be
-                     returned in counter-clockwise order.
+        :param mode: Mode for coordinate arrangement:
+                     "xyxy" for upper left/lower right point representation,
+                     "xywh" for upper left and width/height representation or
+                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+                      returned in counter-clockwise order.
 
         :param scale_x: rescale the x coordinate. Defaults to 1
         :param scale_y: rescale the y coordinate. Defaults to 1
@@ -268,10 +269,11 @@ class BoundingBox:
         """
         Returns the coordinates as list
 
-        :param mode: * "xyxy" for upper left/lower right point representation,
-                     * "xywh" for upper left and width/height representation or
-                     * "poly" for full four-point polygon representation. Points will be returned in counter-clockwise
-                       order
+        :param mode:  Mode for coordinate arrangement:
+                     "xyxy" for upper left/lower right point representation,
+                     "xywh" for upper left and width/height representation or
+                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+                      returned in counter-clockwise order.
 
         :param scale_x: rescale the x coordinate. Defaults to 1
         :param scale_y: rescale the y coordinate. Defaults to 1
@@ -354,9 +356,9 @@ class BoundingBox:
     @no_type_check
     def from_dict(cls, **kwargs) -> "BoundingBox":
         """
-        Create :class:`BoundingBox` instance from dict
+        Create `BoundingBox` instance from dict
 
-        :param kwargs: dict with  :class:`BoundingBox` attributes
+        :param kwargs: dict with  `BoundingBox` attributes
         :return: Initialized BoundingBox
         """
         return cls(**kwargs)
@@ -368,7 +370,7 @@ def intersection_box(
     """
     Returns the intersection bounding box of two boxes. Will raise a `ValueError` if the intersection is empty.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
-    coordinates as the box induces from :func:`crop_box_from_image`
+    coordinates as the box induces from `crop_box_from_image`
 
     :param box_1: bounding box
     :param box_2: bounding box
@@ -493,7 +495,7 @@ def merge_boxes(*boxes: BoundingBox) -> BoundingBox:
     Generating the smallest box containing an arbitrary tuple/list of boxes. This function is only implemented for boxes
     with absolute coords = "True".
 
-    :param boxes: An arbitrary tuple/list of bounding boxes :class:`BoundingBox` all having absolute_coords="True".
+    :param boxes: An arbitrary tuple/list of bounding boxes `BoundingBox` all having absolute_coords="True".
     """
     absolute_coords = boxes[0].absolute_coords
     assert all(box.absolute_coords == absolute_coords for box in boxes), "all boxes must have same absolute_coords"
@@ -514,9 +516,15 @@ def rescale_coords(
     scaled_total_height: float,
 ) -> BoundingBox:
     """
-    Generating a bounding box with scaled coordinates. Will rescale x coordinate with *
-    (current_total_width/scaled_total_width), resp. y coordinate with * (current_total_height/scaled_total_height),
-    while not changing anything if absolute_coords is set to False.
+    Generating a bounding box with scaled coordinates. Will rescale x coordinate with factor
+
+    * (current_total_width/scaled_total_width),
+
+    resp. y coordinate with factor
+
+    * (current_total_height/scaled_total_height),
+
+    while not changing anything if `absolute_coords` is set to False.
 
     :param box: BoudingBox to rescale
     :param current_total_width: absolute coords of width of image

@@ -19,17 +19,15 @@
 """
 Config functions for setting up Tensorpack Faster-RCNN models and training schemes.
 
-*************************************************************************
+
 Description of the config file.
-*************************************************************************
 
 Most of the descriptions are taken from
 
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/config.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/config.py>
 
-***************************************
 Backbone settings
-***************************************
+
 
 **BACKBONE**
 
@@ -47,9 +45,6 @@ Backbone settings
 than top/left. See https://github.com/tensorflow/tensorflow/issues/18213. Using either one should probably give the same
 performance.
 
-****************************************
-Cascade RCNN only available with FPN
-****************************************
 
 **CASCADE**
 
@@ -62,10 +57,6 @@ Cascade RCNN only available with FPN
 
 .TRAIN_NUM_WORKERS: Number of threads to use when parallelizing the pre-processing (e.g. augmenting, adding anchors,
 RPN gt-labelling,...)
-
-*****************************************
-Feature Pyramid Network
-*****************************************
 
 
 **FPN**
@@ -88,10 +79,6 @@ Feature Pyramid Network
 
 .PROPOSAL_MODE: Choices: 'Level', 'Joint'
 
-*******************************************
-Faster-RCNN
-*******************************************
-
 **FRCNN**
 
 .BATCH_PER_IM: Number of total proposals selected. Will divide into fg and bg by given ratio
@@ -104,19 +91,11 @@ Faster-RCNN
 
 .MODE_MASK: Whether to train mask head
 
-******************************************
-Mask-RCNN
-******************************************
-
 **MRCNN**
 
 .ACCURATE_PASTE: Slightly more aligned results, but very slow on numpy
 
 .HEAD_DIM: Head dimension
-
-*****************************************
-Data Pre Processing
-*****************************************
 
 **PREPROC**
 
@@ -130,10 +109,6 @@ Data Pre Processing
 
 .TRAIN_SHORT_EDGE_SIZE: The size to resize the image to (training), while not exceeding max size. [min, max] to sample
 from
-
-*****************************************
-Region Proposal Network
-*****************************************
 
 **RPN**
 
@@ -170,10 +145,6 @@ to a value larger than 1.0 will disable the feature. It is disabled by default b
 
 .POST_NMS_TOPK: Number of proposals after carrying out nms (inference)
 
-*****************************************
-Output
-*****************************************
-
 **OUTPUT**
 
 .FRCNN_NMS_THRESH: Nms threshold for output. nms being performed per class prediction
@@ -184,15 +155,7 @@ Output
 
 .NMS_THRESH_CLASS_AGNOSTIC: Nms threshold for output. nms being performed over all class predictions
 
-****************************************
-Trainer
-****************************************
-
 TRAINER: options: 'horovod', 'replicated'. Note that Horovod trainer is not available when TF2 is installed
-
-****************************************
-Train configs
-****************************************
 
 **TRAIN**
 

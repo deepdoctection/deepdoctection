@@ -39,7 +39,7 @@ class DatapointManager:
     When the image is transferred, the annotations are stored in a cache dictionary so that access via the annotation ID
     can be performed efficiently.
 
-    The manager is part of each PipelineComponent.
+    The manager is part of each `PipelineComponent`.
     """
 
     def __init__(self) -> None:
@@ -74,7 +74,7 @@ class DatapointManager:
 
     def maybe_map_category_id(self, category_id: Union[str, int]) -> int:
         """
-        Maps categories if a category id mapping is provided in :meth:`__init__`.
+        Maps categories if a category id mapping is provided in `__init__`.
 
         :param category_id: category id via integer or string.
         :return: mapped category id
@@ -103,20 +103,20 @@ class DatapointManager:
         detect_result_max_height: Optional[float] = None,
     ) -> Optional[str]:
         """
-        Creating an image annotation from a raw DetectionResult dataclass. Beside dumping the annotation to the Image
-        annotation cache you can also dump the annotation to the :attr:`image` of an annotation with given
-        annotation_id. This is handy if, you know, you want to send the sub image to a subsequent pipeline component.
+        Creating an image annotation from a raw `DetectionResult` dataclass. Beside dumping the annotation to the
+        `ImageAnnotation` cache you can also dump the annotation to the `image` of an annotation with given
+        `annotation_id`. This is handy if, you know, you want to send the sub image to a subsequent pipeline component.
 
-        Moreover, it is possible to generate an Image of the given raw annotation and store it in its :attr:`image`. The
-        resulting image is given as a sub image of :attr:`self` defined by it bounding box coordinates. Use crop_image
+        Moreover, it is possible to generate an Image of the given raw annotation and store it in its `image`. The
+        resulting image is given as a sub image of `self` defined by it bounding box coordinates. Use `crop_image`
         to explicitly store the sub image as numpy array.
 
-        :param detect_result: A :class:`DetectionResult` in general coming from ObjectDetector
-        :param to_annotation_id: Will dump the created image annotation to :attr:`image` of the given annotation_id.
-                                 Requires the to_annotation to have a not None image.
-        :param to_image: If True will populate :attr:`image`.
+        :param detect_result: A `DetectionResult` in general coming from ObjectDetector
+        :param to_annotation_id: Will dump the created image annotation to `image` of the given annotation_id.
+                                 Requires the to_annotation to have a not `None` image.
+        :param to_image: If True will populate `image`.
         :param crop_image: Makes only sense if to_image=True and if a numpy array is stored in the original image.
-                           Will generate :attr:`Image.image`.
+                           Will generate `Image.image`.
         :param detect_result_max_width: If detect result has a different scaling scheme from the image it refers to,
                                         pass the max width possible so coords can be rescaled.
         :param detect_result_max_height: If detect result has a different scaling scheme from the image it refers to,
@@ -260,16 +260,16 @@ class DatapointManager:
         annotation_id: Optional[str] = None,
     ) -> Optional[str]:
         """
-        Creates a sub category of a summary annotation. If a summary of the given annotation_id does not exist, it will
-        create a new one.
+        Creates a sub category of a summary annotation. If a summary of the given `annotation_id` does not exist, it
+        will create a new one.
         :param summary_key: will store the category annotation as sub category
         :param summary_name: will create the summary name as category name
         :param summary_number: will store the value in category_id.
         :param summary_value: will create a ContainerAnnotation and store the corresponding value
         :param summary_score: will store the score
-        :param annotation_id: id of the parent annotation. Note, that the parent annotation must have :attr:`image` to
+        :param annotation_id: id of the parent annotation. Note, that the parent annotation must have `image` to
         be not None.
-        :return: annotation_id of the generated category annotation
+        :return: `annotation_id` of the generated category annotation
         """
         self.assert_datapoint_passed()
         if annotation_id is not None:

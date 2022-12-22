@@ -6,7 +6,7 @@
 
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/predict.py
+<https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/predict.py>
 """
 
 from typing import List

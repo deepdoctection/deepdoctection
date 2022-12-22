@@ -46,9 +46,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     There are hardly any adjustments to the original implementation of Tensorpack. As post-processing, another round
     of NMS can be carried out for the output, which operates on a class-agnostic basis. For a discussion, see
-    https://github.com/facebookresearch/detectron2/issues/978 .
-
-    .. code-block:: python
+    <https://github.com/facebookresearch/detectron2/issues/978> .
 
         config_path = ModelCatalog.get_full_path_configs("dd/tp/conf_frcnn_rows.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/model-162000.data-00000-of-00001")
@@ -73,7 +71,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         The configuration of the model is stored in a yaml-file, which needs to be passed through. For more details,
         please check
 
-        https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/config.py .
+        <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/config.py> .
 
         Mask-Mode could be used as well here provided the data structure is established.
 
@@ -103,7 +101,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
         :param path_yaml: path to the model config
         :param categories: A dict of categories with indices as keys
-        :param config_overwrite: A list with special config attributes reset (consult meth: __init__)
+        :param config_overwrite: A list with special config attributes reset (consult  __init__)
         :return: The FPNResnet model.
         """
 

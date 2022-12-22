@@ -8,7 +8,7 @@ This file is modified from
 https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/logger.py
 
 The logger module itself has the common logging functions of Python's
-:class:`logging.Logger`.
+`logging.Logger`.
 
 **Example:**
 

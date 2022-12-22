@@ -36,7 +36,7 @@ from .anngen import DatapointManager
 class PipelineComponent(ABC):
     """
     Base class for pipeline components. Pipeline components are the parts that make up a pipeline. They contain the
-    abstract :meth:`serve`, in which the component steps are defined. Within pipelines, pipeline components take an
+    abstract `serve`, in which the component steps are defined. Within pipelines, pipeline components take an
     image, enrich these with annotations or transform existing annotation and transfer the image again. The pipeline
     component should be implemented in such a way that the pythonic approach of passing arguments via assignment is used
     well. To support the pipeline component, an intrinsic datapoint manager is provided, which can perform operations on
@@ -44,12 +44,13 @@ class PipelineComponent(ABC):
     and similar annotations.
 
     Pipeline components do not necessarily have to contain predictors but can also contain rule-based transformation
-    steps. (For pipeline components with predictors see :class:`PredictorPipelineComponent`.)
+    steps. (For pipeline components with predictors see `PredictorPipelineComponent`.)
 
     The sequential execution of pipeline components is carried out with dataflows. In the case of components with
     predictors, this allows the predictor graph to be set up first and then to be streamed to the processed data points.
 
-    Caution: Currently, predictors can only process single images. Processing higher number of batches is not planned.
+    **Caution:** Currently, predictors can only process single images. Processing higher number of batches is not
+                 planned.
     """
 
     def __init__(self, name: str):
@@ -72,16 +73,14 @@ class PipelineComponent(ABC):
         dp was transferred to the dp_manager via an assignment. This means that operations on dp directly or operations
         via dp_manager are equivalent.
 
-        As a simplified interface :meth:`serve` does not have to return a dp. The data point is passed on within
-        pipelines internally (via :meth:`pass_datapoint`).
+        As a simplified interface `serve` does not have to return a dp. The data point is passed on within
+        pipelines internally (via `pass_datapoint`).
         """
         raise NotImplementedError
 
     def pass_datapoint(self, dp: Image) -> Image:
         """
         Acceptance, handover to dp_manager, transformation and forwarding of dp. To measure the time, use
-
-        .. code-block:: python
 
             self.timer_on = True
 
@@ -99,7 +98,7 @@ class PipelineComponent(ABC):
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
-        Mapping a datapoint via :meth:`pass_datapoint` within a dataflow pipeline
+        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
 
         :param df: An input dataflow
         :return: A output dataflow
@@ -117,10 +116,11 @@ class PipelineComponent(ABC):
     def get_meta_annotation(self) -> JsonDict:
         """
         Get a dict of list of annotation type. The dict must contain
-        "image_annotation" with values: a list of category names,
-        "sub_categories" with values: a dict with category names as keys and a list of the generated sub categories
-        "relationships" with values: a dict with category names as keys and a list of the generated relationships
-        "summaries" with values: A list of summary sub categories
+
+        `image_annotation` with values: a list of category names,
+        `sub_categories` with values: a dict with category names as keys and a list of the generated sub categories
+        `relationships` with values: a dict with category names as keys and a list of the generated relationships
+        `summaries` with values: A list of summary sub categories
         :return: Dict with meta infos as just described
         """
         raise NotImplementedError
@@ -137,8 +137,8 @@ class PipelineComponent(ABC):
 
 class PredictorPipelineComponent(PipelineComponent, ABC):
     """
-    Lightweight abstract pipeline component class with :attr:`predictor`. Object detectors that only read in images as
-    numpy array and return DetectResults are currently permitted.
+    Lightweight abstract pipeline component class with `predictor`. Object detectors that only read in images as
+    numpy array and return `DetectResult`s are currently permitted.
     """
 
     def __init__(
@@ -160,7 +160,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
     """
-    Abstract pipeline component class with two attributes :attr:`tokenizer` and :attr:`language_model` .
+    Abstract pipeline component class with two attributes `tokenizer` and `language_model` .
     """
 
     def __init__(
@@ -196,7 +196,7 @@ class ImageTransformPipelineComponent(PipelineComponent, ABC):
     def __init__(self, name: str, transform_predictor: ImageTransformer):
         """
         :param name: Will be passed to base class
-        :param transform_predictor: Am ImageTransformer for image transformation
+        :param transform_predictor: An `ImageTransformer` for image transformation
         """
 
         self.transform_predictor = transform_predictor
@@ -218,16 +218,14 @@ class Pipeline(ABC):
 
     The infrastructure, as the backbone of the pipeline, consists of a list of pipeline components in which images can
     be passed through via dataflows. The order of the pipeline components in the list determines the processing order.
-    The components for the pipeline backbone are composed in :meth:`_build_pipe`.
+    The components for the pipeline backbone are composed in `_build_pipe`.
 
-    The pipeline is set up via: meth:`analyze` for a directory with single pages or a document with multiple pages. A
+    The pipeline is set up via: `analyze` for a directory with single pages or a document with multiple pages. A
     data flow is returned that is triggered via a for loop and starts the actual processing.
 
     This creates a pipeline using the following command arrangement:
 
     **Example:**
-
-        .. code-block:: python
 
             layout = LayoutPipeComponent(layout_detector ...)
             text = TextExtractPipeComponent(text_detector ...)
@@ -240,7 +238,7 @@ class Pipeline(ABC):
     In doing so, page contains all document structures determined via the pipeline (either directly from the Image core
     model or already processed further).
 
-    In addition to :meth:`analyze`, the internal :meth:`_entry` is used to bundle preprocessing steps.
+    In addition to `analyze`, the internal `_entry` is used to bundle preprocessing steps.
     """
 
     def __init__(self, pipeline_component_list: List[PipelineComponent]) -> None:
@@ -274,8 +272,6 @@ class Pipeline(ABC):
         Try to keep this method as the only one necessary for the user. All processing steps, such as preprocessing,
         setting up the backbone and post-processing are to be bundled. A dataflow generator df is returned, which is
         generated via
-
-        .. code-block:: python
 
             doc = iter(df)
             page = next(doc)

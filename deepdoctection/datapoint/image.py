@@ -53,26 +53,26 @@ class Image:
 
     When initializing the object, the following arguments can be specified:
 
-    :attr:`file_name`: Should be equal to the name of a physical file representing the image. If the image is part
+    `file_name`: Should be equal to the name of a physical file representing the image. If the image is part
     of a larger document (e.g. pdf-document) the file_name should be populated as a concatenation of the document file
     and its page number.
 
-    :attr:`location`: Full path to the document or to the physical file. Loading functions from disk use this attribute.
+    `location`: Full path to the document or to the physical file. Loading functions from disk use this attribute.
 
-    :attr:`external_id`: A string or integer value for generating an image id.
+    `external_id`: A string or integer value for generating an image id.
 
     All other attributes represent containers (lists or dicts) that can be populated and managed using their own method.
 
-    In :attr:`image`, the image may be saved as np.array. Allocation as base64 encoding string or as pdf bytes are
-    possible and are converted via a :meth:`image.setter`. Other formats are rejected. As a result of the transfer,
-    the width and height of the image are determined. These are accessible via :attr:`width` or :attr:`height`.
-    Using :attr:`embeddings`, various bounding boxes can be saved that describe the position of the image as a
+    In `image`, the image may be saved as np.array. Allocation as base64 encoding string or as pdf bytes are
+    possible and are converted via a `image.setter`. Other formats are rejected. As a result of the transfer,
+    the width and height of the image are determined. These are accessible via `width` or `height`.
+    Using `embeddings`, various bounding boxes can be saved that describe the position of the image as a
     sub-image of another image. The bounding box is accessed in relation to the embedding image via the annotation_id.
-    Embeddings are often used in connection with annotations in which :attr:`image` is populated.
+    Embeddings are often used in connection with annotations in which `image` is populated.
 
     All ImageAnnotations associated with the image are used in the list annotations. Other types of annotation are
     not permitted and must either be transported as  sub-category of an ImageAnnotation or placed as a summary
-    annotation in the :attr:`summary`.
+    annotation in the `summary`.
     """
 
     file_name: str
@@ -185,7 +185,7 @@ class Image:
 
     def clear_image(self, clear_bbox: bool = False) -> None:
         """
-        Removes the :attr:`Image.image`. Useful, if the image must be a lightweight object.
+        Removes the `Image.image`. Useful, if the image must be a lightweight object.
 
         :param clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
                            if the image is going to be replaced with a transform. It will also remove the self
@@ -200,13 +200,9 @@ class Image:
         """
         Get the image either in base64 string representation or as np.array.
 
-        .. code-block:: python
-
             image.get_image().to_np_array()
 
         or
-
-        .. code-block:: python
 
             image.get_image().to_b64()
 
@@ -285,7 +281,7 @@ class Image:
 
     def get_embedding(self, image_id: str) -> BoundingBox:
         """
-        Returns the bounding box according to the image_id.
+        Returns the bounding box according to the `image_id`.
 
         :param image_id: uuid string of the embedding image
         :return: The bounding box of this instance in terms of the embedding image
@@ -300,7 +296,7 @@ class Image:
     def dump(self, annotation: ImageAnnotation) -> None:
         """
         Dump an annotation to the Image dataclass. This is the central method for associating an annotation with
-        an image. It gives the annotation an annotation_id in relation to the image_id in order to ensure uniqueness
+        an image. It gives the annotation an `annotation_id` in relation to the `image_id` in order to ensure uniqueness
         across all images.
 
         :param annotation: image annotation to store
@@ -326,7 +322,7 @@ class Image:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying
         the annotation_id or the category name. (Since only image annotations are currently allowed in the container,
-        annotation_type is a redundant filter condition.) Only annotations that have :attr: active = 'True' are
+        annotation_type is a redundant filter condition.) Only annotations that have  active = 'True' are
         returned. If more than one condition is provided, only annotations will be returned that satisfy all conditions.
         If no condition is provided, it will return all active annotations.
 
@@ -363,7 +359,7 @@ class Image:
         annotation_types: Optional[Union[str, Sequence[str]]] = None,
     ) -> Iterable[ImageAnnotation]:
         """
-        Get annotation as an iterator. Same as :meth:`get_annotation` but returns an iterator instead of a list.
+        Get annotation as an iterator. Same as `get_annotation` but returns an iterator instead of a list.
 
         :param category_names: A single name or list of names
         :param annotation_ids: A single id or list of ids
@@ -376,8 +372,8 @@ class Image:
 
     def as_dict(self) -> Dict[str, Any]:
         """
-        Returns the full image dataclass as dict. Uses the custom :func:`convert.as_dict` to disregard attributes
-        defined by :meth:`remove_keys`.
+        Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
+        defined by `remove_keys`.
 
         :return:  A custom dict.
         """
@@ -400,7 +396,7 @@ class Image:
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
         Generate a uuid for a given annotation. To guarantee uniqueness the generation depends on the datapoint
-        image_id as well as on the annotation.
+        `image_id` as well as on the annotation.
 
         :param annotation:  An annotation to generate the uuid for
         :return: uuid string
@@ -414,7 +410,7 @@ class Image:
         """
         Instead of removing consider deactivating annotations.
 
-        Calls :meth:`List.remove`. Make sure, the element is in the list for otherwise a ValueError will be raised.
+        Calls `List.remove`. Make sure, the element is in the list for otherwise a ValueError will be raised.
 
         :param annotation: The annotation to remove
         """
@@ -425,9 +421,9 @@ class Image:
     def image_ann_to_image(self, annotation_id: str, crop_image: bool = False) -> None:
         """
         This method is an operation that changes the state of an underlying dumped image annotation and that
-        manages :attr:`ImageAnnotation.image`. An image object is generated, which is interpreted as part of the image
+        manages `ImageAnnotation.image`. An image object is generated, which is interpreted as part of the image
         by the bounding box. The image is cut out and the determinable fields such as height, width and the embeddings
-        are determined. The partial image is not saved if crop_image = 'False' is set.
+        are determined. The partial image is not saved if `crop_image = 'False'` is set.
 
         :param annotation_id: An annotation id of the image annotations.
         :param crop_image: Whether to store the cropped image as np.array.
@@ -459,13 +455,13 @@ class Image:
 
     def maybe_ann_to_sub_image(self, annotation_id: str, category_names: Union[str, List[str]]) -> None:
         """
-        Provides a supplement to :meth:`image_ann_to_image` and mainly operates on the: attr:`ImageAnnotation.image` of
+        Provides a supplement to `image_ann_to_image` and mainly operates on the `ImageAnnotation.image` of
         the image annotation. The aim is to assign image annotations from this image one hierarchy level lower to the
         image of the image annotation. All annotations of this image are also dumped onto the image of the image
         annotation, provided that their bounding boxes are completely in the box of the annotation under consideration.
 
         :param annotation_id: image annotation you want to assign image annotation from this image. Note, that the
-                              annotation must have a not None :attr:`image`.
+                              annotation must have a not None `image`.
         :param category_names: Filter the proposals of all image categories of this image by some given category names.
         """
 
@@ -509,9 +505,9 @@ class Image:
     @no_type_check
     def from_dict(cls, **kwargs) -> "Image":
         """
-        Create :class:`Image` instance from dict.
+        Create `Image` instance from dict.
 
-        :param kwargs: dict with  :class:`Image` attributes and nested dicts for initializing annotations,
+        :param kwargs: dict with  `Image` attributes and nested dicts for initializing annotations,
         :return: Initialized image
         """
         image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))

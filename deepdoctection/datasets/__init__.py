@@ -18,9 +18,11 @@
 """
 Simple framework inspired by
 
-https://huggingface.co/docs/datasets/
+<https://huggingface.co/docs/datasets/>
 
-for creating datasets. Create an info card, a DataFlowBaseBuilder derived instance, possibly a category card and a
+for creating datasets.
+
+Create an info card, a DataFlowBaseBuilder derived instance, possibly a category card and a
 DatasetBase derived instance to create a data set.
 """
 

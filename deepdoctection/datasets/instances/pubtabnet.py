@@ -18,14 +18,14 @@
 """
 Module for Pubtabnet dataset. Place the dataset as follows
 
-|    pubtabnet
-|    ├── test
-|    │ ├── PMC1.png
-|    ├── train
-|    │ ├── PMC2.png
-|    ├── val
-|    │ ├── PMC3.png
-|    ├── PubTabNet_2.0.0.jsonl
+    pubtabnet
+    ├── test
+    │ ├── PMC1.png
+    ├── train
+    │ ├── PMC2.png
+    ├── val
+    │ ├── PMC3.png
+    ├── PubTabNet_2.0.0.jsonl
 """
 
 from typing import Dict, List, Mapping, Union
@@ -130,14 +130,18 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        :param split: Split of the dataset. Can be "train","val" or "test". Default: "val"
-        :param max_datapoints: Will stop iterating after max_datapoints. Default: None
-        :param load_image: Will load the image for each datapoint.  Default: False
-        :param rows_and_cols: Will add a "ITEM" image annotations that either represent a row or a column of a table.
-                              Note, that the type of the item (i.e. being a row or a column) can be inferred from the
-                              sub category added. Note further, that "ITEM" are not originally part of the annotations
-                              and are inferred from cell positions and their associated table semantic. Default: True
-        :param fake_score: Will add a fake score so that annotations look like predictions
+        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+
+        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+
+        `load_image:` Will load the image for each datapoint.  Default: `False`
+
+        `rows_and_cols:` Will add a 'item' image annotations that either represent a row or a column of a table.
+                         Note, that the type of the item (i.e. being a row or a column) can be inferred from the
+                         sub category added. Note further, that 'ITEM' are not originally part of the annotations
+                         and are inferred from cell positions and their associated table semantic. Default: `True`
+
+        `fake_score:` Will add a fake score so that annotations look like predictions
 
         :return: dataflow
         """

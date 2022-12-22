@@ -16,16 +16,9 @@
 # limitations under the License.
 
 """
-External package for wrapping blocks that are imported via external packages.
-
-It contains modules that origins from projects of other repos by cloning, but are not parts of the packages themselves
-(e.g. Tensorpack Mask-RCNN). The source code was copied for this and interfaces for calling the code were adapted.
-
-Abstract classes are also defined here which, as adapters, facilitate the transition from the original module to the
-DD package.
-
-Functions that, as wrappers, standardize the transition from external API to DD API.
+Wrappers for models of external libraries as well as implementation of the Cascade-RCNN model of Tensorpack.
 """
+
 from ..utils.file_utils import tensorpack_available
 from .base import *
 from .d2detect import *

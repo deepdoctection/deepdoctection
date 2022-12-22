@@ -18,11 +18,11 @@
 """
 Some visualisation utils. Copied and pasted from
 
-https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/viz.py
+<https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/viz.py>
 
 and
 
-https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py
+<https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
 """
 import sys
 from typing import Callable, List, Optional, Tuple

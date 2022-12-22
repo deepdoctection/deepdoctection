@@ -19,7 +19,7 @@
 Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...). Some ideas have been taken
 from
 
-- https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py
+<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
 """
 from typing import Any, Callable, Iterable, Iterator, List, Optional
 
@@ -43,8 +43,6 @@ class CacheData(ProxyDataFlow):
     Otherwise, the cache may be incomplete.
 
     **Example:**
-
-        .. code-block:: python
 
             df_list = CacheData(df).get_cache()   # buffers the whole dataflow and return a list of all datapoints
     """
@@ -94,13 +92,11 @@ class CacheData(ProxyDataFlow):
 
 class CustomDataFromList(DataFromList):
     """
-    Wraps a list of datapoints to a dataflow. Compared to :class:`Tensorpack.DataFlow.DataFromList` implementation you
+    Wraps a list of datapoints to a dataflow. Compared to `Tensorpack.DataFlow.DataFromList` implementation you
     can specify a number of datapoints after that the iteration stops. You can also pass a rebalance function that
     filters on that list.
 
     **Example:**
-
-        .. code-block:: python
 
                 def filter_first(lst):
                     return lst.pop(0)
@@ -109,8 +105,6 @@ class CustomDataFromList(DataFromList):
                 df.reset_state()
 
         will yield:
-
-        .. code-block:: python
 
             ["c","d"]
 

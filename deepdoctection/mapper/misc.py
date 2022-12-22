@@ -37,7 +37,7 @@ if lxml_available():
 
 def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
     """
-    Mapping an input from :class:`dataflow.SerializerFiles` or similar to an Image
+    Mapping an input from `dataflow.SerializerFiles` or similar to an Image
 
     :param dp: Image
     :param dpi: dot per inch definition for pdf resolution when converting to numpy array
@@ -78,7 +78,7 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
 
 def maybe_load_image(dp: Image) -> Image:
     """
-    If :attr:`image` is None will load the image.
+    If `image` is None will load the image.
 
     :param dp: An Image
     :return: Image with attr: image not None
@@ -93,7 +93,7 @@ def maybe_load_image(dp: Image) -> Image:
 
 def maybe_remove_image(dp: Image) -> Image:
     """
-    Remove :attr:`image` if a location is provided.
+    Remove `image` if a location is provided.
 
     :param dp: An Image
     :return: Image with None attr: image
@@ -128,11 +128,11 @@ def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[s
 
 def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_image: bool = True) -> Image:
     """
-    Adds attr: image to annotations with given category names
+    Adds `image` to annotations with given category names
 
     :param dp: Image
     :param category_names: A single or a list of category names
-    :param crop_image: Will add numpy array to :attr:`image.image`
+    :param crop_image: Will add numpy array to `image.image`
     :return: Image
     """
 
@@ -174,8 +174,6 @@ def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
     Convert a xml object into a dict using a xsl style sheet.
 
     **Example:**
-
-        .. code-block:: python
 
             with open(path_xslt) as xsl_file:
                 xslt_file = xsl_file.read().encode('utf-8')

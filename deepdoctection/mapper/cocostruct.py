@@ -44,10 +44,10 @@ def coco_to_image(
 
     """
     Map a dataset in coco format that has been serialized to image format. This serialized input requirements hold
-    when a coco style sheet is loaded via meth:`SerializerCoco.load`.
+    when a coco style sheet is loaded via `SerializerCoco.load`.
 
     :param dp: a datapoint in serialized coco format.
-    :param categories: A dict of categories, e.g. meth:`DatasetCategories.get_categories`
+    :param categories: A dict of categories, e.g. `DatasetCategories.get_categories`
     :param load_image: If 'True' it will load image to attr: Image.image
     :param filter_empty_image: Will return None, if datapoint has no annotations
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
