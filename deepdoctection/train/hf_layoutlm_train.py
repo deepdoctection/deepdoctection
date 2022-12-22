@@ -237,8 +237,8 @@ def train_hf_layoutlm(
     """
     Script for fine-tuning LayoutLM models either for sequence classification (e.g. classifying documents) or token
     classification using HF Trainer and custom evaluation. It currently supports LayoutLM, LayoutLMv2, LayoutLMv3 and
-    LayoutXLM. Training similar but different models like LILT <https://arxiv.org/abs/2202.13669> can done by changing a
-    few lines of code regarding the selection of the tokenizer.
+    LayoutXLM. Training similar but different models like LILT <https://arxiv.org/abs/2202.13669> can be done by changing
+    a few lines of code regarding the selection of the tokenizer.
 
     The theoretical foundation can be taken from
 
