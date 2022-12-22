@@ -175,8 +175,6 @@ def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
 
     **Example:**
 
-        
-
             with open(path_xslt) as xsl_file:
                 xslt_file = xsl_file.read().encode('utf-8')
             xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))

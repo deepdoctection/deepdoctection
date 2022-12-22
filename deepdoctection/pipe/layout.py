@@ -39,8 +39,6 @@ class ImageLayoutService(PredictorPipelineComponent):
 
     **Example**
 
-        
-
             d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
             item_component = ImageLayoutService(d_items)
     """

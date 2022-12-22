@@ -73,8 +73,6 @@ class MatchingService(PipelineComponent):
 
     Either `iou` (intersection-over-union) or `ioa` (intersection-over-area) can be selected as the matching rule.
 
-        
-
             # the following will assign word annotations to text and title annotation, provided that their ioa-threshold
             # is above 0.7. words below that threshold will not be assigned.
 

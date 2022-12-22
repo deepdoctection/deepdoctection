@@ -47,8 +47,6 @@ class DoctectionPipe(Pipeline):
 
     By default, `DoctectionPipe` will instantiate a default `PageParsingService`
 
-    
-
         PageParsingService(text_container=LayoutType.word,
                            text_block_names=[LayoutType.title,
                                              LayoutType.text,
@@ -59,12 +57,8 @@ class DoctectionPipe(Pipeline):
 
     **Example:**
 
-        
-
             pipe = DoctectionPipe([comp_1, com_2])
             pipe.page_parser =  PageParsingService(text_container= my_custom_setting)
-
-
     """
 
     def __init__(self, pipeline_component_list: List[Union[PipelineComponent]]):

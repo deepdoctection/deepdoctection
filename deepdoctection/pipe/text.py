@@ -365,8 +365,6 @@ class TextOrderService(PipelineComponent):
 
     The blocks are defined in `_floating_text_block_names` and text blocks in `_floating_text_block_names`.
 
-    
-
         order = TextOrderService(text_container=names.C.WORD,
                                  floating_text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST],
                                  text_block_names=[names.C.TITLE, names.C.TEXT, names.C.LIST, names.C.CELL,

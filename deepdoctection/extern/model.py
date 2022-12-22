@@ -68,13 +68,9 @@ class ModelCatalog:
 
     To get an overview of all registered models
 
-    
-
         print(ModelCatalog.get_model_list())
 
     To get a model card for some specific model:
-
-    
 
         profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
         print(profile.description)
@@ -82,17 +78,12 @@ class ModelCatalog:
     Some models will have their weights and configs stored in the cache. To instantiate predictors one will sometimes
     need their path. Use
 
-    
-
         path_weights = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
         path_configs = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
 
     To register a new model
 
-    
-
         ModelCatalog.get_full_path_configs("my_new_model")
-
     """
 
     CATALOG: Dict[str, ModelProfile] = {
@@ -712,8 +703,6 @@ class ModelDownloadManager:
     """
     Class for organizing downloads of config files and weights from various sources. Internally, it will use model
     profiles to know where things are stored.
-
-    
 
         # if you are not sure about the model name use the ModelCatalog
         ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")

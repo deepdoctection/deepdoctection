@@ -80,8 +80,6 @@ def deprecated(
 
     **Example:**
 
-        
-
             @deprecated("Explanation of what to do instead.", "2017-11-4")
             def foo(...):
                 pass

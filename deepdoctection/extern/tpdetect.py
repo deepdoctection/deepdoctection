@@ -48,8 +48,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
     of NMS can be carried out for the output, which operates on a class-agnostic basis. For a discussion, see
     <https://github.com/facebookresearch/detectron2/issues/978> .
 
-    
-
         config_path = ModelCatalog.get_full_path_configs("dd/tp/conf_frcnn_rows.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/model-162000.data-00000-of-00001")
         categories = ModelCatalog.get_profile("item/model-162000.data-00000-of-00001").categories

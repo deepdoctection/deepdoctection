@@ -81,14 +81,10 @@ class TextractOcrDetector(ObjectDetector):
 
     The detector only calls the base OCR engine and does not return additional Textract document analysis features.
 
-    
-
         textract_predictor = TextractOcrDetector()
         detection_result = textract_predictor.predict(bgr_image_as_np_array)
 
     or
-
-    
 
         textract_predictor = TextractOcrDetector()
         text_extract = TextExtractionService(textract_predictor)

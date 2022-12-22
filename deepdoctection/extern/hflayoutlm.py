@@ -298,8 +298,6 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
     **Example**
 
-        
-
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
             tess = TesseractOcrDetector(tesseract_config_path)
@@ -387,8 +385,6 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
     Note, that you must use `LayoutLMTokenizerFast` as tokenizer. `LayoutLMv2TokenizerFast` will not be accepted.
 
     **Example**
-
-        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -490,8 +486,6 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
     Note, that you must use `RobertaTokenizerFast` as tokenizer. `LayoutLMv3TokenizerFast` will not be accepted.
 
     **Example**
-
-        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -695,8 +689,6 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     **Example**
 
-        
-
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
             tess = TesseractOcrDetector(tesseract_config_path)
@@ -757,8 +749,6 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     token classification and other things please use another model of the family.
 
     **Example**
-
-        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
@@ -827,8 +817,6 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     token classification and other things please use another model of the family.
 
     **Example**
-
-        
 
             # setting up compulsory ocr service
             tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")

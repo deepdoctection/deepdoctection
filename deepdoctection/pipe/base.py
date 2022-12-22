@@ -273,8 +273,6 @@ class Pipeline(ABC):
         setting up the backbone and post-processing are to be bundled. A dataflow generator df is returned, which is
         generated via
 
-        
-
             doc = iter(df)
             page = next(doc)
 

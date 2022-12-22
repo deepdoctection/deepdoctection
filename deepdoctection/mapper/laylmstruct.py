@@ -627,14 +627,11 @@ def image_to_layoutlm_features(
     with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
     used internally in `LMTokenClassifierService`.
 
-    
-
             tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
             layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
                                                   categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
 
             layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
-
 
     :param dp: Image datapoint
     :param tokenizer: Tokenizer compatible with the language model

@@ -91,8 +91,6 @@ class DoctrTextlineDetector(ObjectDetector):
 
     **Example:**
 
-         
-
                  path = "/path/to/image_dir"
                  det = DoctrTextlineDetector()
                  layout = ImageLayoutService(det,to_image=True, crop_image=True)
@@ -148,8 +146,6 @@ class DoctrTextRecognizer(TextRecognizer):
     Regarding the model we refer to the documentation <https://mindee.github.io/doctr/models.html>
 
     **Example:**
-
-         
 
                  path = "/path/to/image_dir"
                  det = DoctrTextlineDetector()

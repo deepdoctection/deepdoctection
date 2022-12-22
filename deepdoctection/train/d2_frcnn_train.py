@@ -54,8 +54,8 @@ def _set_config(path_config_yaml: str, conf_list: List[str]) -> CfgNode:
 
 class D2Trainer(DefaultTrainer):
     """
-    Detectron2 `DefaultTrainer` with some custom method for handling datasets and running evaluation. The setting is made
-    to train standard models in detectron2.
+    Detectron2 `DefaultTrainer` with some custom method for handling datasets and running evaluation. The setting is
+    made to train standard models in detectron2.
     """
 
     def __init__(self, cfg: CfgNode, torch_dataset: IterableDataset[Any], mapper: DatasetMapper) -> None:
