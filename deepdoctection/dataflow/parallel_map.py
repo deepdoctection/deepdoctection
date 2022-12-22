@@ -379,10 +379,9 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         strict: bool = False,
     ) -> None:
         """
-        :param ds: the dataflow to map
+        :param df: the dataflow to map
         :param num_proc: number of threads to use
         :param map_func: datapoint -> datapoint | None. Return None to
-        :param discard/skip the datapoint.
         :param buffer_size: number of datapoints in the buffer
         :param strict: use "strict mode", see notes above.
         """

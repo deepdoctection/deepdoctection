@@ -56,14 +56,13 @@ def rpn_losses(anchor_labels, anchor_boxes, label_logits, box_logits, rpn_batch_
     """
     RPN losses
 
-
-    :param box_logits: fHxfWxNAx4
-    :param label_logits: fHxfWxNA
-    :param anchor_boxes: fHxfWxNAx4, encoded
     :param anchor_labels: fHxfWxNA
+    :param anchor_boxes: fHxfWxNAx4, encoded
+    :param label_logits: fHxfWxNA
+    :param box_logits: fHxfWxNAx4
     :param rpn_batch_per_im: RPN batch per image
 
-    :return label_loss, box_loss
+    :return: label_loss, box_loss
     """
 
     with tf.device("/cpu:0"):
@@ -136,7 +135,7 @@ def generate_rpn_proposals(
     :param scores: n float, the logits
     :param boxes: nx4 float dtype, the proposal boxes. Decoded to float box already
 
-    :return boxes: kx4 float
+    :return: boxes: kx4 float
             scores: k logits
 
     """
@@ -176,12 +175,12 @@ def get_all_anchors(*, stride, sizes, ratios, max_size):
     """
     Get all anchors in the largest possible image, shifted, float box
 
-    :param stride (int): the stride of anchors.
-    :param sizes (tuple[int]): the sizes (sqrt area) of anchors
-    :param ratios (tuple[int]): the aspect ratios of anchors
-    :param max_size (int): maximum size of input image
+    :param stride: the stride of anchors.
+    :param sizes: the sizes (sqrt area) of anchors
+    :param ratios: the aspect ratios of anchors
+    :param max_size: maximum size of input image
 
-    :return anchors: SxSxNUM_ANCHOR x 4, where S == ceil(MAX_SIZE/STRIDE), float box
+    :return: SxSxNUM_ANCHOR x 4, where S == ceil(MAX_SIZE/STRIDE), float box
 
     The layout in the NUM_ANCHOR dim is NUM_RATIO x NUM_SIZE.
     """

@@ -68,8 +68,8 @@ class ResizeTransform(BaseTransform):
         :param w: width
         :param new_h: target height
         :param new_w: target width
-        :param: interp: cv2 interpolation method like cv2.INTER_NEAREST, cv2.INTER_LINEAR,
-                        cv2.INTER_AREA
+        :param interp: cv2 interpolation method like cv2.INTER_NEAREST, cv2.INTER_LINEAR,
+                       cv2.INTER_AREA
         """
         self.h = h
         self.w = w
@@ -99,8 +99,8 @@ class InferenceResize:
 
     def __init__(self, short_edge_length: int, max_size: int, interp: str = cv2.INTER_LINEAR) -> None:
         """
-        :param short_edge_length ([int, int]): a [min, max] interval from which to sample the shortest edge length.
-        :param max_size (int): maximum allowed longest edge length.
+        :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
+        :param max_size: maximum allowed longest edge length.
         """
         self.short_edge_length = short_edge_length
         self.max_size = max_size

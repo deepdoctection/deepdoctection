@@ -566,9 +566,6 @@ class LayoutLMDataCollator:
                                   batch samples will be smaller than the output batch samples.
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
-
-    :return: dictionary with the following arguments:  `image_ids, width, height, ann_ids, input_ids,
-             token_type_ids, attention_masks, boxes, labels`.
     """
 
     tokenizer: "PreTrainedTokenizerFast"
@@ -591,7 +588,8 @@ class LayoutLMDataCollator:
         Calling the DataCollator to form model inputs for training and inference. Takes a single raw
         :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
                              boxes, dataset_type`.
-        :return: LayoutLMFeatures
+        :return: LayoutLMFeatures with arguments `image_ids, width, height, ann_ids, input_ids,
+                 token_type_ids, attention_masks, boxes, labels`.
         """
         return raw_features_to_layoutlm_features(
             raw_features,

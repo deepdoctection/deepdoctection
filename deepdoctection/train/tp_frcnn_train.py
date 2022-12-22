@@ -204,7 +204,7 @@ def train_faster_rcnn(
     Tensorpack provides a training API under TF1. Training runs under a TF2 installation if TF2 behavior is deactivated.
 
     :param path_config_yaml: path to TP config file. Check the
-                             [deepdoctection.extern.tp.tpfrcnn.config.config.py][] for various settings.
+                             [deepdoctection.extern.tp.tpfrcnn.config.config][] for various settings.
     :param dataset_train: the dataset to use for training.
     :param path_weights: path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
                          nothing is passed.
