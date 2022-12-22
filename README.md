@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/pics/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/blob/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   A Document AI Package
   </h3>
