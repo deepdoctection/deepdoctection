@@ -249,8 +249,23 @@ def get_detectron2_requirement() -> Requirement:
 
 
 # Tesseract related dependencies
-
 _TESS_AVAILABLE = which("tesseract") is not None
+_TESS_PATH = "tesseract"
+
+def set_tesseract_path(tesseract_path: str="tesseract"):
+    global _TESS_AVAILABLE
+    global _TESS_PATH
+    
+    tesseract_flag = which(tesseract_path)
+
+    if tesseract_flag is None:
+        _TESS_AVAILABLE = False
+    else:
+        _TESS_AVAILABLE = True
+
+    _TESS_PATH = tesseract_path
+
+
 _TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
 
 
@@ -276,7 +291,7 @@ def get_tesseract_version() -> Union[int, version.Version, version.LegacyVersion
     """
     try:
         output = subprocess.check_output(
-            ["tesseract", "--version"],
+            [_TESS_PATH, "--version"],
             stderr=subprocess.STDOUT,
             env=environ,
             stdin=subprocess.DEVNULL,
