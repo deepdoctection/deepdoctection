@@ -34,6 +34,7 @@ from ..utils.file_utils import TesseractNotFound, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
+from ..utils.file_utils import _TESS_PATH
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
 
@@ -93,7 +94,7 @@ def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, o
     if not sys.platform.startswith("win32") and nice != 0:
         cmd_args += ("nice", "-n", str(nice))
 
-    cmd_args += ("tesseract", input_file_name, output_file_name_base, "-l", lang)
+    cmd_args += (_TESS_PATH, input_file_name, output_file_name_base, "-l", lang)
 
     if config:
         cmd_args += shlex.split(config)
@@ -294,7 +295,7 @@ class TesseractOcrDetector(ObjectDetector):
         :param config_overwrite: Overwrite config parameters defined by the yaml file with new values.
                                  E.g. ["oem=14"]
         """
-        self.name = "tesseract"
+        self.name = _TESS_PATH
         if config_overwrite is None:
             config_overwrite = []
 

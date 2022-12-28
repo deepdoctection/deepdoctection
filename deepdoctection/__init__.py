@@ -262,6 +262,7 @@ _IMPORT_STRUCTURE = {
         "detectron2_available",
         "get_detectron2_requirement",
         "tesseract_available",
+        "set_tesseract_path",
         "get_tesseract_version",
         "get_tesseract_requirement",
         "pdf_to_ppm_available",
