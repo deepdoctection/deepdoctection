@@ -166,7 +166,7 @@ docs_deps = deps_list(
     "jinja2",
     "mkdocs-material",
     "mkdocstrings-python",
-    "griffe"
+    "griffe",
 )
 
 

@@ -262,11 +262,11 @@ def set_tesseract_path(tesseract_path: str) -> None:
     :param tesseract_path: Tesseract installation path.
     """
     if tesseract_path is None:
-        raise ValueError(f"tesseract_path is empty.")
+        raise ValueError("tesseract_path is empty.")
 
-    global _TESS_AVAILABLE
-    global _TESS_PATH
-    
+    global _TESS_AVAILABLE  # pylint: disable=W0603
+    global _TESS_PATH  # pylint: disable=W0603
+
     tesseract_flag = which(tesseract_path)
 
     if tesseract_flag is None:
