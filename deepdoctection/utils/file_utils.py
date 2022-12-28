@@ -250,9 +250,21 @@ def get_detectron2_requirement() -> Requirement:
 
 # Tesseract related dependencies
 _TESS_AVAILABLE = which("tesseract") is not None
+# Tesseract installation path
 _TESS_PATH = "tesseract"
+_TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
 
-def set_tesseract_path(tesseract_path: str="tesseract"):
+
+def set_tesseract_path(tesseract_path: str) -> None:
+    """Set the Tesseract path. If you have tesseract installed in Anaconda,
+       you can use this function to set tesseract path.
+
+    Args:
+        tesseract_path (str): Tesseract installation path.
+    """
+    if tesseract_path is None:
+        raise ValueError(f"tesseract_path is empty.")
+
     global _TESS_AVAILABLE
     global _TESS_PATH
     
@@ -264,9 +276,6 @@ def set_tesseract_path(tesseract_path: str="tesseract"):
         _TESS_AVAILABLE = True
 
     _TESS_PATH = tesseract_path
-
-
-_TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
 
 
 def tesseract_available() -> bool:
