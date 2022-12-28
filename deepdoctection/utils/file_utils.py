@@ -259,8 +259,7 @@ def set_tesseract_path(tesseract_path: str) -> None:
     """Set the Tesseract path. If you have tesseract installed in Anaconda,
        you can use this function to set tesseract path.
 
-    Args:
-        tesseract_path (str): Tesseract installation path.
+    :param tesseract_path: Tesseract installation path.
     """
     if tesseract_path is None:
         raise ValueError(f"tesseract_path is empty.")
