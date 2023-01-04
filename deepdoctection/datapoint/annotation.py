@@ -92,7 +92,7 @@ class Annotation(ABC):
                 self.annotation_id = external_id
             else:
                 self.annotation_id = get_uuid(external_id)
-        self._assert_defining_attributes_have_str()
+        self._assert_attributes_have_str()
 
     @property
     def annotation_id(self) -> str:
@@ -128,8 +128,9 @@ class Annotation(ABC):
         """
         raise NotImplementedError
 
-    def _assert_defining_attributes_have_str(self) -> None:
-        for attr in self.get_defining_attributes():
+    def _assert_attributes_have_str(self, state_id: bool = False) -> None:
+        defining_attributes = self.get_state_attributes() if state_id else self.get_defining_attributes()
+        for attr in defining_attributes:
             if not hasattr(eval("self." + attr), "__str__"):  # pylint: disable=W0123
                 raise AttributeError(f"Attribute {attr} must have __str__ method")
 
@@ -180,6 +181,50 @@ class Annotation(ABC):
         """
         raise NotImplementedError
 
+    @staticmethod
+    @abstractmethod
+    def get_state_attributes() -> List[str]:
+        """
+        Similar to `get_defining_attributes` but for `state_id`
+
+        :return: A list of attributes.
+        """
+        raise NotImplementedError
+
+    @property
+    def state_id(self) -> str:
+        """
+        Different to `annotation_id` this id does depend on every defined state attributes and might therefore change
+        over time.
+
+        :return: Annotation state instance
+        """
+        container_ids = []
+        attributes = self.get_state_attributes()
+        for attribute in attributes:
+            attr = getattr(self, attribute)
+            if isinstance(attr, dict):
+                for key, value in attr.items():
+                    if isinstance(value, Annotation):
+                        container_ids.extend([key, value.state_id])
+                    elif isinstance(value, list):
+                        container_ids.extend([str(element) for element in value])
+                    else:
+                        raise TypeError(f"Cannot determine __str__ or annotation_id for element in {attribute}")
+            elif isinstance(attr, list):
+                for element in attr:
+                    if isinstance(element, Annotation):
+                        container_ids.append(element.state_id)
+                    if isinstance(element, str):
+                        container_ids.append(element)
+                    else:
+                        container_ids.append(str(element))
+            elif hasattr(attr, "state_id"):
+                container_ids.append(attr.state_id)
+            else:
+                container_ids.append(str(attr))
+        return get_uuid(self.annotation_id, *container_ids)
+
 
 @dataclass
 class CategoryAnnotation(Annotation):
@@ -228,6 +273,7 @@ class CategoryAnnotation(Annotation):
     def __post_init__(self) -> None:
         self.category_id = str(self.category_id)
         assert self.category_name
+        self._assert_attributes_have_str(state_id=True)
         super().__post_init__()
 
     def dump_sub_category(
@@ -344,6 +390,10 @@ class CategoryAnnotation(Annotation):
         category_ann = ann_from_dict(cls, **kwargs)
         return category_ann
 
+    @staticmethod
+    def get_state_attributes() -> List[str]:
+        return ["active", "sub_categories", "relationships"]
+
 
 @dataclass
 class ImageAnnotation(CategoryAnnotation):
@@ -372,6 +422,10 @@ class ImageAnnotation(CategoryAnnotation):
         if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
         return image_ann
+
+    @staticmethod
+    def get_state_attributes()  -> List[str]:
+        return ["active", "sub_categories", "relationships", "image"]
 
 
 @dataclass

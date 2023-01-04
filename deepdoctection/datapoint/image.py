@@ -529,3 +529,47 @@ class Image:
         if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
         return image
+
+    @staticmethod
+    def get_state_attributes() -> List[str]:
+        """
+        Returns the list of attributes that define the `state_id` of an image.
+
+        :return: List of attributes
+        """
+        return ["annotations", "embeddings", "_image", "_summary"]
+
+    @property
+    def state_id(self) -> str:
+        """
+        Different to `image_id` this id does depend on every state attributes and might therefore change
+        over time.
+
+        :return: Annotation state instance
+        """
+        container_ids = []
+        attributes = self.get_state_attributes()
+
+        for attribute in attributes:
+            attr = getattr(self, attribute)
+            if isinstance(attr, dict):
+                for key, value in attr.items():
+                    if isinstance(value, Annotation):
+                        container_ids.extend([key, value.state_id])
+                    elif isinstance(value, list):
+                        container_ids.extend([str(element) for element in value])
+                    else:
+                        container_ids.append(str(value))
+            elif isinstance(attr, list):
+                for element in attr:
+                    if isinstance(element, Annotation):
+                        container_ids.append(element.state_id)
+                    elif isinstance(element, str):
+                        container_ids.append(element)
+                    else:
+                        container_ids.append(str(element))
+            elif isinstance(attr, np.ndarray):
+                container_ids.append(convert_np_array_to_b64(attr))
+            else:
+                container_ids.append(str(attr))
+        return get_uuid(self.image_id, *container_ids)
