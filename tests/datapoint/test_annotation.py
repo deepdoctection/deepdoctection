@@ -141,4 +141,4 @@ class TestCategoryAnnotation:
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
 
         # Assert
-        assert cat.state_id == "58d80ed6-8023-3e74-a02b-bc07cf2aa52c"
+        assert cat.state_id == "8301eef5-bd4a-3c10-9dad-7cae94dd150b"
