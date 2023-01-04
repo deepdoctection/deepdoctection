@@ -122,3 +122,23 @@ class TestCategoryAnnotation:
         # Assert
         with pytest.raises(Exception):
             cat.get_sub_category(get_type("bak"))
+
+    @staticmethod
+    @mark.basic
+    def test_state_id() -> None:
+        """
+        state_id is correctly determined based by given state attributes
+        """
+
+        # Arrange
+        cat = CategoryAnnotation(
+            category_name="FOO", category_id="1", external_id="c822f8c3-1148-30c4-90eb-cb4896b1e222"
+        )
+        sub_cat_1 = CategoryAnnotation(
+            category_name="FOOBAK", category_id="2", external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+        )
+        # Act
+        cat.dump_sub_category(get_type("bak"), sub_cat_1)
+
+        # Assert
+        assert cat.state_id == "58d80ed6-8023-3e74-a02b-bc07cf2aa52c"
