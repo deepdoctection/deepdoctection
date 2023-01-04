@@ -294,3 +294,38 @@ class TestImage:
         df = MapData(df, lambda dp: Image.from_dict(**dp))
         image_list = collect_datapoint_from_dataflow(df)
         assert len(image_list) == 1
+
+    @staticmethod
+    @mark.basic
+    def test_state_id_changes_when_annotations_added(image: WhiteImage) -> None:
+        """
+        state_id changes when annotations are added
+        """
+
+        # Arrange
+        test_image = Image(location=image.loc, file_name=image.file_name)
+        cat_1 = ImageAnnotation(
+            category_name="FOO",
+            category_id="1",
+            bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
+        )
+        cat_2 = ImageAnnotation(
+            category_name="BAK",
+            category_id="2",
+            bounding_box=BoundingBox(ulx=2.0, uly=2.0, width=2.0, height=2.0, absolute_coords=True),
+        )
+        cat_3 = ImageAnnotation(
+            category_name="BAK",
+            category_id="1",
+            bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
+        )
+
+        test_image.dump(cat_1)
+        test_image.dump(cat_2)
+
+        # Assert
+        assert test_image.state_id == "ec2d4ac5-a4dc-351f-b869-3ec6334d9906"
+
+        # Act
+        test_image.dump(cat_3)
+        assert test_image.state_id == "ceb9021b-c96d-36e1-9cd5-465b48cae58b"
