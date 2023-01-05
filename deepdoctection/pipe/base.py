@@ -314,7 +314,7 @@ class Pipeline(ABC):
         :return: Either a full dictionary with position and name of all pipeline components or the name, if the position
                  has been passed or the position if the name has been passed.
         """
-        comp_info = {key + 1: comp.name for key, comp in enumerate(self.pipe_component_list)}
+        comp_info = {key: comp.name for key, comp in enumerate(self.pipe_component_list)}
         comp_info_name_as_key = {value: key for key, value in comp_info.items()}
         if position:
             return comp_info[position]
