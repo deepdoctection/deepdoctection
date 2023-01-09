@@ -55,7 +55,6 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
         location = str(dp.get("location", ""))
         if location == "":
             location = str(dp.get("path", ""))
-            location = os.path.join(location, file_name)
     else:
         raise TypeError("datapoint not of expected type for converting to image")
 
