@@ -14,6 +14,6 @@ RUN apt-get update && \
                    python3-opencv \
                    tesseract-ocr
 
-RUN python3 -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision && \
+RUN python3 -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision
 
 RUN python3 -m pip install --no-cache-dir ".[source-pt]"
