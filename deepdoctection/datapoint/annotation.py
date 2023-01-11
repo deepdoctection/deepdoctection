@@ -424,7 +424,7 @@ class ImageAnnotation(CategoryAnnotation):
         return image_ann
 
     @staticmethod
-    def get_state_attributes()  -> List[str]:
+    def get_state_attributes() -> List[str]:
         return ["active", "sub_categories", "relationships", "image"]
 
 
