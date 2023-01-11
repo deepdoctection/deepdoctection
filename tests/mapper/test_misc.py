@@ -42,7 +42,10 @@ _TEST_IMAGE_2.image = ones((4, 3, 3), dtype=uint8)
         ("test/to/path/test_image.png", _TEST_IMAGE),
         ({"file_name": "test_image.png", "location": "test/to/path/test_image.png"}, _TEST_IMAGE),
         ({"file_name": "test_image.png", "path": "test/to/path/test_image.png"}, _TEST_IMAGE),
-        ({"file_name": "test_image.pdf", "path": "test/to/path/test_image.pdf", "pdf_bytes": b"some_bytes"}, _TEST_IMAGE_2),
+        (
+            {"file_name": "test_image.pdf", "path": "test/to/path/test_image.pdf", "pdf_bytes": b"some_bytes"},
+            _TEST_IMAGE_2,
+        ),
     ],
 )
 @patch("deepdoctection.mapper.misc.load_image_from_file", MagicMock(return_value=ones((4, 3, 3))))
