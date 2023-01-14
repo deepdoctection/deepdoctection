@@ -333,7 +333,7 @@ class CustomDataset(DatasetBase):
         name: str,
         dataset_type: TypeOrStr,
         location: Pathlike,
-        init_categories: Sequence[ObjectTypes],
+        init_categories: Optional[Sequence[ObjectTypes]],
         dataflow_builder: Type[DataFlowBaseBuilder],
         init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
@@ -352,7 +352,7 @@ class CustomDataset(DatasetBase):
         :param init_categories: A list of all available categories in this dataset. You must use a list as the order
                                 of the categories must always be preserved: they determine the category id that in turn
                                 will be used for model training.
-        :param dataflow_builder: A sub class of `DataFlowBaseBuilder`. Do not instantiate the class by yourself.
+        :param dataflow_builder: A subclass of `DataFlowBaseBuilder`. Do not instantiate the class by yourself.
         :param init_sub_categories: A dict mapping main categories to sub categories, if there are any available.
                                     Suppose an object `LayoutType.cell` has two additional information in the annotation
                                     file: `CellType.header, CellType.body`. You can then write:
