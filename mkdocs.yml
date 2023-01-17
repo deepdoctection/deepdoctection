@@ -54,13 +54,15 @@ nav:
 
 
 plugins:
-- mkdocstrings:
-    handlers:
-      python:
-        options:
-          line_length: 120
-          docstring_style: sphinx
-          merge_init_into_class: True
+    - search:
+        lang: en
+    - mkdocstrings:
+        handlers:
+          python:
+            options:
+              line_length: 120
+              docstring_style: sphinx
+              merge_init_into_class: True
 
 # to watch lib files in mkdocs server. Uncomment, if update docs locally
 #watch:
