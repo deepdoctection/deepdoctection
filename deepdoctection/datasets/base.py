@@ -333,7 +333,7 @@ class CustomDataset(DatasetBase):
         name: str,
         dataset_type: TypeOrStr,
         location: Pathlike,
-        init_categories: Optional[Sequence[ObjectTypes]],
+        init_categories: Sequence[ObjectTypes],
         dataflow_builder: Type[DataFlowBaseBuilder],
         init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
