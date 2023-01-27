@@ -43,6 +43,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
+from ...mapper.cats import filter_cat
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import lxml_available
 from ...utils.settings import DatasetType, LayoutType, CellType
@@ -287,5 +288,15 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
                                        "table column header": CellType.column_header},
             ),
         )
+
+        assert self.categories is not None  # avoid many typing issues
+        if self.categories.is_filtered():
+            df = MapData(
+                df,
+                filter_cat(
+                    self.categories.get_categories(as_dict=False, filtered=True),
+                    self.categories.get_categories(as_dict=False, filtered=False),
+                ),
+            )
 
         return df

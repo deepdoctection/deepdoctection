@@ -509,12 +509,14 @@ class Page(Image):
                 box_stack.append(item.bbox)
                 category_names_list.append(item.category_name)
 
+        cells_displayed = False
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bbox)
                 category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
+                        cells_displayed = True
                         box_stack.append(cell.bbox)
                         category_names_list.append(None)
                 if show_table_structure:
@@ -526,6 +528,15 @@ class Page(Image):
                     for col in cols:
                         box_stack.append(col.bbox)
                         category_names_list.append(None)
+
+        if show_cells:
+            if not cells_displayed:
+                for cell in self.get_annotation(category_names=[CellType.spanning,
+                                                                CellType.row_header,
+                                                                CellType.column_header,
+                                                                CellType.projected_row_header]):
+                    box_stack.append(cell.bbox)
+                    category_names_list.append(None)
 
         if show_words:
             all_words = []
