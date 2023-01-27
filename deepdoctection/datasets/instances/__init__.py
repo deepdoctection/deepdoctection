@@ -48,7 +48,8 @@ __all__ = [
     "Xfund",
     "Funsd",
     "IIITar13K",
-    "Pubtables1M",
+    "Pubtables1MDet",
+    "Pubtables1MStruct",
     "Rvlcdip",
     "DocLayNet",
 ]

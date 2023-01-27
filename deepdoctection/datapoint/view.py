@@ -245,6 +245,10 @@ IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     LayoutType.table: Table,
     LayoutType.word: Word,
     LayoutType.cell: Cell,
+    CellType.projected_row_header: Cell,
+    CellType.spanning: Cell,
+    CellType.row_header: Cell,
+    CellType.column_header: Cell,
 }
 
 
