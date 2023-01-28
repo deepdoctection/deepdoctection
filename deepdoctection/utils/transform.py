@@ -22,7 +22,7 @@ of coordinates. Most have the ideas have been taken from
 """
 
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Tuple
 
 import cv2
 import numpy as np
@@ -31,7 +31,7 @@ from numpy import float32
 
 from .detection_types import ImageType
 
-__all__ = ["ResizeTransform", "InferenceResize"]
+__all__ = ["ResizeTransform", "InferenceResize", "PadTransform"]
 
 
 class BaseTransform(ABC):
@@ -138,3 +138,57 @@ def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_st
     :param pixel_std: (3,) array
     """
     return (image - pixel_mean) * (1.0 / pixel_std)
+
+def pad_image(image: ImageType, top: np.int, right: np.int, bottom: np.int, left: np.int) -> ImageType:
+    """Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
+    currently supported
+
+    :param image: image as np.array
+    :param top: Top pixel value to pad
+    :param right: Right pixel value to pad
+    :param bottom: Bottom pixel value to pad
+    :param left: Left pixel value to pad
+    """
+    return np.pad(image, ((left,right),(top,bottom),(0,0)), 'constant', constant_values=(255))
+
+class PadTransform(BaseTransform):
+    """
+    Pad the image
+    """
+
+    def __init__(self, top: Union[int, float],
+                 right: Union[int, float],
+                 bottom: Union[int, float],
+                 left: Union[int, float]):
+        """
+        :param top: padding top image side
+        :param right: padding right image side
+        :param bottom: padding bottom image side
+        :param left: padding left image side
+        """
+        self.top = top
+        self.right = right
+        self.bottom = bottom
+        self.left = left
+
+    def apply_image(self, img: ImageType) -> ImageType:
+        return pad_image(img,self.top, self.right,self.bottom,self.left)
+
+    def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Transformation that should be applied to coordinates"""
+        coords[:, 0] = coords[:, 0] + self.left
+        coords[:, 1] = coords[:, 1] + self.top
+        coords[:, 2] = coords[:, 2] + self.left
+        coords[:, 3] = coords[:, 3] + self.top
+        return coords
+
+    def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Inverse transformation going back from coordinates of padded image to original image"""
+        coords[:, 0] = coords[:, 0] - self.left
+        coords[:, 1] = coords[:, 1] - self.top
+        coords[:, 2] = coords[:, 2] - self.left
+        coords[:, 3] = coords[:, 3] - self.top
+        return coords
+
+    def clone(self):
+        return self.__class__(self.top,self.right,self.bottom,self.left)

@@ -21,7 +21,7 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import List, Optional, no_type_check
+from typing import List, Optional, no_type_check, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -546,3 +546,43 @@ def rescale_coords(
         lrx=box.lrx * scale_width,
         lry=box.lry * scale_height,
     )
+
+def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[BoundingBox]) -> Sequence[BoundingBox]:
+    """
+
+    :param boxes_1:
+    :param boxes_2:
+    :return:
+    """
+    if boxes_1[0].absolute_coords != boxes_1[0].absolute_coords:
+        raise ValueError("absolute_coords of boxes_1 and boxes_2 mus be equal")
+    absolute_coords = boxes_1[0].absolute_coords
+    boxes1 = np.array([box.to_list(mode="xyxy") for box in boxes_1])
+    boxes2 = np.array([box.to_list(mode="xyxy") for box in boxes_2])
+    [x_min1, y_min1, x_max1, y_max1] = np.split(boxes1, 4, axis=1)
+    [x_min2, y_min2, x_max2, y_max2] = np.split(boxes2, 4, axis=1)
+
+    ulys = np.maximum(y_min1, np.transpose(y_min2))
+    lrys = np.minimum(y_max1, np.transpose(y_max2))
+    intersect_heights = np.maximum(
+        np.zeros(ulys.shape, dtype="f4"), lrys - ulys
+    ).flatten()
+
+    ulxs = np.maximum(x_min1, np.transpose(x_min2))
+    lrxs = np.minimum(x_max1, np.transpose(x_max2))
+    intersect_widths = np.maximum(
+        np.zeros(ulxs.shape, dtype="f4"), lrxs - ulxs
+    ).flatten()
+    np_boxes_output = np.swapaxes([ulxs.flatten(),
+                                     ulys.flatten(),
+                                     intersect_widths.flatten(),
+                                     intersect_heights.flatten()],
+                                     1, 0)
+    boxes_output = []
+    for idx in range(np_boxes_output.shape[0]):
+        boxes_output.append(BoundingBox(ulx=np_boxes_output[idx,0][0],
+                              uly=np_boxes_output[idx,0][1],
+                              width=np_boxes_output[idx,0][2],
+                              height=np_boxes_output[idx,0][3],
+                              absolute_coords=absolute_coords))#
+    return boxes_output

@@ -339,6 +339,8 @@ _IMPORT_STRUCTURE = {
         "ResizeTransform",
         "InferenceResize",
         "normalize_image",
+        "pad_image",
+        "PadTransform",
         "delete_keys_from_dict",
         "split_string",
         "string_to_dict",
