@@ -22,10 +22,13 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from typing import Dict, List, Mapping, Optional, Union
 
+import numpy as np
+
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
 from ..utils.settings import ObjectTypes, Relationships
+from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -124,6 +127,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         sub_image_names: Union[str, List[str]],
         category_id_mapping: Optional[Dict[int, int]] = None,
         add_dummy_detection: bool = False,
+        padder: Optional[PadTransform] = None
     ):
         """
         :param sub_image_detector: object detector.
@@ -142,6 +146,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         self.add_dummy_detection = add_dummy_detection
         self.dummy_generator_cls = None
         self.category_id_mapping = category_id_mapping
+        self.padder = padder
         if add_dummy_detection:
             if category_id_mapping is None:
                 raise ValueError("Using DetectResult dummy generator requires passing a category_id_mapping")
@@ -164,7 +169,15 @@ class SubImageLayoutService(PredictorPipelineComponent):
         for sub_image_ann in sub_image_anns:
             if sub_image_ann.image is None:
                 raise ValueError("sub_image_ann.image is None, but must be an image")
-            detect_result_list = self.predictor.predict(sub_image_ann.image.image)
+            np_image = sub_image_ann.image
+            if self.padder:
+                np_image = self.padder.apply_image(np_image)
+            detect_result_list = self.predictor.predict(np_image)
+            if self.padder and detect_result_list:
+                boxes = np.array([detect_result.box for detect_result in detect_result_list])
+                boxes_orig = self.padder.inverse_apply_coords(boxes)
+                for idx, detect_result in enumerate(detect_result_list):
+                    detect_result.box = boxes_orig[idx, :].tolist()
             if self.has_dummy_generator():
                 if hasattr(self.predictor, "categories"):
                     generator = self.get_dummy_generator(
@@ -223,6 +236,9 @@ class SubImageLayoutService(PredictorPipelineComponent):
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
+        padder_clone = None
+        if self.padder:
+            padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
             raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(predictor)}")
         return self.__class__(
@@ -230,4 +246,5 @@ class SubImageLayoutService(PredictorPipelineComponent):
             deepcopy(self.sub_image_name),
             deepcopy(self.category_id_mapping),
             deepcopy(self.add_dummy_detection),
+            padder_clone
         )
