@@ -580,9 +580,9 @@ def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[Boundin
                                      1, 0)
     boxes_output = []
     for idx in range(np_boxes_output.shape[0]):
-        boxes_output.append(BoundingBox(ulx=np_boxes_output[idx,0][0],
-                              uly=np_boxes_output[idx,0][1],
-                              width=np_boxes_output[idx,0][2],
-                              height=np_boxes_output[idx,0][3],
-                              absolute_coords=absolute_coords))#
+        boxes_output.append(BoundingBox(ulx=np_boxes_output[idx][0],
+                              uly=np_boxes_output[idx][1],
+                              width=np_boxes_output[idx][2],
+                              height=np_boxes_output[idx][3],
+                              absolute_coords=absolute_coords))
     return boxes_output

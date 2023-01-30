@@ -152,7 +152,6 @@ class CellType(ObjectTypes):
     column_span = "column_span"
     column_header = "column_header"
     spanning = "spanning"
-    cell_test = "cell_test"
 
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):

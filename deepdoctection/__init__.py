@@ -234,6 +234,7 @@ _IMPORT_STRUCTURE = {
         "LMTokenClassifierService",
         "LMSequenceClassifierService",
         "TableSegmentationRefinementService",
+        "generate_html_string",
         "pipeline_component_registry",
         "TableSegmentationService",
         "SegmentationResult",
