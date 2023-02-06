@@ -34,4 +34,5 @@ if pytorch_available() and detectron2_available():
     from .d2_frcnn_train import train_d2_faster_rcnn
 
 if pytorch_available() and transformers_available():
+    from .hf_detr_train import train_hf_detr
     from .hf_layoutlm_train import train_hf_layoutlm

@@ -325,7 +325,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     if transforming_context.context_error:
         return None
 
-    with MappingContextManager(idx) as mapping_context:
+    with MappingContextManager(str(idx)) as mapping_context:
 
         max_rs, max_cs = 0, 0
         if idx is None:

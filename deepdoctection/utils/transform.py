@@ -22,7 +22,7 @@ of coordinates. Most have the ideas have been taken from
 """
 
 from abc import ABC, abstractmethod
-from typing import Union, Tuple
+from typing import Literal, Tuple, Union
 
 import cv2
 import numpy as np
@@ -139,6 +139,7 @@ def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_st
     """
     return (image - pixel_mean) * (1.0 / pixel_std)
 
+
 def pad_image(image: ImageType, top: np.int, right: np.int, bottom: np.int, left: np.int) -> ImageType:
     """Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
     currently supported
@@ -149,46 +150,66 @@ def pad_image(image: ImageType, top: np.int, right: np.int, bottom: np.int, left
     :param bottom: Bottom pixel value to pad
     :param left: Left pixel value to pad
     """
-    return np.pad(image, ((left,right),(top,bottom),(0,0)), 'constant', constant_values=(255))
+    return np.pad(image, ((left, right), (top, bottom), (0, 0)), "constant", constant_values=(255))
+
 
 class PadTransform(BaseTransform):
     """
-    Pad the image
+    A transform for padding images left/right/top/bottom-wise.
     """
 
-    def __init__(self, top: Union[int, float],
-                 right: Union[int, float],
-                 bottom: Union[int, float],
-                 left: Union[int, float]):
+    def __init__(
+        self,
+        top: Union[int, float],
+        right: Union[int, float],
+        bottom: Union[int, float],
+        left: Union[int, float],
+        mode: Literal["xyxy", "xywh"] = "xyxy",
+    ):
         """
         :param top: padding top image side
         :param right: padding right image side
         :param bottom: padding bottom image side
         :param left: padding left image side
+        :param mode: bounding box mode. Needed for transforming coordinates.
         """
         self.top = top
         self.right = right
         self.bottom = bottom
         self.left = left
+        self.image_width = None
+        self.image_height = None
+        self.mode = mode
 
     def apply_image(self, img: ImageType) -> ImageType:
-        return pad_image(img,self.top, self.right,self.bottom,self.left)
+        """Apply padding to image"""
+        self.image_width = img.shape[1]
+        self.image_height = img.shape[0]
+        return pad_image(img, self.top, self.right, self.bottom, self.left)
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
         """Transformation that should be applied to coordinates"""
-        coords[:, 0] = coords[:, 0] + self.left
-        coords[:, 1] = coords[:, 1] + self.top
-        coords[:, 2] = coords[:, 2] + self.left
-        coords[:, 3] = coords[:, 3] + self.top
+        if self.mode == "xyxy":
+            coords[:, 0] = coords[:, 0] + self.left
+            coords[:, 1] = coords[:, 1] + self.top
+            coords[:, 2] = coords[:, 2] + self.left
+            coords[:, 3] = coords[:, 3] + self.top
+        else:
+            coords[:, 0] = coords[:, 0] + self.left
+            coords[:, 1] = coords[:, 1] + self.top
         return coords
 
     def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
         """Inverse transformation going back from coordinates of padded image to original image"""
-        coords[:, 0] = coords[:, 0] - self.left
-        coords[:, 1] = coords[:, 1] - self.top
-        coords[:, 2] = coords[:, 2] - self.left
-        coords[:, 3] = coords[:, 3] - self.top
+        if self.mode == "xyxy":
+            coords[:, 0] = np.maximum(coords[:, 0] - self.left, np.zeros(coords[:, 0].shape))
+            coords[:, 1] = np.maximum(coords[:, 1] - self.top, np.zeros(coords[:, 1].shape))
+            coords[:, 2] = np.minimum(coords[:, 2] - self.left, np.ones(coords[:, 2].shape) * self.image_width)
+            coords[:, 3] = np.minimum(coords[:, 3] - self.top, np.ones(coords[:, 3].shape) * self.image_height)
+        else:
+            coords[:, 0] = np.maximum(coords[:, 0] - self.left, np.zeros(coords[:, 0].shape))
+            coords[:, 1] = np.maximum(coords[:, 1] - self.top, np.zeros(coords[:, 1].shape))
         return coords
 
     def clone(self):
-        return self.__class__(self.top,self.right,self.bottom,self.left)
+        return self.__class__(self.top, self.right, self.bottom, self.left, self.mode)

@@ -19,7 +19,7 @@
 Some data samples in a separate module
 """
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.settings import LayoutType
+from deepdoctection.utils.settings import CellType, LayoutType
 
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "
@@ -85,3 +85,14 @@ WORD_RESULTS = [
         class_name=LayoutType.word,
     ),
 ]
+
+
+def get_detr_categories():
+    return {
+        "1": LayoutType.table,
+        "2": LayoutType.column,
+        "3": LayoutType.row,
+        "4": CellType.column_header,
+        "5": CellType.projected_row_header,
+        "6": CellType.spanning,
+    }

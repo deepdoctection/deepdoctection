@@ -106,6 +106,7 @@ class LayoutType(ObjectTypes):
     """Layout types"""
 
     table = "table"
+    table_rotated = "table_rotated"
     figure = "figure"
     list = "list"
     text = "text"
@@ -152,6 +153,7 @@ class CellType(ObjectTypes):
     column_span = "column_span"
     column_header = "column_header"
     spanning = "spanning"
+
 
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):

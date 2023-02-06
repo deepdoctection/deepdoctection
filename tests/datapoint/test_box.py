@@ -19,7 +19,7 @@
 Testing the module datapoint.box
 """
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from numpy import asarray
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -31,6 +31,7 @@ from deepdoctection.datapoint import (
     crop_box_from_image,
     global_to_local_coords,
     intersection_box,
+    intersection_boxes,
     local_to_global_coords,
     merge_boxes,
     rescale_coords,
@@ -375,3 +376,41 @@ def test_rescale_coords(
     np_box = rescaled_box.to_np_array(mode="xyxy")
     np_expected_box = expected_box.to_np_array(mode="xyxy")
     assert_almost_equal(np_box, np_expected_box, decimal=3)
+
+
+@mark.basic
+@mark.parametrize(
+    "box_1,box_2,expected_boxes",
+    [
+        (
+            [
+                BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=70),
+            ],
+            [
+                BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=30, lry=30),
+                BoundingBox(absolute_coords=True, ulx=10, uly=40, lrx=30, lry=60),
+            ],
+            [
+                BoundingBox(absolute_coords=True, ulx=10, uly=10, lrx=20, lry=30),
+                BoundingBox(absolute_coords=True, ulx=10, uly=40, lrx=20, lry=60),
+            ],
+        ),
+        (
+            [BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.3, lry=0.4)],
+            [BoundingBox(absolute_coords=False, ulx=0.5, uly=0.6, lrx=0.7, lry=0.8)],
+            [],
+        ),
+    ],
+)
+def test_intersection_boxes(
+    box_1: Sequence[BoundingBox], box_2: Sequence[BoundingBox], expected_boxes: Sequence[BoundingBox]
+) -> None:
+    """
+    Testing intersection_boxes
+    """
+
+    # Act
+    output_boxes = intersection_boxes(box_1, box_2)
+
+    # Assert
+    assert output_boxes == expected_boxes
