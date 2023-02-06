@@ -21,20 +21,41 @@ Testing module datasets.instances.pubtables1m
 
 from pytest import mark
 
-from deepdoctection.datasets import Pubtables1M
+from deepdoctection.datasets import Pubtables1MDet, Pubtables1MStruct
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
 @mark.basic
-def test_dataset_pubtables1m_returns_image() -> None:
+def test_dataset_pubtables1m_det_returns_image() -> None:
     """
-    test dataset pubtales1m return image
+    test dataset pubtables1m_det return image
     """
 
     # Arrange
-    pubtables = Pubtables1M()
+    pubtables = Pubtables1MDet()
     pubtables.dataflow.get_workdir = get_test_path  # type: ignore
+    pubtables.dataflow.annotation_files = {"val": ""}
+    df = pubtables.dataflow.build()
+
+    # Act
+    df_list = collect_datapoint_from_dataflow(df)
+    assert len(df_list) == 1
+
+
+@mark.basic
+def test_dataset_pubtables1m_struct_returns_image() -> None:
+    """
+    test dataset pubtables1m_struct return image
+    """
+
+    def get_pubtab1m_struct_test_path():
+        test_path = get_test_path() / "pubtable1m_struct"
+        return test_path
+
+    # Arrange
+    pubtables = Pubtables1MStruct()
+    pubtables.dataflow.get_workdir = get_pubtab1m_struct_test_path  # type: ignore
     pubtables.dataflow.annotation_files = {"val": ""}
     df = pubtables.dataflow.build()
 

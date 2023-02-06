@@ -52,7 +52,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         layout_detector: ObjectDetector,
         to_image: bool = False,
         crop_image: bool = False,
-        padder: Optional[PadTransform] = None
+        padder: Optional[PadTransform] = None,
     ):
         """
         :param layout_detector: object detector
@@ -74,11 +74,11 @@ class ImageLayoutService(PredictorPipelineComponent):
         if self.padder:
             np_image = self.padder.apply_image(np_image)
         detect_result_list = self.predictor.predict(np_image)  # type: ignore
-        if self.padder and  detect_result_list:
+        if self.padder and detect_result_list:
             boxes = np.array([detect_result.box for detect_result in detect_result_list])
             boxes_orig = self.padder.inverse_apply_coords(boxes)
             for idx, detect_result in enumerate(detect_result_list):
-                detect_result.box = boxes_orig[idx,:].tolist()
+                detect_result.box = boxes_orig[idx, :].tolist()
 
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)

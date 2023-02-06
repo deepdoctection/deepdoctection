@@ -18,15 +18,16 @@
 """
 Fixtures for extern package testing
 """
-from typing import List
+from typing import List, Sequence
 
 from pytest import fixture
 
 from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import ObjectTypes
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
-from .data import PDF_BYTES, PDF_BYTES_2
+from .data import PDF_BYTES, PDF_BYTES_2, get_detr_categories
 
 
 @fixture(name="layoutlm_input_for_predictor")
@@ -89,3 +90,11 @@ def fixture_pdf_bytes_page_2() -> bytes:
     fixture pdf bytes
     """
     return PDF_BYTES_2
+
+
+@fixture(name="detr_categories")
+def fixture_detr_categories() -> Sequence[ObjectTypes]:
+    """
+    fixture object types
+    """
+    return get_detr_categories()

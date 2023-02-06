@@ -304,7 +304,17 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     if table.image is None:
         raise ValueError("table.image cannot be None")
     table_image = table.image
-    cells = table_image.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body, CellType.spanning, CellType.row_header, CellType.column_header, CellType.projected_row_header])
+    cells = table_image.get_annotation(
+        category_names=[
+            LayoutType.cell,
+            CellType.header,
+            CellType.body,
+            CellType.spanning,
+            CellType.row_header,
+            CellType.column_header,
+            CellType.projected_row_header,
+        ]
+    )
     number_of_rows = int(table_image.summary.get_sub_category(TableType.number_of_rows).category_id)
     number_of_cols = int(table_image.summary.get_sub_category(TableType.number_of_columns).category_id)
     table_list = []

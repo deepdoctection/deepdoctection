@@ -30,7 +30,7 @@ from typing import List, Optional, Tuple, Union
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.tessocr import TesseractOcrDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.cell import SubImageLayoutService
+from ..pipe.cell import DetectResultGenerator, SubImageLayoutService
 from ..pipe.common import MatchingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
@@ -161,10 +161,12 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             assert categories_item is not None
             d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=cfg.DEVICE)
 
-        cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, True)
+        detect_result_generator = DetectResultGenerator(categories_cell)
+        cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, detect_result_generator)
         pipe_component_list.append(cell)
 
-        item = SubImageLayoutService(d_item, LayoutType.table, {1: 7, 2: 8}, True)
+        detect_result_generator = DetectResultGenerator(categories_item)
+        item = SubImageLayoutService(d_item, LayoutType.table, {1: 7, 2: 8}, detect_result_generator)
         pipe_component_list.append(item)
 
         table_segmentation = TableSegmentationService(

@@ -43,13 +43,13 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
+from ...mapper.cats import filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
-from ...mapper.cats import filter_cat
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import lxml_available
-from ...utils.settings import DatasetType, LayoutType, CellType
+from ...utils.settings import CellType, DatasetType, LayoutType
 from ...utils.systools import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -80,11 +80,12 @@ _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
 _TYPE = DatasetType.object_detection
 _LOCATION = "PubTables1M"
 _ANNOTATION_FILES: Mapping[str, str] = {
-    "train": "train",
-    "val": "val",
-    "test": "test",
+    "train": "PubTables1M-Detection-PASCAL-VOC/train",
+    "val": "PubTables1M-Detection-PASCAL-VOC/val",
+    "test": "PubTables1M-Detection-PASCAL-VOC/test",
 }
-_INIT_CATEGORIES_DET = [LayoutType.table]
+_INIT_CATEGORIES_DET = [LayoutType.table, LayoutType.table_rotated]
+
 
 @dataset_registry.register("pubtables1m_det")
 class Pubtables1MDet(_BuiltInDataset):
@@ -173,11 +174,12 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={"table": LayoutType.table},
+                category_name_mapping={"table": LayoutType.table, "table rotated": LayoutType.table_rotated},
             ),
         )
 
         return df
+
 
 _NAME_STRUCT = "pubtables1m_struct"
 _ANNOTATION_FILES_STRUCT: Mapping[str, str] = {
@@ -186,8 +188,15 @@ _ANNOTATION_FILES_STRUCT: Mapping[str, str] = {
     "test": "PubTables-1M-Structure_Annotations_Test",
 }
 
-_INIT_CATEGORIES_STRUCT = [LayoutType.table,
-                           LayoutType.row, LayoutType.column, CellType.spanning, CellType.row_header, CellType.column_header, CellType.projected_row_header]
+_INIT_CATEGORIES_STRUCT = [
+    LayoutType.table,
+    LayoutType.row,
+    LayoutType.column,
+    CellType.spanning,
+    CellType.row_header,
+    CellType.column_header,
+    CellType.projected_row_header,
+]
 
 _IMAGES: Mapping[str, str] = {
     "train": "PubTables-1M-Structure_Images_Train",
@@ -206,7 +215,9 @@ class Pubtables1MStruct(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME_STRUCT, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME_STRUCT, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES_STRUCT)
@@ -270,7 +281,7 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
         def _map_file_name(dp: JsonDict, split: str) -> JsonDict:
             path, file_name = os.path.split(dp["file_name"])
             file_split = _IMAGES[split]
-            path = os.path.join(os.path.split(path)[0],file_split)
+            path = os.path.join(os.path.split(path)[0], file_split)
             dp["json"]["filename"] = os.path.join(path, file_name.replace(".xml", ".jpg"))
             return dp["json"]
 
@@ -282,13 +293,15 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={"table": LayoutType.table,
-                                       "table spanning cell": CellType.spanning,
-                                       "table row": LayoutType.row,
-                                       "table row header": CellType.row_header,
-                                       "table projected row header": CellType.projected_row_header,
-                                       "table column": LayoutType.column,
-                                       "table column header": CellType.column_header},
+                category_name_mapping={
+                    "table": LayoutType.table,
+                    "table spanning cell": CellType.spanning,
+                    "table row": LayoutType.row,
+                    "table row header": CellType.row_header,
+                    "table projected row header": CellType.projected_row_header,
+                    "table column": LayoutType.column,
+                    "table column header": CellType.column_header,
+                },
             ),
         )
 

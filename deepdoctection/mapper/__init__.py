@@ -37,6 +37,7 @@ if detectron2_available():
     from .d2struct import *
 
 if pytorch_available() and transformers_available():
+    from .hfstruct import *
     from .laylmstruct import *
 
 
