@@ -19,6 +19,7 @@
 Some data samples in a separate module
 """
 from deepdoctection.extern.base import DetectionResult
+from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.settings import CellType, LayoutType
 
 PDF_BYTES = (
@@ -87,7 +88,8 @@ WORD_RESULTS = [
 ]
 
 
-def get_detr_categories():
+def get_detr_categories() -> JsonDict:
+    """detr_categories"""
     return {
         "1": LayoutType.table,
         "2": LayoutType.column,

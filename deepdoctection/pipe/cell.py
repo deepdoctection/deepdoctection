@@ -58,8 +58,8 @@ class DetectResultGenerator:
         :param absolute_coords: 'absolute_coords' value to be set in 'DetectionResult'
         """
         self.categories = categories
-        self.width = None
-        self.height = None
+        self.width: Optional[int] = None
+        self.height: Optional[int] = None
         if group_categories is None:
             group_categories = [[idx] for idx in self.categories]
         self.group_categories = group_categories
@@ -87,7 +87,7 @@ class DetectResultGenerator:
                     if not self._dummy_for_group_generated(category_id):
                         detect_result_list.append(
                             DetectionResult(
-                                box=[0.0, 0.0, self.width, self.height],
+                                box=[0.0, 0.0, float(self.width), float(self.height)],  # type: ignore
                                 class_id=int(category_id),
                                 class_name=self.categories[category_id],
                                 score=0.0,
@@ -129,7 +129,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
     **Example**
 
             detect_result_generator = DetectResultGenerator(categories_items)
-            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": LayoutType.row, "2": LayoutType.column})
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": LayoutType.row,
+            "2": LayoutType.column})
             item_component = SubImageLayoutService(d_items, LayoutType.table, {1: 7, 2: 8}, detect_result_generator)
     """
 
@@ -147,12 +148,12 @@ class SubImageLayoutService(PredictorPipelineComponent):
                                 Attention: The selected ImageAnnotations must have: attr:`image` and: attr:`image.image`
                                 not None.
         :param category_id_mapping: Mapping of category IDs. Usually, the category ids start with 1.
-        :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as the
-                                        'categories' attribute of the 'sub_image_detector'. The generator will be responsible to create
-                                         'DetectionResult' for some categories, if they have not been detected by
-                                         'sub_image_detector'.
-        :param padder: 'PadTransform' to pad an image before passing to a predictor. Will be also responsible for inverse
-                        coordinate transformation.
+        :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as
+                                        the 'categories' attribute of the 'sub_image_detector'. The generator will be
+                                        responsible to create 'DetectionResult' for some categories, if they have not
+                                        been detected by 'sub_image_detector'.
+        :param padder: 'PadTransform' to pad an image before passing to a predictor. Will be also responsible for
+                        inverse coordinate transformation.
         """
 
         if isinstance(sub_image_names, str):
@@ -164,7 +165,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         self.padder = padder
         super().__init__(self._get_name(sub_image_detector.name), sub_image_detector)
         if self.detect_result_generator is not None:
-            assert self.detect_result_generator.categories == self.predictor.categories
+            assert self.detect_result_generator.categories == self.predictor.categories  # type: ignore
 
     def serve(self, dp: Image) -> None:
         """
@@ -193,9 +194,10 @@ class SubImageLayoutService(PredictorPipelineComponent):
 
             for detect_result in detect_result_list:
                 if self.category_id_mapping:
-                    detect_result.class_id = self.category_id_mapping.get(
-                        detect_result.class_id, detect_result.class_id
-                    )
+                    if detect_result.class_id:
+                        detect_result.class_id = self.category_id_mapping.get(
+                            detect_result.class_id, detect_result.class_id
+                        )
                 self.dp_manager.set_image_annotation(detect_result, sub_image_ann.annotation_id)
 
     def get_meta_annotation(self) -> JsonDict:
@@ -225,6 +227,6 @@ class SubImageLayoutService(PredictorPipelineComponent):
             predictor,
             deepcopy(self.sub_image_name),
             deepcopy(self.category_id_mapping),
-            deepcopy(self.add_dummy_detection),
+            deepcopy(self.detect_result_generator),
             padder_clone,
         )

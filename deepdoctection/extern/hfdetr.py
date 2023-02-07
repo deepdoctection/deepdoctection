@@ -19,7 +19,7 @@
 HF Detr model for object detection.
 """
 
-from typing import Any, List, Literal, Mapping, Optional, Sequence
+from typing import List, Literal, Mapping, Optional, Sequence
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -34,7 +34,7 @@ from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch
-    from torchvision.ops import boxes as box_ops
+    from torchvision.ops import boxes as box_ops  # type: ignore
 
 if transformers_available():
     from transformers import (
@@ -45,7 +45,9 @@ if transformers_available():
     )
 
 
-def _detr_post_processing(boxes: torch.Tensor, scores: torch.Tensor, labels: torch.Tensor, nms_thresh: float):
+def _detr_post_processing(
+    boxes: torch.Tensor, scores: torch.Tensor, labels: torch.Tensor, nms_thresh: float
+) -> torch.Tensor:
     return box_ops.batched_nms(boxes.float(), scores, labels, nms_thresh)
 
 
@@ -116,6 +118,7 @@ class HFDetrDerivedDetector(ObjectDetector):
 
         detection_result = detr_predictor.predict(bgr_image_np_array)
     """
+
     def __init__(
         self,
         path_config_json: str,
@@ -194,7 +197,7 @@ class HFDetrDerivedDetector(ObjectDetector):
         """
         filtered_detection_result: List[DetectionResult] = []
         for result in detection_results:
-            result.class_name = self.categories[str(result.class_id + 1)]
+            result.class_name = self.categories[str(result.class_id + 1)]  # type: ignore
             if isinstance(result.class_id, int):
                 result.class_id += 1
             if self.filter_categories:

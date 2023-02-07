@@ -92,7 +92,7 @@ class DetrDerivedTrainer(Trainer):
         for comp in self.evaluator.pipe_component.pipe_components:
             assert isinstance(comp, PredictorPipelineComponent)
             assert isinstance(comp.predictor, HFDetrDerivedDetector)
-            comp.predictor.model = None
+            comp.predictor.hf_detr_predictor = None
         self.build_eval_kwargs = build_eval_kwargs
 
     def evaluate(
@@ -110,7 +110,7 @@ class DetrDerivedTrainer(Trainer):
         # memory metrics - must set up as early as possible
         self._memory_tracker.start()
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.language_model.model = copy.deepcopy(self.model).eval()
+            comp.predictor.hf_detr_predictor = copy.deepcopy(self.model).eval()  # type: ignore
         if isinstance(self.build_eval_kwargs, dict):
             scores = self.evaluator.run(True, **self.build_eval_kwargs)
         else:
@@ -146,7 +146,10 @@ def train_hf_detr(
     :param path_feature_extractor_config_json: path to a feature extractor config file. In many situations you can use
                                                the standard config file:
 
-                                               ModelCatalog.get_full_path_preprocessor_configs("microsoft/table-transformer-detection/pytorch_model.bin")
+                                                   ModelCatalog.
+                                                   get_full_path_preprocessor_configs
+                                                   ("microsoft/table-transformer-detection/pytorch_model.bin")
+
     :param config_overwrite: Pass a list of arguments if some configs from the .json file are supposed to be replaced.
                              Use the list convention, e.g. ['per_device_train_batch_size=4']
     :param log_dir: Will default to 'train_log/detr'
@@ -208,7 +211,7 @@ def train_hf_detr(
         conf_dict[key] = val
 
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
-    if conf_dict["max_steps"] > number_samples:
+    if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
             "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
         )
@@ -236,8 +239,10 @@ def train_hf_detr(
     trainer = DetrDerivedTrainer(model, arguments, data_collator, dataset)
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
-        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
-        detector = HFDetrDerivedDetector(path_config_json, path_weights, path_feature_extractor_config_json, categories)
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
+        detector = HFDetrDerivedDetector(
+            path_config_json, path_weights, path_feature_extractor_config_json, categories  # type: ignore
+        )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
         assert isinstance(pipeline_component, PredictorPipelineComponent)
@@ -246,6 +251,6 @@ def train_hf_detr(
             metric = metric_registry.get(metric_name)
         assert metric is not None
 
-        trainer.setup_evaluator(dataset_val, pipeline_component, metric)
+        trainer.setup_evaluator(dataset_val, pipeline_component, metric)  # type: ignore
 
     trainer.train()

@@ -24,7 +24,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Union
 
 import numpy as np
-
 from transformers import BatchFeature, DetrFeatureExtractor
 
 from ..datapoint.image import Image
@@ -124,24 +123,25 @@ class DetrDataCollator:
             if maybe_image is None:
                 load_func = get_load_image_func(feature["file_name"])
                 feature["image"] = load_func(feature["file_name"])
-                if self.padder:
-                    feature = self.pad_image_and_transform(feature)
+                feature = self.maybe_pad_image_and_transform(feature)
                 images_input.append(feature["image"])
             else:
                 images_input.append(maybe_image)
-        image_features = self.feature_extractor(
+        image_features = self.feature_extractor(  # pylint: disable=E1102
             images_input, annotations=raw_features, return_tensors=self.return_tensors
         )
 
         return image_features
 
-    def pad_image_and_transform(self, feature: JsonDict) -> JsonDict:
+    def maybe_pad_image_and_transform(self, feature: JsonDict) -> JsonDict:
         """
         Pads an 'image' and transforming bounding boxes from annotations.
 
         :param feature: A dict of raw_features
         :return: Same as input
         """
+        if self.padder is None:
+            return feature
         feature["image"] = self.padder.apply_image(feature["image"])
         feature["height"] = feature["image"].shape[0]
         feature["width"] = feature["image"].shape[1]

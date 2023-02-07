@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Testing module extern.hfdetr
+"""
+
 
 from typing import Dict, Sequence
 from unittest.mock import MagicMock, patch

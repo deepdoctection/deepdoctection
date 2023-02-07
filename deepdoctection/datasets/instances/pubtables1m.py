@@ -68,8 +68,8 @@ _DESCRIPTION = (
     "recognition. In addition to being the largest dataset of its kind, PubTables1M addresses issues such as \n"
     " inherent ambiguity and lack of consistency in the source annotations, attempting to provide definitive ground \n"
     " truth labels through a thorough canonicalization and quality control process.' This dataset is devoted to two "
-    "different tasks: table detection and table structure recognition. For this first task use  'pubtables1m_det' whereas "
-    "for the second 'pubtables1m_struct'"
+    "different tasks: table detection and table structure recognition. For this first task use  'pubtables1m_det' "
+    "whereas for the second 'pubtables1m_struct'"
 )
 
 _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
