@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Module for training Hugging Face Detr implementation. Note, that this scripts only trans Tabletransformer like Detr
+models that are a slightly different from the plain Detr model that are provided by the transformer library.
+"""
 
 import copy
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
@@ -131,6 +135,29 @@ def train_hf_detr(
     metric: Optional[Union[Type[MetricBase], MetricBase]] = None,
     pipeline_component_name: Optional[str] = None,
 ) -> None:
+    """
+    Train Tabletransformer from scratch or fine-tune using an adaptation of the transformer trainer.
+    Allowing experiments by using different config settings.
+
+    :param path_config_json: path to a Tabletransformer config file
+    :param dataset_train: dataset to use for training
+    :param path_weights: path to a checkpoint, if you want to resume training or fine-tune. Will train from scratch if
+                         an empty string is passed
+    :param path_feature_extractor_config_json: path to a feature extractor config file. In many situations you can use
+                                               the standard config file:
+
+                                               ModelCatalog.get_full_path_preprocessor_configs("microsoft/table-transformer-detection/pytorch_model.bin")
+    :param config_overwrite: Pass a list of arguments if some configs from the .json file are supposed to be replaced.
+                             Use the list convention, e.g. ['per_device_train_batch_size=4']
+    :param log_dir: Will default to 'train_log/detr'
+    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
+    :param dataset_val: the dataset to use for validation
+    :param build_val_config: same as `build_train_config` but for dataflow validation
+    :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
+                        metric setting, pass a metric explicitly.
+    :param metric: A metric to choose for validation
+    :param pipeline_component_name: A pipeline component name to use for validation
+    """
 
     build_train_dict: Dict[str, str] = {}
     if build_train_config is not None:

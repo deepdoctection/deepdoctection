@@ -52,11 +52,24 @@ def _detr_post_processing(boxes: torch.Tensor, scores: torch.Tensor, labels: tor
 def detr_predict_image(
     np_img: ImageType,
     predictor: TableTransformerForObjectDetection,
-    feature_extractor: Any,
+    feature_extractor: DetrFeatureExtractor,
     device: Literal["cpu", "cuda"],
     threshold: float,
     nms_threshold: float,
 ) -> List[DetectionResult]:
+    """
+    Calling predictor. Before doing that, tensors must be transferred to the device where the model is loaded. After
+    prediction it will present prediction in DetectionResult format-
+
+    :param np_img: image as numpy array
+    :param predictor: TableTransformerForObjectDetection
+    :param feature_extractor: feature extractor
+    :param device: device where the model is loaded
+    :param threshold: Will filter all predictions with confidence score less threshold
+    :param nms_threshold: Threshold to perform NMS on prediction outputs. (Note, that NMS does not belong to canonical
+                          Detr inference processing)
+
+    """
     target_sizes = [np_img.shape[:2]]
     inputs = feature_extractor(images=np_img, return_tensors="pt")
     inputs.data["pixel_values"] = inputs.data["pixel_values"].to(device)
@@ -80,6 +93,29 @@ def detr_predict_image(
 
 
 class HFDetrDerivedDetector(ObjectDetector):
+    """
+    Model wrapper for TableTransformerForObjectDetection that again is based on
+
+    https://github.com/microsoft/table-transformer .
+
+    The wrapper can be used to load pre-trained models for table detection and table structure recognition. Running Detr
+    models trained from scratch on custom datasets is possible as well. Note, that this wrapper will load
+    `TableTransformerForObjectDetection` that is slightly different compared to `DetrForObjectDetection` that can be
+    found in the transformer library as well.
+
+        config_path = ModelCatalog.
+        get_full_path_configs("microsoft/table-transformer-structure-recognition/pytorch_model.bin")
+        weights_path = ModelDownloadManager.
+        get_full_path_weights("microsoft/table-transformer-structure-recognition/pytorch_model.bin")
+        feature_extractor_config_path = ModelDownloadManager.
+        get_full_path_preprocessor_configs("microsoft/table-transformer-structure-recognition/pytorch_model.bin")
+        categories = ModelCatalog.
+        get_profile("microsoft/table-transformer-structure-recognition/pytorch_model.bin").categories
+
+        detr_predictor = HFDetrDerivedDetector(config_path,weights_path,feature_extractor_config_path,categories)
+
+        detection_result = detr_predictor.predict(bgr_image_np_array)
+    """
     def __init__(
         self,
         path_config_json: str,
@@ -89,7 +125,16 @@ class HFDetrDerivedDetector(ObjectDetector):
         device: Optional[Literal["cpu", "cuda"]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
-
+        """
+        Set up the predictor.
+        :param path_config_json: The path to the json config.
+        :param path_weights: The path to the model checkpoint.
+        :param path_feature_extractor_config_json: The path to the feature extractor config.
+        :param categories: A dict with key (indices) and values (category names).
+        :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
+        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
+                                  be filtered. Pass a list of category names that must not be returned
+        """
         self.name = "Detr"
         self.categories = {idx: get_type(cat) for idx, cat in categories.items()}
         self.path_config = path_config_json
