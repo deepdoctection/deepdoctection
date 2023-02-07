@@ -1015,6 +1015,15 @@ class DatapointImage:
                 {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [16.6, 26.6, 30.6, 30.6], "category_id": 1},
             ],
         }
+        self.hf_detr_training: JsonDict ={"image": _img_np,
+            "width": 96,
+            "height": 34,
+            "image_id": 42170407,
+            "file_name": self.image.location,
+            "annotations": [{"bbox": [2.6, 3.7, 1.9999999999999996, 2.0], "category_id": 0,
+                                           "image_id": "42170407", "id": "75443272"},
+                            {'id': "83371336", 'image_id': "42170407",
+                             'bbox': [16.6, 26.6, 14.0, 4.0], 'category_id': 1, 'area': 56.0}]}
 
     def get_image_str(self) -> str:
         """
@@ -1083,6 +1092,12 @@ class DatapointImage:
         self.image.summary = SummaryAnnotation()
         self.image.summary.dump_sub_category(get_type("BAK"), CategoryAnnotation(category_name="FOO", category_id="1"))
         return self.image
+
+    def get_hf_detr_training_anns(self) -> JsonDict:
+        """
+        Dict of HF training anns
+        """
+        return self.hf_detr_training
 
 
 class DatapointPageDict:

@@ -15,12 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Module for mapping annotations into standard Huggingface Detr input structure for training
+"""
+
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Union
 
 import numpy as np
-import torch
+
 from transformers import BatchFeature, DetrFeatureExtractor
 
 from ..datapoint.image import Image
@@ -101,7 +105,7 @@ class DetrDataCollator:
     """
 
     feature_extractor: DetrFeatureExtractor  # TODO: Replace deprecated DetrFeatureExtractor with DetrImageProcessor
-    padder: Optional["PadTransform"] = None
+    padder: Optional[PadTransform] = None
     return_tensors: Optional[Literal["pt"]] = field(default="pt")
 
     def __call__(self, raw_features: List[JsonDict]) -> BatchFeature:

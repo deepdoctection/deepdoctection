@@ -162,7 +162,7 @@ def train_d2_faster_rcnn(
                              for various settings.
     :param dataset_train: the dataset to use for training.
     :param path_weights: path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
-                         nothing is passed.
+                         an empty string is passed
     :param config_overwrite: Pass a list of arguments if some configs from the .yaml file should be replaced. Use the
                              list convention, e.g. ['TRAIN.STEPS_PER_EPOCH=500', 'OUTPUT.RESULT_SCORE_THRESH=0.4']
     :param log_dir: Path to log dir. Will default to `train_log/frcnn`
@@ -170,7 +170,7 @@ def train_d2_faster_rcnn(
     :param dataset_val: the dataset to use for validation.
     :param build_val_config: same as `build_train_config` but for validation
     :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
-                        metric setting pass a metric explicitly.
+                        metric setting, pass a metric explicitly.
     :param metric: A metric to choose for validation.
     :param pipeline_component_name: A pipeline component name to use for validation.
     """
