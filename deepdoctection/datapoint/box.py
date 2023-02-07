@@ -551,8 +551,8 @@ def rescale_coords(
 
 def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[BoundingBox]) -> Sequence[BoundingBox]:
     """
-    The multiple version of 'intersection_box': Given two lists of m and n bounding boxes, it will calculate the pairwise
-    intersection of both groups. There will be at most mxn intersection boxes.
+    The multiple version of 'intersection_box': Given two lists of m and n bounding boxes, it will calculate the
+    pairwise intersection of both groups. There will be at most mxn intersection boxes.
 
     :param boxes_1: sequence of m BoundingBox
     :param boxes_2: sequence of n BoundingBox
@@ -563,8 +563,8 @@ def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[Boundin
     absolute_coords = boxes_1[0].absolute_coords
     boxes1 = np.array([box.to_list(mode="xyxy") for box in boxes_1])
     boxes2 = np.array([box.to_list(mode="xyxy") for box in boxes_2])
-    [x_min1, y_min1, x_max1, y_max1] = np.split(boxes1, 4, axis=1)
-    [x_min2, y_min2, x_max2, y_max2] = np.split(boxes2, 4, axis=1)
+    [x_min1, y_min1, x_max1, y_max1] = np.split(boxes1, 4, axis=1)  # pylint: disable=W0632
+    [x_min2, y_min2, x_max2, y_max2] = np.split(boxes2, 4, axis=1)  # pylint: disable=W0632
 
     ulys = np.maximum(y_min1, np.transpose(y_min2))
     lrys = np.minimum(y_max1, np.transpose(y_max2))

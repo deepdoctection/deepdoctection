@@ -19,6 +19,8 @@
 Testing module datasets.instances.pubtables1m
 """
 
+from pathlib import Path
+
 from pytest import mark
 
 from deepdoctection.datasets import Pubtables1MDet, Pubtables1MStruct
@@ -49,7 +51,7 @@ def test_dataset_pubtables1m_struct_returns_image() -> None:
     test dataset pubtables1m_struct return image
     """
 
-    def get_pubtab1m_struct_test_path():
+    def get_pubtab1m_struct_test_path() -> Path:
         test_path = get_test_path() / "pubtable1m_struct"
         return test_path
 

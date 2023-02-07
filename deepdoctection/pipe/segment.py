@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Sequence, Union
+from typing import List, Literal, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -47,7 +47,7 @@ class SegmentationResult:
     Simple mutable storage for segmentation results
     """
 
-    annotation_id: Optional[str]
+    annotation_id: str
     row_num: int
     col_num: int
     rs: int
@@ -302,14 +302,14 @@ def tile_tables_with_items_per_table(
 
     if items[0].image is not None:
         items.sort(
-            key=lambda x: x.image.get_embedding(dp.image_id).cx
+            key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
             if item_name == LayoutType.column
-            else x.image.get_embedding(dp.image_id).cy
+            else x.image.get_embedding(dp.image_id).cy  # type: ignore
         )
     else:
         items.sort(
             key=lambda x: x.bounding_box.cx  # type: ignore
-            if item_name == LayoutType.column  # pylint: disable=W0640
+            if item_name == LayoutType.column
             else x.bounding_box.cy  # type: ignore
         )
 
@@ -382,8 +382,8 @@ def segment_table(
 
     :param dp: A datapoint
     :param table: the table as image annotation.
-    :param item_names: A list of item names (e.g. "ROW" and "COLUMN")
-    :param cell_names: A list of cell names (e.g. "CELL")
+    :param item_names: A list of item names (e.g. "row" and "column")
+    :param cell_names: A list of cell names (e.g. "cell")
     :param segment_rule: 'iou' or 'ioa'
     :param threshold_rows: the iou/ioa threshold of a cell with a row in order to conclude that the cell belongs
                                to the row.
@@ -461,10 +461,21 @@ def create_intersection_cells(
     cols: List[ImageAnnotation],
     table_annotation_id: str,
     cell_class_id: int,
-    sub_item_names: List[ObjectTypes],
-) -> (List[DetectionResult], List[SegmentationResult]):
-    boxes_rows = [row.image.get_embedding(table_annotation_id) for row in rows]
-    boxes_cols = [col.image.get_embedding(table_annotation_id) for col in cols]
+    sub_item_names: List[CellType],
+) -> Tuple[List[DetectionResult], List[SegmentationResult]]:
+    """
+    Given rows and columns with row- and column number sub categories, create a list of `DetectionResult` and
+    `SegmentationResult` as intersection of all their intersection rectangles.
+
+    :param rows: list of rows
+    :param cols: list of columns
+    :param table_annotation_id: annotation_id of underlying table ImageAnnotation
+    :param cell_class_id: The class_id to a synthetically generated DetectionResult
+    :param sub_item_names: ObjectTypes for row-/column number
+    :return: Pair of lists of `DetectionResult` and `SegmentationResult`.
+    """
+    boxes_rows = [row.image.get_embedding(table_annotation_id) for row in rows if row.image is not None]
+    boxes_cols = [col.image.get_embedding(table_annotation_id) for col in cols if col.image is not None]
 
     boxes_cells = intersection_boxes(boxes_rows, boxes_cols)
     detect_result_cells = []
@@ -482,7 +493,7 @@ def create_intersection_cells(
             )
             segment_result_cells.append(
                 SegmentationResult(
-                    annotation_id=None,
+                    annotation_id="",
                     row_num=int(row.get_sub_category(sub_item_names[0]).category_id),
                     col_num=int(col.get_sub_category(sub_item_names[1]).category_id),
                     rs=1,
@@ -493,7 +504,35 @@ def create_intersection_cells(
     return detect_result_cells, segment_result_cells
 
 
-def segment_pubtables(dp, table, item_names, spanning_cell_names, segment_rule, threshold_rows, threshold_cols):
+def segment_pubtables(
+    dp: Image,
+    table: ImageAnnotation,
+    item_names: List[LayoutType],
+    spanning_cell_names: List[CellType],
+    segment_rule: Literal["iou", "ioa"],
+    threshold_rows: float,
+    threshold_cols: float,
+) -> List[SegmentationResult]:
+    """
+    Segment a table based on the results of `table-transformer-structure-recognition`. The processing assumes that cells
+    have already been generated from the intersection of columns and rows and that column and row numbers have been
+    inferred for rows and columns.
+
+    Row and column positions as well as row and column lengths are determined for all types of spanning cells.
+    All simple cells that are covered by a spanning cell as well in the table position (double allocation) are then
+    removed.
+
+    :param dp: Image
+    :param table: table ImageAnnotation
+    :param item_names: A list of item names (e.g. "row" and "column")
+    :param spanning_cell_names: A list of spanning cell names (e.g. "projected_row_header" and "spanning")
+    :param segment_rule: 'iou' or 'ioa'
+    :param threshold_rows: the iou/ioa threshold of a cell with a row in order to conclude that the cell belongs
+                               to the row.
+    :param threshold_cols: the iou/ioa threshold of a cell with a column in order to conclude that the cell belongs
+                               to the column.
+    :return: A list of len(number of cells) of SegmentationResult for spanning cells
+    """
     child_ann_ids = table.get_relationship(Relationships.child)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
@@ -651,9 +690,9 @@ class TableSegmentationService(PipelineComponent):
                 # we will assume that either all or no image attribute has been generated
                 if items[0].image is not None:
                     items.sort(
-                        key=lambda x: x.image.get_embedding(dp.image_id).cx
-                        if item_name == LayoutType.column
-                        else x.image.get_embedding(dp.image_id).cy
+                        key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
+                        if item_name == LayoutType.column  # pylint: disable=W0640
+                        else x.image.get_embedding(dp.image_id).cy  # type: ignore
                     )
                 else:
                     items.sort(
@@ -830,9 +869,9 @@ class PubtablesSegmentationService(PipelineComponent):
                 # we will assume that either all or no image attribute has been generated
                 if items[0].image is not None:
                     items.sort(
-                        key=lambda x: x.image.get_embedding(dp.image_id).cx
-                        if item_name == LayoutType.column
-                        else x.image.get_embedding(dp.image_id).cy
+                        key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
+                        if item_name == LayoutType.column  # pylint: disable=W0640
+                        else x.image.get_embedding(dp.image_id).cy  # type: ignore
                     )
                 else:
                     items.sort(
@@ -852,7 +891,7 @@ class PubtablesSegmentationService(PipelineComponent):
             )
             cell_rn_cn_to_ann_id = {}
             for detect_result, segment_result in zip(detect_result_cells, segment_result_cells):
-                segment_result.annotation_id = self.dp_manager.set_image_annotation(
+                segment_result.annotation_id = self.dp_manager.set_image_annotation(  # type: ignore
                     detect_result,
                     to_annotation_id=table.annotation_id,
                     to_image=self.cell_to_image,
@@ -901,7 +940,9 @@ class PubtablesSegmentationService(PipelineComponent):
                     cell_ann_id = cell_rn_cn_to_ann_id[cell_position]
                     self.dp_manager.deactivate_annotation(cell_ann_id)
 
-            cells = table.image.get_annotation(category_names=self._cell_names)
+            cells = []
+            if table.image:
+                cells = table.image.get_annotation(category_names=self._cell_names)
             number_of_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells])
             number_of_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells])
             max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
