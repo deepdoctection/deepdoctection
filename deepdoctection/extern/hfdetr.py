@@ -46,8 +46,8 @@ if transformers_available():
 
 
 def _detr_post_processing(
-    boxes: torch.Tensor, scores: torch.Tensor, labels: torch.Tensor, nms_thresh: float
-) -> torch.Tensor:
+    boxes: "torch.Tensor", scores: "torch.Tensor", labels: "torch.Tensor", nms_thresh: float
+) -> "torch.Tensor":
     return box_ops.batched_nms(boxes.float(), scores, labels, nms_thresh)
 
 
