@@ -24,7 +24,15 @@ from typing import List
 from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image
-from deepdoctection.pipe.segment import TableSegmentationService, stretch_items, tile_tables_with_items_per_table
+from deepdoctection.extern.base import DetectionResult
+from deepdoctection.pipe.segment import (
+    PubtablesSegmentationService,
+    SegmentationResult,
+    TableSegmentationService,
+    create_intersection_cells,
+    stretch_items,
+    tile_tables_with_items_per_table,
+)
 from deepdoctection.utils.settings import CellType, LayoutType
 
 
@@ -254,3 +262,101 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
             )
             assert cell.get_sub_category(CellType.row_span) == cell_expected.get_sub_category(CellType.row_span)
             assert cell.get_sub_category(CellType.column_span) == cell_expected.get_sub_category(CellType.column_span)
+
+
+@mark.basic
+def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
+    """
+    Test create_intersection_cells generates cells from intersecting rows and columns and creates
+    """
+
+    # Arrange
+    dp = dp_image_tab_cell_item
+
+    rows = dp.get_annotation(category_names=LayoutType.row)
+    cols = dp.get_annotation(category_names=LayoutType.column)
+    for idx, items in enumerate(zip(rows, cols)):
+        items[0].dump_sub_category(
+            CellType.row_number, CategoryAnnotation(category_name=CellType.row_number, category_id=str(idx + 1))
+        )
+        items[1].dump_sub_category(
+            CellType.column_number, CategoryAnnotation(category_name=CellType.column_number, category_id=str(idx + 1))
+        )
+
+    table = dp.get_annotation(category_names=LayoutType.table)[0]
+    table_ann_id = table.annotation_id
+    detect_result_cells, segment_result_cells = create_intersection_cells(
+        rows, cols, table_ann_id, 5, [CellType.row_number, CellType.column_number]
+    )
+    expected_detect_result = [
+        DetectionResult(box=[15.0, 100.0, 20.0, 150.0], class_id=5, class_name=LayoutType.cell),
+        DetectionResult(box=[40.0, 100.0, 50.0, 150.0], class_id=5, class_name=LayoutType.cell),
+        DetectionResult(box=[15.0, 200.0, 20.0, 240.0], class_id=5, class_name=LayoutType.cell),
+        DetectionResult(box=[40.0, 200.0, 50.0, 240.0], class_id=5, class_name=LayoutType.cell),
+    ]
+    expected_segment_result = [
+        SegmentationResult(row_num=1, col_num=1, rs=1, cs=1, annotation_id=""),
+        SegmentationResult(row_num=1, col_num=2, rs=1, cs=1, annotation_id=""),
+        SegmentationResult(row_num=2, col_num=1, rs=1, cs=1, annotation_id=""),
+        SegmentationResult(row_num=2, col_num=2, rs=1, cs=1, annotation_id=""),
+    ]
+
+    assert len(detect_result_cells) == 4
+    assert detect_result_cells == expected_detect_result
+    assert len(segment_result_cells) == 4
+    assert expected_segment_result == segment_result_cells
+
+
+class TestPubtablesSegmentationService:
+    """
+    Test PubtablesSegmentationService
+    """
+
+    def setup_method(self) -> None:
+        """
+        setup necessary components
+        """
+
+        self._ioa_threshold_rows = 0.4
+        self._ioa_threshold_cols = 0.4
+        self._remove_iou_threshold_rows = 0.001
+        self._remove_iou_threshold_cols = 0.001
+        self._tile_table_with_items = True
+        self.cell_class_id = 5
+
+        self.table_segmentation_service = PubtablesSegmentationService(
+            "ioa",
+            self._ioa_threshold_rows,
+            self._ioa_threshold_cols,
+            self._tile_table_with_items,
+            self._remove_iou_threshold_rows,
+            self._remove_iou_threshold_cols,
+            self.cell_class_id,
+        )
+
+    def test_pass_datapoint(self, dp_image_tab_cell_item: Image) -> None:
+        """test pass_datapoint"""
+
+        # Arrange
+        dp = dp_image_tab_cell_item
+        cells = dp.get_annotation(category_names=LayoutType.cell)
+        table = dp.get_annotation(category_names=LayoutType.table)[0]
+
+        for cell in cells:
+            dp.remove(cell)
+
+        tab_cells = table.image.get_annotation(category_names=LayoutType.cell)  # type: ignore
+        for cell in tab_cells:
+            table.image.remove(cell)  # type: ignore
+
+        # Act
+        dp = self.table_segmentation_service.pass_datapoint(dp)
+
+        # Assert
+        rows = dp.get_annotation(category_names=LayoutType.row)
+        cols = dp.get_annotation(category_names=LayoutType.column)
+        cells = dp.get_annotation(category_names=LayoutType.cell)
+
+        assert len(rows) == 2
+        assert len(cols) == 2
+        assert len(cells) == 4

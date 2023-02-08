@@ -25,6 +25,7 @@ from .d2detect import *
 from .deskew import *
 from .doctrocr import *
 from .fastlang import *
+from .hfdetr import *
 from .hflayoutlm import *
 from .model import *
 from .pdftext import *
