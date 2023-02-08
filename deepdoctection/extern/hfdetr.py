@@ -33,11 +33,11 @@ from .base import DetectionResult, ObjectDetector
 from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
-    import torch
+    import torch  # pylint: disable=W0611
     from torchvision.ops import boxes as box_ops  # type: ignore
 
 if transformers_available():
-    from transformers import (
+    from transformers import (  # pylint: disable=W0611
         AutoFeatureExtractor,
         DetrFeatureExtractor,
         PretrainedConfig,
