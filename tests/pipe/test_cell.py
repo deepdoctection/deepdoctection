@@ -42,11 +42,11 @@ def test_detect_result_generator(
 
     # Arrange
     categories = dataset_categories.get_categories()
-    detect_result_generator = DetectResultGenerator(
-        categories, dp_image.width, dp_image.height, [["1"], ["2"], ["3"], ["4"], ["5"]]
-    )
+    detect_result_generator = DetectResultGenerator(categories, [["1"], ["2"], ["3"], ["4"], ["5"]])
 
     # Act
+    detect_result_generator.width = 600
+    detect_result_generator.height = 400
     raw_anns = detect_result_generator.create_detection_result(layout_detect_results)
 
     # Assert
@@ -68,6 +68,7 @@ class TestSubImageLayoutService:
 
         self._cell_detector = MagicMock(spec=ObjectDetector)
         self._cell_detector.name = "mock_cell_detector"
+
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
 
     @mark.basic

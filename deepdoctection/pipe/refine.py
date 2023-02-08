@@ -37,7 +37,7 @@ from ..utils.settings import CellType, LayoutType, Relationships, TableType, get
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
-__all__ = ["TableSegmentationRefinementService"]
+__all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
 def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, int], str]]:
@@ -304,7 +304,17 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     if table.image is None:
         raise ValueError("table.image cannot be None")
     table_image = table.image
-    cells = table_image.get_annotation(category_names=[LayoutType.cell, CellType.header, CellType.body])
+    cells = table_image.get_annotation(
+        category_names=[
+            LayoutType.cell,
+            CellType.header,
+            CellType.body,
+            CellType.spanning,
+            CellType.row_header,
+            CellType.column_header,
+            CellType.projected_row_header,
+        ]
+    )
     number_of_rows = int(table_image.summary.get_sub_category(TableType.number_of_rows).category_id)
     number_of_cols = int(table_image.summary.get_sub_category(TableType.number_of_columns).category_id)
     table_list = []
@@ -432,7 +442,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                         )
                     else:
                         # DetectionResult cannot be dumped, hence merged_box must already exist. Hence, it must
-                        # contain all other boxes. Hence we must deactivate all other boxes.
+                        # contain all other boxes. Hence, we must deactivate all other boxes.
                         with MappingContextManager(
                             dp_name=dp.file_name, filter_level="annotation", detect_result=asdict(det_result)
                         ) as annotation_context:

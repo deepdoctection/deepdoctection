@@ -307,3 +307,12 @@ class DatapointManager:
         if annotation_context.context_error:
             return None
         return ann.annotation_id
+
+    def deactivate_annotation(self, annotation_id: str) -> None:
+        """
+        Deactivate annotation by given annotation_id
+
+        :param annotation_id: annotation_id
+        """
+        ann = self._cache_anns[annotation_id]
+        ann.deactivate()

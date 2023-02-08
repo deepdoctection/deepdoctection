@@ -18,10 +18,14 @@
 """
 Module for layout pipeline component
 """
+from typing import Optional
+
+import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
+from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -48,6 +52,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         layout_detector: ObjectDetector,
         to_image: bool = False,
         crop_image: bool = False,
+        padder: Optional[PadTransform] = None,
     ):
         """
         :param layout_detector: object detector
@@ -59,11 +64,22 @@ class ImageLayoutService(PredictorPipelineComponent):
         """
         self.to_image = to_image
         self.crop_image = crop_image
+        self.padder = padder
         super().__init__(self._get_name(layout_detector.name), layout_detector)
 
     def serve(self, dp: Image) -> None:
-        assert dp.image is not None
-        detect_result_list = self.predictor.predict(dp.image)  # type: ignore
+        if dp.image is None:
+            raise ValueError("image cannot be None")
+        np_image = dp.image
+        if self.padder:
+            np_image = self.padder.apply_image(np_image)
+        detect_result_list = self.predictor.predict(np_image)  # type: ignore
+        if self.padder and detect_result_list:
+            boxes = np.array([detect_result.box for detect_result in detect_result_list])
+            boxes_orig = self.padder.inverse_apply_coords(boxes)
+            for idx, detect_result in enumerate(detect_result_list):
+                detect_result.box = boxes_orig[idx, :].tolist()
+
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
 
@@ -84,6 +100,9 @@ class ImageLayoutService(PredictorPipelineComponent):
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
+        padder_clone = None
+        if self.padder:
+            padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
             raise ValueError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
-        return self.__class__(predictor, self.to_image, self.crop_image)
+        return self.__class__(predictor, self.to_image, self.crop_image, padder_clone)

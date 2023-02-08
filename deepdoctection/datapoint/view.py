@@ -192,7 +192,16 @@ class Table(Layout):
         """
         all_relation_ids = self.get_relationship(Relationships.child)
         cell_anns = self.base_page.get_annotation(
-            annotation_ids=all_relation_ids, category_names=[LayoutType.cell, CellType.header, CellType.body]
+            annotation_ids=all_relation_ids,
+            category_names=[
+                LayoutType.cell,
+                CellType.header,
+                CellType.body,
+                CellType.projected_row_header,
+                CellType.spanning,
+                CellType.row_header,
+                CellType.column_header,
+            ],
         )
         return cell_anns
 
@@ -245,6 +254,10 @@ IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     LayoutType.table: Table,
     LayoutType.word: Word,
     LayoutType.cell: Cell,
+    CellType.projected_row_header: Cell,
+    CellType.spanning: Cell,
+    CellType.row_header: Cell,
+    CellType.column_header: Cell,
 }
 
 
@@ -511,8 +524,9 @@ class Page(Image):
                 category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
-                        box_stack.append(cell.bbox)
-                        category_names_list.append(None)
+                        if cell.category_name != LayoutType.cell:
+                            box_stack.append(cell.bbox)
+                            category_names_list.append(None)
                 if show_table_structure:
                     rows = table.rows
                     cols = table.columns

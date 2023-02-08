@@ -18,14 +18,17 @@
 """
 Module for cell detection pipeline component
 """
-from collections import Counter, defaultdict
+from collections import Counter
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Union
+
+import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
 from ..utils.settings import ObjectTypes, Relationships
+from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -43,23 +46,28 @@ class DetectResultGenerator:
     def __init__(
         self,
         categories: Mapping[str, ObjectTypes],
-        image_width: float,
-        image_height: float,
-        group_categories: List[List[str]],
+        group_categories: Optional[List[List[str]]] = None,
+        exclude_category_ids: Optional[Sequence[str]] = None,
+        absolute_coords: bool = True,
     ) -> None:
         """
         :param categories: The dict of all possible detection categories
-        :param image_width: Used for generating a DetectResult of image_width
-        :param image_height: Used for generating a DetectResult of image_height
         :param group_categories: If you only want to generate only one DetectResult for a group of categories, provided
                                  that the sum of the group is less than one, then you can pass a list of list for
                                  grouping category ids.
+        :param absolute_coords: 'absolute_coords' value to be set in 'DetectionResult'
         """
         self.categories = categories
-        self.width = image_width
-        self.height = image_height
+        self.width: Optional[int] = None
+        self.height: Optional[int] = None
+        if group_categories is None:
+            group_categories = [[idx] for idx in self.categories]
         self.group_categories = group_categories
+        if exclude_category_ids is None:
+            exclude_category_ids = []
+        self.exclude_category_ids = exclude_category_ids
         self.dummy_for_group_generated = [False for _ in self.group_categories]
+        self.absolute_coords = absolute_coords
 
     def create_detection_result(self, detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
         """
@@ -68,18 +76,24 @@ class DetectResultGenerator:
         :param detect_result_list: DetectResults of a previously run ObjectDetector
         :return: refined list
         """
+
+        if self.width is None and self.height is None:
+            raise ValueError("Initialize height and width first")
+
         count = self._create_condition(detect_result_list)
         for category_id in self.categories:
-            if count[category_id] < 1:
-                if not self._dummy_for_group_generated(category_id):
-                    detect_result_list.append(
-                        DetectionResult(
-                            box=[0.0, 0.0, self.width, self.height],
-                            class_id=int(category_id),
-                            class_name=self.categories[category_id],
-                            score=0.0,
+            if category_id not in self.exclude_category_ids:
+                if count[category_id] < 1:
+                    if not self._dummy_for_group_generated(category_id):
+                        detect_result_list.append(
+                            DetectionResult(
+                                box=[0.0, 0.0, float(self.width), float(self.height)],  # type: ignore
+                                class_id=int(category_id),
+                                class_name=self.categories[category_id],
+                                score=0.0,
+                                absolute_coords=self.absolute_coords,
+                            )
                         )
-                    )
         return detect_result_list
 
     def _create_condition(self, detect_result_list: List[DetectionResult]) -> Dict[str, int]:
@@ -114,8 +128,10 @@ class SubImageLayoutService(PredictorPipelineComponent):
 
     **Example**
 
-            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
-            item_component = SubImageLayoutService(d_items, names.C.TAB, {1: 6}, True)
+            detect_result_generator = DetectResultGenerator(categories_items)
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": LayoutType.row,
+            "2": LayoutType.column})
+            item_component = SubImageLayoutService(d_items, LayoutType.table, {1: 7, 2: 8}, detect_result_generator)
     """
 
     def __init__(
@@ -123,7 +139,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
         sub_image_detector: ObjectDetector,
         sub_image_names: Union[str, List[str]],
         category_id_mapping: Optional[Dict[int, int]] = None,
-        add_dummy_detection: bool = False,
+        detect_result_generator: Optional[DetectResultGenerator] = None,
+        padder: Optional[PadTransform] = None,
     ):
         """
         :param sub_image_detector: object detector.
@@ -131,27 +148,24 @@ class SubImageLayoutService(PredictorPipelineComponent):
                                 Attention: The selected ImageAnnotations must have: attr:`image` and: attr:`image.image`
                                 not None.
         :param category_id_mapping: Mapping of category IDs. Usually, the category ids start with 1.
-        :param add_dummy_detection: If set to True will add an ImageAnnotation for each class for which no sample have
-                                    been detected.
+        :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as
+                                        the 'categories' attribute of the 'sub_image_detector'. The generator will be
+                                        responsible to create 'DetectionResult' for some categories, if they have not
+                                        been detected by 'sub_image_detector'.
+        :param padder: 'PadTransform' to pad an image before passing to a predictor. Will be also responsible for
+                        inverse coordinate transformation.
         """
 
         if isinstance(sub_image_names, str):
             sub_image_names = [sub_image_names]
 
         self.sub_image_name = sub_image_names
-        self.add_dummy_detection = add_dummy_detection
-        self.dummy_generator_cls = None
         self.category_id_mapping = category_id_mapping
-        if add_dummy_detection:
-            if category_id_mapping is None:
-                raise ValueError("Using DetectResult dummy generator requires passing a category_id_mapping")
-            self.dummy_generator_cls = DetectResultGenerator
-            group_categories_dict = defaultdict(list)
-            for group in category_id_mapping.items():
-                group_categories_dict[group[1]].append(str(group[0]))
-            group_categories = list(group_categories_dict.values())
-            self.group_categories = group_categories
+        self.detect_result_generator = detect_result_generator
+        self.padder = padder
         super().__init__(self._get_name(sub_image_detector.name), sub_image_detector)
+        if self.detect_result_generator is not None:
+            assert self.detect_result_generator.categories == self.predictor.categories  # type: ignore
 
     def serve(self, dp: Image) -> None:
         """
@@ -164,46 +178,27 @@ class SubImageLayoutService(PredictorPipelineComponent):
         for sub_image_ann in sub_image_anns:
             if sub_image_ann.image is None:
                 raise ValueError("sub_image_ann.image is None, but must be an image")
-            detect_result_list = self.predictor.predict(sub_image_ann.image.image)
-            if self.has_dummy_generator():
-                if hasattr(self.predictor, "categories"):
-                    generator = self.get_dummy_generator(
-                        self.predictor.categories,  # type: ignore
-                        sub_image_ann.image.width,
-                        sub_image_ann.image.height,
-                        self.group_categories,
-                    )
-                    detect_result_list = generator.create_detection_result(detect_result_list)
-                else:
-                    raise AttributeError("predictor must have attribute categories when using dummy generation")
+            np_image = sub_image_ann.image.image
+            if self.padder:
+                np_image = self.padder.apply_image(np_image)
+            detect_result_list = self.predictor.predict(np_image)
+            if self.padder and detect_result_list:
+                boxes = np.array([detect_result.box for detect_result in detect_result_list])
+                boxes_orig = self.padder.inverse_apply_coords(boxes)
+                for idx, detect_result in enumerate(detect_result_list):
+                    detect_result.box = boxes_orig[idx, :].tolist()
+            if self.detect_result_generator:
+                self.detect_result_generator.width = sub_image_ann.image.width
+                self.detect_result_generator.height = sub_image_ann.image.height
+                detect_result_list = self.detect_result_generator.create_detection_result(detect_result_list)
+
             for detect_result in detect_result_list:
+                if self.category_id_mapping:
+                    if detect_result.class_id:
+                        detect_result.class_id = self.category_id_mapping.get(
+                            detect_result.class_id, detect_result.class_id
+                        )
                 self.dp_manager.set_image_annotation(detect_result, sub_image_ann.annotation_id)
-
-    def get_dummy_generator(
-        self, categories: Dict[str, str], image_width: float, image_height: float, group_categories: List[List[str]]
-    ) -> DetectResultGenerator:
-        """
-        Create a DetectResultGenerator with some configs
-
-        :param categories: A dict of possible categories
-        :param image_width: width
-        :param image_height: height
-        :param group_categories: If you only want to generate only one DetectResult for a group of categories, provided
-                                 that the sum of the group is less than one, then you can pass a list of list for
-                                 grouping category ids.
-        :return: DetectResultGenerator instance
-        """
-        if self.has_dummy_generator():
-            return self.dummy_generator_cls(categories, image_width, image_height, group_categories)  # type: ignore
-        raise ValueError("No dummy generator available")
-
-    def has_dummy_generator(self) -> bool:
-        """
-        :return: True if DetectResultGenerator is available
-        """
-        if self.dummy_generator_cls is None:
-            return False
-        return True
 
     def get_meta_annotation(self) -> JsonDict:
         assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
@@ -223,11 +218,15 @@ class SubImageLayoutService(PredictorPipelineComponent):
 
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
+        padder_clone = None
+        if self.padder:
+            padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
             raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(predictor)}")
         return self.__class__(
             predictor,
             deepcopy(self.sub_image_name),
             deepcopy(self.category_id_mapping),
-            deepcopy(self.add_dummy_detection),
+            deepcopy(self.detect_result_generator),
+            padder_clone,
         )
