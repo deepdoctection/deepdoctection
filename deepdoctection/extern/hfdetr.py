@@ -53,7 +53,7 @@ def _detr_post_processing(
 
 def detr_predict_image(
     np_img: ImageType,
-    predictor: TableTransformerForObjectDetection,
+    predictor: "TableTransformerForObjectDetection",
     feature_extractor: DetrFeatureExtractor,
     device: Literal["cpu", "cuda"],
     threshold: float,
@@ -169,7 +169,7 @@ class HFDetrDerivedDetector(ObjectDetector):
         )
         return self._map_category_names(results)
 
-    def set_model(self, path_weights: str) -> TableTransformerForObjectDetection:
+    def set_model(self, path_weights: str) -> "TableTransformerForObjectDetection":
         """
         Builds the Detr model
 
