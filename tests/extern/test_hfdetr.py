@@ -45,7 +45,7 @@ def get_mock_features() -> "BatchFeature":
     return BatchFeature(data=data)
 
 
-def get_mock_predictions() -> Dict[str, torch.Tensor]:
+def get_mock_predictions() -> Dict[str, "torch.Tensor"]:
     """
     return detr predictions
     """
