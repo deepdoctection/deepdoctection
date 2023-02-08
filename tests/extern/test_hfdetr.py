@@ -37,7 +37,7 @@ if transformers_available():
     from transformers import BatchFeature
 
 
-def get_mock_features() -> BatchFeature:
+def get_mock_features() -> "BatchFeature":
     """
     returns batch features inputs
     """
@@ -67,7 +67,7 @@ def get_mock_predictions() -> Dict[str, torch.Tensor]:
     return outputs
 
 
-def get_mock_post_process_features() -> Sequence[Dict[str, torch.Tensor]]:
+def get_mock_post_process_features() -> Sequence[Dict[str, "torch.Tensor"]]:
     """
     return feature_extractor.post_process_object_detection
     """
