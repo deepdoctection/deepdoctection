@@ -31,9 +31,12 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
  - Deskewing and rotating images with jdeskew. 
- - [**new!**] Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
+ - Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
    provided by the [**Transformer**](https://github.com/huggingface/transformers) library. 
    (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!) 
+ - [**new!** not in release yet] Table detection and table structure recognition with 
+   [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
+   [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
    
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
