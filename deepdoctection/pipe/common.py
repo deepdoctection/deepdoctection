@@ -18,7 +18,7 @@
 """
 Module for common pipeline components
 """
-
+from copy import deepcopy
 from typing import List, Literal, Optional, Sequence, Union
 
 import numpy as np
@@ -29,9 +29,15 @@ from ..datapoint.view import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import pytorch_available, tf_available
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
+
+if tf_available():
+    from ..mapper.tpstruct import tf_nms_image_annotations as nms_image_annotations
+elif pytorch_available():
+    from ..mapper.d2struct import pt_nms_image_annotations as nms_image_annotations
 
 
 @pipeline_component_registry.register("ImageCroppingService")
@@ -209,3 +215,40 @@ class PageParsingService:
             LayoutType.word,
             LayoutType.line,
         ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
+
+
+@pipeline_component_registry.register("AnnotationNmsService")
+class AnnotationNmsService(PipelineComponent):
+    """
+    A service to pass `ImageAnnotation` to a non-maximum suppression (NMS) process for given pairs of categories.
+    `ImageAnnotation`s are subjected to NMS process in groups: If `nms_pairs=[[LayoutType.text, LayoutType.table],
+    [LayoutType.title, LayoutType.table]]` all `ImageAnnotation` subject to these categories are being selected and
+     identified as one category. After NMS the discarded image annotation will be deactivated.
+    """
+
+    def __init__(self, nms_pairs: Sequence[Sequence[TypeOrStr]], thresholds: Union[float, List[float]]):
+        """
+        :param nms_pairs: Groups of categories, either as string or by `ObjectType`.
+        :param thresholds: Suppression threshold
+        """
+        self.nms_pairs = [[get_type(val) for val in pair] for pair in nms_pairs]
+        if isinstance(thresholds, float):
+            self.threshold = [thresholds for _ in self.nms_pairs]
+        else:
+            assert len(self.nms_pairs) == len(thresholds), "Sequences of nms_pairs and thresholds must have same length"
+            self.threshold = thresholds
+        super().__init__("nms")
+
+    def serve(self, dp: Image) -> None:
+        for pair, threshold in zip(self.nms_pairs, self.threshold):
+            anns = dp.get_annotation(category_names=pair)
+            ann_ids_to_keep = nms_image_annotations(anns, threshold, dp.image_id)
+            for ann in anns:
+                if ann.annotation_id not in ann_ids_to_keep:
+                    self.dp_manager.deactivate_annotation(ann.annotation_id)
+
+    def clone(self) -> "PipelineComponent":
+        return self.__class__(deepcopy(self.nms_pairs), self.threshold)
+
+    def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
