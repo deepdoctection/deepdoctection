@@ -25,7 +25,6 @@ from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
-
 from detectron2.layers import batched_nms
 from detectron2.structures import BoxMode
 
@@ -94,8 +93,9 @@ def image_to_d2_frcnn_training(
     return output
 
 
-def pt_nms_image_annotations(anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None) \
-        -> Sequence[str]:
+def pt_nms_image_annotations(
+    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None
+) -> Sequence[str]:
     """
     Processing given image annotations through NMS. This is useful, if you want to supress some specific image
     annotation, e.g. given by name or returned through different predictors. This is the pt version, for tf check
@@ -113,8 +113,9 @@ def pt_nms_image_annotations(anns: Sequence[ImageAnnotation], threshold: float, 
         return []
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
     if image_id:
-        boxes = torch.tensor([ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if
-                              ann.image is not None])
+        boxes = torch.tensor(
+            [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
+        )
     else:
         boxes = torch.tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None])
     scores = torch.tensor([ann.score for ann in anns])

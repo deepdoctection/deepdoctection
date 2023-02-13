@@ -21,7 +21,7 @@ Testing module pipe.common
 from pytest import mark
 
 from deepdoctection.datapoint import Image
-from deepdoctection.pipe import MatchingService, AnnotationNmsService
+from deepdoctection.pipe import AnnotationNmsService, MatchingService
 from deepdoctection.utils.settings import LayoutType, Relationships
 
 
@@ -84,11 +84,11 @@ class TestAnnotationNmsService:
         setup necessary components
         """
 
-        self._nms_pairs = [["row","column"]]
+        self._nms_pairs = [["row", "column"]]
         self._thresholds = [0.01]
-        self._categories = ["row","column"]
+        self._categories = ["row", "column"]
 
-        self.nms_service = AnnotationNmsService(self._nms_pairs,self._thresholds)
+        self.nms_service = AnnotationNmsService(self._nms_pairs, self._thresholds)
 
     @mark.requires_pt
     def test_integration_pipeline_component(self, dp_image_fully_segmented_unrelated_words: Image) -> None:
