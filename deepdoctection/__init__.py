@@ -186,6 +186,7 @@ _IMPORT_STRUCTURE = {
         "coco_to_image",
         "image_to_coco",
         "image_to_d2_frcnn_training",
+        "pt_nms_image_annotations",
         "image_to_hf_detr_training",
         "DetrDataCollator",
         "image_to_layoutlm",
@@ -216,6 +217,7 @@ _IMPORT_STRUCTURE = {
         "pub_to_image_uncur",
         "pub_to_image",
         "image_to_tp_frcnn_training",
+        "tf_nms_image_annotations",
         "xfund_to_image",
     ],
     "pipe": [
@@ -230,6 +232,7 @@ _IMPORT_STRUCTURE = {
         "ImageCroppingService",
         "MatchingService",
         "PageParsingService",
+        "AnnotationNmsService",
         "MultiThreadPipelineComponent",
         "DoctectionPipe",
         "LanguageDetectionService",
