@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
+
 from detectron2.layers import batched_nms
 from detectron2.structures import BoxMode
 

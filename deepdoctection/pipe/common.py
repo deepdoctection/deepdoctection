@@ -29,14 +29,15 @@ from ..datapoint.view import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import pytorch_available, tf_available
+from ..utils.file_utils import pytorch_available, tf_available, detectron2_available
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 if tf_available():
     from ..mapper.tpstruct import tf_nms_image_annotations as nms_image_annotations
-elif pytorch_available():
+
+elif pytorch_available() and detectron2_available():
     from ..mapper.d2struct import pt_nms_image_annotations as nms_image_annotations
 
 
