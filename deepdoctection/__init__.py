@@ -14,7 +14,7 @@ from packaging import version
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
 
-__version__ = 0.20
+__version__ = 0.21
 
 _IMPORT_STRUCTURE = {
     "analyzer": ["get_dd_analyzer", "build_analyzer", "load_page", "load_document"],
