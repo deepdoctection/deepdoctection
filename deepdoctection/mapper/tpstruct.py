@@ -23,10 +23,16 @@ from typing import Optional, Sequence, Union
 
 import numpy as np
 
+from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
+from ..utils.file_utils import tf_available
 from ..utils.settings import ObjectTypes
 from .maputils import curry
+
+if tf_available():
+    from tensorflow import convert_to_tensor, uint8  # type: ignore # pylint: disable=E0401
+    from tensorflow.image import non_max_suppression  # type: ignore # pylint: disable=E0401
 
 
 @curry
@@ -76,3 +82,39 @@ def image_to_tp_frcnn_training(
     output["file_name"] = dp.location  # full path
 
     return output
+
+
+def tf_nms_image_annotations(
+    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None
+) -> Sequence[str]:
+    """
+    Processing given image annotations through NMS. This is useful, if you want to supress some specific image
+    annotation, e.g. given by name or returned through different predictors. This is the tf version, for pt check
+    `mapper.d2struct`
+
+    :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
+    :param threshold: NMS threshold
+    :param image_id: id in order to get the embedding bounding box
+
+    :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
+    """
+    if len(anns) == 1:
+        return [anns[0].annotation_id]
+    if not anns:
+        return []
+    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
+    if image_id:
+        boxes = convert_to_tensor(
+            [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
+        )
+    else:
+        boxes = convert_to_tensor(
+            [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+        )
+    scores = convert_to_tensor([ann.score for ann in anns])
+    class_mask = convert_to_tensor(len(boxes), dtype=uint8)
+    keep = non_max_suppression(boxes, scores, class_mask, iou_threshold=threshold)
+    ann_ids_keep = ann_ids[keep]
+    if not isinstance(ann_ids_keep, str):
+        return ann_ids_keep.tolist()
+    return []

@@ -21,7 +21,7 @@ Testing module pipe.common
 from pytest import mark
 
 from deepdoctection.datapoint import Image
-from deepdoctection.pipe import MatchingService
+from deepdoctection.pipe import AnnotationNmsService, MatchingService
 from deepdoctection.utils.settings import LayoutType, Relationships
 
 
@@ -72,3 +72,36 @@ class TestMatchingService:
 
         assert relationships_word_first_parent[0] == child_anns[0].annotation_id
         assert relationships_word_third_parent[0] == child_anns[1].annotation_id
+
+
+class TestAnnotationNmsService:
+    """
+    Test AnnotationNmsService
+    """
+
+    def setup_method(self) -> None:
+        """
+        setup necessary components
+        """
+
+        self._nms_pairs = [["row", "column"]]
+        self._thresholds = [0.01]
+        self._categories = ["row", "column"]
+
+        self.nms_service = AnnotationNmsService(self._nms_pairs, self._thresholds)
+
+    @mark.requires_pt
+    def test_integration_pipeline_component(self, dp_image_fully_segmented_unrelated_words: Image) -> None:
+        """
+        test annotation nms service suppresses the annotations within groups
+        """
+
+        dp = dp_image_fully_segmented_unrelated_words
+
+        # Act
+        dp = self.nms_service.pass_datapoint(dp)
+
+        anns = dp.get_annotation(category_names=self._categories)
+
+        # Assert
+        assert len(anns) == 2
