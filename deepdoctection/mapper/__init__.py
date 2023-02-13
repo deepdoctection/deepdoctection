@@ -33,7 +33,7 @@ from .pubstruct import *
 from .tpstruct import *
 from .xfundstruct import *
 
-if detectron2_available():
+if detectron2_available() and pytorch_available():
     from .d2struct import *
 
 if pytorch_available() and transformers_available():

@@ -31,7 +31,7 @@ def test_pipe_registry_has_all_build_in_pipe_component_registered() -> None:
     """
     test pipe registry has all pipeline components registered
     """
-    assert len(pipeline_component_registry.get_all()) == 13
+    assert len(pipeline_component_registry.get_all()) == 14
 
 
 @mark.basic
