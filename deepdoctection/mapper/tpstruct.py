@@ -31,7 +31,8 @@ from ..utils.settings import ObjectTypes
 from .maputils import curry
 
 if tf_available():
-    import tensorflow as tf  #type: ignore # pylint: disable=E0401
+    from tensorflow import convert_to_tensor  #type: ignore # pylint: disable=E0401
+    from tensorflow.image import non_max_suppression  #type: ignore # pylint: disable=E0401
 
 
 @curry
@@ -102,14 +103,14 @@ def tf_nms_image_annotations(anns: Sequence[ImageAnnotation], threshold: float, 
         return []
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
     if image_id:
-        boxes = tf.convert_to_tensor([ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if
+        boxes = convert_to_tensor([ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if
                                       ann.image is not None])
     else:
-        boxes = tf.convert_to_tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns
+        boxes = convert_to_tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns
                                       if ann.bounding_box is not None])
-    scores = tf.convert_to_tensor([ann.score for ann in anns])
-    class_mask = tf.convert_to_tensor(len(boxes), dtype=tf.uint8)
-    keep = tf.image.non_max_suppression(boxes, scores, class_mask, iou_threshold=threshold)
+    scores = convert_to_tensor([ann.score for ann in anns])
+    class_mask = convert_to_tensor(len(boxes), dtype=tf.uint8)
+    keep = non_max_suppression(boxes, scores, class_mask, iou_threshold=threshold)
     ann_ids_keep = ann_ids[keep]
     if not isinstance(ann_ids_keep, str):
         return ann_ids_keep.tolist()
