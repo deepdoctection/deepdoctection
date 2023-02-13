@@ -50,7 +50,7 @@ _DEPS = [
     "lxml>=4.9.1",
     "mock==4.0.3",
     "networkx>=2.7.1",
-    "numpy>=1.21",
+    "numpy>=1.21,<1.24",
     "opencv-python==4.5.4.60",
     "packaging>=20.0,<22.0",
     "pycocotools>=2.0.2",
