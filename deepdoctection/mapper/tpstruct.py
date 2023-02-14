@@ -107,6 +107,8 @@ def tf_nms_image_annotations(
         boxes = convert_to_tensor(
             [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
         )
+        if not boxes.shape[0]:
+            boxes = convert_to_tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None])
     else:
         boxes = convert_to_tensor(
             [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
