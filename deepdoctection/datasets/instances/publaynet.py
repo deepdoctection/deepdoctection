@@ -34,7 +34,7 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent
 from ...dataflow.custom_serialize import SerializerCoco
-from ...mapper.cats import filter_cat
+from ...mapper.cats import filter_cat, add_summary
 from ...mapper.cocostruct import coco_to_image
 from ...utils.settings import DatasetType, LayoutType
 from ..base import _BuiltInDataset
@@ -138,4 +138,5 @@ class PublaynetBuilder(DataFlowBaseBuilder):
                 ),
             )
 
+        df = MapData(df, add_summary(self.categories.get_categories(filtered=True)))
         return df
