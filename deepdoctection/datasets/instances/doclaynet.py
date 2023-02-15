@@ -32,7 +32,7 @@ from typing import Mapping, Sequence, Union
 from ...dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
 from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
 from ...datapoint.image import Image
-from ...mapper.cats import cat_to_sub_cat, filter_cat, filter_summary, add_summary
+from ...mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_summary
 from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.detection_types import JsonDict

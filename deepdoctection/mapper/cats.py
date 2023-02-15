@@ -23,10 +23,10 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
-from ..datapoint.annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, CategoryAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.image import Image
-from ..utils.settings import TypeOrStr, get_type, ObjectTypes
-from .maputils import curry, LabelSummarizer
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from .maputils import LabelSummarizer, curry
 
 
 @curry
@@ -321,6 +321,7 @@ def remove_cats(
 
     return dp
 
+
 @curry
 def add_summary(dp: Image, categories: Mapping[str, ObjectTypes]) -> Image:
     """
@@ -330,7 +331,7 @@ def add_summary(dp: Image, categories: Mapping[str, ObjectTypes]) -> Image:
     :param categories: A dict of all categories, e.g. `{"1": "text", "2":"title", ...}`
     :return: Image
     """
-    category_list = [cat for cat in categories.values()]
+    category_list = list(categories.values())
     anns = dp.get_annotation(category_names=category_list)
     summarizer = LabelSummarizer(categories)
     for ann in anns:
@@ -338,7 +339,8 @@ def add_summary(dp: Image, categories: Mapping[str, ObjectTypes]) -> Image:
     summary_dict = summarizer.get_summary()
     summary = SummaryAnnotation()
     for cat_id, val in summary_dict.items():
-        summary.dump_sub_category(categories[cat_id],
-                                  CategoryAnnotation(category_name=categories[cat_id],category_id=str(val)))
+        summary.dump_sub_category(
+            categories[cat_id], CategoryAnnotation(category_name=categories[cat_id], category_id=str(val))
+        )
     dp.summary = summary
     return dp
