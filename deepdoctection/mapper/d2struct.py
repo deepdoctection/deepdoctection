@@ -56,7 +56,7 @@ def image_to_d2_frcnn_training(
     if not os.path.isfile(dp.location) and dp.image is None:
         return None
 
-    output: JsonDict = {"file_name": dp.location}
+    output: JsonDict = {"file_name": str(dp.location)}
 
     if dp.image is not None:
         output["image"] = dp.image.astype("float32")
