@@ -116,6 +116,11 @@ def pt_nms_image_annotations(
         boxes = torch.tensor(
             [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
         )
+        # if we do not have image embeddings but pass an image_id
+        if not boxes.shape[0]:
+            boxes = torch.tensor(
+                [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+            )
     else:
         boxes = torch.tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None])
     scores = torch.tensor([ann.score for ann in anns])

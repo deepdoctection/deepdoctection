@@ -183,6 +183,7 @@ _IMPORT_STRUCTURE = {
         "filter_summary",
         "image_to_cat_id",
         "remove_cats",
+        "add_summary",
         "coco_to_image",
         "image_to_coco",
         "image_to_d2_frcnn_training",
