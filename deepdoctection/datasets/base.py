@@ -177,6 +177,8 @@ class MergeDataset(DatasetBase):
         self.datapoint_list: Optional[List[Image]] = None
         super().__init__()
         self._dataset_info.type = datasets[0].dataset_info.type
+        self._dataset_info.name = "merge_" + "_".join([dataset.dataset_info.name for dataset in self.datasets])
+
 
     def _categories(self) -> DatasetCategories:
         return get_merged_categories(

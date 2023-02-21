@@ -50,7 +50,7 @@ _DESCRIPTION = (
     "DocLayNet provides page-by-page layout segmentation ground-truth using bounding-boxes for 11 distinct class"
     " labels on 80863 unique pages from 6 document categories. It provides several unique features compared"
     " to related work such as PubLayNet or DocBank: \n"
-    "Humman Annotation: DocLayNet is hand-annotated by well-trained experts, providing a gold-standard in layout"
+    "Human Annotation: DocLayNet is hand-annotated by well-trained experts, providing a gold-standard in layout"
     " segmentation through human recognition and interpretation of each page layout \n"
     "Large layout variability: DocLayNet includes diverse and complex layouts from a large variety of public"
     " sources in Finance, Science, Patents, Tenders, Law texts and Manuals \n"
@@ -139,6 +139,7 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
             max_datapoints = int(max_datapoints)
         load_image = kwargs.get("load_image", False)
         fake_score = kwargs.get("fake_score", False)
+        resized = kwargs.get("resized", False)
 
         # Load
         df: DataFlow
@@ -146,7 +147,12 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
-        df = MapDataComponent(df, lambda dp: self.get_workdir() / "PNG" / dp, "file_name")
+        if resized:
+            png_folder = "PNG_resized"
+        else:
+            png_folder = "PNG"
+
+        df = MapDataComponent(df, lambda dp: self.get_workdir() / png_folder / dp, "file_name")
         df = MapData(
             df,
             coco_to_image(
