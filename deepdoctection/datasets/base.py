@@ -22,6 +22,8 @@ Module for the base class of datasets.
 import os
 import pprint
 from abc import ABC, abstractmethod
+from collections import defaultdict
+
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
@@ -326,12 +328,45 @@ class MergeDataset(DatasetBase):
         To reproduce a dataset split at a later stage, get a summary of the by having a dict of list with split and
         the image ids contained in the split.
 
-        :return: E.g. `{"train": ['ab','ac'],"val":['bc','bd']}
+        :return: E.g. `{"train": ['ab','ac'],"val":['bc','bd']}`
         """
         if isinstance(self._dataflow_builder,SplitDataFlow):
             return {key: [img.image_id for img in self._dataflow_builder.split_cache.get(key,[])]
                     for key in ("train","val","test")}
         return {"train": [], "val": [], "test": []}
+
+    def create_split_by_id(self, split_dict, **dataflow_build_kwargs) -> None:
+        """
+        Reproducing a dataset split from a dataset or a dataflow by a dict of list of image ids.
+
+            merge = dd.MergeDataset(doclaynet)
+            merge.explicit_dataflows(df_doc)
+            merge.buffer_datasets()
+            merge.split_datasets(ratio=0.1)
+            out = merge.get_ids_by_split()   # Save out somewhere
+
+            merge_2 = dd.MergeDataset(doclaynet)
+            df_doc_2 = doclaynet.dataflow.build(split="train", max_datapoints=4000)
+            merge_2.explicit_dataflows(df_doc_2)
+            merge_2.create_split_by_id(out)   # merge_2 now has the same split as merge
+
+        :param split_dict: e.g. `{"train":['ab','ac',...],"val":['bc'],"test":[]}`
+        """
+
+        if set(split_dict.keys())!={"train","val","test"}:
+            raise KeyError("split_dict must contain keys for 'train', 'val' and 'test'")
+        ann_id_to_split = {ann_id: "train" for ann_id in split_dict["train"]}
+        ann_id_to_split.update({ann_id: "val" for ann_id in split_dict["val"]})
+        ann_id_to_split.update({ann_id: "test" for ann_id in split_dict["test"]})
+        self.buffer_datasets(**dataflow_build_kwargs)
+        split_defaultdict = defaultdict(list)
+        for image in self.datapoint_list:
+            split_defaultdict[ann_id_to_split[image.image_id]].append(image)
+        train_dataset = split_defaultdict["train"]
+        val_dataset = split_defaultdict["val"]
+        test_dataset = split_defaultdict["test"]
+        self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
+        self._dataflow_builder.categories = self._categories()
 
 
 
