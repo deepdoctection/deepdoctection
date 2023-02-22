@@ -126,6 +126,41 @@ class _BuiltInDataset(DatasetBase, ABC):
         return True
 
 
+class SplitDataFlow(DataFlowBaseBuilder):
+    """
+    Dataflow builder for splitting datasets
+    """
+
+    def __init__(self, train: List[Image], val: List[Image], test: Optional[List[Image]]):
+        """
+        :param train: Cached train split
+        :param val: Cached val split
+        :param test: Cached test split
+        """
+        super().__init__(location="")
+        self.split_cache: Dict[str, List[Image]]
+        if test is None:
+            self.split_cache = {"train": train, "val": val}
+        else:
+            self.split_cache = {"train": train, "val": val, "test": test}
+
+    def build(self, **kwargs: Union[str, int]) -> DataFlow:
+        """
+        Dataflow builder for merged split datasets
+        :param kwargs: Only split and max_datapoints arguments will be considered.
+        :return: Dataflow
+        """
+
+        split = kwargs.get("split", "train")
+        if not isinstance(split, str):
+            raise ValueError("'split' must be a string")
+        max_datapoints = kwargs.get("max_datapoints")
+        if isinstance(max_datapoints, str):
+            max_datapoints = int(max_datapoints)
+
+        return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints)
+
+
 class MergeDataset(DatasetBase):
     """
     A class for merging dataset ready to feed a training or an evaluation script. The dataflow builder will generate
@@ -283,43 +318,21 @@ class MergeDataset(DatasetBase):
             )
         )
 
-        class SplitDataFlow(DataFlowBaseBuilder):
-            """
-            Dataflow builder for splitting datasets
-            """
-
-            def __init__(self, train: List[Image], val: List[Image], test: Optional[List[Image]]):
-                """
-                :param train: Cached train split
-                :param val: Cached val split
-                :param test: Cached test split
-                """
-                super().__init__(location="")
-                self.split_cache: Dict[str, List[Image]]
-                if test is None:
-                    self.split_cache = {"train": train, "val": val}
-                else:
-                    self.split_cache = {"train": train, "val": val, "test": test}
-
-            def build(self, **kwargs: Union[str, int]) -> DataFlow:
-                """
-                Dataflow builder for merged split datasets.
-
-                :param kwargs: Only split and max_datapoints arguments will be considered.
-                :return: Dataflow
-                """
-
-                split = kwargs.get("split", "train")
-                if not isinstance(split, str):
-                    raise ValueError("'split' must be a string")
-                max_datapoints = kwargs.get("max_datapoints")
-                if isinstance(max_datapoints, str):
-                    max_datapoints = int(max_datapoints)
-
-                return CustomDataFromList(self.split_cache[split], max_datapoints=max_datapoints)
-
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
+
+    def get_ids_by_split(self) -> Dict[str,List[str]]:
+        """
+        To reproduce a dataset split at a later stage, get a summary of the by having a dict of list with split and
+        the image ids contained in the split.
+
+        :return: E.g. `{"train": ['ab','ac'],"val":['bc','bd']}
+        """
+        if isinstance(self._dataflow_builder,SplitDataFlow):
+            return {key: [img.image_id for img in self._dataflow_builder.split_cache.get(key,[])]
+                    for key in ("train","val","test")}
+        return {"train": [], "val": [], "test": []}
+
 
 
 class CustomDataset(DatasetBase):
