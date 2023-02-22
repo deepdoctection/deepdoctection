@@ -272,7 +272,11 @@ def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectType
     :return: Transformed annotation
     """
 
-    layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
+    # We need to handle annotations that are text containers like words
+    if annotation.category_name == text_container:
+        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.word]
+    else:
+        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
     ann_dict = annotation.as_dict()
     layout = layout_class.from_dict(**ann_dict)
     if image_dict := ann_dict.get("image"):
