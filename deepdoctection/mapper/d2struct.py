@@ -139,7 +139,7 @@ def pt_nms_image_annotations(
 
 
 @curry
-def to_wandb_image(dp: Image, categories: Mapping[str, TypeOrStr]) -> Tuple[str, Wbimage]:
+def to_wandb_image(dp: Image, categories: Mapping[str, TypeOrStr]) -> Tuple[str, "Wbimage"]:
     """
     Converting a deepdoctection image into a wandb image
 
