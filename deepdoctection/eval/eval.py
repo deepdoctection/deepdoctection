@@ -23,7 +23,7 @@ Module for `Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Dict, List, Literal, Mapping, Optional, Type, Union, overload, Any
+from typing import Any, Dict, List, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 
@@ -37,7 +37,7 @@ from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
-from ..utils.file_utils import wandb_available, detectron2_available
+from ..utils.file_utils import detectron2_available, wandb_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr
 from ..utils.viz import interactive_imshow
@@ -307,8 +307,14 @@ class WandbTableAgent:
         agent.log()
 
     """
-    def __init__(self, wandb_run: "wandb.sdk.wandb_run.Run", dataset_name: str, num_samples: int,
-                 categories: Mapping[str, TypeOrStr]):
+
+    def __init__(
+        self,
+        wandb_run: "wandb.sdk.wandb_run.Run",
+        dataset_name: str,
+        num_samples: int,
+        categories: Mapping[str, TypeOrStr],
+    ):
         """
         :param wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
                           **kwargs)` to generate a `run`.
@@ -349,7 +355,7 @@ class WandbTableAgent:
         """
         self._table_rows = []
 
-    def _build_table(self) -> Table:
+    def _build_table(self) -> "Table":
         """
         Builds wandb.Table object for logging evaluation
 

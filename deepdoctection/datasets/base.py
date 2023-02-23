@@ -335,7 +335,9 @@ class MergeDataset(DatasetBase):
             }
         return {"train": [], "val": [], "test": []}
 
-    def create_split_by_id(self, split_dict: Mapping[str,Sequence[str]], **dataflow_build_kwargs: Union[str, int]) -> None:
+    def create_split_by_id(
+        self, split_dict: Mapping[str, Sequence[str]], **dataflow_build_kwargs: Union[str, int]
+    ) -> None:
         """
         Reproducing a dataset split from a dataset or a dataflow by a dict of list of image ids.
 
