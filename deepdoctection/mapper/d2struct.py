@@ -37,7 +37,7 @@ from ..utils.file_utils import wandb_available
 from ..utils.settings import ObjectTypes, TypeOrStr
 
 if wandb_available():
-    from wandb import Classes  # type: ignore
+    from wandb import Classes
     from wandb import Image as Wbimage
 
 

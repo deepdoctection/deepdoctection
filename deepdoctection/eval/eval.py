@@ -44,7 +44,7 @@ from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
 if wandb_available():
-    import wandb  # type: ignore
+    import wandb  # pylint:disable=W0611
     from wandb import Artifact, Table
 
 if wandb_available() and detectron2_available():
@@ -381,4 +381,4 @@ class WandbTableAgent:
         eval_art.add(self._build_table(), self.dataset_name)
         self._run.use_artifact(eval_art)
         eval_art.wait()
-        self._table_ref = eval_art.get(self.dataset_name).data
+        self._table_ref = eval_art.get(self.dataset_name).data  # type:ignore
