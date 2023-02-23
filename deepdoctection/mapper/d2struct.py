@@ -22,7 +22,7 @@ visualising
 
 
 import os.path
-from typing import Dict, List, Optional, Sequence, Union, Mapping, Tuple
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -33,11 +33,13 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
-from ..utils.settings import ObjectTypes, TypeOrStr
 from ..utils.file_utils import wandb_available
+from ..utils.settings import ObjectTypes, TypeOrStr
 
 if wandb_available():
-    from wandb import Classes, Image as Wbimage
+    from wandb import Classes
+    from wandb import Image as Wbimage
+
 
 @curry
 def image_to_d2_frcnn_training(
@@ -138,26 +140,34 @@ def pt_nms_image_annotations(
 
 @curry
 def to_wandb_image(dp: Image, categories: Mapping[str, TypeOrStr]) -> Tuple[str, Wbimage]:
+    """
+    Converting a deepdoctection image into a wandb image
+
+    :param dp: deepdoctection image
+    :param categories: dict of categories
+    :return: a W&B image
+    """
+    if dp.image is None:
+        raise ValueError("Cannot convert to W&B image type when Image.image is None")
+
     boxes = []
     anns = dp.get_annotation(category_names=list(categories.values()))
-    class_labels = {int(key):val for key,val in categories.items()}
+    class_labels = {int(key): val for key, val in categories.items()}
 
     class_set = Classes([{"name": val, "id": int(key)} for key, val in categories.items()])
 
     for ann in anns:
         bounding_box = ann.image.get_embedding(dp.image_id) if ann.image is not None else ann.bounding_box
-        box = {"position": {"middle": bounding_box.center,
-                            "width": bounding_box.width,
-                            "height": bounding_box.height },
-               "domain": "pixel",
-               "class_id": int(ann.category_id),
-               "box_caption": ann.category_name}
+        box = {
+            "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
+            "domain": "pixel",
+            "class_id": int(ann.category_id),
+            "box_caption": ann.category_name,
+        }
         if ann.score:
             box["scores"] = {"acc": ann.score}
         boxes.append(box)
 
-    predictions = {"predictions": {"box_data": boxes,
-                                   "class_labels": class_labels}}
+    predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
 
     return dp.image_id, Wbimage(dp.image[:, :, ::-1], mode="RGB", boxes=predictions, classes=class_set)
-

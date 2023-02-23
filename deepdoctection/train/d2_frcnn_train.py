@@ -21,18 +21,15 @@ Module for training Detectron2 `GeneralizedRCNN`
 
 
 import copy
-from typing import Any, Dict, List, Optional, Sequence, Type, Union, Mapping
-
-from fvcore.nn.precise_bn import get_bn_modules
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Type, Union
 
 from detectron2.config import CfgNode, get_cfg
 from detectron2.data import DatasetMapper, build_detection_train_loader
 from detectron2.data.transforms import RandomFlip, ResizeShortestEdge
-from detectron2.engine import DefaultTrainer, default_writers
-from detectron2.utils.events import get_event_storage, EventWriter
+from detectron2.engine import DefaultTrainer, HookBase, default_writers, hooks
 from detectron2.utils import comm
-from detectron2.engine import hooks, HookBase
-
+from detectron2.utils.events import EventWriter, get_event_storage
+from fvcore.nn.precise_bn import get_bn_modules  # type: ignore
 from torch.utils.data import DataLoader, IterableDataset
 
 from ..datasets.adapter import DatasetAdapter
@@ -46,17 +43,23 @@ from ..extern.pt.ptutils import get_num_gpu
 from ..mapper.d2struct import image_to_d2_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
+from ..utils.file_utils import get_wandb_requirement, wandb_available
 from ..utils.logger import logger
 from ..utils.utils import string_to_dict
-from ..utils.file_utils import wandb_available, get_wandb_requirement
 
 if wandb_available():
     import wandb
 
 
-def _set_config(path_config_yaml: str, conf_list: List[str], dataset_train: DatasetBase, dataset_val: Optional[DatasetBase],
-                metric_name: Optional[str], metric: Optional[Union[Type[MetricBase], MetricBase]],
-                pipeline_component_name: Optional[str] ) -> CfgNode:
+def _set_config(
+    path_config_yaml: str,
+    conf_list: List[str],
+    dataset_train: DatasetBase,
+    dataset_val: Optional[DatasetBase],
+    metric_name: Optional[str],
+    metric: Optional[Union[Type[MetricBase], MetricBase]],
+    pipeline_component_name: Optional[str],
+) -> CfgNode:
     cfg = get_cfg()
     cfg.defrost()
     cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.01
@@ -68,16 +71,19 @@ def _set_config(path_config_yaml: str, conf_list: List[str], dataset_train: Data
     cfg.merge_from_file(path_config_yaml)
     cfg.merge_from_list(conf_list)
 
-    cfg.TEST.DO_EVAL = (cfg.TEST.EVAL_PERIOD > 0
+    cfg.TEST.DO_EVAL = (
+        cfg.TEST.EVAL_PERIOD > 0
         and dataset_val is not None
         and (metric_name is not None or metric is not None)
-        and pipeline_component_name is not None)
+        and pipeline_component_name is not None
+    )
     if cfg.TEST.DO_EVAL:
-        cfg.DATASETS.TEST = (dataset_val.dataset_info.name,)
+        cfg.DATASETS.TEST = (dataset_val.dataset_info.name,)  # type: ignore
     cfg.freeze()
     return cfg
 
-def _update_for_eval(config_overwrite: List[str]):
+
+def _update_for_eval(config_overwrite: List[str]) -> List[str]:
     ret = [item for item in config_overwrite if not "WANDB" in item]
     return ret
 
@@ -91,9 +97,9 @@ class WandbWriter(EventWriter):
         self,
         project: str,
         repo: str,
-        config: Optional[Union[Dict, CfgNode]] = None,
+        config: Optional[Union[Dict[str,Any], CfgNode]] = None,
         window_size: int = 20,
-        **kwargs,
+        **kwargs: Any,
     ):
         """
         :param project: W&B Project name
@@ -104,22 +110,20 @@ class WandbWriter(EventWriter):
         if config is None:
             config = {}
         self._window_size = window_size
-        self._run = (
-            wandb.init(project=project, config=config, **kwargs) if not wandb.run else wandb.run
-        )
-        self._run._label(repo=repo)
+        self._run = wandb.init(project=project, config=config, **kwargs) if not wandb.run else wandb.run
+        self._run._label(repo=repo) # type:ignore
 
-    def write(self):
+    def write(self) -> None:
         storage = get_event_storage()
 
         log_dict = {}
-        for k, (v, _) in storage.latest_with_smoothing_hint(self._window_size).items():
-            log_dict[k] = v
+        for key, (val, _) in storage.latest_with_smoothing_hint(self._window_size).items():
+            log_dict[key] = val
 
-        self._run.log(log_dict)
+        self._run.log(log_dict)  # type:ignore
 
-    def close(self):
-        self._run.finish()
+    def close(self) -> None:
+        self._run.finish()  # type:ignore
 
 
 class D2Trainer(DefaultTrainer):
@@ -132,7 +136,7 @@ class D2Trainer(DefaultTrainer):
         self.dataset = torch_dataset
         self.mapper = mapper
         self.evaluator: Optional[Evaluator] = None
-        self.build_val_dict: Mapping[str,str] = {}
+        self.build_val_dict: Mapping[str, str] = {}
         super().__init__(cfg)
 
     def build_hooks(self) -> List[HookBase]:
@@ -152,12 +156,12 @@ class D2Trainer(DefaultTrainer):
             hooks.PreciseBN(
                 # Run at the same freq as (but before) evaluation.
                 cfg.TEST.EVAL_PERIOD,
-                self.model,
+                self.model,  # pylint: disable=E1101
                 # Build a new data loader to not affect training
                 self.build_train_loader(cfg),
                 cfg.TEST.PRECISE_BN.NUM_ITER,
             )
-            if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)
+            if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)  # pylint: disable=E1101
             else None,
         ]
 
@@ -168,11 +172,15 @@ class D2Trainer(DefaultTrainer):
         if comm.is_main_process():
             ret.append(hooks.PeriodicCheckpointer(self.checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD))
 
-
         # Do evaluation after checkpointer, because then if it fails,
         # we can use the saved checkpoint to debug.
         if self.cfg.TEST.DO_EVAL:
-            ret.append(hooks.EvalHook(cfg.TEST.EVAL_PERIOD, lambda: self.eval_with_dd_evaluator(**self.build_val_dict),))
+            ret.append(
+                hooks.EvalHook(
+                    cfg.TEST.EVAL_PERIOD,
+                    lambda: self.eval_with_dd_evaluator(**self.build_val_dict),  # pylint: disable=W0108
+                )
+            )
 
         if comm.is_main_process():
             # Here the default print/log frequency of each writer is used.
@@ -196,7 +204,7 @@ class D2Trainer(DefaultTrainer):
                 raise ImportError(err_msg)
             if self.cfg.WANDB.PROJECT is None:
                 raise ValueError("When using W&B, you must specify a project, i.e. WANDB.PROJECT")
-            writers_list.append(WandbWriter(self.cfg.WANDB.PROJECT,self.cfg.WANDB.REPO, self.cfg))
+            writers_list.append(WandbWriter(self.cfg.WANDB.PROJECT, self.cfg.WANDB.REPO, self.cfg))
         return writers_list
 
     def build_train_loader(self, cfg: CfgNode) -> DataLoader[Any]:  # pylint: disable=W0221
@@ -229,7 +237,7 @@ class D2Trainer(DefaultTrainer):
         dataset_val: DatasetBase,
         pipeline_component: PredictorPipelineComponent,
         metric: Union[Type[MetricBase], MetricBase],
-        build_val_dict: Optional[Mapping[str,str]] = None
+        build_val_dict: Optional[Mapping[str, str]] = None,
     ) -> None:
         """
         Setup of evaluator before starting training. During training, predictors will be replaced by current
@@ -240,8 +248,13 @@ class D2Trainer(DefaultTrainer):
         :param metric: A metric class
         :param build_val_dict: evaluation dataflow build config
         """
-        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=get_num_gpu() * 2,
-                                   run=wandb.run if wandb.run is not None else None)
+        self.evaluator = Evaluator(
+            dataset_val,
+            pipeline_component,
+            metric,
+            num_threads=get_num_gpu() * 2,
+            run=wandb.run if wandb.run is not None else None,
+        )
         if build_val_dict:
             self.build_val_dict = build_val_dict
         assert self.evaluator.pipe_component
@@ -331,9 +344,12 @@ def train_d2_faster_rcnn(
 
     if config_overwrite is None:
         config_overwrite = []
-    conf_list = ["MODEL.WEIGHTS", path_weights,
-                 "OUTPUT_DIR", log_dir,
-                 ]
+    conf_list = [
+        "MODEL.WEIGHTS",
+        path_weights,
+        "OUTPUT_DIR",
+        log_dir,
+    ]
     for conf in config_overwrite:
         key, val = conf.split("=", maxsplit=1)
         conf_list.extend([key, val])
@@ -341,7 +357,9 @@ def train_d2_faster_rcnn(
     if isinstance(dataset_train, str):
         dataset_train = get_dataset(dataset_train)
 
-    cfg = _set_config(path_config_yaml, conf_list, dataset_train, dataset_val, metric_name, metric, pipeline_component_name)
+    cfg = _set_config(
+        path_config_yaml, conf_list, dataset_train, dataset_val, metric_name, metric, pipeline_component_name
+    )
 
     if metric_name is not None:
         metric = metric_registry.get(metric_name)
@@ -356,7 +374,7 @@ def train_d2_faster_rcnn(
     trainer.resume_or_load()
 
     if cfg.TEST.DO_EVAL:
-        categories = dataset_val.dataflow.categories.get_categories(filtered=True)
+        categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         config_overwrite = _update_for_eval(config_overwrite)
         detector = D2FrcnnDetector(path_config_yaml, path_weights, categories, config_overwrite, cfg.MODEL.DEVICE)
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
@@ -367,5 +385,5 @@ def train_d2_faster_rcnn(
             metric = metric_registry.get(metric_name)
         assert metric is not None
 
-        trainer.setup_evaluator(dataset_val, pipeline_component, metric, build_val_dict)
+        trainer.setup_evaluator(dataset_val, pipeline_component, metric, build_val_dict)  # type: ignore
     return trainer.train()

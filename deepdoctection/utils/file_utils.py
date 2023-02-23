@@ -573,11 +573,13 @@ def get_fasttext_requirement() -> Requirement:
 _WANDB_AVAILABLE = importlib.util.find_spec("wandb") is not None
 _WANDB_ERR_MSG = "WandB must be installed. >> pip install wandb"
 
+
 def wandb_available() -> bool:
     """
     Returns True if W&B package wandb is installed
     """
     return bool(_WANDB_AVAILABLE)
+
 
 def get_wandb_requirement() -> Requirement:
     """
