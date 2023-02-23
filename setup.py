@@ -60,6 +60,7 @@ _DEPS = [
     "pyzmq>=16",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
+    "tqdm==4.64.0",
     # type-stubs
     "types-PyYAML",
     "types-termcolor==1.1.3",
@@ -94,6 +95,7 @@ _DEPS = [
     # test
     "pytest",
     "pytest-cov",
+    "wandb",
 ]
 
 # lookup table with items like:
@@ -126,6 +128,7 @@ dist_deps = deps_list(
     "pyzmq",
     "termcolor",
     "tabulate",
+    "tqdm",
     "types-PyYAML",
     "types-termcolor",
     "types-tabulate",
@@ -174,7 +177,7 @@ docs_deps = deps_list(
 test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("click", "black", "isort", "pylint", "mypy")
+dev_deps = deps_list("click", "black", "isort", "pylint", "mypy","wandb")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.

@@ -86,7 +86,7 @@ class CacheData(ProxyDataFlow):
         self.reset_state()
         with get_tqdm() as status_bar:
             for _ in self:
-                status_bar.update()
+                status_bar.update()  # type: ignore
             return self.buffer
 
 

@@ -23,11 +23,12 @@ Module for `Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Dict, List, Literal, Optional, Type, Union, overload
+from typing import Any, Dict, List, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
+from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
@@ -36,10 +37,18 @@ from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
+from ..utils.file_utils import detectron2_available, wandb_available
 from ..utils.logger import logger
-from ..utils.settings import DatasetType, LayoutType
+from ..utils.settings import DatasetType, LayoutType, TypeOrStr
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
+
+if wandb_available():
+    import wandb  # pylint:disable=W0611
+    from wandb import Artifact, Table
+
+if wandb_available() and detectron2_available():
+    from ..mapper.d2struct import to_wandb_image
 
 
 class Evaluator:
@@ -85,6 +94,7 @@ class Evaluator:
         component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
         metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
+        run: Optional["wandb.sdk.wandb_run.Run"] = None,
     ) -> None:
         """
         Evaluating a pipeline component on a dataset with a given metric.
@@ -126,6 +136,14 @@ class Evaluator:
 
         self._sanity_checks()
 
+        self.wandb_table_agent: Optional[WandbTableAgent]
+        if run is not None:
+            self.wandb_table_agent = WandbTableAgent(
+                run, self.dataset.dataset_info.name, 50, self.dataset.dataflow.categories.get_categories(filtered=True)
+            )
+        else:
+            self.wandb_table_agent = None
+
     @overload
     def run(
         self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
@@ -160,6 +178,9 @@ class Evaluator:
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
         self.metric.print_result()
 
+        if self.wandb_table_agent:
+            self.wandb_table_agent.log()
+
         if output_as_dict:
             return self.metric.result_list_to_dict(result)
 
@@ -173,6 +194,8 @@ class Evaluator:
             self.pipe_component.put_task(df_pr)
             logger.info("Predicting objects...")
             df_pr_list = self.pipe_component.start()
+            if self.wandb_table_agent is not None:
+                df_pr_list = [self.wandb_table_agent.dump(dp) for dp in df_pr_list]
             return DataFromList(df_pr_list)
         df_pr = MapData(df_pr, maybe_load_image)
         df_pr = self.pipe.analyze(dataset_dataflow=df_pr, output="image")  # type: ignore
@@ -181,6 +204,8 @@ class Evaluator:
             comp.timer_on = False
         df_pr = MapData(df_pr, maybe_remove_image)
         df_list = CacheData(df_pr).get_cache()
+        if self.wandb_table_agent is not None:
+            df_list = [self.wandb_table_agent.dump(dp) for dp in df_list]
         return DataFromList(df_list)
 
     def _clean_up_predict_dataflow_annotations(self, df_pr: DataFlow) -> DataFlow:
@@ -268,3 +293,92 @@ class Evaluator:
             else:
                 return img_concat
         return None
+
+
+class WandbTableAgent:
+    """
+    A class that creates a W&B table of sample predictions and sends them to the W&B server.
+
+        df ... # some dataflow
+        agent = WandbTableAgent(myrun,"MY_DATASET",50,{"1":"FOO"})
+        for dp in df:
+            agent.dump(dp)
+
+        agent.log()
+
+    """
+
+    def __init__(
+        self,
+        wandb_run: "wandb.sdk.wandb_run.Run",
+        dataset_name: str,
+        num_samples: int,
+        categories: Mapping[str, TypeOrStr],
+    ):
+        """
+        :param wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
+                          **kwargs)` to generate a `run`.
+        :param dataset_name: name for tracking
+        :param num_samples: When dumping images to a table it will stop adding samples after `num_samples` instances
+        :param categories: dict of all possible categories
+        """
+
+        self.dataset_name = dataset_name
+        self.num_samples = num_samples
+        self.categories = categories
+        self._run = wandb_run
+        self._counter = 0
+
+        # Table logging utils
+        self._table_cols: List[str] = ["file_name", "image"]
+        self._table_rows: List[Any] = []
+        self._table_ref = None
+
+    def dump(self, dp: Image) -> Image:
+        """
+        Dump image to a table. Add this while iterating over samples. After `num_samples` it will stop appending samples
+        to the table
+
+        :param dp: datapoint image
+        :return: same as input
+        """
+        if self.num_samples > self._counter:
+            dp = maybe_load_image(dp)
+            self._table_rows.append(to_wandb_image(self.categories)(dp))  # pylint: disable=E1102
+            dp = maybe_remove_image(dp)
+            self._counter += 1
+        return dp
+
+    def reset(self) -> None:
+        """
+        Reset table rows
+        """
+        self._table_rows = []
+
+    def _build_table(self) -> "Table":
+        """
+        Builds wandb.Table object for logging evaluation
+
+        returns: Table object to log evaluation
+        """
+        return Table(columns=self._table_cols, data=self._table_rows)
+
+    def log(self) -> None:
+        """
+        Log WandB table and maybe send table to WandB server
+        """
+        table = self._build_table()
+        self._run.log({self.dataset_name: table})
+        self.reset()
+
+    def _use_table_as_artifact(self) -> None:
+        """
+        This function logs the given table as artifact and calls `use_artifact`
+        on it so tables from next iterations can use the reference of already uploaded images.
+        """
+
+        eval_art = Artifact(self._run.id + self.dataset_name, type="dataset")
+        eval_art.add(self._build_table(), self.dataset_name)
+        self._run.use_artifact(eval_art)
+        eval_art.wait()
+        self._table_ref = eval_art.get(self.dataset_name).data  # type:ignore
