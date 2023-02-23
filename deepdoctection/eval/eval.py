@@ -31,14 +31,13 @@ from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
-from ..mapper.d2struct import to_wandb_image
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
-from ..utils.file_utils import wandb_available
+from ..utils.file_utils import wandb_available, detectron2_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr
 from ..utils.viz import interactive_imshow
@@ -47,6 +46,9 @@ from .base import MetricBase
 if wandb_available():
     import wandb
     from wandb import Artifact, Table
+
+if wandb_available() and detectron2_available():
+    from ..mapper.d2struct import to_wandb_image
 
 
 class Evaluator:
