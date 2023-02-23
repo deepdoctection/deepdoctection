@@ -354,6 +354,7 @@ class WandbTableAgent:
         Reset table rows
         """
         self._table_rows = []
+        self._counter = 0
 
     def _build_table(self) -> "Table":
         """
