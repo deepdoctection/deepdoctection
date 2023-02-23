@@ -97,7 +97,7 @@ class WandbWriter(EventWriter):
         self,
         project: str,
         repo: str,
-        config: Optional[Union[Dict[str,Any], CfgNode]] = None,
+        config: Optional[Union[Dict[str, Any], CfgNode]] = None,
         window_size: int = 20,
         **kwargs: Any,
     ):
@@ -111,7 +111,7 @@ class WandbWriter(EventWriter):
             config = {}
         self._window_size = window_size
         self._run = wandb.init(project=project, config=config, **kwargs) if not wandb.run else wandb.run
-        self._run._label(repo=repo) # type:ignore
+        self._run._label(repo=repo)  # type:ignore
 
     def write(self) -> None:
         storage = get_event_storage()
