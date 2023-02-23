@@ -307,7 +307,7 @@ class WandbTableAgent:
         agent.log()
 
     """
-    def __init__(self, wandb_run: wandb.sdk.wandb_run.Run, dataset_name: str, num_samples: int,
+    def __init__(self, wandb_run: "wandb.sdk.wandb_run.Run", dataset_name: str, num_samples: int,
                  categories: Mapping[str, TypeOrStr]):
         """
         :param wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
