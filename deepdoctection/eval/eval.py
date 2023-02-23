@@ -94,7 +94,7 @@ class Evaluator:
         component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
         metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
-        run: Optional[wandb.sdk.wandb_run.Run] = None,
+        run: Optional["wandb.sdk.wandb_run.Run"] = None,
     ) -> None:
         """
         Evaluating a pipeline component on a dataset with a given metric.
