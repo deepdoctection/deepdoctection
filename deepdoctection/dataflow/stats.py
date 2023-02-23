@@ -135,7 +135,7 @@ class MeanFromDataFlow(ProxyDataFlow):
                     x = np.mean(val, axis=self.axis if inner_axis is None else inner_axis)
                     self.mean += (x - self.mean) / n
 
-                status_bar.update()
+                status_bar.update()  # type: ignore
                 if self.max_datapoints is not None:
                     if n == self.max_datapoints:
                         break
@@ -260,7 +260,7 @@ class StdFromDataFlow(ProxyDataFlow):
                     ex += x - k
                     ex2 += (x - k) * (x - k)
 
-                status_bar.update()
+                status_bar.update()  # type: ignore
                 if self.max_datapoints is not None:
                     if n == self.max_datapoints:
                         break
