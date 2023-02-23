@@ -48,7 +48,7 @@ from ..utils.logger import logger
 from ..utils.utils import string_to_dict
 
 if wandb_available():
-    import wandb
+    import wandb  # type: ignore
 
 
 def _set_config(
@@ -111,7 +111,7 @@ class WandbWriter(EventWriter):
             config = {}
         self._window_size = window_size
         self._run = wandb.init(project=project, config=config, **kwargs) if not wandb.run else wandb.run
-        self._run._label(repo=repo)  # type:ignore
+        self._run._label(repo=repo)
 
     def write(self) -> None:
         storage = get_event_storage()
@@ -120,10 +120,10 @@ class WandbWriter(EventWriter):
         for key, (val, _) in storage.latest_with_smoothing_hint(self._window_size).items():
             log_dict[key] = val
 
-        self._run.log(log_dict)  # type:ignore
+        self._run.log(log_dict)
 
     def close(self) -> None:
-        self._run.finish()  # type:ignore
+        self._run.finish()
 
 
 class D2Trainer(DefaultTrainer):

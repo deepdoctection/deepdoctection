@@ -483,7 +483,7 @@ class SerializerCoco:
             with get_tqdm(total=len(imgs)) as status_bar:
                 for img in imgs:
                     img["annotations"] = coco.img_to_anns[img["id"]]
-                    status_bar.update()
+                    status_bar.update()  # type: ignore
 
         df = CustomDataFromList(imgs, max_datapoints=max_datapoints)
         return df

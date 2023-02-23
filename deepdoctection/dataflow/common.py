@@ -56,7 +56,7 @@ class TestDataSpeed(ProxyDataFlow):
         # add smoothing for speed benchmark
         with get_tqdm(total=self.test_size, leave=True, smoothing=0.2) as pbar:
             for idx, _ in enumerate(itr):
-                pbar.update()
+                pbar.update()  # type: ignore
                 if idx == self.test_size - 1:
                     break
 
