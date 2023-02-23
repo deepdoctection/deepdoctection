@@ -60,6 +60,7 @@ _DEPS = [
     "pyzmq>=16",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
+    "tqdm==4.64.0",
     # type-stubs
     "types-PyYAML",
     "types-termcolor==1.1.3",
@@ -126,6 +127,7 @@ dist_deps = deps_list(
     "pyzmq",
     "termcolor",
     "tabulate",
+    "tqdm",
     "types-PyYAML",
     "types-termcolor",
     "types-tabulate",
