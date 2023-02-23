@@ -23,7 +23,6 @@ import os
 import pprint
 from abc import ABC, abstractmethod
 from collections import defaultdict
-
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import numpy as np
@@ -216,7 +215,6 @@ class MergeDataset(DatasetBase):
         self._dataset_info.type = datasets[0].dataset_info.type
         self._dataset_info.name = "merge_" + "_".join([dataset.dataset_info.name for dataset in self.datasets])
 
-
     def _categories(self) -> DatasetCategories:
         return get_merged_categories(
             *(dataset.dataflow.categories for dataset in self.datasets if dataset.dataflow.categories is not None)
@@ -323,19 +321,21 @@ class MergeDataset(DatasetBase):
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
 
-    def get_ids_by_split(self) -> Dict[str,List[str]]:
+    def get_ids_by_split(self) -> Dict[str, List[str]]:
         """
         To reproduce a dataset split at a later stage, get a summary of the by having a dict of list with split and
         the image ids contained in the split.
 
         :return: E.g. `{"train": ['ab','ac'],"val":['bc','bd']}`
         """
-        if isinstance(self._dataflow_builder,SplitDataFlow):
-            return {key: [img.image_id for img in self._dataflow_builder.split_cache.get(key,[])]
-                    for key in ("train","val","test")}
+        if isinstance(self._dataflow_builder, SplitDataFlow):
+            return {
+                key: [img.image_id for img in self._dataflow_builder.split_cache.get(key, [])]
+                for key in ("train", "val", "test")
+            }
         return {"train": [], "val": [], "test": []}
 
-    def create_split_by_id(self, split_dict, **dataflow_build_kwargs) -> None:
+    def create_split_by_id(self, split_dict: Mapping[str,Sequence[str]], **dataflow_build_kwargs: Union[str, int]) -> None:
         """
         Reproducing a dataset split from a dataset or a dataflow by a dict of list of image ids.
 
@@ -353,21 +353,20 @@ class MergeDataset(DatasetBase):
         :param split_dict: e.g. `{"train":['ab','ac',...],"val":['bc'],"test":[]}`
         """
 
-        if set(split_dict.keys())!={"train","val","test"}:
+        if set(split_dict.keys()) != {"train", "val", "test"}:
             raise KeyError("split_dict must contain keys for 'train', 'val' and 'test'")
         ann_id_to_split = {ann_id: "train" for ann_id in split_dict["train"]}
         ann_id_to_split.update({ann_id: "val" for ann_id in split_dict["val"]})
         ann_id_to_split.update({ann_id: "test" for ann_id in split_dict["test"]})
         self.buffer_datasets(**dataflow_build_kwargs)
         split_defaultdict = defaultdict(list)
-        for image in self.datapoint_list:
+        for image in self.datapoint_list:  # type: ignore
             split_defaultdict[ann_id_to_split[image.image_id]].append(image)
         train_dataset = split_defaultdict["train"]
         val_dataset = split_defaultdict["val"]
         test_dataset = split_defaultdict["test"]
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
-
 
 
 class CustomDataset(DatasetBase):
