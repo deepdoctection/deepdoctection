@@ -24,7 +24,7 @@ from copy import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from huggingface_hub import cached_download, hf_hub_url  # type: ignore
+from huggingface_hub import cached_download, hf_hub_url
 from tabulate import tabulate
 from termcolor import colored
 
@@ -857,16 +857,19 @@ class ModelDownloadManager:
     @staticmethod
     def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str, force_download: bool = False) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
-        use_auth_token = os.environ.get("HF_CREDENTIALS")
+        token = os.environ.get("HF_CREDENTIALS")
         f_path = cached_download(
             url,
             cache_dir=cache_directory,
             force_filename=file_name,
             force_download=force_download,
-            use_auth_token=use_auth_token,
+            token=token,
             legacy_cache_layout=True,
         )
-        stat_info = os.stat(f_path)
-        size = stat_info.st_size
-        assert size > 0, f"Downloaded an empty file from {url}!"
-        return size
+        if f_path:
+            stat_info = os.stat(f_path)
+            size = stat_info.st_size
+
+            assert size > 0, f"Downloaded an empty file from {url}!"
+            return size
+        raise TypeError("Returned value from cached_download cannot be Null")
