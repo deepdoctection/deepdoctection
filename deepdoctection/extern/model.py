@@ -24,7 +24,7 @@ from copy import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from huggingface_hub import cached_download, hf_hub_url  # type: ignore
+from huggingface_hub import cached_download, hf_hub_url
 from tabulate import tabulate
 from termcolor import colored
 
@@ -866,8 +866,10 @@ class ModelDownloadManager:
             token=token,
             legacy_cache_layout=True,
         )
-        stat_info = os.stat(f_path)
-        size = stat_info.st_size
+        if f_path:
+            stat_info = os.stat(f_path)
+            size = stat_info.st_size
 
-        assert size > 0, f"Downloaded an empty file from {url}!"
-        return size
+            assert size > 0, f"Downloaded an empty file from {url}!"
+            return size
+        raise TypeError("Returned value from cached_download cannot be Null")
