@@ -29,6 +29,7 @@ nav:
         - Datasets: ./tutorials/datasets.md
         - Customized parsing: ./tutorials/layout_parsing_structure.md
         - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
+        - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
     - Notes:
         - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
         - Various topics around LayoutLMv1 - part II: ./tutorials/layoutlm_various_topics_pt2.md
