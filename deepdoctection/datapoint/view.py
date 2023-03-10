@@ -516,6 +516,7 @@ class Page(Image):
 
         category_names_list: List[Union[str, None]] = []
         box_stack = []
+        cells_found = False
 
         if show_layouts:
             for item in self.layouts:
@@ -529,6 +530,7 @@ class Page(Image):
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name != LayoutType.cell:
+                            cells_found = True
                             box_stack.append(cell.bbox)
                             category_names_list.append(None)
                 if show_table_structure:
@@ -540,6 +542,12 @@ class Page(Image):
                     for col in cols:
                         box_stack.append(col.bbox)
                         category_names_list.append(None)
+
+        if show_cells and not cells_found:
+            for ann in self.annotations:
+                if isinstance(ann, Cell):
+                    box_stack.append(ann.bbox)
+                    category_names_list.append(None)
 
         if show_words:
             all_words = []
