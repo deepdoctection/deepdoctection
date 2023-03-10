@@ -24,7 +24,7 @@ from copy import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from huggingface_hub import cached_download, hf_hub_url
+from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
 
