@@ -98,6 +98,7 @@ _SUB_CATEGORIES = {
         CellType.column_number: [],
         CellType.row_span: [],
         CellType.column_span: [],
+        CellType.spanning: [CellType.spanning, LayoutType.cell],
     },
     TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
     CellType.header: {
@@ -105,12 +106,14 @@ _SUB_CATEGORIES = {
         CellType.column_number: [],
         CellType.row_span: [],
         CellType.column_span: [],
+        CellType.spanning: [CellType.spanning, LayoutType.cell],
     },
     CellType.body: {
         CellType.row_number: [],
         CellType.column_number: [],
         CellType.row_span: [],
         CellType.column_span: [],
+        CellType.spanning: [CellType.spanning, LayoutType.cell],
     },
 }
 
@@ -176,6 +179,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         use_multi_proc_strict = to_bool(kwargs.get("use_multi_proc_strict", False))
         fake_score = kwargs.get("fake_score", False)
         build_mode = kwargs.get("build_mode")
+        pubtables_like = kwargs.get("pubtables_like", False)
 
         if build_mode and not load_image:
             logger.info("When 'build_mode' is set to True will reset 'load_image' to True")
@@ -212,6 +216,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
             rows_and_cols=rows_and_cols,
             dd_pipe_like=False,
             is_fintabnet=True,
+            pubtables_like=pubtables_like,
         )
         if use_multi_proc:
             df = MultiProcessMapData(

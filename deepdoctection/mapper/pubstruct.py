@@ -156,7 +156,7 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
     return tiling
 
 
-def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, str]) -> Image:
+def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, str], pubtables_like: bool) -> Image:
 
     item_number = CellType.row_number if item_type == LayoutType.row else CellType.column_number
     item_span = CellType.row_span if item_type == LayoutType.row else CellType.column_span
@@ -170,10 +170,11 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         number_of_items = int(category_item.category_id)
 
     cells = image.get_annotation(category_names=LayoutType.cell)
+    table: ImageAnnotation
 
-    for item in range(1, number_of_items + 1):
+    for item_num in range(1, number_of_items + 1):
         cell_item = list(
-            filter(lambda x: x.get_sub_category(item_number).category_id == str(item), cells)  # pylint: disable=W0640
+            filter(lambda x: x.get_sub_category(item_number).category_id == str(item_num), cells)  # pylint: disable=W0640
         )
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
@@ -185,6 +186,21 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
 
             lry = max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
 
+            if pubtables_like:
+                tables = image.get_annotation(category_names=LayoutType.table)
+                if not tables:
+                    raise ValueError("pubtables_like = True requires table")
+                table = tables[0]
+
+                if item_type == LayoutType.row:
+                    if table.bounding_box:
+                        ulx = table.bounding_box.ulx + 1.0
+                        lrx = table.bounding_box.lrx - 1.0
+                else:
+                    if table.bounding_box:
+                        uly = table.bounding_box.uly + 1.0
+                        lry = table.bounding_box.lry - 1.0
+
             item_ann = ImageAnnotation(
                 category_id=categories_name_as_key[TableType.item],
                 category_name=TableType.item,
@@ -193,6 +209,52 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
             item_sub_ann = CategoryAnnotation(category_name=item_type)
             item_ann.dump_sub_category(TableType.item, item_sub_ann, image.image_id)
             image.dump(item_ann)
+
+    if pubtables_like:  # pubtables_like:
+        items = image.get_annotation(category_names=TableType.item)
+        item_type_anns = [ann for ann in items if ann.get_sub_category(TableType.item).category_name == item_type]
+        item_type_anns.sort(
+            key=lambda x: x.bounding_box.cx  # type: ignore
+            if item_type == LayoutType.column
+            else x.bounding_box.cy  # type: ignore
+        )
+        if table.bounding_box:
+            tmp_item_xy = table.bounding_box.uly + 1.0 if item_type == LayoutType.row else table.bounding_box.ulx + 1.0
+        for idx, item in enumerate(item_type_anns):
+            with MappingContextManager(
+                dp_name=image.file_name,
+                filter_level="bounding box",
+                image_annotation={"category_name": item.category_name, "annotation_id": item.annotation_id},
+            ):
+
+                box = item.bounding_box
+                if box:
+                    tmp_next_item_xy = 0.
+                    if idx != len(item_type_anns) - 1:
+                        next_box = item_type_anns[idx + 1].bounding_box
+                        if next_box:
+                            tmp_next_item_xy = (
+                                (box.lry + next_box.uly) / 2 if item_type == LayoutType.row else
+                                (box.lrx + next_box.ulx) / 2
+                            )
+                    else:
+                        if table.bounding_box:
+                            tmp_next_item_xy = (
+                                table.bounding_box.lry - 1.0 if item_type == LayoutType.row else
+                                table.bounding_box.lrx - 1.0
+                            )
+
+                    new_embedding_box = BoundingBox(
+                        ulx=box.ulx if item_type == LayoutType.row else tmp_item_xy,
+                        uly=tmp_item_xy if item_type == LayoutType.row else box.uly,
+                        lrx=box.lrx if item_type == LayoutType.row else tmp_next_item_xy,
+                        lry=tmp_next_item_xy if item_type == LayoutType.row else box.lry,
+                        absolute_coords=True,
+                    )
+                    item.bounding_box = new_embedding_box
+
+                    tmp_item_xy = tmp_next_item_xy
+
     return image
 
 
@@ -277,6 +339,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     rows_and_cols: bool,
     dd_pipe_like: bool,
     is_fintabnet: bool,
+    pubtables_like: bool,
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
@@ -284,15 +347,16 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
     :param dp: A datapoint in serialized coco format.
     :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
-    :param load_image: If 'True' it will load image to `Image.image`
+    :param load_image: If `True` it will load image to `Image.image`
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
                        will be added.
-    :param rows_and_cols: If set to True, synthetic "ITEM" ImageAnnotations will be added.  Each item has a
+    :param rows_and_cols: If set to `True`, synthetic "ITEM" ImageAnnotations will be added.  Each item has a
                           sub-category "row_col" that is equal to "ROW" or "COL".
     :param dd_pipe_like: This will generate an image identical to the output of the dd analyzer (e.g. table and words
                          annotations as well as sub annotations and relationships will be generated)
-    :param is_fintabnet: Set True, if this mapping is used for generating fintabnet datapoints.
-
+    :param is_fintabnet: Set `True`, if this mapping is used for generating fintabnet datapoints.
+    :param pubtables_like: Set `True`, the area covering the table will be tiled with non overlapping rows and columns
+                           without leaving empty space
     :return: Image
     """
 
@@ -388,6 +452,21 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                     CategoryAnnotation(category_name=CellType.column_span, category_id=str(col_span)),
                     image.image_id,
                 )
+                if (
+                    int(cell_ann.get_sub_category(CellType.row_span).category_id) > 1
+                    or int(cell_ann.get_sub_category(CellType.column_span).category_id) > 1
+                ):
+                    cell_ann.dump_sub_category(
+                        CellType.spanning,
+                        CategoryAnnotation(category_name=CellType.spanning),
+                        image.image_id,
+                    )
+                else:
+                    cell_ann.dump_sub_category(
+                        CellType.spanning,
+                        CategoryAnnotation(category_name=LayoutType.cell),
+                        image.image_id,
+                    )
 
                 max_rs = max(max_rs, row_span)  # type: ignore
                 max_cs = max(max_cs, col_span)  # type: ignore
@@ -448,11 +527,12 @@ def pub_to_image_uncur(  # pylint: disable=R0914
         image.summary = summary_ann
 
         if rows_and_cols or dd_pipe_like:
-            image = _add_items(image, LayoutType.row, categories_name_as_key)
-            image = _add_items(image, LayoutType.column, categories_name_as_key)
+            image = _add_items(image, LayoutType.row, categories_name_as_key, pubtables_like)
+            image = _add_items(image, LayoutType.column, categories_name_as_key, pubtables_like)
 
         if dd_pipe_like:
             image = embedding_in_image(image, html, categories_name_as_key)
+
     if mapping_context.context_error:
         return None
     return image

@@ -177,7 +177,7 @@ docs_deps = deps_list(
 test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("click", "black", "isort", "pylint", "mypy","wandb")
+dev_deps = deps_list("click", "black", "isort", "pylint", "mypy", "wandb")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.
