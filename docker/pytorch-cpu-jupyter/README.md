@@ -7,7 +7,7 @@ run sample code in the container.
 From repo folder create an image
 
 ```
-docker build -t dd:<your_tag> -f docker/pytorch-cpu-jupyter
+docker build -t dd:<your-tag> -f docker/pytorch-cpu-jupyter/Dockerfile .
 ``` 
 
 Then start running a container. Specify a host directory if you want to have some files mounted into the container
