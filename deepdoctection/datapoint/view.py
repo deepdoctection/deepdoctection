@@ -24,7 +24,7 @@ import json
 from copy import copy
 from itertools import chain
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check, List, Tuple
 
 import cv2
 import numpy as np
@@ -170,6 +170,10 @@ class Layout(ImageAnnotationBaseView):
     def get_attribute_names(self) -> Set[str]:
         return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.reading_order})
 
+    def __len__(self):
+        """len of text counted by number of characters"""
+        return len(self.text)
+
 
 class Cell(Layout):
     """
@@ -247,6 +251,21 @@ class Table(Layout):
 
     def get_attribute_names(self) -> Set[str]:
         return set(TableType).union(super().get_attribute_names()).union({"cells", "rows", "columns", "html"})
+
+    @property
+    def csv(self) -> List[List[str]]:
+        cells = self.cells
+        table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]
+        for cell in cells:
+            table_list[cell.row_number-1][cell.column_number-1]= cell.text
+        return  table_list
+
+    def __str__(self):
+        out = " ".join([" ".join(row + ["\n"] ) for row in self.csv])
+        return out
+
+
+
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -418,6 +437,8 @@ class Page(Image):
             img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id")  # type: ignore
         )
         page.image_orig = image_orig
+        page.page_number = image_orig.page_number
+        page.document_id = image_orig.document_id
         if image_orig.image is not None:
             page.image = image_orig.image  # pass image explicitly so
         page._image_id = img_kwargs.get("_image_id")
@@ -468,6 +489,18 @@ class Page(Image):
             block_attr = "text" if block.category_name != LayoutType.word else "characters"
             text += f"{linebreak}{getattr(block, block_attr)}"
         return text
+
+    @property
+    def chunks(self)->List[Tuple[str, str,str,str,str,str]]:
+        block_with_order = self._order("layouts")
+        for table in self.tables:
+            if table.reading_order:
+                block_with_order.append(table)
+        all_chunks = []
+        for chunk in block_with_order:
+            all_chunks.append((self.document_id, self.image_id, chunk.annotation_id,chunk.reading_order,chunk.category_name,chunk.text))
+        return all_chunks
+
 
     @property
     def text_no_line_break(self) -> str:
