@@ -77,6 +77,8 @@ class Image:
 
     file_name: str
     location: str = field(default="")
+    document_id: str = field(default="", init=False, repr=True)
+    page_number: int = field(default=0, init=False, repr=False)
     external_id: Optional[Union[str, int]] = field(default=None, repr=False)
     _image_id: Optional[str] = field(default=None, init=False, repr=True)
     _image: Optional[ImageType] = field(default=None, init=False, repr=False)
@@ -95,6 +97,7 @@ class Image:
                 self.image_id = get_uuid(external_id)
         else:
             self.image_id = get_uuid(str(self.location), self.file_name)
+        self.document_id = self.image_id
 
     @property
     def image_id(self) -> str:
@@ -513,6 +516,7 @@ class Image:
         image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
         image._image_id = kwargs.get("_image_id")
         _image = kwargs.get("_image")
+        image.page_number = int(kwargs.get("page_number", 0))
         if _image is not None:
             image.image = _image
         if box_kwargs := kwargs.get("_bbox"):
