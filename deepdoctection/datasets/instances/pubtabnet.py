@@ -182,7 +182,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
             rows_and_cols=rows_and_cols,
             dd_pipe_like=dd_pipe_like,
             is_fintabnet=False,
-            pubtables_like=False
+            pubtables_like=False,
         )
 
         df = MapData(df, pub_mapper)

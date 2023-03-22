@@ -29,10 +29,10 @@ from jsonlines import Reader, Writer
 
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict, Pathlike
+from ..utils.identifier import get_uuid_from_str
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import FileExtensionError, is_file_extension
-from ..utils.identifier import get_uuid_from_str
 from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
@@ -525,11 +525,16 @@ class SerializerPdfDoc:
         prefix, suffix = os.path.splitext(file_name)
         df: DataFlow
         df = CustomDataFromIterable(PDFStreamer(path=path), max_datapoints=max_datapoints)
-        df = MapData(df, lambda dp: {"path": path,
-                                     "file_name": prefix + f"_{dp[1]}" + suffix,
-                                     "pdf_bytes": dp[0],
-                                     "page_number": dp[1],
-                                     "document_id": get_uuid_from_str(prefix)})
+        df = MapData(
+            df,
+            lambda dp: {
+                "path": path,
+                "file_name": prefix + f"_{dp[1]}" + suffix,
+                "pdf_bytes": dp[0],
+                "page_number": dp[1],
+                "document_id": get_uuid_from_str(prefix),
+            },
+        )
         return df
 
     @staticmethod

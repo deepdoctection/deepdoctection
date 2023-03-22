@@ -51,10 +51,10 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
         _, file_name = os.path.split(dp)
         location = dp
         page_number = 0
-        document = None
+        document_id = None
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name", ""))
-        page_number = int(dp.get("page_number",0))
+        page_number = int(dp.get("page_number", 0))
         location = str(dp.get("location", ""))
         document_id = dp.get("document_id")
         if location == "":
