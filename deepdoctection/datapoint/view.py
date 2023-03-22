@@ -24,7 +24,7 @@ import json
 from copy import copy
 from itertools import chain
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Type, Union, no_type_check, List, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -257,15 +257,12 @@ class Table(Layout):
         cells = self.cells
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]
         for cell in cells:
-            table_list[cell.row_number-1][cell.column_number-1]= cell.text
-        return  table_list
+            table_list[cell.row_number - 1][cell.column_number - 1] = cell.text
+        return table_list
 
     def __str__(self):
-        out = " ".join([" ".join(row + ["\n"] ) for row in self.csv])
+        out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out
-
-
-
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -491,16 +488,24 @@ class Page(Image):
         return text
 
     @property
-    def chunks(self)->List[Tuple[str, str,str,str,str,str]]:
+    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:
         block_with_order = self._order("layouts")
         for table in self.tables:
             if table.reading_order:
                 block_with_order.append(table)
         all_chunks = []
         for chunk in block_with_order:
-            all_chunks.append((self.document_id, self.image_id, chunk.annotation_id,chunk.reading_order,chunk.category_name,chunk.text))
+            all_chunks.append(
+                (
+                    self.document_id,
+                    self.image_id,
+                    chunk.annotation_id,
+                    chunk.reading_order,
+                    chunk.category_name,
+                    chunk.text,
+                )
+            )
         return all_chunks
-
 
     @property
     def text_no_line_break(self) -> str:
