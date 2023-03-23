@@ -50,9 +50,13 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
     if isinstance(dp, str):
         _, file_name = os.path.split(dp)
         location = dp
+        page_number = 0
+        document_id = None
     elif isinstance(dp, dict):
         file_name = str(dp.get("file_name", ""))
+        page_number = int(dp.get("page_number", 0))
         location = str(dp.get("location", ""))
+        document_id = dp.get("document_id")
         if location == "":
             location = str(dp.get("path", ""))
     else:
@@ -60,6 +64,9 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
 
     with MappingContextManager(dp_name=file_name) as mapping_context:
         dp_image = Image(file_name=file_name, location=location)
+        dp_image.page_number = page_number
+        if document_id:
+            dp_image.document_id = document_id
         if file_name is not None:
             if is_file_extension(file_name, ".pdf") and isinstance(dp, dict):
                 dp_image.pdf_bytes = dp.get("pdf_bytes")
