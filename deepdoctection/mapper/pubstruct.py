@@ -175,8 +175,8 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
     for item_num in range(1, number_of_items + 1):
         cell_item = list(
             filter(
-                lambda x: x.get_sub_category(item_number).category_id == str(item_num), cells
-            )  # pylint: disable=W0640
+                lambda x: x.get_sub_category(item_number).category_id == str(item_num), cells  # pylint: disable=W0640
+            )
         )
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
