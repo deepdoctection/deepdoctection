@@ -170,7 +170,7 @@ class Layout(ImageAnnotationBaseView):
     def get_attribute_names(self) -> Set[str]:
         return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.reading_order})
 
-    def __len__(self):
+    def __len__(self) -> int:
         """len of text counted by number of characters"""
         return len(self.text)
 
@@ -254,13 +254,17 @@ class Table(Layout):
 
     @property
     def csv(self) -> List[List[str]]:
+        """Returns a csv-style representation of a table as list of lists of string. Cell content of cell with higher
+        row or column spans will be shown at the upper left cell tile. All other tiles covered by the cell will be left
+        as blank
+        """
         cells = self.cells
-        table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]
+        table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
-            table_list[cell.row_number - 1][cell.column_number - 1] = cell.text
+            table_list[cell.row_number - 1][cell.column_number - 1] = cell.text  # type: ignore
         return table_list
 
-    def __str__(self):
+    def __str__(self) -> str:
         out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out
 
@@ -488,7 +492,17 @@ class Page(Image):
         return text
 
     @property
-    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:
+    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:  # type: ignore
+        """
+        :return: Returns a "chunk" of a layout element or a table as 6-tuple containing
+
+                    - document id
+                    - image id
+                    - reading order
+                    - category name
+                    - text string
+
+        """
         block_with_order = self._order("layouts")
         for table in self.tables:
             if table.reading_order:
