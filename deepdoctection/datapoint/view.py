@@ -492,7 +492,7 @@ class Page(Image):
         return text
 
     @property
-    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:  # type: ignore
+    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:
         """
         :return: Returns a "chunk" of a layout element or a table as 6-tuple containing
 
@@ -519,7 +519,7 @@ class Page(Image):
                     chunk.text,
                 )
             )
-        return all_chunks
+        return all_chunks  # type: ignore
 
     @property
     def text_no_line_break(self) -> str:
