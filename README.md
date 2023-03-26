@@ -33,8 +33,9 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Deskewing and rotating images with jdeskew. 
  - Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
    provided by the [**Transformer**](https://github.com/huggingface/transformers) library. 
-   (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!) 
- - [**new!**] Table detection and table structure recognition with 
+   (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!). Check the notebook repo or 
+   the documentation on how to train a model on your custom task or how to setup a pipeline.
+ - Table detection and table structure recognition with 
    [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
    [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
    
