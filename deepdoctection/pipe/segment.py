@@ -735,20 +735,22 @@ class TableSegmentationService(PipelineComponent):
                 max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
                 # TODO: the summaries should be sub categories of the underlying ann
                 self.dp_manager.set_summary_annotation(
-                TableType.number_of_rows, TableType.number_of_rows, number_of_rows,
-                annotation_id=table.annotation_id
+                    TableType.number_of_rows,
+                    TableType.number_of_rows,
+                    number_of_rows,
+                    annotation_id=table.annotation_id,
                 )
                 self.dp_manager.set_summary_annotation(
-                TableType.number_of_columns,
-                TableType.number_of_columns,
-                number_of_cols,
-                annotation_id=table.annotation_id,
+                    TableType.number_of_columns,
+                    TableType.number_of_columns,
+                    number_of_cols,
+                    annotation_id=table.annotation_id,
                 )
                 self.dp_manager.set_summary_annotation(
-                TableType.max_row_span, TableType.max_row_span, max_row_span, annotation_id=table.annotation_id
+                    TableType.max_row_span, TableType.max_row_span, max_row_span, annotation_id=table.annotation_id
                 )
                 self.dp_manager.set_summary_annotation(
-                TableType.max_col_span, TableType.max_col_span, max_col_span, annotation_id=table.annotation_id
+                    TableType.max_col_span, TableType.max_col_span, max_col_span, annotation_id=table.annotation_id
                 )
 
     def clone(self) -> PipelineComponent:

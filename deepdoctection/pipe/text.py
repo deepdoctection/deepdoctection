@@ -284,10 +284,11 @@ def _reading_columns(
             ):
                 reading_blocks.append((idx, ann.annotation_id))
                 # update the top and right with the new line added.
-                col["left"] = min(rel_coords_box.ulx, col["left"])
-                col["top"] = min(rel_coords_box.uly, col["top"])
-                col["right"] = max(rel_coords_box.lrx, col["right"])
-                col["bottom"] = max(rel_coords_box.lry, col["bottom"])
+                if ann.category_name != LayoutType.table:
+                    col["left"] = min(rel_coords_box.ulx, col["left"])
+                    col["top"] = min(rel_coords_box.uly, col["top"])
+                    col["right"] = max(rel_coords_box.lrx, col["right"])
+                    col["bottom"] = max(rel_coords_box.lry, col["bottom"])
                 column_found = True
                 break
 
@@ -309,7 +310,12 @@ def _reading_columns(
         col["id"] = idx
         component_found = False
         for comp in connected_components:
-            if comp["top"] < col["top"] < comp["bottom"] or comp["top"] < col["bottom"] < comp["bottom"]:
+            if (
+                comp["top"] < col["top"] < comp["bottom"]
+                or comp["top"] < col["bottom"] < comp["bottom"]
+                or col["top"] < comp["top"] < col["bottom"]
+                or col["top"] < comp["bottom"] < col["bottom"]
+            ):
                 comp["top"] = min(comp["top"], col["top"])
                 comp["bottom"] = max(comp["bottom"], col["bottom"])
                 comp["left"] = col["left"]
@@ -321,16 +327,20 @@ def _reading_columns(
                 {"top": col["top"], "bottom": col["bottom"], "left": col["left"], "column": [col]}
             )
 
-    # next, sorting columns in connected components by increasing x-value
+    # next, sorting columns in connected components by increasing x-value. In order to be tolerant to nearby values
+    # we are rounding values we want to sort
     for comp in connected_components:
-        comp["column"].sort(key=lambda x: x["left"])
+        for col in comp["column"]:
+            col["left"] = round(col["left"], 2)
+            col["top"] = round(col["top"], 2)
+        comp["column"].sort(key=lambda x: (x["left"], x["top"]))
 
     # finally, sorting connected components by increasing y-value
     connected_components.sort(key=lambda x: x["top"])
     columns = list(chain(*[comp["column"] for comp in connected_components]))
 
     # old to new mapping
-    columns_dict = {k: col["id"] for k, col in enumerate(columns)}
+    columns_dict = {col["id"]: k for k, col in enumerate(columns)}
     _blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]
     _blocks.sort(key=lambda x: x[0])
     reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(_blocks)]
