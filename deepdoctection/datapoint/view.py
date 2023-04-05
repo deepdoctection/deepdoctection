@@ -665,7 +665,10 @@ class Page(Image):
         elif path is None:
             path = Path(self.image_orig.location)
         suffix = path.suffix
-        path_json = path.as_posix().replace(suffix, ".json")
+        if suffix:
+            path_json = path.as_posix().replace(suffix, ".json")
+        else:
+            path_json = path.as_posix() + ".json"
         if highest_hierarchy_only:
             self.image_orig.remove_image_from_lower_hierachy()
         export_dict = self.image_orig.as_dict()
