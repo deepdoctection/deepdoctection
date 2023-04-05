@@ -240,8 +240,9 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
 def _reading_columns(
     dp: Image,
     anns: List[ImageAnnotation],
-    starting_point_tolerance: float = 0.01,
-    height_tolerance: float = 3.0,
+    starting_point_tolerance: float,
+    height_tolerance: float,
+    ignore_category_when_building_column_blocks: List[LayoutType],
 ) -> List[Tuple[int, str]]:
     reading_blocks = []
     columns: List[Dict[str, float]] = []
@@ -284,7 +285,7 @@ def _reading_columns(
             ):
                 reading_blocks.append((idx, ann.annotation_id))
                 # update the top and right with the new line added.
-                if ann.category_name != LayoutType.table:
+                if ann.category_name not in ignore_category_when_building_column_blocks:
                     col["left"] = min(rel_coords_box.ulx, col["left"])
                     col["top"] = min(rel_coords_box.uly, col["top"])
                     col["right"] = max(rel_coords_box.lrx, col["right"])
@@ -416,6 +417,9 @@ class TextOrderService(PipelineComponent):
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
         self._text_containers_to_text_block = text_containers_to_text_block
+        self.starting_point_tolerance = 0.05
+        self.height_tolerance = 2.0
+        self.ignore_category_when_building_column_blocks = [LayoutType.table]
         self._init_sanity_checks()
         super().__init__("text_order")
 
@@ -438,7 +442,10 @@ class TextOrderService(PipelineComponent):
         # (number_text_block_anns_orig >0) or if the text container is not a word. Otherwise, we will have to skip that
         # part
         if self._text_container != LayoutType.word or number_floating_text_block_anns_orig:
-            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns, 0.05, 2.0)
+            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns,
+                                                      self.starting_point_tolerance ,
+                                                      self.height_tolerance ,
+                                                      self.ignore_category_when_building_column_blocks)
 
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(
