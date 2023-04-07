@@ -581,7 +581,7 @@ class Page(Image):
                 category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
-                        if cell.category_name != LayoutType.cell:
+                        if cell.category_name == LayoutType.cell:
                             cells_found = True
                             box_stack.append(cell.bbox)
                             category_names_list.append(None)
@@ -597,7 +597,7 @@ class Page(Image):
 
         if show_cells and not cells_found:
             for ann in self.annotations:
-                if isinstance(ann, Cell):
+                if isinstance(ann, Cell) and ann.active:
                     box_stack.append(ann.bbox)
                     category_names_list.append(None)
 
@@ -665,7 +665,10 @@ class Page(Image):
         elif path is None:
             path = Path(self.image_orig.location)
         suffix = path.suffix
-        path_json = path.as_posix().replace(suffix, ".json")
+        if suffix:
+            path_json = path.as_posix().replace(suffix, ".json")
+        else:
+            path_json = path.as_posix() + ".json"
         if highest_hierarchy_only:
             self.image_orig.remove_image_from_lower_hierachy()
         export_dict = self.image_orig.as_dict()

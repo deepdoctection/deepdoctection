@@ -240,8 +240,9 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
 def _reading_columns(
     dp: Image,
     anns: List[ImageAnnotation],
-    starting_point_tolerance: float = 0.01,
-    height_tolerance: float = 3.0,
+    starting_point_tolerance: float,
+    height_tolerance: float,
+    ignore_category_when_building_column_blocks: List[LayoutType],
 ) -> List[Tuple[int, str]]:
     reading_blocks = []
     columns: List[Dict[str, float]] = []
@@ -284,10 +285,11 @@ def _reading_columns(
             ):
                 reading_blocks.append((idx, ann.annotation_id))
                 # update the top and right with the new line added.
-                col["left"] = min(rel_coords_box.ulx, col["left"])
-                col["top"] = min(rel_coords_box.uly, col["top"])
-                col["right"] = max(rel_coords_box.lrx, col["right"])
-                col["bottom"] = max(rel_coords_box.lry, col["bottom"])
+                if ann.category_name not in ignore_category_when_building_column_blocks:
+                    col["left"] = min(rel_coords_box.ulx, col["left"])
+                    col["top"] = min(rel_coords_box.uly, col["top"])
+                    col["right"] = max(rel_coords_box.lrx, col["right"])
+                    col["bottom"] = max(rel_coords_box.lry, col["bottom"])
                 column_found = True
                 break
 
@@ -309,7 +311,12 @@ def _reading_columns(
         col["id"] = idx
         component_found = False
         for comp in connected_components:
-            if comp["top"] < col["top"] < comp["bottom"] or comp["top"] < col["bottom"] < comp["bottom"]:
+            if (
+                comp["top"] < col["top"] < comp["bottom"]
+                or comp["top"] < col["bottom"] < comp["bottom"]
+                or col["top"] < comp["top"] < col["bottom"]
+                or col["top"] < comp["bottom"] < col["bottom"]
+            ):
                 comp["top"] = min(comp["top"], col["top"])
                 comp["bottom"] = max(comp["bottom"], col["bottom"])
                 comp["left"] = col["left"]
@@ -321,16 +328,20 @@ def _reading_columns(
                 {"top": col["top"], "bottom": col["bottom"], "left": col["left"], "column": [col]}
             )
 
-    # next, sorting columns in connected components by increasing x-value
+    # next, sorting columns in connected components by increasing x-value. In order to be tolerant to nearby values
+    # we are rounding values we want to sort
     for comp in connected_components:
-        comp["column"].sort(key=lambda x: x["left"])
+        for col in comp["column"]:
+            col["left"] = round(col["left"], 2)
+            col["top"] = round(col["top"], 2)
+        comp["column"].sort(key=lambda x: (x["left"], x["top"]))
 
     # finally, sorting connected components by increasing y-value
     connected_components.sort(key=lambda x: x["top"])
     columns = list(chain(*[comp["column"] for comp in connected_components]))
 
     # old to new mapping
-    columns_dict = {k: col["id"] for k, col in enumerate(columns)}
+    columns_dict = {col["id"]: k for k, col in enumerate(columns)}
     _blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]
     _blocks.sort(key=lambda x: x[0])
     reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(_blocks)]
@@ -406,6 +417,9 @@ class TextOrderService(PipelineComponent):
         self._floating_text_block_names = floating_text_block_names
         self._text_block_names = text_block_names
         self._text_containers_to_text_block = text_containers_to_text_block
+        self.starting_point_tolerance = 0.05
+        self.height_tolerance = 2.0
+        self.ignore_category_when_building_column_blocks = [LayoutType.table]
         self._init_sanity_checks()
         super().__init__("text_order")
 
@@ -428,7 +442,10 @@ class TextOrderService(PipelineComponent):
         # (number_text_block_anns_orig >0) or if the text container is not a word. Otherwise, we will have to skip that
         # part
         if self._text_container != LayoutType.word or number_floating_text_block_anns_orig:
-            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns, 0.05, 2.0)
+            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns,
+                                                      self.starting_point_tolerance ,
+                                                      self.height_tolerance ,
+                                                      self.ignore_category_when_building_column_blocks)
 
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(

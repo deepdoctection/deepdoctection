@@ -459,6 +459,15 @@ class TableSegmentationRefinementService(PipelineComponent):
             max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
             max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
             # TODO: the summaries should be sub categories of the underlying ann
+            if TableType.number_of_rows in table.sub_categories:
+                table.remove_sub_category(TableType.number_of_rows)
+            if TableType.number_of_columns in table.sub_categories:
+                table.remove_sub_category(TableType.number_of_columns)
+            if TableType.max_row_span in table.sub_categories:
+                table.remove_sub_category(TableType.max_row_span)
+            if TableType.max_col_span in table.sub_categories:
+                table.remove_sub_category(TableType.max_col_span)
+
             self.dp_manager.set_summary_annotation(
                 TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id
             )
