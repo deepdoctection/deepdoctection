@@ -442,10 +442,13 @@ class TextOrderService(PipelineComponent):
         # (number_text_block_anns_orig >0) or if the text container is not a word. Otherwise, we will have to skip that
         # part
         if self._text_container != LayoutType.word or number_floating_text_block_anns_orig:
-            raw_reading_order_list = _reading_columns(dp, floating_text_block_anns,
-                                                      self.starting_point_tolerance ,
-                                                      self.height_tolerance ,
-                                                      self.ignore_category_when_building_column_blocks)
+            raw_reading_order_list = _reading_columns(
+                dp,
+                floating_text_block_anns,
+                self.starting_point_tolerance,
+                self.height_tolerance,
+                self.ignore_category_when_building_column_blocks,
+            )
 
             for raw_reading_order in raw_reading_order_list:
                 self.dp_manager.set_category_annotation(

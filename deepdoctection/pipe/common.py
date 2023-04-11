@@ -19,7 +19,7 @@
 Module for common pipeline components
 """
 from copy import deepcopy
-from typing import List, Literal, Optional, Sequence, Union
+from typing import List, Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
@@ -28,6 +28,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
+from ..mapper.misc import to_image
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import detectron2_available, pytorch_available, tf_available
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
@@ -180,6 +181,7 @@ class PageParsingService:
                                  text containers themselves). This is only necessary, when residual text_container (e.g.
                                  words that have not been assigned to any text block) should be displayed in `page.text`
         """
+        self.name = "page_parser"
         if isinstance(top_level_text_block_names, (str, ObjectTypes)):
             top_level_text_block_names = [top_level_text_block_names]
         if isinstance(text_block_names, (str, ObjectTypes)):
@@ -217,6 +219,19 @@ class PageParsingService:
             LayoutType.line,
         ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
 
+    @staticmethod
+    def get_meta_annotation() -> JsonDict:
+        """
+        meta annotation. We do not generate any new annotations here
+        """
+        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+
+    def clone(self) -> "PageParsingService":
+        """clone"""
+        return self.__class__(
+            deepcopy(self._text_container), deepcopy(self._top_level_text_block_names), deepcopy(self._text_block_names)
+        )
+
 
 @pipeline_component_registry.register("AnnotationNmsService")
 class AnnotationNmsService(PipelineComponent):
@@ -252,4 +267,43 @@ class AnnotationNmsService(PipelineComponent):
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
     def get_meta_annotation(self) -> JsonDict:
+        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+
+
+@pipeline_component_registry.register("ImageParsingService")
+class ImageParsingService:
+    """
+    A super light service that calls `to_image` when processing datapoints. Might be useful if you build a pipeline that
+    is not derived from `DoctectionPipe`.
+    """
+
+    def __init__(self, dpi: Optional[int] = None):
+        """
+        :param dpi: dpi resolution when converting PDFs into pixel values
+        """
+        self.name = "image"
+        self.dpi = dpi
+
+    def pass_datapoint(self, dp: Union[str, Mapping[str, Union[str, bytes]]]) -> Optional[Image]:
+        """pass a datapoint"""
+        return to_image(dp, self.dpi)
+
+    def predict_dataflow(self, df: DataFlow) -> DataFlow:
+        """
+        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
+
+        :param df: An input dataflow
+        :return: A output dataflow
+        """
+        return MapData(df, self.pass_datapoint)
+
+    def clone(self) -> "ImageParsingService":
+        """clone"""
+        return self.__class__(self.dpi)
+
+    @staticmethod
+    def get_meta_annotation() -> JsonDict:
+        """
+        meta annotation. We do not generate any new annotations here
+        """
         return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])

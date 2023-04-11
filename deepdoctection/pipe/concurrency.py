@@ -27,14 +27,18 @@ from typing import Callable, List, Optional, Sequence, Union
 
 import tqdm
 
-from ..dataflow import DataFlow
+from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..utils.detection_types import QueueType, TqdmType
+from ..utils.context import timed_operation
+from ..utils.detection_types import JsonDict, QueueType, TqdmType
 from ..utils.tqdm import get_tqdm
-from .base import LanguageModelPipelineComponent, PipelineComponent, PredictorPipelineComponent
+from .base import PipelineComponent
+from .common import ImageParsingService, PageParsingService
+from .registry import pipeline_component_registry
 
 
-class MultiThreadPipelineComponent:
+@pipeline_component_registry.register("ImageCroppingService")
+class MultiThreadPipelineComponent(PipelineComponent):
     """
     Running a pipeline component in multiple thread to increase through put. Datapoints will be queued
     and processed once calling the `start`.
@@ -60,11 +64,42 @@ class MultiThreadPipelineComponent:
         multi_thread_comp.put_task(some_dataflow)
         output_list = multi_thread_comp.start()
 
+    You cannot run `MultiThreadPipelineComponent` in `DoctectionPipe` as this requires batching datapoints and neither
+    can you run `MultiThreadPipelineComponent` in combination with a humble 'PipelineComponent` unless you take care
+    of batching/unbatching between each component by yourself. The easiest way to build a pipeline with
+    `MultiThreadPipelineComponent` can be accomplished as follows:
+
+        # define the pipeline component
+        ome_component = SubImageLayoutService(some_predictor, some_category)
+        some_component:clone = some_component.clone()
+
+        # creating two threads, one for each component
+        multi_thread_comp = MultiThreadPipelineComponent(pipeline_components=[some_component,some_component_clone],
+                                                         pre_proc_func=maybe_load_image,
+                                                         post_proc_func=maybe_remove_image)
+
+        # currying `to_image`, so that you can call it in `MapData`.
+        @curry
+        def _to_image(dp,dpi):
+            return to_image(dp,dpi)
+
+        # set-up the dataflow/stream, e.g.
+        df = SerializerPdfDoc.load(path, max_datapoints=max_datapoints)
+        df = MapData(df, to_image(dpi=300))
+        df = BatchData(df, batch_size=32,remainder=True)
+        df = multi_thread_comp.predict_dataflow(df)
+        df = FlattenData(df)
+        df = MapData(df, lambda x: x[0])
+
+        df.reset_state()
+
+        for dp in df:
+           ...
     """
 
     def __init__(
         self,
-        pipeline_components: Sequence[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]],
+        pipeline_components: Sequence[Union[PipelineComponent, PageParsingService, ImageParsingService]],
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
@@ -85,6 +120,8 @@ class MultiThreadPipelineComponent:
         self.pre_proc_func = pre_proc_func
         self.post_proc_func = post_proc_func
         self.max_datapoints = max_datapoints
+        self.timer_on = False
+        super().__init__(f"multi_thread_{self.pipe_components[0].name}")
 
     def put_task(self, df: Union[DataFlow, List[Image]]) -> None:
         """
@@ -155,3 +192,38 @@ class MultiThreadPipelineComponent:
                 if self.max_datapoints >= idx:
                     break
             self.input_queue.put(dp)
+
+    def pass_datapoints(self, dpts: List[Image]) -> List[Image]:
+        """
+        Putting the list of datapoints into a thread-save queue and start for each pipeline
+        component a separate thread. It will return a list of datapoints where the order of appearance
+        of the output might be not the same as the input.
+        :param dpts:
+        :return:
+        """
+        for dp in dpts:
+            self.input_queue.put(dp)
+        if self.timer_on:
+            with timed_operation(self.pipe_components[0].name):
+                dpts = self.start()
+        else:
+            dpts = self.start()
+        return dpts
+
+    def predict_dataflow(self, df: DataFlow) -> DataFlow:
+        """
+        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
+
+        :param df: An input dataflow
+        :return: A output dataflow
+        """
+        return MapData(df, self.pass_datapoints)
+
+    def serve(self, dp: Image) -> None:
+        raise NotImplementedError("MultiThreadPipelineComponent does not follow the PipelineComponent implementation")
+
+    def clone(self) -> "MultiThreadPipelineComponent":
+        raise NotImplementedError("MultiThreadPipelineComponent does not allow cloning")
+
+    def get_meta_annotation(self) -> JsonDict:
+        return self.pipe_components[0].get_meta_annotation()
