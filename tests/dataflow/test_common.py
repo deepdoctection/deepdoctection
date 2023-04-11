@@ -26,6 +26,7 @@ from numpy.testing import assert_array_equal
 from pytest import mark
 
 from deepdoctection.dataflow import (
+    BatchData,
     ConcatData,
     CustomDataFromList,
     DataFlow,
@@ -169,3 +170,50 @@ def test_join_data() -> None:
     # Assert
     assert len(output) == 2
     assert "foo" in output[0] and "bak" in output[0] and "baz" in output[0] and "bal" in output[0]
+
+
+@mark.basic
+def test_batch_data() -> None:
+    """Test BatchData"""
+
+    # Arrange
+    dataflow_list = [
+        {"foo": "1", "bak": "a"},
+        {"foo": "3", "bak": "c"},
+        {"baz": "2", "bal": "a"},
+        {"baz": "4", "bal": "c"},
+    ]
+    df: DataFlow
+    df = DataFromList(dataflow_list, shuffle=False)
+
+    # Act
+    df = BatchData(df, 3)
+    output = collect_datapoint_from_dataflow(df=df)
+
+    # Assert
+    assert len(output) == 1
+    assert len(output[0]) == 3
+
+
+@mark.basic
+def test_batch_data_with_remainder() -> None:
+    """Test BatchData with remainder"""
+
+    # Arrange
+    dataflow_list = [
+        {"foo": "1", "bak": "a"},
+        {"foo": "3", "bak": "c"},
+        {"baz": "2", "bal": "a"},
+        {"baz": "4", "bal": "c"},
+    ]
+    df: DataFlow
+    df = DataFromList(dataflow_list, shuffle=False)
+
+    # Act
+    df = BatchData(df, 3, remainder=True)
+    output = collect_datapoint_from_dataflow(df=df)
+
+    # Assert
+    assert len(output) == 2
+    assert len(output[0]) == 3
+    assert len(output[1]) == 1
