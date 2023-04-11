@@ -68,7 +68,7 @@ class DataFlow:
         * The `__iter__` method can be either finite (will stop iteration) or infinite
           (will not stop iteration). For a finite dataflow, `__iter__` can be called
           again immediately after the previous call returned.
-        * For many dataflow, the `__iter__` method is non-reentrant, which means for an dataflow
+        * For many dataflow, the `__iter__` method is non-reentrant, which means for a dataflow
           instance ``df``, `df.__iter__` cannot be called before the previous
           `df.__iter__` call has finished (iteration has stopped).
           When a dataflow is non-reentrant, `df.__iter__` should throw an exception if

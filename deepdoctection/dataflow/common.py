@@ -235,12 +235,10 @@ class JoinData(DataFlow):
 
     def __init__(self, df_lists: List[DataFlow]) -> None:
         """
-        Args:
-            df_lists (list): a list of DataFlow.
-                When these dataflows have different sizes, JoinData will stop when any
-                of them is exhausted.
-                The list could contain the same DataFlow instance more than once,
-                but note that in that case `__iter__` will then also be called many times.
+        :param df_lists: a list of DataFlow. When these dataflows have different sizes, JoinData will stop when any
+                        of them is exhausted.
+                        The list could contain the same DataFlow instance more than once,
+                        but note that in that case `__iter__` will then also be called many times.
         """
         self.df_lists = df_lists
 
@@ -269,3 +267,46 @@ class JoinData(DataFlow):
                 yield dp
         except StopIteration:  # some of them are exhausted
             pass
+
+
+class BatchData(ProxyDataFlow):
+    """
+    Stack datapoints into batches. It produces datapoints of the same number of components as `df`, but
+    each datapoint is now a list of datapoints.
+    """
+
+    def __init__(self, df: DataFlow, batch_size: int, remainder: bool = False) -> None:
+        """
+        :param df: A dataflow
+        :param batch_size: batch size
+        :param remainder: When the remaining datapoints in ``df`` is not enough to form a batch, whether or not to
+                          also produce the remaining data as a smaller batch.
+                          If set to `False`, all produced datapoints are guaranteed to have the same batch size.
+                          If set to `True`, `len(ds)` must be accurate.
+        """
+        super().__init__(df)
+        if not remainder:
+            if batch_size > len(df):
+                raise ValueError("Dataflow must be larger than batch_size")
+        self.batch_size = int(batch_size)
+        if self.batch_size <= 0:
+            raise ValueError("batch_size must be a positive integer")
+        self.remainder = remainder
+
+    def __len__(self) -> int:
+        df_size = len(self.df)
+        div = df_size // self.batch_size
+        rem = df_size % self.batch_size
+        if rem == 0:
+            return div
+        return div + int(self.remainder)
+
+    def __iter__(self) -> Iterator[Any]:
+        holder = []
+        for data in self.df:
+            holder.append(data)
+            if len(holder) == self.batch_size:
+                yield holder
+                holder = []
+        if self.remainder and len(holder) > 0:
+            yield holder
