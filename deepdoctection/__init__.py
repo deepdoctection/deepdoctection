@@ -238,7 +238,6 @@ _IMPORT_STRUCTURE = {
         "AnnotationNmsService",
         "MultiThreadPipelineComponent",
         "DoctectionPipe",
-        "MultiThreadPipe",
         "LanguageDetectionService",
         "ImageLayoutService",
         "get_tokenizer_from_architecture",
