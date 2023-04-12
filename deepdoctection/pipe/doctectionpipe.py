@@ -73,6 +73,8 @@ def _proto_process(
 ) -> Union[str, Mapping[str, str]]:
     if isinstance(dp, str):
         file_name = Path(dp).name
+    elif isinstance(dp, Image):
+        file_name = dp.file_name
     else:
         file_name = dp["file_name"]
     if path is None:
@@ -153,7 +155,8 @@ class DoctectionPipe(Pipeline):
             raise BrokenPipeError("Cannot build Dataflow")
 
         df = MapData(df, _proto_process(path, doc_path))
-        df = MapData(df, _to_image(dpi=300))  # pylint: disable=E1120
+        if dataset_dataflow is None:
+            df = MapData(df, _to_image(dpi=300))  # pylint: disable=E1120
         return df
 
     @staticmethod

@@ -100,8 +100,9 @@ class TextExtractionService(PredictorPipelineComponent):
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
         self.skip_if_text_extracted = skip_if_text_extracted
         if self.skip_if_text_extracted and isinstance(self.predictor, TextRecognizer):
-            raise ValueError("skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not "
-                             "compatible")
+            raise ValueError(
+                "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not " "compatible"
+            )
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
