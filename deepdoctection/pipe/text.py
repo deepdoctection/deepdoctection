@@ -68,10 +68,17 @@ class TextExtractionService(PredictorPipelineComponent):
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
         run_time_ocr_language_selection: bool = False,
+        skip_if_text_extracted: bool = False,
     ):
         """
         :param text_extract_detector: ObjectDetector
         :param extract_from_roi: one or more category names for roi selection
+        :param run_time_ocr_language_selection: Only available for `TesseractOcrDetector` as this framework has
+                                                multiple language selections. Also requires that a language detection
+                                                pipeline component ran before. It will select the expert language OCR
+                                                model based on the determined language.
+        :param skip_if_text_extracted: Set to `True` if text has already been extracted in a previous pipeline component
+                                       and should not be extracted again. Use-case: A PDF with some scanned images.
         """
 
         if extract_from_roi is None:
@@ -91,6 +98,11 @@ class TextExtractionService(PredictorPipelineComponent):
             )
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
+        self.skip_if_text_extracted = skip_if_text_extracted
+        if self.skip_if_text_extracted and isinstance(self.predictor, TextRecognizer):
+            raise ValueError(
+                "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not " "compatible"
+            )
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -101,44 +113,54 @@ class TextExtractionService(PredictorPipelineComponent):
             predictor_input = self.get_predictor_input(text_roi)
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
-            width, height = None, None
-            if self.run_time_ocr_language_selection:
-                self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
-            detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
-            if isinstance(self.predictor, PdfMiner):
-                width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
+            if predictor_input == b"":
+                pass
+            else:
+                width, height = None, None
+                if self.run_time_ocr_language_selection:
+                    self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
+                detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
+                if isinstance(self.predictor, PdfMiner):
+                    width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
 
-            for detect_result in detect_result_list:
-                if isinstance(self.predictor, TextRecognizer):
-                    detect_ann_id = detect_result.uuid
-                else:
-                    detect_ann_id = self.dp_manager.set_image_annotation(
-                        detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
-                    )
-                if detect_ann_id is not None:
-                    self.dp_manager.set_container_annotation(
-                        WordType.characters,
-                        None,
-                        WordType.characters,
-                        detect_ann_id,
-                        detect_result.text if detect_result.text is not None else "",
-                        detect_result.score,
-                    )
-                    if detect_result.block:
-                        self.dp_manager.set_category_annotation(
-                            WordType.block, detect_result.block, WordType.block, detect_ann_id
+                for detect_result in detect_result_list:
+                    if isinstance(self.predictor, TextRecognizer):
+                        detect_ann_id = detect_result.uuid
+                    else:
+                        detect_ann_id = self.dp_manager.set_image_annotation(
+                            detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
                         )
-                    if detect_result.line:
-                        self.dp_manager.set_category_annotation(
-                            WordType.text_line, detect_result.line, WordType.text_line, detect_ann_id
+                    if detect_ann_id is not None:
+                        self.dp_manager.set_container_annotation(
+                            WordType.characters,
+                            None,
+                            WordType.characters,
+                            detect_ann_id,
+                            detect_result.text if detect_result.text is not None else "",
+                            detect_result.score,
                         )
+                        if detect_result.block:
+                            self.dp_manager.set_category_annotation(
+                                WordType.block, detect_result.block, WordType.block, detect_ann_id
+                            )
+                        if detect_result.line:
+                            self.dp_manager.set_category_annotation(
+                                WordType.text_line, detect_result.line, WordType.text_line, detect_ann_id
+                            )
 
     def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
         """
         Return image rois based on selected categories. As this selection makes only sense for specific text extractors
         (e.g. those who do proper OCR and do not mine from text from native pdfs) it will do some sanity checks.
+        It is possible that a preceding text extractor dumped text before. If the predictor must not extract text as
+        well `get_text_rois` will return an empty list.
         :return: list of ImageAnnotation or Image
         """
+        if self.skip_if_text_extracted:
+            text_categories = self.predictor.possible_categories()  # type: ignore
+            text_anns = dp.get_annotation(category_names=text_categories)
+            if text_anns:
+                return []
 
         if self.extract_from_category:
             if self.predictor.accepts_batch:
@@ -171,7 +193,9 @@ class TextExtractionService(PredictorPipelineComponent):
             assert all(roi.image is not None for roi in text_roi)
             assert all(roi.image.image is not None for roi in text_roi)  # type: ignore
             return [(roi.annotation_id, roi.image.image) for roi in text_roi]  # type: ignore
-        return text_roi.pdf_bytes
+        if isinstance(self.predictor, PdfMiner) and text_roi.pdf_bytes is not None:
+            return text_roi.pdf_bytes
+        return b""
 
     def get_meta_annotation(self) -> JsonDict:
         if self.extract_from_category:
