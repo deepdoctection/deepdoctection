@@ -113,37 +113,40 @@ class TextExtractionService(PredictorPipelineComponent):
             predictor_input = self.get_predictor_input(text_roi)
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
-            width, height = None, None
-            if self.run_time_ocr_language_selection:
-                self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
-            detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
-            if isinstance(self.predictor, PdfMiner):
-                width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
+            elif predictor_input == b"":
+                pass
+            else:
+                width, height = None, None
+                if self.run_time_ocr_language_selection:
+                    self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
+                detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
+                if isinstance(self.predictor, PdfMiner):
+                    width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
 
-            for detect_result in detect_result_list:
-                if isinstance(self.predictor, TextRecognizer):
-                    detect_ann_id = detect_result.uuid
-                else:
-                    detect_ann_id = self.dp_manager.set_image_annotation(
-                        detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
-                    )
-                if detect_ann_id is not None:
-                    self.dp_manager.set_container_annotation(
-                        WordType.characters,
-                        None,
-                        WordType.characters,
-                        detect_ann_id,
-                        detect_result.text if detect_result.text is not None else "",
-                        detect_result.score,
-                    )
-                    if detect_result.block:
-                        self.dp_manager.set_category_annotation(
-                            WordType.block, detect_result.block, WordType.block, detect_ann_id
+                for detect_result in detect_result_list:
+                    if isinstance(self.predictor, TextRecognizer):
+                        detect_ann_id = detect_result.uuid
+                    else:
+                        detect_ann_id = self.dp_manager.set_image_annotation(
+                            detect_result, ann_id, True, detect_result_max_width=width, detect_result_max_height=height
                         )
-                    if detect_result.line:
-                        self.dp_manager.set_category_annotation(
-                            WordType.text_line, detect_result.line, WordType.text_line, detect_ann_id
+                    if detect_ann_id is not None:
+                        self.dp_manager.set_container_annotation(
+                            WordType.characters,
+                            None,
+                            WordType.characters,
+                            detect_ann_id,
+                            detect_result.text if detect_result.text is not None else "",
+                            detect_result.score,
                         )
+                        if detect_result.block:
+                            self.dp_manager.set_category_annotation(
+                                WordType.block, detect_result.block, WordType.block, detect_ann_id
+                            )
+                        if detect_result.line:
+                            self.dp_manager.set_category_annotation(
+                                WordType.text_line, detect_result.line, WordType.text_line, detect_ann_id
+                            )
 
     def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
         """
@@ -190,7 +193,9 @@ class TextExtractionService(PredictorPipelineComponent):
             assert all(roi.image is not None for roi in text_roi)
             assert all(roi.image.image is not None for roi in text_roi)  # type: ignore
             return [(roi.annotation_id, roi.image.image) for roi in text_roi]  # type: ignore
-        return text_roi.pdf_bytes
+        if isinstance(self.predictor, PdfMiner) and text_roi.pdf_bytes is not None:
+            return text_roi.pdf_bytes
+        return b""
 
     def get_meta_annotation(self) -> JsonDict:
         if self.extract_from_category:
