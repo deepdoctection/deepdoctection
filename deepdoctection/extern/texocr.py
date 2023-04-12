@@ -97,13 +97,14 @@ class TextractOcrDetector(ObjectDetector):
 
     """
 
-    def __init__(self, text_lines: bool = False) -> None:
+    def __init__(self, text_lines: bool = False, **credentials_kwargs: str) -> None:
         """
         :param text_lines: If True, it will return DetectionResults of Text lines as well.
+        :param credentials_kwargs: `aws_access_key_id`, `aws_secret_access_key` or `aws_session_token`
         """
         self.name = "textract"
         self.text_lines = text_lines
-        self.client = boto3.client("textract")
+        self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
             self.categories = {"1": LayoutType.word, "2": LayoutType.line}
         else:
