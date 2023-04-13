@@ -122,7 +122,7 @@ class TextractOcrDetector(ObjectDetector):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        return [get_aws_requirement(), get_boto3_requirement()]
+        return [get_boto3_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__()
