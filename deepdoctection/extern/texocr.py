@@ -32,7 +32,7 @@ from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if boto3_available():
     import boto3  # type:ignore
-    from botocore.errorfactory import InvalidParameterException  # type:ignore # pylint: disable=E0611
+    import botocore # type:ignore
 
 
 def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
@@ -74,7 +74,7 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
     b_img = convert_np_array_to_b64_b(np_img)
     try:
         response = client.detect_document_text(Document={"Bytes": b_img})
-    except InvalidParameterException:
+    except botocore.errorfactory.InvalidParameterException:
         _, exc_val, exc_tb = sys.exc_info()
         frame_summary = traceback.extract_tb(exc_tb)[0]
         log_dict = {
