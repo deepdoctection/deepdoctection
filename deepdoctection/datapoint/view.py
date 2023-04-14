@@ -487,7 +487,7 @@ class Page(Image):
         block_with_order = self._order(block_name)
         linebreak = "\n" if block_name == "layouts" else " "
         for block in block_with_order:
-            block_attr = "text" if not isinstance(block,Word) else "characters"
+            block_attr = "text" if not isinstance(block, Word) else "characters"
             text += f"{linebreak}{getattr(block, block_attr)}"
         return text
 
