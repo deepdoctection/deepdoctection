@@ -113,7 +113,7 @@ class TextExtractionService(PredictorPipelineComponent):
             predictor_input = self.get_predictor_input(text_roi)
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
-            if predictor_input == b"":
+            if predictor_input in [b""]:
                 pass
             else:
                 width, height = None, None

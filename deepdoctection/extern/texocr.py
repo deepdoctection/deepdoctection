@@ -19,16 +19,20 @@
 AWS Textract OCR engine for text extraction
 """
 
+import sys
+import traceback
 from typing import List
 
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_boto3_requirement
+from ..utils.logger import logger
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if boto3_available():
     import boto3  # type:ignore
+    from botocore.errorfactory import InvalidParameterException  # type:ignore # pylint: disable=E0611
 
 
 def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
@@ -68,7 +72,21 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
 
     width, height = np_img.shape[1], np_img.shape[0]
     b_img = convert_np_array_to_b64_b(np_img)
-    response = client.detect_document_text(Document={"Bytes": b_img})
+    try:
+        response = client.detect_document_text(Document={"Bytes": b_img})
+    except InvalidParameterException:
+        _, exc_val, exc_tb = sys.exc_info()
+        frame_summary = traceback.extract_tb(exc_tb)[0]
+        log_dict = {
+            "file_name": "NN",
+            "error_type": type(exc_val).__name__,
+            "error_msg": str(exc_val),
+            "orig_module": frame_summary.filename,
+            "line": frame_summary.lineno,
+        }
+        logger.warning("botocore InvalidParameterException", "DetectionResult", log_dict)
+        response = {}
+
     all_results = _textract_to_detectresult(response, width, height, text_lines)
     return all_results
 
