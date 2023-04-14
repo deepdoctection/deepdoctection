@@ -73,7 +73,7 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
     b_img = convert_np_array_to_b64_b(np_img)
     try:
         response = client.detect_document_text(Document={"Bytes": b_img})
-    except:  # pylint: disable=E1101
+    except:  # pylint: disable=W0702
         _, exc_val, exc_tb = sys.exc_info()
         frame_summary = traceback.extract_tb(exc_tb)[0]
         log_dict = {
