@@ -83,7 +83,7 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
             "orig_module": frame_summary.filename,
             "line": frame_summary.lineno,
         }
-        logger.warning("botocore InvalidParameterException", "DetectionResult", log_dict)
+        logger.warning("botocore InvalidParameterException", log_dict)
         response = {}
 
     all_results = _textract_to_detectresult(response, width, height, text_lines)
