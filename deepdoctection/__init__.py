@@ -159,6 +159,7 @@ _IMPORT_STRUCTURE = {
         "HFLayoutLmTokenClassifierBase",
         "HFLayoutLmTokenClassifier",
         "HFLayoutLmv2TokenClassifier",
+        "HFLayoutLmv3TokenClassifier",
         "HFLayoutLmSequenceClassifier",
         "HFLayoutLmv2SequenceClassifier",
         "HFLayoutLmv3SequenceClassifier",
