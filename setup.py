@@ -58,6 +58,7 @@ _DEPS = [
     "python-prctl",
     "pyyaml==6.0",
     "pyzmq>=16",
+    "rapidfuzz>=1.6.0,<3.0",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
     "tqdm==4.64.0",
