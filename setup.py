@@ -79,6 +79,7 @@ _DEPS = [
     "boto3",
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.17.1",
+    "tf2onnx>=1.9.2",
     "python-doctr==0.6.0",
     "fasttext",
     # dev dependencies
@@ -141,7 +142,7 @@ dist_deps = deps_list(
 additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
 
 # Tensorflow dependencies
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr")
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr")
 
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "python-doctr")
