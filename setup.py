@@ -128,6 +128,7 @@ dist_deps = deps_list(
     "pypdf2",
     "pyyaml",
     "pyzmq",
+    "rapidfuzz",
     "termcolor",
     "tabulate",
     "tqdm",
