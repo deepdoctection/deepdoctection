@@ -3,7 +3,7 @@
 
 ## Requirements
 
-![](./tutorials/_imgs/requirements_deepdoctection.jpg)
+![](./tutorials/_imgs/requirements_deepdoctection.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 by the user. 
@@ -11,7 +11,7 @@ by the user.
 - Linux **or** macOS. (Windows is not supported but there is [Dockerfile](../docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >=  3.8
 - [Poppler](https://poppler.freedesktop.org/)
-- PyTorch >= 1.8 **or** Tensorflow >=2.8 and CUDA
+- PyTorch >= 1.8 **or** Tensorflow >=2.9 and CUDA
 
 With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).

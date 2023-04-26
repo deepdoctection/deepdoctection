@@ -122,14 +122,14 @@ documentation.
 
 ## Requirements
 
-![requirements](./docs/tutorials/_imgs/requirements_deepdoctection.jpg)
+![requirements](./docs/tutorials/_imgs/requirements_deepdoctection.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 
 
 - Linux or macOS. (Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >= 3.8
-- PyTorch >= 1.8 **or** Tensorflow >= 2.8 and CUDA. If you want to run the models provided by Tensorpack a GPU is
+- PyTorch >= 1.8 **or** Tensorflow >= 2.9 and CUDA. If you want to run the models provided by Tensorpack a GPU is
   required. You can run on PyTorch with a CPU only.
 - **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images. 

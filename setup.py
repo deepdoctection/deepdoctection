@@ -58,6 +58,7 @@ _DEPS = [
     "python-prctl",
     "pyyaml==6.0",
     "pyzmq>=16",
+    "rapidfuzz>=1.6.0,<3.0",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
     "tqdm==4.64.0",
@@ -78,8 +79,9 @@ _DEPS = [
     "jdeskew",
     "boto3",
     "pdfplumber>=0.7.1",
-    "tensorflow-addons>=0.13.0",
-    "python-doctr<=0.5.1",
+    "tensorflow-addons>=0.17.1",
+    "tf2onnx>=1.9.2",
+    "python-doctr==0.6.0",
     "fasttext",
     # dev dependencies
     "click==8.0.4",  # version will not break black
@@ -126,6 +128,7 @@ dist_deps = deps_list(
     "pypdf2",
     "pyyaml",
     "pyzmq",
+    "rapidfuzz",
     "termcolor",
     "tabulate",
     "tqdm",
@@ -141,7 +144,7 @@ dist_deps = deps_list(
 additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
 
 # Tensorflow dependencies
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr")
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr")
 
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "python-doctr")
