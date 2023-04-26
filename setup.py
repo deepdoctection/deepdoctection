@@ -73,13 +73,13 @@ _DEPS = [
     # PyTorch related dependencies
     "timm",
     "transformers<=4.24",
-    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git --no-build-isolation",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "jdeskew",
     "boto3",
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.13.0",
-    "python-doctr<=0.5.1",
+    "python-doctr==0.6.0",
     "fasttext",
     # dev dependencies
     "click==8.0.4",  # version will not break black
@@ -145,7 +145,7 @@ tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "python-doctr
 
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "python-doctr")
-source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
+source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git --no-build-isolation")
 
 # Putting all together
 tf_deps = dist_deps + tf_deps + additional_deps
