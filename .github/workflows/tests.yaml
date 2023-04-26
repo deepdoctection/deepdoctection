@@ -22,14 +22,14 @@ jobs:
       matrix:
         include:
           - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04, tox: py310,
-              dll: tensorflow==2.4.1, extras: ,
+              dll: tensorflow==2.9, extras: ,
               test_cases: test-basic }
           - { name: '3.8-basic-pt', python: '3.8', os: ubuntu-20.04, tox: py310,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
               extras: ,
               test_cases: test-basic }
           - { name: '3.8-tf', python: '3.8', os: ubuntu-20.04, tox: py310,
-              dll: tensorflow==2.8, extras: tf,
+              dll: tensorflow==2.9, extras: tf,
               test_cases: test-tf }
           - { name: '3.8-pt', python: '3.8', os: ubuntu-20.04, tox: py310,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Upgrade pip
-        run: python3 -m pip install --upgrade pip tox
+        run: python3 -m pip install pip<=22.1.2
 
       - name: Install libcap
         run: sudo apt-get install build-essential libcap-dev
