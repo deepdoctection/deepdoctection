@@ -30,7 +30,7 @@ pipelines. Its core function does not depend on any specific deep learning libra
    (Tensorflow and PyTorch implementations available) and a wrapper to an API for a commercial solution, 
  - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
- - Deskewing and rotating images with jdeskew. 
+ - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
  - Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
    provided by the [**Transformer**](https://github.com/huggingface/transformers) library. 
    (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!). Check the notebook repo or 
