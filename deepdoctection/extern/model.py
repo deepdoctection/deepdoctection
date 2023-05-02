@@ -439,19 +439,19 @@ class ModelCatalog:
         "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt": ModelProfile(
             name="doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt",
             description="Doctr implementation of DBNet from “Real-time Scene Text Detection with Differentiable "
-                        "Binarization”. For more information please check "
-                        "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch artefact.",
+            "Binarization”. For more information please check "
+            "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch artefact.",
             size=[101971449],
             urls=["https://doctr-static.mindee.com/models?id=v0.3.1/db_resnet50-ac60cadc.pt&src=0"],
-            categories= {"1": LayoutType.word},
+            categories={"1": LayoutType.word},
             dl_library="PT",
             model_wrapper="DoctrTextlineDetector",
         ),
         "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip": ModelProfile(
             name="doctr/db_resnet50/tf/db_resnet50-adcafc63.zip",
             description="Doctr implementation of DBNet from “Real-time Scene Text Detection with Differentiable "
-                        "Binarization”. For more information please check "
-                        "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow artefact.",
+            "Binarization”. For more information please check "
+            "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow artefact.",
             size=[94178964],
             urls=["https://doctr-static.mindee.com/models?id=v0.2.0/db_resnet50-adcafc63.zip&src=0"],
             categories={"1": LayoutType.word},
@@ -461,12 +461,23 @@ class ModelCatalog:
         "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt": ModelProfile(
             name="doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
             description="Doctr implementation of CRNN from “An End-to-End Trainable Neural Network for Image-based "
-                        "Sequence Recognition and Its Application to Scene Text Recognition”. For more information "
-                        "please check https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch "
-                        "artefact.",
+            "Sequence Recognition and Its Application to Scene Text Recognition”. For more information "
+            "please check https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch "
+            "artefact.",
             size=[63286381],
             urls=["https://doctr-static.mindee.com/models?id=v0.3.1/crnn_vgg16_bn-9762b0b0.pt&src=0"],
             dl_library="PT",
+            model_wrapper="DoctrTextRecognizer",
+        ),
+        "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip": ModelProfile(
+            name="doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip",
+            description="Doctr implementation of CRNN from “An End-to-End Trainable Neural Network for Image-based "
+            "Sequence Recognition and Its Application to Scene Text Recognition”. For more information "
+            "please check https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow "
+            "artefact.",
+            size=[58758994],
+            urls=["https://doctr-static.mindee.com/models?id=v0.3.0/crnn_vgg16_bn-76b7f2c6.zip&src=0"],
+            dl_library="TF",
             model_wrapper="DoctrTextRecognizer",
         ),
         "fasttext/lid.176.bin": ModelProfile(
