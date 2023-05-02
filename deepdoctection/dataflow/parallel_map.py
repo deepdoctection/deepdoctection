@@ -358,7 +358,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         @no_type_check
         def run(self):
             enable_death_signal(_warn=self.identity == b"0")
-            ctx = zmq.Context()  # pylint: disable=E0110
+            ctx = zmq.Context()
             socket = ctx.socket(zmq.REP)
             socket.setsockopt(zmq.IDENTITY, self.identity)
             socket.set_hwm(self.hwm)
@@ -410,7 +410,7 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         _ParallelMapData.reset_state(self)
         self._guard = DataFlowReentrantGuard()
 
-        self.context = zmq.Context()  # type: ignore  # pylint: disable=E0110
+        self.context = zmq.Context()  # type: ignore
         self.socket = self.context.socket(zmq.DEALER)  # type: ignore
         self.socket.set_hwm(self._buffer_size * 2)  # type: ignore
         pipename = _get_pipe_name("dataflow-map")
