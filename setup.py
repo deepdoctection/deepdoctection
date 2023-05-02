@@ -58,7 +58,7 @@ _DEPS = [
     "python-prctl",
     "pyyaml==6.0",
     "pyzmq>=16",
-    "rapidfuzz>=1.6.0,<3.0",
+    "rapidfuzz>=1.6.0,<3.0",  # we need this requirement for Doctr as long they have not fixed #1186 for v.0.6.0
     "termcolor>=1.1",
     "tabulate>=0.7.7",
     "tqdm==4.64.0",

@@ -54,6 +54,7 @@ class ModelProfile:
     hf_config_file: Optional[List[str]] = field(default=None)
     urls: Optional[List[str]] = field(default=None)
     categories: Optional[Dict[str, ObjectTypes]] = field(default=None)
+    dl_library: Optional[str] = field(default=None)
     model_wrapper: Optional[str] = field(default=None)
 
     def as_dict(self) -> Dict[str, Any]:
@@ -104,6 +105,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
         "cell/model-1800000_inf_only.data-00000-of-00001": ModelProfile(
@@ -116,6 +118,7 @@ class ModelCatalog:
             hf_model_name="model-1800000_inf_only",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
+            dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000_inf_only.data-00000-of-00001": ModelProfile(
@@ -128,6 +131,7 @@ class ModelCatalog:
             hf_model_name="model-1620000_inf_only",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
         "item/model-1620000.data-00000-of-00001": ModelProfile(
@@ -140,6 +144,7 @@ class ModelCatalog:
             hf_model_name="model-1620000",
             hf_config_file=["conf_frcnn_rows.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
         "layout/model-800000.data-00000-of-00001": ModelProfile(
@@ -151,6 +156,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
             hf_model_name="model-800000",
             hf_config_file=["conf_frcnn_layout.yaml"],
+            dl_library="TF",
             categories={
                 "1": LayoutType.text,
                 "2": LayoutType.title,
@@ -170,6 +176,7 @@ class ModelCatalog:
             hf_model_name="model-1800000",
             hf_config_file=["conf_frcnn_cell.yaml"],
             categories={"1": LayoutType.cell},
+            dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
         "layout/d2_model-800000-layout.pkl": ModelProfile(
@@ -188,6 +195,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout_inf_only.pt": ModelProfile(
@@ -206,6 +214,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "layout/d2_model_0829999_layout.pth": ModelProfile(
@@ -224,6 +233,7 @@ class ModelCatalog:
                 "4": LayoutType.table,
                 "5": LayoutType.figure,
             },
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model-1800000-cell.pkl": ModelProfile(
@@ -236,6 +246,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1800000-cell.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell_inf_only.pt": ModelProfile(
@@ -248,6 +259,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1849999_cell_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "cell/d2_model_1849999_cell.pth": ModelProfile(
@@ -260,6 +272,7 @@ class ModelCatalog:
             hf_model_name="cell/d2_model_1849999_cell.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.cell},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model-1620000-item.pkl": ModelProfile(
@@ -272,6 +285,7 @@ class ModelCatalog:
             hf_model_name="d2_model-1620000-item.pkl",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item.pth": ModelProfile(
@@ -284,6 +298,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item_inf_only.pt": ModelProfile(
@@ -296,6 +311,7 @@ class ModelCatalog:
             hf_model_name="d2_model_1639999_item_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={"1": LayoutType.row, "2": LayoutType.column},
+            dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
         "microsoft/layoutlm-base-uncased/pytorch_model.bin": ModelProfile(
@@ -311,6 +327,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/layoutlm-base-uncased",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
+            dl_library="PT",
         ),
         "microsoft/layoutlm-large-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlm-large-uncased/pytorch_model.bin",
@@ -325,6 +342,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/layoutlm-large-uncased",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
+            dl_library="PT",
         ),
         "microsoft/layoutlmv2-base-uncased/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlmv2-base-uncased/pytorch_model.bin",
@@ -340,6 +358,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/layoutlmv2-base-uncased",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
+            dl_library="PT",
         ),
         "microsoft/layoutxlm-base/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutxlm-base/pytorch_model.bin",
@@ -359,6 +378,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/layoutxlm-base",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
+            dl_library="PT",
         ),
         "microsoft/layoutlmv3-base/pytorch_model.bin": ModelProfile(
             name="microsoft/layoutlmv3-base/pytorch_model.bin",
@@ -374,6 +394,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/layoutlmv3-base",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json"],
+            dl_library="PT",
         ),
         "microsoft/table-transformer-detection/pytorch_model.bin": ModelProfile(
             name="microsoft/table-transformer-detection/pytorch_model.bin",
@@ -388,6 +409,7 @@ class ModelCatalog:
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json", "preprocessor_config.json"],
             categories={"1": LayoutType.table},
+            dl_library="PT",
             model_wrapper="HFDetrDerivedDetector",
         ),
         "microsoft/table-transformer-structure-recognition/pytorch_model.bin": ModelProfile(
@@ -411,7 +433,52 @@ class ModelCatalog:
                 "5": CellType.projected_row_header,
                 "6": CellType.spanning,
             },
+            dl_library="PT",
             model_wrapper="HFDetrDerivedDetector",
+        ),
+        "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt": ModelProfile(
+            name="doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt",
+            description="Doctr implementation of DBNet from “Real-time Scene Text Detection with Differentiable "
+            "Binarization”. For more information please check "
+            "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch artefact.",
+            size=[101971449],
+            urls=["https://doctr-static.mindee.com/models?id=v0.3.1/db_resnet50-ac60cadc.pt&src=0"],
+            categories={"1": LayoutType.word},
+            dl_library="PT",
+            model_wrapper="DoctrTextlineDetector",
+        ),
+        "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip": ModelProfile(
+            name="doctr/db_resnet50/tf/db_resnet50-adcafc63.zip",
+            description="Doctr implementation of DBNet from “Real-time Scene Text Detection with Differentiable "
+            "Binarization”. For more information please check "
+            "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow artefact.",
+            size=[94178964],
+            urls=["https://doctr-static.mindee.com/models?id=v0.2.0/db_resnet50-adcafc63.zip&src=0"],
+            categories={"1": LayoutType.word},
+            dl_library="TF",
+            model_wrapper="DoctrTextlineDetector",
+        ),
+        "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt": ModelProfile(
+            name="doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+            description="Doctr implementation of CRNN from “An End-to-End Trainable Neural Network for Image-based "
+            "Sequence Recognition and Its Application to Scene Text Recognition”. For more information "
+            "please check https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch "
+            "artefact.",
+            size=[63286381],
+            urls=["https://doctr-static.mindee.com/models?id=v0.3.1/crnn_vgg16_bn-9762b0b0.pt&src=0"],
+            dl_library="PT",
+            model_wrapper="DoctrTextRecognizer",
+        ),
+        "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip": ModelProfile(
+            name="doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip",
+            description="Doctr implementation of CRNN from “An End-to-End Trainable Neural Network for Image-based "
+            "Sequence Recognition and Its Application to Scene Text Recognition”. For more information "
+            "please check https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow "
+            "artefact.",
+            size=[58758994],
+            urls=["https://doctr-static.mindee.com/models?id=v0.3.0/crnn_vgg16_bn-76b7f2c6.zip&src=0"],
+            dl_library="TF",
+            model_wrapper="DoctrTextRecognizer",
         ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
@@ -788,7 +855,7 @@ class ModelDownloadManager:
                     if profile.urls is None:
                         raise ValueError("hf_model_name and urls cannot be both None")
                     for url in profile.urls:
-                        file_names.append(url.split("/")[-1])
+                        file_names.append(url.split("/")[-1].split("&")[0])
                 else:
                     file_names.append(model_name)
             if profile.hf_repo_id:
