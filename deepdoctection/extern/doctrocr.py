@@ -19,7 +19,7 @@
 Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
 """
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Literal, Mapping
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -32,8 +32,9 @@ from ..utils.file_utils import (
     tf_addons_available,
     tf_available,
 )
-from ..utils.settings import LayoutType, ObjectTypes
+from ..utils.settings import LayoutType, ObjectTypes, TypeOrStr
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
+from .pt.ptutils import set_torch_auto_device
 
 if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
@@ -41,6 +42,8 @@ if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
     from doctr.models.recognition.zoo import recognition_predictor
 
+if pytorch_available():
+    import torch
 
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor") -> List[DetectionResult]:
     """
@@ -83,20 +86,32 @@ def doctr_predict_text(inputs: List[Tuple[str, ImageType]], predictor: "Recognit
 class DoctrTextlineDetector(ObjectDetector):
     """
     A deepdoctection wrapper of DocTr text line detector. We model text line detection as ObjectDetector
-    and assume to use this detector in a ImageLayoutService. This model currently uses the default implementation
-    DBNet as described in “Real-time Scene Text Detection with Differentiable Binarization”, using a ResNet-50 backbone.
-    and can be used in either Tensorflow or PyTorch.
-
-    Regarding the model we refer to the documentation <https://mindee.github.io/doctr/models.html>
+    and assume to use this detector in a ImageLayoutService.
+    DocTr supports several text line detection implementations but provides only a subset of pre-trained models.
+    The most usable one for document OCR for which a pre-trained model exists is DBNet as described in “Real-time Scene
+    Text Detection with Differentiable Binarization”, with a ResNet-50 backbone. This model can be used in either
+    Tensorflow or PyTorch.
+    Some other pre-trained models exist that have not been registered in `ModelCatalog`. Please check the DocTr library
+    and organize the download of the pre-trained model by yourself.
 
     **Example:**
 
-                 path = "/path/to/image_dir"
-                 det = DoctrTextlineDetector()
+                 path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
+                 /db_resnet50-ac60cadc.pt")
+                 # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
+
+                 categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+                 det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
                  layout = ImageLayoutService(det,to_image=True, crop_image=True)
-                 rec = DoctrTextRecognizer()
-                 text = TextExtractionService(rec,extract_from_roi="WORD")
+
+                 path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
+                 /pt/crnn_vgg16_bn-9762b0b0.pt")
+                 rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+                 text = TextExtractionService(rec, extract_from_roi="word")
+
                  analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
+
+                 path = "/path/to/image_dir"
                  df = analyzer.analyze(path = path)
 
                  for dp in df:
@@ -105,10 +120,21 @@ class DoctrTextlineDetector(ObjectDetector):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, architecture: str,
+                 path_weights: str,
+                 categories: Mapping[str, TypeOrStr],
+                 device: Optional[Literal["cpu", "cuda"]] = None) -> None:
         self.name = "doctr_text_detector"
-        self.doctr_predictor = detection_predictor(pretrained=True)
-        self.categories = {"1": LayoutType.word}
+        self.architecture = architecture
+        self.path_weights = path_weights
+        self.doctr_predictor = detection_predictor(arch=self.architecture, pretrained=False) # we will be loading the model
+        # later because there is no easy way in doctr to load a model by giving only a path to its weights
+        self.categories = categories
+        if device is not None:
+            self.device = device
+        elif pytorch_available():
+            self.device = set_torch_auto_device()
+        self.load_model()
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -129,30 +155,50 @@ class DoctrTextlineDetector(ObjectDetector):
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
     def clone(self) -> PredictorBase:
-        return self.__class__()
+        return self.__class__(self.architecture, self.path_weights, self.categories, self.device)
 
     def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
+
+    def load_model(self):
+        if pytorch_available():
+            state_dict = torch.load(self.path_weights, map_location= self.device)
+            for key in list(state_dict.keys()):
+                state_dict["model." + key] = state_dict.pop(key)
+            self.doctr_predictor.load_state_dict(state_dict)
+            self.doctr_predictor.to(self.device)
 
 
 class DoctrTextRecognizer(TextRecognizer):
     """
     A deepdoctection wrapper of DocTr text recognition predictor. The base class is a TextRecognizer that takes
     a batch of sub images (e.g. text lines from a text detector) and returns a list with text spotted in the sub images.
-    This model currently uses the default implementation CRNN with a VGG-16 backbone as described in
-    “An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene
-    Text Recognition” and can be used in either Tensorflow or PyTorch.
+    DocTr supports several text recognition models but provides only a subset of pre-trained models.
 
-    Regarding the model we refer to the documentation <https://mindee.github.io/doctr/models.html>
+    This model that is most suitable for document text recognition is the CRNN implementation with a VGG-16 backbone as
+    described in “An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to
+    Scene Text Recognition”. It can be used in either Tensorflow or PyTorch.
+
+    For more details please check the official DocTr documentation by Mindee: https://mindee.github.io/doctr/
 
     **Example:**
 
-                 path = "/path/to/image_dir"
-                 det = DoctrTextlineDetector()
+                 path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
+                 /db_resnet50-ac60cadc.pt")
+                 # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
+
+                 categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+                 det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
                  layout = ImageLayoutService(det,to_image=True, crop_image=True)
-                 rec = DoctrTextRecognizer()
-                 text = TextExtractionService(rec,extract_from_roi="LINE")
+
+                 path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
+                 /pt/crnn_vgg16_bn-9762b0b0.pt")
+                 rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+                 text = TextExtractionService(rec, extract_from_roi="word")
+
                  analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
+
+                 path = "/path/to/image_dir"
                  df = analyzer.analyze(path = path)
 
                  for dp in df:
@@ -160,9 +206,19 @@ class DoctrTextRecognizer(TextRecognizer):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, architecture: str,
+                       path_weights: str,
+                       device: Optional[Literal["cpu", "cuda"]] = None) -> None:
+
         self.name = "doctr_text_recognizer"
-        self.doctr_predictor = recognition_predictor(pretrained=True)
+        self.architecture = architecture
+        self.path_weights = path_weights
+        if device is not None:
+            self.device = device
+        elif pytorch_available():
+            self.device = set_torch_auto_device()
+        self.doctr_predictor = recognition_predictor(arch=self.architecture, pretrained=True)
+        self.load_model()
 
     def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
         """
@@ -184,4 +240,12 @@ class DoctrTextRecognizer(TextRecognizer):
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
     def clone(self) -> PredictorBase:
-        return self.__class__()
+        return self.__class__(self.architecture, self.path_weights, self.device)
+
+    def load_model(self):
+        if pytorch_available():
+            state_dict = torch.load(self.path_weights, map_location= self.device)
+            for key in list(state_dict.keys()):
+                state_dict["model." + key] = state_dict.pop(key)
+            self.doctr_predictor.load_state_dict(state_dict)
+            self.doctr_predictor.to(self.device)
