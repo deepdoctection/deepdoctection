@@ -27,8 +27,8 @@ from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.utils.detection_types import ImageType
-from deepdoctection.extern.model import ModelDownloadManager, ModelCatalog
 from tests.data import Annotations
 
 
@@ -67,9 +67,11 @@ class TestDoctrTextlineDetector:
         """
 
         # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
+            "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"
+        )
         categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
-        doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu") # type: ignore
+        doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu")  # type: ignore
 
         # Act
         results = doctr.predict(np_image)
@@ -86,9 +88,11 @@ class TestDoctrTextlineDetector:
         """
 
         # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/tf/db_resnet50-adcafc63.zip")
+        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
+            "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip"
+        )
         categories = ModelCatalog.get_profile("doctr/db_resnet50/tf/db_resnet50-adcafc63.zip").categories
-        doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu") # type: ignore
+        doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu")  # type: ignore
 
         # Act
         results = doctr.predict(np_image)
@@ -111,7 +115,9 @@ class TestDoctrTextRecognizer:
         """
 
         # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
+            "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
+        )
         doctr = DoctrTextRecognizer("crnn_vgg16_bn", path_weights, "cpu")
 
         # Act
@@ -129,7 +135,9 @@ class TestDoctrTextRecognizer:
         """
 
         # Arrange
-        path_weights = ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip")
+        path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
+            "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip"
+        )
         doctr = DoctrTextRecognizer("crnn_vgg16_bn", path_weights, "cpu")
 
         # Act

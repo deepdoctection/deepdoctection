@@ -48,15 +48,13 @@ if pytorch_available():
     import torch
 
 if tf_available():
-    import tensorflow as tf  # type: ignore
+    import tensorflow as tf  # type: ignore  # pylint: disable=E0401
 
 
 def _set_device_str(device: Optional[str] = None) -> str:
     if device is not None:
         if tf_available():
             device = "/" + device.replace("cuda", "gpu") + ":0"
-        else:
-            device = device
     elif pytorch_available():
         device = set_torch_auto_device()
     else:
@@ -76,8 +74,8 @@ def _load_model(path_weights: str, doctr_predictor: Any, device: str) -> None:
         params_path = Path(path_weights).parent
         is_zip_path = path_weights.endswith(".zip")
         if is_zip_path:
-            with ZipFile(path_weights, "r") as f:
-                f.extractall(path=params_path)
+            with ZipFile(path_weights, "r") as file:
+                file.extractall(path=params_path)
                 doctr_predictor.model.load_weights(params_path / "weights")
         else:
             doctr_predictor.model.load_weights(path_weights)
@@ -183,7 +181,7 @@ class DoctrTextlineDetector(ObjectDetector):
             arch=self.architecture, pretrained=False, pretrained_backbone=False
         )  # we will be loading the model
         # later because there is no easy way in doctr to load a model by giving only a path to its weights
-        self.categories = categories # type: ignore
+        self.categories = categories  # type: ignore
         self.device_input = device
         self.device = _set_device_str(device)
         self.load_model()
@@ -213,6 +211,7 @@ class DoctrTextlineDetector(ObjectDetector):
         return [LayoutType.word]
 
     def load_model(self) -> None:
+        """Loading model weights"""
         _load_model(self.path_weights, self.doctr_predictor, self.device)
 
 
@@ -286,4 +285,5 @@ class DoctrTextRecognizer(TextRecognizer):
         return self.__class__(self.architecture, self.path_weights, self.device_input)
 
     def load_model(self) -> None:
+        """Loading model weights"""
         _load_model(self.path_weights, self.doctr_predictor, self.device)
