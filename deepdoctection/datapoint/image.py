@@ -18,14 +18,15 @@
 """
 Dataclass Image
 """
-
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
 
-from ..utils.detection_types import ImageType
+from ..utils.detection_types import ImageType, JsonDict, Pathlike
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
 from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
@@ -534,6 +535,19 @@ class Image:
             image.summary = SummaryAnnotation.from_dict(**summary_dict)
         return image
 
+    @classmethod
+    @no_type_check
+    def from_file(cls, file_path: str) -> "Image":
+        """
+        Create `Image` instance from .json file.
+
+        :param file_path: file_path
+        :return: Initialized image
+        """
+        with open(file_path, "r", encoding="UTF-8") as file:
+            image = Image.from_dict(**json.load(file))
+        return image
+
     @staticmethod
     def get_state_attributes() -> List[str]:
         """
@@ -577,3 +591,44 @@ class Image:
             else:
                 container_ids.append(str(attr))
         return get_uuid(self.image_id, *container_ids)
+
+    def save(
+        self,
+        image_to_json: bool = True,
+        highest_hierarchy_only: bool = False,
+        path: Optional[Pathlike] = None,
+        dry: bool = False,
+    ) -> Optional[JsonDict]:
+        """
+        Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
+        base64 encodings.
+        :param image_to_json: If True will save the image as b64 encoded string in output
+        :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
+        :param path: Path to save the .json file to. If `None` results will be saved in the folder of the original
+                     document.
+        :param dry: Will run dry, i.e. without saving anything but returning the dict
+
+        :return: optional dict
+        """
+        if isinstance(path, str):
+            path = Path(path)
+        elif path is None:
+            path = Path(self.location)
+        if path.is_dir():
+            path = path / self.image_id
+        suffix = path.suffix
+        if suffix:
+            path_json = path.as_posix().replace(suffix, ".json")
+        else:
+            path_json = path.as_posix() + ".json"
+        if highest_hierarchy_only:
+            self.remove_image_from_lower_hierachy()
+        export_dict = self.as_dict()
+        export_dict["location"] = str(export_dict["location"])
+        if image_to_json and self.image is not None:
+            export_dict["_image"] = convert_np_array_to_b64(self.image)
+        if dry:
+            return export_dict
+        with open(path_json, "w", encoding="UTF-8") as file:
+            json.dump(export_dict, file, indent=2)
+        return None

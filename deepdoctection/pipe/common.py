@@ -237,15 +237,22 @@ class PageParsingService:
 class AnnotationNmsService(PipelineComponent):
     """
     A service to pass `ImageAnnotation` to a non-maximum suppression (NMS) process for given pairs of categories.
-    `ImageAnnotation`s are subjected to NMS process in groups: If `nms_pairs=[[LayoutType.text, LayoutType.table],
-    [LayoutType.title, LayoutType.table]]` all `ImageAnnotation` subject to these categories are being selected and
-     identified as one category. After NMS the discarded image annotation will be deactivated.
+    `ImageAnnotation`s are subjected to NMS process in groups:
+    If `nms_pairs=[[LayoutType.text, LayoutType.table],[LayoutType.title, LayoutType.table]]` all `ImageAnnotation`
+    subject to these categories are being selected and identified as one category.
+    After NMS the discarded image annotation will be deactivated.
     """
 
-    def __init__(self, nms_pairs: Sequence[Sequence[TypeOrStr]], thresholds: Union[float, List[float]]):
+    def __init__(
+        self,
+        nms_pairs: Sequence[Sequence[TypeOrStr]],
+        thresholds: Union[float, List[float]],
+        priority: Optional[List[Union[Optional[TypeOrStr]]]] = None,
+    ):
         """
         :param nms_pairs: Groups of categories, either as string or by `ObjectType`.
-        :param thresholds: Suppression threshold
+        :param thresholds: Suppression threshold. If only one value is provided, it will apply the threshold to all
+                           pairs. If a list is provided, make sure to add as many list elements as `nms_pairs`.
         """
         self.nms_pairs = [[get_type(val) for val in pair] for pair in nms_pairs]
         if isinstance(thresholds, float):
@@ -253,12 +260,23 @@ class AnnotationNmsService(PipelineComponent):
         else:
             assert len(self.nms_pairs) == len(thresholds), "Sequences of nms_pairs and thresholds must have same length"
             self.threshold = thresholds
+        if priority:
+            assert len(self.nms_pairs) == len(priority), "Sequences of nms_pairs and priority must have same length"
+
+            def _get_type(val: Optional[str]) -> Union[ObjectTypes, str]:
+                if val is None:
+                    return ""
+                return get_type(val)
+
+            self.priority = [_get_type(val) for val in priority]
+        else:
+            self.priority = [None for _ in self.nms_pairs]  # type: ignore
         super().__init__("nms")
 
     def serve(self, dp: Image) -> None:
-        for pair, threshold in zip(self.nms_pairs, self.threshold):
+        for pair, threshold, prio in zip(self.nms_pairs, self.threshold, self.priority):
             anns = dp.get_annotation(category_names=pair)
-            ann_ids_to_keep = nms_image_annotations(anns, threshold, dp.image_id)
+            ann_ids_to_keep = nms_image_annotations(anns, threshold, dp.image_id, prio)
             for ann in anns:
                 if ann.annotation_id not in ann_ids_to_keep:
                     self.dp_manager.deactivate_annotation(ann.annotation_id)
