@@ -211,7 +211,7 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric  # type: ignore
-    mapper = Page.from_image  # type: ignore
+    mapper = Page.from_image
     structure_only = False
 
     @classmethod
@@ -226,11 +226,11 @@ class TedsMetric(MetricBase):
         gt_dict = defaultdict(list)
         pred_dict = defaultdict(list)
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            page_gt = cls.mapper(dp_gt, LayoutType.word, [LayoutType.table])  # type: ignore
+            page_gt = cls.mapper(dp_gt, LayoutType.word, [LayoutType.table])
             for table in page_gt.tables:
                 gt_dict[page_gt.image_id].append(table.html)
 
-            page_pred = cls.mapper(dp_pred, LayoutType.word, [LayoutType.table])  # type: ignore
+            page_pred = cls.mapper(dp_pred, LayoutType.word, [LayoutType.table])
             for table in page_pred.tables:
                 pred_dict[page_pred.image_id].append(table.html)
 
@@ -240,7 +240,7 @@ class TedsMetric(MetricBase):
             gt_list.extend(gt_dict[sample])
             pred_list.extend(pred_dict[sample])
 
-        return gt_list, pred_list
+        return gt_list, pred_list  # type: ignore
 
     @classmethod
     def get_distance(
