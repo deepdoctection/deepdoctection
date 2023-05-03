@@ -28,6 +28,7 @@ from deepdoctection.datapoint.image import Image
 from deepdoctection.datapoint.view import Page
 from deepdoctection.utils.settings import LayoutType, Relationships
 
+from ..test_utils import get_test_path
 from .conftest import WhiteImage
 
 
@@ -95,3 +96,13 @@ def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
         page.save(dry=True)
     except Exception as exception:  # pylint: disable=W0703
         assert False, f"{exception}"
+
+
+@mark.basic
+def test_load_page_from_file() -> None:
+    """
+    test class from_file returns a page
+    """
+    test_file_path = get_test_path() / "test_image.json"
+    image = Page.from_file(test_file_path.as_posix())
+    assert isinstance(image, Page)

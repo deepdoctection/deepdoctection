@@ -297,6 +297,16 @@ class TestImage:
 
     @staticmethod
     @mark.basic
+    def test_load_image_from_file() -> None:
+        """
+        test class from_file returns an image
+        """
+        test_file_path = get_test_path() / "test_image.json"
+        image = Image.from_file(test_file_path.as_posix())
+        assert isinstance(image, Image)
+
+    @staticmethod
+    @mark.basic
     def test_state_id_changes_when_annotations_added(image: WhiteImage) -> None:
         """
         state_id changes when annotations are added
