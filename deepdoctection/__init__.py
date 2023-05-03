@@ -17,7 +17,7 @@ from .utils.logger import logger
 __version__ = 0.22
 
 _IMPORT_STRUCTURE = {
-    "analyzer": ["get_dd_analyzer", "build_analyzer", "load_page", "load_document"],
+    "analyzer": ["get_dd_analyzer", "build_analyzer"],
     "configs": [],
     "dataflow": [
         "DataFlowTerminated",

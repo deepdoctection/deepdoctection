@@ -100,7 +100,7 @@ def image_to_d2_frcnn_training(
 
 
 def pt_nms_image_annotations(
-    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None
+    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
 ) -> Sequence[str]:
     """
     Processing given image annotations through NMS. This is useful, if you want to supress some specific image
@@ -110,7 +110,7 @@ def pt_nms_image_annotations(
     :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
     :param threshold: NMS threshold
     :param image_id: id in order to get the embedding bounding box
-
+    :param prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
     :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
     """
     if len(anns) == 1:
@@ -129,7 +129,15 @@ def pt_nms_image_annotations(
             )
     else:
         boxes = torch.tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None])
-    scores = torch.tensor([ann.score for ann in anns])
+
+    def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
+        if ann.category_name == priority:
+            return 1.0
+        if ann.score:
+            return ann.score
+        raise ValueError("score cannot be None")
+
+    scores = torch.tensor([priority_to_confidence(ann, prio) for ann in anns])
     class_mask = torch.ones(len(boxes), dtype=torch.uint8)
     keep = batched_nms(boxes, scores, class_mask, threshold)
     ann_ids_keep = ann_ids[keep]

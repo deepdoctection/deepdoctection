@@ -20,10 +20,8 @@ Subclasses for ImageAnnotation and Image objects with various properties. These 
 simplify consumption
 """
 
-import json
 from copy import copy
 from itertools import chain
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
 import cv2
@@ -35,7 +33,6 @@ from ..utils.settings import CellType, LayoutType, ObjectTypes, PageType, Relati
 from ..utils.viz import draw_boxes, interactive_imshow
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
 from .box import BoundingBox
-from .convert import convert_np_array_to_b64
 from .image import Image
 
 
@@ -280,6 +277,17 @@ IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     CellType.column_header: Cell,
 }
 
+IMAGE_DEFAULTS: Dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
+    "text_container": LayoutType.word,
+    "top_level_text_block_names": [
+        LayoutType.table,
+        LayoutType.text,
+        LayoutType.title,
+        LayoutType.figure,
+        LayoutType.list,
+    ],
+}
+
 
 @no_type_check
 def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectTypes) -> ImageAnnotationBaseView:
@@ -415,8 +423,8 @@ class Page(Image):
     def from_image(
         cls,
         image_orig: Image,
-        text_container: ObjectTypes,
-        top_level_text_block_names: List[ObjectTypes],
+        text_container: Optional[ObjectTypes] = None,
+        top_level_text_block_names: Optional[List[ObjectTypes]] = None,
         text_block_names: Optional[List[ObjectTypes]] = None,
         base_page: Optional["Page"] = None,
     ) -> "Page":
@@ -433,6 +441,13 @@ class Page(Image):
                           In doubt, do not populate this value.
         :return:
         """
+
+        if text_container is None:
+            text_container = IMAGE_DEFAULTS["text_container"]  # type: ignore
+
+        if top_level_text_block_names is None:
+            top_level_text_block_names = IMAGE_DEFAULTS["top_level_text_block_names"]  # type: ignore
+
         img_kwargs = image_orig.as_dict()
         page = cls(
             img_kwargs.get("file_name"), img_kwargs.get("location"), img_kwargs.get("external_id")  # type: ignore
@@ -465,9 +480,9 @@ class Page(Image):
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
-        page.top_level_text_block_names = top_level_text_block_names
+        page.top_level_text_block_names = top_level_text_block_names  # type: ignore
         page.text_block_names = text_block_names
-        page.text_container = text_container
+        page.text_container = text_container  # type: ignore
         return page
 
     def _order(self, block: str) -> List[ImageAnnotationBaseView]:
@@ -653,30 +668,24 @@ class Page(Image):
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
         base64 encodings.
-        :param image_to_json: If True will save the image as b64 encoded string in output
+        :param image_to_json: If `True` will save the image as b64 encoded string in output
         :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
-        :param path: Path to save the .json file to
+        :param path: Path to save the .json file to. If `None` results will be saved in the folder of the original
+                     document.
         :param dry: Will run dry, i.e. without saving anything but returning the dict
 
         :return: optional dict
         """
-        if isinstance(path, str):
-            path = Path(path)
-        elif path is None:
-            path = Path(self.image_orig.location)
-        suffix = path.suffix
-        if suffix:
-            path_json = path.as_posix().replace(suffix, ".json")
-        else:
-            path_json = path.as_posix() + ".json"
-        if highest_hierarchy_only:
-            self.image_orig.remove_image_from_lower_hierachy()
-        export_dict = self.image_orig.as_dict()
-        export_dict["location"] = str(export_dict["location"])
-        if image_to_json and self.image_orig.image is not None:
-            export_dict["_image"] = convert_np_array_to_b64(self.image_orig.image)
-        if dry:
-            return export_dict
-        with open(path_json, "w", encoding="UTF-8") as file:
-            json.dump(export_dict, file)
-        return None
+        return self.image_orig.save(image_to_json, highest_hierarchy_only, path, dry)
+
+    @classmethod
+    @no_type_check
+    def from_file(
+        cls,
+        file_path: str,
+        text_container: Optional[ObjectTypes] = None,
+        top_level_text_block_names: Optional[List[ObjectTypes]] = None,
+        text_block_names: Optional[List[ObjectTypes]] = None,
+    ) -> "Page":
+        image = Image.from_file(file_path)
+        return cls.from_image(image, text_container, top_level_text_block_names, text_block_names)
