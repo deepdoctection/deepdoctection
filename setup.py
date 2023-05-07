@@ -73,7 +73,7 @@ _DEPS = [
     "tensorpack",
     # PyTorch related dependencies
     "timm",
-    "transformers<=4.24",
+    "transformers",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
     "jdeskew",

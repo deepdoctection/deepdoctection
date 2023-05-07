@@ -21,12 +21,12 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 
 from copy import copy
 from pathlib import Path
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Sequence, Union
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
 from ..utils.metacfg import set_config_by_yaml
-from ..utils.settings import ObjectTypes, TypeOrStr
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
 if tensorpack_available():
@@ -64,6 +64,7 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[List[str]] = None,
         ignore_mismatch: bool = False,
+        filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
         Set up the predictor.
@@ -83,11 +84,16 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"]
         :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
+        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
+                                  be filtered. Pass a list of category names that must not be returned
         """
         self.name = "_".join(Path(path_weights).parts[-3:])
         self.path_yaml = path_yaml
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
+        if filter_categories:
+            filter_categories = [get_type(cat) for cat in filter_categories]
+        self.filter_categories = filter_categories
         model = TPFrcnnDetector.set_model(path_yaml, self.categories, config_overwrite)
         super().__init__(model, path_weights, ignore_mismatch)
         assert self._number_gpus > 0, "Model only support inference with GPU"
@@ -139,9 +145,15 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         :param detection_results: list of detection results
         :return: List of detection results with attribute class_name populated
         """
+        filtered_detection_result: List[DetectionResult] = []
         for result in detection_results:
             result.class_name = self._model.cfg.DATA.CLASS_DICT[str(result.class_id)]
-        return detection_results
+            if self.filter_categories:
+                if result.class_name not in self.filter_categories:
+                    filtered_detection_result.append(result)
+            else:
+                filtered_detection_result.append(result)
+        return filtered_detection_result
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -149,5 +161,10 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(
-            self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.ignore_mismatch
+            self.path_yaml,
+            self.path_weights,
+            self.categories,
+            self.config_overwrite,
+            self.ignore_mismatch,
+            self.filter_categories,
         )

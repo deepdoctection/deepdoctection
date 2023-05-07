@@ -596,7 +596,13 @@ class Page(Image):
                 category_names_list.append(LayoutType.table)
                 if show_cells:
                     for cell in table.cells:
-                        if cell.category_name == LayoutType.cell:
+                        if cell.category_name in {
+                            LayoutType.cell,
+                            CellType.projected_row_header,
+                            CellType.spanning,
+                            CellType.row_header,
+                            CellType.column_header,
+                        }:
                             cells_found = True
                             box_stack.append(cell.bbox)
                             category_names_list.append(None)

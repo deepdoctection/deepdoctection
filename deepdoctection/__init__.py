@@ -248,6 +248,7 @@ _IMPORT_STRUCTURE = {
         "generate_html_string",
         "pipeline_component_registry",
         "TableSegmentationService",
+        "PubtablesSegmentationService",
         "SegmentationResult",
         "TextExtractionService",
         "TextOrderService",
