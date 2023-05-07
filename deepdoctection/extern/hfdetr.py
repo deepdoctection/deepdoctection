@@ -61,7 +61,7 @@ def detr_predict_image(
 ) -> List[DetectionResult]:
     """
     Calling predictor. Before doing that, tensors must be transferred to the device where the model is loaded. After
-    prediction it will present prediction in DetectionResult format-
+    running prediction it will present prediction in DetectionResult format-
 
     :param np_img: image as numpy array
     :param predictor: TableTransformerForObjectDetection
