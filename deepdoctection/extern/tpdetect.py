@@ -21,7 +21,7 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 
 from copy import copy
 from pathlib import Path
-from typing import List, Mapping, Optional, Union, Sequence
+from typing import List, Mapping, Optional, Sequence, Union
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
@@ -166,5 +166,5 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
             self.categories,
             self.config_overwrite,
             self.ignore_mismatch,
-            self.filter_categories
+            self.filter_categories,
         )
