@@ -567,7 +567,8 @@ def segment_pubtables(
         for idx, cell in enumerate(spanning_cells):
             cell_positions_rows = cell_index_rows == idx
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
-            rs = np.count_nonzero(cell_index_rows == idx)
+            rs = max([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell]) - \
+                 min([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell]) +1
             if len(rows_of_cell):
                 row_number = min([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell])
             else:
@@ -575,7 +576,9 @@ def segment_pubtables(
 
             cell_positions_cols = cell_index_cols == idx
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
-            cs = np.count_nonzero(cell_index_cols == idx)
+            cs = max([int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell]) - \
+                 min([int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell]) +1
+
             if len(cols_of_cell):
                 col_number = min(
                     [int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell]

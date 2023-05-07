@@ -21,7 +21,7 @@ D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional
+from typing import Dict, List, Literal, Mapping, Optional, Sequence
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -132,6 +132,7 @@ class D2FrcnnDetector(ObjectDetector):
         categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[List[str]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
+        filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
         Set up the predictor.
@@ -148,6 +149,8 @@ class D2FrcnnDetector(ObjectDetector):
         :param config_overwrite:  Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
                                  ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
         :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
+        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
+                                  be filtered. Pass a list of category names that must not be returned
         """
 
         self.name = "_".join(Path(path_weights).parts[-3:])
@@ -167,6 +170,9 @@ class D2FrcnnDetector(ObjectDetector):
             self.device = device
         else:
             self.device = set_torch_auto_device()
+        if filter_categories:
+            filter_categories = [get_type(cat) for cat in filter_categories]
+        self.filter_categories = filter_categories
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
         self._instantiate_d2_predictor()
@@ -219,14 +225,20 @@ class D2FrcnnDetector(ObjectDetector):
         """
         Populating category names to detection results
 
-        :param detection_results: list of detection results
+        :param detection_results: list of detection results. Will also filter categories
         :return: List of detection results with attribute class_name populated
         """
+        filtered_detection_result: List[DetectionResult] = []
         for result in detection_results:
             result.class_name = self._categories_d2[str(result.class_id)]
             if isinstance(result.class_id, int):
                 result.class_id += 1
-        return detection_results
+            if self.filter_categories:
+                if result.class_name not in self.filter_categories:
+                    filtered_detection_result.append(result)
+            else:
+                filtered_detection_result.append(result)
+        return filtered_detection_result
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -237,7 +249,8 @@ class D2FrcnnDetector(ObjectDetector):
         return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device)
+        return self.__class__(self.path_yaml, self.path_weights, self.categories, self.config_overwrite, self.device,
+                              self.filter_categories)
 
     def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())
