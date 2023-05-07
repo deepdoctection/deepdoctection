@@ -61,7 +61,7 @@ def detr_predict_image(
 ) -> List[DetectionResult]:
     """
     Calling predictor. Before doing that, tensors must be transferred to the device where the model is loaded. After
-    prediction it will present prediction in DetectionResult format-
+    running prediction it will present prediction in DetectionResult format-
 
     :param np_img: image as numpy array
     :param predictor: TableTransformerForObjectDetection
@@ -144,6 +144,7 @@ class HFDetrDerivedDetector(ObjectDetector):
         self.path_weights = path_weights
         self.path_feature_extractor_config = path_feature_extractor_config_json
         self.config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=self.path_config)
+        self.config.use_timm_backbone = True
         self.config.threshold = 0.1
         self.config.nms_threshold = 0.05
         self.hf_detr_predictor = self.set_model(path_weights)
