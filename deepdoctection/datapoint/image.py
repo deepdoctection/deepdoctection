@@ -632,3 +632,9 @@ class Image:
         with open(path_json, "w", encoding="UTF-8") as file:
             json.dump(export_dict, file, indent=2)
         return None
+
+    def get_categories_from_current_state(self):
+        return {ann.category_name for ann in self.get_annotation()}
+
+
+

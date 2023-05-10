@@ -312,7 +312,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
                                                                'S-question'])
 
             # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -400,7 +400,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
                                                                'S-question'])
 
             # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -501,7 +501,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
                                                                'S-question'])
 
             # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -700,7 +700,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
                                                   categories=["handwritten", "presentation", "resume"])
 
             # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -761,7 +761,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
                                                   categories=["handwritten", "presentation", "resume"])
 
             # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
@@ -829,7 +829,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
                                                   categories=["handwritten", "presentation", "resume"])
 
             # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm, image_to_layoutlm_features)
+            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
             pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
