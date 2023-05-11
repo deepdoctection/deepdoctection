@@ -21,7 +21,7 @@ Dataclass Image
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union, no_type_check, Set
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
