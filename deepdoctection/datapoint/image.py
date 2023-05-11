@@ -21,7 +21,7 @@ Dataclass Image
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union, no_type_check
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union, no_type_check, Set
 
 import numpy as np
 from numpy import uint8
@@ -633,8 +633,6 @@ class Image:
             json.dump(export_dict, file, indent=2)
         return None
 
-    def get_categories_from_current_state(self):
+    def get_categories_from_current_state(self) -> Set[str]:
+        """Returns all active dumped categories"""
         return {ann.category_name for ann in self.get_annotation()}
-
-
-
