@@ -94,6 +94,8 @@ class DetectResultGenerator:
                                 absolute_coords=self.absolute_coords,
                             )
                         )
+        # resetting before finishing this sample
+        self.dummy_for_group_generated = self._initialize_dummy_for_group_generated()
         return detect_result_list
 
     def _create_condition(self, detect_result_list: List[DetectionResult]) -> Dict[str, int]:
@@ -114,6 +116,10 @@ class DetectResultGenerator:
                 self.dummy_for_group_generated[idx] = True
                 return is_generated
         return False
+
+    def _initialize_dummy_for_group_generated(self):
+        return [False for _ in self.group_categories]
+
 
 
 @pipeline_component_registry.register("SubImageLayoutService")
