@@ -518,6 +518,7 @@ class Image:
         image._image_id = kwargs.get("_image_id")
         _image = kwargs.get("_image")
         image.page_number = int(kwargs.get("page_number", 0))
+        image.document_id = kwargs.get("document_id", image._image_id)
         if _image is not None:
             image.image = _image
         if box_kwargs := kwargs.get("_bbox"):
