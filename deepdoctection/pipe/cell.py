@@ -117,9 +117,8 @@ class DetectResultGenerator:
                 return is_generated
         return False
 
-    def _initialize_dummy_for_group_generated(self):
+    def _initialize_dummy_for_group_generated(self) -> List[bool]:
         return [False for _ in self.group_categories]
-
 
 
 @pipeline_component_registry.register("SubImageLayoutService")
