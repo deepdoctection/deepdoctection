@@ -258,12 +258,17 @@ class Table(Layout):
         cells = self.cells
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
-            table_list[cell.row_number - 1][cell.column_number - 1] = cell.text  # type: ignore
+            table_list[cell.row_number - 1][cell.column_number - 1] = \
+                table_list[cell.row_number - 1][cell.column_number - 1] + cell.text  # type: ignore
         return table_list
 
     def __str__(self) -> str:
         out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out
+
+    @property
+    def text(self) -> str:
+        return str(self)
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -507,12 +512,14 @@ class Page(Image):
         return text
 
     @property
-    def chunks(self) -> List[Tuple[str, str, str, str, str, str]]:
+    def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
         """
         :return: Returns a "chunk" of a layout element or a table as 6-tuple containing
 
                     - document id
                     - image id
+                    - page number
+                    - annotation_id
                     - reading order
                     - category name
                     - text string
@@ -528,6 +535,7 @@ class Page(Image):
                 (
                     self.document_id,
                     self.image_id,
+                    self.page_number,
                     chunk.annotation_id,
                     chunk.reading_order,
                     chunk.category_name,
