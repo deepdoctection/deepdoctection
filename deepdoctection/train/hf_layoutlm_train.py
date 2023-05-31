@@ -21,6 +21,7 @@ Module for training Huggingface implementation of LayoutLm
 
 import copy
 import json
+import os
 import pprint
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
@@ -61,9 +62,13 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_fea
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
+from ..utils.file_utils import wandb_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
 from ..utils.utils import string_to_dict
+
+if wandb_available():
+    import wandb
 
 _ARCHITECTURES_TO_MODEL_CLASS = {
     "LayoutLMForTokenClassification": (LayoutLMForTokenClassification, HFLayoutLmTokenClassifier, PretrainedConfig),
@@ -152,6 +157,7 @@ class LayoutLMTrainer(Trainer):
         dataset_val: DatasetBase,
         pipeline_component: LanguageModelPipelineComponent,
         metric: Union[Type[ClassificationMetric], ClassificationMetric],
+        run: Optional["wandb.sdk.wandb_run.Run"] = None,
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
@@ -161,10 +167,11 @@ class LayoutLMTrainer(Trainer):
         :param dataset_val: dataset on which to run evaluation
         :param pipeline_component: pipeline component to plug into the evaluator
         :param metric: A metric class
+        :param run: WandB run
         :param build_eval_kwargs:
         """
 
-        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1)
+        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
             comp.language_model.model = None  # type: ignore
@@ -370,6 +377,11 @@ def train_hf_layoutlm(
         if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
         else "no",
         "eval_steps": 100,
+        "use_wandb": False,
+        "wandb_project": None,
+        "wandb_repo": "deepdoctection",
+        "sliding_window_stride": 0,
+        "max_batch_size": 0,
     }
 
     # We allow to overwrite the default setting by the user.
@@ -384,13 +396,37 @@ def train_hf_layoutlm(
                 pass
         conf_dict[key] = val
 
-    # Will inform about dataloader warnings if max_steps exceeds length of dataset
+    max_batch_size = conf_dict.pop("max_batch_size")
+    sliding_window_stride = conf_dict.pop("sliding_window_stride")
+    if sliding_window_stride and not max_batch_size:
+        logger.warning(
+            "sliding_window_stride is not 0 and max_batch_size is 0. This can result in CUDA out of memory because the "
+            "batch size can be higher than per_device_train_batch_size. Set max_batch_size to a positive number if you"
+            "encounter this type of problem.",
+            number_samples,
+        )
+
+    use_wandb = conf_dict.pop("use_wandb")
+    wandb_project = conf_dict.pop("wandb_project")
+    wandb_repo = conf_dict.pop("wandb_repo")
+
+    # Initialize Wandb, if necessary
+    run = None
+    if use_wandb:
+        if not wandb_available():
+            raise ModuleNotFoundError("WandB must be installed separately")
+        run = wandb.init(project=wandb_project, config=conf_dict)  # type: ignore
+        run._label(repo=wandb_repo)  # type: ignore # pylint: disable=W0212
+    else:
+        os.environ["WANDB_DISABLED"] = "True"
+
+        # Will inform about dataloader warnings if max_steps exceeds length of dataset
     if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
             "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
         )
 
-    arguments = TrainingArguments(**conf_dict)
+    arguments = TrainingArguments(**conf_dict)  # pylint: disable=E1123
     logger.info("Config: \n %s", str(arguments.to_dict()), arguments.to_dict())
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
@@ -399,7 +435,10 @@ def train_hf_layoutlm(
 
     config = config_cls.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
-    data_collator = LayoutLMDataCollator(tokenizer_fast, return_tensors="pt")
+    data_collator = LayoutLMDataCollator(
+        tokenizer_fast, return_tensors="pt",
+        sliding_window_stride=sliding_window_stride, max_batch_size=max_batch_size  # type: ignore
+    )
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
@@ -427,9 +466,14 @@ def train_hf_layoutlm(
         if dataset_type == DatasetType.sequence_classification:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model)
         else:
-            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, use_other_as_default_category=True)
+            pipeline_component = pipeline_component_cls(
+                tokenizer_fast,
+                dd_model,
+                use_other_as_default_category=True,
+                sliding_window_stride=sliding_window_stride,
+            )
         assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
-        trainer.setup_evaluator(dataset_val, pipeline_component, metric, **build_val_dict)  # type: ignore
+        trainer.setup_evaluator(dataset_val, pipeline_component, metric, run, **build_val_dict)  # type: ignore
 
     trainer.train()

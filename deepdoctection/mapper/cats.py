@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.image import Image
@@ -61,25 +61,39 @@ def cat_to_sub_cat(
 
 
 @curry
-def re_assign_cat_ids(dp: Image, categories_dict_name_as_key: Dict[TypeOrStr, str]) -> Image:
+def re_assign_cat_ids(
+    dp: Image,
+    categories_dict_name_as_key: Optional[Dict[TypeOrStr, str]] = None,
+    cat_to_sub_cat_mapping: Optional[Mapping[ObjectTypes, Any]] = None,
+) -> Image:
     """
     Re-assigning category ids is sometimes necessary to align with categories of the `DatasetCategories` . E.g.
     consider the situation where some categories are filtered. In order to guarantee alignment of category ids of the
     `DatasetCategories` the ids in the annotation have to be re-assigned.
 
-    Annotations that as not in the dictionary provided will removed from the image.
+    Annotations that are not in the dictionary provided will be removed.
 
     :param dp: Image
-    :param categories_dict_name_as_key:
+    :param categories_dict_name_as_key: e.g. {"foo": "1", "bak": "2"}
+    :param cat_to_sub_cat_mapping:
     :return: Image
     """
 
     anns_to_remove: List[ImageAnnotation] = []
     for ann in dp.get_annotation_iter():
-        if ann.category_name in categories_dict_name_as_key:
-            ann.category_id = categories_dict_name_as_key[ann.category_name]
-        else:
-            anns_to_remove.append(ann)
+        if categories_dict_name_as_key is not None:
+            if ann.category_name in categories_dict_name_as_key:
+                ann.category_id = categories_dict_name_as_key[ann.category_name]
+            else:
+                anns_to_remove.append(ann)
+
+        if cat_to_sub_cat_mapping:
+            if ann.category_name in cat_to_sub_cat_mapping:
+                sub_cat_keys_to_sub_cat_values = cat_to_sub_cat_mapping[get_type(ann.category_name)]
+                for key in sub_cat_keys_to_sub_cat_values:
+                    sub_cat_values_dict = sub_cat_keys_to_sub_cat_values[key]
+                    sub_category = ann.get_sub_category(key)
+                    sub_category.category_id = sub_cat_values_dict.get(sub_category.category_name, "")
 
     for ann in anns_to_remove:
         dp.remove(ann)
@@ -220,7 +234,7 @@ def image_to_cat_id(
     if id_name_or_value not in ("id", "name", "value"):
         raise ValueError(f"id_name_or_value must be in ('id', 'name', 'value') but is {id_name_or_value}")
 
-    if category_names or sub_categories:  # pylint: disable=R1702
+    if category_names or sub_categories:
         for ann in dp.get_annotation_iter():
             if ann.category_name in category_names:
                 cat_container[ann.category_name].append(int(ann.category_id))
