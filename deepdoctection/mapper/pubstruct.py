@@ -132,7 +132,7 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
     tiling = [[-1] * number_of_cols for _ in range(number_of_rows)]  # initialize placeholders
     table = zip(cell_ids, row_spans, col_spans)
 
-    for row_id, row in enumerate(table):  # type: ignore # pylint: disable=R1702
+    for row_id, row in enumerate(table):  # type: ignore
         for cell in zip(row[0], row[1], row[2]):  # type: ignore
             cell_id = cell[0]
             row_span = cell[1]

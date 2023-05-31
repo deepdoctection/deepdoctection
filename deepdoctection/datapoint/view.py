@@ -247,7 +247,11 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> Set[str]:
-        return set(TableType).union(super().get_attribute_names()).union({"cells", "rows", "columns", "html"})
+        return (
+            set(TableType)
+            .union(super().get_attribute_names())
+            .union({"cells", "rows", "columns", "html", "csv", "text"})
+        )
 
     @property
     def csv(self) -> List[List[str]]:
@@ -671,7 +675,20 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union({"text", "tables", "layouts", "words", "residual_words"})
+        return set(PageType).union(
+            {
+                "text",
+                "chunks",
+                "tables",
+                "layouts",
+                "words",
+                "residual_words",
+                "file_name",
+                "location",
+                "document_id",
+                "page_number",
+            }
+        )
 
     def save(
         self,

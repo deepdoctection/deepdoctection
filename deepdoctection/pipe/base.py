@@ -316,8 +316,8 @@ class Pipeline(ABC):
         """
         comp_info = {key: comp.name for key, comp in enumerate(self.pipe_component_list)}
         comp_info_name_as_key = {value: key for key, value in comp_info.items()}
-        if position:
+        if position is not None:
             return comp_info[position]
-        if name:
+        if name is not None:
             return comp_info_name_as_key[name]
         return comp_info

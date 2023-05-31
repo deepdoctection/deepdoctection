@@ -94,6 +94,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
     for ann in image.get_annotation():
         ann.remove_sub_category(WordType.token_class)
         ann.remove_sub_category(WordType.tag)
+        ann.remove_sub_category(WordType.token_tag)
 
     # Act
     raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(image)

@@ -22,7 +22,7 @@ Module for storing dataset info (e.g. general meta data or categories)
 from copy import copy
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, overload
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, no_type_check, overload
 
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
@@ -230,7 +230,7 @@ class DatasetCategories:
             sub_categories = {}
 
         sub_cat: Dict[ObjectTypes, Union[ObjectTypes, List[ObjectTypes]]] = {}
-        for cat in _categories:  # pylint: disable=R1702
+        for cat in _categories:
             assert cat in self.get_categories(  # pylint: disable=E1135
                 as_dict=False, filtered=True
             ), f"{cat} not in categories. Maybe it has been replaced with sub category"
@@ -370,6 +370,7 @@ class DatasetCategories:
         assert all(isinstance(val, dict) for val in self.init_sub_categories.values())
 
 
+@no_type_check
 def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     """
     Given a set of `DatasetCategories`, a `DatasetCategories` instance will be returned that summarize the category
@@ -420,8 +421,26 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
             intersect_init_sub_cat_values[sub_cat_key] = list(val)
         intersect_init_sub_cat[key] = intersect_init_sub_cat_values
 
+    # Building sub cats such that the result is deterministic. Because we use sets in several occasions above the
+    # construction is not deterministic but guarantees for unique values in all sub categories. Now we build the
+    # ensemble dict of sub categories where we guarantee unique values on one hand side and always maintain the
+    # same arrangements for all category/ sub category lists
+    init_sub_cat: Dict[ObjectTypes, Any] = {}
+    for category in categories:
+        for cat in intersect_sub_cat_keys:
+            for sub_cat_key in category.init_sub_categories[cat]:
+                if sub_cat_key in intersect_init_sub_cat[cat]:
+                    for sub_cat_val in category.init_sub_categories[cat][sub_cat_key]:
+                        if sub_cat_val in intersect_init_sub_cat[cat][sub_cat_key]:
+                            if cat not in init_sub_cat:
+                                init_sub_cat[cat] = {}
+                            if sub_cat_key not in init_sub_cat[cat]:
+                                init_sub_cat[cat][sub_cat_key] = [sub_cat_val]
+                            else:
+                                init_sub_cat[cat][sub_cat_key].append(sub_cat_val)
+
     # Next, build the DatasetCategories instance.
-    merged_categories = DatasetCategories(init_categories=init_categories, init_sub_categories=intersect_init_sub_cat)
+    merged_categories = DatasetCategories(init_categories=init_categories, init_sub_categories=init_sub_cat)
     merged_categories._categories_update = categories_update  # pylint: disable = W0212
     merged_categories._allow_update = False  # pylint: disable = W0212
     setattr(merged_categories, "_categories_filter_update", categories_filtered)
