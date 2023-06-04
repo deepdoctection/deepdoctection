@@ -273,7 +273,7 @@ class Evaluator:
 
         return df_pr
 
-    def compare(self, interactive: bool = False, **dataflow_build_kwargs: Union[str, int]) -> Optional[ImageType]:
+    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Optional[ImageType]:
         """
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.
@@ -281,11 +281,18 @@ class Evaluator:
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently (e.g. matplotlib). Note that, if the interactive mode is being
                             used, more than one sample can be iteratively be displayed.
-        :param dataflow_build_kwargs: Dataflow configs for displaying specific image splits
+        :param kwargs: Dataflow configs for displaying specific image splits and visualisation configs:
+                       `show_tables`, `show_layouts`, `show_table_structure`, `show_words`
         :return: Image as numpy array
         """
-        df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
-        df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
+
+        show_tables = kwargs.pop("show_tables",True)
+        show_layouts = kwargs.pop("show_layouts",True)
+        show_table_structure = kwargs.pop("show_table_structure",True)
+        show_words = kwargs.pop("show_words",False)
+
+        df_gt = self.dataset.dataflow.build(**kwargs)
+        df_pr = self.dataset.dataflow.build(**kwargs)
         df_gt = MapData(df_gt, maybe_load_image)
         df_pr = MapData(df_pr, maybe_load_image)
         df_pr = MapData(df_pr, deepcopy)
@@ -316,7 +323,14 @@ class Evaluator:
         df_pr.reset_state()
         df_gt.reset_state()
         for dp_gt, dp_pred in zip(df_gt, df_pr):
-            img_gt, img_pred = dp_gt.viz(), dp_pred.viz()
+            img_gt, img_pred = dp_gt.viz(show_tables=show_tables,
+                                         show_layouts=show_layouts,
+                                         show_table_structure=show_table_structure,
+                                         show_words=show_words), \
+                dp_pred.viz(show_tables=show_tables,
+                                         show_layouts=show_layouts,
+                                         show_table_structure=show_table_structure,
+                                         show_words=show_words)
             img_concat = np.concatenate((img_gt, img_pred), axis=1)
             if interactive:
                 interactive_imshow(img_concat)
