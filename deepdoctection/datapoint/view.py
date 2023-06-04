@@ -601,12 +601,12 @@ class Page(Image):
         if show_layouts:
             for item in self.layouts:
                 box_stack.append(item.bbox)
-                category_names_list.append(item.category_name)
+                category_names_list.append(item.category_name.value)
 
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bbox)
-                category_names_list.append(LayoutType.table)
+                category_names_list.append(LayoutType.table.value)
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name in {
@@ -642,9 +642,9 @@ class Page(Image):
             for word in all_words:
                 box_stack.append(word.bbox)
                 if show_token_class:
-                    category_names_list.append(str(word.token_class).replace("TokenClasses", ""))
+                    category_names_list.append(word.token_class.value)
                 else:
-                    category_names_list.append(str(word.token_tag))
+                    category_names_list.append(word.token_tag.value)
 
         if self.image is not None:
             if box_stack:
@@ -654,9 +654,8 @@ class Page(Image):
                         self.image,
                         boxes,
                         category_names_list,
-                        color=(255, 222, 173),
                         font_scale=0.25,
-                        rectangle_thickness=1,
+                        rectangle_thickness=4,
                     )
                 else:
                     img = draw_boxes(self.image, boxes, category_names_list)
