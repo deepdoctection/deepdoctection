@@ -119,7 +119,7 @@ def test_filter_summary_1(datapoint_image_with_summary: Image) -> None:
     """
 
     # Arrange
-    output = filter_summary({"BAK": "FOO"}, True)(datapoint_image_with_summary)
+    output = filter_summary({"BAK": "FOO"})(datapoint_image_with_summary)
 
     # Assert
     assert output is not None
@@ -132,7 +132,7 @@ def test_filter_summary_2(datapoint_image_with_summary: Image) -> None:
     """
 
     # Arrange
-    output = filter_summary({"BAK": ["BAZ"]}, True)(datapoint_image_with_summary)
+    output = filter_summary({"BAK": ["BAZ"]})(datapoint_image_with_summary)
 
     # Assert
     assert output is None

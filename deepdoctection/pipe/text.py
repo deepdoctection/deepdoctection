@@ -449,14 +449,17 @@ class TextOrderService(PipelineComponent):
 
     @property
     def text_container(self) -> str:
+        """text container"""
         return self._text_container
 
     @property
     def floating_text_block_names(self) -> Sequence[str]:
+        """floating text block names"""
         return self._floating_text_block_names
 
     @property
     def text_block_names(self) -> Sequence[str]:
+        """text block names"""
         return self._text_block_names
 
     def serve(self, dp: Image) -> None:

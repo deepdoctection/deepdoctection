@@ -286,10 +286,10 @@ class Evaluator:
         :return: Image as numpy array
         """
 
-        show_tables = kwargs.pop("show_tables",True)
-        show_layouts = kwargs.pop("show_layouts",True)
-        show_table_structure = kwargs.pop("show_table_structure",True)
-        show_words = kwargs.pop("show_words",False)
+        show_tables = kwargs.pop("show_tables", True)
+        show_layouts = kwargs.pop("show_layouts", True)
+        show_table_structure = kwargs.pop("show_table_structure", True)
+        show_words = kwargs.pop("show_words", False)
 
         df_gt = self.dataset.dataflow.build(**kwargs)
         df_pr = self.dataset.dataflow.build(**kwargs)
@@ -323,14 +323,17 @@ class Evaluator:
         df_pr.reset_state()
         df_gt.reset_state()
         for dp_gt, dp_pred in zip(df_gt, df_pr):
-            img_gt, img_pred = dp_gt.viz(show_tables=show_tables,
-                                         show_layouts=show_layouts,
-                                         show_table_structure=show_table_structure,
-                                         show_words=show_words), \
-                dp_pred.viz(show_tables=show_tables,
-                                         show_layouts=show_layouts,
-                                         show_table_structure=show_table_structure,
-                                         show_words=show_words)
+            img_gt, img_pred = dp_gt.viz(
+                show_tables=show_tables,
+                show_layouts=show_layouts,
+                show_table_structure=show_table_structure,
+                show_words=show_words,
+            ), dp_pred.viz(
+                show_tables=show_tables,
+                show_layouts=show_layouts,
+                show_table_structure=show_table_structure,
+                show_words=show_words,
+            )
             img_concat = np.concatenate((img_gt, img_pred), axis=1)
             if interactive:
                 interactive_imshow(img_concat)

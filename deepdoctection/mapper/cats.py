@@ -133,7 +133,9 @@ def filter_cat(
 
 @curry
 def filter_summary(
-    dp: Image, sub_cat_to_sub_cat_names_or_ids: Mapping[TypeOrStr, Sequence[TypeOrStr]], use_category_name: bool = True
+    dp: Image,
+    sub_cat_to_sub_cat_names_or_ids: Mapping[TypeOrStr, Sequence[TypeOrStr]],
+    mode: Literal["name", "id", "value"] = "name",
 ) -> Optional[Image]:
     """
     Filters datapoints with given summary conditions. If several conditions are given, it will filter out datapoints
@@ -143,13 +145,16 @@ def filter_summary(
     :param sub_cat_to_sub_cat_names_or_ids: A dict of list. The key correspond to the sub category key to look for in
                                             the summary. The value correspond to a sequence of either category names
                                             or category ids
-    :param use_category_name: With respect to the previous argument, if set to True, it will look if the category name
-                              corresponds to any of the given values. If False it will look for category ids.
+    :param mode: With respect to the previous argument, it will look if the category name, the value or the category_id
+                 corresponds to any of the given values.
     :return: Image or None
     """
     for key, values in sub_cat_to_sub_cat_names_or_ids.items():
-        if use_category_name and dp.summary:
+        if mode == "name" and dp.summary:
             if dp.summary.get_sub_category(get_type(key)).category_name in values:
+                return dp
+        elif mode == "value" and dp.summary:
+            if dp.summary.get_sub_category(get_type(key)).value in values:  # type: ignore
                 return dp
         elif dp.summary:
             if dp.summary.get_sub_category(get_type(key)).category_id in values:
