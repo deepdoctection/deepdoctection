@@ -436,8 +436,10 @@ def train_hf_layoutlm(
     config = config_cls.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
     data_collator = LayoutLMDataCollator(
-        tokenizer_fast, return_tensors="pt",
-        sliding_window_stride=sliding_window_stride, max_batch_size=max_batch_size  # type: ignore
+        tokenizer_fast,
+        return_tensors="pt",
+        sliding_window_stride=sliding_window_stride,  # type: ignore
+        max_batch_size=max_batch_size,  # type: ignore
     )
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
 

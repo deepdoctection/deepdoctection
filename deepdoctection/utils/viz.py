@@ -223,7 +223,7 @@ def draw_boxes(
     color: Optional[Tuple[int, int, int]] = None,
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
-    box_color_by_category: bool = True
+    box_color_by_category: bool = True,
 ) -> ImageType:
     """
     Dray bounding boxes with category names into image.
@@ -242,9 +242,8 @@ def draw_boxes(
 
     category_to_color = {}
     if box_color_by_category:
-        category_names = set(category_names_list)
+        category_names = set(category_names_list)  # type: ignore
         category_to_color = {category: random_color() for category in category_names}
-
 
     boxes = np.asarray(boxes, dtype="int32")
     if category_names_list is not None:
@@ -280,13 +279,12 @@ def draw_boxes(
 
     # draw a (very ugly) color palette
     y_0 = np_image.shape[0]
-    for category, color in category_to_color.items():
-        np_image = draw_text(
-            np_image, (np_image.shape[1], y_0), category, color=color, font_scale=2
-        )
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        ((_, text_h), _) = cv2.getTextSize(category, font, font_scale, 2)
-        y_0= y_0 - int(10 * text_h)
+    for category, col in category_to_color.items():
+        if category is not None:
+            np_image = draw_text(np_image, (np_image.shape[1], y_0), category, color=col, font_scale=2)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            ((_, text_h), _) = cv2.getTextSize(category, font, font_scale, 2)
+            y_0 = y_0 - int(10 * text_h)
 
     return np_image
 
