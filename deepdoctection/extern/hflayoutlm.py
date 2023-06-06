@@ -73,7 +73,9 @@ def predict_token_classes(
     token_type_ids: "Tensor",
     boxes: "Tensor",
     tokens: List[List[str]],
-    model: "LayoutLMForTokenClassification",
+    model: Union["LayoutLMForTokenClassification",
+                 "LayoutLMv2ForTokenClassification",
+                 "LayoutLMv3ForTokenClassification"],
     images: Optional["Tensor"] = None,
 ) -> List[TokenClassResult]:
     """
@@ -87,12 +89,24 @@ def predict_token_classes(
     :param images: A list of torch image tensors or None
     :return: A list of TokenClassResults
     """
+
     if images is None:
         outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
-    else:
+    elif isinstance(model, LayoutLMv2ForTokenClassification):
         outputs = model(
             input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids, image=images
         )
+    elif isinstance(model, LayoutLMv3ForTokenClassification):
+        outputs = model(
+            input_ids=input_ids,
+            bbox=boxes,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            pixel_values=images,
+        )
+    else:
+        raise ValueError(f"Cannot call model {type(model)}")
+
     soft_max = F.softmax(outputs.logits, dim=2)
     score = torch.max(soft_max, dim=2)[0].tolist()
     token_class_predictions_ = outputs.logits.argmax(-1).tolist()
