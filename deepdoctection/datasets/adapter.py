@@ -127,7 +127,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                         cat_ids = dp.summary.get_sub_category(PageType.document_type).category_id
 
                     elif self.dataset.dataset_info.type == DatasetType.token_classification:
-                        anns = dp.get_annotation()
+                        anns = dp.get_annotation(category_names=LayoutType.word)
                         if use_token_tag:
                             cat_ids = [ann.get_sub_category(WordType.token_tag).category_id for ann in anns]
                         else:

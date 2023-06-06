@@ -150,9 +150,11 @@ def _get_category_attributes(
     ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
 ) -> Tuple[str, str, Optional[float]]:
     if cat_to_sub_cat:
-        sub_cat_key = cat_to_sub_cat[get_type(ann.category_name)]
-        sub_cat = ann.get_sub_category(sub_cat_key)
-        return sub_cat.category_name, sub_cat.category_id, sub_cat.score
+        sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
+        if sub_cat_key in ann.sub_categories:
+            sub_cat = ann.get_sub_category(sub_cat_key)
+            return sub_cat.category_name, sub_cat.category_id, sub_cat.score
+        return "", "", 0.
     return ann.category_name, ann.category_id, ann.score
 
 
@@ -193,15 +195,16 @@ def to_wandb_image(
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, True)
         category_name, category_id, score = _get_category_attributes(ann, cat_to_sub_cat)
-        box = {
-            "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
-            "domain": "pixel",
-            "class_id": int(category_id),
-            "box_caption": category_name,
-        }
-        if score:
-            box["scores"] = {"acc": score}
-        boxes.append(box)
+        if category_name:
+            box = {
+                "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
+                "domain": "pixel",
+                "class_id": int(category_id),
+                "box_caption": category_name,
+            }
+            if score:
+                box["scores"] = {"acc": score}
+            boxes.append(box)
 
     predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
 
