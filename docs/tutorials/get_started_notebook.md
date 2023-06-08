@@ -434,4 +434,4 @@ word #  __repr__ of the base object does carry <WordType.token_class> informatio
 
 
 
-There is no easy way yet to modify results. In tutorial **Diving deeper into the data structure** we will show how you can do this. 
+There is no easy way yet to modify results. In tutorial [Data structure](data_structure_notebook.md) we will show how you can do this. 
