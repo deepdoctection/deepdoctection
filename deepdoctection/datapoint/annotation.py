@@ -280,7 +280,7 @@ class CategoryAnnotation(Annotation):
         self, sub_category_name: TypeOrStr, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
     ) -> None:
         """
-        Storage of sub-categories. Since sub-categories usually only depend on very few attributes and the parent
+        Storage of sub-categories. As sub-categories usually only depend on very few attributes and the parent
         category cannot yet be stored in a comprehensive container, it is possible to include a context of the
         annotation id in order to ensure that the sub-category annotation id is unambiguously created.
 

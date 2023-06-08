@@ -417,8 +417,8 @@ class TextOrderService(PipelineComponent):
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
         :param floating_text_block_names: name of image annotation that belong to floating text. These annotations form
-                                          the highest hierarchy of text blocks that will ordered to generate a sensible
-                                          output of text
+                                          the highest hierarchy of text blocks that will be ordered to generate a
+                                          sensible output of text
         :param text_block_names: name of image annotation that have a relation with text containers (or which might be
                                  text containers themselves).
         :param text_containers_to_text_block: Text containers are in general no text blocks and belong to a lower
@@ -446,6 +446,21 @@ class TextOrderService(PipelineComponent):
         self.ignore_category_when_building_column_blocks = [LayoutType.table]
         self._init_sanity_checks()
         super().__init__("text_order")
+
+    @property
+    def text_container(self) -> str:
+        """text container"""
+        return self._text_container
+
+    @property
+    def floating_text_block_names(self) -> Sequence[str]:
+        """floating text block names"""
+        return self._floating_text_block_names
+
+    @property
+    def text_block_names(self) -> Sequence[str]:
+        """text block names"""
+        return self._text_block_names
 
     def serve(self, dp: Image) -> None:
         # select all text blocks that are considered to be relevant for page text. This does not include some layout

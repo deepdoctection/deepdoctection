@@ -320,7 +320,7 @@ plt.imshow(dp.viz())
 
 
 
-![](./_imgs/output_26_2.png)
+![](./_imgs/layoutlm_sequence_classification_1.png)
 
 
 
@@ -355,7 +355,7 @@ plt.imshow(dp.viz())
 
 
 
-![](./_imgs/output_29_1.png)
+![](./_imgs/layoutlm_sequence_classification_2.png)
 
 
 

@@ -34,7 +34,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import wandb_available
-from ..utils.settings import ObjectTypes, TypeOrStr
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 
 if wandb_available():
     from wandb import Classes
@@ -146,13 +146,35 @@ def pt_nms_image_annotations(
     return []
 
 
+def _get_category_attributes(
+    ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
+) -> Tuple[str, str, Optional[float]]:
+    if cat_to_sub_cat:
+        sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
+        if sub_cat_key in ann.sub_categories:
+            sub_cat = ann.get_sub_category(sub_cat_key)
+            return sub_cat.category_name, sub_cat.category_id, sub_cat.score
+        return "", "", 0.
+    return ann.category_name, ann.category_id, ann.score
+
+
 @curry
-def to_wandb_image(dp: Image, categories: Mapping[str, TypeOrStr]) -> Tuple[str, "Wbimage"]:
+def to_wandb_image(
+    dp: Image,
+    categories: Mapping[str, TypeOrStr],
+    sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
+    cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
+) -> Tuple[str, "Wbimage"]:
     """
     Converting a deepdoctection image into a wandb image
 
     :param dp: deepdoctection image
-    :param categories: dict of categories
+    :param categories: dict of categories. The categories refer to categories of `ImageAnnotation`s.
+    :param sub_categories:  dict of sub categories. If provided, these categories will define the classes for the table
+    :param cat_to_sub_cat: dict of category to sub category keys. Suppose your category `foo` has a sub category defined
+                           by the key `sub_foo`. The range sub category values must then be given by `sub_categories`
+                           and to extract the sub category values one must pass `{"foo": "sub_foo"}
+
     :return: a W&B image
     """
     if dp.image is None:
@@ -160,21 +182,29 @@ def to_wandb_image(dp: Image, categories: Mapping[str, TypeOrStr]) -> Tuple[str,
 
     boxes = []
     anns = dp.get_annotation(category_names=list(categories.values()))
-    class_labels = {int(key): val for key, val in categories.items()}
 
-    class_set = Classes([{"name": val, "id": int(key)} for key, val in categories.items()])
+    if sub_categories:
+        class_labels = {int(key): val for key, val in sub_categories.items()}
+        class_set = Classes([{"name": val, "id": int(key)} for key, val in sub_categories.items()])
+    else:
+        class_labels = {int(key): val for key, val in categories.items()}
+        class_set = Classes([{"name": val, "id": int(key)} for key, val in categories.items()])
 
     for ann in anns:
         bounding_box = ann.image.get_embedding(dp.image_id) if ann.image is not None else ann.bounding_box
-        box = {
-            "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
-            "domain": "pixel",
-            "class_id": int(ann.category_id),
-            "box_caption": ann.category_name,
-        }
-        if ann.score:
-            box["scores"] = {"acc": ann.score}
-        boxes.append(box)
+        if not bounding_box.absolute_coords:
+            bounding_box = bounding_box.transform(dp.width, dp.height, True)
+        category_name, category_id, score = _get_category_attributes(ann, cat_to_sub_cat)
+        if category_name:
+            box = {
+                "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
+                "domain": "pixel",
+                "class_id": int(category_id),
+                "box_caption": category_name,
+            }
+            if score:
+                box["scores"] = {"acc": score}
+            boxes.append(box)
 
     predictions = {"predictions": {"box_data": boxes, "class_labels": class_labels}}
 

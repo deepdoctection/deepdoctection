@@ -223,6 +223,7 @@ def draw_boxes(
     color: Optional[Tuple[int, int, int]] = None,
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
+    box_color_by_category: bool = True,
 ) -> ImageType:
     """
     Dray bounding boxes with category names into image.
@@ -233,8 +234,16 @@ def draw_boxes(
     :param color: A 3-tuple BGR color (in range [0, 255])
     :param font_scale: Font scale of text box
     :param rectangle_thickness: Thickness of bounding box
+    :param box_color_by_category:
     :return: A new image np.ndarray
     """
+    if color is not None:
+        box_color_by_category = False
+
+    category_to_color = {}
+    if box_color_by_category:
+        category_names = set(category_names_list)  # type: ignore
+        category_to_color = {category: random_color() for category in category_names}
 
     boxes = np.asarray(boxes, dtype="int32")
     if category_names_list is not None:
@@ -257,7 +266,9 @@ def draw_boxes(
     for i in sorted_inds:
         box = boxes[i, :]
         if category_names_list is not None:
-            choose_color = random_color() if color is None else color
+            choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
+            if choose_color is None:
+                choose_color = random_color()
             if category_names_list[i] is not None:
                 np_image = draw_text(
                     np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
@@ -265,6 +276,16 @@ def draw_boxes(
             cv2.rectangle(
                 np_image, (box[0], box[1]), (box[2], box[3]), color=choose_color, thickness=rectangle_thickness
             )
+
+    # draw a (very ugly) color palette
+    y_0 = np_image.shape[0]
+    for category, col in category_to_color.items():
+        if category is not None:
+            np_image = draw_text(np_image, (np_image.shape[1], y_0), category, color=col, font_scale=2)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            ((_, text_h), _) = cv2.getTextSize(category, font, font_scale, 2)
+            y_0 = y_0 - int(10 * text_h)
+
     return np_image
 
 
