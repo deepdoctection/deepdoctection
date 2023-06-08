@@ -44,6 +44,8 @@ nav:
             - Datasets: ./tutorials/datasets.md
             - Customized parsing: ./tutorials/layout_parsing_structure.md
             - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
+            - LayoutLMv1 for financial report NER: ./tutorials/layoutlm_v1_on_custom_token_classification_notebook.md
+            - LayoutLMv2 and LayoutXLM for financial report NER: ./tutorials/layoutlm_v2_on_custom_token_classification_notebook.md
             - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
         - Notes:
             - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
