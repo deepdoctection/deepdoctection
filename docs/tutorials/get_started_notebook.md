@@ -1,3 +1,19 @@
+# Notebooks, Tutorials, Scripts and Notes
+
+Tutorials are divided into different groups. 
+
+**Introductory tutorials:** The introductory tutorials are also available as 
+[notebooks](https://github.com/deepdoctection/notebooks).
+
+**Deep dive tutorials:** Architectural issues related to the library are discussed. In addition, other topics such 
+as training and evaluation of multimodal models are described that did not find a place as introductory tutorial. 
+
+**Notes:** Notes contain topics on special issues, experiments or ideas. Notes have the common feature that 
+the implementation is more complex. 
+
+**Scripts:** Following the name, these are training or evaluation scripts. They are provided with little to no comments.
+
+
 ![title](./_imgs/dd_logo.png) 
 
 # Getting started

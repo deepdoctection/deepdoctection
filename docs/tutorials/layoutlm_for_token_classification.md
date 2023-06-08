@@ -12,6 +12,10 @@ We also show how to visualize and display the results.
 For training and evaluation we use the [Funsd][deepdoctection.datasets.instances.funsd] dataset. To demonstrate the
 inference pipeline, we use form samples from the [RVLCDIP][deepdoctection.datasets.instances.rvlcdip] dataset.
 
+There is a [series](layoutlm_v1_on_custom_token_classification_notebook.md) of further tutorials on token classification with LayoutLM. There, a special dataset with special 
+categories is used to show how training and evaluation can be started using W&B. The models LayoutLMv1, LayoutLMv2, 
+LayoutXLM as well as LayoutLMv3 are treated there.
+
 ```python
 
     from transformers import LayoutLMTokenizerFast
@@ -97,7 +101,7 @@ inference pipeline, we use form samples from the [RVLCDIP][deepdoctection.datase
     
 
 ```
-
+```
     Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-300
     Configuration saved in /path/to/Tests/Token_classification/checkpoint-300/config.json
     Model weights saved in /path/to/Tests/Token_classification/checkpoint-300/pytorch_model.bin
