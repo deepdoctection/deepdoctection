@@ -96,54 +96,6 @@ inference pipeline, we use form samples from the [RVLCDIP][deepdoctection.datase
     }
     
 
-
-    [32m[0903 14:37.28 @accmetric.py:340][0m [32mINF[0m F1 results:
-    |    key    | category_id   | val      | num_samples   |
-    |:---------:|:--------------|:---------|:--------------|
-    | token_tag | 1             | 0.841791 | 821           |
-    | token_tag | 2             | 0.528455 | 122           |
-    | token_tag | 3             | 0.863985 | 1077          |
-    | token_tag | 4             | 0.814785 | 2544          |
-    | token_tag | 5             | 0.558923 | 257           |
-    | token_tag | 6             | 0.766207 | 1594          |
-    | token_tag | 7             | 0.769401 | 2558          |
-
-    Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-100
-    Configuration saved in /path/to/Tests/Token_classification/checkpoint-100/config.json
-    Model weights saved in /path/to/Tests/Token_classification/checkpoint-100/pytorch_model.bin
-
-    [32m[0903 14:38.00 @accmetric.py:340] F1 results:
-    |    key    | category_id   | val      | num_samples   |
-    |:---------:|:--------------|:---------|:--------------|
-    | token_tag | 1             | 0.848989 | 821           |
-    | token_tag | 2             | 0.616541 | 122           |
-    | token_tag | 3             | 0.871966 | 1077          |
-    | token_tag | 4             | 0.818508 | 2544          |
-    | token_tag | 5             | 0.528363 | 257           |
-    | token_tag | 6             | 0.779874 | 1594          |
-    | token_tag | 7             | 0.754623 | 2558          |
-```
-
-
-```
-
-    Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-200
-    Configuration saved in /path/to/Tests/Token_classification/checkpoint-200/config.json
-    Model weights saved in /path/to/Tests/Token_classification/checkpoint-200/pytorch_model.bin
-
-
-    [0903 14:38.32 @accmetric.py:340] F1 results:
-    |    key    | category_id   | val      | num_samples   |
-    |:---------:|:--------------|:---------|:--------------|
-    | token_tag | 1             | 0.856124 | 821           |
-    | token_tag | 2             | 0.606557 | 122           |
-    | token_tag | 3             | 0.87206  | 1077          |
-    | token_tag | 4             | 0.812651 | 2544          |
-    | token_tag | 5             | 0.543333 | 257           |
-    | token_tag | 6             | 0.772786 | 1594          |
-    | token_tag | 7             | 0.746672 | 2558          |
-```
-
 ```
 
     Saving model checkpoint to /path/to/Tests/Token_classification/checkpoint-300
@@ -276,7 +228,7 @@ trained model by using a confusion matrix.
     plt.imshow(dp.viz())
 ```
 
-![](./_imgs/output_10_1.png)
+![](./_imgs/layoutlm_token_classification_1.png)
 
 
 ```python
@@ -286,7 +238,7 @@ trained model by using a confusion matrix.
     plt.imshow(dp.viz(show_words=True))
 ```
 
-![](./_imgs/output_11_1.png)
+![](./_imgs/layoutlm_token_classification_2.png)
 
 
 ```python
@@ -419,7 +371,7 @@ trained model by using a confusion matrix.
     plt.imshow(dp.viz())
 ```
 
-[](./_imgs/output_14_1.png)
+[](./_imgs/layoutlm_token_classification_3.png)
 
 
 ```python
@@ -429,7 +381,7 @@ trained model by using a confusion matrix.
     plt.imshow(dp.viz(show_words=True))
 ```
 
-[](./_imgs/output_15_1.png)
+[](./_imgs/layoutlm_token_classification_4.png)
 
 
 ```python

@@ -2,13 +2,12 @@
 
 ## Dataset
 
-In **deep**doctection, there is a module `datasets` available that allows you to use some public datasets for training 
-and sampling straight away. They might also help you by providing examples if you want to make you custom dataset 
-ready for **deep**doctection.
+In **deep**doctection, there is a module `datasets` available that allows you to use some public datasets straight away. They might also help you by providing examples if you want to make your custom dataset ready for **deep**doctection.
 
 
 ```python
 import deepdoctection as dd
+
 from matplotlib import pyplot as plt
 ```
 
@@ -18,33 +17,6 @@ Let's print a list of all built-in datasets.
 ```python
 dd.print_dataset_infos(add_license=False, add_info=False)
 ```
-
-    ╒═══════════════╕
-    │ dataset       │
-    ╞═══════════════╡
-    │ doclaynet     │
-    ├───────────────┤
-    │ doclaynet-seq │
-    ├───────────────┤
-    │ fintabnet     │
-    ├───────────────┤
-    │ funsd         │
-    ├───────────────┤
-    │ iiitar13k     │
-    ├───────────────┤
-    │ testlayout    │
-    ├───────────────┤
-    │ publaynet     │
-    ├───────────────┤
-    │ pubtables1m   │
-    ├───────────────┤
-    │ pubtabnet     │
-    ├───────────────┤
-    │ rvl-cdip      │
-    ├───────────────┤
-    │ xfund         │
-    ╘═══════════════╛
-
 
 With `get_dataset("doclaynet")` we can create an instance of a built-in dataset.
 
@@ -63,9 +35,7 @@ print(doclaynet.dataset_info.description)
     Redundant annotations: A fraction of the pages in DocLayNet are double- or triple-annotated, allowing to estimate annotation uncertainty and an upper-bound of achievable prediction accuracy with ML models Pre-defined train- test- and validation-sets: DocLayNet provides fixed sets for each to ensure proportional representation of the class-labels and avoid leakage of unique layout styles across the sets.
 
 
-In **deep**doctection there is no function that automatically downloads a dataset from its remote storage. 
-You have to download and unpack it by yourself. Note further, that all datasets are image datasets and in many 
-cases quite large. 
+In **deep**doctection there is no function that automatically downloads a dataset from its remote storage. You have to download and unpack it by yourself. Note further, that all datasets are image datasets and in most cases quite large. 
 
 To install the dataset, go to the url below and download the zip-file. 
 
@@ -81,21 +51,12 @@ doclaynet.dataset_info.url
 
 
 
-You will have to unzip and place the data set in your local **.cache/deepdoctection/dataset** directory. 
-Once extracted, the dataset will already have the expected folder structure. If you are unsure, however, 
-you can get some additional information about the physical structure by calling the dataset module docstring:
+You will have to unzip and place the data set in your local **.cache/deepdoctection/dataset** directory. Once extracted, the dataset will already have the expected folder structure. If you are unsure, however, you can get some additional information about the physical structure by calling the dataset module docstring:
 
 
 ```python
 doclaynet.dataflow.get_workdir()
 ```
-
-
-
-
-    PosixPath('.cache/deepdoctection/datasets/DocLayNet_core')
-
-
 
 
 ```python
@@ -116,9 +77,7 @@ print(dd.datasets.instances.doclaynet.__doc__)
 
 ## Dataflow
 
-If you know iterable-style datasets in PyTorch you will see that in **deep**doctection samples will be generated in 
-the same fashion. The API differs, though: We will now use the `datasets.dataflow.build` method to display some data 
-points. 
+If you know iterable-style datasets in PyTorch you will see that in **deep**doctection samples will be generated in the same fashion. The API differs, though: We will now use the `datasets.dataflow.build` method to display some data points. 
 
 Samples produced by `datasets.dataflow.build` are already in **deep**doctection's data format. 
 
@@ -168,10 +127,7 @@ datapoint_dict["file_name"],datapoint_dict["_image_id"], datapoint_dict["annotat
 
 Depending on the data set, different configurations of the `build` method can yield different representations of data points. For example, the underlying image is not loaded by default. Passing the parameter `load_image=True` will load the image.
 
-Note, that all images in **deep**doctection are loaded using the OpenCV framework, where the default loading setting 
-is `BGR`. Matplotlib (and PIL default-setting) expects a numpy array in `RGB` order, which is why we have to swap 
-dimensions. If you load an image and you want to pass it to **deep**doctection consider only using OpenCV. If you 
-coincidently load the image in `RGB` format you will get much worse results without having any errors.
+Note, that all images in **deepdoctection** are loaded using the OpenCV framework, where the default loading setting is `BGR`. Matplotlib (and PIL default-setting) expects a numpy array in `RGB` order, which is why we have to swap dimensions. If you load an image and you want to pass it to **deep**doctection consider only using OpenCV. If you coincidently load the image in `RGB` format you will get much worse results without having any errors.
 
 
 ```python
@@ -186,25 +142,18 @@ plt.axis('off')
 plt.imshow(datapoint.image[:,:,::-1])
 ```
 
-
-
-![](_imgs/output_14_2.png)
+![png](./_imgs/doclaynet_1.png)
 
 
 ## Custom dataset
 
-If you bring your own dataset, there is a client-class `CustomDataset` with a simple interface. Please check the docs 
-to get some help for this class.
+If you bring your own dataset, there is a client-class `CustomDataset` with a simple interface. Please check the [docs](https://deepdoctection.readthedocs.io/en/latest/tutorials/datasets/) to get some help for this class.
 
 ## Evaluation
 
-In many situation you are not interested in raw predictions of a model but on results which have been polished 
-through several post-processing steps. In other situations, you want to measure accuracy/precision etc. not after 
-running one but several models. For example, getting the HTML representation of a table requires outputs from several 
-predictors. Evaluating along a pipeline allows you to see how model prediction(s) and post-processing works in 
-conjunction. 
+In many situation you are not interested in raw predictions of a model but on results which have been polished through several post-processing steps. In other situations, you want to measure accuracy/precision etc. not after running one but several models. For example, getting the HTML representation of a table requires output from several predictors. Evaluating along a pipeline allows you to see how model prediction(s) and post processing works in conjunction. 
 
-**deep**doctection comes equipped with an evaluator that allows you to run evaluation not on a model directly but on a pipeline component or a full pipeline.   
+**deep**doctection comes equipped with an Evaluator that allows you to run evaluation not on a model directly but on a pipeline component or a full pipeline.   
 
 Let's take the layout detection model. It has been trained on `Publaynet`, a dataset of images from medical research papers. We will check, how it will perform on `Doclaynet`.  
 
@@ -219,23 +168,21 @@ layout_detector = dd.D2FrcnnDetector(config_yaml_path,weights_path,categories)
 layout_service = dd.ImageLayoutService(layout_detector)
 ```
 
-&nbsp;
-
 Next, we need a metric.
 
 
 ```python
 coco_metric = dd.get_metric("coco")
 ```
-&nbsp;
 
-Now for the dataset. Doclaynet has several other labels but there is a mapping that collapses all doclaynet 
-labels into publaynet labels. Let's see how to invoke this mapping. Datasets have a categories object:
+Now for the dataset. Doclaynet has several other labels but there is a mapping that collapses all doclaynet labels into publaynet labels. Let's see how to invoke this mapping. Datasets have a categories object:
 
 
 ```python
 doclaynet.dataflow.categories.get_categories()
 ```
+
+
 
 
     {'1': <LayoutType.caption>,
@@ -290,89 +237,7 @@ Now, that dataset, pipeline component and metric have been setup, we can build t
 evaluator = dd.Evaluator(doclaynet,layout_service, coco_metric)
 ```
 
-    | Names in Model                                  | Names in Checkpoint                                               | Shapes                          |
-    |:------------------------------------------------|:------------------------------------------------------------------|:--------------------------------|
-    | backbone.bottom_up.res2.0.conv1.*               | backbone.bottom_up.res2.0.conv1.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,64,1,1)      |
-    | backbone.bottom_up.res2.0.conv2.*               | backbone.bottom_up.res2.0.conv2.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,4,3,3)       |
-    | backbone.bottom_up.res2.0.conv3.*               | backbone.bottom_up.res2.0.conv3.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,128,1,1)     |
-    | backbone.bottom_up.res2.0.shortcut.*            | backbone.bottom_up.res2.0.shortcut.{norm.bias,norm.weight,weight} | (256,) (256,) (256,64,1,1)      |
-    | backbone.bottom_up.res2.1.conv1.*               | backbone.bottom_up.res2.1.conv1.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,256,1,1)     |
-    | backbone.bottom_up.res2.1.conv2.*               | backbone.bottom_up.res2.1.conv2.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,4,3,3)       |
-    | backbone.bottom_up.res2.1.conv3.*               | backbone.bottom_up.res2.1.conv3.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,128,1,1)     |
-    | backbone.bottom_up.res2.2.conv1.*               | backbone.bottom_up.res2.2.conv1.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,256,1,1)     |
-    | backbone.bottom_up.res2.2.conv2.*               | backbone.bottom_up.res2.2.conv2.{norm.bias,norm.weight,weight}    | (128,) (128,) (128,4,3,3)       |
-    | backbone.bottom_up.res2.2.conv3.*               | backbone.bottom_up.res2.2.conv3.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,128,1,1)     |
-    | backbone.bottom_up.res3.0.conv1.*               | backbone.bottom_up.res3.0.conv1.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,256,1,1)     |
-    | backbone.bottom_up.res3.0.conv2.*               | backbone.bottom_up.res3.0.conv2.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,8,3,3)       |
-    | backbone.bottom_up.res3.0.conv3.*               | backbone.bottom_up.res3.0.conv3.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,256,1,1)     |
-    | backbone.bottom_up.res3.0.shortcut.*            | backbone.bottom_up.res3.0.shortcut.{norm.bias,norm.weight,weight} | (512,) (512,) (512,256,1,1)     |
-    | backbone.bottom_up.res3.1.conv1.*               | backbone.bottom_up.res3.1.conv1.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,512,1,1)     |
-    | backbone.bottom_up.res3.1.conv2.*               | backbone.bottom_up.res3.1.conv2.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,8,3,3)       |
-    | backbone.bottom_up.res3.1.conv3.*               | backbone.bottom_up.res3.1.conv3.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,256,1,1)     |
-    | backbone.bottom_up.res3.2.conv1.*               | backbone.bottom_up.res3.2.conv1.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,512,1,1)     |
-    | backbone.bottom_up.res3.2.conv2.*               | backbone.bottom_up.res3.2.conv2.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,8,3,3)       |
-    | backbone.bottom_up.res3.2.conv3.*               | backbone.bottom_up.res3.2.conv3.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,256,1,1)     |
-    | backbone.bottom_up.res3.3.conv1.*               | backbone.bottom_up.res3.3.conv1.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,512,1,1)     |
-    | backbone.bottom_up.res3.3.conv2.*               | backbone.bottom_up.res3.3.conv2.{norm.bias,norm.weight,weight}    | (256,) (256,) (256,8,3,3)       |
-    | backbone.bottom_up.res3.3.conv3.*               | backbone.bottom_up.res3.3.conv3.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,256,1,1)     |
-    | backbone.bottom_up.res4.0.conv1.*               | backbone.bottom_up.res4.0.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,512,1,1)     |
-    | backbone.bottom_up.res4.0.conv2.*               | backbone.bottom_up.res4.0.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.0.conv3.*               | backbone.bottom_up.res4.0.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.0.shortcut.*            | backbone.bottom_up.res4.0.shortcut.{norm.bias,norm.weight,weight} | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.1.conv1.*               | backbone.bottom_up.res4.1.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,1024,1,1)    |
-    | backbone.bottom_up.res4.1.conv2.*               | backbone.bottom_up.res4.1.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.1.conv3.*               | backbone.bottom_up.res4.1.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.2.conv1.*               | backbone.bottom_up.res4.2.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,1024,1,1)    |
-    | backbone.bottom_up.res4.2.conv2.*               | backbone.bottom_up.res4.2.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.2.conv3.*               | backbone.bottom_up.res4.2.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.3.conv1.*               | backbone.bottom_up.res4.3.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,1024,1,1)    |
-    | backbone.bottom_up.res4.3.conv2.*               | backbone.bottom_up.res4.3.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.3.conv3.*               | backbone.bottom_up.res4.3.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.4.conv1.*               | backbone.bottom_up.res4.4.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,1024,1,1)    |
-    | backbone.bottom_up.res4.4.conv2.*               | backbone.bottom_up.res4.4.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.4.conv3.*               | backbone.bottom_up.res4.4.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res4.5.conv1.*               | backbone.bottom_up.res4.5.conv1.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,1024,1,1)    |
-    | backbone.bottom_up.res4.5.conv2.*               | backbone.bottom_up.res4.5.conv2.{norm.bias,norm.weight,weight}    | (512,) (512,) (512,16,3,3)      |
-    | backbone.bottom_up.res4.5.conv3.*               | backbone.bottom_up.res4.5.conv3.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,512,1,1)  |
-    | backbone.bottom_up.res5.0.conv1.*               | backbone.bottom_up.res5.0.conv1.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,1024,1,1) |
-    | backbone.bottom_up.res5.0.conv2.*               | backbone.bottom_up.res5.0.conv2.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,32,3,3)   |
-    | backbone.bottom_up.res5.0.conv3.*               | backbone.bottom_up.res5.0.conv3.{norm.bias,norm.weight,weight}    | (2048,) (2048,) (2048,1024,1,1) |
-    | backbone.bottom_up.res5.0.shortcut.*            | backbone.bottom_up.res5.0.shortcut.{norm.bias,norm.weight,weight} | (2048,) (2048,) (2048,1024,1,1) |
-    | backbone.bottom_up.res5.1.conv1.*               | backbone.bottom_up.res5.1.conv1.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,2048,1,1) |
-    | backbone.bottom_up.res5.1.conv2.*               | backbone.bottom_up.res5.1.conv2.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,32,3,3)   |
-    | backbone.bottom_up.res5.1.conv3.*               | backbone.bottom_up.res5.1.conv3.{norm.bias,norm.weight,weight}    | (2048,) (2048,) (2048,1024,1,1) |
-    | backbone.bottom_up.res5.2.conv1.*               | backbone.bottom_up.res5.2.conv1.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,2048,1,1) |
-    | backbone.bottom_up.res5.2.conv2.*               | backbone.bottom_up.res5.2.conv2.{norm.bias,norm.weight,weight}    | (1024,) (1024,) (1024,32,3,3)   |
-    | backbone.bottom_up.res5.2.conv3.*               | backbone.bottom_up.res5.2.conv3.{norm.bias,norm.weight,weight}    | (2048,) (2048,) (2048,1024,1,1) |
-    | backbone.bottom_up.stem.conv1.*                 | backbone.bottom_up.stem.conv1.{norm.bias,norm.weight,weight}      | (64,) (64,) (64,3,7,7)          |
-    | backbone.fpn_lateral2.*                         | backbone.fpn_lateral2.{norm.bias,norm.weight,weight}              | (256,) (256,) (256,256,1,1)     |
-    | backbone.fpn_lateral3.*                         | backbone.fpn_lateral3.{norm.bias,norm.weight,weight}              | (256,) (256,) (256,512,1,1)     |
-    | backbone.fpn_lateral4.*                         | backbone.fpn_lateral4.{norm.bias,norm.weight,weight}              | (256,) (256,) (256,1024,1,1)    |
-    | backbone.fpn_lateral5.*                         | backbone.fpn_lateral5.{norm.bias,norm.weight,weight}              | (256,) (256,) (256,2048,1,1)    |
-    | backbone.fpn_output2.*                          | backbone.fpn_output2.{norm.bias,norm.weight,weight}               | (256,) (256,) (256,256,3,3)     |
-    | backbone.fpn_output3.*                          | backbone.fpn_output3.{norm.bias,norm.weight,weight}               | (256,) (256,) (256,256,3,3)     |
-    | backbone.fpn_output4.*                          | backbone.fpn_output4.{norm.bias,norm.weight,weight}               | (256,) (256,) (256,256,3,3)     |
-    | backbone.fpn_output5.*                          | backbone.fpn_output5.{norm.bias,norm.weight,weight}               | (256,) (256,) (256,256,3,3)     |
-    | proposal_generator.rpn_head.anchor_deltas.*     | proposal_generator.rpn_head.anchor_deltas.{bias,weight}           | (12,) (12,256,1,1)              |
-    | proposal_generator.rpn_head.conv.*              | proposal_generator.rpn_head.conv.{bias,weight}                    | (256,) (256,256,3,3)            |
-    | proposal_generator.rpn_head.objectness_logits.* | proposal_generator.rpn_head.objectness_logits.{bias,weight}       | (3,) (3,256,1,1)                |
-    | roi_heads.box_head.0.fc1.*                      | roi_heads.box_head.0.fc1.{bias,weight}                            | (1024,) (1024,12544)            |
-    | roi_heads.box_head.0.fc2.*                      | roi_heads.box_head.0.fc2.{bias,weight}                            | (1024,) (1024,1024)             |
-    | roi_heads.box_head.1.fc1.*                      | roi_heads.box_head.1.fc1.{bias,weight}                            | (1024,) (1024,12544)            |
-    | roi_heads.box_head.1.fc2.*                      | roi_heads.box_head.1.fc2.{bias,weight}                            | (1024,) (1024,1024)             |
-    | roi_heads.box_head.2.fc1.*                      | roi_heads.box_head.2.fc1.{bias,weight}                            | (1024,) (1024,12544)            |
-    | roi_heads.box_head.2.fc2.*                      | roi_heads.box_head.2.fc2.{bias,weight}                            | (1024,) (1024,1024)             |
-    | roi_heads.box_predictor.0.bbox_pred.*           | roi_heads.box_predictor.0.bbox_pred.{bias,weight}                 | (4,) (4,1024)                   |
-    | roi_heads.box_predictor.0.cls_score.*           | roi_heads.box_predictor.0.cls_score.{bias,weight}                 | (6,) (6,1024)                   |
-    | roi_heads.box_predictor.1.bbox_pred.*           | roi_heads.box_predictor.1.bbox_pred.{bias,weight}                 | (4,) (4,1024)                   |
-    | roi_heads.box_predictor.1.cls_score.*           | roi_heads.box_predictor.1.cls_score.{bias,weight}                 | (6,) (6,1024)                   |
-    | roi_heads.box_predictor.2.bbox_pred.*           | roi_heads.box_predictor.2.bbox_pred.{bias,weight}                 | (4,) (4,1024)                   |
-    | roi_heads.box_predictor.2.cls_score.*           | roi_heads.box_predictor.2.cls_score.{bias,weight}                 | (6,) (6,1024)                   |[0m
-
-&nbsp;
-
-We start evaluation using the `run` method. `max_datapoints` limits the number of samples to at most 100 samples. 
-The `val` split is used by default.
+We start evaluation using the `run` method. `max_datapoints` limits the number of samples to at most 100 samples. The `val` split is used by default.
 
 
 ```python
@@ -380,33 +245,7 @@ evaluator = dd.Evaluator(doclaynet,layout_service, coco_metric)
 output= evaluator.run(max_datapoints=100)
 ```
 
-
-    creating index...
-    index created!
-    creating index...
-    index created!
-    Running per image evaluation...
-    Evaluate annotation type *bbox*
-    DONE (t=0.12s).
-    Accumulating evaluation results...
-    DONE (t=0.03s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.147
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.195
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.144
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.010
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.022
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.200
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.100
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.171
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.174
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.009
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.031
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.231
-
-&nbsp;
-
-The result shows that Doclaynet has a very different layout compared to Publaynet where the model has been trained on. 
-To get a feeling, results on the Publaynet test split are in the range of 0.9+ !
+The result shows that Doclaynet has a very different layout compared to Publaynet where the model has been trained on. To get a feeling, results on the Publaynet test split are in the range of 0.9+ !
 
 
 ```python
@@ -464,3 +303,6 @@ dd.train_d2_faster_rcnn(path_config_yaml=config_yaml_path,
 ```
 
 If you fine tune the model with this setting you can increase mAP/mAR to a region of 0.75.  
+
+If you want to see how you can train a model on two datasets like Publaynet and Doclaynet to increase the variance
+the in distribution check the documentation [here](https://deepdoctection.readthedocs.io/en/latest/tutorials/training_and_logging/) to get some guidance
