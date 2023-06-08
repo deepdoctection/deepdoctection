@@ -639,12 +639,15 @@ class Page(Image):
             all_words = []
             for layout in self.layouts:
                 all_words.extend(layout.words)
+            if not all_words:
+                all_words = self.get_annotation(category_names=LayoutType.word)
             for word in all_words:
                 box_stack.append(word.bbox)
                 if show_token_class:
                     category_names_list.append(word.token_class.value)
                 else:
                     category_names_list.append(word.token_tag.value)
+
 
         if self.image is not None:
             if box_stack:

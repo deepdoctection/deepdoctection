@@ -32,10 +32,13 @@ nav:
     - Tutorials:
         - Introductory tutorials:
             - Get started: ./tutorials/get_started_notebook.md
+            - Pipelines: ./tutorials/pipelines_notebook.md
             - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
+            - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
             - Datasets and evaluation: ./tutorials/datasets_and_eval_notebook.md
+            - Data structures: ./tutorials/data_structure_notebook.md
             - LayoutLM for sequence classification: ./tutorials/using_layoutlm_for_sequence_classification_notebook.md
-            - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_other_libraries.md
+
         - Deep dive tutorials:
             - Architecture: ./tutorials/architecture.md
             - Datasets: ./tutorials/datasets.md
