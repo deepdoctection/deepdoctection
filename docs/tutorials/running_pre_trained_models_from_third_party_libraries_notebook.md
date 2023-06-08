@@ -80,7 +80,7 @@ plt.imshow(image)
 
 
 
-![png](./_imgs/output_4_2.png)
+![png](./_imgs/layoutparser_1.png)
 
 
 You can use some additional config parameters that are only available in **deep**doctection like `NMS_THRESH_CLASS_AGNOSTIC`. This can reduce the number of overlapping layout segments.
@@ -113,7 +113,7 @@ plt.imshow(image)
     [32m[0523 15:40.14 @context.py:126][0m  [32mINF[0m  [97mImageLayoutService total: 0.0372 sec.[0m
 
 
-![png](./_imgs/output_6_2.png)
+![png](./_imgs/layoutparser_2.png)
 
 
 ## A second example
@@ -197,7 +197,7 @@ plt.imshow(image)
     [32m[0523 15:56.16 @context.py:126][0m  [32mINF[0m  [97mImageLayoutService total: 0.0388 sec.[0m
 
 
-![png](./_imgs/output_13_2.png)
+![png](./_imgs/layoutparser_3.png)
 
 
 

@@ -161,7 +161,7 @@ We use PDF Plumber to extract the text from the native PDF documents.
     plt.imshow(page.viz())
 ```
 
-![](./_imgs/output_8_1.png)
+![](./_imgs/layoutlm_various_topics_1.png)
 
 
 ```python
@@ -186,7 +186,7 @@ We use PDF Plumber to extract the text from the native PDF documents.
     plt.imshow(page.viz())
 ```
 
-![](./_imgs/output_1_1.png)
+![](./_imgs/layoutlm_various_topics_2.png)
 
 
 ```python
@@ -211,7 +211,7 @@ We use PDF Plumber to extract the text from the native PDF documents.
     plt.imshow(page.viz())
 ```
 
-![](./_imgs/output_12_1.png)
+![](./_imgs/layoutlm_various_topics_3.png)
 
 
 ```python

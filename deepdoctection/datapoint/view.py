@@ -247,7 +247,11 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> Set[str]:
-        return set(TableType).union(super().get_attribute_names()).union({"cells", "rows", "columns", "html"})
+        return (
+            set(TableType)
+            .union(super().get_attribute_names())
+            .union({"cells", "rows", "columns", "html", "csv", "text"})
+        )
 
     @property
     def csv(self) -> List[List[str]]:
@@ -597,12 +601,12 @@ class Page(Image):
         if show_layouts:
             for item in self.layouts:
                 box_stack.append(item.bbox)
-                category_names_list.append(item.category_name)
+                category_names_list.append(item.category_name.value)
 
         if show_tables:
             for table in self.tables:
                 box_stack.append(table.bbox)
-                category_names_list.append(LayoutType.table)
+                category_names_list.append(LayoutType.table.value)
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name in {
@@ -635,12 +639,15 @@ class Page(Image):
             all_words = []
             for layout in self.layouts:
                 all_words.extend(layout.words)
+            if not all_words:
+                all_words = self.get_annotation(category_names=LayoutType.word)
             for word in all_words:
                 box_stack.append(word.bbox)
                 if show_token_class:
-                    category_names_list.append(str(word.token_class).replace("TokenClasses", ""))
+                    category_names_list.append(word.token_class.value)
                 else:
-                    category_names_list.append(str(word.token_tag))
+                    category_names_list.append(word.token_tag.value)
+
 
         if self.image is not None:
             if box_stack:
@@ -650,9 +657,8 @@ class Page(Image):
                         self.image,
                         boxes,
                         category_names_list,
-                        color=(255, 222, 173),
                         font_scale=0.25,
-                        rectangle_thickness=1,
+                        rectangle_thickness=4,
                     )
                 else:
                     img = draw_boxes(self.image, boxes, category_names_list)
@@ -671,7 +677,20 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union({"text", "tables", "layouts", "words", "residual_words"})
+        return set(PageType).union(
+            {
+                "text",
+                "chunks",
+                "tables",
+                "layouts",
+                "words",
+                "residual_words",
+                "file_name",
+                "location",
+                "document_id",
+                "page_number",
+            }
+        )
 
     def save(
         self,

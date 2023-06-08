@@ -20,6 +20,7 @@ Module for mapping annotations from image to layout lm input structure. Heavily 
 <https://github.com/NielsRogge/Transformers-Tutorials>
 """
 
+import random
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
 
@@ -162,10 +163,8 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
-            WordType.token_tag in ann.sub_categories
-            and WordType.token_class in ann.sub_categories
-            and dataset_type == DatasetType.token_classification
-        ):
+            WordType.token_tag in ann.sub_categories or WordType.token_class in ann.sub_categories
+        ) and dataset_type == DatasetType.token_classification:
             if use_token_tag:
                 all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
             else:
@@ -242,6 +241,7 @@ def _tokenize_with_sliding_window(
     raw_features: List[RawLayoutLMFeatures],
     tokenizer: "PreTrainedTokenizerFast",
     sliding_window_stride: int,
+    max_batch_size: int,
     return_tensors: Optional[Literal["pt"]] = None,
 ) -> Union[JsonDict, "BatchEncoding"]:
     """
@@ -249,6 +249,9 @@ def _tokenize_with_sliding_window(
     If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
     from raw tokenized outputs we run the tokenizer a second time without truncating and build the sliding windows from
     this second output.
+    The current implementation has a bug in that sense, that for higher batch sizes it will only return overflowing
+    samples. It is therefore recommended that if the dataset consist of many samples with lots of tokens one should
+    use a low per device batch size.
     """
     # first try: we require return_overflowing_tokens=True. If the number of raw features is equal to
     # overflow_to_sample_mapping then there is nothing more to do because the sample has less than max_length
@@ -361,6 +364,31 @@ def _tokenize_with_sliding_window(
                 word_ids.extend(pad_none)
                 all_word_ids.append(word_ids)
 
+    if max_batch_size:
+        if max_batch_size < len(overflow_to_sample_mapping):
+            (
+                overflow_to_sample_mapping,
+                all_input_ids,
+                all_token_type_ids,
+                all_attention_mask,
+                all_word_ids,
+                all_tokens,
+            ) = zip(
+                *random.sample(
+                    list(
+                        zip(
+                            overflow_to_sample_mapping,
+                            all_input_ids,
+                            all_token_type_ids,
+                            all_attention_mask,
+                            all_word_ids,
+                            all_tokens,
+                        )
+                    ),
+                    max_batch_size,
+                )
+            )
+
     slided_tokenized_inputs: Dict[str, Union[List[Union[str, int]], torch.Tensor]] = {}
     if return_tensors == "pt":
         slided_tokenized_inputs["overflow_to_sample_mapping"] = torch.tensor(overflow_to_sample_mapping)
@@ -386,6 +414,7 @@ def raw_features_to_layoutlm_features(
     return_tensors: Optional[Literal["pt"]] = None,
     remove_columns_for_training: bool = False,
     sliding_window_stride: int = 0,
+    max_batch_size: int = 0,
 ) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
@@ -433,7 +462,9 @@ def raw_features_to_layoutlm_features(
 
     if sliding_window_stride:
         return_overflowing_tokens = True
-        tokenized_inputs = _tokenize_with_sliding_window(raw_features, tokenizer, sliding_window_stride, return_tensors)
+        tokenized_inputs = _tokenize_with_sliding_window(
+            raw_features, tokenizer, sliding_window_stride, max_batch_size, return_tensors
+        )
 
     else:
         tokenized_inputs = tokenizer(
@@ -566,6 +597,10 @@ class LayoutLMDataCollator:
                                   batch samples will be smaller than the output batch samples.
     :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
                            of lists.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
+                           will be created with each window having max_length sequence input. When using
+                           `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                           with windows shifted `sliding_window_stride` to the right.
     """
 
     tokenizer: "PreTrainedTokenizerFast"
@@ -574,6 +609,7 @@ class LayoutLMDataCollator:
     return_overflowing_tokens: bool = field(default=False)
     return_tensors: Optional[Literal["pt"]] = field(default=None)
     sliding_window_stride: int = field(default=0)
+    max_batch_size: int = field(default=0)
 
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
@@ -600,6 +636,7 @@ class LayoutLMDataCollator:
             self.return_tensors,
             True,
             self.sliding_window_stride,
+            self.max_batch_size,
         )
 
 

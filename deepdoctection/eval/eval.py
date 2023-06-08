@@ -39,7 +39,7 @@ from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
 from ..utils.file_utils import detectron2_available, wandb_available
 from ..utils.logger import logger
-from ..utils.settings import DatasetType, LayoutType, TypeOrStr
+from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
@@ -138,9 +138,39 @@ class Evaluator:
 
         self.wandb_table_agent: Optional[WandbTableAgent]
         if run is not None:
-            self.wandb_table_agent = WandbTableAgent(
-                run, self.dataset.dataset_info.name, 50, self.dataset.dataflow.categories.get_categories(filtered=True)
-            )
+            if self.dataset.dataset_info.type == DatasetType.object_detection:
+                self.wandb_table_agent = WandbTableAgent(
+                    run,
+                    self.dataset.dataset_info.name,
+                    50,
+                    self.dataset.dataflow.categories.get_categories(filtered=True),
+                )
+            elif self.dataset.dataset_info.type == DatasetType.token_classification:
+                if hasattr(self.metric, "sub_cats"):
+                    sub_cat_key, sub_cat_val_list = list(self.metric.sub_cats.items())[0]  # type: ignore
+                    sub_cat_val = sub_cat_val_list[0]
+                    sub_cats = {sub_cat_key: sub_cat_val}
+                    self.wandb_table_agent = WandbTableAgent(
+                        run,
+                        self.dataset.dataset_info.name,
+                        50,
+                        self.dataset.dataflow.categories.get_categories(filtered=True),
+                        self.dataset.dataflow.categories.get_sub_categories(
+                            categories=sub_cat_key,
+                            sub_categories=sub_cats,
+                            keys=False,
+                            values_as_dict=True,
+                            name_as_key=False,
+                        )[sub_cat_key][sub_cat_val],
+                        sub_cats,
+                    )
+                else:
+                    raise AttributeError(
+                        "metric has no attribute sub_cats and cannot be used for token classification " "datasets"
+                    )
+            else:
+                raise NotImplementedError
+
         else:
             self.wandb_table_agent = None
 
@@ -243,7 +273,7 @@ class Evaluator:
 
         return df_pr
 
-    def compare(self, interactive: bool = False, **dataflow_build_kwargs: Union[str, int]) -> Optional[ImageType]:
+    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Optional[ImageType]:
         """
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.
@@ -251,11 +281,18 @@ class Evaluator:
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently (e.g. matplotlib). Note that, if the interactive mode is being
                             used, more than one sample can be iteratively be displayed.
-        :param dataflow_build_kwargs: Dataflow configs for displaying specific image splits
+        :param kwargs: Dataflow configs for displaying specific image splits and visualisation configs:
+                       `show_tables`, `show_layouts`, `show_table_structure`, `show_words`
         :return: Image as numpy array
         """
-        df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
-        df_pr = self.dataset.dataflow.build(**dataflow_build_kwargs)
+
+        show_tables = kwargs.pop("show_tables", True)
+        show_layouts = kwargs.pop("show_layouts", True)
+        show_table_structure = kwargs.pop("show_table_structure", True)
+        show_words = kwargs.pop("show_words", False)
+
+        df_gt = self.dataset.dataflow.build(**kwargs)
+        df_pr = self.dataset.dataflow.build(**kwargs)
         df_gt = MapData(df_gt, maybe_load_image)
         df_pr = MapData(df_pr, maybe_load_image)
         df_pr = MapData(df_pr, deepcopy)
@@ -286,7 +323,17 @@ class Evaluator:
         df_pr.reset_state()
         df_gt.reset_state()
         for dp_gt, dp_pred in zip(df_gt, df_pr):
-            img_gt, img_pred = dp_gt.viz(), dp_pred.viz()
+            img_gt, img_pred = dp_gt.viz(
+                show_tables=show_tables,
+                show_layouts=show_layouts,
+                show_table_structure=show_table_structure,
+                show_words=show_words,
+            ), dp_pred.viz(
+                show_tables=show_tables,
+                show_layouts=show_layouts,
+                show_table_structure=show_table_structure,
+                show_words=show_words,
+            )
             img_concat = np.concatenate((img_gt, img_pred), axis=1)
             if interactive:
                 interactive_imshow(img_concat)
@@ -314,6 +361,8 @@ class WandbTableAgent:
         dataset_name: str,
         num_samples: int,
         categories: Mapping[str, TypeOrStr],
+        sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
+        cat_to_sub_cat: Optional[Mapping[TypeOrStr, TypeOrStr]] = None,
     ):
         """
         :param wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
@@ -321,11 +370,20 @@ class WandbTableAgent:
         :param dataset_name: name for tracking
         :param num_samples: When dumping images to a table it will stop adding samples after `num_samples` instances
         :param categories: dict of all possible categories
+        :param sub_categories:  dict of sub categories. If provided, these categories will define the classes for the
+                                table
+        :param cat_to_sub_cat: dict of category to sub category keys. Suppose your category `foo` has a sub category
+                               defined by the key `sub_foo`. The range sub category values must then be given by
+                               `sub_categories` and to extract the sub category values one must pass `{"foo": "sub_foo"}
         """
 
         self.dataset_name = dataset_name
         self.num_samples = num_samples
         self.categories = categories
+        self.sub_categories = sub_categories
+        if cat_to_sub_cat is None:
+            cat_to_sub_cat = {}
+        self.cat_to_sub_cat = {get_type(cat): get_type(sub_cat) for cat, sub_cat in cat_to_sub_cat.items()}
         self._run = wandb_run
         self._counter = 0
 
@@ -344,7 +402,9 @@ class WandbTableAgent:
         """
         if self.num_samples > self._counter:
             dp = maybe_load_image(dp)
-            self._table_rows.append(to_wandb_image(self.categories)(dp))  # pylint: disable=E1102
+            self._table_rows.append(
+                to_wandb_image(self.categories, self.sub_categories, self.cat_to_sub_cat)(dp)  # pylint: disable=E1102
+            )
             dp = maybe_remove_image(dp)
             self._counter += 1
         return dp

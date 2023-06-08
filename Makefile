@@ -46,6 +46,8 @@ install-dd-dev-pt: check-venv
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
+	pip install -e ".[docs]"
+	@echo "--> Done installing docs dependencies"
 	@echo ""
 
 install-dd-dev-tf: check-venv
@@ -54,6 +56,8 @@ install-dd-dev-tf: check-venv
 	@echo "--> Installing dev, test dependencies"
 	pip install -e ".[dev, test]"
 	@echo "--> Done installing dev, test dependencies"
+	pip install -e ".[docs]"
+	@echo "--> Done installing docs dependencies"
 	@echo ""
 
 install-dd-test: check-venv
