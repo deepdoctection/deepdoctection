@@ -31,13 +31,16 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
  - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
- - Document and token classification with all [LayoutLM](https://github.com/microsoft/unilm) models 
-   provided by the [**Transformer**](https://github.com/huggingface/transformers) library. 
-   (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!). Check the notebook repo or 
-   the documentation on how to train a model on your custom task or how to setup a pipeline.
+ - Document and token classification with all LayoutLM models provided by the Transformer library. 
+ - (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
  - Table detection and table structure recognition with 
    [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
    [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
+ - [**new!**] There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
+   and a lot of new [tutorials](https://github.com/deepdoctection/notebooks/blob/main/Layoutlm_v2_on_custom_token_classification.ipynb) 
+   to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3. Training scripts can 
+   now be tracked with W&B. Check some experimentation results of the notebooks [here](https://wandb.ai/jm76/FRFPE_layoutlmv1?workspace=user-jm76)
+   and try to improve the results!
    
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
