@@ -32,8 +32,8 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
  - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
  - Document and token classification with all LayoutLM models provided by the Transformer library. 
- - (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
- - Table detection and table structure recognition with 
+   (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
+   Table detection and table structure recognition with 
    [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
    [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
  - [**new!**] There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
