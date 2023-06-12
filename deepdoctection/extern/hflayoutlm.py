@@ -73,9 +73,9 @@ def predict_token_classes(
     token_type_ids: "Tensor",
     boxes: "Tensor",
     tokens: List[List[str]],
-    model: Union["LayoutLMForTokenClassification",
-                 "LayoutLMv2ForTokenClassification",
-                 "LayoutLMv3ForTokenClassification"],
+    model: Union[
+        "LayoutLMForTokenClassification", "LayoutLMv2ForTokenClassification", "LayoutLMv3ForTokenClassification"
+    ],
     images: Optional["Tensor"] = None,
 ) -> List[TokenClassResult]:
     """

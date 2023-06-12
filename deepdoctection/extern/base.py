@@ -22,7 +22,7 @@ Abstract classes for unifying external base- and Doctection predictors
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
@@ -87,6 +87,8 @@ class DetectionResult:
     `line`: line number. For reading order from some ocr predictors
 
     `uuid`: uuid. For assigning detection result (e.g. text to image annotations)
+
+
     """
 
     box: Optional[List[float]] = None
@@ -99,6 +101,7 @@ class DetectionResult:
     block: Optional[str] = None
     line: Optional[str] = None
     uuid: Optional[str] = None
+    relationships: Optional[Dict[str, Any]] = None
 
 
 class ObjectDetector(PredictorBase):

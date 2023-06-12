@@ -22,9 +22,10 @@ from copy import copy, deepcopy
 from itertools import chain
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
+from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
-from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import DetectionResult, ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.logger import logger
@@ -232,7 +233,8 @@ class TextExtractionService(PredictorPipelineComponent):
         return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
 
 
-def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, str]]:
+def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tuple[int, int, str]]:
+    """return list of tuple (word reading order, reading line order)"""
     reading_lines = []
     rows: List[Dict[str, float]] = []
     for word in word_anns:
@@ -258,7 +260,76 @@ def _reading_lines(image_id: str, word_anns: List[ImageAnnotation]) -> List[Tupl
         idx: key[0] for idx, key in enumerate(sorted(rows_dict.items(), key=lambda it: it[1]["upper"]))  # type:ignore
     }
     reading_lines.sort(key=lambda x: (rows_dict[x[0]], x[2]))
-    return [(idx + 1, word[1]) for idx, word in enumerate(reading_lines)]
+    number_rows = len(rows_dict)
+    return [(idx + 1, number_rows - word[0], word[1]) for idx, word in enumerate(reading_lines)]
+
+
+def _reading_sub_lines(dp: Image, raw_reading_order_list: List[Tuple[int, int, str]], paragraph_break: float) \
+        -> List[DetectionResult]:
+
+    if not raw_reading_order_list:
+        return []
+    # adaptation from https://github.com/mindee/doctr/blob/main/doctr/models/builder.py#L57
+    number_rows = max([word[1] for word in raw_reading_order_list])
+    line_detection_result = []
+    for row in range(1, number_rows + 1):
+        ann_meta_per_row = [ann_meta for ann_meta in raw_reading_order_list if ann_meta[1]==row]
+        ann_ids = [ann_meta[2] for ann_meta in ann_meta_per_row]
+        anns_per_row = dp.get_annotation(annotation_ids=ann_ids)
+        anns_per_row.sort(key=lambda x: x.image.get_embedding(dp.image_id).ulx) # type: ignore
+
+        # words are already sorted horizontally
+        sub_line = [anns_per_row[0]]
+        sub_line_ann_ids = [anns_per_row[0].annotation_id]
+        if len(anns_per_row) >= 2:
+            for idx, ann in enumerate(anns_per_row[1:]):
+                horiz_break = True
+                prev_box = sub_line[-1].image.get_embedding(dp.image_id) # type: ignore
+                current_box = ann.image.get_embedding(dp.image_id) # type: ignore
+
+                if prev_box.absolute_coords:
+                    prev_box = prev_box.transform(dp.width, dp.height)
+                if current_box.absolute_coords:
+                    current_box = current_box.transform(dp.width, dp.height)
+
+                # Compute distance between boxes
+                dist = current_box.ulx - prev_box.lrx
+                # If distance between boxes is lower than paragraph break, same sub-line
+                if dist < paragraph_break:
+                    horiz_break = False
+
+                if horiz_break or idx == len(anns_per_row) - 2:
+                    if idx == len(anns_per_row) - 2:
+                        sub_line.append(ann)
+                        sub_line_ann_ids.append(ann.annotation_id)
+                    boxes = [ann.image.get_embedding(dp.image_id) for ann in sub_line]  # type: ignore
+                    merge_box = merge_boxes(*boxes)
+                    detection_result = DetectionResult(
+                        box=merge_box.to_list(mode="xyxy"),
+                        class_name=LayoutType.line,
+                        class_id=8,
+                        absolute_coords=merge_box.absolute_coords,
+                        relationships={"child": sub_line_ann_ids},
+                    )
+                    line_detection_result.append(detection_result)
+                    sub_line = []
+                    sub_line_ann_ids = []
+
+                sub_line.append(ann)
+                sub_line_ann_ids.append(ann.annotation_id)
+        else:
+            # text line is the same as word
+            box = anns_per_row[0].image.get_embedding(dp.image_id)  # type: ignore
+            detection_result = DetectionResult(
+                box=box.to_list(mode="xyxy"),
+                class_name=LayoutType.line,
+                class_id=8,
+                absolute_coords=box.absolute_coords,
+                relationships={"child": sub_line_ann_ids},
+            )
+            line_detection_result.append(detection_result)
+
+    return line_detection_result
 
 
 def _reading_columns(
@@ -372,6 +443,24 @@ def _reading_columns(
     return reading_blocks
 
 
+def _consolidate_reading_order(dp: Image) -> None:
+    lines = dp.get_annotation(category_names=LayoutType.line)
+    lines.sort(key=lambda x: int(x.get_sub_category(Relationships.reading_order).category_id))
+    word_ids = [ann.get_relationship(Relationships.child) for ann in lines]
+    sorted_word_ids = []
+    for word_per_line in word_ids:
+        words = dp.get_annotation(annotation_ids=word_per_line)
+        words.sort(key=lambda x: int(x.get_sub_category(Relationships.reading_order).category_id))
+        sorted_word_ids.extend([word.annotation_id for word in words])
+    for idx, word_id in enumerate(sorted_word_ids):
+        word = dp.get_annotation(annotation_ids=word_id)[0]
+        word.remove_sub_category(Relationships.reading_order)
+        reading_order_ann = CategoryAnnotation(category_name=Relationships.reading_order, category_id=str(idx + 1))
+        word.dump_sub_category(Relationships.reading_order, reading_order_ann)
+    for line in lines:
+        line.deactivate()
+
+
 @pipeline_component_registry.register("TextOrderService")
 class TextOrderService(PipelineComponent):
     """
@@ -443,6 +532,7 @@ class TextOrderService(PipelineComponent):
         self._text_containers_to_text_block = text_containers_to_text_block
         self.starting_point_tolerance = 0.05
         self.height_tolerance = 2.0
+        self.paragraph_break = 0.035
         self.ignore_category_when_building_column_blocks = [LayoutType.table]
         self._init_sanity_checks()
         super().__init__("text_order")
@@ -502,10 +592,10 @@ class TextOrderService(PipelineComponent):
                 annotation_ids=text_container_ann_ids,
                 category_names=self._text_container,
             )
-            raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
-            for raw_reading_order in raw_reading_order_list:
+            raw_reading_lines_list = _reading_lines(dp.image_id, text_container_anns)
+            for raw_reading_line in raw_reading_lines_list:
                 self.dp_manager.set_category_annotation(
-                    Relationships.reading_order, raw_reading_order[0], Relationships.reading_order, raw_reading_order[1]
+                    Relationships.reading_order, raw_reading_line[0], Relationships.reading_order, raw_reading_line[2]
                 )
 
         # this is the setting where we order words without having text blocks
@@ -531,8 +621,28 @@ class TextOrderService(PipelineComponent):
                             Relationships.reading_order, position, Relationships.reading_order, element[3]
                         )
                 else:
-                    # Last try. We only form lines without and define a reading from this
-                    raw_reading_order_list = _reading_lines(dp.image_id, text_container_anns)
+                    # Last try. First we infer a reading order of words but we do not take multi column layout into
+                    # account
+                    raw_reading_lines_list = _reading_lines(dp.image_id, text_container_anns)
+                    # Having defined line number to each word, we try to split them into sub lines. Each sub line
+                    # will be an ImageAnnotation object
+                    detect_result_list = _reading_sub_lines(dp, raw_reading_lines_list, self.paragraph_break)
+                    for detect_result in detect_result_list:
+                        ann_id = self.dp_manager.set_image_annotation(detect_result)
+                        line_ann = self.dp_manager.datapoint.get_annotation(annotation_ids=ann_id)[0]
+                        child_ann_id_list = detect_result.relationships["child"]  # type: ignore
+                        for child_ann_id in child_ann_id_list:
+                            line_ann.dump_relationship(Relationships.child, child_ann_id)
+                    # Next, we proceed, as if we have text_block. We infer reading columns for text lines as well as
+                    # reading orders for words within text lines.
+                    line_anns = dp.get_annotation(category_names=LayoutType.line)
+                    raw_reading_order_list = _reading_columns(
+                        dp,
+                        line_anns,
+                        self.starting_point_tolerance,
+                        self.height_tolerance,
+                        self.ignore_category_when_building_column_blocks,
+                    )
                     for raw_reading_order in raw_reading_order_list:
                         self.dp_manager.set_category_annotation(
                             Relationships.reading_order,
@@ -540,6 +650,22 @@ class TextOrderService(PipelineComponent):
                             Relationships.reading_order,
                             raw_reading_order[1],
                         )
+                    block_anns = dp.get_annotation(category_names=LayoutType.line)
+                    for text_block in block_anns:
+                        text_container_ann_ids = text_block.get_relationship(Relationships.child)
+                        text_container_anns = dp.get_annotation(
+                            annotation_ids=text_container_ann_ids,
+                            category_names=self._text_container,
+                        )
+                        raw_reading_lines_list = _reading_lines(dp.image_id, text_container_anns)
+                        for raw_reading_line in raw_reading_lines_list:
+                            self.dp_manager.set_category_annotation(
+                                Relationships.reading_order,
+                                raw_reading_line[0],
+                                Relationships.reading_order,
+                                raw_reading_line[2],
+                            )
+                    _consolidate_reading_order(dp)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(
