@@ -648,7 +648,6 @@ class Page(Image):
                 else:
                     category_names_list.append(word.token_tag.value)
 
-
         if self.image is not None:
             if box_stack:
                 boxes = np.vstack(box_stack)
