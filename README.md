@@ -38,9 +38,7 @@ pipelines. Its core function does not depend on any specific deep learning libra
    [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
  - [**new!**] There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
    and a lot of new [tutorials](https://github.com/deepdoctection/notebooks/blob/main/Layoutlm_v2_on_custom_token_classification.ipynb) 
-   to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3. Training scripts can 
-   now be tracked with W&B. Check some experimentation results of the notebooks [here](https://wandb.ai/jm76/FRFPE_layoutlmv1?workspace=user-jm76)
-   and try to improve the results!
+   to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3.
    
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
