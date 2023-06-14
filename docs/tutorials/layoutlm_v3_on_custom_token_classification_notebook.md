@@ -108,21 +108,6 @@ artifact = wandb.use_artifact('jm76/FRFPE_layoutlmv1/merge_FRFPE:v0', type='data
 table = artifact.get("split")
 ```
 
-wandb version 0.15.4 is available!  To upgrade, please run:
- $ pip install wandb --upgrade
-
-
-
-Syncing run <strong><a href='https://wandb.ai/jm76/FRFPE_layoutlmv1/runs/1kca6a9r' target="_blank">avid-plant-11</a></strong> to <a href='https://wandb.ai/jm76/FRFPE_layoutlmv1' target="_blank">Weights & Biases</a> (<a href='https://wandb.me/run' target="_blank">docs</a>)<br/>
-
-
-View project at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv1' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv1</a>
-
-
-View run at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv1/runs/1kca6a9r' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv1/runs/1kca6a9r</a>
-
-
-
 ```python
 split_dict = defaultdict(list)
 for row in table.data:
@@ -180,17 +165,6 @@ dd.train_hf_layoutlm(path_config_json,
 
 
 
-Syncing run <strong><a href='https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln' target="_blank">feasible-hill-6</a></strong> to <a href='https://wandb.ai/jm76/FRFPE_layoutlmv3' target="_blank">Weights & Biases</a> (<a href='https://wandb.me/run' target="_blank">docs</a>)<br/>
-
-
-
-View project at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv3' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv3</a>
-
-
-
-View run at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln</a>
-
-
      {0: <FundsFirstPage.report_date>,
      1: <FundsFirstPage.report_type>,
      2: <FundsFirstPage.umbrella>,
@@ -211,12 +185,6 @@ View run at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln' targe
 ```python
 wandb.finish()
 ```
-
-
-View run <strong style="color:#cdcd00">feasible-hill-6</strong> at: <a href='https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv3/runs/l78v5xln</a><br/>Synced 5 W&B file(s), 21 media file(s), 560 artifact file(s) and 0 other file(s)
-
-
-Find logs at: <code>./wandb/run-20230608_191648-l78v5xln/logs</code>
 
 
 ## Evaluation

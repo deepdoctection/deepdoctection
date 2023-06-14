@@ -214,30 +214,6 @@ dd.train_hf_layoutlm(path_config_json,
 
 
 
-wandb version 0.15.4 is available!  To upgrade, please run:
- $ pip install wandb --upgrade
-
-
-
-Tracking run with wandb version 0.15.0
-
-
-
-Run data is saved locally in <code>/home/janis/Public/notebooks/wandb/run-20230608_144841-9lrarks0</code>
-
-
-
-Syncing run <strong><a href='https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0' target="_blank">legendary-bird-1</a></strong> to <a href='https://wandb.ai/jm76/FRFPE_layoutlmv2' target="_blank">Weights & Biases</a> (<a href='https://wandb.me/run' target="_blank">docs</a>)<br/>
-
-
-
-View project at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv2' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv2</a>
-
-
-
-View run at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0</a>
-
-
      {0: <FundsFirstPage.report_date>,
      1: <FundsFirstPage.report_type>,
      2: <FundsFirstPage.umbrella>,
@@ -260,15 +236,6 @@ View run at <a href='https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0' targe
 ```python
 wandb.finish()
 ```
-
-
-Waiting for W&B process to finish... <strong style="color:green">(success).</strong>
-
-
-View run <strong style="color:#cdcd00">legendary-bird-1</strong> at: <a href='https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0' target="_blank">https://wandb.ai/jm76/FRFPE_layoutlmv2/runs/9lrarks0</a><br/>Synced 5 W&B file(s), 21 media file(s), 560 artifact file(s) and 0 other file(s)
-
-
-Find logs at: <code>./wandb/run-20230608_144841-9lrarks0/logs</code>
 
 
 ## Evaluation
@@ -373,19 +340,6 @@ dd.train_hf_layoutlm(path_config_json,
 
 
 
-
-Syncing run <strong><a href='https://wandb.ai/jm76/FRFPE_layoutxlm/runs/h0d16oh7' target="_blank">upbeat-shadow-1</a></strong> to <a href='https://wandb.ai/jm76/FRFPE_layoutxlm' target="_blank">Weights & Biases</a> (<a href='https://wandb.me/run' target="_blank">docs</a>)<br/>
-
-
-
-View project at <a href='https://wandb.ai/jm76/FRFPE_layoutxlm' target="_blank">https://wandb.ai/jm76/FRFPE_layoutxlm</a>
-
-
-
-View run at <a href='https://wandb.ai/jm76/FRFPE_layoutxlm/runs/h0d16oh7' target="_blank">https://wandb.ai/jm76/FRFPE_layoutxlm/runs/h0d16oh7</a>
-
-
-
      {0: <FundsFirstPage.report_date>,
      1: <FundsFirstPage.report_type>,
      2: <FundsFirstPage.umbrella>,
@@ -449,13 +403,6 @@ _ = evaluator.run(split="test")
 ```python
 wandb.finish()
 ```
-
-View run <strong style="color:#cdcd00">upbeat-shadow-1</strong> at: <a href='https://wandb.ai/jm76/FRFPE_layoutxlm/runs/h0d16oh7' target="_blank">https://wandb.ai/jm76/FRFPE_layoutxlm/runs/h0d16oh7</a><br/>Synced 5 W&B file(s), 21 media file(s), 392 artifact file(s) and 0 other file(s)
-
-
-
-Find logs at: <code>./wandb/run-20230608_162536-h0d16oh7/logs</code>
-
 
 
 ```python
