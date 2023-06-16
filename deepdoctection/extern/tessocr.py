@@ -240,8 +240,6 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
                 box=[caption[0], caption[1], caption[0] + caption[2], caption[1] + caption[3]],
                 score=score / 100,
                 text=caption[5],
-                block=str(caption[6]),
-                line=str(caption[7]),
                 class_id=1,
                 class_name=LayoutType.word,
             )
