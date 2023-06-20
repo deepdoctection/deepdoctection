@@ -170,7 +170,7 @@ class PageParsingService:
         self,
         text_container: TypeOrStr,
         floating_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-        include_residual_text_container: bool = True
+        include_residual_text_container: bool = True,
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
@@ -182,7 +182,6 @@ class PageParsingService:
             floating_text_block_categories = [floating_text_block_categories]
         if floating_text_block_categories is None:
             floating_text_block_categories = []
-
 
         self.text_container = get_type(text_container)
         self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
@@ -209,7 +208,8 @@ class PageParsingService:
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
             LayoutType.word,
-            LayoutType.line), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
+            LayoutType.line,
+        ), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
 
     @staticmethod
     def get_meta_annotation() -> JsonDict:
@@ -223,7 +223,7 @@ class PageParsingService:
         return self.__class__(
             deepcopy(self.text_container),
             deepcopy(self.floating_text_block_categories),
-            self.include_residual_text_container
+            self.include_residual_text_container,
         )
 
 

@@ -18,20 +18,17 @@
 """
 Module for text extraction pipeline component
 """
-from copy import copy, deepcopy
-from itertools import chain
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from copy import deepcopy
+from typing import List, Optional, Sequence, Tuple, Union
 
-from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
-from ..datapoint.box import merge_boxes
+from .base import PredictorPipelineComponent
+from .registry import pipeline_component_registry
+from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from ..extern.base import DetectionResult, ObjectDetector, PdfMiner, TextRecognizer
+from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
-from ..utils.logger import logger
-from ..utils.settings import LayoutType, PageType, Relationships, TypeOrStr, WordType, get_type
-from .base import PipelineComponent, PredictorPipelineComponent
-from .registry import pipeline_component_registry
+from ..utils.settings import PageType, TypeOrStr, WordType, get_type
 
 __all__ = ["TextExtractionService"]
 
@@ -140,7 +137,6 @@ class TextExtractionService(PredictorPipelineComponent):
                             detect_result.text if detect_result.text is not None else "",
                             detect_result.score,
                         )
-
 
     def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
         """

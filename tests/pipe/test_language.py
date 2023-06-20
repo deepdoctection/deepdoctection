@@ -27,7 +27,7 @@ from deepdoctection.datapoint import ContainerAnnotation, Image
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.language import LanguageDetectionService
 from deepdoctection.pipe.order import TextOrderService
-from deepdoctection.utils import CellType, LayoutType, PageType
+from deepdoctection.utils import LayoutType, PageType
 
 
 class TestLanguageDetectionService:
@@ -50,11 +50,8 @@ class TestLanguageDetectionService:
                 LayoutType.cell,
             ],
             floating_text_block_categories=[LayoutType.title, LayoutType.text, LayoutType.list],
-
         )
-        self.language_detection_service = LanguageDetectionService(
-            self._language_detector
-        )
+        self.language_detection_service = LanguageDetectionService(self._language_detector)
 
     @mark.basic
     def test_pass_datapoint(
