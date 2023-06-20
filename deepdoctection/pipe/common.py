@@ -169,29 +169,24 @@ class PageParsingService:
     def __init__(
         self,
         text_container: TypeOrStr,
-        top_level_text_block_names: Union[TypeOrStr, Sequence[TypeOrStr]],
-        text_block_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        floating_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        include_residual_text_container: bool = True
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
                                ordered within all text blocks.
-        :param top_level_text_block_names: name of image annotation that have a relation with text containers (or which
-                                           might be text containers themselves).
-        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
-                                 text containers themselves). This is only necessary, when residual text_container (e.g.
-                                 words that have not been assigned to any text block) should be displayed in `page.text`
+        :param floating_text_block_categories: name of image annotation that have a relation with text containers.
         """
         self.name = "page_parser"
-        if isinstance(top_level_text_block_names, (str, ObjectTypes)):
-            top_level_text_block_names = [top_level_text_block_names]
-        if isinstance(text_block_names, (str, ObjectTypes)):
-            text_block_names = [text_block_names]
-        if text_block_names is not None:
-            text_block_names = [get_type(text_block) for text_block in text_block_names]
+        if isinstance(floating_text_block_categories, (str, ObjectTypes)):
+            floating_text_block_categories = [floating_text_block_categories]
+        if floating_text_block_categories is None:
+            floating_text_block_categories = []
 
-        self._text_container = get_type(text_container)
-        self._top_level_text_block_names = [get_type(text_block) for text_block in top_level_text_block_names]
-        self._text_block_names = text_block_names
+
+        self.text_container = get_type(text_container)
+        self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
+        self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
 
     def pass_datapoint(self, dp: Image) -> Page:
@@ -200,9 +195,7 @@ class PageParsingService:
         :param dp: Image
         :return: Page
         """
-        return Page.from_image(
-            dp, self._text_container, self._top_level_text_block_names, self._text_block_names  # type: ignore
-        )
+        return Page.from_image(dp, self.text_container, self.floating_text_block_categories)
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
@@ -214,10 +207,9 @@ class PageParsingService:
         return MapData(df, self.pass_datapoint)
 
     def _init_sanity_checks(self) -> None:
-        assert self._text_container in [
+        assert self.text_container in (
             LayoutType.word,
-            LayoutType.line,
-        ], f"text_container must be either {LayoutType.word} or {LayoutType.line}"
+            LayoutType.line), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
 
     @staticmethod
     def get_meta_annotation() -> JsonDict:
@@ -229,7 +221,9 @@ class PageParsingService:
     def clone(self) -> "PageParsingService":
         """clone"""
         return self.__class__(
-            deepcopy(self._text_container), deepcopy(self._top_level_text_block_names), deepcopy(self._text_block_names)
+            deepcopy(self.text_container),
+            deepcopy(self.floating_text_block_categories),
+            self.include_residual_text_container
         )
 
 
