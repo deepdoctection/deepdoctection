@@ -28,7 +28,7 @@ from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation, Contai
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deepdoctection.pipe.text import TextExtractionService
 from deepdoctection.pipe.order import TextOrderService
-from deepdoctection.utils.settings import CellType, LayoutType, Relationships, WordType
+from deepdoctection.utils.settings import LayoutType, Relationships, WordType
 
 
 class TestTextExtractionService:
