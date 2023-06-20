@@ -125,11 +125,13 @@ class DoctectionPipe(Pipeline):
             pipe = DoctectionPipe([comp_1, com_2], PageParsingService(text_container= my_custom_setting))
     """
 
-    def __init__(self, pipeline_component_list: List[Union[PipelineComponent]],
-                 page_parsing_service: Optional[PageParsingService] = None):
+    def __init__(
+        self,
+        pipeline_component_list: List[Union[PipelineComponent]],
+        page_parsing_service: Optional[PageParsingService] = None,
+    ):
         if page_parsing_service is None:
-            self.page_parser = PageParsingService(
-            text_container=LayoutType.word)
+            self.page_parser = PageParsingService(text_container=LayoutType.word)
         else:
             self.page_parser = page_parsing_service
         assert all(

@@ -25,8 +25,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
-from ..utils.logger import logger
-from ..utils.settings import LayoutType, PageType, TypeOrStr, get_type
+from ..utils.settings import PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -96,7 +95,6 @@ class LanguageDetectionService(PipelineComponent):
             PageType.language, PageType.language, 1, predict_result.text, predict_result.score
         )
 
-
     def clone(self) -> PipelineComponent:
         predictor = self.predictor.clone()
         if not isinstance(predictor, LanguageDetector):
@@ -105,7 +103,7 @@ class LanguageDetectionService(PipelineComponent):
             predictor,
             copy(self.text_container),
             deepcopy(self.text_detector),
-            deepcopy(self.text_block_names),
+            deepcopy(self.floating_text_block_categories),
         )
 
     def get_meta_annotation(self) -> JsonDict:

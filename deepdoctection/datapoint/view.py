@@ -21,7 +21,6 @@ simplify consumption
 """
 
 from copy import copy
-from itertools import chain
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
 import cv2
@@ -343,7 +342,6 @@ class Page(Image):
     floating_text_block_categories: List[ObjectTypes]
     image_orig: Image
 
-
     @no_type_check
     def get_annotation(
         self,
@@ -393,8 +391,7 @@ class Page(Image):
         """
         A list of a layouts. Layouts are all exactly all floating text block categories
         """
-        layouts = [layout for layout in self.floating_text_block_categories]
-        return self.get_annotation(category_names=layouts)
+        return self.get_annotation(category_names=self.floating_text_block_categories)
 
     @property
     def words(self) -> List[ImageAnnotationBaseView]:
@@ -402,7 +399,6 @@ class Page(Image):
         A list of a words. Word are all text containers
         """
         return self.get_annotation(category_names=self.text_container)
-
 
     @property
     def tables(self) -> List[ImageAnnotationBaseView]:
@@ -469,7 +465,8 @@ class Page(Image):
                 if image_dict:
                     image = Image.from_dict(**image_dict)
                     layout_ann.image = cls.from_image(
-                        image, text_container, floating_text_block_categories, base_page=page)
+                        image, text_container, floating_text_block_categories, base_page=page
+                    )
             layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
@@ -497,7 +494,6 @@ class Page(Image):
         Get text of all layouts.
         """
         return self._make_text()
-
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
