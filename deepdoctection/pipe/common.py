@@ -26,6 +26,7 @@ import numpy as np
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..datapoint.view import Page
+from ..datapoint.view import IMAGE_DEFAULTS
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
@@ -181,7 +182,7 @@ class PageParsingService:
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
             floating_text_block_categories = [floating_text_block_categories]
         if floating_text_block_categories is None:
-            floating_text_block_categories = []
+            floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])  # type: ignore
 
         self.text_container = get_type(text_container)
         self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
