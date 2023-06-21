@@ -272,7 +272,11 @@ class Table(Layout):
 
     @property
     def text(self) -> str:
-        return str(self)
+        try:
+            return str(self)
+        except TypeError:
+            return super().text
+
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -494,6 +498,7 @@ class Page(Image):
         Get text of all layouts.
         """
         return self._make_text()
+
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:

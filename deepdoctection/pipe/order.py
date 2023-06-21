@@ -176,7 +176,8 @@ class OrderGenerator:
         :param image_id: image id
         :return: List of tuples with reading order position and `annotation_id`
         """
-
+        if not anns:
+            return []
         reading_blocks = []
         columns: List[BoundingBox] = []
         anns.sort(
@@ -258,7 +259,7 @@ class OrderGenerator:
 
         # old to new mapping
         columns_dict = {col["id"]: k for k, col in enumerate(columns_box)}
-        blocks = [(columns_dict[x[0]], x[1]) for x in reading_blocks]
+        blocks = [(columns_dict.get(x[0], consoldiated_cols.get(x[0])), x[1]) for x in reading_blocks]
         blocks.sort(key=lambda x: x[0])
         sorted_blocks = []
         max_block_number = max(list(columns_dict.values()))
@@ -269,6 +270,8 @@ class OrderGenerator:
         return reading_blocks
 
     def _consolidate_columns(self, columns):
+        if not columns:
+            return []
         np_boxes = np.array([col.to_list(mode="xyxy") for col in columns])
         ioa_matrix = np.transpose(np_ioa(np_boxes, np_boxes))
         np.fill_diagonal(ioa_matrix, 0)
@@ -284,6 +287,8 @@ class OrderGenerator:
 
     @staticmethod
     def _sort_anns_grouped_by_blocks(block, anns, image_width, image_height):
+        if not block:
+            return []
         anns_and_blocks_numbers = list(zip(*block))
         ann_ids = anns_and_blocks_numbers[1]
         block_number = anns_and_blocks_numbers[0][0]
@@ -468,7 +473,7 @@ class TextOrderService(PipelineComponent):
                                                 will build synthetic text lines from text containers and regard these
                                                 text lines as floating text blocks.
         """
-        self.text_container = text_container
+        self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
             text_block_categories = [text_block_categories]
         self.text_block_categories = [get_type(category) for category in text_block_categories]

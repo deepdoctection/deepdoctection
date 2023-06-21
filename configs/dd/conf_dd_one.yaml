@@ -4,7 +4,7 @@ CONFIG:
   TPITEM: dd/tp/conf_frcnn_rows.yaml
   D2LAYOUT: dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml
   D2CELL: dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml
-  D2ITEM: dd/d2/rows/CASCADE_RCNN_R_50_FPN_GN.yaml
+  D2ITEM: dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml
   TESS_OCR: dd/conf_tesseract.yaml
 WEIGHTS:
   TPLAYOUT: layout/model-800000_inf_only.data-00000-of-00001
@@ -24,10 +24,26 @@ SEGMENTATION:
   REMOVE_IOU_THRESHOLD_COLS: 0.001
 WORD_MATCHING:
   PARENTAL_CATEGORIES:
-    - TEXT
-    - TITLE
-    - CELL
-    - LIST
+    - text
+    - title
+    - cell
+    - list
   RULE: ioa
   IOU_THRESHOLD: 0.001
   IOA_THRESHOLD: 0.6
+TEXT_ORDERING:
+  TEXT_CONTAINER: word
+  TEXT_BLOCK_CATEGORIES:
+    - title
+    - text
+    - list
+    - cell
+  FLOATING_TEXT_BLOCK_CATEGORIES:
+    - title
+    - text
+    - list
+  INCLUDE_RESIDUAL_TEXT_CONTAINER: False
+  STARTING_POINT_TOLERANCE: 0.005
+  BROKEN_LINE_TOLERANCE: 0.003
+  HEIGHT_TOLERANCE: 2.0
+  PARAGRAPH_BREAK: 0.035

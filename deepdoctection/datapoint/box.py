@@ -327,10 +327,10 @@ class BoundingBox:
             if self.absolute_coords:
                 transformed_box = BoundingBox(
                     absolute_coords=not self.absolute_coords,
-                    ulx=self.ulx / image_width,
-                    uly=self.uly / image_height,
-                    lrx=self.lrx / image_width,
-                    lry=self.lry / image_height,
+                    ulx=max(self.ulx / image_width,0.),
+                    uly=max(self.uly / image_height,0.),
+                    lrx=min(self.lrx / image_width,1.),
+                    lry=min(self.lry / image_height,1.),
                 )
             else:
                 transformed_box = BoundingBox(
