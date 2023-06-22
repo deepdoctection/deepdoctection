@@ -1,7 +1,8 @@
 ## Running pre-trained models from Layout-Parser
 
-Layout-Parser provides several models trained on datasets like Publaynet but from many different areas as well. 
-In this tutorial we will show you how to configure and run a model from this library within a **dee**pdoctection pipeline. 
+[**Layout-Parser**](https://layout-parser.github.io/) provides several models trained on datasets like Publaynet but from many different areas as well. 
+
+In this tutorial we will show you how to configure and run a model from this library within a **deep**doctection pipeline. 
 
 Layout-Parser provides some pre-trained Detectron2 models for various document layout analysis tasks. Models from other libraries are available as well, but running Detectron2 models with **deep**doctection is particularly easy because model wrappers are already available. 
 
@@ -9,7 +10,7 @@ You can find the Layout-Parser catalog [here](https://github.com/Layout-Parser/l
 
 Let's download `faster_rcnn_R_50_FPN_3x` trained on Publaynet. Enter the URL into your browser and the download starts. We need the model weights and the config file. 
 
-To make it easy we suggest to save config file in **deep**doctection's .cache directory. 
+To make it easy we suggest to save config file in **deep**doctection's `.cache` directory. 
 
 Assume you have saved the model at: 
 
@@ -62,7 +63,7 @@ image_layout = dd.ImageLayoutService(d2_detector)
 
 pipe = dd.DoctectionPipe([image_layout])
 
-df = pipe.analyze(path="/home/janis/Downloads/publaynet")
+df = pipe.analyze(path="/path/to/publaynet_dir")
 df.reset_state()
 
 df_iter = iter(df)
@@ -74,9 +75,6 @@ plt.figure(figsize = (25,17))
 plt.axis('off')
 plt.imshow(image)
 ```
-    |14/?[00:00<00:00,26179.34it/s]
-    [32m[0523 15:36.11 @doctectionpipe.py:84][0m  [32mINF[0m  [97mProcessing PMC1087887_00003.jpg[0m
-    [32m[0523 15:36.11 @context.py:126][0m  [32mINF[0m  [97mImageLayoutService total: 0.0383 sec.[0m
 
 
 
@@ -108,9 +106,6 @@ plt.figure(figsize = (25,17))
 plt.axis('off')
 plt.imshow(image)
 ```
-
-    [32m[0523 15:40.14 @doctectionpipe.py:84][0m  [32mINF[0m  [97mProcessing PMC1087887_00003.jpg[0m
-    [32m[0523 15:40.14 @context.py:126][0m  [32mINF[0m  [97mImageLayoutService total: 0.0372 sec.[0m
 
 
 ![png](./_imgs/layoutparser_2.png)
@@ -177,10 +172,19 @@ categories = dd.ModelCatalog.get_profile("layoutparser/newspaper/model_final.pth
 
 d2_detector = dd.D2FrcnnDetector(path_config,path_weights,categories,config_overwrite=["NMS_THRESH_CLASS_AGNOSTIC=0.8","MODEL.ROI_HEADS.SCORE_THRESH_TEST=0.1"])
 image_layout = dd.ImageLayoutService(d2_detector)
-pipe = dd.DoctectionPipe([image_layout])
-pipe.page_parser._top_level_text_block_names.extend([layout_item for layout_item in NewspaperExtension])
 
-df = pipe.analyze(path="/home/janis/Downloads/hflayout")
+page_parser = dd.PageParsingService(text_container = dd.LayoutType.word, # this argument is required but will not have any effect
+                                    floating_text_block_categories=[layout_item for layout_item in NewspaperExtension])
+pipe = dd.DoctectionPipe([image_layout],page_parsing_service = page_parser)
+```
+
+    [32m[0622 10:11.41 @detection_checkpoint.py:38][0m  [32mINF[0m  [97m[DetectionCheckpointer] Loading from /home/janis/.cache/deepdoctection/weights/layoutparser/newspaper/model_final.pth ...[0m
+    [32m[0622 10:11.41 @checkpoint.py:150][0m  [32mINF[0m  [97m[Checkpointer] Loading from /home/janis/.cache/deepdoctection/weights/layoutparser/newspaper/model_final.pth ...[0m
+
+
+
+```python
+df = pipe.analyze(path="/path/to/dir/newspaper_layout")
 df.reset_state()
 
 df_iter = iter(df)
@@ -192,13 +196,8 @@ plt.figure(figsize = (25,17))
 plt.axis('off')
 plt.imshow(image)
 ```
-    |2/?[00:00<00:00,2691.24it/s]
-    [32m[0523 15:56.16 @doctectionpipe.py:84][0m  [32mINF[0m  [97mProcessing Screenshot_2023-05-11_12-48-18.png[0m
-    [32m[0523 15:56.16 @context.py:126][0m  [32mINF[0m  [97mImageLayoutService total: 0.0388 sec.[0m
 
-
-![png](./_imgs/layoutparser_3.png)
-
+![layoutparser_3.png](./_imgs/layoutparser_3.png)
 
 
 ```python
@@ -214,7 +213,3 @@ dp.layouts
      Layout(active=True, _annotation_id='700c979a-4c6a-3218-ae14-fd8009768590', category_name=<NewspaperExtension.illustration>, _category_name=<NewspaperExtension.illustration>, category_id='2', score=0.23696725070476532, sub_categories={}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=239.40988159179688, uly=81.54991149902344, lrx=298.70074462890625, lry=152.0034942626953, height=70.45358276367188, width=59.290863037109375)),
      Layout(active=True, _annotation_id='aa7d72ce-46c5-3304-88a8-1403251ce0e3', category_name=<NewspaperExtension.advertisement>, _category_name=<NewspaperExtension.advertisement>, category_id='7', score=0.14747683703899384, sub_categories={}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=260.8577575683594, uly=500.2983093261719, lrx=520.8097534179688, lry=781.0679321289062, height=280.7696228027344, width=259.9519958496094))]
 
-
-```python
-
-```

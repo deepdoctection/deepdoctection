@@ -408,7 +408,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/table-transformer-detection",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json", "preprocessor_config.json"],
-            categories={"1": LayoutType.table},
+            categories={"1": LayoutType.table, "2": LayoutType.table_rotated},
             dl_library="PT",
             model_wrapper="HFDetrDerivedDetector",
         ),

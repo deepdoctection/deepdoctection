@@ -26,8 +26,8 @@ from pytest import mark
 from deepdoctection.datapoint import ContainerAnnotation, Image
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.language import LanguageDetectionService
-from deepdoctection.pipe.text import TextOrderService
-from deepdoctection.utils import CellType, LayoutType, PageType
+from deepdoctection.pipe.order import TextOrderService
+from deepdoctection.utils import LayoutType, PageType
 
 
 class TestLanguageDetectionService:
@@ -43,28 +43,15 @@ class TestLanguageDetectionService:
         self._language_detector = MagicMock()
         self._text_order_service = TextOrderService(
             text_container=LayoutType.word,
-            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
-            text_block_names=[
+            text_block_categories=[
                 LayoutType.title,
                 LayoutType.text,
                 LayoutType.list,
                 LayoutType.cell,
-                CellType.header,
-                CellType.body,
             ],
+            floating_text_block_categories=[LayoutType.title, LayoutType.text, LayoutType.list],
         )
-        self.language_detection_service = LanguageDetectionService(
-            self._language_detector,
-            text_container=LayoutType.word,
-            text_block_names=[
-                LayoutType.title,
-                LayoutType.text,
-                LayoutType.list,
-                LayoutType.cell,
-                CellType.header,
-                CellType.body,
-            ],
-        )
+        self.language_detection_service = LanguageDetectionService(self._language_detector)
 
     @mark.basic
     def test_pass_datapoint(

@@ -55,7 +55,7 @@ Next, we instantiate the **deep**doctection analyzer. The analyzer is an example
 
 Because the document is german we will be using Tesseract's model trained on german text (`language='deu'`). If you have a document in a different language choose one by entering its ISO-639-1-Codes. Here are some examples: `fre`, `dut`, `chi`, `cze`, `per`, `gre`, `mac`, `rum`, `arm`, `geo`. 
 
-This will give you much better results than using the default english model.
+This will give you, depending on your language, much better results than using the default english model.
 
 
 ```python
@@ -64,7 +64,7 @@ analyzer = dd.get_dd_analyzer(language='deu')
 
 ## Analyze methods
 
-Once all models have been loaded, we can process single pages, one or multi page PDF-documents or Dataflows. Leaving Dataflows aside for now, you can either set `path=path/to/dir` if you have a folder of images or `path=path/to/my/doc.pdf` if you have a pdf document. 
+Once all models have been loaded, we can process single pages, multi page PDF-documents or `Dataflow`s. Leaving `Dataflow`s aside for now, you can either set `path='path/to/dir'` if you have a folder of images or `path='path/to/my/doc.pdf'` if you have a pdf document. 
 
 You will receive an error if your path points to a single image. Processing images requires to pass the path to the base image directory.
 
@@ -76,9 +76,10 @@ df = analyzer.analyze(path=path)
 df.reset_state()  # This method must be called just before starting the iteration. It is part of the API.
 ```
 
-You can see when activating the cell that not much has happened yet. The reason is that `analyze` is a generator function. It does not return instantly any results. Instead it returns a `Dataflow`. 
 
-A `Dataflow` is an object to create iterators for data loading and data processing. You can traverse through all the values of the Dataflow simply by using a `for`-loop or the `next` function. Let's go!  
+You can see, when activating the cell, that not much has happened yet. The reason is that `analyze` is a [generator function](https://wiki.python.org/moin/Generators). It does not return instantly any results. Instead it returns a `Dataflow`. 
+
+A `Dataflow` is an object to create iterators for data loading and data processing. You can traverse through all the values of the `Dataflow` simply by using a `for`-loop or the `next` function. Let's go!  
 
 
 ```python
@@ -94,6 +95,9 @@ Let's see what we got back. For each iteration we receive a `Page` object. This 
 ```python
 type(page)
 ```
+
+
+
 
     deepdoctection.datapoint.view.Page
 
@@ -114,7 +118,7 @@ print(f" height: {page.height} \n width: {page.width} \n file_name: {page.file_n
     
 
 
-`document_id` and `image_id` are the same. The reason is because we only process a single image and the naming convention silently assumes that we deal with a one page document. Once we process multi page PDFs `document_id` and `image_id` differ.
+`document_id` and `image_id` are the same. The reason is because we only process a single image. The naming convention silently assumes that we deal with a one page document. Once we process multi page PDFs `document_id` and `image_id` differ.
 
 With `get_attribute_names()` you get a list of all attributes. 
 
@@ -126,10 +130,14 @@ page.get_attribute_names()
 
 
 
-    {<PageType.document_type>,
+    {'chunks',
+     'document_id',
+     <PageType.document_type>,
+     'file_name',
      <PageType.language>,
      'layouts',
-     'residual_words',
+     'location',
+     'page_number',
      'tables',
      'text',
      'words'}
@@ -150,7 +158,8 @@ page.document_type, page.language
 
 `page.document_type` and `page.language` both return None. The reason is that the analyzer has no component for predicting a document type or a language.
 
-You can easily build a custom analyzer/pipeline containing a document classifier, though. Check this [notebook](Using_LayoutLM_for_sequence_classification.ipynb) for further information.
+You can easily build a custom analyzer/pipeline containing a document classifier, though. Check this
+[notebook](using_layoutlm_for_sequence_classification_notebook.md) for further information.
 
 ## Layout segments
 
@@ -175,7 +184,6 @@ Let's have a look at other attributes. We can use the `text` property to get the
 print(page.text)
 ```
 
-    
     Festlegung der VV und angemessene Risikoadjustierung
     Die VV-Pools der DWS Gruppe werden einer angemessenen Anpassung der Risiken unterzogen, die die Adjustierung ex ante als auch ex post umfasst. Die angewandte robuste Methode soll sicherstellen, dass bei der Festlegung der VV sowohl der risikoadjustierten Leistung als auch der Kapital- und Liquiditätsausstattung der DWS Gruppe Rechnung getragen wird. Die Er- mittlung des Gesamtbetrags der VV orientiert sich primär an (i) der Tragfähigkeit für die DWS Gruppe (das heißt, was „kann” die DWS Gruppe langfristig an VV im Einklang mit regulatorischen ‚Anforderungen gewähren) und (il) der Leistung (das heißt, was „sollte” die DWS Gruppe an VV gewähren, um für eine angemessene leistungsbezogene Vergütung zu sorgen und gleichzeitig den langfristigen Erfolg des Unternehmens zu sichern)
     Die DWS Gruppe hat für die Festlegung der VV auf Ebene der individuellen Mitarbeiter die „Grundsätze für die Festlegung der variablen Vergütung” eingeführt. Diese enthalten Informationen über die Faktoren und Messgrößen, die bei Entscheidungen zur IVV berücksichtigt werden müssen. Dazu zählen beispielsweise Investmentperformance, Kundenbindung, Erwägungen zur Unternehmenskultur sowie Zielvereinbarungen und Leistungsbeurteilung im Rahmen des „Ganzheitliche Leistung“-Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli- narmaßnahmen sowie deren Einfluss auf die VV einbezogen
@@ -188,6 +196,7 @@ print(page.text)
     Gemäß Gesetz vom 17. Dezember 2010 über die Organismen für gemeinsame Anlagen (in seiner jeweils gültigen Fassung) sowie den ESMA-Leitlinien unter Berücksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt („Risikoträger"). Das Identifizierungsverfahren basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr verwalteten Fonds: (a) Geschäftsführung/Senior Management, (b) Portfolio-/ Investmentmanager, (c) Kontrollfunktionen, (d) Mitarbeiter mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikoträger) mit wesentlichem Einfluss, (f} sonstige Mitarbeiter in der gleichen Vergütungsstufe wie sonstige Risikoträger. Mindestens 40 % der VV für Risikoträger werden aufgeschoben vergeben. Des Weiteren werden für wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewährt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfallbedingungen unterworfen, um eine angemessene nachträgliche Risikoadjustierung zu gewähr- leisten. Bei einem VV-Betrag von weniger als EUR 50.000 erhalten Risikoträger ihre gesamte \VV in bar und ohne Aufschub.
     Zusammenfassung der Informationen zur Vergütung für die Gesellschaft für 2018 '
     \ Vergütungsdaten für Delegierte, die die Gesellschaft Portfolio- oder Risikomanagementaufgaben übertragen hat, sind nicht der Tabelle erfasst. an in Unter Berücksichtigung diverser Vergütungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeiträge) oder Nicht-(direkte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergütungen für Fahrzeuge, Mobiltelefone, usw.) umfassen 3 „Senior Management” umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfüllt die Definition als Führungskräfte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Führungskräfte identifiziert.
+    
 
 
 You can get the individual layout segments like `text`, `title`, `list` or `figure`. 
@@ -218,7 +227,7 @@ page.chunks[0]
      '2aa98b36-196e-3cdf-af09-8f2d885d5f88',
      0,
      '215a633f-c16c-3e04-bbc2-78f9e00d524e',
-     1,
+     17,
      <LayoutType.title>,
      'Festlegung der VV und angemessene Risikoadjustierung')
 
@@ -230,9 +239,6 @@ Tables cannot be retrieved from `page.layouts`. They have a special `page.tables
 ```python
 len(page.tables)
 ```
-
-
-
 
     1
 
@@ -252,6 +258,7 @@ table.get_attribute_names()
     {'bbox',
      'cells',
      'columns',
+     'csv',
      <TableType.html>,
      <TableType.item>,
      <TableType.max_col_span>,
@@ -385,7 +392,7 @@ word.get_attribute_names()
 
 The reading order determines the string position of the word characters in a cell segment. 
 
-When inferring the reading order of a page we therefore have to levels reading orders: A high level reading order where layout segments such as `title`, `text` or `cell` are being involved and a low word level reading order.  
+When inferring the reading order of a page we therefore have to distinguish between high and low level reading orders: A high level reading order where layout segments such as `title`, `text` or `cell` are being involved and a low word level reading order where `word`s have to be arranged into some narrative text.  
 
 Let's look at some more attributes.
 
@@ -430,8 +437,17 @@ word #  __repr__ of the base object does carry <WordType.token_class> informatio
 
 
 
-    Word(active=True, _annotation_id='844631a5-5ddb-3ba8-b81a-bb9f05604d58', category_name=<LayoutType.word>, _category_name=<LayoutType.word>, category_id='1', score=0.91, sub_categories={<WordType.characters>: ContainerAnnotation(active=True, _annotation_id='ded39c8a-72c0-335b-853f-e6c8b50fbfbc', category_name=<WordType.characters>, _category_name=<WordType.characters>, category_id='None', score=0.91, sub_categories={}, relationships={}, value='Gesamtvergütung'), <WordType.block>: CategoryAnnotation(active=True, _annotation_id='a0712a5f-b3ff-3217-a8ca-690e4f5c7297', category_name=<WordType.block>, _category_name=<WordType.block>, category_id='47', score=None, sub_categories={}, relationships={}), <WordType.text_line>: CategoryAnnotation(active=True, _annotation_id='ffa96640-1fbd-3411-b932-0c8db602052d', category_name=<WordType.text_line>, _category_name=<WordType.text_line>, category_id='1', score=None, sub_categories={}, relationships={}), <Relationships.reading_order>: CategoryAnnotation(active=True, _annotation_id='9a2ced50-d1b6-378e-bbb7-49b8d3cfee61', category_name=<Relationships.reading_order>, _category_name=<Relationships.reading_order>, category_id='1', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=146, uly=1481, lrx=277, lry=1496, height=15, width=131))
+    Word(active=True, _annotation_id='844631a5-5ddb-3ba8-b81a-bb9f05604d58', category_name=<LayoutType.word>, _category_name=<LayoutType.word>, category_id='1', score=0.91, sub_categories={<WordType.characters>: ContainerAnnotation(active=True, _annotation_id='ded39c8a-72c0-335b-853f-e6c8b50fbfbc', category_name=<WordType.characters>, _category_name=<WordType.characters>, category_id='None', score=0.91, sub_categories={}, relationships={}, value='Gesamtvergütung'), <Relationships.reading_order>: CategoryAnnotation(active=True, _annotation_id='9a2ced50-d1b6-378e-bbb7-49b8d3cfee61', category_name=<Relationships.reading_order>, _category_name=<Relationships.reading_order>, category_id='1', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=146, uly=1481, lrx=277, lry=1496, height=15, width=131))
 
 
 
-There is no easy way yet to modify results. In tutorial [Data structure](data_structure_notebook.md) we will show how you can do this. 
+There is no easy way yet to modify results. In tutorial **Diving deeper into the data structure** we will show how you can do this. 
+
+## Where to go from here
+
+If you want to get a deeper understanding how a pipeline is composed, we suggest to look at the [pipeline notebook](pipelines_notebook.md).
+
+
+```python
+
+```

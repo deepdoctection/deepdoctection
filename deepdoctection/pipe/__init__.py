@@ -29,6 +29,7 @@ from .doctectionpipe import *
 from .language import *
 from .layout import *
 from .lm import *
+from .order import *
 from .refine import *
 from .registry import *
 from .segment import *

@@ -282,7 +282,10 @@ config_overwrite=["SOLVER.MAX_ITER=100000",    # Tensorpack equivalent:  TRAIN.L
                   "TEST.EVAL_PERIOD=20000",                           #  TRAIN.EVAL_PERIOD=40 (run a 500 samples * 40) 
                   "SOLVER.CHECKPOINT_PERIOD=20000",                   #  TRAIN.CHECKPOINT_PERIOD=40
                   "MODEL.BACKBONE.FREEZE_AT=0",                       #  BACKBONE.FREEZE_AT=0 (train the every layer of the backbone and do not freeze the bottom layers)
-                  "SOLVER.BASE_LR=1e-3"]                              #  TRAIN.BASE_LR=1e-3
+                  "SOLVER.BASE_LR=1e-3",                              #  TRAIN.BASE_LR=1e-3
+                  "SOLVER.IMS_PER_BATCH=2"]                           # no equivalent.    
+
+# if you encounter CUDA out of memory, reduce SOLVER.IMS_PER_BATCH to 1
 
 build_train_config = ["max_datapoints=86000"]  # you can also change the setting if you want to train with less samples
 ```
