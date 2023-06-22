@@ -24,7 +24,7 @@ from unittest.mock import MagicMock
 
 from pytest import mark, raises
 
-from deepdoctection.datapoint import BoundingBox,Image, ImageAnnotation
+from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
 from deepdoctection.pipe.text import TextExtractionService
 from deepdoctection.utils.settings import LayoutType

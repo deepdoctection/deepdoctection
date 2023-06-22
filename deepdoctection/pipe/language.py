@@ -25,7 +25,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
-from ..utils.settings import PageType, TypeOrStr, get_type
+from ..utils.settings import PageType, TypeOrStr, get_type, ObjectTypes
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -82,7 +82,7 @@ class LanguageDetectionService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)
+            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)  # type: ignore
             text = page.text_no_line_break
         else:
             if dp.image is None:

@@ -278,7 +278,6 @@ class Table(Layout):
             return super().text
 
 
-
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
     **{i: Layout for i in LayoutType if (i not in {LayoutType.table, LayoutType.word, LayoutType.cell})},
     LayoutType.table: Table,
@@ -298,6 +297,7 @@ IMAGE_DEFAULTS: Dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
         LayoutType.figure,
         LayoutType.list,
     ],
+    "text_block_categories": [LayoutType.text, LayoutType.title, LayoutType.figure, LayoutType.list, LayoutType.cell],
 }
 
 
@@ -440,8 +440,8 @@ class Page(Image):
         if not floating_text_block_categories:
             floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])  # type: ignore
 
-        if include_residual_text_container and LayoutType.line not in floating_text_block_categories:
-            floating_text_block_categories.append(LayoutType.line)
+        if include_residual_text_container and LayoutType.line not in floating_text_block_categories:  # type: ignore
+            floating_text_block_categories.append(LayoutType.line)  # type: ignore
 
         img_kwargs = image_orig.as_dict()
         page = cls(
@@ -484,7 +484,7 @@ class Page(Image):
         blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
 
-    def _make_text(self, line_break: bool = True):
+    def _make_text(self, line_break: bool = True) -> str:
         text: str = ""
         block_with_order = self._order("layouts")
         break_str = "\n" if line_break else " "
@@ -498,7 +498,6 @@ class Page(Image):
         Get text of all layouts.
         """
         return self._make_text()
-
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:

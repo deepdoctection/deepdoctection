@@ -42,7 +42,7 @@ from ..utils.file_utils import pytorch_available, tensorpack_available, tf_avail
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import  LayoutType
+from ..utils.settings import LayoutType
 from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
