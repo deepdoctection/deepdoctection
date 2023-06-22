@@ -154,7 +154,7 @@ def _get_category_attributes(
         if sub_cat_key in ann.sub_categories:
             sub_cat = ann.get_sub_category(sub_cat_key)
             return sub_cat.category_name, sub_cat.category_id, sub_cat.score
-        return "", "", 0.
+        return "", "", 0.0
     return ann.category_name, ann.category_id, ann.score
 
 

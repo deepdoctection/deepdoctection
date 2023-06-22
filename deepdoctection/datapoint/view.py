@@ -21,7 +21,6 @@ simplify consumption
 """
 
 from copy import copy
-from itertools import chain
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
 import cv2
@@ -273,7 +272,10 @@ class Table(Layout):
 
     @property
     def text(self) -> str:
-        return str(self)
+        try:
+            return str(self)
+        except TypeError:
+            return super().text
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -289,13 +291,13 @@ IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
 
 IMAGE_DEFAULTS: Dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
     "text_container": LayoutType.word,
-    "top_level_text_block_names": [
-        LayoutType.table,
+    "floating_text_block_categories": [
         LayoutType.text,
         LayoutType.title,
         LayoutType.figure,
         LayoutType.list,
     ],
+    "text_block_categories": [LayoutType.text, LayoutType.title, LayoutType.figure, LayoutType.list, LayoutType.cell],
 }
 
 
@@ -335,17 +337,14 @@ class Page(Image):
 
     top_level_text_block_names: Top level layout objects, e.g. `LayoutType.text` or `LayoutType.table`.
 
-    text_block_names: layout objects that have associated text
-
     image_orig: Base image
 
     text_container: LayoutType to take the text from
     """
 
-    top_level_text_block_names: List[ObjectTypes]
-    text_block_names: Optional[List[ObjectTypes]]
-    image_orig: Image
     text_container: ObjectTypes
+    floating_text_block_categories: List[ObjectTypes]
+    image_orig: Image
 
     @no_type_check
     def get_annotation(
@@ -394,33 +393,16 @@ class Page(Image):
     @property
     def layouts(self) -> List[ImageAnnotationBaseView]:
         """
-        A list of a layouts.
+        A list of a layouts. Layouts are all exactly all floating text block categories
         """
-        layouts = [layout for layout in self.top_level_text_block_names if layout != LayoutType.table]
-        return self.get_annotation(category_names=layouts)
+        return self.get_annotation(category_names=self.floating_text_block_categories)
 
     @property
     def words(self) -> List[ImageAnnotationBaseView]:
         """
-        A list of a words.
+        A list of a words. Word are all text containers
         """
         return self.get_annotation(category_names=self.text_container)
-
-    @property
-    def residual_words(self) -> List[ImageAnnotationBaseView]:
-        """
-        A list of a words that have not been assigned to any text block but have a reading order.
-        Words having this property appear, once `text_containers_to_text_block=True`.
-        """
-        if self.text_block_names is None:
-            return []
-        text_block_anns = self.get_annotation(category_names=self.text_block_names)
-        text_ann_ids = list(
-            chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
-        )
-        text_container_anns = self.get_annotation(category_names=self.text_container)
-        residual_words = [ann for ann in text_container_anns if ann.annotation_id not in text_ann_ids]
-        return residual_words
 
     @property
     def tables(self) -> List[ImageAnnotationBaseView]:
@@ -434,8 +416,8 @@ class Page(Image):
         cls,
         image_orig: Image,
         text_container: Optional[ObjectTypes] = None,
-        top_level_text_block_names: Optional[List[ObjectTypes]] = None,
-        text_block_names: Optional[List[ObjectTypes]] = None,
+        floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+        include_residual_text_container: bool = True,
         base_page: Optional["Page"] = None,
     ) -> "Page":
         """
@@ -443,10 +425,10 @@ class Page(Image):
 
         :param image_orig: `Image` instance to convert
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
-        :param top_level_text_block_names: A list of top level layout objects
-        :param text_block_names: name of image annotation that have a relation with text containers (or which might be
-                                 text containers themselves). This is only necessary, when residual text_container (e.g.
-                                 words that have not been assigned to any text block) should be displayed in `page.text`
+        :param floating_text_block_categories: A list of top level layout objects
+        :param include_residual_text_container: This will regard synthetic text line annotations as floating text
+                                                blocks and therefore incorporate all image annotations of category
+                                                `word` when building text strings.
         :param base_page: For top level objects that are images themselves, pass the page that encloses all objects.
                           In doubt, do not populate this value.
         :return:
@@ -455,8 +437,11 @@ class Page(Image):
         if text_container is None:
             text_container = IMAGE_DEFAULTS["text_container"]  # type: ignore
 
-        if top_level_text_block_names is None:
-            top_level_text_block_names = IMAGE_DEFAULTS["top_level_text_block_names"]  # type: ignore
+        if not floating_text_block_categories:
+            floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])  # type: ignore
+
+        if include_residual_text_container and LayoutType.line not in floating_text_block_categories:  # type: ignore
+            floating_text_block_categories.append(LayoutType.line)  # type: ignore
 
         img_kwargs = image_orig.as_dict()
         page = cls(
@@ -484,37 +469,35 @@ class Page(Image):
                 if image_dict:
                     image = Image.from_dict(**image_dict)
                     layout_ann.image = cls.from_image(
-                        image, text_container, top_level_text_block_names, text_block_names, page
+                        image, text_container, floating_text_block_categories, base_page=page
                     )
             layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
-        page.top_level_text_block_names = top_level_text_block_names  # type: ignore
-        page.text_block_names = text_block_names
+        page.floating_text_block_categories = floating_text_block_categories  # type: ignore
         page.text_container = text_container  # type: ignore
         return page
 
     def _order(self, block: str) -> List[ImageAnnotationBaseView]:
         blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
-        if self.residual_words:
-            blocks_with_order.extend(self.residual_words)
         blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
+
+    def _make_text(self, line_break: bool = True) -> str:
+        text: str = ""
+        block_with_order = self._order("layouts")
+        break_str = "\n" if line_break else " "
+        for block in block_with_order:
+            text += f"{block.text}{break_str}"
+        return text
 
     @property
     def text(self) -> str:
         """
         Get text of all layouts.
         """
-        text: str = ""
-        block_name = "layouts" if self.layouts else "words"
-        block_with_order = self._order(block_name)
-        linebreak = "\n" if block_name == "layouts" else " "
-        for block in block_with_order:
-            block_attr = "text" if not isinstance(block, Word) else "characters"
-            text += f"{linebreak}{getattr(block, block_attr)}"
-        return text
+        return self._make_text()
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
@@ -555,12 +538,7 @@ class Page(Image):
         Get text of all layouts. While `text` will do a line break for each layout block this here will return the
         string in one single line.
         """
-        text: str = ""
-        layouts_with_order = self._order("layouts")
-        for layout in layouts_with_order:
-            text += " " + layout.text  # type: ignore
-
-        return text
+        return self._make_text(False)
 
     @no_type_check
     def viz(
@@ -644,10 +622,9 @@ class Page(Image):
             for word in all_words:
                 box_stack.append(word.bbox)
                 if show_token_class:
-                    category_names_list.append(word.token_class.value)
+                    category_names_list.append(word.token_class.value if word.token_class is not None else None)
                 else:
-                    category_names_list.append(word.token_tag.value)
-
+                    category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
 
         if self.image is not None:
             if box_stack:
@@ -684,7 +661,6 @@ class Page(Image):
                 "tables",
                 "layouts",
                 "words",
-                "residual_words",
                 "file_name",
                 "location",
                 "document_id",
@@ -718,8 +694,16 @@ class Page(Image):
         cls,
         file_path: str,
         text_container: Optional[ObjectTypes] = None,
-        top_level_text_block_names: Optional[List[ObjectTypes]] = None,
-        text_block_names: Optional[List[ObjectTypes]] = None,
+        floating_text_block_categories: Optional[List[ObjectTypes]] = None,
+        include_residual_text_container: bool = True,
     ) -> "Page":
+        """Reading JSON file and building a `Page` object with given config.
+        :param file_path: Path to file
+        :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
+        :param floating_text_block_categories: A list of top level layout objects
+        :param include_residual_text_container: This will regard synthetic text line annotations as floating text
+                                                blocks and therefore incorporate all image annotations of category
+                                                `word` when building text strings.
+        """
         image = Image.from_file(file_path)
-        return cls.from_image(image, text_container, top_level_text_block_names, text_block_names)
+        return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)

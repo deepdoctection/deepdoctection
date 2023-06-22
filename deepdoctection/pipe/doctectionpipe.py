@@ -113,24 +113,27 @@ class DoctectionPipe(Pipeline):
     By default, `DoctectionPipe` will instantiate a default `PageParsingService`
 
         PageParsingService(text_container=LayoutType.word,
-                           text_block_names=[LayoutType.title,
-                                             LayoutType.text,
-                                             LayoutType.list,
-                                             LayoutType.table])
+                           text_block_categories=[LayoutType.title,
+                                                  LayoutType.text,
+                                                  LayoutType.list,
+                                                  LayoutType.table])
 
     but you can overwrite the current setting:
 
     **Example:**
 
-            pipe = DoctectionPipe([comp_1, com_2])
-            pipe.page_parser =  PageParsingService(text_container= my_custom_setting)
+            pipe = DoctectionPipe([comp_1, com_2], PageParsingService(text_container= my_custom_setting))
     """
 
-    def __init__(self, pipeline_component_list: List[Union[PipelineComponent]]):
-        self.page_parser = PageParsingService(
-            text_container=LayoutType.word,
-            top_level_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list, LayoutType.table],
-        )
+    def __init__(
+        self,
+        pipeline_component_list: List[Union[PipelineComponent]],
+        page_parsing_service: Optional[PageParsingService] = None,
+    ):
+        if page_parsing_service is None:
+            self.page_parser = PageParsingService(text_container=LayoutType.word)
+        else:
+            self.page_parser = page_parsing_service
         assert all(
             isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
         )

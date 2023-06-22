@@ -25,8 +25,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
-from ..utils.logger import logger
-from ..utils.settings import LayoutType, PageType, TypeOrStr, get_type
+from ..utils.settings import PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -59,7 +58,7 @@ class LanguageDetectionService(PipelineComponent):
         language_detector: LanguageDetector,
         text_container: Optional[TypeOrStr] = None,
         text_detector: Optional[ObjectDetector] = None,
-        text_block_names: Optional[Sequence[TypeOrStr]] = None,
+        floating_text_block_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
         :param language_detector: Detector to determine text
@@ -67,25 +66,23 @@ class LanguageDetectionService(PipelineComponent):
                                text detector.
         :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
 
-        :param text_block_names: text blocks, needed for generating the reading order. Not necessary
+        :param floating_text_block_categories: text blocks, needed for generating the reading order. Not necessary
                                  when passing a text detector.
         """
 
         self.predictor = language_detector
         self.text_detector = text_detector
         self.text_container = get_type(text_container) if text_container is not None else text_container
-        _text_block_names = []
-        if text_block_names:
-            _text_block_names = [get_type(text_block) for text_block in text_block_names]
-        self.text_block_names = _text_block_names
-        self._init_sanity_checks()
+        if floating_text_block_categories:
+            floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
+        self.floating_text_block_categories = floating_text_block_categories if floating_text_block_categories else []
         super().__init__(
             self._get_name(self.predictor.name)
         )  # cannot use PredictorPipelineComponent class because of return type of predict meth
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self.text_container, self.text_block_names)
+            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)  # type: ignore
             text = page.text_no_line_break
         else:
             if dp.image is None:
@@ -98,17 +95,6 @@ class LanguageDetectionService(PipelineComponent):
             PageType.language, PageType.language, 1, predict_result.text, predict_result.score
         )
 
-    def _init_sanity_checks(self) -> None:
-        assert (
-            self.text_detector or self.text_container
-        ), "if no text_detector is provided a text container must be specified"
-        if not self.text_detector:
-            assert self.text_container in [LayoutType.word, LayoutType.line], (
-                f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
-            )
-            if not self.text_block_names:
-                logger.info("text_block_names are set to None. This setting will return no reading order!")
-
     def clone(self) -> PipelineComponent:
         predictor = self.predictor.clone()
         if not isinstance(predictor, LanguageDetector):
@@ -117,7 +103,7 @@ class LanguageDetectionService(PipelineComponent):
             predictor,
             copy(self.text_container),
             deepcopy(self.text_detector),
-            deepcopy(self.text_block_names),
+            deepcopy(self.floating_text_block_categories),
         )
 
     def get_meta_annotation(self) -> JsonDict:

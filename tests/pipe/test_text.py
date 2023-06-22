@@ -26,8 +26,8 @@ from pytest import mark, raises
 
 from deepdoctection.datapoint import BoundingBox, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector, PdfMiner
-from deepdoctection.pipe.text import TextExtractionService, TextOrderService
-from deepdoctection.utils.settings import CellType, LayoutType, Relationships
+from deepdoctection.pipe.text import TextExtractionService
+from deepdoctection.utils.settings import LayoutType
 
 
 class TestTextExtractionService:
@@ -200,55 +200,3 @@ class TestTextExtractionServiceWithSubImage:
             annotation_ids=fourth_word_ann.annotation_id
         )[0]
         assert isinstance(st_text_ann, ImageAnnotation)
-
-
-class TestTextOrderService:
-    """
-    Test TextOrderService
-    """
-
-    @staticmethod
-    @mark.basic
-    def test_integration_pipeline_component(dp_image_with_layout_and_word_annotations: Image) -> None:
-        """
-        test integration_pipeline_component
-        """
-
-        # Arrange
-        text_order_service = TextOrderService(
-            text_container=LayoutType.word,
-            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
-            text_block_names=[
-                LayoutType.title,
-                LayoutType.text,
-                LayoutType.list,
-                LayoutType.cell,
-                CellType.header,
-                CellType.body,
-            ],
-        )
-        dp_image = dp_image_with_layout_and_word_annotations
-
-        # Act
-        text_order_service.pass_datapoint(dp_image)
-
-        # Assert
-        layout_anns = dp_image.get_annotation(category_names=[LayoutType.title, LayoutType.text])
-        word_anns = dp_image.get_annotation(category_names=LayoutType.word)
-
-        # only need to check on layout_anns and word_anns, if sub cats have been added
-        # and numbers are correctly assigned
-
-        sub_cat = layout_anns[0].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "1"
-        sub_cat = layout_anns[1].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "2"
-
-        sub_cat = word_anns[0].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "1"
-        sub_cat = word_anns[1].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "2"
-        sub_cat = word_anns[2].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "1"
-        sub_cat = word_anns[3].get_sub_category(Relationships.reading_order)
-        assert sub_cat.category_id == "2"

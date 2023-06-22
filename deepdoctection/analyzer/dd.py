@@ -34,14 +34,15 @@ from ..pipe.cell import DetectResultGenerator, SubImageLayoutService
 from ..pipe.common import MatchingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
+from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import TableSegmentationService
-from ..pipe.text import TextExtractionService, TextOrderService
+from ..pipe.text import TextExtractionService
 from ..utils.file_utils import pytorch_available, tensorpack_available, tf_available
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import CellType, LayoutType
+from ..utils.settings import LayoutType
 from ..utils.systools import get_configs_dir_path, get_package_path
 
 if tf_available() and tensorpack_available():
@@ -82,7 +83,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
-def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
+def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = False) -> str:
     """
     Initial copying of config file from the package dir into the config cache.
 
@@ -208,16 +209,14 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(match)
 
         order = TextOrderService(
-            text_container=LayoutType.word,
-            floating_text_block_names=[LayoutType.title, LayoutType.text, LayoutType.list],
-            text_block_names=[
-                LayoutType.title,
-                LayoutType.text,
-                LayoutType.list,
-                LayoutType.cell,
-                CellType.header,
-                CellType.body,
-            ],
+            text_container=cfg.TEXT_ORDERING.TEXT_CONTAINER,
+            text_block_categories=cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
+            floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
+            include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
+            starting_point_tolerance=cfg.TEXT_ORDERING.STARTING_POINT_TOLERANCE,
+            broken_line_tolerance=cfg.TEXT_ORDERING.BROKEN_LINE_TOLERANCE,
+            height_tolerance=cfg.TEXT_ORDERING.HEIGHT_TOLERANCE,
+            paragraph_break=cfg.TEXT_ORDERING.PARAGRAPH_BREAK,
         )
         pipe_component_list.append(order)
 

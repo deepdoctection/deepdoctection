@@ -244,6 +244,9 @@ _IMPORT_STRUCTURE = {
         "get_tokenizer_from_architecture",
         "LMTokenClassifierService",
         "LMSequenceClassifierService",
+        "OrderGenerator",
+        "TextLineGenerator",
+        "TextOrderService",
         "TableSegmentationRefinementService",
         "generate_html_string",
         "pipeline_component_registry",
@@ -251,7 +254,6 @@ _IMPORT_STRUCTURE = {
         "PubtablesSegmentationService",
         "SegmentationResult",
         "TextExtractionService",
-        "TextOrderService",
         "SimpleTransformPipelineComponent",
     ],
     "train": [
