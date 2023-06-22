@@ -99,7 +99,6 @@ class OrderGenerator:
         rows_dict = {
             idx: key[0]  # type:ignore
             for idx, key in enumerate(sorted(rows_dict.items(), key=lambda it: it[1]["upper"]))
-
         }
         reading_lines.sort(key=lambda x: (rows_dict[x[0]], x[2]))
         number_rows = len(rows_dict)
@@ -289,10 +288,9 @@ class OrderGenerator:
         return column_dict
 
     @staticmethod
-    def _sort_anns_grouped_by_blocks(block: Sequence[Tuple[int,str]],
-                                     anns: Sequence[ImageAnnotation],
-                                     image_width: float,
-                                     image_height: float) -> List[Tuple[int,str]]:
+    def _sort_anns_grouped_by_blocks(
+        block: Sequence[Tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
+    ) -> List[Tuple[int, str]]:
         if not block:
             return []
         anns_and_blocks_numbers = list(zip(*block))
@@ -329,7 +327,7 @@ class TextLineGenerator:
         self.make_sub_lines = make_sub_lines
         self.paragraph_break = paragraph_break
 
-    def _make_detect_result(self, box: BoundingBox, relationships: Dict[str,List[str]]) -> DetectionResult:
+    def _make_detect_result(self, box: BoundingBox, relationships: Dict[str, List[str]]) -> DetectionResult:
         return DetectionResult(
             box=box.to_list(mode="xyxy"),
             class_name=LayoutType.line,

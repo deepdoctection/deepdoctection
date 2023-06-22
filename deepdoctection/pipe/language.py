@@ -25,7 +25,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
-from ..utils.settings import PageType, TypeOrStr, get_type, ObjectTypes
+from ..utils.settings import PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
