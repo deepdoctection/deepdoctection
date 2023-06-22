@@ -318,5 +318,5 @@ class DatapointManager:
         ann.deactivate()
 
     def get_annotation(self, annotation_id: str) -> ImageAnnotation:
-        """get single `ImageAnnotation` """
+        """get single `ImageAnnotation`"""
         return self._cache_anns[annotation_id]

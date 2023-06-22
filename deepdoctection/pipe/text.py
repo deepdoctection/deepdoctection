@@ -21,14 +21,14 @@ Module for text extraction pipeline component
 from copy import deepcopy
 from typing import List, Optional, Sequence, Tuple, Union
 
-from .base import PredictorPipelineComponent
-from .registry import pipeline_component_registry
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
 from ..utils.settings import PageType, TypeOrStr, WordType, get_type
+from .base import PredictorPipelineComponent
+from .registry import pipeline_component_registry
 
 __all__ = ["TextExtractionService"]
 
