@@ -137,7 +137,7 @@ class CocoMetric(MetricBase):
 
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
             img_gt, ann_gt = cls.mapper(dp_gt)  # type: ignore
-            dp_pred = re_assign_cat_ids(  # pylint: disable=E1120
+            dp_pred = re_assign_cat_ids(
                 categories.get_categories(as_dict=True, filtered=True, name_as_key=True)
             )(dp_pred)
             img_pr, ann_pr = cls.mapper(dp_pred)  # type: ignore

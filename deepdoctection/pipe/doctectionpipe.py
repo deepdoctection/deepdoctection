@@ -113,10 +113,10 @@ class DoctectionPipe(Pipeline):
     By default, `DoctectionPipe` will instantiate a default `PageParsingService`
 
         PageParsingService(text_container=LayoutType.word,
-                           text_block_names=[LayoutType.title,
-                                             LayoutType.text,
-                                             LayoutType.list,
-                                             LayoutType.table])
+                           text_block_categories=[LayoutType.title,
+                                                  LayoutType.text,
+                                                  LayoutType.list,
+                                                  LayoutType.table])
 
     but you can overwrite the current setting:
 
