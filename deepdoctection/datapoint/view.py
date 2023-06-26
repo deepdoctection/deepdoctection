@@ -159,9 +159,20 @@ class Layout(ImageAnnotationBaseView):
         """
         Text captured within the instance respecting the reading order of each word.
         """
+        words = self.get_ordered_words()
+        return " ".join([word.characters for word in words])  # type: ignore
+
+    def get_ordered_words(self) ->  List[ImageAnnotationBaseView]:
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
         words_with_reading_order.sort(key=lambda x: x.reading_order)  # type: ignore
-        return " ".join([word.characters for word in words_with_reading_order])  # type: ignore
+        return words_with_reading_order
+
+    @property
+    def text_(self) -> Dict[str,List[str]]:
+        words = self.get_ordered_words()
+        return {"text":" ".join([word.characters for word in words]),
+                "text_list": [word.characters for word in words],
+                "annotation_ids": [word.annotation_id for word in words]}
 
     def get_attribute_names(self) -> Set[str]:
         return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.reading_order})
@@ -276,6 +287,20 @@ class Table(Layout):
             return str(self)
         except TypeError:
             return super().text
+
+    @property
+    def text_(self) -> Dict[str,List[str]]:
+        cells = self.cells
+        if not cells:
+            return super().text_
+        text_list = []
+        annotation_id_list = []
+        for cell in cells:
+            text_list.extend(cell.text_["text_list"])
+            annotation_id_list.extend(cell.text_["annotation_ids"])
+        return {"text":" ".join([cell.text for cell in cells]),
+                "text_list": text_list,
+                "annotation_ids": annotation_id_list}
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -498,6 +523,18 @@ class Page(Image):
         Get text of all layouts.
         """
         return self._make_text()
+
+    @property
+    def text_(self) -> Dict[str,List[str]]:
+        block_with_order = self._order("layouts")
+        text_list = []
+        annotation_id_list = []
+        for block in block_with_order:
+            text_list.extend(block.text_["text_list"])
+            annotation_id_list.extend(block.text_["annotation_ids"])
+        return {"text": self.text,
+                "text_list": text_list,
+                "annotation_ids": annotation_id_list}
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
