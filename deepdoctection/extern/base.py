@@ -245,13 +245,13 @@ class TokenClassResult:
     """
 
     uuid: str
-    token_id: int
     token: str
     class_id: int
     class_name: ObjectTypes = DefaultType.default_type
     semantic_name: ObjectTypes = DefaultType.default_type
     bio_tag: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None
+    token_id: Optional[int] = None
 
 
 @dataclass
@@ -262,11 +262,13 @@ class SequenceClassResult:
     `class_id`: category id
     `class_name`: category name
     `score`: prediction score
+    `class_name_orig`: original class name
     """
 
     class_id: int
     class_name: ObjectTypes = DefaultType.default_type
     score: Optional[float] = None
+    class_name_orig: Optional[str] = None
 
 
 class LMTokenClassifier(PredictorBase):
