@@ -92,7 +92,7 @@ class TextExtractionService(PredictorPipelineComponent):
                 raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
         if run_time_ocr_language_selection:
             assert isinstance(self.predictor, TesseractOcrDetector), (
-                "Only TesseractOcrDetector supports multiple " "languages"
+                "Only TesseractOcrDetector supports multiple languages"
             )
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
