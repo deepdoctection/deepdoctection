@@ -56,6 +56,7 @@ class ModelProfile:
     categories: Optional[Dict[str, ObjectTypes]] = field(default=None)
     dl_library: Optional[str] = field(default=None)
     model_wrapper: Optional[str] = field(default=None)
+    architecture: Optional[str] = field(default=None)
 
     def as_dict(self) -> Dict[str, Any]:
         """
@@ -446,6 +447,7 @@ class ModelCatalog:
             categories={"1": LayoutType.word},
             dl_library="PT",
             model_wrapper="DoctrTextlineDetector",
+            architecture="db_resnet50"
         ),
         "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip": ModelProfile(
             name="doctr/db_resnet50/tf/db_resnet50-adcafc63.zip",
@@ -457,6 +459,7 @@ class ModelCatalog:
             categories={"1": LayoutType.word},
             dl_library="TF",
             model_wrapper="DoctrTextlineDetector",
+            architecture="db_resnet50"
         ),
         "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt": ModelProfile(
             name="doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
@@ -468,6 +471,7 @@ class ModelCatalog:
             urls=["https://doctr-static.mindee.com/models?id=v0.3.1/crnn_vgg16_bn-9762b0b0.pt&src=0"],
             dl_library="PT",
             model_wrapper="DoctrTextRecognizer",
+            architecture="crnn_vgg16_bn"
         ),
         "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip": ModelProfile(
             name="doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip",
@@ -479,6 +483,7 @@ class ModelCatalog:
             urls=["https://doctr-static.mindee.com/models?id=v0.3.0/crnn_vgg16_bn-76b7f2c6.zip&src=0"],
             dl_library="TF",
             model_wrapper="DoctrTextRecognizer",
+            architecture="crnn_vgg16_bn"
         ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
