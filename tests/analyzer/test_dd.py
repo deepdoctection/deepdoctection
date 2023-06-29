@@ -33,7 +33,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(tables=False, ocr=False)
+    analyzer = get_dd_analyzer(config_overwrite=["USE_TABLE_SEGMENTATION=False", "USE_OCR=False"])
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -57,7 +57,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(tables=True, ocr=False)
+    analyzer = get_dd_analyzer(config_overwrite=["USE_OCR=False"])
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -92,7 +92,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(tables=True, ocr=True)
+    analyzer = get_dd_analyzer()
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())

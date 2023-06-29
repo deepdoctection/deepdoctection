@@ -53,7 +53,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         to_image: bool = False,
         crop_image: bool = False,
         padder: Optional[PadTransform] = None,
-        skip_if_layout_extracted: bool = False
+        skip_if_layout_extracted: bool = False,
     ):
         """
         :param layout_detector: object detector
