@@ -398,8 +398,12 @@ class TableSegmentationRefinementService(PipelineComponent):
     """
 
     def __init__(self) -> None:
-        self._table_name = LayoutType.table
-        self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
+        self._table_name = [LayoutType.table, LayoutType.table_rotated]
+        self._cell_names = [LayoutType.cell,
+                            CellType.column_header,
+                            CellType.projected_row_header,
+                            CellType.spanning,
+                            CellType.row_header]
         super().__init__("table_segment_refine")
 
     def serve(self, dp: Image) -> None:

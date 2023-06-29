@@ -279,7 +279,7 @@ class Table(Layout):
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
             table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
-                table_list[cell.row_number - 1][cell.column_number - 1] + cell.text  # type: ignore
+                table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
             )
         return table_list
 
