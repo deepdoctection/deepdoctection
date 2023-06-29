@@ -53,6 +53,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         to_image: bool = False,
         crop_image: bool = False,
         padder: Optional[PadTransform] = None,
+        skip_if_layout_extracted: bool = False,
     ):
         """
         :param layout_detector: object detector
@@ -61,13 +62,22 @@ class ImageLayoutService(PredictorPipelineComponent):
         :param crop_image: Do not only populate `ImageAnnotation.image` but also crop the detected block according
                            to its bounding box and populate the resulting sub image to
                            `ImageAnnotation.image.image`.
+        :param skip_if_layout_extracted: When `True` will check, if there are already `ImageAnnotation` of a category
+                                         available that will be predicted by the `layout_detector`. If yes, will skip
+                                         the prediction process.
         """
         self.to_image = to_image
         self.crop_image = crop_image
         self.padder = padder
+        self.skip_if_layout_extracted = skip_if_layout_extracted
         super().__init__(self._get_name(layout_detector.name), layout_detector)
 
     def serve(self, dp: Image) -> None:
+        if self.skip_if_layout_extracted:
+            categories = self.predictor.possible_categories()  # type: ignore
+            anns = dp.get_annotation(category_names=categories)
+            if anns:
+                return
         if dp.image is None:
             raise ValueError("image cannot be None")
         np_image = dp.image
@@ -105,4 +115,4 @@ class ImageLayoutService(PredictorPipelineComponent):
             padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
             raise ValueError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
-        return self.__class__(predictor, self.to_image, self.crop_image, padder_clone)
+        return self.__class__(predictor, self.to_image, self.crop_image, padder_clone, self.skip_if_layout_extracted)

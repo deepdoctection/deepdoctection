@@ -27,16 +27,20 @@ import os
 from shutil import copyfile
 from typing import List, Optional, Tuple, Union
 
+from ..extern.base import ObjectDetector
+from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.model import ModelCatalog, ModelDownloadManager
+from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector
+from ..extern.texocr import TextractOcrDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.cell import DetectResultGenerator, SubImageLayoutService
-from ..pipe.common import MatchingService
+from ..pipe.common import MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
-from ..pipe.segment import TableSegmentationService
+from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
 from ..utils.file_utils import pytorch_available, tensorpack_available, tf_available
 from ..utils.fs import mkdir_p
@@ -44,6 +48,7 @@ from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import LayoutType
 from ..utils.systools import get_configs_dir_path, get_package_path
+from ..utils.transform import PadTransform
 
 if tf_available() and tensorpack_available():
     from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
@@ -55,6 +60,7 @@ if pytorch_available():
     from torch import cuda
 
     from ..extern.d2detect import D2FrcnnDetector
+    from ..extern.hfdetr import HFDetrDerivedDetector
 
 
 __all__ = ["get_dd_analyzer", "build_analyzer"]
@@ -72,18 +78,18 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
     """
     if tf_available() and tensorpack_available():
         if get_num_gpu() >= 1:
-            return "tf", "cuda"
+            return "TF", "cuda"
         if pytorch_available():
-            return "pt", "cpu"
+            return "PT", "cpu"
         raise ModuleNotFoundError("Install Pytorch and Torchvision to run with a CPU")
     if pytorch_available():
         if cuda.is_available():
-            return "pt", "gpu"
-        return "pt", "cpu"
+            return "PT", "cuda"
+        return "PT", "cpu"
     raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
-def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = False) -> str:
+def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
     """
     Initial copying of config file from the package dir into the config cache.
 
@@ -98,6 +104,100 @@ def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = False) -> str
     return absolute_path
 
 
+def _config_sanity_checks(cfg: AttrDict) -> None:
+    if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
+        raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
+
+
+def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector"]:
+    weights = getattr(cfg.TF, mode).WEIGHTS if cfg.LIB == "TF" else getattr(cfg.PT, mode).WEIGHTS
+    filter_categories = (
+        getattr(getattr(cfg.TF, mode), "FILTER") if cfg.LIB == "TF" else getattr(getattr(cfg.PT, mode), "FILTER")
+    )
+    config_path = ModelCatalog.get_full_path_configs(weights)
+    weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+    profile = ModelCatalog.get_profile(weights)
+    categories = profile.categories
+    assert categories is not None
+    if profile.model_wrapper in ("TPFrcnnDetector",):
+        return TPFrcnnDetector(config_path, weights_path, categories, filter_categories=filter_categories)
+    if profile.model_wrapper in ("D2FrcnnDetector",):
+        return D2FrcnnDetector(
+            config_path, weights_path, categories, device=cfg.DEVICE, filter_categories=filter_categories
+        )
+    if profile.model_wrapper in ("HFDetrDerivedDetector",):
+        preprocessor_config = ModelCatalog.get_full_path_preprocessor_configs(weights)
+        return HFDetrDerivedDetector(
+            config_path,
+            weights_path,
+            preprocessor_config,
+            categories,
+            device=cfg.DEVICE,
+            filter_categories=filter_categories,
+        )
+    raise TypeError(
+        f"You have chosen profile.model_wrapper: {profile.model_wrapper} which is not allowed. Please check "
+        f"compatability with your deep learning framework")
+
+
+def _build_padder(cfg: AttrDict, mode: str) -> PadTransform:
+    top, right, bottom, left = (
+        getattr(cfg.PT, mode).PAD.TOP,
+        getattr(cfg.PT, mode).PAD.RIGHT,
+        getattr(cfg.PT, mode).PAD.BOTTOM,
+        getattr(cfg.PT, mode).PAD.LEFT,
+    )
+    return PadTransform(top=top, right=right, bottom=bottom, left=left)
+
+
+def _build_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> ImageLayoutService:
+    padder = None
+    if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
+        padder = _build_padder(cfg, mode)
+    return ImageLayoutService(detector, to_image=True, crop_image=True, padder=padder)
+
+
+def _build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> SubImageLayoutService:
+    exclude_category_ids = []
+    padder = None
+    if mode == "ITEM":
+        if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
+            exclude_category_ids.extend(["1", "3", "4", "5", "6"])
+            padder = _build_padder(cfg, mode)
+    detect_result_generator = DetectResultGenerator(detector.categories, exclude_category_ids=exclude_category_ids)
+    return SubImageLayoutService(
+        detector, [LayoutType.table, LayoutType.table_rotated], None, detect_result_generator, padder
+    )
+
+
+def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    if cfg.OCR.USE_TESSERACT:
+        ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
+        return TesseractOcrDetector(ocr_config_path,config_overwrite=[f"LANGUAGES={cfg.LANGUAGE}"] if
+        cfg.LANGUAGE is not None else None)
+    if cfg.OCR.USE_DOCTR:
+        weights = cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT
+        weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+        profile = ModelCatalog.get_profile(weights)
+        if profile.architecture is None:
+            raise ValueError("model profile.architecture must be specified")
+        return DoctrTextRecognizer(profile.architecture, weights_path, cfg.DEVICE)
+    if cfg.OCR.USE_TEXTRACT:
+        return TextractOcrDetector()
+    raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
+
+
+def _build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
+    weights = cfg.OCR.WEIGHTS.DOCTR_WORD.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_WORD.PT
+    weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
+    profile = ModelCatalog.get_profile(weights)
+    if profile.architecture is None:
+        raise ValueError("model profile.architecture must be specified")
+    if profile.categories is None:
+        raise ValueError("model profile.categories must be specified")
+    return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, cfg.DEVICE)
+
+
 def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     """
     Builds the analyzer with a given config
@@ -107,109 +207,81 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     """
     pipe_component_list: List[PipelineComponent] = []
 
-    d_layout: Union[D2FrcnnDetector, TPFrcnnDetector]
-    if cfg.LIB == "tf":
-        layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPLAYOUT)
-        layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPLAYOUT)
-        profile = ModelCatalog.get_profile(cfg.WEIGHTS.TPLAYOUT)
-        categories_layout = profile.categories
-        assert categories_layout is not None
-        assert layout_weights_path is not None
-        d_layout = TPFrcnnDetector(layout_config_path, layout_weights_path, categories_layout)
-    else:
-        layout_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2LAYOUT)
-        layout_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2LAYOUT)
-        profile = ModelCatalog.get_profile(cfg.WEIGHTS.D2LAYOUT)
-        categories_layout = profile.categories
-        assert categories_layout is not None
-        assert layout_weights_path is not None
-        d_layout = D2FrcnnDetector(layout_config_path, layout_weights_path, categories_layout, device=cfg.DEVICE)
-    layout = ImageLayoutService(d_layout, to_image=True, crop_image=True)
-    pipe_component_list.append(layout)
+    if cfg.USE_LAYOUT:
+        d_layout = _build_detector(cfg, "LAYOUT")
+        layout = _build_service(d_layout, cfg, "LAYOUT")
+        pipe_component_list.append(layout)
 
     # setup tables service
-    if cfg.TAB:
-        d_cell: Optional[Union[D2FrcnnDetector, TPFrcnnDetector]]
-        d_item: Union[D2FrcnnDetector, TPFrcnnDetector]
-        if cfg.LIB == "tf":
-            cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPCELL)
-            cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPCELL)
-            profile = ModelCatalog.get_profile(cfg.WEIGHTS.TPCELL)
-            categories_cell = profile.categories
-            assert categories_cell is not None
-            d_cell = TPFrcnnDetector(
-                cell_config_path,
-                cell_weights_path,
-                categories_cell,
-            )
-            item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.TPITEM)
-            item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.TPITEM)
-            profile = ModelCatalog.get_profile(cfg.WEIGHTS.TPITEM)
-            categories_item = profile.categories
-            assert categories_item is not None
-            d_item = TPFrcnnDetector(item_config_path, item_weights_path, categories_item)
-        else:
-            cell_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
-            cell_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
-            profile = ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL)
-            categories_cell = profile.categories
-            assert categories_cell is not None
-            d_cell = D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device=cfg.DEVICE)
-            item_config_path = ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
-            item_weights_path = ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
-            profile = ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM)
-            categories_item = profile.categories
-            assert categories_item is not None
-            d_item = D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device=cfg.DEVICE)
-
-        detect_result_generator = DetectResultGenerator(categories_cell)
-        cell = SubImageLayoutService(d_cell, LayoutType.table, {1: 6}, detect_result_generator)
-        pipe_component_list.append(cell)
-
-        detect_result_generator = DetectResultGenerator(categories_item)
-        item = SubImageLayoutService(d_item, LayoutType.table, {1: 7, 2: 8}, detect_result_generator)
+    if cfg.USE_TABLE_SEGMENTATION:
+        d_item = _build_detector(cfg, "ITEM")
+        item = _build_sub_image_service(d_item, cfg, "ITEM")
         pipe_component_list.append(item)
 
-        table_segmentation = TableSegmentationService(
-            cfg.SEGMENTATION.ASSIGNMENT_RULE,
-            cfg.SEGMENTATION.IOU_THRESHOLD_ROWS
-            if cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-            else cfg.SEGMENTATION.IOA_THRESHOLD_ROWS,
-            cfg.SEGMENTATION.IOU_THRESHOLD_COLS
-            if cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-            else cfg.SEGMENTATION.IOA_THRESHOLD_COLS,
-            cfg.SEGMENTATION.FULL_TABLE_TILING,
-            cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-            cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-        )
-        pipe_component_list.append(table_segmentation)
+        if d_item.__class__.__name__ not in ("HFDetrDerivedDetector",):
+            d_cell = _build_detector(cfg, "CELL")
+            cell = _build_sub_image_service(d_cell, cfg, "CELL")
+            pipe_component_list.append(cell)
 
-        if cfg.TAB_REF:
-            table_segmentation_refinement = TableSegmentationRefinementService()
-            pipe_component_list.append(table_segmentation_refinement)
+        if d_item.__class__.__name__ in ("HFDetrDerivedDetector",):
+            pubtables = PubtablesSegmentationService(
+                cfg.SEGMENTATION.ASSIGNMENT_RULE,
+                cfg.SEGMENTATION.THRESHOLD_ROWS,
+                cfg.SEGMENTATION.THRESHOLD_COLS,
+                cfg.SEGMENTATION.FULL_TABLE_TILING,
+                cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
+                cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+                cfg.SEGMENTATION.CELL_CATEGORY_ID,
+                stretch_rule=cfg.SEGMENTATION.STRETCH_RULE,
+            )
+            pipe_component_list.append(pubtables)
+        else:
+            table_segmentation = TableSegmentationService(
+                cfg.SEGMENTATION.ASSIGNMENT_RULE,
+                cfg.SEGMENTATION.THRESHOLD_ROWS,
+                cfg.SEGMENTATION.THRESHOLD_COLS,
+                cfg.SEGMENTATION.FULL_TABLE_TILING,
+                cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
+                cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+                cfg.SEGMENTATION.STRETCH_RULE,
+            )
+            pipe_component_list.append(table_segmentation)
+
+            if cfg.USE_TABLE_REFINEMENT:
+                table_segmentation_refinement = TableSegmentationRefinementService()
+                pipe_component_list.append(table_segmentation_refinement)
+
+    if cfg.USE_PDF_MINER:
+        pdf_text = PdfPlumberTextDetector()
+        d_text = TextExtractionService(pdf_text)
+        pipe_component_list.append(d_text)
 
     # setup ocr
-    if cfg.OCR:
+    if cfg.USE_OCR:
+        # the extra mile for DocTr
+        if cfg.OCR.USE_DOCTR:
+            d_word = _build_doctr_word(cfg)
+            word = ImageLayoutService(d_word, to_image=True, crop_image=True, skip_if_layout_extracted=True)
+            pipe_component_list.append(word)
 
-        tess_ocr_config_path = get_configs_dir_path() / cfg.CONFIG.TESS_OCR
-        d_tess_ocr = TesseractOcrDetector(
-            tess_ocr_config_path, config_overwrite=[f"LANGUAGES={cfg.LANG}"] if cfg.LANG is not None else None
+        ocr = _build_ocr(cfg)
+        skip_if_text_extracted = cfg.USE_PDF_MINER
+        extract_from_roi = LayoutType.word if cfg.OCR.USE_DOCTR else None
+        text = TextExtractionService(
+            ocr, skip_if_text_extracted=skip_if_text_extracted, extract_from_roi=extract_from_roi
         )
-        text = TextExtractionService(d_tess_ocr)
         pipe_component_list.append(text)
 
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
             child_categories=LayoutType.word,
             matching_rule=cfg.WORD_MATCHING.RULE,
-            threshold=cfg.WORD_MATCHING.IOU_THRESHOLD
-            if cfg.WORD_MATCHING.RULE in ["iou"]
-            else cfg.WORD_MATCHING.IOA_THRESHOLD,
+            threshold=cfg.WORD_MATCHING.THRESHOLD,
         )
         pipe_component_list.append(match)
 
         order = TextOrderService(
-            text_container=cfg.TEXT_ORDERING.TEXT_CONTAINER,
+            text_container=LayoutType.word,
             text_block_categories=cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
             floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
             include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
@@ -220,63 +292,62 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         )
         pipe_component_list.append(order)
 
-    pipe = DoctectionPipe(pipeline_component_list=pipe_component_list)
+    page_parsing_service = PageParsingService(
+        text_container=LayoutType.word,
+        floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
+        include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
+    )
+    pipe = DoctectionPipe(pipeline_component_list=pipe_component_list, page_parsing_service=page_parsing_service)
 
     return pipe
 
 
-def get_dd_analyzer(
-    tables: bool = True, ocr: bool = True, table_refinement: bool = True, language: Optional[str] = None
-) -> DoctectionPipe:
+def get_dd_analyzer(reset_config_file: bool = True, config_overwrite: Optional[List[str]] = None) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 
     The Standard Analyzer is a pipeline that comprises the following analysis components:
 
-    - Document analysis with object recognition and classification of:
+    - Document layout analysis
 
-        * title
-        * text
-        * list
-        * table
-        * figure
+    - Table segmentation
 
-    - Table recognition including line and column segmentation as well as detection of cells that run over several
-      rows or columns.
+    - Text extraction/OCR
 
-    - OCR using Tesseract as well as text assignment to the document assignment.
+    - Reading order
 
-    - Determination of the reading order for complex structured documents.
+    We refer to the various notebooks and docs for running an analyzer and changing the configs.
 
-    You can optionally switch off table recognition and ocr related components.
+    :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
+                              resetting all configurations if set to `True`.
+    :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
+                             highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
+                                                     "USE_OCR=False",
+                                                     "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]
 
-    :param tables: Will do full table recognition. Default set to True
-    :param table_refinement: Will rearrange cells such that generating html is possible
-    :param ocr: Will do ocr, matching with layout and ordering words. Default set to True
-    :param language: Select a specific language. Pre-selecting layout will increase ocr precision.
-
-    :return: A DoctectionPipe instance with the given configs
+    :return: A DoctectionPipe instance with given configs
     """
-
+    config_overwrite = [] if config_overwrite is None else config_overwrite
     lib, device = _auto_select_lib_and_device()
-    dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE)
+    dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
     _maybe_copy_config_to_cache(_TESSERACT)
 
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path)
 
     cfg.freeze(freezed=False)
+    cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
-    cfg.TAB = tables
-    cfg.TAB_REF = table_refinement
-    cfg.OCR = ocr
-    cfg.LANG = language
     cfg.freeze()
 
+    if config_overwrite:
+        cfg.update_args(config_overwrite)
+
+    _config_sanity_checks(cfg)
     logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 
-    # will silent all TP loggings while building the tower
+    # will silent all TP logging while building the tower
     if tensorpack_available():
         disable_tp_layer_logging()
 
