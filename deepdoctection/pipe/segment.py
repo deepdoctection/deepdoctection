@@ -290,10 +290,10 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
             )
             item_table_embedding_box = item.image.get_embedding(table.annotation_id)
             new_table_embedding_box = BoundingBox(
-                ulx=new_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
-                uly=tmp_item_table_xy if item_name == LayoutType.row else new_table_embedding_box.uly,
-                lrx=new_table_embedding_box.lrx,
-                lry=new_table_embedding_box.lry,
+                ulx=item_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
+                uly=tmp_item_table_xy if item_name == LayoutType.row else item_table_embedding_box.uly,
+                lrx=item_table_embedding_box.lrx,
+                lry=item_table_embedding_box.lry,
                 absolute_coords=True,
             )
 
@@ -306,8 +306,8 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                     absolute_coords=True,
                 )
                 new_table_embedding_box = BoundingBox(
-                    ulx=new_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
-                    uly=tmp_item_table_xy if item_name == LayoutType.row else new_table_embedding_box.uly,
+                    ulx=item_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
+                    uly=tmp_item_table_xy if item_name == LayoutType.row else item_table_embedding_box.uly,
                     lrx=item_table_embedding_box.lrx if item_name == LayoutType.row else table.image.width - 1.0,
                     lry=table.image.height - 1.0 if item_name == LayoutType.row else item_table_embedding_box.lry,
                     absolute_coords=True,

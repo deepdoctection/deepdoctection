@@ -83,7 +83,7 @@ def _auto_select_lib_and_device() -> Tuple[str, str]:
         raise ModuleNotFoundError("Install Pytorch and Torchvision to run with a CPU")
     if pytorch_available():
         if cuda.is_available():
-            return "PT", "gpu"
+            return "PT", "cuda"
         return "PT", "cpu"
     raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
@@ -102,9 +102,14 @@ def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
         copyfile(absolute_path_source, absolute_path)
     return absolute_path
 
+def _config_sanity_checks(cfg):
+    if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
+        raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
+
 def _build_detector(cfg, mode) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector"]:
     weights = getattr(cfg.TF,mode).WEIGHTS if cfg.LIB == "TF" else getattr(cfg.PT,mode).WEIGHTS
-    filter_categories = getattr(getattr(cfg.TF,mode),"FILTER") if cfg.LIB == "TF" else getattr(getattr(cfg.PT,mode),"FILTER")
+    filter_categories = getattr(getattr(cfg.TF,mode),"FILTER") if cfg.LIB == "TF" \
+        else getattr(getattr(cfg.PT,mode),"FILTER")
     config_path = ModelCatalog.get_full_path_configs(weights)
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
@@ -123,8 +128,9 @@ def _build_detector(cfg, mode) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "H
                                             weights_path,
                                             preprocessor_config,
                                             categories,
+                                            device=cfg.DEVICE,
                                             filter_categories=filter_categories)
-    raise ValueError("You have chosen profile.model_wrapper: %s which is not allowed. Please check compatability with"
+    raise TypeError("You have chosen profile.model_wrapper: %s which is not allowed. Please check compatability with"
                      "your deep learning framework", profile.model_wrapper)
 
 def _build_padder(cfg, mode):
@@ -153,9 +159,7 @@ def _build_sub_image_service(detector, cfg, mode):
 def _build_ocr(cfg):
     if cfg.OCR.USE_TESSERACT:
         ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
-        return TesseractOcrDetector(
-            ocr_config_path, config_overwrite=[f"LANGUAGES={cfg.LANGUAGES}"] if cfg.LANGUAGES is not None else None
-        )
+        return TesseractOcrDetector(ocr_config_path)
     if cfg.OCR.USE_DOCTR:
         weights = cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
@@ -214,6 +218,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.FULL_TABLE_TILING,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+                cfg.SEGMENTATION.STRETCH_RULE
             )
             pipe_component_list.append(table_segmentation)
 
@@ -235,7 +240,10 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             pipe_component_list.append(word)
 
         ocr = _build_ocr(cfg)
-        text = TextExtractionService(ocr, skip_if_text_extracted=True)
+        skip_if_text_extracted = True if cfg.USE_PDF_MINER else False
+        text = TextExtractionService(ocr,
+                                     skip_if_text_extracted=skip_if_text_extracted,
+                                     extract_from_roi=LayoutType.word)
         pipe_component_list.append(text)
 
         match = MatchingService(
@@ -265,9 +273,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     return pipe
 
 
-def get_dd_analyzer(
-    table_segmentation: bool = True, ocr: bool = True, language: Optional[str] = None, reset_config_file: bool = False
-) -> DoctectionPipe:
+def get_dd_analyzer(reset_config_file: bool = False) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 
@@ -308,14 +314,11 @@ def get_dd_analyzer(
     cfg.freeze(freezed=False)
     cfg.LIB = lib
     cfg.DEVICE = device
-    cfg.USE_TABLE_SEGMENTATION = table_segmentation
-    cfg.USE_OCR = ocr
-    cfg.LANGUAGES = language
     cfg.freeze()
-
+    _config_sanity_checks(cfg)
     logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 
-    # will silent all TP loggings while building the tower
+    # will silent all TP logging while building the tower
     if tensorpack_available():
         disable_tp_layer_logging()
 

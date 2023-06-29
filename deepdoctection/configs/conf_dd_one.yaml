@@ -59,8 +59,12 @@ WORD_MATCHING:
   PARENTAL_CATEGORIES:
     - text
     - title
-    - cell
     - list
+    - cell
+    - column_header
+    - projected_row_header
+    - spanning
+    - row_header
   RULE: ioa
   THRESHOLD: 0.6
 TEXT_ORDERING:
@@ -69,6 +73,10 @@ TEXT_ORDERING:
     - text
     - list
     - cell
+    - column_header
+    - projected_row_header
+    - spanning
+    - row_header
   FLOATING_TEXT_BLOCK_CATEGORIES:
     - title
     - text
