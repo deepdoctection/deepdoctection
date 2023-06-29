@@ -173,7 +173,8 @@ def _build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str)
 def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
     if cfg.OCR.USE_TESSERACT:
         ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
-        return TesseractOcrDetector(ocr_config_path)
+        return TesseractOcrDetector(ocr_config_path,config_overwrite=[f"LANGUAGES={cfg.LANGUAGE}"] if
+        cfg.LANGUAGE is not None else None)
     if cfg.OCR.USE_DOCTR:
         weights = cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
@@ -307,29 +308,24 @@ def get_dd_analyzer(reset_config_file: bool = True, config_overwrite: Optional[L
 
     The Standard Analyzer is a pipeline that comprises the following analysis components:
 
-    - Document analysis with object recognition and classification of:
+    - Document layout analysis
 
-        * title
-        * text
-        * list
-        * table
-        * figure
+    - Table segmentation
 
-    - Table recognition including line and column segmentation as well as detection of cells that run over several
-      rows or columns.
+    - Text extraction/OCR
 
-    - OCR using Tesseract as well as text assignment to the document assignment.
+    - Reading order
 
-    - Determination of the reading order for complex structured documents.
+    We refer to the various notebooks and docs for running an analyzer and changing the configs.
 
-    You can optionally switch off table recognition and ocr related components.
+    :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
+                              resetting all configurations if set to `True`.
+    :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
+                             highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
+                                                     "USE_OCR=False",
+                                                     "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]
 
-    :param tables: Will do full table recognition. Default set to True
-    :param table_refinement: Will rearrange cells such that generating html is possible
-    :param ocr: Will do ocr, matching with layout and ordering words. Default set to True
-    :param language: Select a specific language. Pre-selecting layout will increase ocr precision.
-
-    :return: A DoctectionPipe instance with the given configs
+    :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
     lib, device = _auto_select_lib_and_device()
@@ -339,13 +335,15 @@ def get_dd_analyzer(reset_config_file: bool = True, config_overwrite: Optional[L
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path)
 
-    if config_overwrite:
-        cfg.update_args(config_overwrite)
-
     cfg.freeze(freezed=False)
+    cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
     cfg.freeze()
+
+    if config_overwrite:
+        cfg.update_args(config_overwrite)
+
     _config_sanity_checks(cfg)
     logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 

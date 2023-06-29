@@ -33,6 +33,7 @@ nav:
         - Introductory tutorials:
             - Get started: ./tutorials/get_started_notebook.md
             - Pipelines: ./tutorials/pipelines_notebook.md
+            - Analyzer Configuration: ./tutorials/analyzer_configuration_notebook.md
             - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
             - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
             - Datasets and evaluation: ./tutorials/datasets_and_eval_notebook.md

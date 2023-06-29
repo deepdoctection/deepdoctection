@@ -46,7 +46,9 @@ Therefore in total, three object detectors and one OCR are loaded.
 
 We see while initializing a configuration in the logs of the analyzer. The configuration is saved in a `.yaml` file. You can find this file in the .cache dir of **deep**doctection.
 
-<!-- You can use the `.yaml` file to replace one model with e.g. a model trained on your own data. The tutorial **Customizing_pipelines.ipynb** will show you where you need to pay attention when changing the `.yaml` file. -->
+You can use the `.yaml` file to replace one model with e.g. a model trained on your own data. 
+The tutorial [**Analyzer configuration**](./analyzer_configuration_notebook.md) will show you where you need to pay 
+attention when changing the `.yaml` file.
 
 In [this tutorial](./running_pre_trained_models_from_third_party_libraries_notebook.md) we will show you how to add a model to the `ModelCatalog` and change the model in the `.yaml` file so that you can use model from third party libraries, that run layout detection models with Detectron2.
 
