@@ -260,9 +260,6 @@ def _tile_by_stretching_rows_left_and_rightwise(
             tmp_item_table_xy = tmp_table_next_item_xy
 
 
-
-
-
 def _tile_by_stretching_rows_leftwise_column_downwise(
     dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
 ) -> None:
@@ -271,7 +268,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
-    tmp_item_table_xy =  1.0
+    tmp_item_table_xy = 1.0
     for item in items:
         with MappingContextManager(
             dp_name=dp.file_name,
@@ -314,7 +311,9 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                 )
 
             tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.row else item_embedding_box.lrx
-            tmp_item_table_xy = item_table_embedding_box.lry if item_name == LayoutType.row else item_table_embedding_box.lrx
+            tmp_item_table_xy = (
+                item_table_embedding_box.lry if item_name == LayoutType.row else item_table_embedding_box.lrx
+            )
             item.image.set_embedding(dp.image_id, new_embedding_box)
             item.image.set_embedding(table.annotation_id, new_table_embedding_box)
 
