@@ -314,6 +314,7 @@ class Table(Layout):
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
     **{i: Layout for i in LayoutType if (i not in {LayoutType.table, LayoutType.word, LayoutType.cell})},
     LayoutType.table: Table,
+    LayoutType.table_rotated: Table,
     LayoutType.word: Word,
     LayoutType.cell: Cell,
     CellType.projected_row_header: Cell,
