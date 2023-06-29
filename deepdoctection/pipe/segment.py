@@ -204,6 +204,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
+    tmp_item_table_xy = 1.0
     for idx, item in enumerate(items):
         with MappingContextManager(
             dp_name=dp.file_name,
@@ -235,6 +236,32 @@ def _tile_by_stretching_rows_left_and_rightwise(
             item.image.set_embedding(dp.image_id, new_embedding_box)
             tmp_item_xy = tmp_next_item_xy
 
+            item_table_embedding_box = item.image.get_embedding(table.annotation_id)
+            if idx != len(items) - 1:
+                next_item_table_embedding_box = items[idx + 1].image.get_embedding(table.annotation_id)  # type: ignore
+                tmp_table_next_item_xy = (
+                    (item_table_embedding_box.lry + next_item_table_embedding_box.uly) / 2
+                    if item_name == LayoutType.row
+                    else (item_table_embedding_box.lrx + next_item_table_embedding_box.ulx) / 2
+                )
+            else:
+                tmp_table_next_item_xy = (
+                    table.image.height - 1.0 if item_name == LayoutType.row else table.image.width - 1.0
+                )
+
+            new_table_embedding_box = BoundingBox(
+                ulx=item_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
+                uly=tmp_item_table_xy if item_name == LayoutType.row else item_table_embedding_box.uly,
+                lrx=item_table_embedding_box.lrx if item_name == LayoutType.row else tmp_table_next_item_xy,
+                lry=tmp_table_next_item_xy if item_name == LayoutType.row else item_table_embedding_box.lry,
+                absolute_coords=True,
+            )
+            item.image.set_embedding(table.annotation_id, new_table_embedding_box)
+            tmp_item_table_xy = tmp_table_next_item_xy
+
+
+
+
 
 def _tile_by_stretching_rows_leftwise_column_downwise(
     dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
@@ -244,6 +271,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
     table_embedding_box = table.image.get_embedding(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
+    tmp_item_table_xy =  1.0
     for item in items:
         with MappingContextManager(
             dp_name=dp.file_name,
@@ -260,6 +288,14 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                 lry=item_embedding_box.lry,
                 absolute_coords=True,
             )
+            item_table_embedding_box = item.image.get_embedding(table.annotation_id)
+            new_table_embedding_box = BoundingBox(
+                ulx=new_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
+                uly=tmp_item_table_xy if item_name == LayoutType.row else new_table_embedding_box.uly,
+                lrx=new_table_embedding_box.lrx,
+                lry=new_table_embedding_box.lry,
+                absolute_coords=True,
+            )
 
             if item == items[-1]:
                 new_embedding_box = BoundingBox(
@@ -269,9 +305,18 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                     lry=table_embedding_box.lry - 1.0 if item_name == LayoutType.row else item_embedding_box.lry,
                     absolute_coords=True,
                 )
+                new_table_embedding_box = BoundingBox(
+                    ulx=new_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
+                    uly=tmp_item_table_xy if item_name == LayoutType.row else new_table_embedding_box.uly,
+                    lrx=item_table_embedding_box.lrx if item_name == LayoutType.row else table.image.width - 1.0,
+                    lry=table.image.height - 1.0 if item_name == LayoutType.row else item_table_embedding_box.lry,
+                    absolute_coords=True,
+                )
 
             tmp_item_xy = item_embedding_box.lry if item_name == LayoutType.row else item_embedding_box.lrx
+            tmp_item_table_xy = item_table_embedding_box.lry if item_name == LayoutType.row else item_table_embedding_box.lrx
             item.image.set_embedding(dp.image_id, new_embedding_box)
+            item.image.set_embedding(table.annotation_id, new_table_embedding_box)
 
 
 def tile_tables_with_items_per_table(
