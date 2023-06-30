@@ -137,7 +137,8 @@ def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrc
         )
     raise TypeError(
         f"You have chosen profile.model_wrapper: {profile.model_wrapper} which is not allowed. Please check "
-        f"compatability with your deep learning framework")
+        f"compatability with your deep learning framework"
+    )
 
 
 def _build_padder(cfg: AttrDict, mode: str) -> PadTransform:
@@ -173,8 +174,9 @@ def _build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str)
 def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
     if cfg.OCR.USE_TESSERACT:
         ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
-        return TesseractOcrDetector(ocr_config_path,config_overwrite=[f"LANGUAGES={cfg.LANGUAGE}"] if
-        cfg.LANGUAGE is not None else None)
+        return TesseractOcrDetector(
+            ocr_config_path, config_overwrite=[f"LANGUAGES={cfg.LANGUAGE}"] if cfg.LANGUAGE is not None else None
+        )
     if cfg.OCR.USE_DOCTR:
         weights = cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
