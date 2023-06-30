@@ -30,6 +30,8 @@ from deepdoctection.extern.d2detect import D2FrcnnDetector
 from deepdoctection.utils.detection_types import ImageType
 from deepdoctection.utils.settings import ObjectTypes
 
+
+
 if pytorch_available():
     import torch
 

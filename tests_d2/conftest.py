@@ -30,13 +30,14 @@ from deepdoctection.utils.systools import get_package_path
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
 from deepdoctection.utils.detection_types import ImageType
 
+from tests.test_utils import get_test_path
 
 @fixture(name="path_to_d2_frcnn_yaml")
 def fixture_path_to_d2_frcnn_yaml() -> Path:
     """
     path to d2 frcnn yaml file
     """
-    return get_package_path() / "configs/d2/CASCADE_RCNN_R_50_FPN_GN.yaml"
+    return get_test_path() / "configs/d2/CASCADE_RCNN_R_50_FPN_GN.yaml"
 
 
 @fixture(name="categories")
