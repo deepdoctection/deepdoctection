@@ -26,7 +26,6 @@ import numpy as np
 
 from pytest import fixture
 
-from deepdoctection.utils.systools import get_package_path
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
 from deepdoctection.utils.detection_types import ImageType
 
