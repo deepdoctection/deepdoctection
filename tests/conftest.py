@@ -58,6 +58,7 @@ from .data import (
     get_token_class_result,
 )
 from .mapper.data import DatapointImage
+from .test_utils import get_test_path
 
 
 def get_image_results() -> DatapointImage:
@@ -80,7 +81,7 @@ def fixture_path_to_tp_frcnn_yaml() -> Path:
     """
     path to tp frcnn yaml file
     """
-    return get_package_path() / "configs/tp/layout/conf_frcnn_layout.yaml"
+    return get_test_path() / "configs/tp/conf_frcnn_layout.yaml"
 
 
 @fixture(name="path_to_d2_frcnn_yaml")
@@ -88,7 +89,7 @@ def fixture_path_to_d2_frcnn_yaml() -> Path:
     """
     path to d2 frcnn yaml file
     """
-    return get_package_path() / "configs/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml"
+    return get_test_path() / "configs/d2/CASCADE_RCNN_R_50_FPN_GN.yaml"
 
 
 @fixture(name="categories")
