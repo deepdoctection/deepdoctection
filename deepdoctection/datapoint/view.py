@@ -28,7 +28,17 @@ import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
 from ..utils.logger import logger
-from ..utils.settings import CellType, LayoutType, ObjectTypes, PageType, Relationships, TableType, WordType, get_type
+from ..utils.settings import (
+    CellType,
+    LayoutType,
+    ObjectTypes,
+    PageType,
+    Relationships,
+    TableType,
+    TokenClasses,
+    WordType,
+    get_type,
+)
 from ..utils.viz import draw_boxes, interactive_imshow
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
 from .box import BoundingBox
@@ -309,6 +319,32 @@ class Table(Layout):
             "text_list": text_list,
             "annotation_ids": annotation_id_list,
         }
+
+    @property
+    def words(self) -> List[ImageAnnotationBaseView]:
+        """
+        Get a list of `ImageAnnotationBaseView` objects with `LayoutType` defined by `text_container`.
+        It will only select those among all annotations that have an entry in `Relationships.child` .
+        """
+        all_words: List[ImageAnnotationBaseView] = []
+        cells = self.cells
+        if not cells:
+            return super().words
+        for cell in cells:
+            all_words.extend(cell.words)  # type: ignore
+        return all_words
+
+    def get_ordered_words(self) -> List[ImageAnnotationBaseView]:
+        """Returns a list of words order by reading order. Words with no reading order will not be returned"""
+        try:
+            cells = self.cells
+            all_words = []
+            cells.sort(key=lambda x: (x.row_number, x.column_number))
+            for cell in cells:
+                all_words.extend(cell.get_ordered_words())  # type: ignore
+            return all_words
+        except TypeError:
+            return super().get_ordered_words()
 
 
 IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
@@ -596,6 +632,7 @@ class Page(Image):
         show_table_structure: bool = True,
         show_words: bool = False,
         show_token_class: bool = True,
+        ignore_default_token_class: bool = False,
         interactive: bool = False,
     ) -> Optional[ImageType]:
         """
@@ -616,6 +653,8 @@ class Page(Image):
         :param show_token_class: Will display token class instead of token tags (i.e. token classes with tags)
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
+        :param ignore_default_token_class: Will ignore displaying word bounding boxes with default or None token class
+                                           label
         :return: If interactive will return nothing else a numpy array.
         """
 
@@ -666,12 +705,21 @@ class Page(Image):
                 all_words.extend(layout.words)
             if not all_words:
                 all_words = self.get_annotation(category_names=LayoutType.word)
-            for word in all_words:
-                box_stack.append(word.bbox)
-                if show_token_class:
-                    category_names_list.append(word.token_class.value if word.token_class is not None else None)
-                else:
-                    category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
+            if not ignore_default_token_class:
+                for word in all_words:
+                    box_stack.append(word.bbox)
+                    if show_token_class:
+                        category_names_list.append(word.token_class.value if word.token_class is not None else None)
+                    else:
+                        category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
+            else:
+                for word in all_words:
+                    if word.token_class is not None and word.token_class != TokenClasses.other:
+                        box_stack.append(word.bbox)
+                        if show_token_class:
+                            category_names_list.append(word.token_class.value if word.token_class is not None else None)
+                        else:
+                            category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
 
         if self.image is not None:
             if box_stack:
@@ -754,3 +802,13 @@ class Page(Image):
         """
         image = Image.from_file(file_path)
         return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)
+
+    def get_token(self) -> List[Tuple[str, str]]:
+        """Return a list of tuples with word and non default token tags"""
+        block_with_order = self._order("layouts")
+        all_words = []
+        for block in block_with_order:
+            all_words.extend(block.get_ordered_words())  # type: ignore
+        return [
+            (word.characters, word.token_tag) for word in all_words if word.token_tag not in (TokenClasses.other, None)
+        ]
