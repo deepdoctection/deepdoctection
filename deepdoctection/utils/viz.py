@@ -25,7 +25,7 @@ and
 <https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
 """
 import sys
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, no_type_check
 
 import cv2
 import numpy as np
@@ -288,7 +288,7 @@ def draw_boxes(
 
     return np_image
 
-
+@no_type_check
 def interactive_imshow(
     img: ImageType,
     lclick_cb: Optional[Callable[[npt.NDArray[float32], int, int], None]] = None,

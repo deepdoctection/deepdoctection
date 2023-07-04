@@ -22,7 +22,7 @@ of coordinates. Most have the ideas have been taken from
 """
 
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union,  no_type_check
 
 import cv2
 import numpy as np
@@ -61,7 +61,7 @@ class ResizeTransform(BaseTransform):
         w: Union[int, float],
         new_h: Union[int, float],
         new_w: Union[int, float],
-        interp: str,
+        interp: Union[str,int],
     ):
         """
         :param h: height
@@ -79,7 +79,7 @@ class ResizeTransform(BaseTransform):
 
     def apply_image(self, img: ImageType) -> ImageType:
         assert img.shape[:2] == (self.h, self.w)
-        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)
+        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)  # type: ignore
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret
