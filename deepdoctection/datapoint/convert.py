@@ -23,7 +23,7 @@ import copy
 from dataclasses import fields, is_dataclass
 from io import BytesIO
 from shutil import which
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -97,7 +97,7 @@ def convert_np_array_to_b64(np_image: ImageType) -> str:
     image = base64.b64encode(np_encode[1]).decode("utf-8")
     return image
 
-
+@no_type_check
 def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
     """
     Converts an image from numpy array into a base64 bytes encoding representation

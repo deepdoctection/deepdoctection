@@ -72,7 +72,6 @@ DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str
 _CLS_BOX = [0.0, 0.0, 1000.0, 1000.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
 
-
 @curry
 def image_to_raw_layoutlm_features(
     dp: Image,
