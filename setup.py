@@ -53,6 +53,7 @@ _DEPS = [
     "numpy>=1.21,<1.24",
     "opencv-python==4.5.4.60",
     "packaging>=20.0,<22.0",
+    "Pillow<10.0",  # we need this requirement for Detectron2 as long they have not fixed #5010
     "pycocotools>=2.0.2",
     "pypdf2>=1.27.5,<2.10.1",
     "python-prctl",
@@ -124,6 +125,7 @@ dist_deps = deps_list(
     "numpy",
     "opencv-python",
     "packaging",
+    "Pillow",
     "pycocotools",
     "pypdf2",
     "pyyaml",
