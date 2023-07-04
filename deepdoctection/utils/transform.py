@@ -22,7 +22,7 @@ of coordinates. Most have the ideas have been taken from
 """
 
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Union,  no_type_check
+from typing import Literal, Optional, Union
 
 import cv2
 import numpy as np
@@ -61,7 +61,7 @@ class ResizeTransform(BaseTransform):
         w: Union[int, float],
         new_h: Union[int, float],
         new_w: Union[int, float],
-        interp: Union[str,int],
+        interp: Union[str, int],
     ):
         """
         :param h: height

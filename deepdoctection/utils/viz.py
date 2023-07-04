@@ -288,6 +288,7 @@ def draw_boxes(
 
     return np_image
 
+
 @no_type_check
 def interactive_imshow(
     img: ImageType,
@@ -311,7 +312,7 @@ def interactive_imshow(
     name = "q, x: quit / s: save"
     cv2.imshow(name, img)
 
-    def mouse_cb(event, x, y, *args):  # type: ignore
+    def mouse_cb(event, x, y, *args):
         if event == cv2.EVENT_LBUTTONUP and lclick_cb is not None:
             lclick_cb(img.astype(dtype=float32), x, y)
         elif event == cv2.EVENT_RBUTTONUP and rclick_cb is not None:
@@ -324,7 +325,7 @@ def interactive_imshow(
     key = chr(key & 0xFF)
     cb_name = "key_cb_" + key
     if cb_name in kwargs:
-        kwargs[cb_name](img)  # type: ignore
+        kwargs[cb_name](img)
     elif key == "q":
         cv2.destroyWindow(name)
     elif key == "x":
