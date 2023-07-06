@@ -97,7 +97,7 @@ class InferenceResize:
     the inference version of `extern.tp.frcnn.common.CustomResize` .
     """
 
-    def __init__(self, short_edge_length: int, max_size: int, interp: str = cv2.INTER_LINEAR) -> None:
+    def __init__(self, short_edge_length: int, max_size: int, interp: int = cv2.INTER_LINEAR) -> None:
         """
         :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
         :param max_size: maximum allowed longest edge length.
