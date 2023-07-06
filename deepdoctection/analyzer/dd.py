@@ -279,6 +279,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             child_categories=LayoutType.word,
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.THRESHOLD,
+            max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
         )
         pipe_component_list.append(match)
 

@@ -117,9 +117,9 @@ class TextExtractionService(PredictorPipelineComponent):
                 width, height = None, None
                 if self.run_time_ocr_language_selection:
                     self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
-                detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
+                detect_result_list = self.predictor.predict(predictor_input)
                 if isinstance(self.predictor, PdfMiner):
-                    width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
+                    width, height = self.predictor.get_width_height(predictor_input)
 
                 for detect_result in detect_result_list:
                     if isinstance(self.predictor, TextRecognizer):
@@ -160,7 +160,7 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_predictor_input(
         self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
-    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]],int]]:
+    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]], int]]:
         """
         Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
