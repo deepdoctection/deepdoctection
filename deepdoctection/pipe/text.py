@@ -160,7 +160,7 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_predictor_input(
         self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
-    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]]], int]:
+    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]],int]]:
         """
         Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
