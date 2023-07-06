@@ -117,9 +117,9 @@ class TextExtractionService(PredictorPipelineComponent):
                 width, height = None, None
                 if self.run_time_ocr_language_selection:
                     self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
-                detect_result_list = self.predictor.predict(predictor_input)
+                detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
                 if isinstance(self.predictor, PdfMiner):
-                    width, height = self.predictor.get_width_height(predictor_input)
+                    width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
 
                 for detect_result in detect_result_list:
                     if isinstance(self.predictor, TextRecognizer):
