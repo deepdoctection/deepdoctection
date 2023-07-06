@@ -21,7 +21,7 @@ simplify consumption
 """
 
 from copy import copy
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check, Mapping
 
 import cv2
 import numpy as np
@@ -803,12 +803,13 @@ class Page(Image):
         image = Image.from_file(file_path)
         return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)
 
-    def get_token(self) -> List[Tuple[str, str]]:
+    def get_token(self) -> List[Mapping[str, str]]:
         """Return a list of tuples with word and non default token tags"""
         block_with_order = self._order("layouts")
         all_words = []
         for block in block_with_order:
             all_words.extend(block.get_ordered_words())  # type: ignore
         return [
-            (word.characters, word.token_tag) for word in all_words if word.token_tag not in (TokenClasses.other, None)
+            {"word": word.characters, "entity":word.token_tag} for word in all_words
+            if word.token_tag not in (TokenClasses.other, None)
         ]
