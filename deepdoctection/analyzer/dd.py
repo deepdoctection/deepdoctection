@@ -24,6 +24,7 @@ Module for **deep**doctection analyzer.
 """
 
 import os
+from os import environ
 from shutil import copyfile
 from typing import List, Optional, Tuple, Union
 
@@ -42,7 +43,7 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
-from ..utils.file_utils import pytorch_available, tensorpack_available, tf_available
+from ..utils.file_utils import boto3_available, pytorch_available, tensorpack_available, tf_available
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
@@ -61,6 +62,9 @@ if pytorch_available():
 
     from ..extern.d2detect import D2FrcnnDetector
     from ..extern.hfdetr import HFDetrDerivedDetector
+
+if boto3_available():
+    from botocore.config import Config  # type: ignore
 
 
 __all__ = ["get_dd_analyzer", "build_analyzer"]
@@ -185,7 +189,12 @@ def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer
             raise ValueError("model profile.architecture must be specified")
         return DoctrTextRecognizer(profile.architecture, weights_path, cfg.DEVICE)
     if cfg.OCR.USE_TEXTRACT:
-        return TextractOcrDetector()
+        credentials_kwargs = {
+            "aws_access_key_id": environ.get("ACCESS_KEY"),
+            "aws_secret_access_key": environ.get("SECRET_KEY"),
+            "config": Config(region_name=environ.get("REGION")),
+        }
+        return TextractOcrDetector(**credentials_kwargs)
     raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
 
 
