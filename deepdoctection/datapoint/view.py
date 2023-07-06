@@ -21,7 +21,7 @@ simplify consumption
 """
 
 from copy import copy
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union, no_type_check, Mapping
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
 import cv2
 import numpy as np
@@ -810,6 +810,7 @@ class Page(Image):
         for block in block_with_order:
             all_words.extend(block.get_ordered_words())  # type: ignore
         return [
-            {"word": word.characters, "entity":word.token_tag} for word in all_words
+            {"word": word.characters, "entity": word.token_tag}
+            for word in all_words
             if word.token_tag not in (TokenClasses.other, None)
         ]
