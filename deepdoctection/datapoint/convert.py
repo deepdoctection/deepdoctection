@@ -94,7 +94,7 @@ def convert_np_array_to_b64(np_image: ImageType) -> str:
     :return: An image as base64 string.
     """
     np_encode = cv2.imencode(".png", np_image)
-    image = base64.b64encode(np_encode[1]).decode("utf-8")
+    image = base64.b64encode(np_encode[1]).decode("utf-8")  # type: ignore
     return image
 
 
