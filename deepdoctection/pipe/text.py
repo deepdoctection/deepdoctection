@@ -111,7 +111,7 @@ class TextExtractionService(PredictorPipelineComponent):
             predictor_input = self.get_predictor_input(text_roi)
             if predictor_input is None:
                 raise ValueError("predictor_input cannot be None")
-            if predictor_input in [b""]:
+            if isinstance(predictor_input, int):
                 pass
             else:
                 width, height = None, None
@@ -160,7 +160,7 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_predictor_input(
         self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
-    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]]]]:
+    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]]], int]:
         """
         Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
@@ -185,7 +185,7 @@ class TextExtractionService(PredictorPipelineComponent):
             return [(roi.annotation_id, roi.image.image) for roi in text_roi]  # type: ignore
         if isinstance(self.predictor, PdfMiner) and text_roi.pdf_bytes is not None:
             return text_roi.pdf_bytes
-        return b""
+        return 1
 
     def get_meta_annotation(self) -> JsonDict:
         if self.extract_from_category:
