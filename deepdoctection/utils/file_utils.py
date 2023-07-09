@@ -292,7 +292,7 @@ class TesseractNotFound(BaseException):
     """
 
 
-def get_tesseract_version() -> Union[int, version.Version, version.LegacyVersion]:
+def get_tesseract_version() -> Union[int, version.Version]:
     """
     Returns Version object of the Tesseract version. We need at least Tesseract 3.05
     """
@@ -352,7 +352,7 @@ class PopplerNotFound(BaseException):
     """
 
 
-def get_poppler_version() -> Union[int, version.Version, version.LegacyVersion]:
+def get_poppler_version() -> Union[int, version.Version]:
     """
     Returns Version object of the Poppler version. We need at least Tesseract 3.05
     """

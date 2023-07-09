@@ -53,14 +53,3 @@ _global_import(
     "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
 )
 
-# pylint: disable=undefined-variable
-__all__.extend(context.__all__)  # type: ignore
-__all__.extend(fs.__all__)  # type: ignore
-__all__.extend(identifier.__all__)  # type: ignore
-__all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
-__all__.extend(pdf_utils.__all__)  # type: ignore
-__all__.extend(systools.__all__)  # type: ignore
-__all__.extend(["get_tqdm"])
-__all__.extend(transform.__all__)  # type: ignore
-__all__.extend(viz.__all__)  # type: ignore
-# pylint: enable=undefined-variable
