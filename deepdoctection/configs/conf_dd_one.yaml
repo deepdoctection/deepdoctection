@@ -18,7 +18,7 @@ PT:
         TOP: 60
         RIGHT: 60
         BOTTOM: 60
-        LEFT": 60
+        LEFT: 60
    ITEM:
      WEIGHTS: item/d2_model_1639999_item_inf_only.pt
      FILTER:
@@ -26,7 +26,7 @@ PT:
         TOP: 60
         RIGHT: 60
         BOTTOM: 60
-        LEFT": 60
+        LEFT: 60
    CELL:
       WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
       FILTER:
