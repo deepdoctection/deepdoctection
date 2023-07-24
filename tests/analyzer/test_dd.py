@@ -22,6 +22,7 @@ from pytest import mark
 
 from deepdoctection.analyzer import get_dd_analyzer
 from deepdoctection.datapoint import Page
+from deepdoctection.extern.model import ModelCatalog
 
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
@@ -29,7 +30,7 @@ from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_p
 @mark.integration
 def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
-    Analyzer integration test with setting tables = False and ocr = False
+    Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
     """
 
     # Arrange
@@ -53,7 +54,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
 @mark.integration
 def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
-    Analyzer integration test with setting tables = True and ocr = False
+    Analyzer integration test with setting USE_OCR = False
     """
 
     # Arrange
@@ -88,7 +89,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
 @mark.integration
 def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
-    Analyzer integration test with setting tables = True and ocr = True
+    Analyzer integration test with setting USE_TABLE_SEGMENTATION = True and USE_OCR = True
     """
 
     # Arrange
@@ -130,3 +131,30 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert text_["text"] == page.text
     assert len(text_["text_list"]) == 632
     assert len(text_["annotation_ids"]) == 632
+
+
+@mark.integration
+def test_dd_analyzer_with_tatr() -> None:
+    """
+    Analyzer integration test with setting USE_OCR=False and table transformer for table detection and table recognition
+    """
+
+    # Arrange
+    analyzer = get_dd_analyzer(config_overwrite=["USE_OCR=False",
+                                                 "PT.LAYOUT.WEIGHTS=microsoft/table-transformer-detection/pytorch_model.bin",
+                                                 "PT.ITEM.WEIGHTS=microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+                                                 "PT.ITEM.FILTER=['table']"])
+
+    # Act
+    df = analyzer.analyze(path=get_integration_test_path())
+    output = collect_datapoint_from_dataflow(df)
+
+    # Assert
+    assert len(output) == 1
+    page = output[0]
+    assert isinstance(page, Page)
+    # 9 for d2 and 10 for tp model
+    assert not len(page.layouts)
+    assert len(page.tables) == 1
+    assert len(page.tables[0].cells) in {13}
+
