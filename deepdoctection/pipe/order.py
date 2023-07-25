@@ -357,7 +357,7 @@ class TextLineGenerator:
         # every list now non-empty
         word_anns_dict = {ann.annotation_id: ann for ann in word_anns}
         word_order_list = OrderGenerator.group_words_into_lines(word_anns, image_id)
-        number_rows = max([word[1] for word in word_order_list])
+        number_rows = max(word[1] for word in word_order_list)
         detection_result_list = []
         for row in range(1, number_rows + 1):
             ann_meta_per_row = [ann_meta for ann_meta in word_order_list if ann_meta[1] == row]

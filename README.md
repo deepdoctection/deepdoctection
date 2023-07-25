@@ -39,7 +39,7 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
    and a lot of new [tutorials](https://github.com/deepdoctection/notebooks/blob/main/Layoutlm_v2_on_custom_token_classification.ipynb) 
    to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3.
- - [**new!**] Comprehensive configuration of **analyzer** like choosing different models, output parsing, OCR selection.
+ - Comprehensive configuration of **analyzer** like choosing different models, output parsing, OCR selection.
    Check this [notebook](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Configuration.ipynb) or the 
    [docs](https://deepdoctection.readthedocs.io/en/latest/tutorials/analyzer_configuration_notebook/) for more infos.
    
@@ -133,7 +133,7 @@ separately.
 
 - Linux or macOS. (Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >= 3.8
-- PyTorch >= 1.8 **or** Tensorflow >= 2.9 and CUDA. If you want to run the models provided by Tensorpack a GPU is
+- 1.8 <= PyTorch < 2.0 **or** Tensorflow >= 2.9 and CUDA. If you want to run the models provided by Tensorpack a GPU is
   required. You can run on PyTorch with a CPU only.
 - **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images. 

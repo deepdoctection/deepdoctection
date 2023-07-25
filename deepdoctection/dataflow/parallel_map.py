@@ -39,7 +39,7 @@ def del_weakref(x):
     """delete weakref"""
     instance = x()
     if instance is not None:
-        instance.__del__()
+        del instance
 
 
 @no_type_check
@@ -90,7 +90,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
             df = RepeatedData(self.df, -1)
         else:
             df = self.df  # type: ignore
-        self._iter = df.__iter__()
+        self._iter = iter(df)
 
     @no_type_check
     @abstractmethod
@@ -137,7 +137,7 @@ class _ParallelMapData(ProxyDataFlow, ABC):
         for dp in self._iter:
             self._send(dp)
             yield self._recv_filter_none()
-        self._iter = self.df.__iter__()  # refresh
+        self._iter = iter(self.df)  # refresh
 
         # first clear the buffer, then fill
         for k in range(self._buffer_size):

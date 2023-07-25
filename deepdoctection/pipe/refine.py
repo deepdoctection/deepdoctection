@@ -460,10 +460,10 @@ class TableSegmentationRefinementService(PipelineComponent):
                             cell.deactivate()
 
             cells = table.image.get_annotation(category_names=self._cell_names)
-            number_of_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells])
-            number_of_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells])
-            max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
-            max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
+            number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
+            number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
+            max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
+            max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
             if TableType.number_of_rows in table.sub_categories:
                 table.remove_sub_category(TableType.number_of_rows)

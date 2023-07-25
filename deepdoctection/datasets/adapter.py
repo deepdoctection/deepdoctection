@@ -137,7 +137,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                         summarizer.dump(cat_ids)
 
                     datapoints.append(dp)
-                    status_bar.update()  # type: ignore
+                    status_bar.update()
 
             if _data_statistics:
                 summarizer.print_summary_histogram()

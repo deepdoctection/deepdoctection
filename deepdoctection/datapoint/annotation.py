@@ -52,7 +52,7 @@ def ann_from_dict(cls, **kwargs):
     return ann
 
 
-@dataclass  # type: ignore
+@dataclass
 class Annotation(ABC):
     """
     Abstract base class for all types of annotations. This abstract base class only implements general methods for

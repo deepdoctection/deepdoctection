@@ -136,7 +136,6 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     buffered = BytesIO()
 
     if dpi is None:
-
         image = convert_from_bytes(pdf_bytes, size=(width, height))[0]
     else:
         image = convert_from_bytes(pdf_bytes, dpi=dpi)[0]

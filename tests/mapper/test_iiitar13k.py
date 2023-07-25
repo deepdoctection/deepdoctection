@@ -39,7 +39,6 @@ def test_pascal_voc_dict_to_image(
     iiitar13k_category_names_mapping: Dict[str, str],
     iiitar13k_results: IIITar13KJson,
 ) -> None:
-
     """
     testing iiitar13k_to_image is mapping correctly
     """

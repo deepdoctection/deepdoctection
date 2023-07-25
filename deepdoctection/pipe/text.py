@@ -99,7 +99,7 @@ class TextExtractionService(PredictorPipelineComponent):
         self.skip_if_text_extracted = skip_if_text_extracted
         if self.skip_if_text_extracted and isinstance(self.predictor, TextRecognizer):
             raise ValueError(
-                "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not " "compatible"
+                "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not compatible"
             )
 
     def serve(self, dp: Image) -> None:

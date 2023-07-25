@@ -782,7 +782,8 @@ class DatapointPubtabnet:
             return "1"
         return self.categories["1"]
 
-    def get_first_ann_sub_category_header_name(self) -> ObjectTypes:  # pylint: disable=R0201
+    @staticmethod
+    def get_first_ann_sub_category_header_name() -> ObjectTypes:
         """
         category_name of sub category
         """
@@ -794,91 +795,106 @@ class DatapointPubtabnet:
         """
         return self.categories["1"]
 
-    def get_last_ann_sub_category_header_name(self) -> ObjectTypes:  # pylint: disable=R0201
+    @staticmethod
+    def get_last_ann_sub_category_header_name() -> ObjectTypes:
         """
         category_name of sub category
         """
         return CellType.header
 
-    def get_last_ann_sub_category_row_number_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_last_ann_sub_category_row_number_id() -> str:
         """
         row number
         """
         return "1"
 
-    def get_last_ann_sub_category_col_number_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_last_ann_sub_category_col_number_id() -> str:
         """
         col number
         """
         return "1"
 
-    def get_last_ann_sub_category_row_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_last_ann_sub_category_row_span_id() -> str:
         """
         row span
         """
         return "1"
 
-    def get_last_ann_sub_category_col_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_last_ann_sub_category_col_span_id() -> str:
         """
         col span
         """
         return "1"
 
-    def get_first_ann_sub_category_row_number_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_first_ann_sub_category_row_number_id() -> str:
         """
         row number
         """
         return "14"
 
-    def get_first_ann_sub_category_col_number_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_first_ann_sub_category_col_number_id() -> str:
         """
         col number
         """
         return "9"
 
-    def get_first_ann_sub_category_row_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_first_ann_sub_category_row_span_id() -> str:
         """
         row span
         """
         return "1"
 
-    def get_first_ann_sub_category_col_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_first_ann_sub_category_col_span_id() -> str:
         """
         col span
         """
         return "1"
 
-    def get_summary_ann_sub_category_rows_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_summary_ann_sub_category_rows_id() -> str:
         """
         number rows
         """
         return "14"
 
-    def get_summary_ann_sub_category_col_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_summary_ann_sub_category_col_id() -> str:
         """
         number cols
         """
         return "9"
 
-    def get_summary_ann_sub_category_row_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_summary_ann_sub_category_row_span_id() -> str:
         """
         max row span
         """
         return "1"
 
-    def get_summary_ann_sub_category_col_span_id(self) -> str:  # pylint: disable=R0201
+    @staticmethod
+    def get_summary_ann_sub_category_col_span_id() -> str:
         """
         max col span
         """
         return "5"
 
-    def get_number_of_heads(self) -> int:  # pylint: disable=R0201
+    @staticmethod
+    def get_number_of_heads() -> int:
         """
         number of head cells
         """
         return 10
 
-    def get_number_of_bodies(self) -> int:  # pylint: disable=R0201
+    @staticmethod
+    def get_number_of_bodies() -> int:
         """
         number of body cells
         """

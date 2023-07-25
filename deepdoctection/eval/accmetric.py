@@ -218,7 +218,6 @@ class ClassificationMetric(MetricBase):
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple[Any, Any]:
-
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
@@ -234,9 +233,9 @@ class ClassificationMetric(MetricBase):
         labels_per_image_gt = {}
         labels_per_image_predictions = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
-            dp_labels_gt, image_id_gt = mapper_with_setting(dp_gt)
+            dp_labels_gt, image_id_gt = mapper_with_setting(dp_gt)  # pylint: disable=E1102
             labels_per_image_gt[image_id_gt] = dp_labels_gt
-            dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)
+            dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)  # pylint: disable=E1102
             labels_per_image_predictions[image_id_pr] = dp_labels_predictions
 
         for image_id, dp_labels_gt in labels_per_image_gt.items():
@@ -255,7 +254,6 @@ class ClassificationMetric(MetricBase):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -396,7 +394,6 @@ class ConfusionMetric(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -444,7 +441,6 @@ class PrecisionMetric(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -497,7 +493,6 @@ class PrecisionMetricMicro(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []

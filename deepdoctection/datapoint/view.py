@@ -115,7 +115,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
                     return int(sub_cat.category_id)
         return None
 
-    def get_attribute_names(self) -> Set[str]:  # pylint: disable=R0201
+    def get_attribute_names(self) -> Set[str]:
         """
         :return: A set of registered attributes. When sub classing modify this method accordingly.
         """
