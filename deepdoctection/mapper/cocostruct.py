@@ -41,7 +41,6 @@ def coco_to_image(
     coarse_mapping: Optional[Mapping[int, int]] = None,
     coarse_sub_cat_name: Optional[ObjectTypes] = None,
 ) -> Optional[Image]:
-
     """
     Map a dataset in coco format that has been serialized to image format. This serialized input requirements hold
     when a coco style sheet is loaded via `SerializerCoco.load`.

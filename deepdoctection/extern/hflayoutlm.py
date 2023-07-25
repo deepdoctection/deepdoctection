@@ -619,7 +619,6 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.model.to(self.device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
-
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -664,7 +663,6 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     def _validate_encodings(
         self, **encodings: Union[List[List[str]], "torch.Tensor"]
     ) -> Tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor"]:
-
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -732,7 +730,6 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
@@ -793,7 +790,6 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-
         config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMv2ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
@@ -861,7 +857,6 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-
         config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMv3ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config

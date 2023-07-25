@@ -80,7 +80,6 @@ def xfund_to_image(
     token_tag_to_id_mapping = ner_token_to_id_mapping[LayoutType.word][WordType.token_tag]
 
     with MappingContextManager(file_name) as mapping_context:
-
         image = Image(file_name=file_name, location=full_path, external_id=external_id)
 
         image.image = load_image_from_file(full_path)

@@ -152,7 +152,6 @@ class PDFStreamer:
 def _input_to_cli_str(
     input_file_name: Pathlike, output_file_name: Pathlike, dpi: int, size: Optional[Tuple[int, int]] = None
 ) -> List[str]:
-
     cmd_args: List[str] = []
 
     if pdf_to_ppm_available():

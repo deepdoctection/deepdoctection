@@ -112,8 +112,10 @@ def _config_sanity_checks(cfg: AttrDict) -> None:
     if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
         raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
     if cfg.OCR.USE_TESSERACT and (cfg.OCR.USE_DOCTR or cfg.OCR.USE_TEXTRACT):
-        raise ValueError("Configuration OCR.USE_TESSERACT=True and OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True is not "
-                         "allowed. Only one OCR system can be activated.")
+        raise ValueError(
+            "Configuration OCR.USE_TESSERACT=True and OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True is not "
+            "allowed. Only one OCR system can be activated."
+        )
 
 
 def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector"]:

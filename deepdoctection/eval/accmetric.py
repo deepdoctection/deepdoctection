@@ -218,7 +218,6 @@ class ClassificationMetric(MetricBase):
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple[Any, Any]:
-
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
@@ -255,7 +254,6 @@ class ClassificationMetric(MetricBase):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -396,7 +394,6 @@ class ConfusionMetric(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -444,7 +441,6 @@ class PrecisionMetric(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -497,7 +493,6 @@ class PrecisionMetricMicro(ClassificationMetric):
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> List[JsonDict]:
-
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []

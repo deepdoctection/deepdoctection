@@ -159,7 +159,7 @@ def get_train_dataflow(
                 )
             summarizer.dump(dp["gt_labels"])
             datapoints.append(dp)
-            status_bar.update()  # type: ignore
+            status_bar.update()
     summarizer.print_summary_histogram(dd_logic=False)
     num_datapoints = len(datapoints)
     logger.info("Total #images for training: %i", num_datapoints)

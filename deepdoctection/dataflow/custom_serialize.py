@@ -229,7 +229,6 @@ class CocoParser:
     """
 
     def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
-
         self.dataset: JsonDict = {}
         self.anns: Dict[int, JsonDict] = {}
         self.cats: Dict[int, JsonDict] = {}
@@ -484,7 +483,7 @@ class SerializerCoco:
             with get_tqdm(total=len(imgs)) as status_bar:
                 for img in imgs:
                     img["annotations"] = coco.img_to_anns[img["id"]]
-                    status_bar.update()  # type: ignore
+                    status_bar.update()
 
         df = CustomDataFromList(imgs, max_datapoints=max_datapoints)
         return df
