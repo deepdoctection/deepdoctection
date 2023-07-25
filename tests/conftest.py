@@ -255,9 +255,9 @@ def fixture_col_sub_cats() -> List[CategoryAnnotation]:
 
 
 @fixture(name="cell_sub_cats")
-def fixture_cell_sub_cats() -> List[
-    Tuple[CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation]
-]:
+def fixture_cell_sub_cats() -> (
+    List[Tuple[CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation]]
+):
     """fixture cell_sub_cats"""
     return deepcopy(Annotations().get_cell_sub_cats())
 
@@ -340,17 +340,17 @@ def fixture_dp_image_fully_segmented(
 
 
 @fixture(name="cell_sub_cats_when_table_fully_tiled")
-def fixture_cell_sub_cats_when_table_fully_tiled() -> List[
-    Tuple[CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation]
-]:
+def fixture_cell_sub_cats_when_table_fully_tiled() -> (
+    List[Tuple[CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation]]
+):
     """fixture cell_sub_cats_when_table_fully_tiled"""
     return deepcopy(Annotations().get_cell_sub_cats_when_table_fully_tiled())
 
 
 @fixture(name="summary_sub_cats_when_table_fully_tiled")
-def fixture_summary_sub_cats_when_table_fully_tiled() -> Tuple[
-    CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation
-]:
+def fixture_summary_sub_cats_when_table_fully_tiled() -> (
+    Tuple[CategoryAnnotation, CategoryAnnotation, CategoryAnnotation, CategoryAnnotation]
+):
     """fixture summary_sub_cats_when_table_fully_tiled"""
     return deepcopy(Annotations().get_summary_sub_cats_when_table_fully_tiled())
 

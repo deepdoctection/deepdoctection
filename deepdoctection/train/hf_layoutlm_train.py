@@ -353,7 +353,7 @@ def train_hf_layoutlm(
     )
     image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
     if segment_positions:
-        image_to_raw_layoutlm_kwargs["segment_positions"] = segment_positions
+        image_to_raw_layoutlm_kwargs["segment_positions"] = segment_positions  # type: ignore
     image_to_raw_layoutlm_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
     dataset = DatasetAdapter(
         dataset_train,

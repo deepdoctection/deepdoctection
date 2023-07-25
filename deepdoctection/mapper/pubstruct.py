@@ -38,7 +38,6 @@ __all__ = ["pub_to_image"]
 
 
 def _convert_boxes(dp: JsonDict, height: int) -> JsonDict:
-
     if "bbox" in dp:
         table_box_3 = height - dp["bbox"][1]
         dp["bbox"][1] = height - dp["bbox"][3]
@@ -54,7 +53,6 @@ def _convert_boxes(dp: JsonDict, height: int) -> JsonDict:
 
 
 def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
-
     ulx, uly, lrx, lry = list(map(float, dp["bbox"]))
     bbox = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
     annotation = ImageAnnotation(category_name=LayoutType.table, bounding_box=bbox, category_id=category_id)
@@ -62,7 +60,6 @@ def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
 
 
 def _cell_token(html: Sequence[str]) -> List[List[int]]:
-
     index_rows = [i for i, tag in enumerate(html) if tag == "<tr>"]
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
     index_rows_tmp = [(index_rows[i], index_rows[i + 1]) for i in range(len(index_rows) - 1)]
@@ -76,7 +73,6 @@ def _cell_token(html: Sequence[str]) -> List[List[int]]:
 
 
 def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> List[List[int]]:
-
     item_spans = [
         [
             int(html[index_cell - 1].replace(item + "=", "").replace('"', ""))
@@ -121,7 +117,6 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
     for row in col_spans:
         cell_id_per_row = []
         for idx, k in enumerate(itertools.count(i)):
-
             if idx < len(row):
                 i += 1
                 cell_id_per_row.append(k)
@@ -157,7 +152,6 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
 
 
 def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, str], pubtables_like: bool) -> Image:
-
     item_number = CellType.row_number if item_type == LayoutType.row else CellType.column_number
     item_span = CellType.row_span if item_type == LayoutType.row else CellType.column_span
 
@@ -228,7 +222,6 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
                 filter_level="bounding box",
                 image_annotation={"category_name": item.category_name, "annotation_id": item.annotation_id},
             ):
-
                 box = item.bounding_box
                 if box:
                     tmp_next_item_xy = 0.0
@@ -394,7 +387,6 @@ def pub_to_image_uncur(  # pylint: disable=R0914
         return None
 
     with MappingContextManager(str(idx)) as mapping_context:
-
         max_rs, max_cs = 0, 0
         if idx is None:
             raise ValueError("No valid datapoint external id")

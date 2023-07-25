@@ -148,7 +148,6 @@ class MatchingService(PipelineComponent):
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
     def get_meta_annotation(self) -> JsonDict:
-
         return dict(
             [
                 ("image_annotations", []),

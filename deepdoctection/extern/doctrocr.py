@@ -253,7 +253,6 @@ class DoctrTextRecognizer(TextRecognizer):
     """
 
     def __init__(self, architecture: str, path_weights: str, device: Optional[Literal["cpu", "cuda"]] = None) -> None:
-
         self.name = "doctr_text_recognizer"
         self.architecture = architecture
         self.path_weights = path_weights
