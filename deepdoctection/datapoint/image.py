@@ -487,7 +487,7 @@ class Image:
         for sub_image in sub_images:
             if sub_image.image is None:
                 raise ValueError(
-                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not " "be None"
+                    "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None"
                 )
             sub_image.image.set_embedding(
                 annotation_id,

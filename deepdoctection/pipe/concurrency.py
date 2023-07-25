@@ -104,7 +104,6 @@ class MultiThreadPipelineComponent(PipelineComponent):
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,
     ) -> None:
-
         """
         :param pipeline_components: list of identical pipeline component. Number of threads created is determined by
                                     `len`
@@ -161,12 +160,11 @@ class MultiThreadPipelineComponent(PipelineComponent):
     @staticmethod
     def _thread_predict_on_queue(
         input_queue: QueueType,
-        component: PipelineComponent,
+        component: Union[PipelineComponent, PageParsingService, ImageParsingService],
         tqdm_bar: Optional[TqdmType] = None,
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
     ) -> List[Image]:
-
         outputs = []
 
         with ExitStack() as stack:
@@ -178,9 +176,10 @@ class MultiThreadPipelineComponent(PipelineComponent):
                 if pre_proc_func is not None:
                     inp = pre_proc_func(inp)
                 out = component.pass_datapoint(inp)
-                if post_proc_func is not None:
+                if post_proc_func is not None and out is not None:
                     out = post_proc_func(out)
-                outputs.append(out)
+                if out is not None:
+                    outputs.append(out)
                 tqdm_bar.update(1)
         return outputs
 

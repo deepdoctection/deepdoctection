@@ -471,7 +471,7 @@ def segment_table(
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
             rs = np.count_nonzero(cell_index_rows == idx)
             if len(rows_of_cell):
-                row_number = min([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell])
+                row_number = min(int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell)
             else:
                 row_number = 0
 
@@ -479,9 +479,7 @@ def segment_table(
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = np.count_nonzero(cell_index_cols == idx)
             if len(cols_of_cell):
-                col_number = min(
-                    [int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell]
-                )
+                col_number = min(int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell)
             else:
                 col_number = 0
 
@@ -612,27 +610,25 @@ def segment_pubtables(
             cell_positions_rows = cell_index_rows == idx
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
             rs = (
-                max([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell])
-                - min([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell])
+                max(int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell)
+                - min(int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell)
                 + 1
             )
             if len(rows_of_cell):
-                row_number = min([int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell])
+                row_number = min(int(row.get_sub_category(CellType.row_number).category_id) for row in rows_of_cell)
             else:
                 row_number = 0
 
             cell_positions_cols = cell_index_cols == idx
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = (
-                max([int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell])
-                - min([int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell])
+                max(int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell)
+                - min(int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell)
                 + 1
             )
 
             if len(cols_of_cell):
-                col_number = min(
-                    [int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell]
-                )
+                col_number = min(int(col.get_sub_category(CellType.column_number).category_id) for col in cols_of_cell)
             else:
                 col_number = 0
 
@@ -782,10 +778,10 @@ class TableSegmentationService(PipelineComponent):
 
             if table.image:
                 cells = table.image.get_annotation(category_names=self._cell_names)
-                number_of_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells])
-                number_of_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells])
-                max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
-                max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
+                number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
+                number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
+                max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
+                max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
                 # TODO: the summaries should be sub categories of the underlying ann
                 self.dp_manager.set_summary_annotation(
                     TableType.number_of_rows,
@@ -1022,10 +1018,10 @@ class PubtablesSegmentationService(PipelineComponent):
             cells = []
             if table.image:
                 cells = table.image.get_annotation(category_names=self._cell_names)
-            number_of_rows = max([int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells])
-            number_of_cols = max([int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells])
-            max_row_span = max([int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells])
-            max_col_span = max([int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells])
+            number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
+            number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
+            max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
+            max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
                 TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id

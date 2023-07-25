@@ -218,7 +218,6 @@ class TedsMetric(MetricBase):
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> Tuple[List[str], List[str]]:
-
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 

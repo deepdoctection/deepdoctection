@@ -111,7 +111,6 @@ class MetricBase(ABC):
             new_key = ""
             new_val = 0.0
             for k, val in res.items():
-
                 if str(val) != "":
                     if k != "val":
                         if k != "key":

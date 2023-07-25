@@ -55,7 +55,7 @@ class StoppableThread(threading.Thread):
         """
         :param bool: whether the thread is stopped or not
         """
-        return self._stop_evt.isSet()
+        return self._stop_evt.is_set()
 
     def queue_put_stoppable(self, q: QueueType, obj: Any) -> None:
         """Put obj to queue, but will give up when the thread is stopped"""
@@ -105,12 +105,11 @@ def enable_death_signal(_warn: bool = True) -> None:
                 '"import prctl" failed! Install python-prctl so that processes can be cleaned with guarantee.', "warn"
             )
         return
-    else:
-        assert hasattr(
-            prctl, "set_pdeathsig"
-        ), "prctl.set_pdeathsig does not exist! Note that you need to install 'python-prctl' instead of 'prctl'."
-        # is SIGHUP a good choice?
-        prctl.set_pdeathsig(signal.SIGHUP)
+    assert hasattr(
+        prctl, "set_pdeathsig"
+    ), "prctl.set_pdeathsig does not exist! Note that you need to install 'python-prctl' instead of 'prctl'."
+    # is SIGHUP a good choice?
+    prctl.set_pdeathsig(signal.SIGHUP)
 
 
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py

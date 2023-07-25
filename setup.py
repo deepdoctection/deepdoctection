@@ -50,10 +50,10 @@ _DEPS = [
     "lxml>=4.9.1",
     "mock==4.0.3",
     "networkx>=2.7.1",
-    "numpy>=1.21,<1.24",
+    "numpy>=1.21",
     "opencv-python==4.5.4.60",
-    "packaging>=20.0,<22.0",
-    "Pillow<10.0",  # we need this requirement for Detectron2 as long they have not fixed #5010
+    "packaging>=20.0",
+    "Pillow",
     "pycocotools>=2.0.2",
     "pypdf2>=1.27.5,<2.10.1",
     "python-prctl",
@@ -85,11 +85,11 @@ _DEPS = [
     "python-doctr==0.6.0",
     "fasttext",
     # dev dependencies
-    "click==8.0.4",  # version will not break black
-    "black==22.3.0",
+    "click",  # version will not break black
+    "black==23.7.0",
     "isort",
-    "pylint==2.13.4",
-    "mypy==0.942",
+    "pylint==2.17.4",
+    "mypy==1.4.1",
     # docs
     "jinja2==3.0.3",
     "mkdocs-material",

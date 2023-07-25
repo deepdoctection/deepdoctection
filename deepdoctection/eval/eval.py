@@ -147,7 +147,7 @@ class Evaluator:
                 )
             elif self.dataset.dataset_info.type == DatasetType.token_classification:
                 if hasattr(self.metric, "sub_cats"):
-                    sub_cat_key, sub_cat_val_list = list(self.metric.sub_cats.items())[0]  # type: ignore
+                    sub_cat_key, sub_cat_val_list = list(self.metric.sub_cats.items())[0]
                     sub_cat_val = sub_cat_val_list[0]
                     sub_cats = {sub_cat_key: sub_cat_val}
                     self.wandb_table_agent = WandbTableAgent(
@@ -166,7 +166,7 @@ class Evaluator:
                     )
                 else:
                     raise AttributeError(
-                        "metric has no attribute sub_cats and cannot be used for token classification " "datasets"
+                        "metric has no attribute sub_cats and cannot be used for token classification datasets"
                     )
             else:
                 raise NotImplementedError

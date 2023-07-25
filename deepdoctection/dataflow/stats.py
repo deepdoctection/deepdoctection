@@ -93,7 +93,7 @@ class MeanFromDataFlow(ProxyDataFlow):
 
         if not self._reset_called:
             self.df.reset_state()
-        itr = self.df.__iter__()
+        itr = iter(self.df)
 
         logger.info("Calculating mean")
 
@@ -108,7 +108,6 @@ class MeanFromDataFlow(ProxyDataFlow):
         with get_tqdm(total=len_df) as status_bar:
             n = None
             for n, dp in enumerate(itr, 1):
-
                 if isinstance(dp, dict):
                     assert isinstance(self.key, str), self.key
                     val = dp[self.key]
@@ -135,7 +134,7 @@ class MeanFromDataFlow(ProxyDataFlow):
                     x = np.mean(val, axis=self.axis if inner_axis is None else inner_axis)
                     self.mean += (x - self.mean) / n
 
-                status_bar.update()  # type: ignore
+                status_bar.update()
                 if self.max_datapoints is not None:
                     if n == self.max_datapoints:
                         break
@@ -215,7 +214,7 @@ class StdFromDataFlow(ProxyDataFlow):
 
         if not self._reset_called:
             self.df.reset_state()
-        itr = self.df.__iter__()
+        itr = iter(self.df)
 
         logger.info("Calculating standard deviation")
         try:
@@ -227,7 +226,6 @@ class StdFromDataFlow(ProxyDataFlow):
         n = None
         with get_tqdm(total=len_df) as status_bar:
             for n, dp in enumerate(itr, 1):
-
                 if isinstance(dp, dict):
                     assert isinstance(self.key, str), self.key
                     val = dp[self.key]
@@ -260,7 +258,7 @@ class StdFromDataFlow(ProxyDataFlow):
                     ex += x - k
                     ex2 += (x - k) * (x - k)
 
-                status_bar.update()  # type: ignore
+                status_bar.update()
                 if self.max_datapoints is not None:
                     if n == self.max_datapoints:
                         break
