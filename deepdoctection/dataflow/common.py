@@ -49,7 +49,7 @@ class TestDataSpeed(ProxyDataFlow):
         """
         if not self._reset_called:
             self.df.reset_state()
-        itr = self.df.__iter__()
+        itr = iter(self.df)
         if self.warmup:
             for _ in tqdm.trange(self.warmup, **get_tqdm_default_kwargs()):  # type: ignore
                 next(itr)

@@ -46,7 +46,7 @@ class ObjectTypes(str, Enum):
         raise ValueError(f"value {value} does not have corresponding member")
 
 
-TypeOrStr = Union[ObjectTypes, str]
+TypeOrStr = Union[ObjectTypes, str]  # pylint: disable=C0103
 
 object_types_registry = catalogue.create("deepdoctection", "settings", entry_points=True)
 

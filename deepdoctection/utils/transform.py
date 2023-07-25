@@ -150,7 +150,7 @@ def pad_image(image: ImageType, top: int, right: int, bottom: int, left: int) ->
     :param bottom: Bottom pixel value to pad
     :param left: Left pixel value to pad
     """
-    return np.pad(image, ((left, right), (top, bottom), (0, 0)), "constant", constant_values=(255))
+    return np.pad(image, ((left, right), (top, bottom), (0, 0)), "constant", constant_values=255)
 
 
 class PadTransform(BaseTransform):

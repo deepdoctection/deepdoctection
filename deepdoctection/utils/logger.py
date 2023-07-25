@@ -185,7 +185,7 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
         if not action:
             logger.warning("Log directory %s exists! Use 'd' to delete it. ", dir_name)
             logger.warning(
-                "If you're resuming from a previous run, you can choose to keep it." "Press any other key to exit. "
+                "If you're resuming from a previous run, you can choose to keep it. Press any other key to exit. "
             )
         while not action:
             action = input("Select Action: k (keep) / d (delete) / q (quit):").lower().strip()
@@ -225,7 +225,7 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
     """
 
     mod = sys.modules["__main__"]
-    basename = str(os.path.basename(mod.__file__))  # type: ignore
+    basename = str(os.path.basename(mod.__file__))  # type: ignore  # pylint: disable=E1101
     auto_dir_name = os.path.join("train_log", basename[: basename.rfind(".")])
     if name:
         auto_dir_name += "_%s" % name if os.name == "nt" else ":%s" % name  # pylint: disable=C0209
