@@ -59,7 +59,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Upgrade pip
-        run: python3 -m pip install pip==22.1.2
+        run: python3 -m pip install --upgrade pip
 
       - name: Install libcap
         run: sudo apt-get install build-essential libcap-dev
