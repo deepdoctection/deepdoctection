@@ -93,7 +93,7 @@ class MeanFromDataFlow(ProxyDataFlow):
 
         if not self._reset_called:
             self.df.reset_state()
-        itr = self.df.__iter__()
+        itr = iter(self.df)
 
         logger.info("Calculating mean")
 
@@ -214,7 +214,7 @@ class StdFromDataFlow(ProxyDataFlow):
 
         if not self._reset_called:
             self.df.reset_state()
-        itr = self.df.__iter__()
+        itr = iter(self.df)
 
         logger.info("Calculating standard deviation")
         try:

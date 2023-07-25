@@ -174,13 +174,13 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         )
         cell_item = list(filter(lambda x: x.get_sub_category(item_span).category_id == "1", cell_item))
         if cell_item:
-            ulx = min([cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+            ulx = min(cell.bounding_box.ulx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox))
 
-            uly = min([cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+            uly = min(cell.bounding_box.uly for cell in cell_item if isinstance(cell.bounding_box, BoundingBox))
 
-            lrx = max([cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+            lrx = max(cell.bounding_box.lrx for cell in cell_item if isinstance(cell.bounding_box, BoundingBox))
 
-            lry = max([cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox)])
+            lry = max(cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox))
 
             if pubtables_like:
                 tables = image.get_annotation(category_names=LayoutType.table)

@@ -36,15 +36,15 @@ def get_tqdm_default_kwargs(
     :param kwargs: extra arguments to be used.
     """
 
-    return dict(
-        total=kwargs.get("total"),
-        leave=True,
-        smoothing=0.5,
-        dynamic_ncols=True,
-        ascii=True,
-        bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt}[{elapsed}<{remaining},{rate_noinv_fmt}]",
-        mininterval=5,
-    )
+    return {
+        "total": kwargs.get("total"),
+        "leave": True,
+        "smoothing": 0.5,
+        "dynamic_ncols": True,
+        "ascii": True,
+        "bar_format": "{l_bar}{bar}|{n_fmt}/{total_fmt}[{elapsed}<{remaining},{rate_noinv_fmt}]",
+        "mininterval": 5,
+    }
 
 
 def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int, float]) -> TqdmType:

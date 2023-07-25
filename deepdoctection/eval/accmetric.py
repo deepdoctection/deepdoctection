@@ -233,9 +233,9 @@ class ClassificationMetric(MetricBase):
         labels_per_image_gt = {}
         labels_per_image_predictions = {}
         for dp_gt, dp_pd in zip(dataflow_gt, dataflow_predictions):
-            dp_labels_gt, image_id_gt = mapper_with_setting(dp_gt)
+            dp_labels_gt, image_id_gt = mapper_with_setting(dp_gt)  # pylint: disable=E1102
             labels_per_image_gt[image_id_gt] = dp_labels_gt
-            dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)
+            dp_labels_predictions, image_id_pr = mapper_with_setting(dp_pd)  # pylint: disable=E1102
             labels_per_image_predictions[image_id_pr] = dp_labels_predictions
 
         for image_id, dp_labels_gt in labels_per_image_gt.items():

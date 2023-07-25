@@ -166,7 +166,7 @@ class Evaluator:
                     )
                 else:
                     raise AttributeError(
-                        "metric has no attribute sub_cats and cannot be used for token classification " "datasets"
+                        "metric has no attribute sub_cats and cannot be used for token classification datasets"
                     )
             else:
                 raise NotImplementedError
