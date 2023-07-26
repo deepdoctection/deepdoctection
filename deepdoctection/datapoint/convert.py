@@ -130,7 +130,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
 
     with BytesIO(pdf_bytes) as pdf_file:
         pdf = PdfReader(pdf_file).pages[0]
-    shape = pdf.mediabox
+    shape = pdf.mediabox  # pylint: disable=E1101
     height = shape[3] - shape[1]
     width = shape[2] - shape[0]
     buffered = BytesIO()
@@ -160,7 +160,7 @@ def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None
 
     with BytesIO(pdf_bytes) as pdf_file:
         pdf = PdfReader(pdf_file).pages[0]
-    shape = pdf.mediabox
+    shape = pdf.mediabox  # pylint: disable=E1101
     height = shape[3] - shape[1]
     width = shape[2] - shape[0]
 

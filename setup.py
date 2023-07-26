@@ -53,6 +53,7 @@ _DEPS = [
     "numpy>=1.21",
     "opencv-python==4.5.4.60",
     "packaging>=20.0",
+    "pycocotools>=2.0.2",
     "pypdf2",
     "python-prctl",
     "pyyaml==6.0",
@@ -141,8 +142,8 @@ dist_deps = deps_list(
 # remaining dependencies to use models that neither require TF nor PyTorch
 additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
 
-# Tensorflow dependencies
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr")
+# Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
 
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "python-doctr")
