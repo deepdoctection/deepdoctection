@@ -29,7 +29,7 @@ import cv2
 import numpy as np
 from numpy import uint8
 from numpy.typing import NDArray
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfReader
 
 from ..utils.detection_types import ImageType
 from ..utils.develop import deprecated
@@ -129,8 +129,8 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     assert which("pdftoppm") is not None, "convert_pdf_bytes_to_np_array requires poppler to be installed"
 
     with BytesIO(pdf_bytes) as pdf_file:
-        pdf = PdfFileReader(pdf_file).getPage(0)
-    shape = pdf.mediaBox
+        pdf = PdfReader(pdf_file).pages[0]
+    shape = pdf.mediabox
     height = shape[3] - shape[1]
     width = shape[2] - shape[0]
     buffered = BytesIO()
@@ -159,8 +159,8 @@ def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None
     """
 
     with BytesIO(pdf_bytes) as pdf_file:
-        pdf = PdfFileReader(pdf_file).getPage(0)
-    shape = pdf.mediaBox
+        pdf = PdfReader(pdf_file).pages[0]
+    shape = pdf.mediabox
     height = shape[3] - shape[1]
     width = shape[2] - shape[0]
 
