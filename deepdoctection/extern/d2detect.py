@@ -34,6 +34,7 @@ from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .pt.ptutils import set_torch_auto_device
+from .pt.nms import batched_nms
 
 if pytorch_available():
     import torch
@@ -43,7 +44,6 @@ if pytorch_available():
 if detectron2_available():
     from detectron2.checkpoint import DetectionCheckpointer
     from detectron2.config import CfgNode, get_cfg  # pylint: disable=W0611
-    from detectron2.layers import batched_nms
     from detectron2.modeling import GeneralizedRCNN, build_model  # pylint: disable=W0611
     from detectron2.structures import Instances  # pylint: disable=W0611
 
@@ -69,8 +69,7 @@ def _d2_post_processing(
 def d2_predict_image(
     np_img: ImageType,
     predictor: "nn.Module",
-    preproc_short_edge_size: int,
-    preproc_max_size: int,
+    resizer: InferenceResize,
     nms_thresh_class_agnostic: float,
 ) -> List[DetectionResult]:
     """
@@ -79,13 +78,11 @@ def d2_predict_image(
 
     :param np_img: ndarray
     :param predictor: torch nn module implemented in Detectron2
-    :param preproc_short_edge_size: the short edge to resize to
-    :param preproc_max_size: upper bound of one edge when resizing
+    :param resizer: instance for resizing the input image
     :param nms_thresh_class_agnostic: class agnostic nms threshold
     :return: list of DetectionResult
     """
     height, width = np_img.shape[:2]
-    resizer = InferenceResize(preproc_short_edge_size, preproc_max_size)
     resized_img = resizer.get_transform(np_img).apply_image(np_img)
     image = torch.as_tensor(resized_img.astype("float32").transpose(2, 0, 1))
 
@@ -175,6 +172,7 @@ class D2FrcnnDetector(ObjectDetector):
         self.filter_categories = filter_categories
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
         self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
+        self.resizer = InferenceResize(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
         self._instantiate_d2_predictor()
 
     @staticmethod
@@ -215,8 +213,7 @@ class D2FrcnnDetector(ObjectDetector):
         detection_results = d2_predict_image(
             np_img,
             self.d2_predictor,
-            self.cfg.INPUT.MIN_SIZE_TEST,
-            self.cfg.INPUT.MAX_SIZE_TEST,
+            self.resizer,
             self.cfg.NMS_THRESH_CLASS_AGNOSTIC,
         )
         return self._map_category_names(detection_results)

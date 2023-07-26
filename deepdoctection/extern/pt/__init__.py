@@ -18,3 +18,8 @@
 """
 Init file for pytorch compatibility package
 """
+
+from .ptutils import *
+
+if pytorch_available():
+    from .nms import *
