@@ -18,10 +18,9 @@
 """
 Contains everything that is related to transformation between datapoints
 """
-from typing import Callable, Optional
+from typing import Callable
 
-from ..datapoint.image import Image
-from ..utils.file_utils import detectron2_available, pytorch_available, transformers_available
+from ..utils.file_utils import transformers_available
 from .cats import *
 from .cocostruct import *
 from .maputils import *
@@ -32,9 +31,8 @@ from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
 from .xfundstruct import *
+from .d2struct import *
 
-if detectron2_available() and pytorch_available():
-    from .d2struct import *
 
 if pytorch_available() and transformers_available():
     from .hfstruct import *

@@ -26,15 +26,17 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
-from detectron2.layers import batched_nms
-from detectron2.structures import BoxMode
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import wandb_available
+from ..utils.file_utils import wandb_available, pytorch_available, detectron2_available
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..extern.pt.nms import batched_nms
+
+if detectron2_available() and pytorch_available():
+    from detectron2.structures import BoxMode
 
 if wandb_available():
     from wandb import Classes

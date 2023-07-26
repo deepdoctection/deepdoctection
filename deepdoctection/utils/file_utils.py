@@ -165,7 +165,7 @@ def get_lxml_requirement() -> Requirement:
     """
     Returns lxml requirement
     """
-    return "lxml", lxml_available(), _TRANSFORMERS_ERR_MSG
+    return "lxml", lxml_available(), _LXML_ERR_MSG
 
 
 # apted
