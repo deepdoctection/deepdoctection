@@ -109,7 +109,7 @@ HTML(page.tables[0].html)
 
 
 ```
-print(page.get_text())
+print(page.text)
 ```
 
 ![table](./docs/tutorials/_imgs/dd_rm_text.png)

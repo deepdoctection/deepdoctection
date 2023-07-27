@@ -172,7 +172,7 @@ _IMPORT_STRUCTURE = {
         "TextractOcrDetector",
         "TPFrcnnDetector",
     ],
-    "extern.pt": ["set_torch_auto_device", "get_num_gpu"],
+    "extern.pt": ["set_torch_auto_device", "get_num_gpu", "batched_nms"],
     "extern.tp": ["disable_tfv2", "ModelDescWithConfig", "TensorpackPredictor"],
     "extern.tp.tpfrcnn": ["CustomResize", "anchors_and_labels", "augment"],
     "extern.tp.tpfrcnn.utils": ["area", "pairwise_intersection", "pairwise_iou"],
