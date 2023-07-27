@@ -151,6 +151,7 @@ _IMPORT_STRUCTURE = {
         "ImageTransformer",
         "InferenceResize",
         "D2FrcnnDetector",
+        "D2FrcnnTracingDetector",
         "Jdeskewer",
         "DoctrTextlineDetector",
         "DoctrTextRecognizer",
