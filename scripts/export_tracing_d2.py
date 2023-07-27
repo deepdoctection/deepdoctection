@@ -49,10 +49,10 @@ def export_tracing(torch_model, image, path_output):
 
 if __name__ == "__main__":
 
-    path_model_weights="/home/janis/.cache/deepdoctection/weights/item/d2_model_1639999_item_inf_only.pt"
-    path_config_yaml = "/home/janis/.cache/deepdoctection/configs/dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml"
-    path_output_dir = "/home/janis/Tests/pytorch_tracing/item"
-    path_sample_image = "/home/janis/.cache/deepdoctection/datasets/xrf_cell/image/01d248a2-a8ce-32d6-a4a5-5ae3e02a99bc.png"
+    path_model_weights="/path/to/model.pt"
+    path_config_yaml = "/path/to/config.yaml"
+    path_output_dir = "/path/to/output_dir"
+    path_sample_image = "/path/to/sample_image.png"
 
     PathManager.mkdirs(path_output_dir)
     # Disable re-specialization on new shapes. Otherwise --run-eval will be slow
