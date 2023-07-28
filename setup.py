@@ -112,13 +112,10 @@ def deps_list(*pkgs: str):
 
 # pypi dependencies without considering DL models specific dependencies
 dist_deps = deps_list(
-    "apted",
     "catalogue",
-    "distance",
     "huggingface_hub",
     "importlib-metadata",
     "jsonlines",
-    "lxml",
     "mock",
     "networkx",
     "numpy",
@@ -127,26 +124,21 @@ dist_deps = deps_list(
     "pypdf2",
     "pyyaml",
     "pyzmq",
-    "rapidfuzz",
     "termcolor",
     "tabulate",
     "tqdm",
-    "types-PyYAML",
-    "types-termcolor",
-    "types-tabulate",
-    "types-tqdm",
-    "lxml-stubs",
 )
 
 
 # remaining dependencies to use models that neither require TF nor PyTorch
-additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew")
+additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew", "apted", "distance", "lxml",)
 
 # Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "rapidfuzz",
+                    "pycocotools")
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "python-doctr")
+pt_deps = deps_list("timm", "transformers", "python-doctr", "rapidfuzz")
 source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
 
 # Putting all together
@@ -178,7 +170,8 @@ docs_deps = deps_list(
 test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("click", "black", "isort", "pylint", "mypy", "wandb")
+dev_deps = deps_list("click", "black", "isort", "pylint", "mypy", "wandb", "types-PyYAML", "types-termcolor",
+                     "types-tabulate", "types-tqdm","lxml-stubs")
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.
