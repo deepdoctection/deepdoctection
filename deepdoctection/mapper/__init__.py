@@ -20,10 +20,9 @@ Contains everything that is related to transformation between datapoints
 """
 from typing import Callable
 
-from ..utils.file_utils import transformers_available, pytorch_available
+from ..utils.file_utils import pytorch_available, transformers_available
 from .cats import *
 from .cocostruct import *
-
 from .maputils import *
 from .match import *
 from .misc import *

@@ -79,7 +79,7 @@ class ResizeTransform(BaseTransform):
 
     def apply_image(self, img: ImageType) -> ImageType:
         assert img.shape[:2] == (self.h, self.w)
-        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)
+        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)  # type: ignore
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret
