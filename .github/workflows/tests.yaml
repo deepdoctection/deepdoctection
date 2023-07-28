@@ -27,7 +27,7 @@ jobs:
           - { name: '3.8-basic-pt', python: '3.8', os: ubuntu-20.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
               extras: ,
-              test_cases: test-basic }
+              test_cases: test-basic-pt }
           - { name: '3.8-tf', python: '3.8', os: ubuntu-20.04,
               dll: tensorflow==2.9, extras: tf,
               test_cases: test-tf }
@@ -41,7 +41,7 @@ jobs:
           - { name: '3.10-basic-pt', python: '3.10', os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
               extras: ,
-              test_cases: test-basic }
+              test_cases: test-basic-pt }
           - { name: '3.10-tf', python: '3.10', os: ubuntu-22.04,
               dll: tensorflow==2.9, extras: tf,
               test_cases: test-tf }

@@ -71,7 +71,7 @@ class TestTPFrcnnDetector:
     """
 
     @staticmethod
-    @mark.pt_deps
+    @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
     def test_tp_frcnn_does_not_build_when_no_gpu(
         path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]
