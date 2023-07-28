@@ -131,11 +131,20 @@ dist_deps = deps_list(
 
 
 # remaining dependencies to use models that neither require TF nor PyTorch
-additional_deps = deps_list("boto3", "pdfplumber", "fasttext", "jdeskew", "apted", "distance", "lxml",)
+additional_deps = deps_list(
+    "boto3",
+    "pdfplumber",
+    "fasttext",
+    "jdeskew",
+    "apted",
+    "distance",
+    "lxml",
+)
 
 # Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
-tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "rapidfuzz",
-                    "pycocotools")
+tf_deps = deps_list(
+    "tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "rapidfuzz", "pycocotools"
+)
 
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "python-doctr", "rapidfuzz")
@@ -170,8 +179,19 @@ docs_deps = deps_list(
 test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
-dev_deps = deps_list("click", "black", "isort", "pylint", "mypy", "wandb", "types-PyYAML", "types-termcolor",
-                     "types-tabulate", "types-tqdm","lxml-stubs")
+dev_deps = deps_list(
+    "click",
+    "black",
+    "isort",
+    "pylint",
+    "mypy",
+    "wandb",
+    "types-PyYAML",
+    "types-termcolor",
+    "types-tabulate",
+    "types-tqdm",
+    "lxml-stubs",
+)
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
 #  can be printed with correct version dependencies.

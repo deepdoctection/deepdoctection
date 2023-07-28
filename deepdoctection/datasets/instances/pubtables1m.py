@@ -127,6 +127,9 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
         :return: dataflow
         """
 
+        if not lxml_available():
+            raise ModuleNotFoundError("Pubtables1MBuilder.build requires lxml but it is not installed.")
+
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)
         max_datapoints = kwargs.get("max_datapoints")
@@ -243,6 +246,8 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
 
         :return: dataflow
         """
+        if not lxml_available():
+            raise ModuleNotFoundError("Pubtables1MBuilderStruct.build requires lxml but it is not installed.")
 
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)

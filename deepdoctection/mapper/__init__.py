@@ -23,6 +23,7 @@ from typing import Callable
 from ..utils.file_utils import transformers_available
 from .cats import *
 from .cocostruct import *
+from .d2struct import *
 from .maputils import *
 from .match import *
 from .misc import *
@@ -31,8 +32,6 @@ from .prodigystruct import *
 from .pubstruct import *
 from .tpstruct import *
 from .xfundstruct import *
-from .d2struct import *
-
 
 if pytorch_available() and transformers_available():
     from .hfstruct import *
