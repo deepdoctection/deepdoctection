@@ -20,10 +20,10 @@ Contains everything that is related to transformation between datapoints
 """
 from typing import Callable
 
-from ..utils.file_utils import transformers_available
+from ..utils.file_utils import transformers_available, pytorch_available
 from .cats import *
 from .cocostruct import *
-from .d2struct import *
+
 from .maputils import *
 from .match import *
 from .misc import *
@@ -37,6 +37,8 @@ if pytorch_available() and transformers_available():
     from .hfstruct import *
     from .laylmstruct import *
 
+if pytorch_available():
+    from .d2struct import *
 
 # Mapper
 Mapper = Callable[[Image], Optional[Image]]
