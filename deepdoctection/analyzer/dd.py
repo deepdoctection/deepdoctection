@@ -333,7 +333,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     return pipe
 
 
-def get_dd_analyzer(reset_config_file: bool = True, config_overwrite: Optional[List[str]] = None) -> DoctectionPipe:
+def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[List[str]] = None) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 
