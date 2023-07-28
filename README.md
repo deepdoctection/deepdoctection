@@ -142,16 +142,22 @@ images.
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
   engine has to be installed separately.
 
-
-
 ## Installation
 
-We recommend using a virtual environment. You can install the package via pip or from source. Bug fixes or enhancements
-will be deployed to PyPi every 4 to 6 weeks.
+We recommend using a virtual environment. You can install the package via pip or from source. 
 
 ### Install with pip from PyPi
 
-Depending on which Deep Learning library you have available, use the following installation option:
+If you want to get started with a minimal setting (e.g. running the **deep**doctection analyzer with 
+default configuration or trying the 'Get started notebook'), install **deep**doctection with
+
+```
+pip install deepdoctection
+```
+
+The following installation will give you ALL models available within the Deep Learning framework as well as all models
+that are independent of Tensorflow/PyTorch. Please note, that the dependencies are very complex. We try hard to keep 
+the requirements up to date though.
 
 For **Tensorflow**, run
 
@@ -214,7 +220,8 @@ to develop this framework.
 ## Problems
 
 We try hard to eliminate bugs. We also know that the code is not free of issues. We welcome all issues relevant to this
-repo and try to address them as quickly as possible.
+repo and try to address them as quickly as possible. Bug fixes or enhancements will be deployed in a new release every 4 
+to 6 weeks.
 
 ## If you like **deep**doctection ...
  
