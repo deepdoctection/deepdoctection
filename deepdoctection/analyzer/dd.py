@@ -43,7 +43,8 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
-from ..utils.file_utils import boto3_available, pytorch_available, tensorpack_available, tf_available
+from ..utils.file_utils import boto3_available, pytorch_available, tensorpack_available, tf_available, \
+    detectron2_available
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
@@ -119,7 +120,8 @@ def _config_sanity_checks(cfg: AttrDict) -> None:
 
 
 def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector"]:
-    weights = getattr(cfg.TF, mode).WEIGHTS if cfg.LIB == "TF" else getattr(cfg.PT, mode).WEIGHTS
+    weights = getattr(cfg.TF, mode).WEIGHTS if cfg.LIB == "TF" else \
+        (getattr(cfg.PT, mode).WEIGHTS if detectron2_available else getattr(cfg.PT, mode).WEIGHTS_TS)
     filter_categories = (
         getattr(getattr(cfg.TF, mode), "FILTER") if cfg.LIB == "TF" else getattr(getattr(cfg.PT, mode), "FILTER")
     )
