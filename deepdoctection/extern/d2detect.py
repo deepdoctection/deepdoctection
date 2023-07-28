@@ -21,7 +21,7 @@ D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 import io
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional, Sequence, Any
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence
 
 import cv2
 import numpy as np

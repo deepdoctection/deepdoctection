@@ -19,7 +19,7 @@
 Wrappers for models of external libraries as well as implementation of the Cascade-RCNN model of Tensorpack.
 """
 
-from ..utils.file_utils import tensorpack_available, detectron2_available
+from ..utils.file_utils import detectron2_available, tensorpack_available
 from .base import *
 from .deskew import *
 from .doctrocr import *
