@@ -334,6 +334,7 @@ class TestPubtablesSegmentationService:
             self.cell_class_id,
         )
 
+    @mark.basic
     def test_pass_datapoint(self, dp_image_tab_cell_item: Image) -> None:
         """test pass_datapoint"""
 

@@ -58,7 +58,7 @@ class TestDoctrTextlineDetector:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
     def test_pt_doctr_detector_predicts_image(np_image: ImageType) -> None:
         """
@@ -79,7 +79,7 @@ class TestDoctrTextlineDetector:
         assert len(results) == 2
 
     @staticmethod
-    @mark.requires_tf
+    @mark.tf_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
     def test_tf_doctr_detector_predicts_image(np_image: ImageType) -> None:
         """
@@ -106,7 +106,7 @@ class TestDoctrTextRecognizer:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
     def test_doctr_pt_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
         """
@@ -126,7 +126,7 @@ class TestDoctrTextRecognizer:
         assert len(results) == 2
 
     @staticmethod
-    @mark.requires_tf
+    @mark.tf_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
     def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
         """

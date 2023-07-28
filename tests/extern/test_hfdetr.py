@@ -87,7 +87,7 @@ class TestHFDetrDerivedDetector:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.set_model", MagicMock(return_value=MagicMock()))
     @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.set_pre_processor", MagicMock())
     @patch("deepdoctection.extern.hfdetr.PretrainedConfig.from_pretrained", MagicMock())

@@ -27,7 +27,7 @@ if apted_available():
     from deepdoctection.eval.tedsmetric import teds_metric
 
 
-@mark.requires_tf_or_pt
+@mark.additional
 def test_teds_metric_returns_correct_distance() -> None:
     """
     teds returns score of 1.0 when comparing identical html strings

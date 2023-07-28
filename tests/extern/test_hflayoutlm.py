@@ -77,7 +77,7 @@ class TestHFLayoutLmTokenClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
@@ -93,7 +93,7 @@ class TestHFLayoutLmTokenClassifier:
             HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
@@ -126,7 +126,7 @@ class TestHFLayoutLmTokenClassifier:
         assert model.categories == categories_explicit
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
@@ -173,7 +173,7 @@ class TestHFLayoutLmv2TokenClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
@@ -189,7 +189,7 @@ class TestHFLayoutLmv2TokenClassifier:
             HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
@@ -222,7 +222,7 @@ class TestHFLayoutLmv2TokenClassifier:
         assert model.categories == categories_explicit
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForTokenClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
@@ -270,7 +270,7 @@ class TestHFLayoutLmv3TokenClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
@@ -286,7 +286,7 @@ class TestHFLayoutLmv3TokenClassifier:
             HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
@@ -319,7 +319,7 @@ class TestHFLayoutLmv3TokenClassifier:
         assert model.categories == categories_explicit
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForTokenClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
@@ -367,7 +367,7 @@ class TestHFLayoutLmSequenceClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMForSequenceClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch(
@@ -410,7 +410,7 @@ class TestHFLayoutLmv2SequenceClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForSequenceClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
     @patch(
@@ -454,7 +454,7 @@ class TestHFLayoutLmv3SequenceClassifier:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForSequenceClassification.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
     @patch(

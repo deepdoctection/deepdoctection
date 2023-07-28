@@ -18,12 +18,13 @@ from detectron2.utils.env import TORCH_VERSION
 from detectron2.utils.file_io import PathManager
 
 
-def setup_cfg(path_config_yaml):
+def setup_cfg(path_config_yaml, device):
     cfg = get_cfg()
     cfg.defrost()
     cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.01
     # cuda context is initialized before creating dataloader, so we don't fork anymore
     cfg.DATALOADER.NUM_WORKERS = 0
+    cfg.MODEL.DEVICE = device
     cfg.merge_from_file(path_config_yaml)
     cfg.freeze()
     return cfg
@@ -53,12 +54,13 @@ if __name__ == "__main__":
     path_config_yaml = "/path/to/config.yaml"
     path_output_dir = "/path/to/output_dir"
     path_sample_image = "/path/to/sample_image.png"
+    device = "cpu"
 
     PathManager.mkdirs(path_output_dir)
     # Disable re-specialization on new shapes. Otherwise --run-eval will be slow
     torch._C._jit_set_bailout_depth(1)
 
-    cfg = setup_cfg(path_config_yaml)
+    cfg = setup_cfg(path_config_yaml, device)
 
     # create a torch model
     torch_model = build_model(cfg)

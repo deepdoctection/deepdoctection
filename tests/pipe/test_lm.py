@@ -40,7 +40,7 @@ class TestLMTokenClassifierService:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     def test_pass_datapoint_2(
         dp_image_with_layout_and_word_annotations: Image,
         token_class_result: List[TokenClassResult],
@@ -90,7 +90,7 @@ class TestLMSequenceClassifierService:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     def test_pass_datapoint(
         dp_image_with_layout_and_word_annotations: Image,
         sequence_class_result: SequenceClassResult,

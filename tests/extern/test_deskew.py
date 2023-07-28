@@ -33,7 +33,7 @@ class TestJdeskewer:
     """
 
     @staticmethod
-    @mark.requires_tf_or_pt
+    @mark.additional
     def test_deskewer_transforms_image() -> None:
         """
         Detector deskews image and rotates it accordingly
