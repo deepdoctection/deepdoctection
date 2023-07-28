@@ -111,7 +111,7 @@ def test_image_to_raw_layoutlm_features_for_inference(
     assert "labels" not in raw_features
 
 
-@mark.requires_pt
+@mark.pt_deps
 def test_raw_features_to_layoutlm_features(
     dp_image_with_layout_and_word_annotations: Image, layoutlm_features: JsonDict
 ) -> None:

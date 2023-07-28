@@ -90,7 +90,7 @@ class TestAnnotationNmsService:
 
         self.nms_service = AnnotationNmsService(self._nms_pairs, self._thresholds)
 
-    @mark.requires_pt
+    @mark.pt_deps
     def test_integration_pipeline_component(self, dp_image_fully_segmented_unrelated_words: Image) -> None:
         """
         test annotation nms service suppresses the annotations within groups
