@@ -34,8 +34,7 @@ class TestTextractOcrDetector:
 
     @staticmethod
     @mark.additional
-    @patch("deepdoctection.extern.texocr.get_aws_requirement", MagicMock(return_value=("boto3", True, "")))
-    @patch("deepdoctection.extern.texocr.get_boto3_requirement", MagicMock(return_value=("aws", True, "")))
+    @patch("deepdoctection.extern.texocr.get_boto3_requirement", MagicMock(return_value=("boto3", True, "")))
     @patch("deepdoctection.extern.texocr.boto3", MagicMock())
     def test_textract_ocr_predicts_image(np_image: ImageType, textract_response: JsonDict) -> None:
         """
