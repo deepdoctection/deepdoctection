@@ -31,8 +31,18 @@ instruction.
 
 ## Install with pip
 
-We recommend using a virtual environment. You can install **deep**doctection via pip or from source. Bug fixes or 
-enhancements will be deployed to PyPi every 4 to 6 weeks.
+We recommend using a virtual environment. You can install **deep**doctection via pip or from source. 
+
+If you want to get started with a minimal setting (e.g. running the **deep**doctection analyzer with 
+default configuration or trying the 'Get started notebook'), install **deep**doctection with
+
+```
+pip install deepdoctection
+```
+
+The following installation will give you ALL models available within the Deep Learning framework as well as all models
+that are independent of Tensorflow/PyTorch. Please note, that the dependencies are very complex. We try hard to keep 
+the requirements up to date though.
 
 Depending on which Deep Learning library you have available, use the following installation option:
 
