@@ -28,6 +28,21 @@ The code has been tested on Ubuntu 20.04. Functions not involving a GPU have als
 In many applications Tesseract is used to ocr documents. Check the [installation](https://github.com/tesseract-ocr/tesseract) 
 instruction.
 
+The following overview shows the availability of the models in conjunction with the DL framework.
+
+
+
+| Task                                          | PyTorch |  Tensorflow  |
+|-----------------------------------------------|:-------:|:------------:|
+| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (GPU only) |
+| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (GPU only) |
+| Table transformer via Transformers            |    ✅    |      ❌       |
+| DocTr                                         |    ✅    |      ✅       |
+| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌            |
+| Tesseract (DL library agnostic)               |    ✅    | ✅           |
+| Fasttext (DL library agnostic)                |    ✅    | ✅           |
+| jdeskew (DL library agnostic)                 |    ✅    | ✅           |
+| Pdfplumber (DL library agnostic)              |    ✅    | ✅           |
 
 ## Install with pip
 

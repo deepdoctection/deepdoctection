@@ -142,6 +142,21 @@ images.
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
   engine has to be installed separately.
 
+The following overview shows the availability of the models in conjunction with the DL framework.
+
+| Task                                          | PyTorch |  Tensorflow  |
+|-----------------------------------------------|:-------:|:------------:|
+| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (GPU only) |
+| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (GPU only) |
+| Table transformer via Transformers            |    ✅    |      ❌       |
+| DocTr                                         |    ✅    |      ✅       |
+| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌            |
+| Tesseract (DL library agnostic)               |    ✅    | ✅           |
+| Fasttext (DL library agnostic)                |    ✅    | ✅           |
+| jdeskew (DL library agnostic)                 |    ✅    | ✅           |
+| Pdfplumber (DL library agnostic)              |    ✅    | ✅           |
+
+
 ## Installation
 
 We recommend using a virtual environment. You can install the package via pip or from source. 
