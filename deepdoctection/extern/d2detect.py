@@ -19,13 +19,12 @@
 D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 """
 import io
-
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional, Sequence
+from typing import Dict, List, Literal, Mapping, Optional, Sequence, Any
 
-import numpy as np
 import cv2
+import numpy as np
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
@@ -34,12 +33,12 @@ from ..utils.file_utils import (
     get_pytorch_requirement,
     pytorch_available,
 )
+from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
-from ..utils.metacfg import set_config_by_yaml
 from .base import DetectionResult, ObjectDetector, PredictorBase
-from .pt.ptutils import set_torch_auto_device
 from .pt.nms import batched_nms
+from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch
@@ -106,12 +105,21 @@ def d2_predict_image(
     ]
     return results
 
+
 def d2_jit_predict_image(
-            np_img: ImageType,
-            d2_predictor: "nn.Module",
-            resizer: InferenceResize,
-            nms_thresh_class_agnostic: float
-    )-> List[DetectionResult]:
+    np_img: ImageType, d2_predictor: "nn.Module", resizer: InferenceResize, nms_thresh_class_agnostic: float
+) -> List[DetectionResult]:
+    """
+    Run detection on an image using torchscript. It will also handle the preprocessing internally which
+    is using a custom resizing within some bounds. Moreover, and different from the setting where Detectron2 is used
+    it will also handle the resizing of the bounding box coords to the original image size.
+
+    :param np_img: ndarray
+    :param d2_predictor: torchscript nn module
+    :param resizer: instance for resizing the input image
+    :param nms_thresh_class_agnostic: class agnostic nms threshold
+    :return: list of DetectionResult
+    """
     height, width = np_img.shape[:2]
     resized_img = resizer.get_transform(np_img).apply_image(np_img)
     new_height, new_width = resized_img.shape[:2]
@@ -123,17 +131,17 @@ def d2_jit_predict_image(
 
         # The exported model does not contain the final resize step, so we need to add it manually here
         inverse_resizer = ResizeTransform(new_height, new_width, height, width, cv2.INTER_LINEAR)
-        np_boxes = np.reshape(boxes.cpu().numpy(),(-1,2))
+        np_boxes = np.reshape(boxes.cpu().numpy(), (-1, 2))
         np_boxes = inverse_resizer.apply_coords(np_boxes)
-        np_boxes = np.reshape(np_boxes,(-1,4))
+        np_boxes = np.reshape(np_boxes, (-1, 4))
 
         np_boxes, classes, scores = np_boxes[keep], classes[keep], scores[keep]
         # If only one sample is left, it will squeeze np_boxes, so we need to expand it here
-        if np_boxes.ndim==1:
+        if np_boxes.ndim == 1:
             np_boxes = np.expand_dims(np_boxes, axis=0)
     detect_result_list = []
-    for box, label, score in zip(np_boxes,classes,scores):
-        detect_result_list.append(DetectionResult(box=box.tolist(),class_id=label.item(),score=score.item()))
+    for box, label, score in zip(np_boxes, classes, scores):
+        detect_result_list.append(DetectionResult(box=box.tolist(), class_id=label.item(), score=score.item()))
     return detect_result_list
 
 
@@ -314,7 +322,9 @@ class D2FrcnnTracingDetector(ObjectDetector):
         detection_results = d2_predictor.predict(bgr_image_np_array)
     """
 
-    def __init__(self, path_yaml: str,
+    def __init__(
+        self,
+        path_yaml: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[List[str]] = None,
@@ -350,9 +360,9 @@ class D2FrcnnTracingDetector(ObjectDetector):
         self.resizer = InferenceResize(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
         self.d2_predictor = self._instantiate_d2_predictor()
 
-    def _instantiate_d2_predictor(self):
-        with open(self.path_weights, 'rb') as f:
-            buffer = io.BytesIO(f.read())
+    def _instantiate_d2_predictor(self) -> Any:
+        with open(self.path_weights, "rb") as file:
+            buffer = io.BytesIO(file.read())
         # Load all tensors to the original device
         return torch.jit.load(buffer)
 

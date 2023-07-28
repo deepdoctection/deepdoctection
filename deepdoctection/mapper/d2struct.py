@@ -29,11 +29,11 @@ import torch
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
+from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import wandb_available, pytorch_available, detectron2_available
+from ..utils.file_utils import detectron2_available, pytorch_available, wandb_available
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
-from ..extern.pt.nms import batched_nms
 
 if detectron2_available() and pytorch_available():
     from detectron2.structures import BoxMode

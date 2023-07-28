@@ -28,7 +28,7 @@ from deepdoctection.datasets import Pubtables1MDet, Pubtables1MStruct
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
 
 
-@mark.basic
+@mark.requires_tf_or_pt
 def test_dataset_pubtables1m_det_returns_image() -> None:
     """
     test dataset pubtables1m_det return image
@@ -45,7 +45,7 @@ def test_dataset_pubtables1m_det_returns_image() -> None:
     assert len(df_list) == 1
 
 
-@mark.basic
+@mark.requires_tf_or_pt
 def test_dataset_pubtables1m_struct_returns_image() -> None:
     """
     test dataset pubtables1m_struct return image

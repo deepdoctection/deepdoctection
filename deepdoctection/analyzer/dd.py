@@ -43,8 +43,13 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
-from ..utils.file_utils import boto3_available, pytorch_available, tensorpack_available, tf_available, \
-    detectron2_available
+from ..utils.file_utils import (
+    boto3_available,
+    detectron2_available,
+    pytorch_available,
+    tensorpack_available,
+    tf_available,
+)
 from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
@@ -61,7 +66,7 @@ if tf_available() and tensorpack_available():
 if pytorch_available():
     from torch import cuda
 
-    from ..extern.d2detect import D2FrcnnDetector
+    from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
     from ..extern.hfdetr import HFDetrDerivedDetector
 
 if boto3_available():
@@ -119,9 +124,14 @@ def _config_sanity_checks(cfg: AttrDict) -> None:
         )
 
 
-def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector"]:
-    weights = getattr(cfg.TF, mode).WEIGHTS if cfg.LIB == "TF" else \
-        (getattr(cfg.PT, mode).WEIGHTS if detectron2_available else getattr(cfg.PT, mode).WEIGHTS_TS)
+def _build_detector(
+    cfg: AttrDict, mode: str
+) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector", "D2FrcnnTracingDetector"]:
+    weights = (
+        getattr(cfg.TF, mode).WEIGHTS
+        if cfg.LIB == "TF"
+        else (getattr(cfg.PT, mode).WEIGHTS if detectron2_available() else getattr(cfg.PT, mode).WEIGHTS_TS)
+    )
     filter_categories = (
         getattr(getattr(cfg.TF, mode), "FILTER") if cfg.LIB == "TF" else getattr(getattr(cfg.PT, mode), "FILTER")
     )
@@ -136,6 +146,8 @@ def _build_detector(cfg: AttrDict, mode: str) -> Union["D2FrcnnDetector", "TPFrc
         return D2FrcnnDetector(
             config_path, weights_path, categories, device=cfg.DEVICE, filter_categories=filter_categories
         )
+    if profile.model_wrapper in ("D2FrcnnTracingDetector",):
+        return D2FrcnnTracingDetector(config_path, weights_path, categories, filter_categories=filter_categories)
     if profile.model_wrapper in ("HFDetrDerivedDetector",):
         preprocessor_config = ModelCatalog.get_full_path_preprocessor_configs(weights)
         return HFDetrDerivedDetector(

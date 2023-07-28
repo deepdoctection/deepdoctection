@@ -20,12 +20,11 @@ Module for custom NMS functions.
 """
 
 import torch
-from torchvision.ops import boxes as box_ops
+from torchvision.ops import boxes as box_ops  # type: ignore
+
 
 # Copy & paste from https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/nms.py
-def batched_nms(
-    boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float
-):
+def batched_nms(boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float) -> torch.Tensor:
     """
     Same as torchvision.ops.boxes.batched_nms, but with float().
     """
