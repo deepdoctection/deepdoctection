@@ -32,7 +32,7 @@ if transformers_available():
     from deepdoctection.mapper.hfstruct import image_to_hf_detr_training
 
 
-@mark.requires_pt
+@mark.pt_deps
 @patch("deepdoctection.mapper.hfstruct.os.path.isfile", MagicMock(return_value=True))
 def test_image_to_hf_detr_training(datapoint_image: Image, image_results: DatapointImage) -> None:
     """

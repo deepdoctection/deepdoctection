@@ -61,7 +61,7 @@ class TestD2FrcnnDetector:
     """
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.utils.file_utils.detectron2_available",MagicMock(return_value=False))
     def test_d2_does_not_build_when_d2_not_available(path_to_d2_frcnn_yaml: str,
                                                      categories: Dict[str,ObjectTypes]) -> None:
@@ -74,7 +74,7 @@ class TestD2FrcnnDetector:
             D2FrcnnDetector(path_yaml=path_to_d2_frcnn_yaml,path_weights="",categories=categories)
 
     @staticmethod
-    @mark.requires_pt
+    @mark.pt_deps
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector.set_model", MagicMock(return_value=MagicMock))
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._instantiate_d2_predictor", MagicMock())
     def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,ObjectTypes],

@@ -28,11 +28,31 @@ The code has been tested on Ubuntu 20.04. Functions not involving a GPU have als
 In many applications Tesseract is used to ocr documents. Check the [installation](https://github.com/tesseract-ocr/tesseract) 
 instruction.
 
+The following overview shows the availability of the models in conjunction with the DL framework.
+
+| Task                                          | PyTorch | Torchscript    |  Tensorflow  |
+|-----------------------------------------------|:-------:|----------------|:------------:|
+| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table transformer via Transformers            |    ✅    | ❌              |      ❌       |
+| DocTr                                         |    ✅    | ❌              |      ✅       |
+| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌              | ❌            |
+
 
 ## Install with pip
 
-We recommend using a virtual environment. You can install **deep**doctection via pip or from source. Bug fixes or 
-enhancements will be deployed to PyPi every 4 to 6 weeks.
+We recommend using a virtual environment. You can install **deep**doctection via pip or from source. 
+
+If you want to get started with a minimal setting (e.g. running the **deep**doctection analyzer with 
+default configuration or trying the 'Get started notebook'), install **deep**doctection with
+
+```
+pip install deepdoctection
+```
+
+The following installation will give you ALL models available within the Deep Learning framework as well as all models
+that are independent of Tensorflow/PyTorch. Please note, that the dependencies are very complex. We try hard to keep 
+the requirements up to date though.
 
 Depending on which Deep Learning library you have available, use the following installation option:
 

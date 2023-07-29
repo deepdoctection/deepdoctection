@@ -132,7 +132,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(text_["annotation_ids"]) == 632
 
 
-@mark.integration
+@mark.integration_additional
 def test_dd_analyzer_with_tatr() -> None:
     """
     Analyzer integration test with setting USE_OCR=False and table transformer for table detection and table recognition
@@ -162,7 +162,7 @@ def test_dd_analyzer_with_tatr() -> None:
     assert len(page.tables[0].cells) in {11, 13}  # type: ignore
 
 
-@mark.integration
+@mark.integration_additional
 def test_dd_analyzer_with_doctr() -> None:
     """
     Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True

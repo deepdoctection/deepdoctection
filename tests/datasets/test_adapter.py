@@ -33,7 +33,7 @@ if pytorch_available() and detectron2_available():
     from deepdoctection.mapper.d2struct import image_to_d2_frcnn_training
 
 
-@mark.requires_pt
+@mark.pt_deps  # pt_deps because we need Detectron2 here
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_adapter_with_cached_dataset() -> None:
     """
@@ -55,7 +55,7 @@ def test_adapter_with_cached_dataset() -> None:
     assert len(df_list) == 4
 
 
-@mark.requires_pt
+@mark.pt_deps  # pt_deps because we need Detectron2 here
 @patch("deepdoctection.mapper.tpstruct.os.path.isfile", MagicMock(return_value=True))
 def test_adapter_with_uncached_dataset() -> None:
     """

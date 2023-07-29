@@ -124,6 +124,9 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
         :return: dataflow
         """
 
+        if not lxml_available():
+            raise ModuleNotFoundError("IIITar13KBuilder.build requires lxml but it is not installed.")
+
         split = str(kwargs.get("split", "val"))
         load_image = kwargs.get("load_image", False)
         max_datapoints = kwargs.get("max_datapoints")
