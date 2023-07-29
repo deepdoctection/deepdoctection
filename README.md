@@ -33,16 +33,17 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
  - Document and token classification with all LayoutLM models provided by the Transformer library. 
    (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
-   Table detection and table structure recognition with 
-   [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
-   [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
+ - Table detection and table structure recognition with 
+   [**table-transformer**](https://github.com/microsoft/table-transformer). 
  - There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
    and a lot of new [tutorials](https://github.com/deepdoctection/notebooks/blob/main/Layoutlm_v2_on_custom_token_classification.ipynb) 
    to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3.
  - Comprehensive configuration of **analyzer** like choosing different models, output parsing, OCR selection.
    Check this [notebook](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Configuration.ipynb) or the 
    [docs](https://deepdoctection.readthedocs.io/en/latest/tutorials/analyzer_configuration_notebook/) for more infos.
-   
+ - [**new**] Document layout analysis and table recognition now runs with Torchscript (CPU) as well and Detectron2 is 
+   not required anymore for basic inference. 
+
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
 into contiguous text. You will get an output in JSON format that you can customize even further by yourself. 
@@ -109,7 +110,7 @@ HTML(page.tables[0].html)
 
 
 ```
-print(page.get_text())
+print(page.text)
 ```
 
 ![table](./docs/tutorials/_imgs/dd_rm_text.png)
@@ -142,16 +143,41 @@ images.
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
   engine has to be installed separately.
 
+The following overview shows the availability of the models in conjunction with the DL framework.
+
+| Task                                          | PyTorch | Torchscript    |  Tensorflow  |
+|-----------------------------------------------|:-------:|----------------|:------------:|
+| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table transformer via Transformers            |    ✅    | ❌              |      ❌       |
+| DocTr                                         |    ✅    | ❌              |      ✅       |
+| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌              | ❌            |
+
 
 
 ## Installation
 
-We recommend using a virtual environment. You can install the package via pip or from source. Bug fixes or enhancements
-will be deployed to PyPi every 4 to 6 weeks.
+We recommend using a virtual environment. You can install the package via pip or from source. 
 
 ### Install with pip from PyPi
 
-Depending on which Deep Learning library you have available, use the following installation option:
+#### Minimal installation 
+
+If you want to get started with a minimal setting (e.g. running the **deep**doctection analyzer with 
+default configuration or trying the 'Get started notebook'), install **deep**doctection with
+
+```
+pip install deepdoctection
+```
+
+If you want to use the Tensorflow framework, please install Tensorpack separately. Detectron2 will not be installed 
+and layout models/ table recognition models will run with Torchscript on a CPU.
+
+#### Full installation
+
+The following installation will give you ALL models available within the Deep Learning framework as well as all models
+that are independent of Tensorflow/PyTorch. Please note, that the dependencies are very complex. We try hard to keep 
+the requirements up to date though.
 
 For **Tensorflow**, run
 
@@ -214,7 +240,8 @@ to develop this framework.
 ## Problems
 
 We try hard to eliminate bugs. We also know that the code is not free of issues. We welcome all issues relevant to this
-repo and try to address them as quickly as possible.
+repo and try to address them as quickly as possible. Bug fixes or enhancements will be deployed in a new release every 4 
+to 6 weeks.
 
 ## If you like **deep**doctection ...
  

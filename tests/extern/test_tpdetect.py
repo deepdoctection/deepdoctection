@@ -71,7 +71,7 @@ class TestTPFrcnnDetector:
     """
 
     @staticmethod
-    @mark.requires_tf
+    @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
     def test_tp_frcnn_does_not_build_when_no_gpu(
         path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]
@@ -84,7 +84,7 @@ class TestTPFrcnnDetector:
             TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
 
     @staticmethod
-    @mark.requires_tf
+    @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
     def test_tp_frcnn_returns_fpn_model(path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]) -> None:
         """
@@ -97,7 +97,7 @@ class TestTPFrcnnDetector:
         assert isinstance(frcnn._model, ResNetFPNModel)  # pylint: disable=W0212
 
     @staticmethod
-    @mark.requires_tf
+    @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
     @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor._build_config", MagicMock())
     @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor.get_predictor", MagicMock())

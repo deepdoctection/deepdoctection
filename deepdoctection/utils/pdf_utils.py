@@ -29,7 +29,7 @@ from typing import Generator, List, Optional, Tuple
 
 from cv2 import IMREAD_COLOR, imread
 from numpy import uint8
-from PyPDF2 import PdfFileReader, PdfFileWriter, errors
+from PyPDF2 import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
@@ -70,7 +70,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
+def get_pdf_file_reader(path: Pathlike) -> PdfReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
@@ -88,27 +88,27 @@ def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
     with open(path, "rb") as file:
         qpdf_called = False
         try:
-            input_pdf_as_bytes = PdfFileReader(file)
+            input_pdf_as_bytes = PdfReader(file)
         except (errors.PdfReadError, AttributeError):
             _ = decrypt_pdf_document(path)
             qpdf_called = True
 
         if not qpdf_called:
-            if input_pdf_as_bytes.isEncrypted:
+            if input_pdf_as_bytes.is_encrypted:
                 is_decrypted = decrypt_pdf_document(path)
                 if not is_decrypted:
                     logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
                     sys.exit()
 
-    file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732
+    file_reader = PdfReader(open(path, "rb"))  # pylint: disable=R1732
     return file_reader
 
 
-def get_pdf_file_writer() -> PdfFileWriter:
+def get_pdf_file_writer() -> PdfWriter:
     """
-    `PdfFileWriter` instance
+    `PdfWriter` instance
     """
-    return PdfFileWriter()
+    return PdfWriter()
 
 
 class PDFStreamer:
@@ -131,16 +131,16 @@ class PDFStreamer:
         :param path: to a pdf.
         """
         self.file_reader = get_pdf_file_reader(path)
-        self.file_writer = PdfFileWriter()
+        self.file_writer = PdfWriter()
 
     def __len__(self) -> int:
-        return self.file_reader.getNumPages()
+        return len(self.file_reader.pages)
 
     def __iter__(self) -> Generator[Tuple[bytes, int], None, None]:
         for k in range(len(self)):
             buffer = BytesIO()
-            writer = PdfFileWriter()
-            writer.addPage(self.file_reader.getPage(k))
+            writer = get_pdf_file_writer()
+            writer.add_page(self.file_reader.pages[k])
             writer.write(buffer)
             yield buffer.getvalue(), k
 

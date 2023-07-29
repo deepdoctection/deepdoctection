@@ -117,15 +117,22 @@ test-build:
 test-basic:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
-test-tf:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_tf or requires_tf_or_pt" tests
+test-basic-pt: test-integration
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
-test-pt: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or requires_pt or requires_tf_or_pt" tests
+test-tf:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or tf_deps" tests
+
+test-pt: test-integration-additional
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or pt_deps" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
 test-integration:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
+
+test-integration-additional:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration_additional" tests
 
 test-gpu:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "requires_gpu" tests

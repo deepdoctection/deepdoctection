@@ -55,7 +55,7 @@ jobs:
 
       - name: Run black
         run: |
-          pip install black==22.3.0
+          pip install black==23.7.0
           make black
 
   isort:

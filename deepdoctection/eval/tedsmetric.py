@@ -150,6 +150,7 @@ class TEDS:
         """Computes TEDS score between the prediction and the ground truth of a
         given sample
         """
+
         ground_truth, pred = inputs[0], inputs[1]
         if (not pred) or (not ground_truth):
             return 0.0
