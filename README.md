@@ -33,9 +33,8 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
  - Document and token classification with all LayoutLM models provided by the Transformer library. 
    (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
-   Table detection and table structure recognition with 
-   [**table-transformer**](https://github.com/microsoft/table-transformer). You can try a pipeline using 
-   [**this script**](https://github.com/deepdoctection/deepdoctection/discussions/116).  
+ - Table detection and table structure recognition with 
+   [**table-transformer**](https://github.com/microsoft/table-transformer). 
  - There is a small dataset for token classification [available](https://huggingface.co/datasets/deepdoctection/FRFPE)
    and a lot of new [tutorials](https://github.com/deepdoctection/notebooks/blob/main/Layoutlm_v2_on_custom_token_classification.ipynb) 
    to show, how to train and evaluate this dataset using LayoutLMv1, LayoutLMv2, LayoutXLM and LayoutLMv3.
@@ -144,17 +143,14 @@ images.
 
 The following overview shows the availability of the models in conjunction with the DL framework.
 
-| Task                                          | PyTorch |  Tensorflow  |
-|-----------------------------------------------|:-------:|:------------:|
-| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (GPU only) |
-| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (GPU only) |
-| Table transformer via Transformers            |    ✅    |      ❌       |
-| DocTr                                         |    ✅    |      ✅       |
-| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌            |
-| Tesseract (DL library agnostic)               |    ✅    | ✅           |
-| Fasttext (DL library agnostic)                |    ✅    | ✅           |
-| jdeskew (DL library agnostic)                 |    ✅    | ✅           |
-| Pdfplumber (DL library agnostic)              |    ✅    | ✅           |
+| Task                                          | PyTorch | Torchscript    |  Tensorflow  |
+|-----------------------------------------------|:-------:|----------------|:------------:|
+| Layout detection via Detectron2/Tensorpack    |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table recognition via Detectron2/Tensorpack   |    ✅    | ✅ (CPU only)   | ✅ (GPU only) |
+| Table transformer via Transformers            |    ✅    | ❌              |      ❌       |
+| DocTr                                         |    ✅    | ❌              |      ✅       |
+| LayoutLM (v1, v2, v3, XLM) via Transformers   |    ✅    | ❌              | ❌            |
+
 
 
 ## Installation
@@ -163,12 +159,19 @@ We recommend using a virtual environment. You can install the package via pip or
 
 ### Install with pip from PyPi
 
+#### Minimal installation 
+
 If you want to get started with a minimal setting (e.g. running the **deep**doctection analyzer with 
 default configuration or trying the 'Get started notebook'), install **deep**doctection with
 
 ```
 pip install deepdoctection
 ```
+
+If you want to use the Tensorflow framework, please install Tensorpack separately. Detectron2 will not be installed 
+and layout models/ table recognition models will run with Torchscript on a CPU.
+
+#### Full installation
 
 The following installation will give you ALL models available within the Deep Learning framework as well as all models
 that are independent of Tensorflow/PyTorch. Please note, that the dependencies are very complex. We try hard to keep 
