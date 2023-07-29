@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/deepdoctection/deepdoctection/blob/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
   <h3 align="center">
   A Document AI Package
   </h3>
@@ -100,20 +100,20 @@ plt.axis('off')
 plt.imshow(image)
 ```
 
-![text](./docs/tutorials/_imgs/dd_rm_sample.png)
+![text](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_sample.png)
 
 ```
 HTML(page.tables[0].html)
 ```
 
-![table](./docs/tutorials/_imgs/dd_rm_table.png)
+![table](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_table.png)
 
 
 ```
 print(page.text)
 ```
 
-![table](./docs/tutorials/_imgs/dd_rm_text.png)
+![table](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_rm_text.png)
  
 
 ## Documentation
@@ -127,7 +127,7 @@ documentation.
 
 ## Requirements
 
-![requirements](./docs/tutorials/_imgs/requirements_deepdoctection.png)
+![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/requirements_deepdoctection.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 
