@@ -207,7 +207,7 @@ pip install deepdoctection
 This will ignore all model libraries (layers above the **deep**doctection layer in the diagram) and you 
 will be responsible to install them by yourself. Note, that you will not be able to run any pipeline with this setup.
 
-For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/manual/install.html).
+For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/install/).
 
 
 ### Installation from source
