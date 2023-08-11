@@ -51,7 +51,7 @@ _DEPS = [
     "mock==4.0.3",
     "networkx>=2.7.1",
     "numpy>=1.21",
-    "opencv-python==4.5.4.60",
+    "opencv-python==4.8.0.76",
     "packaging>=20.0",
     "pycocotools>=2.0.2",
     "pypdf2",
