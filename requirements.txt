@@ -51,7 +51,7 @@ numpy==1.22.3
     #   matplotlib
     #   opencv-python
     #   pycocotools
-opencv-python==4.5.4.60
+opencv-python==4.8.0.76
     # via deepdoctection (setup.py)
 packaging==21.3
     # via
