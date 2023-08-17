@@ -20,9 +20,12 @@ Methods that convert incoming data to dataflows.
 """
 
 import itertools
+import io
 import json
+import math
 import os
 from collections import defaultdict
+from pypdf import PdfWriter, PdfReader
 from typing import DefaultDict, Dict, List, Optional, Sequence, Union
 
 from jsonlines import Reader, Writer
@@ -40,13 +43,21 @@ from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
 __all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles"]
 
 
-def _reset_df_and_get_length(df: DataFlow) -> int:
-    df.reset_state()
-    try:
-        length = len(df)
-    except NotImplementedError:
-        length = 0
-    return length
+def _chunk_splits(pages_in_pdf: int, chunk_size: int, last_pdf: Optional[bool] = True) -> Dict[int, List[int]]:
+    lastInsertedPage = 1
+    pages_dict = dict()
+
+    for i in range(math.floor(pages_in_pdf / chunk_size)):
+        breakPdfPagesIndices = [lastInsertedPage, lastInsertedPage + chunk_size]
+        lastInsertedPage += chunk_size
+        pages_dict[i] = breakPdfPagesIndices
+
+    if last_pdf and pages_in_pdf % chunk_size:
+        if len(pages_dict) == 0:
+            pages_dict[0] = [lastInsertedPage, pages_in_pdf + 1]
+        else:
+            pages_dict[list(pages_dict)[-1] + 1] = [lastInsertedPage, pages_in_pdf + 1]
+    return pages_dict
 
 
 class SerializerJsonlines:
@@ -544,15 +555,55 @@ class SerializerPdfDoc:
         raise NotImplementedError
 
     @staticmethod
-    def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:
+    def split(
+        path: Pathlike,
+        path_target: Optional[Pathlike] = None,
+        max_datapoint: Optional[int] = None,
+        chunk_size: Optional[int] = None,
+    ) -> None:
         """
-        Split a document into single pages.
+        Split a document into single pages or chunks.
+        Chunk Size is in pages and includes boths boundaries.
         """
         if path_target is None:
             path_target, _ = os.path.split(path)
         if not os.path.isdir(path_target):
             raise NotADirectoryError(path)
+
         df = SerializerPdfDoc.load(path, max_datapoint)
-        for dp in df:
-            with open(os.path.join(path_target, dp["file_name"]), "wb") as page:
-                page.write(dp["pdf_bytes"])
+        new_pdf_index: int = 0
+        tmp = io.BytesIO()
+
+        if chunk_size is not None:
+            max_pdf_pages: int = 0
+            if max_datapoint is not None:
+                max_pdf_pages = len(df) if max_datapoint > len(df) else max_datapoint
+            else:
+                max_pdf_pages = len(df)
+
+            chunk_splits = _chunk_splits(max_pdf_pages, chunk_size)
+            new_pdf_files = [PdfWriter() for _ in chunk_splits]
+            output_filename: str = "" 
+
+            for idx, dp in enumerate(df, 1):
+                tmp = io.BytesIO()
+                page = PdfReader(io.BytesIO(dp['pdf_bytes']))
+                if idx in list(range(*chunk_splits[new_pdf_index])):
+                    new_pdf_files[new_pdf_index].add_page(page.pages[0])
+                else:
+                    output_filename = os.path.join(path_target, dp['file_name'])
+                    new_pdf_files[new_pdf_index].write(tmp)
+                    tmp.seek(0)
+                    with open(output_filename, 'wb') as pdf_out:
+                        new_pdf_files[new_pdf_index].write(pdf_out)
+                    new_pdf_index += 1
+                    new_pdf_files[new_pdf_index].add_page(page.pages[0])
+            tmp = io.BytesIO()
+            new_pdf_files[new_pdf_index].write(tmp)
+            tmp.seek(0)
+            with open(output_filename, "wb") as pdf_out:
+                new_pdf_files[new_pdf_index].write(pdf_out)
+        else:
+            for dp in df:
+                with open(os.path.join(path_target, dp["file_name"]), "wb") as page:
+                    page.write(dp["pdf_bytes"])
