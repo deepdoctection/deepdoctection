@@ -62,14 +62,14 @@ def _set_device_str(device: Optional[str] = None) -> str:
     return device
 
 
-def _load_model(path_weights: str, doctr_predictor: Any, device: str) -> None:
-    if pytorch_available():
+def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: str) -> None:
+    if lib == "PT" and pytorch_available():
         state_dict = torch.load(path_weights, map_location=device)
         for key in list(state_dict.keys()):
             state_dict["model." + key] = state_dict.pop(key)
         doctr_predictor.load_state_dict(state_dict)
         doctr_predictor.to(device)
-    elif tf_available():
+    elif lib == "TF" and tf_available():
         # Unzip the archive
         params_path = Path(path_weights).parent
         is_zip_path = path_weights.endswith(".zip")
@@ -173,7 +173,9 @@ class DoctrTextlineDetector(ObjectDetector):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
+        lib:str = "TF"
     ) -> None:
+        self.lib = lib
         self.name = "doctr_text_detector"
         self.architecture = architecture
         self.path_weights = path_weights

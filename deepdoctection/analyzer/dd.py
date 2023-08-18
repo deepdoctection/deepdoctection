@@ -225,7 +225,7 @@ def _build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
         raise ValueError("model profile.architecture must be specified")
     if profile.categories is None:
         raise ValueError("model profile.categories must be specified")
-    return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, cfg.DEVICE)
+    return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, cfg.DEVICE, lib=cfg.LIB)
 
 
 def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
