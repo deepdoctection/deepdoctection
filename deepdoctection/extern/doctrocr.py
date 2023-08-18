@@ -173,7 +173,7 @@ class DoctrTextlineDetector(ObjectDetector):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
-        lib:str = "TF"
+        lib: str = "TF"
     ) -> None:
         self.lib = lib
         self.name = "doctr_text_detector"
@@ -254,7 +254,8 @@ class DoctrTextRecognizer(TextRecognizer):
 
     """
 
-    def __init__(self, architecture: str, path_weights: str, device: Optional[Literal["cpu", "cuda"]] = None) -> None:
+    def __init__(self, architecture: str, path_weights: str, device: Optional[Literal["cpu", "cuda"]] = None, lib: str = "TF") -> None:
+        self.lib = lib
         self.name = "doctr_text_recognizer"
         self.architecture = architecture
         self.path_weights = path_weights
@@ -287,4 +288,4 @@ class DoctrTextRecognizer(TextRecognizer):
 
     def load_model(self) -> None:
         """Loading model weights"""
-        _load_model(self.path_weights, self.doctr_predictor, self.device)
+        _load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
