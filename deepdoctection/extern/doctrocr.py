@@ -207,14 +207,14 @@ class DoctrTextlineDetector(ObjectDetector):
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.architecture, self.path_weights, self.categories, self.device_input)
+        return self.__class__(self.architecture, self.path_weights, self.categories, self.device_input, self.lib)
 
     def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
 
     def load_model(self) -> None:
         """Loading model weights"""
-        _load_model(self.path_weights, self.doctr_predictor, self.device)
+        _load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
 
 
 class DoctrTextRecognizer(TextRecognizer):
@@ -284,7 +284,7 @@ class DoctrTextRecognizer(TextRecognizer):
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.architecture, self.path_weights, self.device_input)
+        return self.__class__(self.architecture, self.path_weights, self.device_input, self.lib)
 
     def load_model(self) -> None:
         """Loading model weights"""
