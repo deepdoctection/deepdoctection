@@ -206,7 +206,7 @@ def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer
         profile = ModelCatalog.get_profile(weights)
         if profile.architecture is None:
             raise ValueError("model profile.architecture must be specified")
-        return DoctrTextRecognizer(profile.architecture, weights_path, cfg.DEVICE)
+        return DoctrTextRecognizer(profile.architecture, weights_path, cfg.DEVICE, lib=cfg.LIB)
     if cfg.OCR.USE_TEXTRACT:
         credentials_kwargs = {
             "aws_access_key_id": environ.get("ACCESS_KEY"),
@@ -225,7 +225,7 @@ def _build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
         raise ValueError("model profile.architecture must be specified")
     if profile.categories is None:
         raise ValueError("model profile.categories must be specified")
-    return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, cfg.DEVICE)
+    return DoctrTextlineDetector(profile.architecture, weights_path, profile.categories, cfg.DEVICE, lib=cfg.LIB)
 
 
 def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
