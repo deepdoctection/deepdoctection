@@ -36,7 +36,7 @@ from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.cell import DetectResultGenerator, SubImageLayoutService
-from ..pipe.common import MatchingService, PageParsingService
+from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
@@ -241,6 +241,17 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         d_layout = _build_detector(cfg, "LAYOUT")
         layout = _build_service(d_layout, cfg, "LAYOUT")
         pipe_component_list.append(layout)
+
+    # setup layout nms service
+    if cfg.LAYOUT_NMS_PAIRS.COMBINATIONS and cfg.USE_LAYOUT:
+        if not isinstance(cfg.LAYOUT_NMS_PAIRS.COMBINATIONS, list) and not isinstance(
+            cfg.LAYOUT_NMS_PAIRS.COMBINATIONS[0], list
+        ):
+            raise ValueError("LAYOUT_NMS_PAIRS mus be a list of lists")
+        layout_nms_serivce = AnnotationNmsService(
+            cfg.LAYOUT_NMS_PAIRS.COMBINATIONS, cfg.LAYOUT_NMS_PAIRS.THRESHOLDS, cfg.LAYOUT_NMS_PAIRS.PRIORITY
+        )
+        pipe_component_list.append(layout_nms_serivce)
 
     # setup tables service
     if cfg.USE_TABLE_SEGMENTATION:
