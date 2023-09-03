@@ -267,8 +267,8 @@ def fastrcnn_2fc_head(feature, cfg):
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
     init = tfv1.variance_scaling_initializer()
-    hidden = FullyConnected("fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu)
-    hidden = FullyConnected("fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu)
+    hidden = FullyConnected("fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu)   # pylint: disable=E1124
+    hidden = FullyConnected("fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu)    # pylint: disable=E1124
     return hidden
 
 
@@ -298,7 +298,7 @@ def fastrcnn_Xconv1fc_head(feature, num_convs, norm=None, **kwargs):  # pylint: 
             l = Conv2D(f"conv{k}", l, cfg.FPN.FRCNN_CONV_HEAD_DIM, 3, activation=tf.nn.relu)
             if norm is not None:
                 l = GroupNorm(f"gn{k}", l)
-        l = FullyConnected(
+        l = FullyConnected(  # pylint: disable=E1124
             "fc",
             l,
             cfg.FPN.FRCNN_FC_HEAD_DIM,
