@@ -165,7 +165,7 @@ def resnet_shortcut(l, n_out, stride, activation=tf.identity):
     """
     n_in = l.shape[1]
     if n_in != n_out:  # change dimension when channel is not the same
-        return Conv2D("convshortcut", l, n_out, 1, strides=stride, activation=activation)
+        return Conv2D("convshortcut", l, n_out, 1, strides=stride, activation=activation)  # pylint: disable=E1124
     return l
 
 
@@ -181,12 +181,12 @@ def resnet_bottleneck(l, ch_out, stride, cfg):
     """
     shortcut = l
 
-    l = Conv2D("conv1", l, ch_out, 1, strides=1)
+    l = Conv2D("conv1", l, ch_out, 1, strides=1)  # pylint: disable=E1124
     if stride == 2:
         l = tf.pad(l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)])
-        l = Conv2D("conv2", l, ch_out, 3, strides=2, padding="VALID")
+        l = Conv2D("conv2", l, ch_out, 3, strides=2, padding="VALID")  # pylint: disable=E1124
     else:
-        l = Conv2D("conv2", l, ch_out, 3, strides=stride)
+        l = Conv2D("conv2", l, ch_out, 3, strides=stride)  # pylint: disable=E1124
     if cfg.BACKBONE.NORM != "None":
         l = Conv2D("conv3", l, ch_out * 4, 1, activation=get_norm(cfg, zero_init=True))
     else:
@@ -263,9 +263,9 @@ def resnet_fpn_backbone(image, cfg):
             ),
         )
         l.set_shape([None, chan, None, None])
-        l = Conv2D("conv0", l, 64, 7, strides=2, padding="VALID")
+        l = Conv2D("conv0", l, 64, 7, strides=2, padding="VALID")  # pylint: disable=E1124
         l = tf.pad(l, [[0, 0], [0, 0], maybe_reverse_pad(cfg, 0, 1), maybe_reverse_pad(cfg, 0, 1)])
-        l = MaxPooling("pool0", l, 3, strides=2, padding="VALID")
+        l = MaxPooling("pool0", l, 3, strides=2, padding="VALID")  # pylint: disable=E1124
 
     bottleneck = resnet_bottleneck if cfg.BACKBONE.BOTTLENECK == "resnet" else resnext32x4d_bottleneck
     with backbone_scope(cfg=cfg, freeze=freeze_at > 1):

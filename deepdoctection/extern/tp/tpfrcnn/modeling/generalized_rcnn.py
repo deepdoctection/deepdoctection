@@ -98,14 +98,14 @@ class GeneralizedRCNN(ModelDescWithConfig):
 
         image = self.preprocess(inputs["image"])  # 1CHW
 
-        features = self.backbone(image)
+        features = self.backbone(image)  # pylint: disable=E1101
         anchor_inputs = {k: v for k, v in inputs.items() if k.startswith("anchor_")}
-        proposals, rpn_losses = self.rpn(image, features, anchor_inputs)
+        proposals, rpn_losses = self.rpn(image, features, anchor_inputs)  # pylint: disable=E1101
 
         targets = [inputs[k] for k in ["gt_boxes", "gt_labels", "gt_masks"] if k in inputs]
         gt_boxes_area = tf.reduce_mean(tf_area(inputs["gt_boxes"]), name="mean_gt_box_area")
         add_moving_summary(gt_boxes_area)
-        head_losses = self.roi_heads(image, features, proposals, targets)
+        head_losses = self.roi_heads(image, features, proposals, targets)  # pylint: disable=E1101
 
         if self.training:
             wd_cost = regularize_cost(".*/W", l2_regularizer(self.cfg.TRAIN.WEIGHT_DECAY), name="wd_cost")
