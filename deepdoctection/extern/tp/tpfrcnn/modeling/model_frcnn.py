@@ -267,8 +267,10 @@ def fastrcnn_2fc_head(feature, cfg):
 
     dim = cfg.FPN.FRCNN_FC_HEAD_DIM
     init = tfv1.variance_scaling_initializer()
-    hidden = FullyConnected("fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu)   # pylint: disable=E1124
-    hidden = FullyConnected("fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu)    # pylint: disable=E1124
+    hidden = FullyConnected(
+        "fc6", feature, dim, kernel_initializer=init, activation=tf.nn.relu
+    )  # pylint: disable=E1124
+    hidden = FullyConnected("fc7", hidden, dim, kernel_initializer=init, activation=tf.nn.relu)  # pylint: disable=E1124
     return hidden
 
 
