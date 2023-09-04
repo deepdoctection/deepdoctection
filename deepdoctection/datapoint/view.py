@@ -415,6 +415,17 @@ class Page(Image):
     text_container: ObjectTypes
     floating_text_block_categories: List[ObjectTypes]
     image_orig: Image
+    _attribute_names: Set[str] = {
+        "text",
+        "chunks",
+        "tables",
+        "layouts",
+        "words",
+        "file_name",
+        "location",
+        "document_id",
+        "page_number",
+    }
 
     @no_type_check
     def get_annotation(
@@ -744,24 +755,32 @@ class Page(Image):
             return img
         return None
 
-    @staticmethod
-    def get_attribute_names() -> Set[str]:
+    @classmethod
+    def get_attribute_names(cls) -> Set[str]:
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union(
-            {
-                "text",
-                "chunks",
-                "tables",
-                "layouts",
-                "words",
-                "file_name",
-                "location",
-                "document_id",
-                "page_number",
-            }
-        )
+        return set(PageType).union(cls._attribute_names)
+
+    @classmethod
+    def add_attribute_name(cls, attribute_name: Union[str, ObjectTypes]) -> None:
+        """
+        Adding a custom attribute name to a Page class.
+
+                **Example:**
+
+                Page.add_attribute_name("foo")
+
+                page = Page.from_image(...)
+                print(page.foo)
+
+        Note, that the attribute must be registered as a valid `ObjectTypes`
+
+        :param attribute_name: attribute name to add
+        """
+
+        attribute_name = get_type(attribute_name)
+        cls._attribute_names.add(attribute_name.value)
 
     def save(
         self,
