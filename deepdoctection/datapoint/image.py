@@ -626,8 +626,8 @@ class Image:
             self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()
         export_dict["location"] = str(export_dict["location"])
-        if image_to_json and self.image is not None:
-            export_dict["_image"] = convert_np_array_to_b64(self.image)
+        if not image_to_json:
+            export_dict["_image"] = None
         if dry:
             return export_dict
         with open(path_json, "w", encoding="UTF-8") as file:
