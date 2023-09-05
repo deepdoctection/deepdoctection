@@ -313,6 +313,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         )
         pipe_component_list.append(text)
 
+    if cfg.USE_PDF_MINER or cfg.USE_OCR:
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
             child_categories=LayoutType.word,
