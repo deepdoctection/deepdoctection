@@ -165,6 +165,9 @@ class WordType(ObjectTypes):
     tag = "tag"
     token_tag = "token_tag"
     text_line = "text_line"
+    character_type = "character_type"
+    printed = "printed"
+    handwritten = "handwritten"
 
 
 @object_types_registry.register("TokenClasses")
