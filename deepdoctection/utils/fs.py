@@ -90,7 +90,7 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
     f_path = os.path.join(directory, file_name)
 
     if os.path.isfile(f_path):
-        if expect_size is not None and os.stat(f_path).st_size == expect_size:
+        if (expect_size is not None and os.stat(f_path).st_size == expect_size) or expect_size is None:
             logger.info("File %s exists! Skip download.", file_name)
             return f_path
         logger.warning("File %s exists. Will overwrite with a new download!", file_name)
@@ -163,12 +163,13 @@ def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -
     return image
 
 
-def load_bytes_from_pdf_file(path: Pathlike) -> bytes:
+def load_bytes_from_pdf_file(path: Pathlike, page_number: int = 0) -> bytes:
     """
     Loads a pdf file with one single page and passes back a bytes' representation of this file. Can be converted into
     a numpy or directly passed to the attr: image of Image.
 
     :param path: A path to a pdf file. If more pages are available, it will take the first page.
+    :param page_number: If a document has less than page_number it will raise an `IndexError`
     :return: A bytes' representation of the file, width and height
     """
 
@@ -177,7 +178,7 @@ def load_bytes_from_pdf_file(path: Pathlike) -> bytes:
     file_reader = get_pdf_file_reader(path)
     buffer = BytesIO()
     writer = get_pdf_file_writer()
-    writer.addPage(file_reader.getPage(0))
+    writer.add_page(file_reader.pages[page_number])
     writer.write(buffer)
     return buffer.getvalue()
 
