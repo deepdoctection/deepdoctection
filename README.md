@@ -134,7 +134,7 @@ separately.
 
 - Linux or macOS. (Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >= 3.8
-- 1.8 <= PyTorch < 2.0 **or** Tensorflow >= 2.9 and CUDA. If you want to run the models provided by Tensorpack a GPU is
+- 1.12 <= PyTorch < 2.0 **or** Tensorflow >= 2.9 and CUDA. If you want to run the models provided by Tensorpack a GPU is
   required. You can run on PyTorch with a CPU only.
 - **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
 images. 
