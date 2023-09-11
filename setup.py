@@ -58,7 +58,6 @@ _DEPS = [
     "python-prctl",
     "pyyaml==6.0",
     "pyzmq>=16",
-    "rapidfuzz>=1.6.0,<3.0",  # we need this requirement for Doctr as long they have not fixed #1186 for v.0.6.0
     "termcolor>=1.1",
     "tabulate>=0.7.7",
     "tqdm==4.64.0",
@@ -81,7 +80,7 @@ _DEPS = [
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
-    "python-doctr==0.6.0",
+    "python-doctr==0.7.0",
     "fasttext",
     # dev dependencies
     "click",  # version will not break black
@@ -142,12 +141,10 @@ additional_deps = deps_list(
 )
 
 # Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
-tf_deps = deps_list(
-    "tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "rapidfuzz", "pycocotools"
-)
+tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "python-doctr", "rapidfuzz")
+pt_deps = deps_list("timm", "transformers", "python-doctr")
 source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
 
 # Putting all together
