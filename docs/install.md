@@ -11,7 +11,7 @@ by the user.
 - Linux **or** macOS. (Windows is not supported but there is [Dockerfile](../docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >=  3.8
 - [Poppler](https://poppler.freedesktop.org/)
-- 1.8 <= PyTorch < 2.0 **or** Tensorflow >=2.9 and CUDA
+- 1.12 <= PyTorch < 2.0 **or** Tensorflow >=2.11 and CUDA (it does seem to work on CPU starting from TF 2.13 onwards ..)
 
 With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).
