@@ -79,6 +79,7 @@ def _paste_mask(box, mask, shape, mrcnn_accurate_paste):
 
     # rounding errors could happen here, because masks were not originally computed for this shape.
     # but it's hard to do better, because the network does not know the "original" scale
+
     mask = (cv2.resize(mask, (w, h)) > 0.5).astype("uint8")
     ret = np.zeros(shape, dtype="uint8")
     ret[y_0 : y_1 + 1, x_0 : x_1 + 1] = mask

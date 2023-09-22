@@ -23,7 +23,6 @@ simplify consumption
 from copy import copy
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
 
-import cv2
 import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
@@ -39,7 +38,7 @@ from ..utils.settings import (
     WordType,
     get_type,
 )
-from ..utils.viz import draw_boxes, interactive_imshow
+from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
 from .box import BoundingBox
 from .image import Image
@@ -745,7 +744,9 @@ class Page(Image):
                     )
                 else:
                     img = draw_boxes(self.image, boxes, category_names_list)
-                img = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
+                scale_fx, scale_fy = 1.3, 1.3
+                scaled_width, scaled_height = int(self.width * scale_fx), int(self.height * scale_fy)
+                img = viz_handler.resize(img,scaled_width, scaled_height,"VIZ")
             else:
                 img = self.image
 

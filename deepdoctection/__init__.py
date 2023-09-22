@@ -382,6 +382,7 @@ _IMPORT_STRUCTURE = {
         "draw_text",
         "draw_boxes",
         "interactive_imshow",
+        "viz_handler"
     ],
 }
 
@@ -406,6 +407,7 @@ if tf_available():
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703
             pass
+
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

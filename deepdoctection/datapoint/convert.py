@@ -25,7 +25,6 @@ from io import BytesIO
 from shutil import which
 from typing import Any, Optional, Union, no_type_check
 
-import cv2
 import numpy as np
 from numpy import uint8
 from numpy.typing import NDArray
@@ -34,6 +33,7 @@ from PyPDF2 import PdfReader
 from ..utils.detection_types import ImageType
 from ..utils.develop import deprecated
 from ..utils.pdf_utils import pdf_to_np_array
+from ..utils.viz import viz_handler
 
 __all__ = [
     "convert_b64_to_np_array",
@@ -81,9 +81,8 @@ def convert_b64_to_np_array(image: str) -> ImageType:
     :param image: An image as base64 string.
     :return: numpy array.
     """
-    np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
-    np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
-    return np_array.astype(uint8)
+
+    return viz_handler.convert_b64_to_np(image).astype(uint8)
 
 
 def convert_np_array_to_b64(np_image: ImageType) -> str:
@@ -93,9 +92,7 @@ def convert_np_array_to_b64(np_image: ImageType) -> str:
     :param np_image: An image as numpy array.
     :return: An image as base64 string.
     """
-    np_encode = cv2.imencode(".png", np_image)
-    image = base64.b64encode(np_encode[1]).decode("utf-8")  # type: ignore
-    return image
+    return viz_handler.convert_np_to_b64(np_image)
 
 
 @no_type_check
@@ -106,10 +103,7 @@ def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
     :param np_image: An image as numpy array.
     :return: An image as base64 bytes.
     """
-    np_encode = cv2.imencode(".png", np_image)
-    b_image = np_encode[1].tobytes()
-    return b_image
-
+    return viz_handler.encode(np_image)
 
 @deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
 def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:

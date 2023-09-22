@@ -28,13 +28,12 @@ from pathlib import Path
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
-from cv2 import IMREAD_COLOR, imread
-
 from .detection_types import ImageType, JsonDict, Pathlike
 from .logger import logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .tqdm import get_tqdm
 from .utils import FileExtensionError, is_file_extension
+from .viz import viz_handler
 
 __all__ = [
     "load_image_from_file",
@@ -156,7 +155,7 @@ def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -
             with open(path, "rb") as file:
                 image = b64encode(file.read()).decode("utf-8")
         else:
-            image = imread(path, IMREAD_COLOR)
+            image = viz_handler.read_image(path)
     except (FileNotFoundError, ValueError):
         logger.info("file not found or value error: %s", path)
 
