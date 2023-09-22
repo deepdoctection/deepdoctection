@@ -29,10 +29,10 @@ from time import perf_counter as timer
 from typing import Any, Generator, Iterator, Optional, Tuple, Union
 
 import numpy as np
-from cv2 import imwrite
 
 from .detection_types import ImageType
 from .logger import logger
+from .viz import viz_handler
 
 __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
 
@@ -89,7 +89,7 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
                 return
             if isinstance(image, (np.ndarray, np.generic)):
                 input_file_name = file.name + ".PNG"
-                imwrite(input_file_name, image)
+                viz_handler.write_image(input_file_name,image)
                 yield file.name, input_file_name
             if isinstance(image, bytes):
                 input_file_name = file.name

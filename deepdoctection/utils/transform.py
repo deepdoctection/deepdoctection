@@ -24,12 +24,12 @@ of coordinates. Most have the ideas have been taken from
 from abc import ABC, abstractmethod
 from typing import Literal, Optional, Union
 
-import cv2
 import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
 from .detection_types import ImageType
+from .viz import viz_handler
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform"]
 
@@ -61,15 +61,15 @@ class ResizeTransform(BaseTransform):
         w: Union[int, float],
         new_h: Union[int, float],
         new_w: Union[int, float],
-        interp: Union[str, int],
+        interp: str
     ):
         """
         :param h: height
         :param w: width
         :param new_h: target height
         :param new_w: target width
-        :param interp: cv2 interpolation method like cv2.INTER_NEAREST, cv2.INTER_LINEAR,
-                       cv2.INTER_AREA
+        :param interp: interpolation method, that depends on the image processing library. Currently, it supports NEAREST,
+          BOX, BILINEAR, BICUBIC and VIZ for PIL or INTER_NEAREST, INTER_LINEAR, INTER_AREA or VIZ for OpenCV
         """
         self.h = h
         self.w = w
@@ -79,7 +79,7 @@ class ResizeTransform(BaseTransform):
 
     def apply_image(self, img: ImageType) -> ImageType:
         assert img.shape[:2] == (self.h, self.w)
-        ret = cv2.resize(img, (self.new_w, self.new_h), interpolation=self.interp)  # type: ignore
+        ret = viz_handler.resize(img, self.new_w, self.new_w, self.interp)
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret
@@ -97,7 +97,7 @@ class InferenceResize:
     the inference version of `extern.tp.frcnn.common.CustomResize` .
     """
 
-    def __init__(self, short_edge_length: int, max_size: int, interp: int = cv2.INTER_LINEAR) -> None:
+    def __init__(self, short_edge_length: int, max_size: int, interp: str = "VIZ") -> None:
         """
         :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
         :param max_size: maximum allowed longest edge length.

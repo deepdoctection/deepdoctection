@@ -27,7 +27,6 @@ from io import BytesIO
 from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
-from cv2 import IMREAD_COLOR, imread
 from numpy import uint8
 from PyPDF2 import PdfReader, PdfWriter, errors
 
@@ -36,6 +35,7 @@ from .detection_types import ImageType, Pathlike
 from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import logger
 from .utils import FileExtensionError, is_file_extension
+from .viz import viz_handler
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
@@ -215,6 +215,6 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dp
 
     with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
         _run_poppler(_input_to_cli_str(input_file_name, tmp_name, dpi, size))
-        image = imread(tmp_name + "-1.png", IMREAD_COLOR)
+        image = viz_handler.read_image(tmp_name + "-1.png")
 
     return image.astype(uint8)
