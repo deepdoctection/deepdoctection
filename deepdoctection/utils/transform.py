@@ -61,7 +61,7 @@ class ResizeTransform(BaseTransform):
         w: Union[int, float],
         new_h: Union[int, float],
         new_w: Union[int, float],
-        interp: str
+        interp: str,
     ):
         """
         :param h: height
@@ -79,7 +79,7 @@ class ResizeTransform(BaseTransform):
 
     def apply_image(self, img: ImageType) -> ImageType:
         assert img.shape[:2] == (self.h, self.w)
-        ret = viz_handler.resize(img, self.new_w, self.new_w, self.interp)
+        ret = viz_handler.resize(img, self.new_w, self.new_h, self.interp)
         if img.ndim == 3 and ret.ndim == 2:
             ret = ret[:, :, np.newaxis]
         return ret

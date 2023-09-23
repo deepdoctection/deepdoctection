@@ -25,11 +25,11 @@ and
 <https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
 """
 
-from io import BytesIO
 import base64
 import os
 import sys
-from typing import List, Optional, Tuple, no_type_check, Sequence, Any
+from io import BytesIO
+from typing import Any, List, Optional, Sequence, Tuple, no_type_check, Dict
 
 import numpy as np
 import numpy.typing as npt
@@ -194,7 +194,6 @@ def random_color(rgb: bool = True, maximum: int = 255) -> Tuple[int, int, int]:
     return tuple(int(x) for x in ret)  # type: ignore
 
 
-
 def draw_boxes(
     np_image: ImageType,
     boxes: npt.NDArray[float32],
@@ -250,21 +249,18 @@ def draw_boxes(
             if choose_color is None:
                 choose_color = random_color()
             if category_names_list[i] is not None:
-                np_image = viz_handler.draw_text(np_image,
-                                                 (box[0], box[1]) ,
-                                                 category_names_list[i],
-                                                 color=choose_color, font_scale=font_scale)
-            np_image= viz_handler.draw_rectangle(np_image,
-                                                 (box[0],box[1],box[2],box[3]),
-                                                 choose_color,
-                                                 rectangle_thickness)
+                np_image = viz_handler.draw_text(
+                    np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
+                )
+            np_image = viz_handler.draw_rectangle(
+                np_image, (box[0], box[1], box[2], box[3]), choose_color, rectangle_thickness
+            )
 
     # draw a (very ugly) color palette
     y_0 = np_image.shape[0]
     for category, col in category_to_color.items():
         if category is not None:
-            viz_handler.draw_text(np_image, (np_image.shape[1], y_0), category, color=col,
-                                  font_scale=font_scale)
+            viz_handler.draw_text(np_image, (np_image.shape[1], y_0), category, color=col, font_scale=font_scale)
             _, text_h = viz_handler.get_text_size(category, 2)
             y_0 = y_0 - int(10 * text_h)
 
@@ -289,31 +285,37 @@ class VizPackageHandler:
     image files), which can lead to a bottleneck during training, especially if the loading is not parallelized
     """
 
-    PACKAGE_FUNCS = {"cv2": {"read_image": "_cv2_read_image",
-                             "write_image": "_cv2_write_image",
-                             "convert_np_to_b64": "_cv2_convert_np_to_b64",
-                             "convert_b64_to_np": "_cv2_convert_b64_to_np",
-                             "resize": "_cv2_resize",
-                             "get_text_size": "_cv2_get_text_size",
-                             "draw_rectangle": "_cv2_draw_rectangle",
-                             "draw_text": "_cv2_draw_text",
-                             "interactive_imshow": "_cv2_interactive_imshow",
-                             "encode": "_cv2_encode"},
-                     "pillow": {"read_image": "_pillow_read_image",
-                                "write_image": "_pillow_write_image",
-                                "convert_np_to_b64": "_pillow_convert_np_to_b64",
-                                "convert_b64_to_np": "_pillow_convert_b64_to_np",
-                                "resize": "_pillow_resize",
-                                "get_text_size": "_pillow_get_text_size",
-                                "draw_rectangle": "_pillow_draw_rectangle",
-                                "draw_text": "_pillow_draw_text",
-                                "interactive_imshow": "_pillow_interactive_imshow",
-                                "encode": "_pillow_encode"}}
+    PACKAGE_FUNCS = {
+        "cv2": {
+            "read_image": "_cv2_read_image",
+            "write_image": "_cv2_write_image",
+            "convert_np_to_b64": "_cv2_convert_np_to_b64",
+            "convert_b64_to_np": "_cv2_convert_b64_to_np",
+            "resize": "_cv2_resize",
+            "get_text_size": "_cv2_get_text_size",
+            "draw_rectangle": "_cv2_draw_rectangle",
+            "draw_text": "_cv2_draw_text",
+            "interactive_imshow": "_cv2_interactive_imshow",
+            "encode": "_cv2_encode",
+        },
+        "pillow": {
+            "read_image": "_pillow_read_image",
+            "write_image": "_pillow_write_image",
+            "convert_np_to_b64": "_pillow_convert_np_to_b64",
+            "convert_b64_to_np": "_pillow_convert_b64_to_np",
+            "resize": "_pillow_resize",
+            "get_text_size": "_pillow_get_text_size",
+            "draw_rectangle": "_pillow_draw_rectangle",
+            "draw_text": "_pillow_draw_text",
+            "interactive_imshow": "_pillow_interactive_imshow",
+            "encode": "_pillow_encode",
+        },
+    }
 
     def __init__(self) -> None:
         """Selecting the image processing library and fonts"""
         package = self._select_package()
-        self.pkg_func_dict = {}
+        self.pkg_func_dict: Dict[str,str] = {}
         self.font = None
         self._set_vars(package)
 
@@ -326,7 +328,7 @@ class VizPackageHandler:
         :return: either 'pillow' or 'cv2'
         """
         if os.environ.get("USE_OPENCV") is not None:
-            requirements =  get_opencv_requirement()
+            requirements = get_opencv_requirement()
             if not requirements[1]:
                 raise ImportError(requirements[2])
             return "cv2"
@@ -340,25 +342,35 @@ class VizPackageHandler:
             raise ImportError(requirements[2])
         return "cv2"
 
-    def _set_vars(self, package):
-        self.pkg_func_dict=self.PACKAGE_FUNCS[package]
+    def _set_vars(self, package) -> None:
+        self.pkg_func_dict = self.PACKAGE_FUNCS[package]
         if package == "pillow":
             image = Image.fromarray(np.uint8(np.ones((1, 1, 3))))
             self.font = ImageDraw.ImageDraw(image).getfont()
         else:
-            self.font = cv2.FONT_HERSHEY_SIMPLEX
+            self.font = cv2.FONT_HERSHEY_SIMPLEX  # type: ignore
 
     def refresh(self) -> None:
+        """
+        Refresh the viz_handler setting. Useful if you change the env variable on run time and want to take account of
+        the changes.
+
+        **Example**
+
+           os.env["USE_OPENCV"]="True"
+           viz_handler.refresh()             # this will reset the original config and now use OpenCV
+
+        :return:
+        """
         package = self._select_package()
         self._set_vars(package)
-
 
     def read_image(self, path: str) -> ImageType:
         """Reading an image from file and returning a np.array
 
         :param path: Use /path/to/dir/file_name.[suffix]
         """
-        return getattr(self,self.pkg_func_dict["read_image"])(path)
+        return getattr(self, self.pkg_func_dict["read_image"])(path)
 
     @staticmethod
     def _cv2_read_image(path: str) -> ImageType:
@@ -370,7 +382,7 @@ class VizPackageHandler:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
-    def write_image(self, path: str, image: ImageType)->None:
+    def write_image(self, path: str, image: ImageType) -> None:
         """Writing an image as np.array to a file.
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -379,7 +391,7 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["write_image"])(path, image)
 
     @staticmethod
-    def _cv2_write_image(path: str, image: ImageType) ->None:
+    def _cv2_write_image(path: str, image: ImageType) -> None:
         cv2.imwrite(path, image)
 
     @staticmethod
@@ -387,7 +399,7 @@ class VizPackageHandler:
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
         pil_image.save(path)
 
-    def encode(self, np_image: ImageType)-> bytes:
+    def encode(self, np_image: ImageType) -> bytes:
         """Converting an image as np.array into a b64 representation
 
         :param np_image: Image as np.array
@@ -395,13 +407,13 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["encode"])(np_image)
 
     @staticmethod
-    def _cv2_encode(np_image: ImageType)-> bytes:
+    def _cv2_encode(np_image: ImageType) -> bytes:
         np_encode = cv2.imencode(".png", np_image)
         b_image = np_encode[1].tobytes()
         return b_image
 
     @staticmethod
-    def _pillow_encode(np_image: ImageType)-> bytes:
+    def _pillow_encode(np_image: ImageType) -> bytes:
         buffered = BytesIO()
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.save(buffered, format="PNG")
@@ -466,27 +478,28 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_resize(image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
-        intpol_method_dict = { "INTER_NEAREST": cv2.INTER_NEAREST,
-                               "INTER_LINEAR": cv2.INTER_LINEAR,
-                               "INTER_AREA": cv2.INTER_AREA,
-                               "VIZ": cv2.INTER_LINEAR}
+        intpol_method_dict = {
+            "INTER_NEAREST": cv2.INTER_NEAREST,
+            "INTER_LINEAR": cv2.INTER_LINEAR,
+            "INTER_AREA": cv2.INTER_AREA,
+            "VIZ": cv2.INTER_LINEAR,
+        }
         return cv2.resize(image, (width, height), interpolation=intpol_method_dict[interpolation])
 
     @staticmethod
     def _pillow_resize(image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
-
-        intpol_method_dict = { "NEAREST": Image.Resampling.NEAREST,
-                               "BOX": Image.Resampling.BOX,
-                               "BILINEAR": Image.Resampling.BILINEAR,
-                               "BICUBIC": Image.Resampling.BICUBIC,
-                               "VIZ": Image.Resampling.BILINEAR}
+        intpol_method_dict = {
+            "NEAREST": Image.Resampling.NEAREST,
+            "BOX": Image.Resampling.BOX,
+            "BILINEAR": Image.Resampling.BILINEAR,
+            "BICUBIC": Image.Resampling.BICUBIC,
+            "VIZ": Image.Resampling.BILINEAR,
+        }
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
-        pil_image_resized =pil_image.resize(size=(width, height),
-                                            resample=intpol_method_dict[interpolation],
-                                            box=None,
-                                            reducing_gap=None)
+        pil_image_resized = pil_image.resize(
+            size=(width, height), resample=intpol_method_dict[interpolation], box=None, reducing_gap=None
+        )
         return np.array(pil_image_resized)[:, :, ::-1]
-
 
     def get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:
         """
@@ -497,19 +510,17 @@ class VizPackageHandler:
         """
         return getattr(self, self.pkg_func_dict["get_text_size"])(text, font_scale)
 
-
     def _cv2_get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:
-        ((width, height), _) = cv2.getTextSize(text, self.font, font_scale, 1)
+        ((width, height), _) = cv2.getTextSize(text, self.font, font_scale, 1)  # type: ignore
         return width, height
 
-    def _pillow_get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:  #pylint: disable=W0613
-        _,_, width, height = self.font.getbbox(text)
+    def _pillow_get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:  # pylint: disable=W0613
+        _, _, width, height = self.font.getbbox(text)  # type: ignore
         return width, height
 
-    def draw_rectangle(self, np_image: ImageType,
-                       box:  Tuple[Any, Any, Any, Any],
-                       color: Tuple[int, int, int],
-                       thickness: int)-> ImageType:
+    def draw_rectangle(
+        self, np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Tuple[int, int, int], thickness: int
+    ) -> ImageType:
         """
         Drawing a rectangle into an image with a given color (b,g,r) and given thickness
 
@@ -522,25 +533,25 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["draw_rectangle"])(np_image, box, color, thickness)
 
     @staticmethod
-    def _cv2_draw_rectangle(np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int) \
-            -> ImageType:
+    def _cv2_draw_rectangle(
+        np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+    ) -> ImageType:
         cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=thickness)
         return np_image
 
     @staticmethod
-    def _pillow_draw_rectangle(np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int],
-                               thickness: int)-> ImageType:
+    def _pillow_draw_rectangle(
+        np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+    ) -> ImageType:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         draw = ImageDraw.Draw(pil_image)
-        draw.rectangle(box,outline=color,width=thickness)  # type: ignore
-        np_image= np.array(pil_image)[:, :, ::-1]
+        draw.rectangle(box, outline=color, width=thickness)  # type: ignore
+        np_image = np.array(pil_image)[:, :, ::-1]
         return np_image
 
-    def draw_text(self, np_image: ImageType,
-                  pos: Tuple[Any, Any],
-                  text: str,
-                  color: Tuple[int, int, int],
-                  font_scale: float)-> ImageType:
+    def draw_text(
+        self, np_image: ImageType, pos: Tuple[Any, Any], text: str, color: Tuple[int, int, int], font_scale: float
+    ) -> ImageType:
         """
         Drawing a text into a numpy image. The result will differ between PIL and CV2 (and will not look that good when
         using PIL).
@@ -554,11 +565,9 @@ class VizPackageHandler:
         """
         return getattr(self, self.pkg_func_dict["draw_text"])(np_image, pos, text, color, font_scale)
 
-    def _cv2_draw_text(self, np_image: ImageType,
-                       pos: Tuple[Any, Any],
-                       text: str,
-                       color: Tuple[int, int, int],
-                       font_scale: float)-> ImageType:
+    def _cv2_draw_text(
+        self, np_image: ImageType, pos: Tuple[Any, Any], text: str, color: Tuple[int, int, int], font_scale: float
+    ) -> ImageType:
         """
         Draw text on an image.
 
@@ -582,33 +591,35 @@ class VizPackageHandler:
             y_0 = int(1.15 * text_h)
         back_top_left = x_0, y_0 - int(1.3 * text_h)
         back_bottom_right = x_0 + text_w, y_0
-        np_image = self.draw_rectangle(np_image, (
-        back_top_left[0], back_top_left[1], back_bottom_right[0], back_bottom_right[1]), color, 1)
+        np_image = self.draw_rectangle(
+            np_image, (back_top_left[0], back_top_left[1], back_bottom_right[0], back_bottom_right[1]), color, 1
+        )
         # Show text.
         text_bottomleft = x_0, y_0 - int(0.25 * text_h)
-        cv2.putText(np_image, text, text_bottomleft, font, font_scale, (0, 0, 0), thickness=1,
-                    lineType=cv2.LINE_AA)
+        cv2.putText(np_image, text, text_bottomleft, font, font_scale, (0, 0, 0), thickness=1, lineType=cv2.LINE_AA)
         return np_image
 
     @staticmethod
-    def _pillow_draw_text(np_image: ImageType,
-                          pos: Tuple[Any, Any],
-                          text: str,
-                          color: Tuple[int, int, int], #pylint: disable=W0613
-                          font_scale: float)-> ImageType:  #pylint: disable=W0613
+    def _pillow_draw_text(
+        np_image: ImageType,
+        pos: Tuple[Any, Any],
+        text: str,
+        color: Tuple[int, int, int],  # pylint: disable=W0613
+        font_scale: float,
+    ) -> ImageType:  # pylint: disable=W0613
         """Draw a text in an image using PIL."""
         # using PIL default font size that does not scale to larger image sizes.
         # Compare with https://github.com/python-pillow/Pillow/issues/6622
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         draw = ImageDraw.Draw(pil_image)
-        draw.text(pos,text, fill=(0, 0, 0),anchor="lb")
+        draw.text(pos, text, fill=(0, 0, 0), anchor="lb")
         return np.array(pil_image)[:, :, ::-1]
 
     def interactive_imshow(self, np_image: ImageType) -> None:
         """Displaying an image in a separate window"""
         return getattr(self, self.pkg_func_dict["interactive_imshow"])(np_image)
 
-    def _cv2_interactive_imshow(self, np_image: ImageType)  -> None:
+    def _cv2_interactive_imshow(self, np_image: ImageType) -> None:
         """
         Display an image in a pop-up window
 
@@ -644,6 +655,5 @@ class VizPackageHandler:
 
 # default image package
 os.environ["USE_PILLOW"] = "True"
-os.environ["USE_OPENCV"] = "True"
 
 viz_handler = VizPackageHandler()

@@ -105,6 +105,7 @@ def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
     """
     return viz_handler.encode(np_image)
 
+
 @deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
 def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
     """
