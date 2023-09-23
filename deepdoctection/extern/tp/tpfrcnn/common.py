@@ -24,7 +24,7 @@ class CustomResize(ImageAugmentor):
     Try resizing the shortest edge to a certain number while avoiding the longest edge to exceed max_size.
     """
 
-    def __init__(self, short_edge_length, max_size, interp= "VIZ"):
+    def __init__(self, short_edge_length, max_size, interp="VIZ"):
         """
         :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
         :param max_size: maximum allowed longest edge length.

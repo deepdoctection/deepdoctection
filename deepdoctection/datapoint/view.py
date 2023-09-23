@@ -746,7 +746,7 @@ class Page(Image):
                     img = draw_boxes(self.image, boxes, category_names_list)
                 scale_fx, scale_fy = 1.3, 1.3
                 scaled_width, scaled_height = int(self.width * scale_fx), int(self.height * scale_fy)
-                img = viz_handler.resize(img,scaled_width, scaled_height,"VIZ")
+                img = viz_handler.resize(img, scaled_width, scaled_height, "VIZ")
             else:
                 img = self.image
 

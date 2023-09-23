@@ -51,8 +51,9 @@ _DEPS = [
     "mock==4.0.3",
     "networkx>=2.7.1",
     "numpy>=1.21",
-    "opencv-python==4.8.0.76",
+    "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
+    "Pillow=>10.0.0",
     "pycocotools>=2.0.2",
     "pypdf2",
     "python-prctl",
@@ -120,8 +121,8 @@ dist_deps = deps_list(
     "mock",
     "networkx",
     "numpy",
-    "opencv-python",
     "packaging",
+    "Pillow",
     "pypdf2",
     "pyyaml",
     "pyzmq",
@@ -191,8 +192,7 @@ dev_deps = deps_list(
     "types-tqdm",
     "lxml-stubs",
     "types-Pillow",
-    "types-urllib3"
-
+    "types-urllib3",
 )
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors

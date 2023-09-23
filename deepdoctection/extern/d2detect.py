@@ -23,7 +23,6 @@ from copy import copy
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence
 
-import cv2
 import numpy as np
 
 from ..utils.detection_types import ImageType, Requirement

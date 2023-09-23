@@ -382,7 +382,7 @@ _IMPORT_STRUCTURE = {
         "draw_text",
         "draw_boxes",
         "interactive_imshow",
-        "viz_handler"
+        "viz_handler",
     ],
 }
 

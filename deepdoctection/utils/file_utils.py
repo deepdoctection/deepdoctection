@@ -112,9 +112,7 @@ def get_tf_addons_requirements() -> Requirement:
 
 
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
-_TP_ERR_MSG = (
-    f"Tensorpack must be installed. {_GENERIC_ERR_MSG}"
-)
+_TP_ERR_MSG = f"Tensorpack must be installed. {_GENERIC_ERR_MSG}"
 
 
 def tensorpack_available() -> bool:
@@ -252,8 +250,10 @@ def get_detectron2_requirement() -> Requirement:
 _TESS_AVAILABLE = which("tesseract") is not None
 # Tesseract installation path
 _TESS_PATH = "tesseract"
-_TESS_ERR_MSG = ("Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
-                 "https://tesseract-ocr.github.io/tessdoc/Installation.html")
+_TESS_ERR_MSG = (
+    "Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
+    "https://tesseract-ocr.github.io/tessdoc/Installation.html"
+)
 
 
 def set_tesseract_path(tesseract_path: str) -> None:
@@ -527,9 +527,7 @@ def get_aws_requirement() -> Requirement:
 
 # DocTr related dependencies
 _DOCTR_AVAILABLE = importlib.util.find_spec("doctr") is not None
-_DOCTR_ERR_MSG = (
-    f"DocTr must be installed. {_GENERIC_ERR_MSG}"
-)
+_DOCTR_ERR_MSG = f"DocTr must be installed. {_GENERIC_ERR_MSG}"
 
 
 def doctr_available() -> bool:
@@ -598,11 +596,13 @@ _S.freeze()
 _CV2_AVAILABLE = importlib.util.find_spec("cv2") is not None
 _CV2_ERR_MSG = f"OpenCV must be installed. {_GENERIC_ERR_MSG}"
 
+
 def opencv_available() -> bool:
     """
     Returns True if OpenCV is installed
     """
     return bool(_CV2_AVAILABLE)
+
 
 def get_opencv_requirement() -> Requirement:
     """
@@ -610,9 +610,11 @@ def get_opencv_requirement() -> Requirement:
     """
     return "opencv", opencv_available(), _CV2_ERR_MSG
 
+
 # Pillow
 _PILLOW_AVAILABLE = importlib.util.find_spec("pillow") is not None
 _PILLOW_ERR_MSG = f"pillow must be installed. {_GENERIC_ERR_MSG}"
+
 
 def pillow_available() -> bool:
     """
@@ -620,12 +622,12 @@ def pillow_available() -> bool:
     """
     return bool(_CV2_AVAILABLE)
 
+
 def get_pillow_requirement() -> Requirement:
     """
     Return OpenCV requirement
     """
     return "pillow", pillow_available(), _PILLOW_ERR_MSG
-
 
 
 def set_mp_spawn() -> None:
