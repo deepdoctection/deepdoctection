@@ -26,7 +26,6 @@ from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequen
 
 import numpy as np
 import numpy.typing as npt
-from cv2 import INTER_LINEAR
 
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
@@ -179,11 +178,11 @@ def image_to_raw_layoutlm_features(
 
     boxes = box_to_point4(boxes)
 
-    resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, INTER_LINEAR)
+    resizer = ResizeTransform(dp.height, dp.width, input_height, input_width, "VIZ")
 
     if dp.image is not None:
         if image_width != input_width or image_height != input_height:
-            image_only_resizer = ResizeTransform(dp.height, dp.width, image_height, image_width, INTER_LINEAR)
+            image_only_resizer = ResizeTransform(dp.height, dp.width, image_height, image_width, "VIZ")
             image = image_only_resizer.apply_image(dp.image)
         else:
             image = resizer.apply_image(dp.image)

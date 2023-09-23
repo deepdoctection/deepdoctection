@@ -23,13 +23,12 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from cv2 import imwrite
-
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.fs import mkdir_p
+from ..utils.viz import viz_handler
 
 
 def dataflow_to_json(
@@ -84,7 +83,8 @@ def dataflow_to_json(
                 target_file_png = path / "image" / (dp["file_name"].split(".")[0] + ".png")
                 image = dp.pop("_image")
                 image = convert_b64_to_np_array(image)
-                imwrite(str(target_file_png), image)
+
+                viz_handler.write_image(str(target_file_png), image)
 
             with open(target_file, "w", encoding="UTF-8") as file:
                 json.dump(dp, file)
