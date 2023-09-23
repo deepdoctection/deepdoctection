@@ -53,7 +53,7 @@ _DEPS = [
     "numpy>=1.21",
     "opencv-python==4.8.0.76",  # this is not required anymore, but we keep its version as a reference
     "packaging>=20.0",
-    "Pillow=>10.0.0",
+    "Pillow>=10.0.0",
     "pycocotools>=2.0.2",
     "pypdf2",
     "python-prctl",
