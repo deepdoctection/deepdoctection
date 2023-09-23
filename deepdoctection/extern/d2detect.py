@@ -130,7 +130,7 @@ def d2_jit_predict_image(
         keep = batched_nms(boxes, scores, class_masks, nms_thresh_class_agnostic).cpu()
 
         # The exported model does not contain the final resize step, so we need to add it manually here
-        inverse_resizer = ResizeTransform(new_height, new_width, height, width, cv2.INTER_LINEAR)
+        inverse_resizer = ResizeTransform(new_height, new_width, height, width, "VIZ")
         np_boxes = np.reshape(boxes.cpu().numpy(), (-1, 2))
         np_boxes = inverse_resizer.apply_coords(np_boxes)
         np_boxes = np.reshape(np_boxes, (-1, 4))

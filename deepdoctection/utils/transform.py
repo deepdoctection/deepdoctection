@@ -31,7 +31,7 @@ from numpy import float32
 from .detection_types import ImageType
 from .viz import viz_handler
 
-__all__ = ["ResizeTransform", "InferenceResize", "PadTransform"]
+__all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]
 
 
 class BaseTransform(ABC):
@@ -68,13 +68,13 @@ class ResizeTransform(BaseTransform):
         :param w: width
         :param new_h: target height
         :param new_w: target width
-        :param interp: interpolation method, that depends on the image processing library. Currently, it supports NEAREST,
-          BOX, BILINEAR, BICUBIC and VIZ for PIL or INTER_NEAREST, INTER_LINEAR, INTER_AREA or VIZ for OpenCV
+        :param interp: interpolation method, that depends on the image processing library. Currently, it supports
+           NEAREST, BOX, BILINEAR, BICUBIC and VIZ for PIL or INTER_NEAREST, INTER_LINEAR, INTER_AREA or VIZ for OpenCV
         """
         self.h = h
         self.w = w
-        self.new_h = new_h
-        self.new_w = new_w
+        self.new_h = int(new_h)
+        self.new_w = int(new_w)
         self.interp = interp
 
     def apply_image(self, img: ImageType) -> ImageType:
