@@ -66,6 +66,8 @@ _DEPS = [
     "types-termcolor==1.1.3",
     "types-tabulate",
     "types-tqdm",
+    "types-Pillow",
+    "types-urllib3",
     "lxml-stubs",
     # Tensorflow related dependencies
     "protobuf==3.20.1",
@@ -188,6 +190,9 @@ dev_deps = deps_list(
     "types-tabulate",
     "types-tqdm",
     "lxml-stubs",
+    "types-Pillow",
+    "types-urllib3"
+
 )
 
 # TODO: add function that lists correct not pre-installed third party libs in package, such that requirement errors
