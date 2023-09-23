@@ -16,6 +16,11 @@ by the user.
 With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).
 
+We use [Pillow](https://pillow.readthedocs.io/en/stable/) or [OpenCV](https://github.com/opencv/opencv-python) for 
+image processing tasks. PIL is more lightweight, easier to install and the default choice. 
+OpenCV is faster when loading images and can be beneficial especially when training. If you want to use OpenCV, please
+install this framework separately and set the environment variable `USE_OPENCV=True`. 
+
 You can run on PyTorch with a CPU only. For Tensorflow a GPU is required.
 
 If you only want to run some Tensorpack models, Tensorflow >= 2.4.1 will suffice.
