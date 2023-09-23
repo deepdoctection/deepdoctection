@@ -25,6 +25,8 @@ from .detection_types import Requirement
 from .logger import logger
 from .metacfg import AttrDict
 
+_GENERIC_ERR_MSG = "Please check the required version either in the docs or in the setup file"
+
 # Tensorflow and Tensorpack dependencies
 _TF_AVAILABLE = False
 
@@ -33,7 +35,7 @@ try:
 except ValueError:
     pass
 
-_TF_ERR_MSG = "Tensorflow >=2.4.1 must be installed: <https://www.tensorflow.org/install/gpu>"
+_TF_ERR_MSG = f"Tensorflow must be installed. {_GENERIC_ERR_MSG}"
 
 
 def tf_available() -> bool:
@@ -90,8 +92,8 @@ def get_tensorflow_requirement() -> Requirement:
 
 _TF_ADDONS_AVAILABLE = importlib.util.find_spec("tensorflow_addons") is not None
 _TF_ADDONS_ERR_MSG = (
-    "Tensorflow Addons must be installed: https://www.tensorflow.org/addons/overview or"
-    " >> pip install tensorflow-addons"
+    "Tensorflow Addons must be installed. Please check the required version either in the docs or in the setup file."
+    "Please note, that it has been announced, the this package will be deprecated in the near future."
 )
 
 
@@ -110,10 +112,7 @@ def get_tf_addons_requirements() -> Requirement:
 
 
 _TP_AVAILABLE = importlib.util.find_spec("tensorpack") is not None
-_TP_ERR_MSG = (
-    "Tensorflow models all use the Tensorpack modeling API. Therefore, Tensorpack must be installed: "
-    ">>make install-dd-tf"
-)
+_TP_ERR_MSG = f"Tensorpack must be installed. {_GENERIC_ERR_MSG}"
 
 
 def tensorpack_available() -> bool:
@@ -132,7 +131,7 @@ def get_tensorpack_requirement() -> Requirement:
 
 # Pytorch related dependencies
 _PYTORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
-_PYTORCH_ERR_MSG = "Pytorch must be installed: https://pytorch.org/get-started/locally/#linux-pip"
+_PYTORCH_ERR_MSG = f"Pytorch must be installed. {_GENERIC_ERR_MSG}"
 
 
 def pytorch_available() -> bool:
@@ -151,7 +150,7 @@ def get_pytorch_requirement() -> Requirement:
 
 # lxml
 _LXML_AVAILABLE = importlib.util.find_spec("lxml") is not None
-_LXML_ERR_MSG = "lxml must be installed: pip install lxml"
+_LXML_ERR_MSG = f"lxml must be installed. {_GENERIC_ERR_MSG}"
 
 
 def lxml_available() -> bool:
@@ -170,7 +169,7 @@ def get_lxml_requirement() -> Requirement:
 
 # apted
 _APTED_AVAILABLE = importlib.util.find_spec("apted") is not None
-_APTED_ERR_MSG = "APTED must be installed: pip install apted"
+_APTED_ERR_MSG = f"apted must be installed. {_GENERIC_ERR_MSG}"
 
 
 def apted_available() -> bool:
@@ -189,7 +188,7 @@ def get_apted_requirement() -> Requirement:
 
 # distance
 _DISTANCE_AVAILABLE = importlib.util.find_spec("distance") is not None
-_DISTANCE_ERR_MSG = "distance must be installed: pip install distance"
+_DISTANCE_ERR_MSG = f"distance must be installed. {_GENERIC_ERR_MSG}"
 
 
 def distance_available() -> bool:
@@ -208,7 +207,7 @@ def get_distance_requirement() -> Requirement:
 
 # Transformers
 _TRANSFORMERS_AVAILABLE = importlib.util.find_spec("transformers") is not None
-_TRANSFORMERS_ERR_MSG = "Transformers must be installed: >>install-dd-pt"
+_TRANSFORMERS_ERR_MSG = f"transformers must be installed. {_GENERIC_ERR_MSG}"
 
 
 def transformers_available() -> bool:
@@ -228,7 +227,7 @@ def get_transformers_requirement() -> Requirement:
 # Detectron2 related requirements
 _DETECTRON2_AVAILABLE = importlib.util.find_spec("detectron2") is not None
 _DETECTRON2_ERR_MSG = (
-    "Detectron2 must be installed: Follow the official installation instructions "
+    "Detectron2 must be installed. Please follow the official installation instructions "
     "https://detectron2.readthedocs.io/en/latest/tutorials/install.html"
 )
 
@@ -251,7 +250,10 @@ def get_detectron2_requirement() -> Requirement:
 _TESS_AVAILABLE = which("tesseract") is not None
 # Tesseract installation path
 _TESS_PATH = "tesseract"
-_TESS_ERR_MSG = "Tesseract >=4.0 must be installed: https://tesseract-ocr.github.io/tessdoc/Installation.html"
+_TESS_ERR_MSG = (
+    "Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
+    "https://tesseract-ocr.github.io/tessdoc/Installation.html"
+)
 
 
 def set_tesseract_path(tesseract_path: str) -> None:
@@ -304,7 +306,7 @@ def get_tesseract_version() -> Union[int, version.Version]:
             stdin=subprocess.DEVNULL,
         )
     except OSError:
-        raise TesseractNotFound() from OSError
+        raise TesseractNotFound(_TESS_ERR_MSG) from OSError
 
     raw_version = output.decode("utf-8")
     str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(" ")
@@ -390,7 +392,7 @@ def get_poppler_requirement() -> Requirement:
 
 # Pdfplumber.six related dependencies
 _PDFPLUMBER_AVAILABLE = importlib.util.find_spec("pdfplumber") is not None
-_PDFPLUMBER_ERR_MSG = "pdfplumber must be installed. >> pip install pdfplumber"
+_PDFPLUMBER_ERR_MSG = f"pdfplumber must be installed. {_GENERIC_ERR_MSG}"
 
 
 def pdfplumber_available() -> bool:
@@ -409,7 +411,7 @@ def get_pdfplumber_requirement() -> Requirement:
 
 # pycocotools dependencies
 _COCOTOOLS_AVAILABLE = importlib.util.find_spec("pycocotools") is not None
-_COCOTOOLS_ERR_MSG = "pycocotools must be installed. >> pip install pycocotools==2.0.4"
+_COCOTOOLS_ERR_MSG = f"pycocotools must be installed. {_GENERIC_ERR_MSG}"
 
 
 def cocotools_available() -> bool:
@@ -439,7 +441,7 @@ def scipy_available() -> bool:
 
 # jdeskew dependency
 _JDESKEW_AVAILABLE = importlib.util.find_spec("jdeskew") is not None
-_JDESKEW_ERR_MSG = "jdeskew must be installed. >> pip install jdeskew"
+_JDESKEW_ERR_MSG = f"jdeskew must be installed. {_GENERIC_ERR_MSG}"
 
 
 def jdeskew_available() -> bool:
@@ -458,7 +460,7 @@ def get_jdeskew_requirement() -> Requirement:
 
 # scikit-learn dependencies
 _SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
-_SKLEARN_ERR_MSG = "scikit-learn must be installed. >> pip install scikit-learn==1.0.2"
+_SKLEARN_ERR_MSG = f"scikit-learn must be installed. {_GENERIC_ERR_MSG}"
 
 
 def sklearn_available() -> bool:
@@ -488,7 +490,7 @@ def qpdf_available() -> bool:
 
 # Textract related dependencies
 _BOTO3_AVAILABLE = importlib.util.find_spec("boto3") is not None
-_BOTO3_ERR_MSG = "Boto3 must be installed: >> pip install boto3"
+_BOTO3_ERR_MSG = f"Boto3 must be installed. {_GENERIC_ERR_MSG}"
 
 _AWS_CLI_AVAILABLE = which("aws") is not None
 _AWS_ERR_MSG = "AWS CLI must be installed https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
@@ -525,10 +527,7 @@ def get_aws_requirement() -> Requirement:
 
 # DocTr related dependencies
 _DOCTR_AVAILABLE = importlib.util.find_spec("doctr") is not None
-_DOCTR_ERR_MSG = (
-    "DocTr must be installed. Please read the necessary requirements at https://github.com/mindee/doctr"
-    "and use >> pip install python-doctr"
-)
+_DOCTR_ERR_MSG = f"DocTr must be installed. {_GENERIC_ERR_MSG}"
 
 
 def doctr_available() -> bool:
@@ -552,7 +551,7 @@ def get_doctr_requirement() -> Requirement:
 
 # Fasttext related dependencies
 _FASTTEXT_AVAILABLE = importlib.util.find_spec("fasttext") is not None
-_FASTTEXT_ERR_MSG = "Fasttext must be installed. >> pip install fasttext"
+_FASTTEXT_ERR_MSG = f"fasttext must be installed. {_GENERIC_ERR_MSG}"
 
 
 def fasttext_available() -> bool:
@@ -571,7 +570,7 @@ def get_fasttext_requirement() -> Requirement:
 
 # Wandb related dependencies
 _WANDB_AVAILABLE = importlib.util.find_spec("wandb") is not None
-_WANDB_ERR_MSG = "WandB must be installed. >> pip install wandb"
+_WANDB_ERR_MSG = f"WandB must be installed. {_GENERIC_ERR_MSG}"
 
 
 def wandb_available() -> bool:
@@ -591,6 +590,44 @@ def get_wandb_requirement() -> Requirement:
 _S = AttrDict()
 _S.mp_context_set = False
 _S.freeze()
+
+# Image libraries: OpenCV and Pillow
+# OpenCV
+_CV2_AVAILABLE = importlib.util.find_spec("cv2") is not None
+_CV2_ERR_MSG = f"OpenCV must be installed. {_GENERIC_ERR_MSG}"
+
+
+def opencv_available() -> bool:
+    """
+    Returns True if OpenCV is installed
+    """
+    return bool(_CV2_AVAILABLE)
+
+
+def get_opencv_requirement() -> Requirement:
+    """
+    Return OpenCV requirement
+    """
+    return "opencv", opencv_available(), _CV2_ERR_MSG
+
+
+# Pillow
+_PILLOW_AVAILABLE = importlib.util.find_spec("PIL") is not None
+_PILLOW_ERR_MSG = f"pillow must be installed. {_GENERIC_ERR_MSG}"
+
+
+def pillow_available() -> bool:
+    """
+    Returns True if Pillow is installed
+    """
+    return bool(_PILLOW_AVAILABLE)
+
+
+def get_pillow_requirement() -> Requirement:
+    """
+    Return OpenCV requirement
+    """
+    return "pillow", pillow_available(), _PILLOW_ERR_MSG
 
 
 def set_mp_spawn() -> None:

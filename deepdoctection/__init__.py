@@ -311,6 +311,10 @@ _IMPORT_STRUCTURE = {
         "get_fasttext_requirement",
         "wandb_available",
         "get_wandb_requirement",
+        "opencv_available",
+        "get_opencv_requirement",
+        "pillow_available",
+        "get_pillow_requirement",
         "load_image_from_file",
         "load_bytes_from_pdf_file",
         "get_load_image_func",
@@ -378,6 +382,7 @@ _IMPORT_STRUCTURE = {
         "draw_text",
         "draw_boxes",
         "interactive_imshow",
+        "viz_handler",
     ],
 }
 
@@ -402,6 +407,7 @@ if tf_available():
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703
             pass
+
 
 # Direct imports for type-checking
 if TYPE_CHECKING:
