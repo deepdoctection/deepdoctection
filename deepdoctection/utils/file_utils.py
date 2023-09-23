@@ -612,7 +612,7 @@ def get_opencv_requirement() -> Requirement:
 
 
 # Pillow
-_PILLOW_AVAILABLE = importlib.util.find_spec("pillow") is not None
+_PILLOW_AVAILABLE = importlib.util.find_spec("Pillow") is not None
 _PILLOW_ERR_MSG = f"pillow must be installed. {_GENERIC_ERR_MSG}"
 
 
@@ -620,7 +620,7 @@ def pillow_available() -> bool:
     """
     Returns True if Pillow is installed
     """
-    return bool(_CV2_AVAILABLE)
+    return bool(_PILLOW_AVAILABLE)
 
 
 def get_pillow_requirement() -> Requirement:
