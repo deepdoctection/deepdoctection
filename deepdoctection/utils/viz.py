@@ -29,7 +29,7 @@ import base64
 import os
 import sys
 from io import BytesIO
-from typing import Any, List, Optional, Sequence, Tuple, no_type_check, Dict
+from typing import Any, Dict, List, Optional, Sequence, Tuple, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -315,7 +315,7 @@ class VizPackageHandler:
     def __init__(self) -> None:
         """Selecting the image processing library and fonts"""
         package = self._select_package()
-        self.pkg_func_dict: Dict[str,str] = {}
+        self.pkg_func_dict: Dict[str, str] = {}
         self.font = None
         self._set_vars(package)
 
@@ -342,7 +342,7 @@ class VizPackageHandler:
             raise ImportError(requirements[2])
         return "cv2"
 
-    def _set_vars(self, package) -> None:
+    def _set_vars(self, package: str) -> None:
         self.pkg_func_dict = self.PACKAGE_FUNCS[package]
         if package == "pillow":
             image = Image.fromarray(np.uint8(np.ones((1, 1, 3))))
@@ -605,8 +605,8 @@ class VizPackageHandler:
         pos: Tuple[Any, Any],
         text: str,
         color: Tuple[int, int, int],  # pylint: disable=W0613
-        font_scale: float,
-    ) -> ImageType:  # pylint: disable=W0613
+        font_scale: float,  # pylint: disable=W0613
+    ) -> ImageType:
         """Draw a text in an image using PIL."""
         # using PIL default font size that does not scale to larger image sizes.
         # Compare with https://github.com/python-pillow/Pillow/issues/6622
