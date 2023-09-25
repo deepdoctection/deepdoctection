@@ -414,7 +414,11 @@ file_path = Path(os.path.split(__file__)[0])
 PATH = file_path.parent.parent
 
 # model cache directory
-dd_cache_home = Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "deepdoctection"
+if os.environ.get("DEEPDOCTECTION_CACHE"):
+    dd_cache_home = Path(os.environ["DEEPDOCTECTION_CACHE"])
+else:
+    dd_cache_home = Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "deepdoctection"
+
 MODEL_DIR = dd_cache_home / "weights"
 
 # configs cache directory
