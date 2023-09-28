@@ -1,6 +1,7 @@
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV DEEPDOCTECTION_CACHE="/root/.cache/deepdoctection"
 
 WORKDIR /home/repo
 COPY . .
@@ -12,15 +13,13 @@ RUN apt-get update && \
                    python3-opencv \
                    tesseract-ocr
 
-ARG PYTORCH='1.9.0'
-ARG TORCH_VISION=''
-ARG CUDA='cu111'
+RUN mkdir -p $DEEPDOCTECTION_CACHE
+
+ARG PYTORCH='1.13.1'
+ARG TORCH_VISION='0.14.1'
+ARG CUDA='cu117'
 
 RUN [ ${#PYTORCH} -gt 0 ] && VERSION='torch=='$PYTORCH'.*' ||  VERSION='torch'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
-RUN [ ${#TORCH_VISION} -gt 0 ] && VERSION='torchvision=='TORCH_VISION'.*' ||  VERSION='torchvision'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
+RUN [ ${#TORCH_VISION} -gt 0 ] && VERSION='torchvision=='$TORCH_VISION'.*' ||  VERSION='torchvision'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
 
 RUN python3 -m pip install --no-cache-dir ".[source-pt]"
-
-# start container with
-# docker run --rm -gpus all -d -t <image:tag>
-# Will require NVIDIA CONTAINER Toolkit, see https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#install-guide
