@@ -1,0 +1,16 @@
+version: '3'
+services:
+  dd-gpu:
+    image: deepdoctection:tag
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${CACHE_HOST}:${DEEPDOCTECTION_CACHE}
+      - ${WORK_DIR}:/home/files
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
