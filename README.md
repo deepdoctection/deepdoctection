@@ -232,6 +232,26 @@ cd deepdoctection
 pip install ".[source-pt]"
 ```
 
+### Running a Docker container from Docker hub
+
+Starting from release `v.0.27.0`, pre-existing Docker images can be downloaded from the 
+[Docker hub](https://hub.docker.com/r/deepdoctection/deepdoctection).
+
+```
+docker pull deepdoctection/deepdoctection:<release_tag> 
+```
+
+To start the container, you can use the Docker compose file `./docker/pytorch-gpu/docker-compose.yaml`. 
+In the `.env` file provided, specify the host directory where **deep**doctection's cache should be stored. 
+This directory will be mounted. Additionally, specify a working directory to mount files to be processed into the 
+container.
+
+```
+docker compose up -d
+```
+
+will start the container.
+
 ## Credits
 
 We thank all libraries that provide high quality code and pre-trained models. Without, it would have been impossible 
