@@ -248,12 +248,16 @@ class D2Trainer(DefaultTrainer):
         :param metric: A metric class
         :param build_val_dict: evaluation dataflow build config
         """
+        if wandb_available():
+            run = wandb.run if wandb.run is not None else None
+        else:
+            run = None
         self.evaluator = Evaluator(
             dataset_val,
             pipeline_component,
             metric,
             num_threads=get_num_gpu() * 2,
-            run=wandb.run if wandb.run is not None else None,
+            run=run,
         )
         if build_val_dict:
             self.build_val_dict = build_val_dict
