@@ -86,6 +86,10 @@ def image_to_d2_frcnn_training(
             box = ann.bounding_box
         if box is None:
             raise ValueError("BoundingBox cannot be None")
+        if not box.absolute_coords:
+            box = box.transform(dp.width,dp.height,absolute_coords=True)
+
+        # Detectron2 does not fully support BoxMode.XYXY_REL
         mapped_ann: Dict[str, Union[str, int, List[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": box.to_list(mode="xyxy"),
