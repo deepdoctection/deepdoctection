@@ -19,6 +19,7 @@
 Dataclass Image
 """
 import json
+from os import environ
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Union, no_type_check
@@ -147,7 +148,7 @@ class Image:
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         elif isinstance(image, bytes):
-            self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=300)
+            self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=environ.get("DPI", 300))
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         else:
