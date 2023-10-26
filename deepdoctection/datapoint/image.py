@@ -19,7 +19,6 @@
 Dataclass Image
 """
 import json
-from os import environ
 from dataclasses import dataclass, field
 from os import environ
 from pathlib import Path
