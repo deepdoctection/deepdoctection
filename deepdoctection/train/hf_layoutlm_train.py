@@ -62,6 +62,7 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_fea
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
+from ..utils.device_detection import detect_device
 from ..utils.file_utils import wandb_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
@@ -462,7 +463,7 @@ def train_hf_layoutlm(
             path_config_json=path_config_json,
             path_weights=path_weights,
             categories=categories,
-            device="cuda",
+            device=detect_device(),
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.sequence_classification:
