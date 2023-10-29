@@ -13,6 +13,7 @@ from packaging import version
 
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
+from .utils.env_info import auto_select_lib_and_device
 
 __version__ = 0.27
 
@@ -270,6 +271,9 @@ _IMPORT_STRUCTURE = {
         "timeout_manager",
         "save_tmp_file",
         "timed_operation",
+        "collect_env_info",
+        "get_device",
+        "auto_select_lib_and_device",
         "get_tensorflow_requirement",
         "tf_addons_available",
         "get_tf_addons_requirements",
@@ -324,6 +328,11 @@ _IMPORT_STRUCTURE = {
         "is_file_extension",
         "load_json",
         "FileExtensionError",
+        "sub_path",
+        "get_package_path",
+        "get_configs_dir_path",
+        "get_weights_dir_path",
+        "get_dataset_dir_path",
         "is_uuid_like",
         "get_uuid_from_str",
         "get_uuid",
@@ -359,11 +368,6 @@ _IMPORT_STRUCTURE = {
         "DatasetType",
         "update_all_types_dict",
         "get_type",
-        "sub_path",
-        "get_package_path",
-        "get_configs_dir_path",
-        "get_weights_dir_path",
-        "get_dataset_dir_path",
         "get_tqdm",
         "get_tqdm_default_kwargs",
         "ResizeTransform",
@@ -389,7 +393,7 @@ _IMPORT_STRUCTURE = {
 if not tf_available() and not pytorch_available():
     logger.info(
         "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
-        "the library."
+        " the library."
     )
 
 # disable TF warnings for versions > 2.4.1
@@ -408,6 +412,8 @@ if tf_available():
         except Exception:  # pylint: disable=W0703
             pass
 
+# Setting some environment variables so that standard functions can be invoked with available hardware
+auto_select_lib_and_device()
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

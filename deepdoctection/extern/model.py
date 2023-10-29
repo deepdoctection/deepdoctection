@@ -28,10 +28,9 @@ from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.fs import download
+from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
 from ..utils.logger import log_once, logger
 from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes
-from ..utils.systools import get_configs_dir_path, get_weights_dir_path
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 

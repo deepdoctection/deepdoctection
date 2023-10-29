@@ -62,7 +62,7 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_fea
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
-from ..utils.device_detection import detect_device
+from ..utils.env_info import detect_device
 from ..utils.file_utils import wandb_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType

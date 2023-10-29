@@ -47,7 +47,7 @@ from ...mapper.pascalstruct import pascal_voc_dict_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import lxml_available
 from ...utils.settings import DatasetType, LayoutType
-from ...utils.systools import get_package_path
+from ...utils.fs import get_package_path
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
