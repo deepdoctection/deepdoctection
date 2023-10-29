@@ -14,7 +14,6 @@ from .logger import *
 from .metacfg import *
 from .pdf_utils import *
 from .settings import *
-from .systools import *
 from .tqdm import *
 from .transform import *
 from .utils import *
@@ -52,6 +51,8 @@ _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string
 _global_import(
     "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
 )
+_global_import("env_info", prefix=("collect_env_info","get_device","auto_select_lib_and_device"))
+
 
 # pylint: disable=undefined-variable
 __all__.extend(context.__all__)  # type: ignore
@@ -59,7 +60,6 @@ __all__.extend(fs.__all__)  # type: ignore
 __all__.extend(identifier.__all__)  # type: ignore
 __all__.extend(["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"])
 __all__.extend(pdf_utils.__all__)  # type: ignore
-__all__.extend(systools.__all__)  # type: ignore
 __all__.extend(["get_tqdm"])
 __all__.extend(transform.__all__)  # type: ignore
 __all__.extend(viz.__all__)  # type: ignore

@@ -54,7 +54,7 @@ from ..utils.fs import mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import LayoutType
-from ..utils.systools import get_configs_dir_path, get_package_path
+from ..utils.fs import get_configs_dir_path, get_package_path
 from ..utils.transform import PadTransform
 
 if tf_available() and tensorpack_available():
@@ -64,8 +64,6 @@ if tf_available() and tensorpack_available():
     from ..extern.tpdetect import TPFrcnnDetector
 
 if pytorch_available():
-    from torch import cuda
-
     from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
     from ..extern.hfdetr import HFDetrDerivedDetector
 

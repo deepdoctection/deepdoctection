@@ -47,7 +47,7 @@ from deepdoctection.utils.settings import (
     update_all_types_dict,
     update_black_list,
 )
-from deepdoctection.utils.systools import get_package_path
+from deepdoctection.utils.fs import get_package_path
 from deepdoctection.utils.viz import viz_handler
 
 from .data import (
