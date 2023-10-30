@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING
 
 from packaging import version
 
+from .utils.env_info import auto_select_lib_and_device, auto_select_viz_library
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
-from .utils.env_info import auto_select_lib_and_device
 
 __version__ = 0.27
 
@@ -274,6 +274,7 @@ _IMPORT_STRUCTURE = {
         "collect_env_info",
         "get_device",
         "auto_select_lib_and_device",
+        "auto_select_viz_library",
         "get_tensorflow_requirement",
         "tf_addons_available",
         "get_tf_addons_requirements",
@@ -414,6 +415,7 @@ if tf_available():
 
 # Setting some environment variables so that standard functions can be invoked with available hardware
 auto_select_lib_and_device()
+auto_select_viz_library()
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

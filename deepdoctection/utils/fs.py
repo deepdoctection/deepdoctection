@@ -29,14 +29,13 @@ from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
 from .detection_types import ImageType, JsonDict, Pathlike
+from .develop import deprecated
 from .logger import logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
+from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
 from .utils import FileExtensionError, is_file_extension
 from .viz import viz_handler
-from .develop import deprecated
-from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
-
 
 __all__ = [
     "load_image_from_file",
@@ -52,7 +51,7 @@ __all__ = [
     "get_package_path",
     "get_configs_dir_path",
     "get_weights_dir_path",
-    "get_dataset_dir_path"
+    "get_dataset_dir_path",
 ]
 
 
