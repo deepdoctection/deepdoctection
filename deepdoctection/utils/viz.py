@@ -653,7 +653,4 @@ class VizPackageHandler:
         pil_image.show(name)
 
 
-# default image package
-os.environ["USE_PILLOW"] = "True"
-
 viz_handler = VizPackageHandler()

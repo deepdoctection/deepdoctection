@@ -43,6 +43,7 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
+from ..utils.env_info import get_device
 from ..utils.file_utils import (
     boto3_available,
     detectron2_available,
@@ -50,16 +51,13 @@ from ..utils.file_utils import (
     tensorpack_available,
     tf_available,
 )
-from ..utils.fs import mkdir_p
+from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import LayoutType
-from ..utils.fs import get_configs_dir_path, get_package_path
 from ..utils.transform import PadTransform
 
 if tf_available() and tensorpack_available():
-    from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
-
     from ..extern.tp.tfutils import disable_tp_layer_logging
     from ..extern.tpdetect import TPFrcnnDetector
 
@@ -75,26 +73,6 @@ __all__ = ["get_dd_analyzer", "build_analyzer"]
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-
-
-def _auto_select_lib_and_device() -> Tuple[str, str]:
-    """
-    Select the DL library and subsequently the device. In summary:
-
-    If TF is available, use TF unless a GPU is not available, in which case choose PT. If CUDA is not available and PT
-    is not installed raise ImportError.
-    """
-    if tf_available() and tensorpack_available():
-        if get_num_gpu() >= 1:
-            return "TF", "cuda"
-        if pytorch_available():
-            return "PT", "cpu"
-        raise ModuleNotFoundError("Install Pytorch and Torchvision to run with a CPU")
-    if pytorch_available():
-        if cuda.is_available():
-            return "PT", "cuda"
-        return "PT", "cpu"
-    raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
 
 
 def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
@@ -369,7 +347,8 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib, device = _auto_select_lib_and_device()
+    lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
+    device = get_device()
     dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
     _maybe_copy_config_to_cache(_TESSERACT)
 

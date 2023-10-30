@@ -51,7 +51,9 @@ _global_import("utils", prefix=("delete_keys_from_dict", "split_string", "string
 _global_import(
     "settings", suffix=("Type", "TokenClasses", "BioTag", "TokenClassWithTag", "Relationships", "Languages", "get_type")
 )
-_global_import("env_info", prefix=("collect_env_info","get_device","auto_select_lib_and_device"))
+_global_import(
+    "env_info", prefix=("collect_env_info", "get_device", "auto_select_lib_and_device", "auto_select_viz_library")
+)
 
 
 # pylint: disable=undefined-variable
