@@ -62,7 +62,7 @@ from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_fea
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
-from ..utils.env_info import detect_device
+from ..utils.env_info import get_device
 from ..utils.file_utils import wandb_available
 from ..utils.logger import logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
@@ -421,7 +421,7 @@ def train_hf_layoutlm(
     else:
         os.environ["WANDB_DISABLED"] = "True"
 
-        # Will inform about dataloader warnings if max_steps exceeds length of dataset
+    # Will inform about dataloader warnings if max_steps exceeds length of dataset
     if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
             "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
@@ -463,7 +463,7 @@ def train_hf_layoutlm(
             path_config_json=path_config_json,
             path_weights=path_weights,
             categories=categories,
-            device=detect_device(),
+            device=get_device(),
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.sequence_classification:

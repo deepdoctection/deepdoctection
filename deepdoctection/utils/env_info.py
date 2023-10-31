@@ -15,13 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Some useful function for collecting environment information
+"""
+
 import importlib
 import os
 import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 from tabulate import tabulate
@@ -31,6 +35,7 @@ from .file_utils import (
     aws_available,
     boto3_available,
     cocotools_available,
+    opencv_available,
     distance_available,
     doctr_available,
     fasttext_available,
@@ -60,6 +65,7 @@ __all__ = [
     "auto_select_viz_library",
 ]
 
+# pylint: disable=import-outside-toplevel
 
 def collect_torch_env() -> str:
     """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
@@ -82,11 +88,18 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     """
 
     if tensorpack_available():
-        import tensorpack
+        import tensorpack  # pylint: disable=E0401
 
         data.append(("Tensorpack", tensorpack.__version__))
     else:
         data.append(("Tensorpack", "None"))
+
+    if opencv_available():
+        import cv2
+
+        data.append(("OpenCV", cv2.__version__))
+    else:
+        data.append(("OpenCV", "None"))
 
     if lxml_available():
         import lxml
@@ -135,7 +148,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
         data.append(("Pycocotools", "None"))
 
     if scipy_available():
-        import scipy
+        import scipy  # type: ignore
 
         data.append(("Scipy", scipy.__version__))
     else:
@@ -147,21 +160,19 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
         data.append(("Jdeskew", "None"))
 
     if sklearn_available():
-        import sklearn
+        import sklearn  # type: ignore # pylint: disable=E0401
 
         data.append(("Sklearn", sklearn.__version__))
     else:
         data.append(("Sklearn", "None"))
 
     if qpdf_available():
-        import qpdf
-
-        data.append(("Qpdf", qpdf.__version__))
+        data.append(("Qpdf", "available"))
     else:
         data.append(("Qpdf", "None"))
 
     if boto3_available():
-        import boto3
+        import boto3  # type: ignore
 
         data.append(("Boto3", boto3.__version__))
     else:
@@ -194,7 +205,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     return data
 
 
-def detect_compute_compatibility(cuda_home, so_file):
+def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str])-> str:
     """
     Detect the compute compatibility of a CUDA library.
 
@@ -203,21 +214,20 @@ def detect_compute_compatibility(cuda_home, so_file):
     :return: The compute compatibility of the CUDA library
     """
     try:
-        cuobjdump = os.path.join(cuda_home, "bin", "cuobjdump")
+        cuobjdump = os.path.join(cuda_home, "bin", "cuobjdump")  # type: ignore
         if os.path.isfile(cuobjdump):
-            output = subprocess.check_output("'{}' --list-elf '{}'".format(cuobjdump, so_file), shell=True)
-            output = output.decode("utf-8").strip().split("\n")
+            output = subprocess.check_output(f"'{cuobjdump}' --list-elf '{so_file}'", shell=True)
+            output = output.decode("utf-8").strip().split("\n")   #type: ignore
             arch = []
             for line in output:
                 line = re.findall(r"\.sm_([0-9]*)\.", line)[0]  # type: ignore
-                arch.append(".".join(line))
+                arch.append(".".join(line))  # type: ignore
             arch = sorted(set(arch))
             return ", ".join(arch)
-        else:
-            return so_file + "; cannot find cuobjdump"
-    except Exception:
+        return str(so_file) + "; cannot find cuobjdump"
+    except Exception:  # pylint: disable=W0718
         # unhandled failure
-        return so_file
+        return str(so_file)
 
 
 # Copied from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/tfutils/collect_env.py
@@ -228,23 +238,23 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     :return: A list of tuples containing all the collected information
     """
     if tf_available():
-        import tensorflow as tf
+        import tensorflow as tf  # type: ignore # pylint: disable=E0401
 
         data.append(("Tensorflow", tf.__version__))
     else:
         data.append(("Tensorflow", "None"))
         return data
 
-    from tensorflow.python.platform import build_info
+    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401
 
     try:
-        for k, v in list(build_info.build_info.items()):
-            if k == "cuda_version":
-                data.append(("TF built with CUDA", v))
-            elif k == "cudnn_version":
-                data.append(("TF built with CUDNN", v))
-            elif k == "cuda_compute_capabilities":
-                data.append(("TF compute capabilities", ",".join([k.replace("compute_", "") for k in v])))
+        for key, value in list(build_info.build_info.items()):
+            if key == "cuda_version":
+                data.append(("TF built with CUDA", value))
+            elif key == "cudnn_version":
+                data.append(("TF built with CUDNN", value))
+            elif key == "cuda_compute_capabilities":
+                data.append(("TF compute capabilities", ",".join([k.replace("compute_", "") for k in value])))
         return data
     except AttributeError:
         pass
@@ -282,8 +292,8 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     if has_cuda and CUDA_HOME is not None:
         try:
             nvcc = os.path.join(CUDA_HOME, "bin", "nvcc")
-            nvcc = subprocess.check_output("'{}' -V".format(nvcc), shell=True)
-            nvcc = nvcc.decode("utf-8").strip().split("\n")[-1]  # type: ignore
+            nvcc = subprocess.check_output(f"'{nvcc}' -V", shell=True)  # type: ignore
+            nvcc = nvcc.decode('utf-8').strip().rsplit('\n', maxsplit=1)[-1]  # type: ignore
         except subprocess.SubprocessError:
             nvcc = "Not found"
         data.append(("CUDA compiler", nvcc))
@@ -314,7 +324,7 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
                 from torch.utils.collect_env import run as _run
 
                 data.append(("Driver version", get_nvidia_driver_version(_run)))
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 pass
             msg = " - invalid!" if not (CUDA_HOME and os.path.isdir(CUDA_HOME)) else ""
             data.append(("CUDA_HOME", str(CUDA_HOME) + msg))
@@ -328,13 +338,13 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         has_mps_text = "No: torch.backends.mps.is_available() == False"
     else:
         has_mps_text = "Yes"
-        mps_build = torch.backends.mps.is_built()
+        mps_build = str(torch.backends.mps.is_built())
 
     data.append(("MPS available", has_mps_text))
     data.append(("MPS available", mps_build))
 
     try:
-        import torchvision
+        import torchvision  # type: ignore
 
         data.append(
             (
@@ -344,8 +354,8 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         )
         if has_cuda:
             try:
-                torchvision_C = importlib.util.find_spec("torchvision._C").origin
-                msg = detect_compute_compatibility(CUDA_HOME, torchvision_C)
+                torchvision_c = importlib.util.find_spec("torchvision._C").origin  # type: ignore
+                msg = detect_compute_compatibility(CUDA_HOME, torchvision_c)
                 data.append(("torchvision arch flags", msg))
             except (ImportError, AttributeError):
                 data.append(("torchvision._C", "Not found"))
@@ -378,12 +388,12 @@ def collect_env_info()-> str:
 
     has_prctl = True
     try:
-        import prctl
+        import prctl  # type: ignore
 
         _ = prctl.set_pdeathsig  # noqa
     except ModuleNotFoundError:
         has_prctl = False
-    data.append(("python-prctl", has_prctl))
+    data.append(("python-prctl", str(has_prctl)))
 
     # print system compilers when extension fails to build
     if sys.platform != "win32":  # don't know what to do for windows
@@ -391,8 +401,8 @@ def collect_env_info()-> str:
         try:
             # this is how torch/utils/cpp_extensions.py choose compiler
             cxx = os.environ.get("CXX", "c++")
-            cxx = subprocess.check_output("'{}' --version".format(cxx), shell=True)
-            cxx = cxx.decode("utf-8").strip().split("\n")[0]  # type: ignore
+            cxx = subprocess.check_output(f"'{cxx}' --version", shell=True) # type: ignore
+            cxx = cxx.decode('utf-8').strip().split('\n', maxsplit=1)[0]  # type: ignore
         except subprocess.SubprocessError:
             cxx = "Not found"
         data.append(("Compiler ($CXX)", cxx))
@@ -422,7 +432,7 @@ def auto_select_lib_and_device() -> None:
     """
 
     if tf_available() and tensorpack_available():
-        from tensorpack.utils.gpu import get_num_gpu
+        from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
 
         if get_num_gpu() >= 1:
             os.environ["USE_TENSORFLOW"] = "True"
@@ -470,12 +480,16 @@ def get_device(ignore_cpu: bool = True) -> str:
         return "mps"
     if not ignore_cpu:
         return "cpu"
-    raise ValueError(f"Could not find either GPU nor MPS")
+    raise ValueError("Could not find either GPU nor MPS")
 
 
 def auto_select_viz_library() -> None:
-    """Setting PIL as default image library"""
-    # default image package
-    os.environ["USE_PILLOW"] = "True"
-    os.environ["USE_OPENCV"] = "False"
-    return
+    """Setting PIL as default image library if cv2 is not installed"""
+    if opencv_available():
+        os.environ["USE_PILLOW"] = "False"
+        os.environ["USE_OPENCV"] = "True"
+    else:
+        os.environ["USE_PILLOW"] = "True"
+        os.environ["USE_OPENCV"] = "False"
+
+# pylint: enable=import-outside-toplevel
