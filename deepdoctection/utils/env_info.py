@@ -25,7 +25,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from tabulate import tabulate
@@ -35,7 +35,6 @@ from .file_utils import (
     aws_available,
     boto3_available,
     cocotools_available,
-    opencv_available,
     distance_available,
     doctr_available,
     fasttext_available,
@@ -43,6 +42,7 @@ from .file_utils import (
     get_tesseract_version,
     jdeskew_available,
     lxml_available,
+    opencv_available,
     pdf_to_cairo_available,
     pdf_to_ppm_available,
     pdfplumber_available,
@@ -56,6 +56,7 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
+from .logger import logger
 
 __all__ = [
     "collect_torch_env",
@@ -66,6 +67,7 @@ __all__ = [
 ]
 
 # pylint: disable=import-outside-toplevel
+
 
 def collect_torch_env() -> str:
     """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
@@ -97,7 +99,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     if opencv_available():
         import cv2
 
-        data.append(("OpenCV", cv2.__version__))
+        data.append(("OpenCV", cv2.__version__))  # type: ignore
     else:
         data.append(("OpenCV", "None"))
 
@@ -205,7 +207,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     return data
 
 
-def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str])-> str:
+def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str]) -> str:
     """
     Detect the compute compatibility of a CUDA library.
 
@@ -217,7 +219,7 @@ def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str
         cuobjdump = os.path.join(cuda_home, "bin", "cuobjdump")  # type: ignore
         if os.path.isfile(cuobjdump):
             output = subprocess.check_output(f"'{cuobjdump}' --list-elf '{so_file}'", shell=True)
-            output = output.decode("utf-8").strip().split("\n")   #type: ignore
+            output = output.decode("utf-8").strip().split("\n")  # type: ignore
             arch = []
             for line in output:
                 line = re.findall(r"\.sm_([0-9]*)\.", line)[0]  # type: ignore
@@ -293,7 +295,7 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         try:
             nvcc = os.path.join(CUDA_HOME, "bin", "nvcc")
             nvcc = subprocess.check_output(f"'{nvcc}' -V", shell=True)  # type: ignore
-            nvcc = nvcc.decode('utf-8').strip().rsplit('\n', maxsplit=1)[-1]  # type: ignore
+            nvcc = nvcc.decode("utf-8").strip().rsplit("\n", maxsplit=1)[-1]  # type: ignore
         except subprocess.SubprocessError:
             nvcc = "Not found"
         data.append(("CUDA compiler", nvcc))
@@ -365,7 +367,7 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     return data
 
 
-def collect_env_info()-> str:
+def collect_env_info() -> str:
     """
 
     :return:
@@ -401,8 +403,8 @@ def collect_env_info()-> str:
         try:
             # this is how torch/utils/cpp_extensions.py choose compiler
             cxx = os.environ.get("CXX", "c++")
-            cxx = subprocess.check_output(f"'{cxx}' --version", shell=True) # type: ignore
-            cxx = cxx.decode('utf-8').strip().split('\n', maxsplit=1)[0]  # type: ignore
+            cxx = subprocess.check_output(f"'{cxx}' --version", shell=True)  # type: ignore
+            cxx = cxx.decode("utf-8").strip().split("\n", maxsplit=1)[0]  # type: ignore
         except subprocess.SubprocessError:
             cxx = "Not found"
         data.append(("Compiler ($CXX)", cxx))
@@ -462,7 +464,10 @@ def auto_select_lib_and_device() -> None:
         os.environ["USE_PYTORCH"] = "True"
         os.environ["USE_CUDA"] = "False"
         os.environ["USE_MPS"] = "False"
-    raise ModuleNotFoundError("Install Tensorflow or Pytorch before building analyzer")
+    logger.warning(
+        "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
+        " the library."
+    )
 
 
 def get_device(ignore_cpu: bool = True) -> str:
@@ -491,5 +496,6 @@ def auto_select_viz_library() -> None:
     else:
         os.environ["USE_PILLOW"] = "True"
         os.environ["USE_OPENCV"] = "False"
+
 
 # pylint: enable=import-outside-toplevel
