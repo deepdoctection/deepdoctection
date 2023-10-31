@@ -37,8 +37,8 @@ import numpy.typing as npt
 from numpy import float32, uint8
 
 from .detection_types import ImageType
-from .file_utils import get_opencv_requirement, get_pillow_requirement, opencv_available, pillow_available
 from .env_info import auto_select_viz_library
+from .file_utils import get_opencv_requirement, get_pillow_requirement, opencv_available, pillow_available
 
 if opencv_available():
     import cv2
@@ -329,12 +329,13 @@ class VizPackageHandler:
         :return: either 'pillow' or 'cv2'
         """
 
-        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_OPENCV", False)) else None
-        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_PILLOW", True)) else None
+        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_OPENCV", "False")) else None
+        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_PILLOW", "True")) else None
 
         if not maybe_cv2 and not maybe_pil:
-            raise EnvironmentError("Both variables USE_OPENCV and USE_PILLOW are set to True. "
-                                   "Please set only one of them.")
+            raise EnvironmentError(
+                "Both variables USE_OPENCV and USE_PILLOW are set to True. Please set only one of them."
+            )
 
         # USE_OPENCV has priority
         if maybe_cv2:
@@ -657,6 +658,7 @@ class VizPackageHandler:
         name = "q, x: quit / s: save"
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.show(name)
+
 
 auto_select_viz_library()
 viz_handler = VizPackageHandler()

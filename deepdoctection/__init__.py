@@ -391,11 +391,6 @@ _IMPORT_STRUCTURE = {
     ],
 }
 
-if not tf_available() and not pytorch_available():
-    logger.info(
-        "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
-        " the library."
-    )
 
 # disable TF warnings for versions > 2.4.1
 if tf_available():
