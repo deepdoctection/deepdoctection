@@ -441,11 +441,13 @@ def auto_select_lib_and_device() -> None:
             os.environ["USE_PYTORCH"] = "False"
             os.environ["USE_CUDA"] = "True"
             os.environ["USE_MPS"] = "False"
+            return
         if pytorch_available():
             os.environ["USE_TENSORFLOW"] = "False"
             os.environ["USE_PYTORCH"] = "True"
             os.environ["USE_CUDA"] = "False"
-        raise ModuleNotFoundError("Install Pytorch and Torchvision to run with a CPU")
+            return
+        logger.warning("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
     if pytorch_available():
         import torch
 
