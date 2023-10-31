@@ -25,6 +25,7 @@ and
 <https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
 """
 
+import ast
 import base64
 import os
 import sys
@@ -37,6 +38,7 @@ from numpy import float32, uint8
 
 from .detection_types import ImageType
 from .file_utils import get_opencv_requirement, get_pillow_requirement, opencv_available, pillow_available
+from .env_info import auto_select_viz_library
 
 if opencv_available():
     import cv2
@@ -323,24 +325,28 @@ class VizPackageHandler:
     def _select_package() -> str:
         """
         USE_OPENCV has priority and will enforce to use OpenCV
-        Otherwise it will use Pillow as default package, if it is installed.
-        If Pillow is not installed it will try to load OpenCV again
+        Otherwise it will use Pillow as default package
         :return: either 'pillow' or 'cv2'
         """
-        if os.environ.get("USE_OPENCV") is not None:
+
+        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_OPENCV", False)) else None
+        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_PILLOW", True)) else None
+
+        if not maybe_cv2 and not maybe_pil:
+            raise EnvironmentError("Both variables USE_OPENCV and USE_PILLOW are set to True. "
+                                   "Please set only one of them.")
+
+        # USE_OPENCV has priority
+        if maybe_cv2:
             requirements = get_opencv_requirement()
             if not requirements[1]:
                 raise ImportError(requirements[2])
-            return "cv2"
+            return maybe_cv2
+
         requirements = get_pillow_requirement()
-        if os.environ["USE_PILLOW"]:
-            if not requirements[1]:
-                raise ImportError(requirements[2])
-            return "pillow"
-        requirements = get_opencv_requirement()
         if not requirements[1]:
             raise ImportError(requirements[2])
-        return "cv2"
+        return "pillow"
 
     def _set_vars(self, package: str) -> None:
         self.pkg_func_dict = self.PACKAGE_FUNCS[package]
@@ -652,5 +658,5 @@ class VizPackageHandler:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.show(name)
 
-
+auto_select_viz_library()
 viz_handler = VizPackageHandler()

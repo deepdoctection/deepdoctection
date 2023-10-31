@@ -23,10 +23,11 @@ Module for **deep**doctection analyzer.
 -user factory with a reduced config setting
 """
 
+import ast
 import os
 from os import environ
 from shutil import copyfile
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 from ..extern.base import ObjectDetector
 from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
@@ -347,7 +348,7 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
+    lib = "TF" if ast.literal_eval(os.environ["USE_TENSORFLOW"]) else "PT"
     device = get_device()
     dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
     _maybe_copy_config_to_cache(_TESSERACT)
