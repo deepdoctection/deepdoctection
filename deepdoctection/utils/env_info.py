@@ -19,6 +19,7 @@
 Some useful function for collecting environment information
 """
 
+import ast
 import importlib
 import os
 import re
@@ -459,7 +460,7 @@ def auto_select_lib_and_device() -> None:
         if torch.backends.mps.is_available():
             os.environ["USE_TENSORFLOW"] = "False"
             os.environ["USE_PYTORCH"] = "True"
-            os.environ["USE_CUDA"] = "True"
+            os.environ["USE_CUDA"] = "False"
             os.environ["USE_MPS"] = "True"
             return
         os.environ["USE_TENSORFLOW"] = "False"
@@ -481,9 +482,9 @@ def get_device(ignore_cpu: bool = True) -> str:
     :return: Either cuda or mps
     """
 
-    if os.environ.get("USE_CUDA"):
+    if ast.literal_eval(os.environ.get("USE_CUDA")):
         return "cuda"
-    if os.environ.get("USE_MPS"):
+    if ast.literal_eval(os.environ.get("USE_MPS")):
         return "mps"
     if not ignore_cpu:
         return "cpu"
