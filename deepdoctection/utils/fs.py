@@ -29,8 +29,10 @@ from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
 from .detection_types import ImageType, JsonDict, Pathlike
+from .develop import deprecated
 from .logger import logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
+from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
 from .utils import FileExtensionError, is_file_extension
 from .viz import viz_handler
@@ -45,6 +47,11 @@ __all__ = [
     "is_file_extension",
     "load_json",
     "FileExtensionError",
+    "sub_path",
+    "get_package_path",
+    "get_configs_dir_path",
+    "get_weights_dir_path",
+    "get_dataset_dir_path",
 ]
 
 
@@ -239,3 +246,47 @@ def load_json(path_ann: Pathlike) -> JsonDict:
     with open(path_ann, "r", encoding="utf-8") as file:
         json_dict = json.loads(file.read())
     return json_dict
+
+
+def get_package_path() -> Path:
+    """
+    :return: full base path of this package
+    """
+    return PATH
+
+
+def get_weights_dir_path() -> Path:
+    """
+    :return: full base path to the model dir
+    """
+    return MODEL_DIR
+
+
+def get_configs_dir_path() -> Path:
+    """
+    :return: full base path to the configs dir
+    """
+    return CONFIGS
+
+
+def get_dataset_dir_path() -> Path:
+    """
+    :return: full base path to the dataset dir
+    """
+    return DATASET_DIR
+
+
+@deprecated("Use pathlib operations instead", "2022-06-08")
+def sub_path(anchor_dir: str, *paths: str) -> str:
+    """
+    Generate a path from the anchor directory and various paths args.
+
+        sub_path(/path/to,"dir1","dir2")
+
+    will return `/path/to/dir1/dir2`
+
+    :param anchor_dir: anchor directory
+    :param paths: args of directories that should be added to path
+    :return: sub_path
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(anchor_dir)), *paths)
