@@ -739,7 +739,7 @@ class Page(Image):
                         self.image,
                         boxes,
                         category_names_list,
-                        font_scale=1.0,
+                        font_scale=1.,
                         rectangle_thickness=4,
                     )
                 else:
