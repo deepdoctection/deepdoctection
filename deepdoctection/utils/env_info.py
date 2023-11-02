@@ -16,7 +16,34 @@
 # limitations under the License.
 
 """
-Some useful function for collecting environment information
+Some useful function for collecting environment information.
+
+This is also the place where we give an overview of the important environment variables.
+
+`USE_TENSORFLOW
+USE_PYTORCH
+USE_CUDA
+USE_MPS`
+
+are responsible for selecting the predictors based on the installed DL framework and available devices.
+It is not recommended to touch them.
+
+`USE_PILLOW
+USE_OPENCV`
+
+decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
+to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
+Use the variables to let choose `viz_handler` according to your preferences.
+
+`HF_CREDENTIALS`
+
+will be used by the `ModelDownloadManager` to pass your credentials if you have a model registered that resides in a
+private repo.
+
+`MODEL_CATALOG`
+
+can store an (absolute) path to a `.jsonl` file.
+
 """
 
 import ast

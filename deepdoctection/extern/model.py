@@ -24,6 +24,7 @@ from copy import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Union
 
+import jsonlines
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
@@ -815,6 +816,35 @@ class ModelCatalog:
         if name in ModelCatalog.CATALOG:
             raise KeyError("Model already registered")
         ModelCatalog.CATALOG[name] = profile
+
+    @staticmethod
+    def load_profiles_from_file(path: Optional[str] = None) -> None:
+        """
+        Load model profiles from a jsonl file and extend `CATALOG` with the new profiles.
+
+        :param path: Path to the file. `None` is allowed but it will do nothing.
+        """
+        if not path:
+            return
+        with jsonlines.open(path) as reader:
+            for obj in reader:
+                if not obj["name"] in ModelCatalog.CATALOG:
+                    ModelCatalog.register(obj["name"], ModelProfile(**obj))
+
+    @staticmethod
+    def save_profiles_to_file(target_path: str) -> None:
+        """
+        Save model profiles to a jsonl file.
+
+        :param target_path: Path to the file.
+        """
+        with jsonlines.open(target_path, mode="w") as writer:
+            for profile in ModelCatalog.CATALOG.values():
+                writer.write(profile.as_dict())
+
+
+# Additional profiles can be added
+ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))
 
 
 def get_tp_weight_names(name: str) -> List[str]:
