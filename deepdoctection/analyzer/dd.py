@@ -349,7 +349,7 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
     lib = "TF" if ast.literal_eval(os.environ["USE_TENSORFLOW"]) else "PT"
-    device = get_device()
+    device = get_device(False)
     dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
     _maybe_copy_config_to_cache(_TESSERACT)
 

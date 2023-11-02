@@ -482,9 +482,9 @@ def get_device(ignore_cpu: bool = True) -> str:
     :return: Either cuda or mps
     """
 
-    if ast.literal_eval(os.environ.get("USE_CUDA")):
+    if ast.literal_eval(os.environ.get("USE_CUDA", "True")):
         return "cuda"
-    if ast.literal_eval(os.environ.get("USE_MPS")):
+    if ast.literal_eval(os.environ.get("USE_MPS", "True")):
         return "mps"
     if not ignore_cpu:
         return "cpu"
