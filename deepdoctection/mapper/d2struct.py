@@ -121,6 +121,11 @@ def pt_nms_image_annotations(
     """
     if len(anns) == 1:
         return [anns[0].annotation_id]
+
+    # if all annotations are the same and prio is set, we need to return all annotation ids
+    if prio and all(ann.category_name == anns[0].category_name for ann in anns):
+        return [ann.annotation_id for ann in anns]
+
     if not anns:
         return []
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")

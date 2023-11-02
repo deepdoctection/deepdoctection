@@ -74,7 +74,7 @@ WORD_MATCHING:
     - row_header
   RULE: ioa
   THRESHOLD: 0.6
-  MAX_PARENT_ONLY: False
+  MAX_PARENT_ONLY: True
 TEXT_ORDERING:
   TEXT_BLOCK_CATEGORIES:
     - title

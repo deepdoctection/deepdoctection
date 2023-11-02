@@ -20,6 +20,9 @@ The logger module itself has the common logging functions of Python's
         logger.info("Something has happened")
         logger.warning("Attention!")
         logger.error("Error happened!")
+
+Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
+`STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
 """
 
 import errno
@@ -63,10 +66,16 @@ class CustomFilter(logging.Filter):
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
+    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
+
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
         msg = colored("%(message)s", "white")
+
+        if self.std_out_verbose:
+            log_dict = getattr(record, "log_dict", "")
+            msg = f"{msg}. Additional verbose infos: {repr(log_dict)}"
 
         if record.levelno == logging.WARNING:
             fmt = f"{date}  {colored('WRN', 'magenta', attrs=['blink'])}  {msg}"
@@ -111,7 +120,7 @@ _CONFIG_DICT: Dict[str, Any] = {
     "handlers": {
         "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter", "class": "logging.StreamHandler"}
     },
-    "root": {"handlers": ["streamhandler"], "level": "INFO", "propagate": False},
+    "root": {"handlers": ["streamhandler"], "level": os.environ.get("LOG_LEVEL", "INFO"), "propagate": False},
 }
 
 
