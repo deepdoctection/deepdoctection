@@ -516,7 +516,9 @@ class TextOrderService(PipelineComponent):
                 text_block_anns.extend(residual_text_container_anns)
         for text_block_ann in text_block_anns:
             self.order_text_in_text_block(text_block_ann)
-        floating_text_block_anns_to_order = [ann for ann in text_block_anns if ann.category_name in self.floating_text_block_categories]
+        floating_text_block_anns_to_order = [
+            ann for ann in text_block_anns if ann.category_name in self.floating_text_block_categories
+        ]
         self.order_blocks(floating_text_block_anns_to_order)
 
     def _create_lines_for_words(self, word_anns: Sequence[ImageAnnotation]) -> Sequence[ImageAnnotation]:
@@ -545,8 +547,9 @@ class TextOrderService(PipelineComponent):
         :param text_block_ann: text block annotation (category one of `text_block_categories`).
         """
         text_container_ids = text_block_ann.get_relationship(Relationships.child)
-        text_container_ann = self.dp_manager.datapoint.get_annotation(annotation_ids=text_container_ids,
-                                                                      category_names=self.text_container)
+        text_container_ann = self.dp_manager.datapoint.get_annotation(
+            annotation_ids=text_container_ids, category_names=self.text_container
+        )
         if self.text_container == LayoutType.word:
             word_order_list = self.order_generator.group_words_into_lines(
                 text_container_ann, self.dp_manager.datapoint.image_id

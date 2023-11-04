@@ -18,3 +18,4 @@ snippets.py
 /snipptes.py
 /build/
 /wandb/
+.env
