@@ -67,6 +67,8 @@ class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
     std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
 
+    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
+
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")

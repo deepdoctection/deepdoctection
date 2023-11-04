@@ -5,6 +5,16 @@
 Init file for deepdoctection package
 """
 
+import importlib.util
+
+# Before doing anything else, check if the .env file exists and load it
+if importlib.util.find_spec("dotenv") is not None:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
+
+# pylint: disable=wrong-import-position
 import os
 import sys
 from typing import TYPE_CHECKING
@@ -14,6 +24,8 @@ from packaging import version
 from .utils.env_info import auto_select_lib_and_device
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import logger
+
+# pylint: enable=wrong-import-position
 
 __version__ = 0.27
 
