@@ -209,7 +209,7 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
         table.image.dump(ann)
         table.image.image_ann_to_image(ann.annotation_id)
         ann_global_box = local_to_global_coords(
-            ann.bounding_box, table.image.get_embedding(dp_image.image_id)  # type: ignore
+            ann.bounding_box, table.get_bounding_box(dp_image.image_id)  # type: ignore
         )
         assert isinstance(ann.image, Image)
         ann.image.set_embedding(table.annotation_id, ann.bounding_box)  # type: ignore
@@ -226,17 +226,16 @@ def fixture_dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     assert isinstance(table, ImageAnnotation)
     rows = dp.get_annotation_iter(category_names=LayoutType.row)
     cols = dp.get_annotation_iter(category_names=LayoutType.column)
-    assert isinstance(table.image, Image)
-    table_embedding_box = table.image.get_embedding(dp.image_id)
+    table_embedding_box = table.get_bounding_box(dp.image_id)
     for row in rows:
         assert isinstance(row, ImageAnnotation)
-        embedding_box = row.image.get_embedding(dp.image_id)  # type: ignore
+        embedding_box = row.get_bounding_box(dp.image_id)
         embedding_box.ulx = table_embedding_box.ulx + 1.0
         embedding_box.lrx = table_embedding_box.lrx - 1.0
 
     for col in cols:
         assert isinstance(col, ImageAnnotation)
-        embedding_box = col.image.get_embedding(dp.image_id)  # type: ignore
+        embedding_box = col.get_bounding_box(dp.image_id)
         embedding_box.uly = table_embedding_box.uly + 1.0
         embedding_box.lry = table_embedding_box.lry - 1.0
 

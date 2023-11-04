@@ -65,6 +65,7 @@ class CustomFilter(logging.Filter):
 
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
+
     std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
 
     std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
@@ -75,7 +76,7 @@ class StreamFormatter(logging.Formatter):
         msg = colored("%(message)s", "white")
 
         if self.std_out_verbose:
-            log_dict = getattr(record,"log_dict", "")
+            log_dict = getattr(record, "log_dict", "")
             msg = f"{msg}. Additional verbose infos: {repr(log_dict)}"
 
         if record.levelno == logging.WARNING:
@@ -109,6 +110,7 @@ class FileFormatter(logging.Formatter):
         }
         log_dict.update(record.log_dict)
         return json.dumps(log_dict)
+
 
 _LOG_DIR = None
 _CONFIG_DICT: Dict[str, Any] = {

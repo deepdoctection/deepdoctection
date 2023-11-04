@@ -62,7 +62,7 @@ class TestTextExtractionService:
         # Assert
         first_text_ann = anns[0]
 
-        embedding_bbox = first_text_ann.image.get_embedding(dp.image_id)  # type: ignore
+        embedding_bbox = first_text_ann.get_bounding_box(dp.image_id)
         assert embedding_bbox == first_text_ann.bounding_box
 
 
@@ -100,7 +100,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
         # Assert
         first_text_ann = anns[0]
 
-        embedding_bbox = first_text_ann.image.get_embedding(dp.image_id)  # type: ignore
+        embedding_bbox = first_text_ann.get_bounding_box(dp.image_id)
         assert embedding_bbox == first_text_ann.bounding_box
 
 
@@ -166,35 +166,35 @@ class TestTextExtractionServiceWithSubImage:
         third_word_ann = word_anns[2]
         fourth_word_ann = word_anns[3]
 
-        global_box_fta = first_word_ann.image.get_embedding(dp.image_id)  # type: ignore
+        global_box_fta = first_word_ann.get_bounding_box(dp.image_id)
         assert global_box_fta == word_box_global[0]
-        local_box_fta = first_word_ann.image.get_embedding(first_table_ann.annotation_id)  # type: ignore
+        local_box_fta = first_word_ann.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_fta == first_word_ann.bounding_box
-        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=first_word_ann.annotation_id)[  # type: ignore
-            0
-        ]
+        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=  # type: ignore
+                                                           first_word_ann.annotation_id)[0]
 
-        global_box_sta = second_word_ann.image.get_embedding(dp.image_id)  # type: ignore
-        assert global_box_sta == word_box_global[1]
-        local_box_sta = second_word_ann.image.get_embedding(first_table_ann.annotation_id)  # type: ignore
-        assert local_box_sta == second_word_ann.bounding_box
-        ft_text_ann = first_table_ann.image.get_annotation(  # type: ignore
-            annotation_ids=second_word_ann.annotation_id
-        )[0]
         assert isinstance(ft_text_ann, ImageAnnotation)
 
-        global_box_tta = third_word_ann.image.get_embedding(dp.image_id)  # type: ignore
+        global_box_sta = second_word_ann.get_bounding_box(dp.image_id)
+        assert global_box_sta == word_box_global[1]
+        local_box_sta = second_word_ann.get_bounding_box(first_table_ann.annotation_id)
+        assert local_box_sta == second_word_ann.bounding_box
+        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=  # type: ignore
+                                                           second_word_ann.annotation_id)[0]
+        assert isinstance(ft_text_ann, ImageAnnotation)
+
+        global_box_tta = third_word_ann.get_bounding_box(dp.image_id)
         assert global_box_tta == word_box_global[2]
-        local_box_tta = third_word_ann.image.get_embedding(second_table_ann.annotation_id)  # type: ignore
+        local_box_tta = third_word_ann.get_bounding_box(second_table_ann.annotation_id)
         assert local_box_tta == third_word_ann.bounding_box
         st_text_ann = second_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=third_word_ann.annotation_id
         )[0]
         assert isinstance(st_text_ann, ImageAnnotation)
 
-        global_box_fta = fourth_word_ann.image.get_embedding(dp.image_id)  # type: ignore
+        global_box_fta = fourth_word_ann.get_bounding_box(dp.image_id)
         assert global_box_fta == word_box_global[3]
-        local_box_fta = fourth_word_ann.image.get_embedding(second_table_ann.annotation_id)  # type: ignore
+        local_box_fta = fourth_word_ann.get_bounding_box(second_table_ann.annotation_id)
         assert local_box_fta == fourth_word_ann.bounding_box
         st_text_ann = second_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=fourth_word_ann.annotation_id

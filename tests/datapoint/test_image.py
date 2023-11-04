@@ -278,7 +278,7 @@ class TestImage:
         assert cat_1.image
         assert cat_1.image.height == 4
         assert cat_1.image.width == 10
-        assert cat_1.image.get_embedding(test_image.image_id) == BoundingBox(
+        assert cat_1.get_bounding_box(test_image.image_id) == BoundingBox(
             ulx=15.0, uly=20.0, width=10.0, height=4.0, absolute_coords=True
         )
         assert cat_1.image.image.shape == (4, 10, 3)
