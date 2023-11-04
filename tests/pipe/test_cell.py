@@ -107,17 +107,17 @@ class TestSubImageLayoutService:
         first_table_second_cell = first_table_cell_anns[1]
         second_table_first_cell = second_table_cell_anns[0]
 
-        global_box_ftfc = first_table_first_cell.image.get_embedding(dp.image_id)
+        global_box_ftfc = first_table_first_cell.get_bounding_box(dp.image_id)
         assert global_box_ftfc == exp_global_boxes_first_table[0]
-        local_box_ftfc = first_table_first_cell.image.get_embedding(first_table_ann.annotation_id)
+        local_box_ftfc = first_table_first_cell.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_ftfc == first_table_first_cell.bounding_box
 
-        global_box_ftsc = first_table_second_cell.image.get_embedding(dp.image_id)
+        global_box_ftsc = first_table_second_cell.get_bounding_box(dp.image_id)
         assert global_box_ftsc == exp_global_boxes_first_table[1]
-        local_box_ftsc = first_table_second_cell.image.get_embedding(first_table_ann.annotation_id)
+        local_box_ftsc = first_table_second_cell.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_ftsc == first_table_second_cell.bounding_box
 
-        global_box_stfc = second_table_first_cell.image.get_embedding(dp.image_id)
+        global_box_stfc = second_table_first_cell.get_bounding_box(dp.image_id)
         assert global_box_stfc == exp_global_boxes_scd_table[0]
-        local_box_stfc = second_table_first_cell.image.get_embedding(second_table_ann.annotation_id)
+        local_box_stfc = second_table_first_cell.get_bounding_box(second_table_ann.annotation_id)
         assert local_box_stfc == second_table_first_cell.bounding_box

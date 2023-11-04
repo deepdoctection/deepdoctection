@@ -69,13 +69,9 @@ def image_to_hf_detr_training(
     annotations = []
 
     for ann in anns:
-        if ann.image is not None:
-            box = ann.image.get_embedding(dp.image_id)
-        else:
-            box = ann.bounding_box
-        if box is None:
-            raise ValueError("BoundingBox cannot be None")
-        mapped_ann: Dict[str, Union[str, int, List[float]]] = {
+        box = ann.get_bounding_box(dp.image_id)
+
+        mapped_ann: Dict[str, Union[str, int, float, List[float]]] = {
             "id": "".join([c for c in ann.annotation_id if c.isdigit()])[:8],
             "image_id": "".join([c for c in dp.image_id if c.isdigit()])[:8],
             "bbox": box.to_list(mode="xywh"),

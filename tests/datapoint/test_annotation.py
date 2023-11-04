@@ -22,11 +22,11 @@ Testing the module datapoint.annotation
 import pytest
 from pytest import mark
 
-from deepdoctection.datapoint import CategoryAnnotation
+from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
 from deepdoctection.utils.settings import get_type
 
-from .conftest import CatAnn
+from .conftest import CatAnn, WhiteImage
 
 
 class TestCategoryAnnotation:
@@ -142,3 +142,29 @@ class TestCategoryAnnotation:
 
         # Assert
         assert cat.state_id == "8301eef5-bd4a-3c10-9dad-7cae94dd150b"
+
+    @staticmethod
+    @mark.basic
+    def test_get_bounding_box(image: WhiteImage) -> None:
+        """
+        Bounding boxes are getting returned correctly
+        """
+
+        # Arrange
+        cat = ImageAnnotation(
+            category_name="FOO",
+            category_id="1",
+            bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
+        )
+        cat.image = Image(location=image.loc, file_name=image.file_name)
+        cat.image.set_embedding(
+            cat.image.image_id, BoundingBox(ulx=4.0, uly=5.0, width=1.0, height=2.0, absolute_coords=True)
+        )
+
+        # Act
+        box = cat.get_bounding_box()
+        image_box = cat.get_bounding_box(cat.image.image_id)
+
+        # Assert
+        assert box == BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True)
+        assert image_box == BoundingBox(ulx=4.0, uly=5.0, width=1.0, height=2.0, absolute_coords=True)

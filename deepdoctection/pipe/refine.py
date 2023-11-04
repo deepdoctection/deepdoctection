@@ -421,9 +421,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                 no_context_error = True
                 if len(cells_to_merge) != 1:
                     cells = dp.get_annotation(annotation_ids=list(cells_to_merge))
-                    cell_boxes = [
-                        cell.image.get_embedding(table.image.image_id) for cell in cells if cell.image is not None
-                    ]
+                    cell_boxes = [cell.get_bounding_box(table.image.image_id) for cell in cells]
                     merged_box = merge_boxes(*cell_boxes)
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
@@ -467,13 +465,13 @@ class TableSegmentationRefinementService(PipelineComponent):
             # TODO: the summaries should be sub categories of the underlying ann
             if table.image.summary is not None:
                 if TableType.number_of_rows in table.image.summary.sub_categories:
-                    table.image.summary.remove_sub_category(TableType.number_of_rows)
+                    table.get_summary(TableType.number_of_rows)
                 if TableType.number_of_columns in table.image.summary.sub_categories:
-                    table.image.summary.remove_sub_category(TableType.number_of_columns)
+                    table.get_summary(TableType.number_of_columns)
                 if TableType.max_row_span in table.image.summary.sub_categories:
-                    table.image.summary.remove_sub_category(TableType.max_row_span)
+                    table.get_summary(TableType.max_row_span)
                 if TableType.max_col_span in table.image.summary.sub_categories:
-                    table.image.summary.remove_sub_category(TableType.max_col_span)
+                    table.get_summary(TableType.max_col_span)
 
             self.dp_manager.set_summary_annotation(
                 TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id

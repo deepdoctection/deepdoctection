@@ -132,10 +132,7 @@ def image_to_raw_layoutlm_features(
             segment_positions = [segment_positions]
         segment_anns = dp.get_annotation(category_names=segment_positions)
         for segm_ann in segment_anns:
-            if segm_ann.image is not None:
-                bounding_box = segm_ann.image.get_embedding(dp.image_id)
-            else:
-                bounding_box = segm_ann.bounding_box
+            bounding_box = segm_ann.get_bounding_box(dp.image_id)
             if not bounding_box.absolute_coords:
                 bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
             word_id_to_segment_box.update(
@@ -152,11 +149,7 @@ def image_to_raw_layoutlm_features(
             raise ValueError(f"word must be of type str but is of type {type(word)}")
         all_words.append(word)
 
-        if ann.image is not None:
-            box = ann.image.get_embedding(dp.image_id)
-        else:
-            box = ann.bounding_box
-        assert box is not None, box
+        box = ann.get_bounding_box(dp.image_id)
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
         all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
