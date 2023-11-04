@@ -88,6 +88,7 @@ _DEPS = [
     "python-doctr==0.7.0",
     "fasttext",
     # dev dependencies
+    "python-dotenv==1.0.0",
     "click",  # version will not break black
     "black==23.7.0",
     "isort",
@@ -183,6 +184,7 @@ test_deps = deps_list("pytest", "pytest-cov")
 
 # dev dependencies
 dev_deps = deps_list(
+    "python-dotenv",
     "click",
     "black",
     "isort",
