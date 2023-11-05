@@ -427,6 +427,24 @@ class ImageAnnotation(CategoryAnnotation):
     def get_state_attributes() -> List[str]:
         return ["active", "sub_categories", "relationships", "image"]
 
+    def get_bounding_box(self, image_id: Optional[str] = None) -> BoundingBox:
+        """Get bounding from image embeddings or, if not available or if `image_id` is not provided,
+        from `bounding_box`. Raises `ValueError` if no bounding box is available."""
+        if self.image and image_id:
+            box = self.image.get_embedding(image_id)
+        else:
+            box = self.bounding_box
+        if box:
+            return box
+        raise ValueError(f"bounding_box has not been initialized for {self.annotation_id}")
+
+    def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
+        """Get summary sub categories from `image`. Raises `ValueError` if `key` is not available"""
+        if self.image:
+            if self.image.summary:
+                return self.image.summary.get_sub_category(key)
+        raise ValueError(f"Summary does not exist for {self.annotation_id} and key: {key}")
+
 
 @dataclass
 class SummaryAnnotation(CategoryAnnotation):

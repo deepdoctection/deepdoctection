@@ -70,10 +70,9 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
         Get the bounding box as list and in absolute coordinates of the base page.
         """
-        if self.image:
-            bounding_box = self.image.get_embedding(self.base_page.image_id)
-        else:
-            bounding_box = self.bounding_box
+
+        bounding_box = self.get_bounding_box(self.base_page.image_id)
+
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
@@ -106,7 +105,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         if self.image is not None:
             if self.image.summary is not None:
                 if item in self.image.summary.sub_categories:
-                    sub_cat = self.image.summary.get_sub_category(get_type(item))
+                    sub_cat = self.get_summary(get_type(item))
                     if item != sub_cat.category_name:
                         return sub_cat.category_name
                     if isinstance(sub_cat, ContainerAnnotation):
@@ -739,7 +738,7 @@ class Page(Image):
                         self.image,
                         boxes,
                         category_names_list,
-                        font_scale=1.,
+                        font_scale=1.0,
                         rectangle_thickness=4,
                     )
                 else:

@@ -476,9 +476,7 @@ class Image:
         assert ann.bounding_box is not None
         box = ann.bounding_box.to_list("xyxy")
         proposals = self.get_annotation(category_names)
-        points = np.array(
-            [prop.image.get_embedding(self.image_id).center for prop in proposals if prop.image is not None]
-        )
+        points = np.array([prop.get_bounding_box(self.image_id).center for prop in proposals])
         ann_ids = np.array([prop.annotation_id for prop in proposals])
         indices = np.where(
             (box[0] < points[:, 0]) & (box[1] < points[:, 1]) & (box[2] > points[:, 0]) & (box[3] > points[:, 1])
@@ -492,19 +490,16 @@ class Image:
                 )
             sub_image.image.set_embedding(
                 annotation_id,
-                global_to_local_coords(
-                    sub_image.image.get_embedding(self.image_id), ann.image.get_embedding(self.image_id)
-                ),
+                global_to_local_coords(sub_image.get_bounding_box(self.image_id), ann.get_bounding_box(self.image_id)),
             )
             ann.image.dump(sub_image)
 
     def remove_image_from_lower_hierachy(self) -> None:
         """Will remove all images from image annotations."""
         for ann in self.annotations:
-            if ann.image is not None:
-                absolute_bounding_box = ann.image.get_embedding(self.image_id)
-                ann.bounding_box = absolute_bounding_box
-                ann.image = None
+            absolute_bounding_box = ann.get_bounding_box(self.image_id)
+            ann.bounding_box = absolute_bounding_box
+            ann.image = None
 
     @classmethod
     @no_type_check

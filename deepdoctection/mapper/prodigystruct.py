@@ -168,10 +168,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
         if ann.score is not None:
             box["score"] = float(round(ann.score, 3))
         box["type"] = "rect"
-        if ann.image is not None:
-            bounding_box = ann.image.get_embedding(dp.image_id)
-        else:
-            bounding_box = ann.bounding_box
+        bounding_box = ann.get_bounding_box(dp.image_id)
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
         boxes = [

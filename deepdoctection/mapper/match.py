@@ -95,11 +95,8 @@ def match_anns_by_intersection(
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_ann_boxes = np.array(
         [
-            ann.image.get_embedding(dp.image_id)
-            .transform(dp.width, dp.height, absolute_coords=True)
-            .to_list(mode="xyxy")
+            ann.get_bounding_box(dp.image_id).transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
             for ann in child_anns
-            if ann.image is not None
         ]
     )
 
@@ -117,11 +114,8 @@ def match_anns_by_intersection(
     parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
     parent_ann_boxes = np.array(
         [
-            ann.image.get_embedding(dp.image_id)
-            .transform(dp.width, dp.height, absolute_coords=True)
-            .to_list(mode="xyxy")
+            ann.get_bounding_box(dp.image_id).transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
             for ann in parent_anns
-            if ann.image is not None
         ]
     )
 

@@ -80,12 +80,7 @@ def image_to_d2_frcnn_training(
     annotations = []
 
     for ann in anns:
-        if ann.image is not None:
-            box = ann.image.get_embedding(dp.image_id)
-        else:
-            box = ann.bounding_box
-        if box is None:
-            raise ValueError("BoundingBox cannot be None")
+        box = ann.get_bounding_box(dp.image_id)
         if not box.absolute_coords:
             box = box.transform(dp.width, dp.height, absolute_coords=True)
 
@@ -129,17 +124,10 @@ def pt_nms_image_annotations(
     if not anns:
         return []
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
-    if image_id:
-        boxes = torch.tensor(
-            [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
-        )
-        # if we do not have image embeddings but pass an image_id
-        if not boxes.shape[0]:
-            boxes = torch.tensor(
-                [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
-            )
-    else:
-        boxes = torch.tensor([ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None])
+    # safety net to ensure we do not run into a ValueError
+    boxes = torch.tensor(
+        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+    )
 
     def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
         if ann.category_name == priority:
@@ -202,7 +190,7 @@ def to_wandb_image(
         class_set = Classes([{"name": val, "id": int(key)} for key, val in categories.items()])
 
     for ann in anns:
-        bounding_box = ann.image.get_embedding(dp.image_id) if ann.image is not None else ann.bounding_box
+        bounding_box = ann.get_bounding_box(dp.image_id)
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, True)
         category_name, category_id, score = _get_category_attributes(ann, cat_to_sub_cat)
