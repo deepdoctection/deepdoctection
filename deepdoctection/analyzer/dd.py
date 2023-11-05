@@ -70,13 +70,15 @@ if boto3_available():
     from botocore.config import Config  # type: ignore
 
 
-__all__ = ["get_dd_analyzer", "build_analyzer"]
+__all__ = ["maybe_copy_config_to_cache", "config_sanity_checks", "build_detector", "build_padder",
+           "build_service", "build_sub_image_service", "build_ocr", "build_doctr_word",
+           "get_dd_analyzer", "build_analyzer"]
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
-def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
+def maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
     """
     Initial copying of config file from the package dir into the config cache.
 
@@ -91,7 +93,7 @@ def _maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
     return absolute_path
 
 
-def _config_sanity_checks(cfg: AttrDict) -> None:
+def config_sanity_checks(cfg: AttrDict) -> None:
     if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
         raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
     if cfg.OCR.USE_TESSERACT and (cfg.OCR.USE_DOCTR or cfg.OCR.USE_TEXTRACT):
@@ -101,7 +103,7 @@ def _config_sanity_checks(cfg: AttrDict) -> None:
         )
 
 
-def _build_detector(
+def build_detector(
     cfg: AttrDict, mode: str
 ) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector", "D2FrcnnTracingDetector"]:
     weights = (
@@ -141,7 +143,7 @@ def _build_detector(
     )
 
 
-def _build_padder(cfg: AttrDict, mode: str) -> PadTransform:
+def build_padder(cfg: AttrDict, mode: str) -> PadTransform:
     top, right, bottom, left = (
         getattr(cfg.PT, mode).PAD.TOP,
         getattr(cfg.PT, mode).PAD.RIGHT,
@@ -151,27 +153,27 @@ def _build_padder(cfg: AttrDict, mode: str) -> PadTransform:
     return PadTransform(top=top, right=right, bottom=bottom, left=left)
 
 
-def _build_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> ImageLayoutService:
+def build_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> ImageLayoutService:
     padder = None
     if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
-        padder = _build_padder(cfg, mode)
+        padder = build_padder(cfg, mode)
     return ImageLayoutService(detector, to_image=True, crop_image=True, padder=padder)
 
 
-def _build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> SubImageLayoutService:
+def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> SubImageLayoutService:
     exclude_category_ids = []
     padder = None
     if mode == "ITEM":
         if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
             exclude_category_ids.extend(["1", "3", "4", "5", "6"])
-            padder = _build_padder(cfg, mode)
+            padder = build_padder(cfg, mode)
     detect_result_generator = DetectResultGenerator(detector.categories, exclude_category_ids=exclude_category_ids)
     return SubImageLayoutService(
         detector, [LayoutType.table, LayoutType.table_rotated], None, detect_result_generator, padder
     )
 
 
-def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
     if cfg.OCR.USE_TESSERACT:
         ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
         return TesseractOcrDetector(
@@ -194,7 +196,7 @@ def _build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer
     raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
 
 
-def _build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
+def build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
     weights = cfg.OCR.WEIGHTS.DOCTR_WORD.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_WORD.PT
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
@@ -215,8 +217,8 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     pipe_component_list: List[PipelineComponent] = []
 
     if cfg.USE_LAYOUT:
-        d_layout = _build_detector(cfg, "LAYOUT")
-        layout = _build_service(d_layout, cfg, "LAYOUT")
+        d_layout = build_detector(cfg, "LAYOUT")
+        layout = build_service(d_layout, cfg, "LAYOUT")
         pipe_component_list.append(layout)
 
     # setup layout nms service
@@ -232,13 +234,13 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
     # setup tables service
     if cfg.USE_TABLE_SEGMENTATION:
-        d_item = _build_detector(cfg, "ITEM")
-        item = _build_sub_image_service(d_item, cfg, "ITEM")
+        d_item = build_detector(cfg, "ITEM")
+        item = build_sub_image_service(d_item, cfg, "ITEM")
         pipe_component_list.append(item)
 
         if d_item.__class__.__name__ not in ("HFDetrDerivedDetector",):
-            d_cell = _build_detector(cfg, "CELL")
-            cell = _build_sub_image_service(d_cell, cfg, "CELL")
+            d_cell = build_detector(cfg, "CELL")
+            cell = build_sub_image_service(d_cell, cfg, "CELL")
             pipe_component_list.append(cell)
 
         if d_item.__class__.__name__ in ("HFDetrDerivedDetector",):
@@ -278,11 +280,11 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     if cfg.USE_OCR:
         # the extra mile for DocTr
         if cfg.OCR.USE_DOCTR:
-            d_word = _build_doctr_word(cfg)
+            d_word = build_doctr_word(cfg)
             word = ImageLayoutService(d_word, to_image=True, crop_image=True, skip_if_layout_extracted=True)
             pipe_component_list.append(word)
 
-        ocr = _build_ocr(cfg)
+        ocr = build_ocr(cfg)
         skip_if_text_extracted = cfg.USE_PDF_MINER
         extract_from_roi = LayoutType.word if cfg.OCR.USE_DOCTR else None
         text = TextExtractionService(
@@ -350,8 +352,8 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     config_overwrite = [] if config_overwrite is None else config_overwrite
     lib = "TF" if ast.literal_eval(os.environ["USE_TENSORFLOW"]) else "PT"
     device = get_device(False)
-    dd_one_config_path = _maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
-    _maybe_copy_config_to_cache(_TESSERACT)
+    dd_one_config_path = maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
+    maybe_copy_config_to_cache(_TESSERACT)
 
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path)
@@ -365,7 +367,7 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     if config_overwrite:
         cfg.update_args(config_overwrite)
 
-    _config_sanity_checks(cfg)
+    config_sanity_checks(cfg)
     logger.info("Config: \n %s", str(cfg), cfg.to_dict())
 
     # will silent all TP logging while building the tower
