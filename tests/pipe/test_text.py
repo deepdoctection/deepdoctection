@@ -170,8 +170,9 @@ class TestTextExtractionServiceWithSubImage:
         assert global_box_fta == word_box_global[0]
         local_box_fta = first_word_ann.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_fta == first_word_ann.bounding_box
-        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=  # type: ignore
-                                                           first_word_ann.annotation_id)[0]
+        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=first_word_ann.annotation_id)[  # type: ignore
+            0
+        ]
 
         assert isinstance(ft_text_ann, ImageAnnotation)
 
@@ -179,8 +180,9 @@ class TestTextExtractionServiceWithSubImage:
         assert global_box_sta == word_box_global[1]
         local_box_sta = second_word_ann.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_sta == second_word_ann.bounding_box
-        ft_text_ann = first_table_ann.image.get_annotation(annotation_ids=  # type: ignore
-                                                           second_word_ann.annotation_id)[0]
+        ft_text_ann = first_table_ann.image.get_annotation(
+            annotation_ids=second_word_ann.annotation_id  # type: ignore
+        )[0]
         assert isinstance(ft_text_ann, ImageAnnotation)
 
         global_box_tta = third_word_ann.get_bounding_box(dp.image_id)

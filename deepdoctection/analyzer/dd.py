@@ -44,6 +44,7 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
+from ..utils.detection_types import Pathlike
 from ..utils.env_info import get_device
 from ..utils.file_utils import (
     boto3_available,
@@ -70,23 +71,38 @@ if boto3_available():
     from botocore.config import Config  # type: ignore
 
 
-__all__ = ["maybe_copy_config_to_cache", "config_sanity_checks", "build_detector", "build_padder",
-           "build_service", "build_sub_image_service", "build_ocr", "build_doctr_word",
-           "get_dd_analyzer", "build_analyzer"]
+__all__ = [
+    "maybe_copy_config_to_cache",
+    "config_sanity_checks",
+    "build_detector",
+    "build_padder",
+    "build_service",
+    "build_sub_image_service",
+    "build_ocr",
+    "build_doctr_word",
+    "get_dd_analyzer",
+    "build_analyzer",
+]
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
-def maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
+def maybe_copy_config_to_cache(
+    package_path: Pathlike, configs_dir_path: Pathlike, file_name: str, force_copy: bool = True
+) -> str:
     """
-    Initial copying of config file from the package dir into the config cache.
+    Initial copying of various files
+    :param package_path: base path to directory of source file `file_name`
+    :param configs_dir_path: base path to target directory
+    :param file_name: file to copy
+    :param force_copy: If file is already in target directory, will re-copy the file
 
     :return: path to the copied file_name
     """
 
-    absolute_path_source = os.path.join(get_package_path(), file_name)
-    absolute_path = os.path.join(get_configs_dir_path(), os.path.join("dd", os.path.split(file_name)[1]))
+    absolute_path_source = os.path.join(package_path, file_name)
+    absolute_path = os.path.join(configs_dir_path, os.path.join("dd", os.path.split(file_name)[1]))
     mkdir_p(os.path.split(absolute_path)[0])
     if not os.path.isfile(absolute_path) or force_copy:
         copyfile(absolute_path_source, absolute_path)
@@ -94,6 +110,7 @@ def maybe_copy_config_to_cache(file_name: str, force_copy: bool = True) -> str:
 
 
 def config_sanity_checks(cfg: AttrDict) -> None:
+    """Some config sanity checks"""
     if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
         raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
     if cfg.OCR.USE_TESSERACT and (cfg.OCR.USE_DOCTR or cfg.OCR.USE_TEXTRACT):
@@ -106,6 +123,12 @@ def config_sanity_checks(cfg: AttrDict) -> None:
 def build_detector(
     cfg: AttrDict, mode: str
 ) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector", "D2FrcnnTracingDetector"]:
+    """Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
+    the config
+
+    :param cfg: Config
+    :param mode: either `LAYOUT`,`CELL` or `ITEM`
+    """
     weights = (
         getattr(cfg.TF, mode).WEIGHTS
         if cfg.LIB == "TF"
@@ -144,6 +167,12 @@ def build_detector(
 
 
 def build_padder(cfg: AttrDict, mode: str) -> PadTransform:
+    """Building a padder according to the config
+
+    :param cfg: Config
+    :param mode: either `LAYOUT`,`CELL` or `ITEM`
+    :return `PadTransform` instance
+    """
     top, right, bottom, left = (
         getattr(cfg.PT, mode).PAD.TOP,
         getattr(cfg.PT, mode).PAD.RIGHT,
@@ -154,6 +183,13 @@ def build_padder(cfg: AttrDict, mode: str) -> PadTransform:
 
 
 def build_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> ImageLayoutService:
+    """Building a layout service with a given detector
+
+    :param detector: will be passed to the `ImageLayoutService`
+    :param cfg: Configuration
+    :param mode: either `LAYOUT`,`CELL` or `ITEM`
+    :return `ImageLayoutService` instance
+    """
     padder = None
     if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
         padder = build_padder(cfg, mode)
@@ -161,6 +197,14 @@ def build_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> ImageLa
 
 
 def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) -> SubImageLayoutService:
+    """
+    Building a sub image layout service with a given detector
+
+    :param detector: will be passed to the `SubImageLayoutService`
+    :param cfg: Configuration
+    :param mode: either `LAYOUT`,`CELL` or `ITEM`
+    :return: `SubImageLayoutService` instance
+    """
     exclude_category_ids = []
     padder = None
     if mode == "ITEM":
@@ -174,6 +218,10 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
 
 
 def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    """
+    Building OCR predictor
+    :param cfg: Config
+    """
     if cfg.OCR.USE_TESSERACT:
         ocr_config_path = get_configs_dir_path() / cfg.OCR.CONFIG.TESSERACT
         return TesseractOcrDetector(
@@ -197,6 +245,7 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
 
 
 def build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
+    """Building `DoctrTextlineDetector` instance """
     weights = cfg.OCR.WEIGHTS.DOCTR_WORD.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_WORD.PT
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
@@ -352,8 +401,10 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     config_overwrite = [] if config_overwrite is None else config_overwrite
     lib = "TF" if ast.literal_eval(os.environ["USE_TENSORFLOW"]) else "PT"
     device = get_device(False)
-    dd_one_config_path = maybe_copy_config_to_cache(_DD_ONE, reset_config_file)
-    maybe_copy_config_to_cache(_TESSERACT)
+    dd_one_config_path = maybe_copy_config_to_cache(
+        get_package_path(), get_configs_dir_path(), _DD_ONE, reset_config_file
+    )
+    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
 
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path)

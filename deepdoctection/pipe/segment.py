@@ -723,9 +723,9 @@ class TableSegmentationService(PipelineComponent):
 
                 # we will assume that either all or no image attribute has been generated
                 items.sort(
-                    key=lambda x: x.get_bounding_box(dp.image_id).cx # pylint: disable=W0640
+                    key=lambda x: x.get_bounding_box(dp.image_id).cx  # pylint: disable=W0640
                     if item_name == LayoutType.column  # pylint: disable=W0640
-                    else x.get_bounding_box(dp.image_id).cy # pylint: disable=W0640
+                    else x.get_bounding_box(dp.image_id).cy  # pylint: disable=W0640
                 )
 
                 for item_number, item in enumerate(items, 1):
