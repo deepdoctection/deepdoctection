@@ -62,12 +62,7 @@ def image_to_tp_frcnn_training(
         return None
 
     for ann in anns:
-        if ann.image is not None:
-            box = ann.image.get_embedding(dp.image_id)
-        else:
-            box = ann.bounding_box
-        if box is None:
-            raise ValueError("BoundingBox cannot be None")
+        box = ann.get_bounding_box(dp.image_id)
         all_boxes.append(box.to_list(mode="xyxy"))
         all_categories.append(ann.category_id)
 
@@ -103,18 +98,8 @@ def tf_nms_image_annotations(
     if not anns:
         return []
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
-    if image_id:
-        boxes = convert_to_tensor(
-            [ann.image.get_embedding(image_id).to_list(mode="xyxy") for ann in anns if ann.image is not None]
-        )
-        if not boxes.shape[0]:
-            boxes = convert_to_tensor(
-                [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
-            )
-    else:
-        boxes = convert_to_tensor(
-            [ann.bounding_box.to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
-        )
+
+    boxes = convert_to_tensor([ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns])
 
     def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
         if ann.category_name == priority:

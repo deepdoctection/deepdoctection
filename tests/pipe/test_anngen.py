@@ -72,7 +72,7 @@ class TestDatapointManager:
         # Assert
         ann = dp_manager.datapoint.get_annotation()
         assert ann[0].image is not None
-        assert ann[0].bounding_box == ann[0].image.get_embedding(dp_image.image_id)
+        assert ann[0].bounding_box == ann[0].get_bounding_box(dp_image.image_id)
 
     @staticmethod
     @mark.basic
@@ -173,7 +173,7 @@ class TestDatapointManager:
         assert cat_1.category_name == "foo"
         assert cat_1.category_id == "1"
 
-        cat_2 = ann[0].image.summary.get_sub_category(get_type("bak"))  # type: ignore
+        cat_2 = ann[0].get_summary(get_type("bak"))
         assert cat_2.annotation_id == summ_id_2
         assert cat_2.category_name == "bak"
         assert cat_2.category_id == "2"

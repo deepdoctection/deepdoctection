@@ -59,17 +59,13 @@ def test_stretch_items(dp_image_tab_cell_item: Image, dp_image_item_stretched: I
     cols_expected = dp_expected.get_annotation(category_names=item_names[1])
 
     for row, row_expected in zip(rows, rows_expected):
-        assert isinstance(row.image, Image)
-        row_embedding = row.image.get_embedding(dp.image_id)
-        assert isinstance(row_expected.image, Image)
-        row_expected_embedding = row_expected.image.get_embedding(dp_expected.image_id)
+        row_embedding = row.get_bounding_box(dp.image_id)
+        row_expected_embedding = row_expected.get_bounding_box(dp_expected.image_id)
         assert row_embedding == row_expected_embedding
 
     for col, col_expected in zip(cols, cols_expected):
-        assert isinstance(col.image, Image)
-        col_embedding = col.image.get_embedding(dp.image_id)
-        assert isinstance(col_expected.image, Image)
-        col_expected_embedding = col_expected.image.get_embedding(dp_expected.image_id)
+        col_embedding = col.get_bounding_box(dp.image_id)
+        col_expected_embedding = col_expected.get_bounding_box(dp_expected.image_id)
         assert col_embedding == col_expected_embedding
 
 
@@ -186,13 +182,11 @@ def test_tile_tables_with_items_per_table(
     rows = dp.get_annotation(category_names=LayoutType.row)
     cols = dp.get_annotation(category_names=LayoutType.column)
 
-    assert rows[0].image is not None and rows[1].image is not None
-    first_row_box = rows[0].image.get_embedding(dp.image_id)
-    second_row_box = rows[1].image.get_embedding(dp.image_id)
+    first_row_box = rows[0].get_bounding_box(dp.image_id)
+    second_row_box = rows[1].get_bounding_box(dp.image_id)
 
-    assert cols[0].image is not None and cols[1].image is not None
-    first_col_box = cols[0].image.get_embedding(dp.image_id)
-    second_col_box = cols[1].image.get_embedding(dp.image_id)
+    first_col_box = cols[0].get_bounding_box(dp.image_id)
+    second_col_box = cols[1].get_bounding_box(dp.image_id)
 
     assert first_row_box == row_box_tiling_table[0]
     assert second_row_box == row_box_tiling_table[1]

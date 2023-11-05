@@ -124,10 +124,11 @@ class DatapointManager:
         :return: the annotation_id of the generated image annotation
         """
         self.assert_datapoint_passed()
-        assert detect_result.class_id, detect_result.class_id
+        if detect_result.class_id is None:
+            raise ValueError("class_id of detect_result cannot be None")
         if not isinstance(detect_result.box, (list, np.ndarray)):
             raise TypeError(
-                f"detect_result.box must be of type list or np.ndarray, " f"but is of type {(type(detect_result.box))}"
+                f"detect_result.box must be of type list or np.ndarray, but is of type {(type(detect_result.box))}"
             )
         detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
         with MappingContextManager(
@@ -156,13 +157,15 @@ class DatapointManager:
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
-                assert parent_ann.image, parent_ann.image
+                if parent_ann.image is None:
+                    raise ValueError("image cannot be None")
                 parent_ann.image.dump(ann)
                 parent_ann.image.image_ann_to_image(ann.annotation_id)
                 ann_global_box = local_to_global_coords(
-                    ann.bounding_box, parent_ann.image.get_embedding(self.datapoint.image_id)  # type: ignore
+                    ann.bounding_box, parent_ann.get_bounding_box(self.datapoint.image_id)  # type: ignore
                 )
-                assert ann.image, ann.image
+                if ann.image is None:
+                    raise ValueError("image cannot be None")
                 ann.image.set_embedding(parent_ann.annotation_id, ann.bounding_box)
                 ann.image.set_embedding(self.datapoint.image_id, ann_global_box)
                 parent_ann.dump_relationship(Relationships.child, ann.annotation_id)

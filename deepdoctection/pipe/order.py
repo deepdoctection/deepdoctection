@@ -74,10 +74,7 @@ class OrderGenerator:
         reading_lines = []
         rows: List[Dict[str, float]] = []
         for word in word_anns:
-            if word.image is not None and image_id is not None:
-                bounding_box = word.image.get_embedding(image_id)
-            else:
-                bounding_box = word.bounding_box
+            bounding_box = word.get_bounding_box(image_id)
             row_found = False
             for idx, row in enumerate(rows):
                 row_cy = (row["upper"] + row["lower"]) / 2
@@ -117,10 +114,7 @@ class OrderGenerator:
         """
         reading_lines = []
         for ann in line_anns:
-            if ann.image is not None and image_id is not None:
-                bounding_box = ann.image.get_embedding(image_id)
-            else:
-                bounding_box = ann.bounding_box
+            bounding_box = ann.get_bounding_box(image_id)
             reading_lines.append((bounding_box.cy, ann.annotation_id))
         reading_lines.sort(key=lambda x: x[0])
         return [(idx + 1, idx + 1, line[1]) for idx, line in enumerate(reading_lines)]
@@ -188,11 +182,7 @@ class OrderGenerator:
             )
         )
         for ann in anns:
-            if ann.image is not None and image_id is not None:
-                bounding_box = ann.image.get_embedding(image_id)
-            else:
-                bounding_box = ann.bounding_box
-
+            bounding_box = ann.get_bounding_box(image_id)
             if bounding_box.absolute_coords:
                 rel_coords_box = bounding_box.transform(image_width, image_height)
             else:
@@ -363,7 +353,7 @@ class TextLineGenerator:
             ann_meta_per_row = [ann_meta for ann_meta in word_order_list if ann_meta[1] == row]
             ann_ids = [ann_meta[2] for ann_meta in ann_meta_per_row]
             anns_per_row = [word_anns_dict[ann_id] for ann_id in ann_ids]
-            anns_per_row.sort(key=lambda x: x.image.get_embedding(image_id).ulx)  # type: ignore
+            anns_per_row.sort(key=lambda x: x.get_bounding_box(image_id).ulx)
 
             if len(anns_per_row) >= 2 or not self.make_sub_lines:
                 # words are already sorted horizontally
@@ -371,12 +361,8 @@ class TextLineGenerator:
                 sub_line_ann_ids = [anns_per_row[0].annotation_id]
                 for idx, ann in enumerate(anns_per_row[1:]):
                     horiz_break = True
-                    if image_id is not None:
-                        prev_box = sub_line[-1].image.get_embedding(image_id)  # type: ignore
-                        current_box = ann.image.get_embedding(image_id)  # type: ignore
-                    else:
-                        prev_box = sub_line[-1].bounding_box
-                        current_box = ann.bounding_box
+                    prev_box = sub_line[-1].get_bounding_box(image_id)
+                    current_box = ann.get_bounding_box(image_id)
 
                     if prev_box.absolute_coords:
                         prev_box = prev_box.transform(image_width, image_height)
@@ -384,17 +370,15 @@ class TextLineGenerator:
                         current_box = current_box.transform(image_width, image_height)
 
                     # If distance between boxes is lower than paragraph break, same subline
-                    if current_box.ulx - prev_box.lrx < self.paragraph_break:
+                    if current_box.ulx - prev_box.lrx < self.paragraph_break:  # type: ignore
                         horiz_break = False
 
                     if horiz_break or idx == len(anns_per_row) - 2:
                         if idx == len(anns_per_row) - 2:
                             sub_line.append(ann)
                             sub_line_ann_ids.append(ann.annotation_id)
-                        if image_id is not None:
-                            boxes = [ann.image.get_embedding(image_id) for ann in sub_line]  # type: ignore
-                        else:
-                            boxes = [ann.bounding_box for ann in sub_line]
+
+                        boxes = [ann.get_bounding_box(image_id) for ann in sub_line]
                         merge_box = merge_boxes(*boxes)
                         detection_result = self._make_detect_result(merge_box, {"child": sub_line_ann_ids})
                         detection_result_list.append(detection_result)
@@ -405,7 +389,7 @@ class TextLineGenerator:
                     sub_line_ann_ids.append(ann.annotation_id)
             else:
                 # either row has only one word or all words should belong to one line
-                boxes = [ann.image.get_embedding(image_id) for ann in anns_per_row]  # type: ignore
+                boxes = [ann.get_bounding_box(image_id) for ann in anns_per_row]
                 merge_box = merge_boxes(*boxes)
                 detection_result = self._make_detect_result(
                     merge_box, {"child": [ann.annotation_id for ann in anns_per_row]}

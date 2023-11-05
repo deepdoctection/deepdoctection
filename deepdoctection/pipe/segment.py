@@ -75,21 +75,13 @@ def choose_items_by_iou(
                                      `reference_item_proposals`
     """
     item_proposals_boxes = np.array(
-        [
-            item.image.get_embedding(dp.image_id).to_list(mode="xyxy")
-            for item in item_proposals
-            if item.image is not None
-        ]
+        [item.get_bounding_box(dp.image_id).to_list(mode="xyxy") for item in item_proposals]
     )
 
     triangle_ind = None
     if reference_item_proposals is not None:
         reference_item_proposals_boxes = np.array(
-            [
-                item.image.get_embedding(dp.image_id).to_list(mode="xyxy")
-                for item in reference_item_proposals
-                if item.image is not None
-            ]
+            [item.get_bounding_box(dp.image_id).to_list(mode="xyxy") for item in reference_item_proposals]
         )
 
     else:
@@ -143,12 +135,12 @@ def stretch_item_per_table(
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
     if table.image is None:
         raise ValueError("table.image cannot be None")
-    table_embedding_box = table.image.get_embedding(dp.image_id)
+    table_embedding_box = table.get_bounding_box(dp.image_id)
 
     for row in rows:
         if row.image is None:
             raise ValueError("row.image cannot be None")
-        row_embedding_box = row.image.get_embedding(dp.image_id)
+        row_embedding_box = row.get_bounding_box(dp.image_id)
         row_embedding_box.ulx = table_embedding_box.ulx + 1.0
         row_embedding_box.lrx = table_embedding_box.lrx - 1.0
 
@@ -173,7 +165,7 @@ def stretch_item_per_table(
     for col in cols:
         if col.image is None:
             raise ValueError("row.image cannot be None")
-        col_embedding_box = col.image.get_embedding(dp.image_id)
+        col_embedding_box = col.get_bounding_box(dp.image_id)
         col_embedding_box.uly = table_embedding_box.uly + 1.0
         col_embedding_box.lry = table_embedding_box.lry - 1.0
 
@@ -201,7 +193,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
 ) -> None:
     if table.image is None:
         raise ValueError("table.image cannot be None")
-    table_embedding_box = table.image.get_embedding(dp.image_id)
+    table_embedding_box = table.get_bounding_box(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
     tmp_item_table_xy = 1.0
@@ -213,9 +205,9 @@ def _tile_by_stretching_rows_left_and_rightwise(
         ):
             if item.image is None:
                 raise ValueError("item.image cannot be None")
-            item_embedding_box = item.image.get_embedding(dp.image_id)
+            item_embedding_box = item.get_bounding_box(dp.image_id)
             if idx != len(items) - 1:
-                next_item_embedding_box = items[idx + 1].image.get_embedding(dp.image_id)  # type: ignore
+                next_item_embedding_box = items[idx + 1].get_bounding_box(dp.image_id)
                 tmp_next_item_xy = (
                     (item_embedding_box.lry + next_item_embedding_box.uly) / 2
                     if item_name == LayoutType.row
@@ -236,9 +228,9 @@ def _tile_by_stretching_rows_left_and_rightwise(
             item.image.set_embedding(dp.image_id, new_embedding_box)
             tmp_item_xy = tmp_next_item_xy
 
-            item_table_embedding_box = item.image.get_embedding(table.annotation_id)
+            item_table_embedding_box = item.get_bounding_box(table.annotation_id)
             if idx != len(items) - 1:
-                next_item_table_embedding_box = items[idx + 1].image.get_embedding(table.annotation_id)  # type: ignore
+                next_item_table_embedding_box = items[idx + 1].get_bounding_box(table.annotation_id)
                 tmp_table_next_item_xy = (
                     (item_table_embedding_box.lry + next_item_table_embedding_box.uly) / 2
                     if item_name == LayoutType.row
@@ -265,7 +257,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
 ) -> None:
     if table.image is None:
         raise ValueError("table.image cannot be None")
-    table_embedding_box = table.image.get_embedding(dp.image_id)
+    table_embedding_box = table.get_bounding_box(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
     tmp_item_table_xy = 1.0
@@ -277,7 +269,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
         ):
             if item.image is None:
                 raise ValueError("item.image cannot be None")
-            item_embedding_box = item.image.get_embedding(dp.image_id)
+            item_embedding_box = item.get_bounding_box(dp.image_id)
             new_embedding_box = BoundingBox(
                 ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
                 uly=tmp_item_xy if item_name == LayoutType.row else item_embedding_box.uly,
@@ -285,7 +277,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
                 lry=item_embedding_box.lry,
                 absolute_coords=True,
             )
-            item_table_embedding_box = item.image.get_embedding(table.annotation_id)
+            item_table_embedding_box = item.get_bounding_box(table.annotation_id)
             new_table_embedding_box = BoundingBox(
                 ulx=item_table_embedding_box.ulx if item_name == LayoutType.row else tmp_item_table_xy,
                 uly=tmp_item_table_xy if item_name == LayoutType.row else item_table_embedding_box.uly,
@@ -344,18 +336,11 @@ def tile_tables_with_items_per_table(
     item_ann_ids = table.get_relationship(Relationships.child)
     items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
 
-    if items[0].image is not None:
-        items.sort(
-            key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
-            if item_name == LayoutType.column
-            else x.image.get_embedding(dp.image_id).cy  # type: ignore
-        )
-    else:
-        items.sort(
-            key=lambda x: x.bounding_box.cx  # type: ignore
-            if item_name == LayoutType.column
-            else x.bounding_box.cy  # type: ignore
-        )
+    items.sort(
+        key=lambda x: x.get_bounding_box(dp.image_id).cx
+        if item_name == LayoutType.column
+        else x.get_bounding_box(dp.image_id).cy
+    )
 
     if stretch_rule == "left":
         _tile_by_stretching_rows_leftwise_column_downwise(dp, items, table, item_name)
@@ -516,8 +501,8 @@ def create_intersection_cells(
     :param sub_item_names: ObjectTypes for row-/column number
     :return: Pair of lists of `DetectionResult` and `SegmentationResult`.
     """
-    boxes_rows = [row.image.get_embedding(table_annotation_id) for row in rows if row.image is not None]
-    boxes_cols = [col.image.get_embedding(table_annotation_id) for col in cols if col.image is not None]
+    boxes_rows = [row.get_bounding_box(table_annotation_id) for row in rows]
+    boxes_cols = [col.get_bounding_box(table_annotation_id) for col in cols]
 
     boxes_cells = intersection_boxes(boxes_rows, boxes_cols)
     detect_result_cells = []
@@ -737,18 +722,12 @@ class TableSegmentationService(PipelineComponent):
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
 
                 # we will assume that either all or no image attribute has been generated
-                if items[0].image is not None:
-                    items.sort(
-                        key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
-                        if item_name == LayoutType.column  # pylint: disable=W0640
-                        else x.image.get_embedding(dp.image_id).cy  # type: ignore
-                    )
-                else:
-                    items.sort(
-                        key=lambda x: x.bounding_box.cx  # type: ignore
-                        if item_name == LayoutType.column  # pylint: disable=W0640
-                        else x.bounding_box.cy  # type: ignore
-                    )
+                items.sort(
+                    key=lambda x: x.get_bounding_box(dp.image_id).cx # pylint: disable=W0640
+                    if item_name == LayoutType.column  # pylint: disable=W0640
+                    else x.get_bounding_box(dp.image_id).cy # pylint: disable=W0640
+                )
+
                 for item_number, item in enumerate(items, 1):
                     self.dp_manager.set_category_annotation(
                         sub_item_name, item_number, sub_item_name, item.annotation_id
@@ -942,18 +921,11 @@ class PubtablesSegmentationService(PipelineComponent):
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
 
                 # we will assume that either all or no image attribute has been generated
-                if items[0].image is not None:
-                    items.sort(
-                        key=lambda x: x.image.get_embedding(dp.image_id).cx  # type: ignore
-                        if item_name == LayoutType.column  # pylint: disable=W0640
-                        else x.image.get_embedding(dp.image_id).cy  # type: ignore
-                    )
-                else:
-                    items.sort(
-                        key=lambda x: x.bounding_box.cx  # type: ignore
-                        if item_name == LayoutType.column  # pylint: disable=W0640
-                        else x.bounding_box.cy  # type: ignore
-                    )
+                items.sort(
+                    key=lambda x: x.get_bounding_box(dp.image_id).cx
+                    if item_name == LayoutType.column  # pylint: disable=W0640
+                    else x.get_bounding_box(dp.image_id).cy
+                )
 
                 for item_number, item in enumerate(items, 1):
                     self.dp_manager.set_category_annotation(
