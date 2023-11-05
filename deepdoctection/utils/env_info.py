@@ -494,6 +494,7 @@ def auto_select_lib_and_device() -> None:
         os.environ["USE_PYTORCH"] = "True"
         os.environ["USE_CUDA"] = "False"
         os.environ["USE_MPS"] = "False"
+        return
     logger.warning(
         "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
         " the library."
