@@ -25,6 +25,7 @@ Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 `STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
 """
 
+import ast
 import errno
 import functools
 import json
@@ -68,14 +69,12 @@ class StreamFormatter(logging.Formatter):
 
     std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
 
-    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
-
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
         msg = colored("%(message)s", "white")
 
-        if self.std_out_verbose:
+        if ast.literal_eval(self.std_out_verbose):
             log_dict = getattr(record, "log_dict", "")
             msg = f"{msg}. Additional verbose infos: {repr(log_dict)}"
 
