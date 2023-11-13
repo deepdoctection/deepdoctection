@@ -385,7 +385,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _pillow_read_image(path: str) -> ImageType:
-        with Image.open(path) as image:
+        with Image.open(path).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 

@@ -87,7 +87,7 @@ def dataflow_to_json(
                 viz_handler.write_image(str(target_file_png), image)
 
             with open(target_file, "w", encoding="UTF-8") as file:
-                json.dump(dp, file)
+                json.dump(dp, file, indent=2)
 
     else:
         if not file_name:
