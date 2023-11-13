@@ -2,7 +2,7 @@
 # File: __init__.py
 
 """
-Init file for deepdoctection package
+Init file for deepdoctection package. This file is used to import all submodules and to set some environment variables
 """
 
 import importlib.util
