@@ -245,7 +245,7 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
 
 
 def build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
-    """Building `DoctrTextlineDetector` instance """
+    """Building `DoctrTextlineDetector` instance"""
     weights = cfg.OCR.WEIGHTS.DOCTR_WORD.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_WORD.PT
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)

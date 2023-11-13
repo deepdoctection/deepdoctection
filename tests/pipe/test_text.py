@@ -180,7 +180,7 @@ class TestTextExtractionServiceWithSubImage:
         assert global_box_sta == word_box_global[1]
         local_box_sta = second_word_ann.get_bounding_box(first_table_ann.annotation_id)
         assert local_box_sta == second_word_ann.bounding_box
-        ft_text_ann = first_table_ann.image.get_annotation( # type: ignore
+        ft_text_ann = first_table_ann.image.get_annotation(  # type: ignore
             annotation_ids=second_word_ann.annotation_id
         )[0]
         assert isinstance(ft_text_ann, ImageAnnotation)

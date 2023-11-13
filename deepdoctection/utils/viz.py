@@ -328,9 +328,8 @@ class VizPackageHandler:
         Otherwise it will use Pillow as default package
         :return: either 'pillow' or 'cv2'
         """
-
-        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_OPENCV", "False")) else None
-        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_PILLOW", "True")) else None
+        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_DD_OPENCV", "False")) else None
+        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_DD_PILLOW", "True")) else None
 
         if not maybe_cv2 and not maybe_pil:
             raise EnvironmentError(
@@ -385,7 +384,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _pillow_read_image(path: str) -> ImageType:
-        with Image.open(path) as image:
+        with Image.open(path).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
