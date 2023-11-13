@@ -328,8 +328,8 @@ class VizPackageHandler:
         Otherwise it will use Pillow as default package
         :return: either 'pillow' or 'cv2'
         """
-        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_DD_OPENCV","False")) else None
-        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_DD_PILLOW","True")) else None
+        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_DD_OPENCV", "False")) else None
+        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_DD_PILLOW", "True")) else None
 
         if not maybe_cv2 and not maybe_pil:
             raise EnvironmentError(
