@@ -28,8 +28,8 @@ USE_MPS`
 are responsible for selecting the predictors based on the installed DL framework and available devices.
 It is not recommended to touch them.
 
-`USE_PILLOW
-USE_OPENCV`
+`USE_DD_PILLOW
+USE_DD_OPENCV`
 
 decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
 to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
@@ -521,12 +521,16 @@ def get_device(ignore_cpu: bool = True) -> str:
 
 def auto_select_viz_library() -> None:
     """Setting PIL as default image library if cv2 is not installed"""
+
+    # if env variables are already set, don't change them
+    if os.environ.get("USE_DD_PILLOW") or os.environ.get("USE_DD_OPENCV"):
+        return
     if opencv_available():
-        os.environ["USE_PILLOW"] = "False"
-        os.environ["USE_OPENCV"] = "True"
+        os.environ["USE_DD_PILLOW"] = "False"
+        os.environ["USE_DD_OPENCV"] = "True"
     else:
-        os.environ["USE_PILLOW"] = "True"
-        os.environ["USE_OPENCV"] = "False"
+        os.environ["USE_DD_PILLOW"] = "True"
+        os.environ["USE_DD_OPENCV"] = "False"
 
 
 # pylint: enable=import-outside-toplevel
