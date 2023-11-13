@@ -76,6 +76,7 @@ _DEPS = [
     # PyTorch related dependencies
     "timm",
     "transformers",
+    "accelerate",
     # As maintenance of Detectron2 decreases, we will now use our own Fork the keep updating after rigorous testing.
     # This will hopefully prevent from issues like 233
     "detectron2 @ git+https://github.com/deepdoctection/detectron2.git",
@@ -150,7 +151,7 @@ additional_deps = deps_list(
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "python-doctr")
+pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr")
 
 source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
 
@@ -168,6 +169,7 @@ docs_deps = deps_list(
     "tensorpack",
     "boto3",
     "transformers",
+    "accelerate",
     "pdfplumber",
     "lxml",
     "lxml-stubs",
