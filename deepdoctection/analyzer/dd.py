@@ -272,6 +272,8 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
     # setup layout nms service
     if cfg.LAYOUT_NMS_PAIRS.COMBINATIONS and cfg.USE_LAYOUT:
+        if not detectron2_available() and cfg.LIB == "PT":
+            raise ModuleNotFoundError("LAYOUT_NMS_PAIRS is only available for detectron2")
         if not isinstance(cfg.LAYOUT_NMS_PAIRS.COMBINATIONS, list) and not isinstance(
             cfg.LAYOUT_NMS_PAIRS.COMBINATIONS[0], list
         ):
@@ -399,7 +401,7 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if ast.literal_eval(os.environ["USE_TENSORFLOW"]) else "PT"
+    lib = "TF" if ast.literal_eval(os.environ.get("USE_TENSORFLOW", "False")) else "PT"
     device = get_device(False)
     dd_one_config_path = maybe_copy_config_to_cache(
         get_package_path(), get_configs_dir_path(), _DD_ONE, reset_config_file
