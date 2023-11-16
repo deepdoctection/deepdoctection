@@ -282,7 +282,7 @@ def interactive_imshow(img: ImageType) -> None:
 class VizPackageHandler:
     """
     A handler for the image processing libraries PIL or OpenCV. Explicit use of the libraries is not intended.
-    If the environ.ment variable USE_OPENCV=True is set, only the CV2 functions will be used via the handler.
+    If the environ.ment variable USE_DD_OPENCV=True is set, only the CV2 functions will be used via the handler.
     The default library is PIL. Compared to OpenCV, PIL is somewhat slower (this applies to reading and writing
     image files), which can lead to a bottleneck during training, especially if the loading is not parallelized
     """
@@ -324,7 +324,7 @@ class VizPackageHandler:
     @staticmethod
     def _select_package() -> str:
         """
-        USE_OPENCV has priority and will enforce to use OpenCV
+        USE_DD_OPENCV has priority and will enforce to use OpenCV
         Otherwise it will use Pillow as default package
         :return: either 'pillow' or 'cv2'
         """
@@ -333,10 +333,14 @@ class VizPackageHandler:
 
         if not maybe_cv2 and not maybe_pil:
             raise EnvironmentError(
-                "Both variables USE_OPENCV and USE_PILLOW are set to True. Please set only one of them."
+                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to True. Please set only one of them to True"
+            )
+        if maybe_cv2 and maybe_pil:
+            raise EnvironmentError(
+                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to False. Please set one of them to True."
             )
 
-        # USE_OPENCV has priority
+        # USE_DD_OPENCV has priority
         if maybe_cv2:
             requirements = get_opencv_requirement()
             if not requirements[1]:
@@ -363,7 +367,7 @@ class VizPackageHandler:
 
         **Example**
 
-           os.env["USE_OPENCV"]="True"
+           os.env["USE_DD_OPENCV"]="True"
            viz_handler.refresh()             # this will reset the original config and now use OpenCV
 
         :return:
