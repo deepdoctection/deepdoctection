@@ -30,7 +30,17 @@ from .utils.logger import logger
 __version__ = 0.28
 
 _IMPORT_STRUCTURE = {
-    "analyzer": ["get_dd_analyzer", "build_analyzer"],
+    "analyzer": [
+        "maybe_copy_config_to_cache",
+        "config_sanity_checks",
+        "build_detector",
+        "build_padder",
+        "build_service",
+        "build_sub_image_service",
+        "build_ocr",
+        "build_doctr_word",
+        "get_dd_analyzer",
+        "build_analyzer"],
     "configs": [],
     "dataflow": [
         "DataFlowTerminated",
