@@ -40,7 +40,8 @@ _IMPORT_STRUCTURE = {
         "build_ocr",
         "build_doctr_word",
         "get_dd_analyzer",
-        "build_analyzer"],
+        "build_analyzer",
+    ],
     "configs": [],
     "dataflow": [
         "DataFlowTerminated",
