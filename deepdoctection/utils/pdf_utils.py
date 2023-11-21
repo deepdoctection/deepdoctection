@@ -28,7 +28,7 @@ from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
 from numpy import uint8
-from PyPDF2 import PdfReader, PdfWriter, errors
+from PyPDF2 import PdfFileReader, PdfFileWriter, errors
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
@@ -70,7 +70,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: Pathlike) -> PdfReader:
+def get_pdf_file_reader(path: Pathlike) -> PdfFileReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
@@ -88,7 +88,7 @@ def get_pdf_file_reader(path: Pathlike) -> PdfReader:
     with open(path, "rb") as file:
         qpdf_called = False
         try:
-            input_pdf_as_bytes = PdfReader(file)
+            input_pdf_as_bytes = PdfFileReader(file)
         except (errors.PdfReadError, AttributeError):
             _ = decrypt_pdf_document(path)
             qpdf_called = True
@@ -100,15 +100,15 @@ def get_pdf_file_reader(path: Pathlike) -> PdfReader:
                     logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
                     sys.exit()
 
-    file_reader = PdfReader(open(path, "rb"))  # pylint: disable=R1732
+    file_reader = PdfFileReader(open(path, "rb"))  # pylint: disable=R1732
     return file_reader
 
 
-def get_pdf_file_writer() -> PdfWriter:
+def get_pdf_file_writer() -> PdfFileWriter:
     """
     `PdfWriter` instance
     """
-    return PdfWriter()
+    return PdfFileWriter()
 
 
 class PDFStreamer:
@@ -131,7 +131,7 @@ class PDFStreamer:
         :param path: to a pdf.
         """
         self.file_reader = get_pdf_file_reader(path)
-        self.file_writer = PdfWriter()
+        self.file_writer = PdfFileWriter()
 
     def __len__(self) -> int:
         return len(self.file_reader.pages)
