@@ -802,7 +802,7 @@ class ModelCatalog:
         profile = ModelCatalog.CATALOG.get(name)
         if profile is not None:
             return copy(profile)
-        return ModelProfile(name="", description="", size=[0], tp_model=False)
+        raise KeyError("Model Profile does not exist. Please make sure the model is registered")
 
     @staticmethod
     def register(name: str, profile: ModelProfile) -> None:
