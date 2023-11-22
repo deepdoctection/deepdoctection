@@ -227,7 +227,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=dist_deps,
     extras_require=EXTRA_DEPS,
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*", "tests_d2"]),
     package_data={
         "deepdoctection.configs": ["*.yaml"],
         "deepdoctection.datasets.instances.xsl": ["*.xsl"],
