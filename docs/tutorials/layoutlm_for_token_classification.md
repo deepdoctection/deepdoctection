@@ -174,9 +174,16 @@ trained model by using a confusion matrix.
     def get_layoutlm_pipeline():
         path_config_json = "/path/to/dir/checkpoint-300/config.json"
         path_weights = "/path/to/dir/checkpoint-300/pytorch_model.bin"
-        text_line_predictor = dd.DoctrTextlineDetector()
+
+        path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        categories_tl = dd.ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+        text_line_predictor = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories_tl, "cpu", "PT")
+
         layout_component = dd.ImageLayoutService(text_line_predictor, to_image=True, crop_image=True)
-        text_recognizer = dd.DoctrTextRecognizer()
+        
+        
+        path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+        text_recognizer = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu", "PT")
         text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
     
         layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
@@ -193,8 +200,7 @@ trained model by using a confusion matrix.
     
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
         layoutlm_component = dd.LMTokenClassifierService(tokenizer_fast,
-                                                         layoutlm_token_classifier,
-                                                         dd.image_to_layoutlm_features)
+                                                         layoutlm_token_classifier)
         
         # adding a text order service to get an arrangment of words from top to bottom and left to right.
         reading_order = dd.TextOrderService(text_container="word")
@@ -246,12 +252,12 @@ trained model by using a confusion matrix.
 
 ```python
 
-    word_list = dp.items[0].words
-    word_list.sort(key=lambda x: x.reading_order) 
+    word_list = dp.words
+    word_list.sort(key=lambda x: x.reading_order)
     output = [["#", "LABEL"]]
     for word in word_list:
-        output.append([word.text, word.token_class + "-" + word.tag])
-    
+        output.append([word.characters, word.token_class + "-" + word.tag])
+
     print(tabulate(output, headers="firstrow"))
 ```
 
@@ -389,12 +395,12 @@ trained model by using a confusion matrix.
 
 ```python
 
-    word_list = dp.items[0].words
-    word_list.sort(key=lambda x: x.reading_order) 
+    word_list = dp.words
+    word_list.sort(key=lambda x: x.reading_order)
     output = [["#", "LABEL"]]
     for word in word_list:
-        output.append([word.text, word.token_class + "-" + word.tag])
-    
+        output.append([word.characters, word.token_class + "-" + word.tag])
+
     print(tabulate(output, headers="firstrow"))
 ```
 
