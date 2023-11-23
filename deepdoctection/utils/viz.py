@@ -221,13 +221,15 @@ def draw_boxes(
         box_color_by_category = False
 
     category_to_color = {}
-    if box_color_by_category:
-        category_names = set(category_names_list)  # type: ignore
+    if box_color_by_category and category_names_list is not None:
+        category_names = set(category_names_list)
         category_to_color = {category: random_color() for category in category_names}
 
     boxes = np.array(boxes, dtype="int32")
     if category_names_list is not None:
         assert len(category_names_list) == len(boxes), f"{len(category_names_list)} != {len(boxes)}"
+    else:
+        category_names_list = [None] * len(boxes)
     areas = (boxes[:, 2] - boxes[:, 0] + 1) * (boxes[:, 3] - boxes[:, 1] + 1)
     sorted_inds = np.argsort(-areas)  # draw large ones first
     assert areas.min() > 0, areas.min()
@@ -246,17 +248,16 @@ def draw_boxes(
         np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)
     for i in sorted_inds:
         box = boxes[i, :]
-        if category_names_list is not None:
-            choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
-            if choose_color is None:
-                choose_color = random_color()
-            if category_names_list[i] is not None:
-                np_image = viz_handler.draw_text(
-                    np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
-                )
-            np_image = viz_handler.draw_rectangle(
-                np_image, (box[0], box[1], box[2], box[3]), choose_color, rectangle_thickness
+        choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
+        if choose_color is None:
+            choose_color = random_color()
+        if category_names_list[i] is not None:
+            np_image = viz_handler.draw_text(
+                np_image, (box[0], box[1]), category_names_list[i], color=choose_color, font_scale=font_scale
             )
+        np_image = viz_handler.draw_rectangle(
+            np_image, (box[0], box[1], box[2], box[3]), choose_color, rectangle_thickness
+        )
 
     # draw a (very ugly) color palette
     y_0 = np_image.shape[0]

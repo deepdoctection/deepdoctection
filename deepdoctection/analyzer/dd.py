@@ -113,10 +113,10 @@ def config_sanity_checks(cfg: AttrDict) -> None:
     """Some config sanity checks"""
     if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
         raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
-    if cfg.OCR.USE_TESSERACT and (cfg.OCR.USE_DOCTR or cfg.OCR.USE_TEXTRACT):
+    if cfg.OCR.USE_TESSERACT + cfg.OCR.USE_DOCTR + cfg.OCR.USE_TEXTRACT != 1:
         raise ValueError(
-            "Configuration OCR.USE_TESSERACT=True and OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True is not "
-            "allowed. Only one OCR system can be activated."
+            "Choose either OCR.USE_TESSERACT=True or OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True and set the other two "
+            "to False. Only one OCR system can be activated."
         )
 
 

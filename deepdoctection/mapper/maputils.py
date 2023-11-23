@@ -71,7 +71,8 @@ class MappingContextManager:
         context exit
         """
         if (
-            exc_type in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError)
+            exc_type
+            in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError, FileNotFoundError)
             and exc_tb is not None
         ):
             frame_summary = traceback.extract_tb(exc_tb)[0]

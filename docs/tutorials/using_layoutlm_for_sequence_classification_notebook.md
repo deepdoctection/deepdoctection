@@ -1,32 +1,34 @@
 # Using LayoutLM for sequence classification
 
-[**LayoutLM**](https://arxiv.org/abs/1912.13318) developed by Microsoft Research Asia has become a very popular model 
-for document understanding task such as sequence or token classification. In contrast to other language models even 
-the simplest version heavily relies not only on the word/token itself but also on the positional information of words 
-in the document. For scans this requires to perform OCR as a pre-processing step making the task for training or 
-experimenting with different OCR tools and putting the whole framework into production a lot more challenging. 
+[**LayoutLM**](https://arxiv.org/abs/1912.13318) developed by Microsoft Research Asia has become a very popular model for 
+document understanding task such as sequence or token classification. In contrast to other 
+language models even the simplest version heavily relies not only on the word/token itself 
+but also on the positional information of words in the document. For scans this requires to 
+perform OCR as a pre-processing step making the task for training or experimenting with 
+different OCR tools and putting the whole framework into production a lot more challenging. 
 
-In this notebook we are going to show how to train and evaluate a document classifier using LayoutLM and how to run 
-predictions with the model. We divide the task into the following steps:
+In this notebook we are going to show how to train and evaluate a document classifier using 
+LayoutLM and how to run predictions with the model. We divide the task into the following steps:
 
-- First generate a sub data set from the very large and popular [**RVL-CDIP**](https://huggingface.co/datasets/rvl_cdip) 
-dataset. In order to make the dataset ready for training we need to generate features. That means that we OCR the 
-selected documents and generate .json files with bounding boxes and detected words. The dataset has a document type 
-label for each scan. We use the labels as ground truth for training the classifier.   
+- First generate a sub data set from the very large and popular [**RVL-CDIP**](https://huggingface.co/datasets/rvl_cdip) dataset. 
+In order to make the dataset ready for training we need to generate features. That means 
+that we OCR the selected documents and generate .json files with bounding boxes and 
+detected words. The dataset has a document type label for each scan. We use the labels as 
+ground truth for training the classifier.   
 
-- We build a custom **deep**doctection data set for the sub data set. We wrap the data set into a special class to 
-create a training, eval and test split.
+- We build a custom **deep**doctection data set for the sub data set. We wrap the data set 
+into a special class to create a training, eval and test split.
 
 - We download pre-trained base models from the Huggingface hub. 
 
-- Next, we set up the environment for running the training script. We choose a metric and define the evaluation setup. 
-Then we run the training script. The script itself uses the default trainer from the transformer library with 
-standard configuration. 
+- Next, we setup the environment for running the training script. We choose a metric and 
+define the evaluation setup. Then we run the training script. The script itself uses the 
+default trainer from the transformer library with standard configuration. 
 
 - After training has finished we run evaluation on the test split. 
 
-- At the last step we show how to build a **deep**doctection pipeline with an OCR model and how to use the trained 
-model in practise. 
+- At the last step we show how to build a **deep**doctection pipeline with an OCR model and 
+how to use the trained model in practise. 
 
 This notebook requires the PyTorch framework.
 
@@ -38,16 +40,22 @@ import deepdoctection as dd
 
 ## Generating a RVL-CDIP sub data set with words and bounding box features
 
-To OCR some specific documents we first build a **deep**doctection pipeline with an OCR model. 
-We use the [**docTr library by mindee**](https://github.com/mindee/doctr) that has a concept to break the 
-OCR task into two parts: text line detection and text recognition.   
+To OCR some specific documents we first build a **deep**doctection pipeline with an OCR 
+model. We use the [**docTr library by mindee**](https://github.com/mindee/doctr) that has a concept to break the OCR 
+task into two parts: text line detection and text recognition.   
 
 
 ```python
 def get_doctr_pipe():
-    text_line_predictor = dd.DoctrTextlineDetector()
-    layout = dd.ImageLayoutService(text_line_predictor,to_image=True, crop_image=True)
-    text_recognizer = dd.DoctrTextRecognizer()
+    path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+    categories_tl = dd.ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+    text_line_predictor = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories_tl, "cpu", "PT")
+    layout = dd.ImageLayoutService(text_line_predictor, to_image=True, crop_image=True)
+
+    path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+    text_recognizer = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu", "PT")
     text = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
     analyzer = dd.DoctectionPipe(pipeline_component_list=[layout, text])
 
@@ -56,9 +64,10 @@ def get_doctr_pipe():
 
 &nbsp;
 
-Next, we use the RVL-CDIP dataset from the **deep**doctection library. This step requires the full dataset to be downloaded. 
-The full data set has more than 300k samples with 16 different labels. We choose three labels *form*, *invoice* and 
-*budget* and select around 1000 samples for each label. 
+Next, we use the RVL-CDIP dataset from the **deep** library. This step requires the full 
+dataset to be downloaded. The full data set has more than 300k samples with 16 different 
+labels. We choose three labels *form*, *invoice* and *budget* and select around 1000 
+samples for each label. 
 
 
 ```python
@@ -110,8 +119,9 @@ dd.dataflow_to_json(df, path_to_save_samples,
 
 ## Defining a data set 
 
-Having generated a dataset with features and labels at `/path/to/rvlcdip` we now copy the folder into the 
-**deep**doctection cache and define a custom data set for sequence classification.
+Having generated a dataset with features and labels at `/path/to/rvlcdip` we now copy the 
+folder into the **deep**doctection cache and define a custom data set for sequence 
+classification.
 
 
 ```python
@@ -154,7 +164,10 @@ rvlcdip = dd.CustomDataset(name = "rvl",
 
 ## Downloading the LayoutLM base model
 
-The `ModelDownloadManager` has a record for selecting and downloading LayoutLM base model. We use `layoutlm-base-uncased`. This model does not have any head yet and the top head will be specified by the task as well as by the number of labels within the training script just before the training starts.  
+The `ModelDownloadManager` has a record for selecting and downloading LayoutLM base model. 
+We use `layoutlm-base-uncased`. This model does not have any head yet and the top head will 
+be specified by the task as well as by the number of labels within the training script 
+just before the training starts.  
 
 
 ```python
@@ -182,13 +195,19 @@ merge.buffer_datasets()
 merge.split_datasets(ratio=0.1)
 ```
 
-
 ## Training
 
-We invoke `train_hf_layoutlm` to start fine-tuning the LayoutLM model for classification. We must tell the metric what attribute we want to evaluate, hence the reason for calling `set_categories`. 
+We invoke `train_hf_layoutlm` to start fine-tuning the LayoutLM model for classification. 
+We must tell the metric what attribute we want to evaluate, hence the reason for calling 
+`set_categories`. 
 
-We run the training scripts more or less with default arguments as specified by the Transformers `Trainer`. Arguments can be changed by passing a list of strings `argument=value` for `config_overwrite`. We choose `max_steps` of the training to be equal the size of the training split and `per_device_train_batch_size` to be 8.
-When running with one machine this corresponds to run training for 8 epochs. We evaluate on small intervals. Adapt your parameters if you train with more machines or if you need to reduce batch_size because of memory constraints.
+We run the training scripts more or less with default arguments as specified by the 
+Transformers `Trainer`. Arguments can be changed by passing a list of strings 
+`argument=value` for `config_overwrite`. We choose `max_steps` of the training to be 
+equal the size of the training split and `per_device_train_batch_size` to be 8.
+When running with one machine this corresponds to run training for 8 epochs. We evaluate 
+on small intervals. Adapt your parameters if you train with more machines or if you need 
+to reduce batch_size because of memory constraints.
 
 
 ```python
@@ -243,7 +262,7 @@ layoutlm_classifier = dd.HFLayoutLmSequenceClassifier(path_config_json,
 
 tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
 
-pipe_component = dd.LMSequenceClassifierService(tokenizer_fast,layoutlm_classifier,dd.image_to_layoutlm_features)
+pipe_component = dd.LMSequenceClassifierService(tokenizer_fast,layoutlm_classifier)
 
 evaluator = dd.Evaluator(merge,pipe_component,metric)
 ```
@@ -266,9 +285,13 @@ In the final step we setup a complete pipeline for running the LayoutLM model. W
 
 ```python
 def get_layoutlm_pipeline():
-    text_line_predictor = dd.DoctrTextlineDetector()
+    path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+    categories_tl = dd.ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+    text_line_predictor = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories_tl, "cpu", "PT")
     layout_component = dd.ImageLayoutService(text_line_predictor,to_image=True, crop_image=True)
-    text_recognizer = dd.DoctrTextRecognizer()
+    
+    path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+    text_recognizer = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu", "PT")
     text_component = dd.TextExtractionService(text_recognizer, extract_from_roi="word")
     
     
@@ -278,8 +301,7 @@ def get_layoutlm_pipeline():
     
     tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
     layoutlm_component = dd.LMSequenceClassifierService(tokenizer_fast,
-                                                        layoutlm_classifier,
-                                                        dd.image_to_layoutlm_features)
+                                                        layoutlm_classifier)
     
     return dd.DoctectionPipe(pipeline_component_list=[layout_component, text_component, layoutlm_component])
 ```
@@ -313,14 +335,10 @@ plt.axis('off')
 plt.imshow(dp.viz())
 ```
 
-    [0920 12:21.03 @doctectionpipe.py:102] processing 0000002151.png
-    [0920 12:21.04 @context.py:131] ImageLayoutService finished, 1.0555 sec.
-    [0920 12:21.05 @context.py:131] TextExtractionService finished, 0.837 sec.
-    [0920 12:21.05 @context.py:131] LMSequenceClassifierService finished, 0.0202 sec.
 
-
-
-![](./_imgs/layoutlm_sequence_classification_1.png)
+    
+![png](./_imgs/layoutlm_sequence_classification_1.png)
+    
 
 
 
@@ -340,12 +358,6 @@ dp.document_type.value
 dp=next(df_iter)
 ```
 
-    [0920 11:42.34 @doctectionpipe.py:102]processing 0000011684.png
-    [0920 11:42.35 @context.py:131]ImageLayoutService finished, 0.9209 sec.
-    [0920 11:42.35 @context.py:131]TextExtractionService finished, 0.1095 sec.
-    [0920 11:42.35 @context.py:131]LMSequenceClassifierService finished, 0.0347 sec.
-
-
 
 ```python
 plt.figure(figsize = (25,17))
@@ -353,9 +365,9 @@ plt.axis('off')
 plt.imshow(dp.viz())
 ```
 
-
-
-![](./_imgs/layoutlm_sequence_classification_2.png)
+    
+![png](./_imgs/layoutlm_sequence_classification_2.png)
+    
 
 
 

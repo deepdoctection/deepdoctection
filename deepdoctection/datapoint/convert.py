@@ -28,7 +28,7 @@ from typing import Any, Optional, Union, no_type_check
 import numpy as np
 from numpy import uint8
 from numpy.typing import NDArray
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 from ..utils.detection_types import ImageType
 from ..utils.develop import deprecated
@@ -66,7 +66,7 @@ def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
             result.append((attribute.name, value))
         return dict_factory(result)
     if isinstance(obj, (list, tuple)):
-        return type(obj)(as_dict(v, dict_factory) for v in obj)
+        return type(obj)(as_dict(v, dict_factory) for v in obj)  # pylint: disable=E0110
     if isinstance(obj, dict):
         return type(obj)((as_dict(k, dict_factory), as_dict(v, dict_factory)) for k, v in obj.items())
     if isinstance(obj, (np.float32, np.float64)):
