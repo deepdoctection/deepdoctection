@@ -144,7 +144,6 @@ trained model by using a confusion matrix.
     tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
     pipe_component = dd.LMTokenClassifierService(tokenizer_fast,
                                                  layoutlm_classifier,
-                                                 dd.image_to_layoutlm_features,
                                                  use_other_as_default_category=True)
     
     evaluator = dd.Evaluator(dataset_train, pipe_component, metric)
@@ -173,8 +172,8 @@ trained model by using a confusion matrix.
 ```python
 
     def get_layoutlm_pipeline():
-        path_config_json = "/path/to/Tests/Token_classification/checkpoint-300/config.json"
-        path_weights = "/path/to/Tests/Token_classification/checkpoint-300/pytorch_model.bin"
+        path_config_json = "/path/to/dir/checkpoint-300/config.json"
+        path_weights = "/path/to/dir/checkpoint-300/pytorch_model.bin"
         text_line_predictor = dd.DoctrTextlineDetector()
         layout_component = dd.ImageLayoutService(text_line_predictor, to_image=True, crop_image=True)
         text_recognizer = dd.DoctrTextRecognizer()
@@ -229,7 +228,7 @@ trained model by using a confusion matrix.
 
     plt.figure(figsize = (25,17))
     plt.axis('off')
-    plt.imshow(dp.viz())
+    plt.imshow(dp.viz(show_words=True))
 ```
 
 ![](./_imgs/layoutlm_token_classification_1.png)

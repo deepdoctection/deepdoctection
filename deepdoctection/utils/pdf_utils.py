@@ -28,7 +28,7 @@ from shutil import copyfile
 from typing import Generator, List, Optional, Tuple
 
 from numpy import uint8
-from PyPDF2 import PdfReader, PdfWriter, errors
+from pypdf import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
