@@ -222,7 +222,7 @@ def draw_boxes(
 
     category_to_color = {}
     if box_color_by_category and category_names_list is not None:
-        category_names = set(category_names_list)  # type: ignore
+        category_names = set(category_names_list)
         category_to_color = {category: random_color() for category in category_names}
 
     boxes = np.array(boxes, dtype="int32")
