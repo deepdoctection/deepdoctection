@@ -728,7 +728,12 @@ class ModelCatalog:
         :param name: model name
         :return: absolute weight path
         """
-        profile = ModelCatalog.get_profile(name)
+        try:
+            profile = ModelCatalog.get_profile(name)
+        except KeyError:
+            logger.info(
+                "Model not found in ModelCatalog. Make sure, you have places model weights in the cache dir")
+            profile = ModelProfile(name="", description="", size=[])
         if profile.name:
             return os.path.join(get_weights_dir_path(), profile.name)
         log_once(
@@ -751,7 +756,12 @@ class ModelCatalog:
         :param name: model name
         :return: absolute path to the config
         """
-        profile = ModelCatalog.get_profile(name)
+        try:
+            profile = ModelCatalog.get_profile(name)
+        except KeyError:
+            logger.info(
+                "Model not found in ModelCatalog. Make sure, you have places model configs in the cache dir")
+            profile = ModelProfile(name="", description="", size=[])
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
         return os.path.join(get_configs_dir_path(), name)
@@ -765,7 +775,15 @@ class ModelCatalog:
         :param name: model name
         :return: absolute path to the preprocessor config
         """
-        profile = ModelCatalog.get_profile(name)
+
+        try:
+            profile = ModelCatalog.get_profile(name)
+        except KeyError:
+            profile = ModelProfile(name="", description="", size=[])
+            logger.info(
+                "Model not found in ModelCatalog. Make sure, you have places preprocessor configs in the cache dir",
+                name,
+            )
         if profile.preprocessor_config is not None:
             return os.path.join(get_configs_dir_path(), profile.preprocessor_config)
         return os.path.join(get_configs_dir_path(), name)
@@ -799,6 +817,7 @@ class ModelCatalog:
         :param name: model name
         :return: A dict of model/weights profiles
         """
+
         profile = ModelCatalog.CATALOG.get(name)
         if profile is not None:
             return copy(profile)

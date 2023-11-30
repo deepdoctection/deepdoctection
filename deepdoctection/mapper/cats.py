@@ -74,8 +74,18 @@ def re_assign_cat_ids(
     Annotations that are not in the dictionary provided will be removed.
 
     :param dp: Image
-    :param categories_dict_name_as_key: e.g. {"foo": "1", "bak": "2"}
-    :param cat_to_sub_cat_mapping:
+    :param categories_dict_name_as_key: e.g. `{LayoutType.word: '1'}`
+    :param cat_to_sub_cat_mapping: e.g. `{<LayoutType.word>:
+        {<WordType.token_class>:
+            {<FundsFirstPage.report_date>: '1',
+            <FundsFirstPage.report_type>: '2',
+            <FundsFirstPage.umbrella>: '3',
+            <FundsFirstPage.fund_name>: '4',
+            <TokenClasses.other>: '5'},
+            <WordType.tag>:
+            {<BioTag.inside>: '1',
+            <BioTag.outside>: '2',
+            <BioTag.begin>: '3'}}}`
     :return: Image
     """
 
