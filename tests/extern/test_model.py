@@ -19,7 +19,7 @@
 Testing module extern.model
 """
 
-from pytest import raises, mark
+from pytest import mark, raises
 
 from deepdoctection.extern.model import ModelCatalog, ModelProfile
 from deepdoctection.utils.fs import get_configs_dir_path, get_weights_dir_path
