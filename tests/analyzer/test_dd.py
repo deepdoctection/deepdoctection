@@ -125,7 +125,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
         "Vergiitung</td><td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR "
         "2.164.096</td></tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung fiir "
         "Senior Management °</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung fiir sonstige Risikotrager"
-        "</td><td>EUR 324.229</td></tr><tr><td></td><td></td></tr></table>"
+        "</td><td>EUR 324.229</td></tr><tr><td></td><td></td></tr></table>",
     }
     assert page.height == 2339
     assert page.width == 1654

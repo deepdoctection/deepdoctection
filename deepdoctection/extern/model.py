@@ -731,8 +731,7 @@ class ModelCatalog:
         try:
             profile = ModelCatalog.get_profile(name)
         except KeyError:
-            logger.info(
-                "Model not found in ModelCatalog. Make sure, you have places model weights in the cache dir")
+            logger.info("Model not found in ModelCatalog. Make sure, you have places model weights in the cache dir")
             profile = ModelProfile(name="", description="", size=[])
         if profile.name:
             return os.path.join(get_weights_dir_path(), profile.name)
@@ -759,8 +758,7 @@ class ModelCatalog:
         try:
             profile = ModelCatalog.get_profile(name)
         except KeyError:
-            logger.info(
-                "Model not found in ModelCatalog. Make sure, you have places model configs in the cache dir")
+            logger.info("Model not found in ModelCatalog. Make sure, you have places model configs in the cache dir")
             profile = ModelProfile(name="", description="", size=[])
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
