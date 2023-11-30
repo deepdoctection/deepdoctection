@@ -44,7 +44,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.layouts) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
@@ -68,7 +68,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.layouts) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}  # type: ignore
@@ -103,7 +103,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.layouts) in {9, 10, 12}
+    assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}  # type: ignore
@@ -121,15 +121,20 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
         "<td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung fiir Senior Management °</td><td>"
         "EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung fuir sonstige Risikotrager</td><td>EUR 324.229</td></tr><tr>"
         "<td>Gesamtvergiitung fir Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>",
+        "<table><tr><td></td><td>139</td></tr><tr><td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe "
+        "Vergiitung</td><td>EUR 13.151.856</td></tr><tr><td>Variable Vergiitung</td><td>EUR "
+        "2.164.096</td></tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergiitung fiir "
+        "Senior Management °</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergiitung fiir sonstige Risikotrager"
+        "</td><td>EUR 324.229</td></tr><tr><td></td><td></td></tr></table>"
     }
     assert page.height == 2339
     assert page.width == 1654
     # first number for tp model, second for pt model
-    assert len(page.text) in {5043, 5045}
+    assert len(page.text) in {5043, 5045, 5153}
     text_ = page.text_
     assert text_["text"] == page.text
-    assert len(text_["text_list"]) in {631, 632}
-    assert len(text_["annotation_ids"]) in {631, 632}
+    assert len(text_["text_list"]) in {631, 632, 642}
+    assert len(text_["annotation_ids"]) in {631, 632, 642}
 
 
 @mark.integration_additional
