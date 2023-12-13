@@ -234,6 +234,16 @@ class AnnotationNmsService(PipelineComponent):
     If `nms_pairs=[[LayoutType.text, LayoutType.table],[LayoutType.title, LayoutType.table]]` all `ImageAnnotation`
     subject to these categories are being selected and identified as one category.
     After NMS the discarded image annotation will be deactivated.
+
+    **Example**
+
+        AnnotationNmsService(nms_pairs=[[LayoutType.text, LayoutType.table],[LayoutType.title, LayoutType.table]],
+                             thresholds=[0.7,0.7])   # for each pair a threshold has to be provided
+
+    For a pair of categories, one can also select a category which has always priority even if the score is lower.
+    This is useful if one expects some categories to be larger and want to keep them.
+
+
     """
 
     def __init__(

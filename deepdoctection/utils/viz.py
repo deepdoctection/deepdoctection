@@ -334,11 +334,11 @@ class VizPackageHandler:
 
         if not maybe_cv2 and not maybe_pil:
             raise EnvironmentError(
-                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to True. Please set only one of them to True"
+                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to False. Please set only one of them to True"
             )
         if maybe_cv2 and maybe_pil:
             raise EnvironmentError(
-                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to False. Please set one of them to True."
+                "Both variables USE_DD_OPENCV and USE_DD_PILLOW are set to True. Please set one of them to False."
             )
 
         # USE_DD_OPENCV has priority
