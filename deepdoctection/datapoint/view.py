@@ -119,7 +119,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
 
         # sub categories and summary sub categories are valid attribute names
-        attribute_names = ({"bbox"}.union({cat.value for cat in self.sub_categories.keys()}))
+        attribute_names = {"bbox"}.union({cat.value for cat in self.sub_categories})
         if self.image:
             if self.image.summary:
                 attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
