@@ -794,6 +794,13 @@ class ModelCatalog:
         return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
+    def get_profile_list() -> List[str]:
+        """
+        Returns a list profile keys.
+        """
+        return list(ModelCatalog.CATALOG.keys())
+
+    @staticmethod
     def is_registered(path_weights: str) -> bool:
         """
         Checks if some weights belong to a registered model
