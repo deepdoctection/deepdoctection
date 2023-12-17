@@ -410,10 +410,8 @@ def get_dd_analyzer(reset_config_file: bool = False,
     )
     maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
 
-    if path_config_file:
-        dd_one_config_path = path_config_file
     # Set up of the configuration and logging
-    cfg = set_config_by_yaml(dd_one_config_path)
+    cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
 
     cfg.freeze(freezed=False)
     cfg.LANGUAGE = None
