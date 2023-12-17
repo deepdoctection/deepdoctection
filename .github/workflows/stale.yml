@@ -25,4 +25,6 @@ jobs:
         stale-pr-message: 'Stale pull request message'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
-        only-labels: 'answered'
+        only-labels:
+          - 'answered'
+          - 'needs-more-info'

@@ -27,7 +27,6 @@ from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Se
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
-from ..mapper.laylmstruct import LayoutLMFeatures
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
 from .anngen import DatapointManager
@@ -167,7 +166,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self,
         name: str,
         tokenizer: Any,
-        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[LayoutLMFeatures]]],
+        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[Any]]],
     ):
         """
         :param name: Will be passed to base class

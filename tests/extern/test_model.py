@@ -49,7 +49,7 @@ class TestModelCatalog:
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         )
-        if not "test_model/test_model.pt" in ModelCatalog.CATALOG:
+        if "test_model/test_model.pt" not in ModelCatalog.CATALOG:
             ModelCatalog.register("test_model/test_model.pt", self.profile)
 
     @mark.basic

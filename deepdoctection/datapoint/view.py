@@ -117,7 +117,13 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
         :return: A set of registered attributes. When sub classing modify this method accordingly.
         """
-        return {"bbox"}
+
+        # sub categories and summary sub categories are valid attribute names
+        attribute_names = {"bbox"}.union({cat.value for cat in self.sub_categories})
+        if self.image:
+            if self.image.summary:
+                attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
+        return attribute_names
 
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotationBaseView":
@@ -591,6 +597,22 @@ class Page(Image):
             annotation_id_list.extend(block.text_["annotation_ids"])  # type: ignore
         return {"text": self.text, "text_list": text_list, "annotation_ids": annotation_id_list}
 
+    def get_layout_context(self, annotation_id: str, context_size: int = 3) -> List[ImageAnnotationBaseView]:
+        """For a given `annotation_id` get a list of `ImageAnnotation` that are nearby in terms of reading order.
+        For a given context_size it will return all layouts with reading_order between
+        reading_order(annoation_id)-context_size and  reading_order(annoation_id)-context_size.
+
+        :param annotation_id: id of central layout element
+        :param context_size: number of elements to the left and right of the central element
+        :return: list of `ImageAnnotationBaseView` objects
+        """
+        ann = self.get_annotation(annotation_ids=annotation_id)
+        block_with_order = self._order("layouts")
+        position = block_with_order.index(ann[0])
+        return block_with_order[
+            max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))
+        ]
+
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
         """
@@ -643,6 +665,7 @@ class Page(Image):
         show_token_class: bool = True,
         ignore_default_token_class: bool = False,
         interactive: bool = False,
+        **debug_kwargs: str,
     ) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
@@ -671,12 +694,18 @@ class Page(Image):
         box_stack = []
         cells_found = False
 
-        if show_layouts:
+        if debug_kwargs:
+            anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
+            for ann in anns:
+                box_stack.append(ann.bbox)
+                category_names_list.append(str(getattr(ann, debug_kwargs[ann.category_name])))
+
+        if show_layouts and not debug_kwargs:
             for item in self.layouts:
                 box_stack.append(item.bbox)
                 category_names_list.append(item.category_name.value)
 
-        if show_tables:
+        if show_tables and not debug_kwargs:
             for table in self.tables:
                 box_stack.append(table.bbox)
                 category_names_list.append(LayoutType.table.value)
@@ -702,13 +731,13 @@ class Page(Image):
                         box_stack.append(col.bbox)
                         category_names_list.append(None)
 
-        if show_cells and not cells_found:
+        if show_cells and not cells_found and not debug_kwargs:
             for ann in self.annotations:
                 if isinstance(ann, Cell) and ann.active:
                     box_stack.append(ann.bbox)
                     category_names_list.append(None)
 
-        if show_words:
+        if show_words and not debug_kwargs:
             all_words = []
             for layout in self.layouts:
                 all_words.extend(layout.words)
