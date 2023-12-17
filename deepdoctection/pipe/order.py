@@ -34,8 +34,8 @@ from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.detection_types import JsonDict
-from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from ..utils.logger import logger
+from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
 
 class OrderGenerator:
@@ -65,7 +65,7 @@ class OrderGenerator:
 
     @staticmethod
     def group_words_into_lines(
-            word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
+        word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
     ) -> List[Tuple[int, int, str]]:
         """Arranging words into horizontal text lines and sorting text lines vertically in order to give
         an enumeration of words that is used for establishing the reading order. Using this reading order arragement
@@ -106,7 +106,7 @@ class OrderGenerator:
 
     @staticmethod
     def group_lines_into_lines(
-            line_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
+        line_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
     ) -> List[Tuple[int, int, str]]:
         """
         Sorting reading lines. Returns for a list of `ImageAnnotation` an list of tuples (each tuple containing the
@@ -131,10 +131,10 @@ class OrderGenerator:
             component_found = False
             for comp in connected_components:
                 if (
-                        comp["top"] < col.uly < comp["bottom"]
-                        or comp["top"] < col.lry < comp["bottom"]
-                        or col.uly < comp["top"] < col.lry
-                        or col.uly < comp["bottom"] < col.lry
+                    comp["top"] < col.uly < comp["bottom"]
+                    or comp["top"] < col.lry < comp["bottom"]
+                    or col.uly < comp["top"] < col.lry
+                    or col.uly < comp["bottom"] < col.lry
                 ):
                     comp["top"] = min(comp["top"], col.uly)
                     comp["bottom"] = max(comp["bottom"], col.lry)
@@ -159,7 +159,7 @@ class OrderGenerator:
         return connected_components
 
     def order_blocks(
-            self, anns: List[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
+        self, anns: List[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
     ) -> Sequence[Tuple[int, str]]:
         """
         Determining a text ordering of text blocks. These text blocks should be larger sections than barely words.
@@ -214,9 +214,9 @@ class OrderGenerator:
                 fifth_condition = abs(rel_coords_box.lry - col.uly) < self.height_tolerance * rel_coords_box.height
 
                 if (first_condition and (fourth_condition or fifth_condition)) or (  # pylint: disable=R0916
-                        second_condition
-                        and (fourth_condition or fifth_condition)
-                        or (third_condition and (fourth_condition or fifth_condition))
+                    second_condition
+                    and (fourth_condition or fifth_condition)
+                    or (third_condition and (fourth_condition or fifth_condition))
                 ):
                     reading_blocks.append((idx, ann.annotation_id))
                     # update the top and right with the new line added.
@@ -283,7 +283,7 @@ class OrderGenerator:
 
     @staticmethod
     def _sort_anns_grouped_by_blocks(
-            block: Sequence[Tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
+        block: Sequence[Tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
     ) -> List[Tuple[int, str]]:
         if not block:
             return []
@@ -300,14 +300,18 @@ class OrderGenerator:
         return [(block_number, ann.annotation_id) for ann in block_anns]
 
     @staticmethod
-    def _make_column_detect_results(columns: List[BoundingBox]):
+    def _make_column_detect_results(columns: Sequence[BoundingBox])-> Sequence[DetectionResult]:
         column_detect_result_list = []
-        if os.environ["LOG_LEVEL"] == "DEBUG":
-            for idx, box in enumerate(columns):
-                column_detect_result_list.append(DetectionResult(box=box.to_list(mode="xyxy"),
-                                                                 absolute_coords=box.absolute_coords,
-                                                                 class_id=99,
-                                                                 class_name=LayoutType.column))
+        if os.environ.get("LOG_LEVEL") == "DEBUG":
+            for box in columns:
+                column_detect_result_list.append(
+                    DetectionResult(
+                        box=box.to_list(mode="xyxy"),
+                        absolute_coords=box.absolute_coords,
+                        class_id=99,
+                        class_name=LayoutType.column,
+                    )
+                )
         return column_detect_result_list
 
 
@@ -318,7 +322,7 @@ class TextLineGenerator:
     """
 
     def __init__(
-            self, make_sub_lines: bool, line_category_id: Union[int, str], paragraph_break: Optional[float] = None
+        self, make_sub_lines: bool, line_category_id: Union[int, str], paragraph_break: Optional[float] = None
     ):
         """
         :param make_sub_lines: Whether to build sub lines from lines
@@ -342,11 +346,11 @@ class TextLineGenerator:
         )
 
     def create_detection_result(
-            self,
-            word_anns: Sequence[ImageAnnotation],
-            image_width: float,
-            image_height: float,
-            image_id: Optional[str] = None,
+        self,
+        word_anns: Sequence[ImageAnnotation],
+        image_width: float,
+        image_height: float,
+        image_id: Optional[str] = None,
     ) -> Sequence[DetectionResult]:
         """
         Creating detecting result of lines (or sub lines) from given word type `ImageAnnotation`.
@@ -393,8 +397,9 @@ class TextLineGenerator:
                             sub_line.append(ann)
                             sub_line_ann_ids.append(ann.annotation_id)
                         else:
-                            detection_result = self._make_detect_result(ann.get_bounding_box(image_id),
-                                                                        {"child": [ann.annotation_id]})
+                            detection_result = self._make_detect_result(
+                                ann.get_bounding_box(image_id), {"child": [ann.annotation_id]}
+                            )
                             detection_result_list.append(detection_result)
 
                         boxes = [ann.get_bounding_box(image_id) for ann in sub_line]
@@ -453,16 +458,16 @@ class TextOrderService(PipelineComponent):
     """
 
     def __init__(
-            self,
-            text_container: str,
-            text_block_categories: Optional[Union[str, Sequence[TypeOrStr]]] = None,
-            floating_text_block_categories: Optional[Union[str, Sequence[TypeOrStr]]] = None,
-            include_residual_text_container: bool = True,
-            starting_point_tolerance: float = 0.005,
-            broken_line_tolerance: float = 0.003,
-            height_tolerance: float = 2.0,
-            paragraph_break: Optional[float] = 0.035,
-            line_category_id: int = 1,
+        self,
+        text_container: str,
+        text_block_categories: Optional[Union[str, Sequence[TypeOrStr]]] = None,
+        floating_text_block_categories: Optional[Union[str, Sequence[TypeOrStr]]] = None,
+        include_residual_text_container: bool = True,
+        starting_point_tolerance: float = 0.005,
+        broken_line_tolerance: float = 0.003,
+        height_tolerance: float = 2.0,
+        paragraph_break: Optional[float] = 0.035,
+        line_category_id: int = 1,
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
@@ -525,13 +530,14 @@ class TextOrderService(PipelineComponent):
         self.order_blocks(floating_text_block_anns_to_order)
         self._create_columns()
 
-    def _create_columns(self):
-        if os.environ.get("LOG_LEVEL") == "DEBUG":
+    def _create_columns(self) -> None:
+        if os.environ.get("LOG_LEVEL") == "DEBUG" and self.order_generator.columns_detect_result:
             for idx, detect_result in enumerate(self.order_generator.columns_detect_result):
                 annotation_id = self.dp_manager.set_image_annotation(detect_result)
-                self.dp_manager.set_category_annotation(
-                    Relationships.reading_order, idx, Relationships.reading_order, annotation_id
-                )
+                if annotation_id:
+                    self.dp_manager.set_category_annotation(
+                        Relationships.reading_order, idx, Relationships.reading_order, annotation_id
+                    )
 
     def _create_lines_for_words(self, word_anns: Sequence[ImageAnnotation]) -> Sequence[ImageAnnotation]:
         detection_result_list = self.text_line_generator.create_detection_result(
