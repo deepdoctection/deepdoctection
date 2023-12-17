@@ -1583,6 +1583,10 @@ class TestType(ObjectTypes):
     three = "3"
     four = "4"
     five = "5"
+    report_date = "report_date"
+    umbrella = "umbrella"
+    report_type = "report_type"
+    fund_name = "fund_name"
 
 
 # pylint: enable=invalid-name, disallowed-name

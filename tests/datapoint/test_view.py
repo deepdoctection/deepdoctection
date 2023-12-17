@@ -106,3 +106,45 @@ def test_load_page_from_file() -> None:
     test_file_path = get_test_path() / "test_image.json"
     image = Page.from_file(test_file_path.as_posix())
     assert isinstance(image, Page)
+
+
+@mark.basic
+def test_get_layout_context() -> None:
+    """
+    test get_layout_context with various context sizes
+    """
+
+    # Arrange
+    test_file_path = get_test_path() / "FRFPE" / "7406fd39ef9ab74660be111dca703065_0.json"
+    page = Page.from_file(test_file_path.as_posix())
+    ann_id = "41c5cb4b-f7b2-3c7c-93de-b2556d560de9"
+
+    # Act
+    out = page.get_layout_context(ann_id, 0)
+
+    # Assert
+    assert len(out) == 1
+    assert out[0].annotation_id == ann_id
+
+    # Act
+    out = page.get_layout_context(ann_id, 1)
+
+    # Assert
+    assert len(out) == 3
+    assert [ann.annotation_id for ann in out] == [
+        "84a540e8-0d37-3aeb-9905-af2870c7b514",
+        "41c5cb4b-f7b2-3c7c-93de-b2556d560de9",
+        "e8785459-890e-3a97-823b-f07aa5eff5a2",
+    ]
+
+    # Act
+    out = page.get_layout_context(ann_id, 2)
+
+    # Assert
+    assert len(out) == 4
+    assert [ann.annotation_id for ann in out] == [
+        "b45b3c5f-9c8e-35a1-bf5c-daaeb271ef38",
+        "84a540e8-0d37-3aeb-9905-af2870c7b514",
+        "41c5cb4b-f7b2-3c7c-93de-b2556d560de9",
+        "e8785459-890e-3a97-823b-f07aa5eff5a2",
+    ]
