@@ -640,15 +640,16 @@ class Page(Image):
 
     @no_type_check
     def viz(
-        self,
-        show_tables: bool = True,
-        show_layouts: bool = True,
-        show_cells: bool = True,
-        show_table_structure: bool = True,
-        show_words: bool = False,
-        show_token_class: bool = True,
-        ignore_default_token_class: bool = False,
-        interactive: bool = False,
+            self,
+            show_tables: bool = True,
+            show_layouts: bool = True,
+            show_cells: bool = True,
+            show_table_structure: bool = True,
+            show_words: bool = False,
+            show_token_class: bool = True,
+            ignore_default_token_class: bool = False,
+            interactive: bool = False,
+            **debug_kwargs: str
     ) -> Optional[ImageType]:
         """
         Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
@@ -677,12 +678,18 @@ class Page(Image):
         box_stack = []
         cells_found = False
 
-        if show_layouts:
+        if debug_kwargs:
+            anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
+            for ann in anns:
+                box_stack.append(ann.bbox)
+                category_names_list.append(str(ann.__getattr__(debug_kwargs[ann.category_name])))
+
+        if show_layouts and not debug_kwargs:
             for item in self.layouts:
                 box_stack.append(item.bbox)
                 category_names_list.append(item.category_name.value)
 
-        if show_tables:
+        if show_tables and not debug_kwargs:
             for table in self.tables:
                 box_stack.append(table.bbox)
                 category_names_list.append(LayoutType.table.value)
@@ -708,13 +715,13 @@ class Page(Image):
                         box_stack.append(col.bbox)
                         category_names_list.append(None)
 
-        if show_cells and not cells_found:
+        if show_cells and not cells_found and not debug_kwargs:
             for ann in self.annotations:
                 if isinstance(ann, Cell) and ann.active:
                     box_stack.append(ann.bbox)
                     category_names_list.append(None)
 
-        if show_words:
+        if show_words and not debug_kwargs:
             all_words = []
             for layout in self.layouts:
                 all_words.extend(layout.words)
