@@ -375,7 +375,9 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     return pipe
 
 
-def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[List[str]] = None) -> DoctectionPipe:
+def get_dd_analyzer(reset_config_file: bool = False,
+                    config_overwrite: Optional[List[str]] = None,
+                    path_config_file: Optional[Pathlike]= None) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 
@@ -397,7 +399,7 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
                              highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
                                                      "USE_OCR=False",
                                                      "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]
-
+    :param path_config_file: Path to a custom config file. Can be outside of the .cache directory.
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
@@ -408,6 +410,8 @@ def get_dd_analyzer(reset_config_file: bool = False, config_overwrite: Optional[
     )
     maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
 
+    if path_config_file:
+        dd_one_config_path = path_config_file
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path)
 
