@@ -606,12 +606,13 @@ class Page(Image):
         :param context_size: number of elements to the left and right of the central element
         :return: list of `ImageAnnotationBaseView` objects
         """
-        ann = self.get_annotation(annotation_ids=annotation_id)
+        ann = self.get_annotation(annotation_ids=annotation_id)[0]
+        if ann.category_name not in self.floating_text_block_categories:
+            raise ValueError(f"Annotation {annotation_id} is not a floating text block category. Cannot get context.")
         block_with_order = self._order("layouts")
-        position = block_with_order.index(ann[0])
+        position = block_with_order.index(ann)
         return block_with_order[
-            max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))
-        ]
+            max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))]
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
