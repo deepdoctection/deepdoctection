@@ -38,7 +38,7 @@ pillow==10.0.1
     # via deepdoctection (setup.py)
 pyparsing==3.0.7
     # via packaging
-pypdf2==1.27.9
+pypdf==3.17.3
     # via deepdoctection (setup.py)
 pyyaml==6.0
     # via
@@ -57,7 +57,9 @@ tqdm==4.64.0
     #   deepdoctection (setup.py)
     #   huggingface-hub
 typing-extensions==4.1.1
-    # via huggingface-hub
+    # via
+    #   huggingface-hub
+    #   pypdf
 urllib3==1.26.8
     # via requests
 zipp==3.7.0
