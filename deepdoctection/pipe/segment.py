@@ -74,6 +74,8 @@ def choose_items_by_iou(
     :param reference_item_proposals: Annotations as reference. If provided, it will compare `item_proposals` with
                                      `reference_item_proposals`
     """
+    if len(item_proposals) <= 1:  # we want to ensure to have at least one element.
+        return dp
     item_proposals_boxes = np.array(
         [item.get_bounding_box(dp.image_id).to_list(mode="xyxy") for item in item_proposals]
     )
@@ -484,12 +486,12 @@ def segment_table(
 
 
 def create_intersection_cells(
-    rows: List[ImageAnnotation],
-    cols: List[ImageAnnotation],
+    rows: Sequence[ImageAnnotation],
+    cols: Sequence[ImageAnnotation],
     table_annotation_id: str,
     cell_class_id: int,
-    sub_item_names: List[CellType],
-) -> Tuple[List[DetectionResult], List[SegmentationResult]]:
+    sub_item_names: Sequence[CellType],
+) -> Tuple[Sequence[DetectionResult], Sequence[SegmentationResult]]:
     """
     Given rows and columns with row- and column number sub categories, create a list of `DetectionResult` and
     `SegmentationResult` as intersection of all their intersection rectangles.
@@ -534,8 +536,8 @@ def create_intersection_cells(
 def segment_pubtables(
     dp: Image,
     table: ImageAnnotation,
-    item_names: List[LayoutType],
-    spanning_cell_names: List[CellType],
+    item_names: Sequence[LayoutType],
+    spanning_cell_names: Sequence[Union[LayoutType, CellType]],
     segment_rule: Literal["iou", "ioa"],
     threshold_rows: float,
     threshold_cols: float,
@@ -668,6 +670,10 @@ class TableSegmentationService(PipelineComponent):
         tile_table_with_items: bool,
         remove_iou_threshold_rows: float,
         remove_iou_threshold_cols: float,
+        table_name: ObjectTypes,
+        cell_names: Sequence[ObjectTypes],
+        item_names: Sequence[ObjectTypes],
+        sub_item_names: Sequence[ObjectTypes],
         stretch_rule: Literal["left", "equal"] = "left",
     ):
         """
@@ -678,6 +684,9 @@ class TableSegmentationService(PipelineComponent):
                                       the adjacent row. Will do a similar shifting with columns.
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
+        :param table_name: layout type table
+        :param cell_names: layout type of cells
+        :param item_names: layout type of items (e.g. row and column)
         :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
         """
         assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
@@ -689,34 +698,35 @@ class TableSegmentationService(PipelineComponent):
         self.tile_table = tile_table_with_items
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
+        self.table_name = table_name
+        self.cell_names = cell_names
+        self.item_names = item_names  # row names must be before column name
+        self.sub_item_names = sub_item_names
         self.stretch_rule = stretch_rule
-        self._table_name = LayoutType.table
-        self._cell_names = [CellType.header, CellType.body, LayoutType.cell]
-        self._item_names = [LayoutType.row, LayoutType.column]  # row names must be before column name
-        self._sub_item_names = [CellType.row_number, CellType.column_number]
+        self.item_iou_threshold = 0.0001
         super().__init__("table_segment")
 
     def serve(self, dp: Image) -> None:
         dp = stretch_items(
             dp,
-            self._table_name,
-            self._item_names[0],
-            self._item_names[1],
+            self.table_name,
+            self.item_names[0],
+            self.item_names[1],
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
         )
-        table_anns = dp.get_annotation(category_names=self._table_name)
+        table_anns = dp.get_annotation(category_names=self.table_name)
         for table in table_anns:
             item_ann_ids = table.get_relationship(Relationships.child)
-            for item_sub_item_name in zip(self._item_names, self._sub_item_names):  # one pass for rows and one for cols
+            for item_sub_item_name in zip(self.item_names, self.sub_item_names):  # one pass for rows and one for cols
                 item_name, sub_item_name = item_sub_item_name[0], item_sub_item_name[1]
                 if self.tile_table:
                     dp = tile_tables_with_items_per_table(dp, table, item_name, self.stretch_rule)
                 items_proposals = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
                 reference_items_proposals = dp.get_annotation(
-                    category_names=self._cell_names, annotation_ids=item_ann_ids
+                    category_names=self.cell_names, annotation_ids=item_ann_ids
                 )
-                dp = choose_items_by_iou(dp, items_proposals, 0.0001, False, reference_items_proposals)
+                dp = choose_items_by_iou(dp, items_proposals, self.item_iou_threshold, False, reference_items_proposals)
 
                 # new query of items so that we only get active annotations
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
@@ -735,8 +745,8 @@ class TableSegmentationService(PipelineComponent):
             raw_table_segments = segment_table(
                 dp,
                 table,
-                self._item_names,
-                self._cell_names,
+                self.item_names,
+                self.cell_names,
                 self.segment_rule,
                 self.threshold_rows,
                 self.threshold_cols,
@@ -756,7 +766,7 @@ class TableSegmentationService(PipelineComponent):
                 )
 
             if table.image:
-                cells = table.image.get_annotation(category_names=self._cell_names)
+                cells = table.image.get_annotation(category_names=self.cell_names)
                 number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
                 number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
                 max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
@@ -789,6 +799,11 @@ class TableSegmentationService(PipelineComponent):
             self.tile_table,
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
+            self.table_name,
+            self.cell_names,
+            self.item_names,
+            self.sub_item_names,
+            self.stretch_rule,
         )
 
     def get_meta_annotation(self) -> JsonDict:
@@ -854,6 +869,11 @@ class PubtablesSegmentationService(PipelineComponent):
         remove_iou_threshold_rows: float,
         remove_iou_threshold_cols: float,
         cell_class_id: int,
+        table_name: ObjectTypes,
+        cell_names: Sequence[Union[LayoutType, CellType]],
+        spanning_cell_names: Sequence[Union[LayoutType, CellType]],
+        item_names: Sequence[LayoutType],
+        sub_item_names: Sequence[CellType],
         cell_to_image: bool = True,
         crop_cell_image: bool = False,
         stretch_rule: Literal["left", "equal"] = "left",
@@ -868,6 +888,11 @@ class PubtablesSegmentationService(PipelineComponent):
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
         :param cell_class_id: 'category_id' for cells to be generated from intersected rows and columns
+        :param table_name: layout type table
+        :param cell_names: layout type of cells
+        :param spanning_cell_names: layout type of spanning cells
+        :param item_names: layout type of items (e.g. row and column)
+        :param sub_item_names: layout type of sub items (e.g. row number and column number)
         :param cell_to_image: If set to 'True' it will create an 'Image' for LayoutType.cell
         :param crop_cell_image: If set to 'True' it will crop a numpy array image for LayoutType.cell.
                                 Requires 'cell_to_image=True'
@@ -877,44 +902,32 @@ class PubtablesSegmentationService(PipelineComponent):
         self.threshold_rows = threshold_rows
         self.threshold_cols = threshold_cols
         self.tile_table = tile_table_with_items
-        self._table_name = LayoutType.table
-        self._cell_names = [
-            CellType.spanning,
-            CellType.row_header,
-            CellType.column_header,
-            CellType.projected_row_header,
-            LayoutType.cell,
-        ]
-        self._spanning_cell_names = [
-            CellType.spanning,
-            CellType.row_header,
-            CellType.column_header,
-            CellType.projected_row_header,
-        ]
+        self.table_name = table_name
+        self.cell_names = cell_names
+        self.spanning_cell_names = spanning_cell_names
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
         self.cell_class_id = cell_class_id
         self.cell_to_image = cell_to_image
         self.crop_cell_image = crop_cell_image
+        self.item_names = item_names  # row names must be before column name
+        self.sub_item_names = sub_item_names
         self.stretch_rule = stretch_rule
-
-        self._item_names = [LayoutType.row, LayoutType.column]  # row names must be before column name
-        self._sub_item_names = [CellType.row_number, CellType.column_number]
         super().__init__("table_transformer_segment")
 
     def serve(self, dp: Image) -> None:
         dp = stretch_items(
             dp,
-            self._table_name,
-            self._item_names[0],
-            self._item_names[1],
+            self.table_name,
+            self.item_names[0],
+            self.item_names[1],
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
         )
-        table_anns = dp.get_annotation(category_names=self._table_name)
+        table_anns = dp.get_annotation(category_names=self.table_name)
         for table in table_anns:
             item_ann_ids = table.get_relationship(Relationships.child)
-            for item_sub_item_name in zip(self._item_names, self._sub_item_names):  # one pass for rows and one for cols
+            for item_sub_item_name in zip(self.item_names, self.sub_item_names):  # one pass for rows and one for cols
                 item_name, sub_item_name = item_sub_item_name[0], item_sub_item_name[1]
                 if self.tile_table:
                     dp = tile_tables_with_items_per_table(dp, table, item_name, self.stretch_rule)
@@ -931,10 +944,10 @@ class PubtablesSegmentationService(PipelineComponent):
                     self.dp_manager.set_category_annotation(
                         sub_item_name, item_number, sub_item_name, item.annotation_id
                     )
-            rows = dp.get_annotation(category_names=self._item_names[0], annotation_ids=item_ann_ids)
-            columns = dp.get_annotation(category_names=self._item_names[1], annotation_ids=item_ann_ids)
+            rows = dp.get_annotation(category_names=self.item_names[0], annotation_ids=item_ann_ids)
+            columns = dp.get_annotation(category_names=self.item_names[1], annotation_ids=item_ann_ids)
             detect_result_cells, segment_result_cells = create_intersection_cells(
-                rows, columns, table.annotation_id, self.cell_class_id, self._sub_item_names
+                rows, columns, table.annotation_id, self.cell_class_id, self.sub_item_names
             )
             cell_rn_cn_to_ann_id = {}
             for detect_result, segment_result in zip(detect_result_cells, segment_result_cells):
@@ -960,8 +973,8 @@ class PubtablesSegmentationService(PipelineComponent):
             spanning_cell_raw_segments = segment_pubtables(
                 dp,
                 table,
-                self._item_names,
-                self._spanning_cell_names,
+                self.item_names,
+                self.spanning_cell_names,
                 self.segment_rule,
                 self.threshold_rows,
                 self.threshold_cols,
@@ -989,7 +1002,7 @@ class PubtablesSegmentationService(PipelineComponent):
 
             cells = []
             if table.image:
-                cells = table.image.get_annotation(category_names=self._cell_names)
+                cells = table.image.get_annotation(category_names=self.cell_names)
             number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
             number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
             max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
@@ -1022,6 +1035,11 @@ class PubtablesSegmentationService(PipelineComponent):
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
             self.cell_class_id,
+            self.table_name,
+            self.cell_names,
+            self.spanning_cell_names,
+            self.item_names,
+            self.sub_item_names,
             self.cell_to_image,
             self.crop_cell_image,
             self.stretch_rule,

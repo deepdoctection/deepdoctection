@@ -56,7 +56,7 @@ from ..utils.file_utils import (
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
 from ..utils.logger import logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import LayoutType
+from ..utils.settings import CellType, LayoutType
 from ..utils.transform import PadTransform
 
 if tf_available() and tensorpack_available():
@@ -303,6 +303,22 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
                 cfg.SEGMENTATION.CELL_CATEGORY_ID,
+                LayoutType.table,
+                [
+                    CellType.spanning,
+                    CellType.row_header,
+                    CellType.column_header,
+                    CellType.projected_row_header,
+                    LayoutType.cell,
+                ],
+                [
+                    CellType.spanning,
+                    CellType.row_header,
+                    CellType.column_header,
+                    CellType.projected_row_header,
+                ],
+                [LayoutType.row, LayoutType.column],
+                [CellType.row_number, CellType.column_number],
                 stretch_rule=cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(pubtables)
@@ -314,6 +330,10 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.FULL_TABLE_TILING,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+                LayoutType.table,
+                [CellType.header, CellType.body, LayoutType.cell],
+                [LayoutType.row, LayoutType.column],
+                [CellType.row_number, CellType.column_number],
                 cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(table_segmentation)
@@ -375,9 +395,11 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     return pipe
 
 
-def get_dd_analyzer(reset_config_file: bool = False,
-                    config_overwrite: Optional[List[str]] = None,
-                    path_config_file: Optional[Pathlike]= None) -> DoctectionPipe:
+def get_dd_analyzer(
+    reset_config_file: bool = False,
+    config_overwrite: Optional[List[str]] = None,
+    path_config_file: Optional[Pathlike] = None,
+) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 

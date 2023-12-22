@@ -77,7 +77,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
             bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
 
-    def viz(self, interactive: bool = False) -> Optional[np.ndarray]:
+    def viz(self, interactive: bool = False) -> Optional[ImageType]:
         """
         Display the annotation (without any sub-layout elements).
 
@@ -88,14 +88,13 @@ class ImageAnnotationBaseView(ImageAnnotation):
 
         bounding_box = self.get_bounding_box(self.base_page.image_id)
         if self.base_page.image is not None:
-            np_image = crop_box_from_image(self.base_page.image,
-                                           bounding_box,
-                                           self.base_page.width,
-                                           self.base_page.height)
+            np_image = crop_box_from_image(
+                self.base_page.image, bounding_box, self.base_page.width, self.base_page.height
+            )
 
             if interactive:
                 interactive_imshow(np_image)
-                return
+                return None
             return np_image
         raise ValueError(f"base_page.image is None for {self.annotation_id}")
 
@@ -634,7 +633,8 @@ class Page(Image):
         block_with_order = self._order("layouts")
         position = block_with_order.index(ann)
         return block_with_order[
-            max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))]
+            max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))
+        ]
 
     @property
     def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
