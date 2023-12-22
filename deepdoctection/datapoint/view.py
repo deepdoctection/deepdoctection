@@ -40,7 +40,7 @@ from ..utils.settings import (
 )
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
-from .box import BoundingBox
+from .box import BoundingBox, crop_box_from_image
 from .image import Image
 
 
@@ -76,6 +76,27 @@ class ImageAnnotationBaseView(ImageAnnotation):
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
+
+    def viz(self, interactive: bool = False) -> Optional[ImageType]:
+        """
+        Display the annotation (without any sub-layout elements).
+
+        :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
+                            can be displayed with e.g. matplotlib
+        :return:
+        """
+
+        bounding_box = self.get_bounding_box(self.base_page.image_id)
+        if self.base_page.image is not None:
+            np_image = crop_box_from_image(
+                self.base_page.image, bounding_box, self.base_page.width, self.base_page.height
+            )
+
+            if interactive:
+                interactive_imshow(np_image)
+                return None
+            return np_image
+        raise ValueError(f"base_page.image is None for {self.annotation_id}")
 
     def __getattr__(self, item: str) -> Optional[Union[str, int, List[str]]]:
         """
@@ -119,7 +140,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
 
         # sub categories and summary sub categories are valid attribute names
-        attribute_names = {"bbox"}.union({cat.value for cat in self.sub_categories})
+        attribute_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
         if self.image:
             if self.image.summary:
                 attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
@@ -606,9 +627,11 @@ class Page(Image):
         :param context_size: number of elements to the left and right of the central element
         :return: list of `ImageAnnotationBaseView` objects
         """
-        ann = self.get_annotation(annotation_ids=annotation_id)
+        ann = self.get_annotation(annotation_ids=annotation_id)[0]
+        if ann.category_name not in self.floating_text_block_categories:
+            raise ValueError(f"Annotation {annotation_id} is not a floating text block category. Cannot get context.")
         block_with_order = self._order("layouts")
-        position = block_with_order.index(ann[0])
+        position = block_with_order.index(ann)
         return block_with_order[
             max(0, position - context_size) : min(position + context_size + 1, len(block_with_order))
         ]
@@ -668,7 +691,7 @@ class Page(Image):
         **debug_kwargs: str,
     ) -> Optional[ImageType]:
         """
-        Display a page detected bounding boxes. One can select bounding boxes of tables or other layout components.
+        Display a page with detected bounding boxes of various types.
 
         **Example:**
 
@@ -676,6 +699,12 @@ class Page(Image):
 
                 img = page.viz()
                 plt.imshow(img)
+
+        In interactive mode it will display the image in a separate window.
+
+                **Example:**
+
+                page.viz(interactive='True') # will open a new window with the image. Can be closed by pressing 'q'
 
         :param show_tables: Will display all tables boxes as well as cells, rows and columns
         :param show_layouts: Will display all other layout components.
@@ -687,7 +716,7 @@ class Page(Image):
                             can be displayed differently.
         :param ignore_default_token_class: Will ignore displaying word bounding boxes with default or None token class
                                            label
-        :return: If interactive will return nothing else a numpy array.
+        :return: If `interactive=False` will return a numpy array.
         """
 
         category_names_list: List[Union[str, None]] = []

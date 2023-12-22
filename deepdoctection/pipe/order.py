@@ -300,7 +300,7 @@ class OrderGenerator:
         return [(block_number, ann.annotation_id) for ann in block_anns]
 
     @staticmethod
-    def _make_column_detect_results(columns: Sequence[BoundingBox])-> Sequence[DetectionResult]:
+    def _make_column_detect_results(columns: Sequence[BoundingBox]) -> Sequence[DetectionResult]:
         column_detect_result_list = []
         if os.environ.get("LOG_LEVEL") == "DEBUG":
             for box in columns:
