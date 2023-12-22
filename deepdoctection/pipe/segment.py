@@ -687,6 +687,7 @@ class TableSegmentationService(PipelineComponent):
         :param table_name: layout type table
         :param cell_names: layout type of cells
         :param item_names: layout type of items (e.g. row and column)
+        :param sub_item_names: cell types of sub items (e.g. row number and column number)
         :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
         """
         assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
