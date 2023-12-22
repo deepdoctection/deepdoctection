@@ -19,7 +19,7 @@
 Testing module pipe.segment
 """
 
-from typing import List
+from typing import List, Sequence, Union
 
 from pytest import mark
 
@@ -87,6 +87,10 @@ class TestTableSegmentationService:
         self._remove_iou_threshold_rows = 0.001
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = False
+        self.table_name = LayoutType.table
+        self.cell_names = [CellType.header, CellType.body, LayoutType.cell]
+        self.item_names = [LayoutType.row, LayoutType.column]
+        self.sub_item_names = [CellType.row_number, CellType.column_number]
 
         self.table_segmentation_service = TableSegmentationService(
             self._segment_rule,  # type: ignore
@@ -95,6 +99,10 @@ class TestTableSegmentationService:
             self._tile_table_with_items,
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
+            self.table_name,
+            self.cell_names,
+            self.item_names,
+            self.sub_item_names,
         )
 
     @mark.basic
@@ -110,8 +118,8 @@ class TestTableSegmentationService:
 
         # Assert items have correctly assigned sub categories row/col number
         for item_name, sub_item_name in zip(
-            self.table_segmentation_service._item_names,  # pylint: disable=W0212
-            self.table_segmentation_service._sub_item_names,  # pylint: disable=W0212
+            self.table_segmentation_service.item_names,  # pylint: disable=W0212
+            self.table_segmentation_service.sub_item_names,  # pylint: disable=W0212
         ):
             items = dp.get_annotation(category_names=item_name)
             items_expected = dp_expected.get_annotation(category_names=item_name)
@@ -123,10 +131,10 @@ class TestTableSegmentationService:
 
         # Assert cells have correctly assigned sub categories row/col/rs/cs number
         cells = dp.get_annotation_iter(
-            category_names=self.table_segmentation_service._cell_names  # pylint: disable=W0212
+            category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
         )
         cells_expected = dp_expected.get_annotation_iter(
-            category_names=self.table_segmentation_service._cell_names  # pylint: disable=W0212
+            category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
         )
 
         for el in zip(cells, cells_expected):
@@ -213,6 +221,10 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         self._remove_iou_threshold_rows = 0.001
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = True
+        self.table_name = LayoutType.table
+        self.cell_names = [CellType.header, CellType.body, LayoutType.cell]
+        self.item_names = [LayoutType.row, LayoutType.column]
+        self.sub_item_names = [CellType.row_number, CellType.column_number]
 
         self.tp_table_segmentation_service = TableSegmentationService(
             self._segment_rule,  # type: ignore
@@ -221,6 +233,10 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
             self._tile_table_with_items,
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
+            self.table_name,
+            self.cell_names,
+            self.item_names,
+            self.sub_item_names,
         )
 
     @mark.basic
@@ -239,12 +255,10 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         dp = self.tp_table_segmentation_service.pass_datapoint(dp)
 
         # Assert
-        cells = dp.get_annotation(
-            category_names=self.tp_table_segmentation_service._cell_names  # pylint: disable=W0212
-        )
+        cells = dp.get_annotation(category_names=self.tp_table_segmentation_service.cell_names)  # pylint: disable=W0212
 
         cells_expected = dp_expected.get_annotation(
-            category_names=self.tp_table_segmentation_service._cell_names  # pylint: disable=W0212
+            category_names=self.tp_table_segmentation_service.cell_names  # pylint: disable=W0212
         )
 
         assert len(cells) == len(cells_expected)
@@ -317,6 +331,22 @@ class TestPubtablesSegmentationService:
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = True
         self.cell_class_id = 5
+        self.table_name = LayoutType.table
+        self.cell_names: Sequence[Union[LayoutType,CellType]] = [
+            CellType.spanning,
+            CellType.row_header,
+            CellType.column_header,
+            CellType.projected_row_header,
+            LayoutType.cell,
+        ]
+        self.spanning_cell_names = [
+            CellType.spanning,
+            CellType.row_header,
+            CellType.column_header,
+            CellType.projected_row_header,
+        ]
+        self.item_names = [LayoutType.row, LayoutType.column]
+        self.sub_item_names = [CellType.row_number, CellType.column_number]
 
         self.table_segmentation_service = PubtablesSegmentationService(
             "ioa",
@@ -326,6 +356,11 @@ class TestPubtablesSegmentationService:
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
             self.cell_class_id,
+            self.table_name,
+            self.cell_names,
+            self.spanning_cell_names,
+            self.item_names,
+            self.sub_item_names,
         )
 
     @mark.basic

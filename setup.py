@@ -75,7 +75,7 @@ _DEPS = [
     "tensorpack",
     # PyTorch related dependencies
     "timm",
-    "transformers",
+    "transformers>=4.36.0",
     "accelerate",
     # As maintenance of Detectron2 decreases, we will now use our own Fork the keep updating after rigorous testing.
     # This will hopefully prevent from issues like 233
