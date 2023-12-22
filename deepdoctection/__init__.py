@@ -27,7 +27,7 @@ from .utils.logger import logger
 
 # pylint: enable=wrong-import-position
 
-__version__ = 0.28
+__version__ = 0.29
 
 _IMPORT_STRUCTURE = {
     "analyzer": [
