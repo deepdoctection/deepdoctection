@@ -84,7 +84,7 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
-from .logger import logger
+from .logger import LoggingRecord, logger
 
 __all__ = [
     "collect_torch_env",
@@ -475,7 +475,11 @@ def auto_select_lib_and_device() -> None:
             os.environ["USE_PYTORCH"] = "True"
             os.environ["USE_CUDA"] = "False"
             return
-        logger.warning("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
+        logger.warning(
+            LoggingRecord(
+                "You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU."
+            )
+        )
     if pytorch_available():
         import torch
 
@@ -496,8 +500,10 @@ def auto_select_lib_and_device() -> None:
         os.environ["USE_MPS"] = "False"
         return
     logger.warning(
-        "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning model from"
-        " the library."
+        LoggingRecord(
+            "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
+            "model from the library."
+        )
     )
 
 

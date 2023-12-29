@@ -530,6 +530,9 @@ def create_intersection_cells(
                 )
             )
             idx += 1
+            # it is possible to have less intersection boxes, e.g. if one cell has height/width 0
+            if idx >= len(boxes_cells):
+                break
     return detect_result_cells, segment_result_cells
 
 

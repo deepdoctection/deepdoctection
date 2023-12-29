@@ -28,7 +28,7 @@ from typing import Any, Callable, Iterator, List, no_type_check
 import zmq
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from .base import DataFlow, DataFlowReentrantGuard, DataFlowTerminated, ProxyDataFlow
 from .common import RepeatedData
 from .serialize import PickleSerializer
@@ -48,11 +48,11 @@ def _zmq_catch_error(name):
     try:
         yield
     except zmq.ContextTerminated as exc:
-        logger.info("[%s] Context terminated.", name)
+        logger.info(LoggingRecord(f"_zmq_catch_error: [{name}] Context terminated."))
         raise DataFlowTerminated() from exc
     except zmq.ZMQError as exc:
         if exc.errno == errno.ENOTSOCK:  # socket closed
-            logger.info("[%s] Socket closed.", name)
+            logger.info(LoggingRecord(f"_zmq_catch_error: [{name}]  Socket closed."))
             raise DataFlowTerminated() from exc
         raise ValueError from exc
     except Exception as exc:
@@ -312,7 +312,8 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
             for x in self._procs:
                 x.terminate()
                 x.join(5)
-            logger.info("%s successfully cleaned-up.", type(self).__name__)
+            logger.info(LoggingRecord(f"_MultiProcessZMQDataFlow [{type(self).__name__}] successfully cleaned-up."))
+
         except Exception:  # pylint: disable=W0703
             pass
 
@@ -323,9 +324,12 @@ def _bind_guard(sock, name):
         sock.bind(name)
     except zmq.ZMQError:
         logger.error(
-            "ZMQError in socket.bind('{name}'). Perhaps you're using pipes on a non-local file system. "
-            "See documentation of MultiProcessRunnerZMQ for more information."
+            LoggingRecord(
+                f"ZMQError in socket.bind('{name}'). Perhaps you're using pipes on a non-local file system. "
+                "See documentation of MultiProcessRunnerZMQ for more information."
+            )
         )
+
         raise
 
 

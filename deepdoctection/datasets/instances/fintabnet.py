@@ -44,7 +44,7 @@ from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
 from ...utils.file_utils import set_mp_spawn
-from ...utils.logger import logger
+from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType
 from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
@@ -182,7 +182,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         pubtables_like = kwargs.get("pubtables_like", False)
 
         if build_mode and not load_image:
-            logger.info("When 'build_mode' is set to True will reset 'load_image' to True")
+            logger.info(LoggingRecord("When 'build_mode' is set to True will reset 'load_image' to True"))
             load_image = True
 
         if use_multi_proc or use_multi_proc_strict:
@@ -191,7 +191,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
         if kwargs.get("build_mode", "") != "table":
-            logger.info("Logic will display only only table per page, even if there are more!!")
+            logger.info(LoggingRecord("Logic will display only only table per page, even if there are more!!"))
 
         # Load
         df: DataFlow

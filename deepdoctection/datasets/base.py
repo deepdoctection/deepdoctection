@@ -30,7 +30,7 @@ import numpy as np
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint import Image
 from ..utils.detection_types import Pathlike
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
@@ -247,10 +247,10 @@ class MergeDataset(DatasetBase):
                 """
                 df_list = []
                 if self.dataflows is not None:
-                    logger.info("Will used dataflow from previously explicitly passed configuration")
+                    logger.info(LoggingRecord("Will used dataflow from previously explicitly passed configuration"))
                     return ConcatData(list(self.dataflows))
 
-                logger.info("Will use the same build setting for all dataflows")
+                logger.info(LoggingRecord("Will use the same build setting for all dataflows"))
                 for dataflow_builder in self.dataflow_builders:
                     df_list.append(dataflow_builder.build(**kwargs))
                 df = ConcatData(df_list)
@@ -305,7 +305,7 @@ class MergeDataset(DatasetBase):
             test_dataset = [dp for id, dp in enumerate(val_dataset) if id % 2]
             val_dataset = [dp for id, dp in enumerate(val_dataset) if not id % 2]
 
-        logger.info("___________________ Number of datapoints per split ___________________")
+        logger.info(LoggingRecord("___________________ Number of datapoints per split ___________________"))
         logger.info(
             pprint.pformat(
                 {

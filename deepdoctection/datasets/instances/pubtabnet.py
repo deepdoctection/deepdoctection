@@ -36,7 +36,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
 from ...utils.detection_types import JsonDict
-from ...utils.logger import logger
+from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -150,7 +150,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         """
         split = str(kwargs.get("split", "val"))
         if split == "val":
-            logger.info("Loading annotations for 'val' split from Pubtabnet will take some time.")
+            logger.info(LoggingRecord("Loading annotations for 'val' split from Pubtabnet will take some time."))
         max_datapoints = kwargs.get("max_datapoints")
         if max_datapoints is not None:
             max_datapoints = int(max_datapoints)
@@ -160,7 +160,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         fake_score = kwargs.get("fake_score", False)
         dd_pipe_like = kwargs.get("dd_pipe_like", False)
         if dd_pipe_like:
-            logger.info("When 'dd_pipe_like'=True will set 'load_image'=True")
+            logger.info(LoggingRecord("When 'dd_pipe_like'=True will set 'load_image'=True"))
             load_image = True
 
         # Load

@@ -34,7 +34,7 @@ from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .base import MetricBase
 from .registry import metric_registry
@@ -339,8 +339,10 @@ class ClassificationMetric(MetricBase):
 
         if cls._cats is None and cls._sub_cats is None and cls._summary_sub_cats is None:
             logger.warning(
-                "Accuracy metric has not correctly been set up: No category, sub category or summary has been "
-                "defined, therefore it is undefined what to evaluate."
+                LoggingRecord(
+                    "Accuracy metric has not correctly been set up: No category, sub category or summary has been "
+                    "defined, therefore it is undefined what to evaluate."
+                )
             )
 
     @classmethod
@@ -368,7 +370,7 @@ class ClassificationMetric(MetricBase):
             stralign="center",
             numalign="left",
         )
-        logger.info("%s results:\n %s", cls.name, colored(table, "cyan"))
+        logger.info(LoggingRecord(f"{cls.name} results:\n {colored(table, 'cyan')}"))
 
 
 @metric_registry.register("accuracy")
