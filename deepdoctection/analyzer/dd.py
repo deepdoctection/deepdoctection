@@ -54,7 +54,7 @@ from ..utils.file_utils import (
     tf_available,
 )
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import CellType, LayoutType
 from ..utils.transform import PadTransform
@@ -445,7 +445,7 @@ def get_dd_analyzer(
         cfg.update_args(config_overwrite)
 
     config_sanity_checks(cfg)
-    logger.info("Config: \n %s", str(cfg), cfg.to_dict())
+    logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))  # type: ignore
 
     # will silent all TP logging while building the tower
     if tensorpack_available():

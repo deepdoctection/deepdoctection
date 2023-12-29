@@ -26,7 +26,7 @@ from ..datasets import DatasetBase
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PredictorPipelineComponent
 from ..utils.file_utils import tensorpack_available
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict
 from ..utils.settings import ObjectTypes
 from .base import MetricBase
@@ -117,7 +117,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
                 break
             self.epochs_to_eval.add(k * eval_period)
         self.epochs_to_eval.add(self.trainer.max_epoch)
-        logger.info("[EvalCallback] Will evaluate every %i epochs", eval_period)
+        logger.info(LoggingRecord(f"EvalCallback: Will evaluate every {eval_period} epochs"))
 
     def _eval(self) -> None:
         scores = self.evaluator.run(True, **self.build_eval_kwargs)
@@ -126,7 +126,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
 
     def _trigger_epoch(self) -> None:
         if self.epoch_num in self.epochs_to_eval:
-            logger.info("Running evaluation ...")
+            logger.info(LoggingRecord("Running evaluation ..."))
             self._eval()
 
 

@@ -23,7 +23,7 @@ from typing import Any, Optional, Tuple, Union
 import numpy as np
 import numpy.typing as npt
 
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.tqdm import get_tqdm
 from .base import DataFlow, ProxyDataFlow
 
@@ -95,7 +95,7 @@ class MeanFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = iter(self.df)
 
-        logger.info("Calculating mean")
+        logger.info(LoggingRecord("Calculating mean"))
 
         len_df: Optional[int]
         try:
@@ -139,7 +139,7 @@ class MeanFromDataFlow(ProxyDataFlow):
                     if n == self.max_datapoints:
                         break
 
-        logger.info("Mean from %s datapoints along axis %s: %s", n, self.axis, self.mean)
+        logger.info(LoggingRecord(f"Mean from {n} datapoints along axis {self.axis}: {self.mean}"))
 
         return self.mean
 
@@ -216,7 +216,7 @@ class StdFromDataFlow(ProxyDataFlow):
             self.df.reset_state()
         itr = iter(self.df)
 
-        logger.info("Calculating standard deviation")
+        logger.info(LoggingRecord("Calculating standard deviation"))
         try:
             len_df = len(self.df)
         except NotImplementedError:
@@ -266,6 +266,6 @@ class StdFromDataFlow(ProxyDataFlow):
             var = (ex2 - (ex * ex) / n) / (n - 1)
             self.std = np.sqrt(var)
 
-        logger.info("Standard deviation from %s datapoints along axis %s: %s", n, self.axis, self.std)
+        logger.info(LoggingRecord(f"Standard deviation from  {n} datapoints along axis {self.axis}: {self.std}"))
 
         return self.std

@@ -22,7 +22,7 @@ import importlib_metadata
 from packaging import version
 
 from .detection_types import Requirement
-from .logger import logger
+from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
 
 _GENERIC_ERR_MSG = "Please check the required version either in the docs or in the setup file"
@@ -545,7 +545,9 @@ def get_doctr_requirement() -> Requirement:
         if not get_poppler_version():
             return get_doctr_requirement()
         # don't know yet how to check whether pango gdk-pixbuf libffi are installed
-        logger.info("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
+        logger.info(
+            LoggingRecord("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
+        )
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 

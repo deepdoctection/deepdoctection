@@ -64,7 +64,7 @@ from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
 from ..utils.env_info import get_device
 from ..utils.file_utils import wandb_available
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
 from ..utils.utils import string_to_dict
 
@@ -401,10 +401,11 @@ def train_hf_layoutlm(
     sliding_window_stride = conf_dict.pop("sliding_window_stride")
     if sliding_window_stride and not max_batch_size:
         logger.warning(
-            "sliding_window_stride is not 0 and max_batch_size is 0. This can result in CUDA out of memory because the "
-            "batch size can be higher than per_device_train_batch_size. Set max_batch_size to a positive number if you"
-            "encounter this type of problem.",
-            number_samples,
+            LoggingRecord(
+                "sliding_window_stride is not 0 and max_batch_size is 0. This can result in CUDA out of "
+                "memory because the batch size can be higher than per_device_train_batch_size. Set "
+                "max_batch_size to a positive number if you encounter this type of problem.",
+            )
         )
 
     use_wandb = conf_dict.pop("use_wandb")
@@ -424,15 +425,21 @@ def train_hf_layoutlm(
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
     if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
-            "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
+            LoggingRecord(
+                f"After {number_samples} dataloader will log warning at every iteration about unexpected " f"samples"
+            )
         )
 
     arguments = TrainingArguments(**conf_dict)  # pylint: disable=E1123
-    logger.info("Config: \n %s", str(arguments.to_dict()), arguments.to_dict())
+    logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
 
-    logger.info("Will setup a head with the following classes\n %s", pprint.pformat(id2label, width=100, compact=True))
+    logger.info(
+        LoggingRecord(
+            f"Will setup a head with the following classes\n " f"{pprint.pformat(id2label, width=100, compact=True)}"
+        )
+    )
 
     config = config_cls.from_pretrained(pretrained_model_name_or_path=path_config_json, id2label=id2label)
     model = model_cls.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)

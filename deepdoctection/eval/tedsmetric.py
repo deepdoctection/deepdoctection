@@ -33,7 +33,7 @@ from ..utils.file_utils import (
     get_lxml_requirement,
     lxml_available,
 )
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType
 from .base import MetricBase
 from .registry import metric_registry
@@ -158,12 +158,18 @@ class TEDS:
         try:
             ground_truth_tr = etree.XML(ground_truth, parser)
         except etree.XMLSyntaxError:
-            logger.info("SyntaxError while xml parsing ground truth. Sample will be removed", {"xml_gt": ground_truth})
+            logger.info(
+                LoggingRecord(
+                    "SyntaxError while xml parsing ground truth. Sample will be removed", {"xml_gt": ground_truth}
+                )
+            )
             return -1.0
         try:
             pred_tr = etree.XML(pred, parser)
         except etree.XMLSyntaxError:
-            logger.info("SyntaxError while xml parsing prediction. Sample will be removed", {"xml_pr": pred})
+            logger.info(
+                LoggingRecord("SyntaxError while xml parsing prediction. Sample will be removed", {"xml_pr": pred})
+            )
             return -1.0
 
         etree.strip_tags(pred_tr)

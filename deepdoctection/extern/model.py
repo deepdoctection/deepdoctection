@@ -30,7 +30,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
-from ..utils.logger import log_once, logger
+from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
@@ -731,13 +731,18 @@ class ModelCatalog:
         try:
             profile = ModelCatalog.get_profile(name)
         except KeyError:
-            logger.info("Model not found in ModelCatalog. Make sure, you have places model weights in the cache dir")
+            logger.info(
+                LoggingRecord(
+                    f"Model {name} not found in ModelCatalog. Make sure, you have places model weights "
+                    f"in the cache dir"
+                )
+            )
             profile = ModelProfile(name="", description="", size=[])
         if profile.name:
             return os.path.join(get_weights_dir_path(), profile.name)
         log_once(
-            f"Model {name} is not registered. Please make sure the weights are available in the weights cache "
-            f"directory or the full path you provide is correct"
+            f"Model {name} is not registered. Please make sure the weights are available in the weights "
+            f"cache directory or the full path you provide is correct"
         )
         if os.path.isfile(name):
             return name
@@ -758,7 +763,12 @@ class ModelCatalog:
         try:
             profile = ModelCatalog.get_profile(name)
         except KeyError:
-            logger.info("Model not found in ModelCatalog. Make sure, you have places model configs in the cache dir")
+            logger.info(
+                LoggingRecord(
+                    f"Model {name} not found in ModelCatalog. Make sure, you have places model "
+                    f"configs in the cache dir"
+                )
+            )
             profile = ModelProfile(name="", description="", size=[])
         if profile.config is not None:
             return os.path.join(get_configs_dir_path(), profile.config)
@@ -779,8 +789,10 @@ class ModelCatalog:
         except KeyError:
             profile = ModelProfile(name="", description="", size=[])
             logger.info(
-                "Model not found in ModelCatalog. Make sure, you have places preprocessor configs in the cache dir",
-                name,
+                LoggingRecord(
+                    f"Model {name} not found in ModelCatalog. Make sure, you have places preprocessor configs "
+                    f"in the cache dir",
+                )
             )
         if profile.preprocessor_config is not None:
             return os.path.join(get_configs_dir_path(), profile.preprocessor_config)
@@ -992,9 +1004,10 @@ class ModelDownloadManager:
             size = ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
             if expect_size is not None and size != expect_size:
                 logger.error(
-                    "File downloaded from %s does not match the expected size! You may have downloaded"
-                    " a broken file, or the upstream may have modified the file.",
-                    repo_id,
+                    LoggingRecord(
+                        f"File downloaded from {repo_id} does not match the expected size! You may have downloaded"
+                        " a broken file, or the upstream may have modified the file."
+                    )
                 )
 
     @staticmethod

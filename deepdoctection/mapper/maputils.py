@@ -30,7 +30,7 @@ from termcolor import colored
 
 from ..datapoint.box import BoundingBoxError
 from ..utils.detection_types import DP, BaseExceptionType, S, T
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes
 
 __all__ = ["MappingContextManager", "DefaultMapper", "maybe_get_fake_score", "LabelSummarizer", "curry"]
@@ -87,7 +87,9 @@ class MappingContextManager:
                 if isinstance(value, dict):
                     log_dict["type"] = key
                     log_dict.update(value)
-            logger.warning("MappingContextManager error. Will filter %s", self.filter_level, log_dict)
+            logger.warning(LoggingRecord(f"MappingContextManager error. Will filter "
+                                         f"{self.filter_level}", log_dict)) # type: ignore
+
             return True
         if exc_type is None:
             self.context_error = False
@@ -220,4 +222,4 @@ class LabelSummarizer:
         table = tabulate(
             data, headers=["category", "#box"] * (num_columns // 2), tablefmt="pipe", stralign="center", numalign="left"
         )
-        logger.info("Ground-Truth category distribution:\n %s", colored(table, "cyan"))
+        logger.info(LoggingRecord(f"Ground-Truth category distribution:\n {colored(table, 'cyan')}"))

@@ -25,7 +25,7 @@ from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 import numpy as np
 
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import get_rng
 from .base import DataFlow, DataFlowReentrantGuard, DataFlowResetStateNotCalled, ProxyDataFlow
@@ -142,7 +142,7 @@ class CustomDataFromList(DataFromList):
             raise DataFlowResetStateNotCalled()
         if self.rebalance_func is not None:
             lst_tmp = self.rebalance_func(self.lst)
-            logger.info("subset size after re-balancing: %s", len(lst_tmp))
+            logger.info(LoggingRecord(f"CustomDataFromList: subset size after re-balancing: {len(lst_tmp)}"))
         else:
             lst_tmp = self.lst
 
