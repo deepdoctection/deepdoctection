@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
 from ..utils.identifier import get_uuid, is_uuid_like
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from .box import BoundingBox
 from .convert import as_dict
@@ -369,7 +369,7 @@ class CategoryAnnotation(Annotation):
                 try:
                     self.relationships[key].remove(ann_id)
                 except ValueError:
-                    logger.warning("Relationship %s cannot be removed because it does not exist", key)
+                    logger.warning(LoggingRecord(f"Relationship {key} cannot be removed because it does not exist"))
         else:
             self.relationships[key].clear()
 

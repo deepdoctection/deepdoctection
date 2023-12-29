@@ -23,7 +23,7 @@ on images (e.g. deskew, de-noising or more general GAN like operations.
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
 from ..utils.detection_types import JsonDict
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from .base import ImageTransformPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -50,9 +50,10 @@ class SimpleTransformService(ImageTransformPipelineComponent):
     def serve(self, dp: Image) -> None:
         if dp.annotations:
             logger.warning(
-                "%s has already received image with image annotations. These annotations will not "
-                "be transformed and might cause unexpected output in your pipeline.",
-                self.name,
+                LoggingRecord(
+                    f"{self.name} has already received image with image annotations. These annotations "
+                    f"will not be transformed and might cause unexpected output in your pipeline."
+                )
             )
         if dp.image is not None:
             np_image_transform = self.transform_predictor.transform(dp.image)

@@ -26,7 +26,7 @@ from typing import List
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import boto3_available, get_boto3_requirement
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
@@ -83,7 +83,7 @@ def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionR
             "orig_module": frame_summary.filename,
             "line": frame_summary.lineno,
         }
-        logger.warning("botocore InvalidParameterException", log_dict)
+        logger.warning(LoggingRecord("botocore InvalidParameterException", log_dict))  # type: ignore
         response = {}
 
     all_results = _textract_to_detectresult(response, width, height, text_lines)

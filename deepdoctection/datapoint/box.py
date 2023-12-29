@@ -29,7 +29,7 @@ from numpy import float32
 
 from ..utils.detection_types import ImageType
 from ..utils.file_utils import cocotools_available
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 
 if cocotools_available():
     import pycocotools.mask as coco_mask
@@ -596,6 +596,6 @@ def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[Boundin
                 "height": np_boxes_output[idx][3],
             }
 
-            logger.warning("intersection_boxes error %s", "", log_dict)
+            logger.warning(LoggingRecord("intersection_boxes", log_dict))  # type: ignore
 
     return boxes_output

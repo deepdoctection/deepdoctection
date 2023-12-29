@@ -21,6 +21,7 @@ Module for ordering text and layout segments pipeline components
 import os
 from copy import copy
 from itertools import chain
+from logging import DEBUG
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -34,7 +35,7 @@ from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.detection_types import JsonDict
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
 
@@ -101,7 +102,13 @@ class OrderGenerator:
         }
         reading_lines.sort(key=lambda x: (rows_dict[x[0]], x[2]))
         number_rows = len(rows_dict)
-        logger.debug("number_rows: %s", number_rows)
+        if logger.isEnabledFor(DEBUG):
+            logger.debug(
+                LoggingRecord(
+                    "group_words_into_lines",
+                    {"number_rows": number_rows, "reading_lines": reading_lines, "rows_dict": rows_dict},
+                )
+            )
         return [(idx + 1, number_rows - word[0], word[1]) for idx, word in enumerate(reading_lines)]
 
     @staticmethod
@@ -120,6 +127,7 @@ class OrderGenerator:
             bounding_box = ann.get_bounding_box(image_id)
             reading_lines.append((bounding_box.cy, ann.annotation_id))
         reading_lines.sort(key=lambda x: x[0])
+        logger.debug(LoggingRecord("group_lines_into_lines", {"reading_lines": reading_lines}))
         return [(idx + 1, idx + 1, line[1]) for idx, line in enumerate(reading_lines)]
 
     @staticmethod
@@ -155,7 +163,8 @@ class OrderGenerator:
 
             # finally, sorting connected components by increasing y-value
             connected_components.sort(key=lambda x: x["top"])
-        logger.debug("connected components: %s", connected_components)
+        if logger.isEnabledFor(DEBUG):
+            logger.debug(LoggingRecord("_connected_components", {"connected_components": str(connected_components)}))
         return connected_components
 
     def order_blocks(
@@ -241,6 +250,7 @@ class OrderGenerator:
                 reading_blocks.append((len(columns) - 1, ann.annotation_id))
         self.columns_detect_result = self._make_column_detect_results(columns)
         consoldiated_cols = self._consolidate_columns(columns)
+
         consolidated_columns = []
         for idx, _ in enumerate(columns):
             if columns[consoldiated_cols[idx]] not in consolidated_columns:
@@ -262,6 +272,16 @@ class OrderGenerator:
             filtered_blocks = list(filter(lambda x: x[0] == idx, blocks))  # type: ignore # pylint: disable=W0640
             sorted_blocks.extend(self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height))
         reading_blocks = [(idx + 1, block[1]) for idx, block in enumerate(sorted_blocks)]
+
+        if logger.isEnabledFor(DEBUG):
+            logger.debug(
+                LoggingRecord(
+                    "order_blocks",
+                    {"consolidated_cols": str(consoldiated_cols),
+                     "columns": str(columns),
+                     "reading_blocks": str(reading_blocks)},
+                )
+            )
         return reading_blocks
 
     def _consolidate_columns(self, columns: List[BoundingBox]) -> Dict[int, int]:
@@ -273,12 +293,14 @@ class OrderGenerator:
         output = ioa_matrix > self.ioa_column_threshold
         child_index, parent_index = output.nonzero()
         column_dict = dict(zip(child_index, parent_index))
+        column_dict = {int(key): int(val) for key, val in column_dict.items()}
         counter = 0
         for idx, _ in enumerate(columns):
             if idx not in column_dict:
                 column_dict[idx] = counter
                 counter += 1
-        logger.debug("consolidated columns: %s", column_dict)
+        if logger.isEnabledFor(DEBUG):
+            logger.debug(LoggingRecord("consolidated columns", copy(column_dict)))
         return column_dict
 
     @staticmethod
@@ -365,53 +387,18 @@ class TextLineGenerator:
             return []
         # every list now non-empty
         word_anns_dict = {ann.annotation_id: ann for ann in word_anns}
+        # list of  (word index, text line, word annotation_id)
         word_order_list = OrderGenerator.group_words_into_lines(word_anns, image_id)
         number_rows = max(word[1] for word in word_order_list)
         detection_result_list = []
-        for row in range(1, number_rows + 1):
-            ann_meta_per_row = [ann_meta for ann_meta in word_order_list if ann_meta[1] == row]
+        for number_row in range(1, number_rows + 1):
+            # list of  (word index, text line, word annotation_id) for text line equal to number_row
+            ann_meta_per_row = [ann_meta for ann_meta in word_order_list if ann_meta[1] == number_row]
             ann_ids = [ann_meta[2] for ann_meta in ann_meta_per_row]
             anns_per_row = [word_anns_dict[ann_id] for ann_id in ann_ids]
             anns_per_row.sort(key=lambda x: x.get_bounding_box(image_id).ulx)
 
-            if len(anns_per_row) >= 2 or not self.make_sub_lines:
-                # words are already sorted horizontally
-                sub_line = [anns_per_row[0]]
-                sub_line_ann_ids = [anns_per_row[0].annotation_id]
-                for idx, ann in enumerate(anns_per_row[1:]):
-                    horiz_break = True
-                    prev_box = sub_line[-1].get_bounding_box(image_id)
-                    current_box = ann.get_bounding_box(image_id)
-
-                    if prev_box.absolute_coords:
-                        prev_box = prev_box.transform(image_width, image_height)
-                    if current_box.absolute_coords:
-                        current_box = current_box.transform(image_width, image_height)
-
-                    # If distance between boxes is lower than paragraph break, same subline
-                    if current_box.ulx - prev_box.lrx < self.paragraph_break:  # type: ignore
-                        horiz_break = False
-
-                    if horiz_break or idx == len(anns_per_row) - 2:
-                        if idx == len(anns_per_row) - 2 and not horiz_break:
-                            sub_line.append(ann)
-                            sub_line_ann_ids.append(ann.annotation_id)
-                        else:
-                            detection_result = self._make_detect_result(
-                                ann.get_bounding_box(image_id), {"child": [ann.annotation_id]}
-                            )
-                            detection_result_list.append(detection_result)
-
-                        boxes = [ann.get_bounding_box(image_id) for ann in sub_line]
-                        merge_box = merge_boxes(*boxes)
-                        detection_result = self._make_detect_result(merge_box, {"child": sub_line_ann_ids})
-                        detection_result_list.append(detection_result)
-                        sub_line = []
-                        sub_line_ann_ids = []
-
-                    sub_line.append(ann)
-                    sub_line_ann_ids.append(ann.annotation_id)
-            else:
+            if len(anns_per_row) < 2 or not self.make_sub_lines:
                 # either row has only one word or all words should belong to one line
                 boxes = [ann.get_bounding_box(image_id) for ann in anns_per_row]
                 merge_box = merge_boxes(*boxes)
@@ -419,6 +406,38 @@ class TextLineGenerator:
                     merge_box, {"child": [ann.annotation_id for ann in anns_per_row]}
                 )
                 detection_result_list.append(detection_result)
+            else:
+                for idx, ann in enumerate(anns_per_row):
+                    if idx == 0:
+                        sub_line = [ann]
+                        sub_line_ann_ids = [ann.annotation_id]
+                        continue
+
+                    prev_box = anns_per_row[idx - 1].get_bounding_box(image_id)
+                    current_box = ann.get_bounding_box(image_id)
+
+                    if prev_box.absolute_coords:
+                        prev_box = prev_box.transform(image_width, image_height)
+                    if current_box.absolute_coords:
+                        current_box = current_box.transform(image_width, image_height)
+
+                    # If distance between boxes is lower than paragraph break, same sub line
+                    if current_box.ulx - prev_box.lrx < self.paragraph_break:  # type: ignore
+                        sub_line.append(ann)
+                        sub_line_ann_ids.append(ann.annotation_id)
+                    else:
+                        boxes = [ann.get_bounding_box(image_id) for ann in sub_line]
+                        merge_box = merge_boxes(*boxes)
+                        detection_result = self._make_detect_result(merge_box, {"child": sub_line_ann_ids})
+                        detection_result_list.append(detection_result)
+                        sub_line = [ann]
+                        sub_line_ann_ids = [ann.annotation_id]
+
+                    if idx == len(anns_per_row) - 1:
+                        boxes = [ann.get_bounding_box(image_id) for ann in sub_line]
+                        merge_box = merge_boxes(*boxes)
+                        detection_result = self._make_detect_result(merge_box, {"child": sub_line_ann_ids})
+                        detection_result_list.append(detection_result)
 
         return detection_result_list
 
@@ -531,7 +550,7 @@ class TextOrderService(PipelineComponent):
         self._create_columns()
 
     def _create_columns(self) -> None:
-        if os.environ.get("LOG_LEVEL") == "DEBUG" and self.order_generator.columns_detect_result:
+        if logger.isEnabledFor(DEBUG) and self.order_generator.columns_detect_result:
             for idx, detect_result in enumerate(self.order_generator.columns_detect_result):
                 annotation_id = self.dp_manager.set_image_annotation(detect_result)
                 if annotation_id:

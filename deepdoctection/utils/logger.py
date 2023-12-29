@@ -34,9 +34,10 @@ import logging.config
 import os
 import shutil
 import sys
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, no_type_check
+from typing import Any, Dict, Optional, Union, no_type_check
 
 from termcolor import colored
 
@@ -45,38 +46,49 @@ from .detection_types import Pathlike
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 
+@dataclass
+class LoggingRecord:
+    """LoggingRecord to pass to the logger in order to distinguish from third party libraries. """
+    msg: str
+    log_dict: Optional[Dict[Union[int, str], Any]] = field(default=None)
+
+    def __post_init__(self) -> None:
+        """log_dict will be added to the log record as a dict."""
+        if self.log_dict is not None:
+            self.log_dict["msg"] = self.msg
+
+    def __str__(self) -> str:
+        """Return the message."""
+        return self.msg
+
+
 class CustomFilter(logging.Filter):
     """A custom filter"""
 
+    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+
     def filter(self, record: logging.LogRecord) -> bool:
-        log_dict = {}
-        args = record.args
-        str_args = []
-        if args:
-            for arg in args:
-                if isinstance(arg, dict):
-                    log_dict.update(arg)
-                else:
-                    str_args.append(arg)
-        record.args = tuple(str_args)
-        if not hasattr(record, "log_dict"):
-            setattr(record, "log_dict", log_dict)
+        if self.filter_third_party_lib:
+            if not isinstance(record.msg, LoggingRecord):
+                return False
+
         return True
 
 
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
-    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False")
+    std_out_verbose = ast.literal_eval(os.environ.get("STD_OUT_VERBOSE", "False"))
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
         msg = colored("%(message)s", "white")
 
-        if ast.literal_eval(self.std_out_verbose):
-            log_dict = getattr(record, "log_dict", "")
-            msg = f"{msg}. Additional verbose infos: {repr(log_dict)}"
+        if self.std_out_verbose:
+            if isinstance(record.msg, LoggingRecord):
+                verbose_info = f" Additional verbose infos: {repr(record.msg.log_dict)}"
+                msg += verbose_info
 
         if record.levelno == logging.WARNING:
             fmt = f"{date}  {colored('WRN', 'magenta', attrs=['blink'])}  {msg}"
@@ -96,6 +108,8 @@ class StreamFormatter(logging.Formatter):
 class FileFormatter(logging.Formatter):
     """A custom formatter to produce a loggings in json format"""
 
+    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
@@ -107,7 +121,12 @@ class FileFormatter(logging.Formatter):
             "time": datetime.now().strftime("%m%d-%H%M%S"),
             "message": message,
         }
-        log_dict.update(record.log_dict)
+        if isinstance(record.msg, LoggingRecord):
+            if record.msg.log_dict:
+                log_dict.update(record.msg.log_dict)
+                log_dict.pop("msg")
+        elif self.filter_third_party_lib:
+            log_dict = {"message": record.msg}
         return json.dumps(log_dict)
 
 
