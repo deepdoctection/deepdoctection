@@ -44,7 +44,7 @@ from ..mapper.d2struct import image_to_d2_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.file_utils import get_wandb_requirement, wandb_available
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
 
 if wandb_available():
@@ -372,7 +372,7 @@ def train_d2_faster_rcnn(
     augment_list = [ResizeShortestEdge(cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN), RandomFlip()]
     mapper = DatasetMapper(is_train=True, augmentations=augment_list, image_format="BGR")
 
-    logger.info("Config: \n %s", str(cfg), cfg)
+    logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))
 
     trainer = D2Trainer(cfg, dataset, mapper)
     trainer.resume_or_load()

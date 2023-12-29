@@ -31,7 +31,7 @@ from typing import Any, Generator, Iterator, Optional, Tuple, Union
 import numpy as np
 
 from .detection_types import ImageType
-from .logger import logger
+from .logger import LoggingRecord, logger
 from .viz import viz_handler
 
 __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
@@ -120,7 +120,7 @@ def timed_operation(message: str, log_start: bool = False) -> Generator[Any, Non
 
     assert len(message)
     if log_start:
-        logger.info("start task: %s ...", message)
+        logger.info(LoggingRecord(f"start task: {message} ..."))
     start = timer()
     yield
-    logger.info("%s total: %s sec.", message, round(timer() - start, 4))
+    logger.info(LoggingRecord(f"{message} total: {round(timer() - start, 4)} sec."))

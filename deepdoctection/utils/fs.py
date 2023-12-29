@@ -30,7 +30,7 @@ from urllib.request import urlretrieve
 
 from .detection_types import ImageType, JsonDict, Pathlike
 from .develop import deprecated
-from .logger import logger
+from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
@@ -97,11 +97,11 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
 
     if os.path.isfile(f_path):
         if (expect_size is not None and os.stat(f_path).st_size == expect_size) or expect_size is None:
-            logger.info("File %s exists! Skip download.", file_name)
+            logger.info(LoggingRecord(f"File {file_name} exists! Skip download."))
             return f_path
-        logger.warning("File %s exists. Will overwrite with a new download!", file_name)
+        logger.warning(LoggingRecord(f"File {file_name} exists. Will overwrite with a new download!"))
     else:
-        logger.info("File %s will be downloaded.", file_name)
+        logger.info(LoggingRecord(f"File {file_name} will be downloaded."))
 
     def hook(total):  # type: ignore
         last_b = [0]
@@ -120,15 +120,17 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
         stat_info = os.stat(f_path)
         size = stat_info.st_size
     except IOError:
-        logger.error("Failed to download %s", url)
+        logger.error(LoggingRecord(f"Failed to download {url}"))
         raise
     assert size > 0, f"Downloaded an empty file from {url}!"
 
     if expect_size is not None and size != expect_size:
-        logger.error("File downloaded from %s does not match the expected size!", url)
-        logger.error("You may have downloaded a broken file, or the upstream may have modified the file.")
+        logger.error(LoggingRecord(f"File downloaded from {url} does not match the expected size!"))
+        logger.error(
+            LoggingRecord("You may have downloaded a broken file, or the upstream may have modified the file.")
+        )
 
-    logger.info("Successfully downloaded %s. %s.", file_name, sizeof_fmt(size))
+    logger.info(LoggingRecord(f"Successfully downloaded {file_name}. {sizeof_fmt(size)}."))
     return f_path
 
 
@@ -164,7 +166,7 @@ def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -
         else:
             image = viz_handler.read_image(path)
     except (FileNotFoundError, ValueError):
-        logger.info("file not found or value error: %s", path)
+        logger.info(LoggingRecord(f"file not found or value error: {path}"))
 
     return image
 

@@ -30,7 +30,7 @@ from ..mapper.maputils import curry
 from ..mapper.misc import to_image
 from ..utils.detection_types import Pathlike
 from ..utils.fs import maybe_path_or_pdf
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType
 from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
 from .common import PageParsingService
@@ -81,7 +81,8 @@ def _proto_process(
         path_tmp = doc_path
     else:
         path_tmp = path
-    logger.info("Processing %s", file_name, {"path": path_tmp, "df": path_tmp, "file_name": file_name})
+    logger.info(LoggingRecord(f"Processing {file_name}", {"path": path_tmp, "df": path_tmp, "file_name": file_name}))
+    # logger.info("Processing %s", file_name, {"path": path_tmp, "df": path_tmp, "file_name": file_name})
     return dp
 
 

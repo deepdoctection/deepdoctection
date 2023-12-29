@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Typ
 import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
     CellType,
     LayoutType,
@@ -293,7 +293,7 @@ class Table(Layout):
                 html_list.pop(html_index)
                 html_list.insert(html_index, cell.text)  # type: ignore
             except ValueError:
-                logger.warning("html construction not possible due to ValueError in: %s", cell.annotation_id)
+                logger.warning(LoggingRecord("html construction not possible", {"annotation_id": cell.annotation_id}))
 
         return "".join(html_list)
 

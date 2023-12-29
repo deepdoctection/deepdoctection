@@ -28,7 +28,7 @@ from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
 from ..utils.file_utils import pytorch_available
-from ..utils.logger import log_once, logger
+from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
@@ -74,7 +74,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         df = self.dataset.dataflow.build(**build_kwargs)
 
         if cache_dataset:
-            logger.info("Yielding dataflow into memory and create torch dataset")
+            logger.info(LoggingRecord("Yielding dataflow into memory and create torch dataset"))
             categories: Mapping[str, ObjectTypes] = {}
             _data_statistics = True
             if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
@@ -93,8 +93,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                     )[LayoutType.word][WordType.token_class]
             else:
                 logger.info(
-                    "dataset is of type %s. Cannot generate statistics for this type of dataset",
-                    self.dataset.dataset_info.type,
+                    LoggingRecord(f"dataset is of type {self.dataset.dataset_info.type}. Cannot generate statistics.")
                 )
                 _data_statistics = False
 

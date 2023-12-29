@@ -33,7 +33,7 @@ from pypdf import PdfReader, PdfWriter, errors
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
 from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
-from .logger import logger
+from .logger import LoggingRecord, logger
 from .utils import FileExtensionError, is_file_extension
 from .viz import viz_handler
 
@@ -66,7 +66,11 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
         if not response:
             return True
     else:
-        logger.info("qpdf is not installed. If the document must be decrypted please ensure that it is installed")
+        logger.info(
+            LoggingRecord(
+                "qpdf is not installed. If the document must be decrypted please ensure that it is installed"
+            )
+        )
     return False
 
 
@@ -97,7 +101,11 @@ def get_pdf_file_reader(path: Pathlike) -> PdfReader:
             if input_pdf_as_bytes.is_encrypted:
                 is_decrypted = decrypt_pdf_document(path)
                 if not is_decrypted:
-                    logger.error("pdf document %s cannot be decrypted and therefore cannot be processed further.", path)
+                    logger.error(
+                        LoggingRecord(
+                            f"pdf document {path} cannot be decrypted and therefore cannot be " f"processed further."
+                        )
+                    )
                     sys.exit()
 
     file_reader = PdfReader(open(path, "rb"))  # pylint: disable=R1732

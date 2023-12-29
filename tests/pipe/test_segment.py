@@ -332,7 +332,7 @@ class TestPubtablesSegmentationService:
         self._tile_table_with_items = True
         self.cell_class_id = 5
         self.table_name = LayoutType.table
-        self.cell_names: Sequence[Union[LayoutType,CellType]] = [
+        self.cell_names: Sequence[Union[LayoutType, CellType]] = [
             CellType.spanning,
             CellType.row_header,
             CellType.column_header,

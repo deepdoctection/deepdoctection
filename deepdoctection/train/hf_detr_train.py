@@ -44,7 +44,7 @@ from ..extern.hfdetr import HFDetrDerivedDetector
 from ..mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
 
 
@@ -213,11 +213,13 @@ def train_hf_detr(
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
     if conf_dict["max_steps"] > number_samples:  # type: ignore
         logger.warning(
-            "After %s dataloader will log warning at every iteration about unexpected samples", number_samples
+            LoggingRecord(
+                f"After {number_samples} dataloader will log warning at every iteration " f"about unexpected samples"
+            )
         )
 
     arguments = TrainingArguments(**conf_dict)
-    logger.info("Config: \n %s", str(arguments.to_dict()), arguments.to_dict())
+    logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
     config = PretrainedConfig.from_pretrained(

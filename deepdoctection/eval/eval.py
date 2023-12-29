@@ -38,7 +38,7 @@ from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
 from ..utils.file_utils import detectron2_available, wandb_available
-from ..utils.logger import logger
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
@@ -111,8 +111,10 @@ class Evaluator:
         # when passing a component, we will process prediction on num_threads
         if isinstance(component_or_pipeline, (PredictorPipelineComponent, LanguageModelPipelineComponent)):
             logger.info(
-                "Building multi threading pipeline component to increase prediction throughput. Using %i threads",
-                num_threads,
+                LoggingRecord(
+                    f"Building multi threading pipeline component to increase prediction throughput. "
+                    f"Using {num_threads} threads"
+                )
             )
             pipeline_components: List[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
 
@@ -204,7 +206,7 @@ class Evaluator:
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
         df_pr = self._run_pipe_or_component(df_pr)
 
-        logger.info("Starting evaluation...")
+        logger.info(LoggingRecord("Starting evaluation..."))
         result = self.metric.get_distance(df_gt, df_pr, self.dataset.dataflow.categories)
         self.metric.print_result()
 
@@ -222,7 +224,7 @@ class Evaluator:
     def _run_pipe_or_component(self, df_pr: DataFlow) -> DataFlow:
         if self.pipe_component:
             self.pipe_component.put_task(df_pr)
-            logger.info("Predicting objects...")
+            logger.info(LoggingRecord("Predicting objects..."))
             df_pr_list = self.pipe_component.start()
             if self.wandb_table_agent is not None:
                 df_pr_list = [self.wandb_table_agent.dump(dp) for dp in df_pr_list]
