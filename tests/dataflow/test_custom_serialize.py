@@ -160,10 +160,13 @@ class TestSerializerPdfDoc:
     def test_loading() -> None:
         """
         Test the loading of a .pdf file
+        PDF Samples: https://freetestdata.com/document-files/pdf/
         """
 
         # Arrange
         test_file = os.path.join(get_test_path(), "test_file.pdf")
+        long_test_file = os.path.join(get_test_path(), "260KB.pdf")
+        long_test_file_0 = os.path.join(get_test_path(), "260KB_10.pdf")
 
         # Act
         df = SerializerPdfDoc.load(test_file)
@@ -174,4 +177,16 @@ class TestSerializerPdfDoc:
         assert len(output) == 2
         assert first_image["path"] == test_file
         assert first_image["file_name"] == "test_file_0.pdf"
+        assert isinstance(first_image["pdf_bytes"], bytes)
+
+        # Act
+        SerializerPdfDoc.split(long_test_file, chunk_size=10)
+        df = SerializerPdfDoc.load(long_test_file_0)
+        output = collect_datapoint_from_dataflow(df=df)
+        first_image = output[0]
+
+        # Assert
+        assert len(output) == 10
+        assert first_image["path"] == long_test_file_0
+        assert first_image["file_name"] == "260KB_10_0.pdf"
         assert isinstance(first_image["pdf_bytes"], bytes)
