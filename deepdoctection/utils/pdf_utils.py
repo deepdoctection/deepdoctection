@@ -67,9 +67,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
             return True
     else:
         logger.info(
-            LoggingRecord(
-                "qpdf is not installed. If the document must be decrypted please ensure that it is installed"
-            )
+            LoggingRecord("qpdf is not installed. If the document must be decrypted please ensure that it is installed")
         )
     return False
 

@@ -476,9 +476,7 @@ def auto_select_lib_and_device() -> None:
             os.environ["USE_CUDA"] = "False"
             return
         logger.warning(
-            LoggingRecord(
-                "You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU."
-            )
+            LoggingRecord("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
         )
     if pytorch_available():
         import torch
