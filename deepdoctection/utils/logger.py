@@ -48,7 +48,8 @@ __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 @dataclass
 class LoggingRecord:
-    """LoggingRecord to pass to the logger in order to distinguish from third party libraries. """
+    """LoggingRecord to pass to the logger in order to distinguish from third party libraries."""
+
     msg: str
     log_dict: Optional[Dict[Union[int, str], Any]] = field(default=None)
 
@@ -140,7 +141,11 @@ _CONFIG_DICT: Dict[str, Any] = {
     "handlers": {
         "streamhandler": {"filters": ["customfilter"], "formatter": "streamformatter", "class": "logging.StreamHandler"}
     },
-    "root": {"handlers": ["streamhandler"], "level": os.environ.get("LOG_LEVEL", "INFO"), "propagate": False},
+    "root": {
+        "handlers": ["streamhandler"],
+        "level": os.environ.get("LOG_LEVEL", "INFO"),
+        "propagate": ast.literal_eval(os.environ.get("LOG_PROPAGATE", "False")),
+    },
 }
 
 

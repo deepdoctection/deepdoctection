@@ -87,8 +87,9 @@ class MappingContextManager:
                 if isinstance(value, dict):
                     log_dict["type"] = key
                     log_dict.update(value)
-            logger.warning(LoggingRecord(f"MappingContextManager error. Will filter "
-                                         f"{self.filter_level}", log_dict)) # type: ignore
+            logger.warning(
+                LoggingRecord(f"MappingContextManager error. Will filter " f"{self.filter_level}", log_dict)
+            )  # type: ignore
 
             return True
         if exc_type is None:

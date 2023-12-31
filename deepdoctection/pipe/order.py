@@ -277,9 +277,11 @@ class OrderGenerator:
             logger.debug(
                 LoggingRecord(
                     "order_blocks",
-                    {"consolidated_cols": str(consoldiated_cols),
-                     "columns": str(columns),
-                     "reading_blocks": str(reading_blocks)},
+                    {
+                        "consolidated_cols": str(consoldiated_cols),
+                        "columns": str(columns),
+                        "reading_blocks": str(reading_blocks),
+                    },
                 )
             )
         return reading_blocks
