@@ -245,7 +245,7 @@ def draw_boxes(
     np_image = np_image.copy()
 
     if np_image.ndim == 2 or (np_image.ndim == 3 and np_image.shape[2] == 1):
-        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)
+        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)  # type: ignore
     for i in sorted_inds:
         box = boxes[i, :]
         choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
