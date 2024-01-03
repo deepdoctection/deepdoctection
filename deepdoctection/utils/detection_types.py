@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Uni
 
 import numpy.typing as npt
 import tqdm
-from numpy import uint8, generic
+from numpy import generic, uint8
 
 
 # Type for a general dataclass
