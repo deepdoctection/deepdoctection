@@ -23,6 +23,7 @@ import itertools
 import json
 import os
 from collections import defaultdict
+from pathlib import Path
 from typing import DefaultDict, Dict, List, Optional, Sequence, Union
 
 from jsonlines import Reader, Writer
@@ -185,6 +186,11 @@ class SerializerFiles:
         df1: DataFlow
         df2: DataFlow
         df3: DataFlow
+
+        if isinstance(path, str):
+            path = Path(path)
+        if not path.exists():
+            raise NotADirectoryError(f"The path {path} to the directory or file does not exist")
 
         if shuffle:
             sort = False

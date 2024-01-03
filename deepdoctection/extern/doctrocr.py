@@ -34,6 +34,7 @@ from ..utils.file_utils import (
     tf_addons_available,
     tf_available,
 )
+from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, TypeOrStr
 from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
 from .pt.ptutils import set_torch_auto_device
@@ -41,8 +42,9 @@ from .pt.ptutils import set_torch_auto_device
 if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
+    from doctr.models.preprocessor import PreProcessor
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
-    from doctr.models.recognition.zoo import recognition_predictor
+    from doctr.models.recognition.zoo import ARCHS, recognition
 
 if pytorch_available():
     import torch
@@ -255,15 +257,31 @@ class DoctrTextRecognizer(TextRecognizer):
     """
 
     def __init__(
-        self, architecture: str, path_weights: str, device: Optional[Literal["cpu", "cuda"]] = None, lib: str = "TF"
+        self,
+        architecture: str,
+        path_weights: str,
+        device: Optional[Literal["cpu", "cuda"]] = None,
+        lib: str = "TF",
+        path_config_json: Optional[str] = None,
     ) -> None:
+        """
+        :param architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
+        "crnn_mobilenet_v3_small". The full list can be found here:
+        https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16.
+        :param path_weights: Path to the weights of the model
+        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+        :param lib: "TF" or "PT". Will default to "TF".
+        :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
+        a model trained on custom vocab.
+        """
         self.lib = lib
         self.name = "doctr_text_recognizer"
         self.architecture = architecture
         self.path_weights = path_weights
         self.device_input = device
         self.device = _set_device_str(device)
-        self.doctr_predictor = recognition_predictor(arch=self.architecture, pretrained=True)
+        self.path_config_json = path_config_json
+        self.doctr_predictor = self.build_model()
         self.load_model()
 
     def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
@@ -291,3 +309,36 @@ class DoctrTextRecognizer(TextRecognizer):
     def load_model(self) -> None:
         """Loading model weights"""
         _load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
+
+    def build_model(self) -> "RecognitionPredictor":
+        """Building the model"""
+
+        # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py
+        custom_configs = {}
+        batch_size = 32
+        recognition_configs = {}
+        if self.path_config_json:
+            custom_configs = load_json(self.path_config_json)
+            custom_configs.pop("arch", None)
+            custom_configs.pop("url", None)
+            custom_configs.pop("task", None)
+            recognition_configs["mean"] = custom_configs.pop("mean")
+            recognition_configs["std"] = custom_configs.pop("std")
+            batch_size = custom_configs.pop("batch_size")
+        recognition_configs["batch_size"] = batch_size
+
+        if isinstance(self.architecture, str):
+            if self.architecture not in ARCHS:
+                raise ValueError(f"unknown architecture '{self.architecture}'")
+
+            model = recognition.__dict__[self.architecture](pretrained=True, pretrained_backbone=True, **custom_configs)
+        else:
+            if not isinstance(
+                self.architecture,
+                (recognition.CRNN, recognition.SAR, recognition.MASTER, recognition.ViTSTR, recognition.PARSeq),
+            ):
+                raise ValueError(f"unknown architecture: {type(self.architecture)}")
+            model = self.architecture
+
+        input_shape = model.cfg["input_shape"][:2] if tf_available() else model.cfg["input_shape"][-2:]
+        return RecognitionPredictor(PreProcessor(input_shape, preserve_aspect_ratio=True, **recognition_configs), model)
