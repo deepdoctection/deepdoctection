@@ -67,7 +67,7 @@ def test_image_to_prodigy(datapoint_image: Image, image_results: DatapointImage)
     """
 
     # Act
-    output = image_to_prodigy()(datapoint_image)
+    output = image_to_prodigy()(datapoint_image)  # pylint: disable=E1102
 
     # Assert
     datapoint = image_results
