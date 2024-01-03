@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Uni
 
 import numpy.typing as npt
 import tqdm
-from numpy import generic, uint8
+from numpy import uint8
 
 
 # Type for a general dataclass
@@ -41,7 +41,7 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
 KeyValue = Union[str, int]
 
 # Numpy image type
-ImageType = Union[npt.NDArray[uint8], npt.NDArray[generic]]
+ImageType = npt.NDArray[uint8]
 
 # typing for curry decorator
 DP = TypeVar("DP")
