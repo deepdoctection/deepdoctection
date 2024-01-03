@@ -31,5 +31,5 @@ def get_white_image(path: str) -> Optional[ImageType]:
     white image
     """
     if path:
-        return np.ones((794, 596, 3), dtype=np.uint8) * 255
+        return np.ones((794, 596, 3), dtype=np.uint8) * 255  # type: ignore
     return None
