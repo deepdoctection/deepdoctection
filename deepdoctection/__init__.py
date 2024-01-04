@@ -343,6 +343,8 @@ _IMPORT_STRUCTURE = {
         "get_opencv_requirement",
         "pillow_available",
         "get_pillow_requirement",
+        "spacy_available",
+        "get_spacy_requirement",
         "load_image_from_file",
         "load_bytes_from_pdf_file",
         "get_load_image_func",
