@@ -632,6 +632,26 @@ def get_pillow_requirement() -> Requirement:
     return "pillow", pillow_available(), _PILLOW_ERR_MSG
 
 
+# SpaCy
+_SPACY_AVAILABLE = importlib.util.find_spec("spacy") is not None
+_SPACY_ERR_MSG = f"SpaCy must be installed. {_GENERIC_ERR_MSG}"
+
+
+def spacy_available() -> bool:
+    """
+    Returns True if SpaCy is installed
+    """
+
+    return bool(_SPACY_AVAILABLE)
+
+
+def get_spacy_requirement() -> Requirement:
+    """
+    Return SpaCy requirement
+    """
+    return "spacy", spacy_available(), _SPACY_ERR_MSG
+
+
 def set_mp_spawn() -> None:
     """
     Sets multiprocessing method to "spawn".

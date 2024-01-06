@@ -231,9 +231,13 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
         weights = cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if cfg.LIB == "TF" else cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
+        # get_full_path_configs will complete the path even if the model is not registered
+        config_path = ModelCatalog.get_full_path_configs(weights) if profile.config is not None else None
         if profile.architecture is None:
             raise ValueError("model profile.architecture must be specified")
-        return DoctrTextRecognizer(profile.architecture, weights_path, cfg.DEVICE, lib=cfg.LIB)
+        return DoctrTextRecognizer(
+            profile.architecture, weights_path, cfg.DEVICE, lib=cfg.LIB, path_config_json=config_path
+        )
     if cfg.OCR.USE_TEXTRACT:
         credentials_kwargs = {
             "aws_access_key_id": environ.get("ACCESS_KEY"),

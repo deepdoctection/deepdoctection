@@ -245,7 +245,7 @@ def draw_boxes(
     np_image = np_image.copy()
 
     if np_image.ndim == 2 or (np_image.ndim == 3 and np_image.shape[2] == 1):
-        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)
+        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)  # type: ignore
     for i in sorted_inds:
         box = boxes[i, :]
         choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
@@ -385,7 +385,7 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_read_image(path: str) -> ImageType:
-        return cv2.imread(path, cv2.IMREAD_COLOR)
+        return cv2.imread(path, cv2.IMREAD_COLOR)  # type: ignore
 
     @staticmethod
     def _pillow_read_image(path: str) -> ImageType:
@@ -495,7 +495,7 @@ class VizPackageHandler:
             "INTER_AREA": cv2.INTER_AREA,
             "VIZ": cv2.INTER_LINEAR,
         }
-        return cv2.resize(image, (width, height), interpolation=intpol_method_dict[interpolation])
+        return cv2.resize(image, (width, height), interpolation=intpol_method_dict[interpolation])  # type: ignore
 
     @staticmethod
     def _pillow_resize(image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
@@ -651,10 +651,10 @@ class VizPackageHandler:
         elif key == "s":
             cv2.imwrite("out.png", np_image)
         elif key in ["+", "="]:
-            np_image = cv2.resize(np_image, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
+            np_image = cv2.resize(np_image, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)  # type: ignore
             self._cv2_interactive_imshow(np_image)
         elif key == "-":
-            np_image = cv2.resize(np_image, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_CUBIC)
+            np_image = cv2.resize(np_image, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_CUBIC)  # type: ignore
             self._cv2_interactive_imshow(np_image)
 
     @staticmethod
