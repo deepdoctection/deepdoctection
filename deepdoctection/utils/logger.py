@@ -126,7 +126,7 @@ class FileFormatter(logging.Formatter):
             if record.msg.log_dict:
                 log_dict.update(record.msg.log_dict)
                 log_dict.pop("msg")
-        elif self.filter_third_party_lib:
+        elif not self.filter_third_party_lib:
             log_dict = {"message": record.msg}
         return json.dumps(log_dict)
 
