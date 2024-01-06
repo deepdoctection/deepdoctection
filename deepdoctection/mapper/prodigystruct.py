@@ -20,10 +20,11 @@ Module for mapping annotations to and from prodigy data structure
 """
 
 import os
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Sequence
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
 from ..utils.detection_types import JsonDict, Pathlike
+from ..utils.settings import ObjectTypes
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
@@ -143,16 +144,17 @@ def prodigy_to_image(
     return image
 
 
-def image_to_prodigy(dp: Image) -> JsonDict:
+@curry
+def image_to_prodigy(dp: Image, category_names: Optional[Sequence[ObjectTypes]] = None) -> JsonDict:
     """
     The mapper to transform the normalized image representation of datasets into the format
     for visualising the annotation components in Prodigy.
 
     :param dp: An image
+    :param category_names: A list of category names to filter the annotations
     :return: A dictionary with compulsory keys: "text" and "spans"
     """
 
-    assert isinstance(dp, Image), f"datapoints must be of type Image, is of type {type(dp)}"
     output: JsonDict = {}
     img_str = dp.get_image().to_b64()
     if img_str is not None:
@@ -161,13 +163,7 @@ def image_to_prodigy(dp: Image) -> JsonDict:
     output["image_id"] = dp.image_id
 
     spans = []
-    for ann in dp.get_annotation_iter():
-        if ann.bounding_box is None:
-            raise ValueError("ann.bounding_box cannot be None")
-        box: JsonDict = {"label": ann.category_name, "annotation_id": ann.annotation_id}
-        if ann.score is not None:
-            box["score"] = float(round(ann.score, 3))
-        box["type"] = "rect"
+    for ann in dp.get_annotation_iter(category_names=category_names):
         bounding_box = ann.get_bounding_box(dp.image_id)
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
@@ -178,9 +174,15 @@ def image_to_prodigy(dp: Image) -> JsonDict:
             [bounding_box.lrx, bounding_box.uly],
         ]
 
-        box["points"] = [list(map(float, box)) for box in boxes]
+        span: JsonDict = {
+            "label": ann.category_name.value,  # type: ignore
+            "annotation_id": ann.annotation_id,
+            "type": "rect",
+            "points": boxes,
+            "score": float(round(ann.score, 3)) if ann.score is not None else None,
+        }
+        spans.append(span)
 
-        spans.append(box)
     output["spans"] = spans
     output["meta"] = {"file_name": dp.file_name}
     return output

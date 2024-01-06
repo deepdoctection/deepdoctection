@@ -127,7 +127,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     if opencv_available():
         import cv2
 
-        data.append(("OpenCV", cv2.__version__))  # type: ignore
+        data.append(("OpenCV", cv2.__version__))
     else:
         data.append(("OpenCV", "None"))
 
