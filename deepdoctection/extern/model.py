@@ -31,7 +31,7 @@ from termcolor import colored
 
 from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes
+from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes, get_type
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 
@@ -58,6 +58,11 @@ class ModelProfile:
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
 
+
+    def __post_init__(self):
+        """updating categories to ObjectTypes. This might be necessary if we load a catalog from a file"""
+        if self.categories:
+            self.categories = {key: get_type(val) for key, val in self.categories.items()}
     def as_dict(self) -> Dict[str, Any]:
         """
         returns a dict of the dataclass
@@ -877,6 +882,7 @@ class ModelCatalog:
         with jsonlines.open(target_path, mode="w") as writer:
             for profile in ModelCatalog.CATALOG.values():
                 writer.write(profile.as_dict())
+        writer.close()
 
 
 # Additional profiles can be added
