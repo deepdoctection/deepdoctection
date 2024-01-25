@@ -263,8 +263,15 @@ def draw_boxes(
     y_0 = np_image.shape[0]
     for category, col in category_to_color.items():
         if category is not None:
-            viz_handler.draw_text(np_image, (np_image.shape[1], y_0), category, color=col, font_scale=font_scale)
-            _, text_h = viz_handler.get_text_size(category, 2)
+            np_image = viz_handler.draw_text(
+                np_image,
+                (np_image.shape[1], y_0),
+                category,
+                color=col,
+                font_scale=font_scale * 3,
+                rectangle_thickness=rectangle_thickness,
+            )
+            _, text_h = viz_handler.get_text_size(category, font_scale * 2)
             y_0 = y_0 - int(10 * text_h)
 
     return np_image
@@ -561,7 +568,13 @@ class VizPackageHandler:
         return np_image
 
     def draw_text(
-        self, np_image: ImageType, pos: Tuple[Any, Any], text: str, color: Tuple[int, int, int], font_scale: float
+        self,
+        np_image: ImageType,
+        pos: Tuple[Any, Any],
+        text: str,
+        color: Tuple[int, int, int],
+        font_scale: float,
+        rectangle_thickness: int = 1,
     ) -> ImageType:
         """
         Drawing a text into a numpy image. The result will differ between PIL and CV2 (and will not look that good when
@@ -572,21 +585,31 @@ class VizPackageHandler:
         :param text: text string
         :param color: (b,g,r) between 0 and 255
         :param font_scale: scale of font. This will only be used within a OPenCV framework
+        :param rectangle_thickness: thickness of the rectangle border
         :return: image with text
         """
-        return getattr(self, self.pkg_func_dict["draw_text"])(np_image, pos, text, color, font_scale)
+        return getattr(self, self.pkg_func_dict["draw_text"])(
+            np_image, pos, text, color, font_scale, rectangle_thickness
+        )
 
     def _cv2_draw_text(
-        self, np_image: ImageType, pos: Tuple[Any, Any], text: str, color: Tuple[int, int, int], font_scale: float
+        self,
+        np_image: ImageType,
+        pos: Tuple[Any, Any],
+        text: str,
+        color: Tuple[int, int, int],
+        font_scale: float,
+        rectangle_thickness: int,
     ) -> ImageType:
         """
         Draw text on an image.
 
         :param np_image: image as np.ndarray
-        :param pos: x, y; the position of the text
+        :param pos: x_min, y_min position of the starting point of the text
         :param text: text string to draw
         :param color: a 3-tuple BGR color in [0, 255]
         :param font_scale: float
+        :param rectangle_thickness: thickness of the rectangle border
         :return: numpy array
         """
 
@@ -603,7 +626,10 @@ class VizPackageHandler:
         back_top_left = x_0, y_0 - int(1.3 * text_h)
         back_bottom_right = x_0 + text_w, y_0
         np_image = self.draw_rectangle(
-            np_image, (back_top_left[0], back_top_left[1], back_bottom_right[0], back_bottom_right[1]), color, 1
+            np_image,
+            (back_top_left[0], back_top_left[1], back_bottom_right[0], back_bottom_right[1]),
+            color,
+            rectangle_thickness,
         )
         # Show text.
         text_bottomleft = x_0, y_0 - int(0.25 * text_h)
@@ -617,6 +643,7 @@ class VizPackageHandler:
         text: str,
         color: Tuple[int, int, int],  # pylint: disable=W0613
         font_scale: float,  # pylint: disable=W0613
+        rectangle_thickness: int,  # pylint: disable=W0613
     ) -> ImageType:
         """Draw a text in an image using PIL."""
         # using PIL default font size that does not scale to larger image sizes.

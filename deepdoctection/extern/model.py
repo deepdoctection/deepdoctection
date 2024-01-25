@@ -58,11 +58,11 @@ class ModelProfile:
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
 
-
     def __post_init__(self):
         """updating categories to ObjectTypes. This might be necessary if we load a catalog from a file"""
         if self.categories:
             self.categories = {key: get_type(val) for key, val in self.categories.items()}
+
     def as_dict(self) -> Dict[str, Any]:
         """
         returns a dict of the dataclass
