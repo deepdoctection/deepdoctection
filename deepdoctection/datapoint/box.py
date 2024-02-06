@@ -558,6 +558,12 @@ def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[Boundin
     :param boxes_2: sequence of n BoundingBox
     :return: list of at most mxn BoundingBox
     """
+    if not boxes_1 and boxes_2:
+        return boxes_2
+    if not boxes_2 and boxes_1:
+        return boxes_1
+    if not boxes_1 and not boxes_2:
+        return []
     if boxes_1[0].absolute_coords != boxes_2[0].absolute_coords:
         raise ValueError("absolute_coords of boxes_1 and boxes_2 mus be equal")
     absolute_coords = boxes_1[0].absolute_coords
