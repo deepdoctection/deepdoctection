@@ -1007,10 +1007,16 @@ class PubtablesSegmentationService(PipelineComponent):
             cells = []
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
-            number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
-            number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
-            max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
-            max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
+            if cells:
+                number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
+                number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
+                max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
+                max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
+            else:
+                number_of_rows = 0
+                number_of_cols = 0
+                max_row_span = 0
+                max_col_span = 0
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
                 TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id
