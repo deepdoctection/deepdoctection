@@ -629,7 +629,11 @@ class Page(Image):
         """
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
         if ann.category_name not in self.floating_text_block_categories:
-            raise ValueError(f"Annotation {annotation_id} is not a floating text block category. Cannot get context.")
+            raise ValueError(
+                f"Annotation {annotation_id} with category_name {ann.category_name} is not a floating text "
+                f"block category. Cannot get context. Make sure to make this category a floating text "
+                f"block"
+            )
         block_with_order = self._order("layouts")
         position = block_with_order.index(ann)
         return block_with_order[
@@ -770,6 +774,8 @@ class Page(Image):
             all_words = []
             for layout in self.layouts:
                 all_words.extend(layout.words)
+            for table in self.tables:
+                all_words.extend(table.words)
             if not all_words:
                 all_words = self.get_annotation(category_names=LayoutType.word)
             if not ignore_default_token_class:
