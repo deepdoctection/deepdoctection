@@ -507,6 +507,13 @@ class TextOrderService(PipelineComponent):
                                                 text block annotations.) Setting `include_residual_text_container=True`
                                                 will build synthetic text lines from text containers and regard these
                                                 text lines as floating text blocks.
+        :param starting_point_tolerance: Threshold to identify if two text blocks belong to one column: To check if two
+                                         text blocks belong to the same column, one condition says, that
+                                         x-coordinates of vertices should not differ more than this threshold
+        :param broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be
+                                      in two different sub-lines (because they belong to two different text columns).
+        :param height_tolerance: Threshold to identify if two columns lying over each other belong together or need to
+                                 be separated. Scaling factor of relative text block height.
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
