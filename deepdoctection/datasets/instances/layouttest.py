@@ -49,12 +49,7 @@ _LICENSE = (
     " – Permissive – Version 1.0 License. Dr. Janis Meyer does not own the copyright of the images. \n"
     " Use of the images must abide by the PMC Open Access Subset Terms of Use."
 )
-_URL = [
-    "https://www.googleapis.com/drive/v3/files/1ZD4Ef4gd2FIfp7vR8jbnrZeXD3gSWNqE?alt"
-    "=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-    "https://www.googleapis.com/drive/v3/files/18HD62LFLa1iAmqffo4SyjuEQ32MzyNQ0?alt"
-    "=media&key=AIzaSyDuoPG6naK-kRJikScR7cP_1sQBF1r3fWU",
-]
+
 _SPLITS: Mapping[str, str] = {"test": "test", "predict": "predict"}
 _TYPE = DatasetType.object_detection
 _LOCATION = "testlayout"
@@ -77,7 +72,7 @@ class LayoutTest(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, splits=_SPLITS, type=_TYPE)
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)

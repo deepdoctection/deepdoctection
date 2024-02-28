@@ -109,7 +109,7 @@ def enable_death_signal(_warn: bool = True) -> None:
         prctl, "set_pdeathsig"
     ), "prctl.set_pdeathsig does not exist! Note that you need to install 'python-prctl' instead of 'prctl'."
     # is SIGHUP a good choice?
-    prctl.set_pdeathsig(signal.SIGHUP)
+    prctl.set_pdeathsig(signal.SIGHUP)  # pylint: disable=E1101
 
 
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py

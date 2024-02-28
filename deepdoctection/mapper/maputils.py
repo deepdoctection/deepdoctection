@@ -28,8 +28,8 @@ import numpy as np
 from tabulate import tabulate
 from termcolor import colored
 
-from ..datapoint.box import BoundingBoxError
 from ..utils.detection_types import DP, BaseExceptionType, S, T
+from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes
 
@@ -72,7 +72,18 @@ class MappingContextManager:
         """
         if (
             exc_type
-            in (KeyError, ValueError, IndexError, AssertionError, TypeError, BoundingBoxError, FileNotFoundError)
+            in (
+                KeyError,
+                ValueError,
+                IndexError,
+                AssertionError,
+                TypeError,
+                FileNotFoundError,
+                BoundingBoxError,
+                AnnotationError,
+                ImageError,
+                UUIDError,
+            )
             and exc_tb is not None
         ):
             frame_summary = traceback.extract_tb(exc_tb)[0]

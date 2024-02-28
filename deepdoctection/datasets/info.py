@@ -306,7 +306,7 @@ class DatasetCategories:
 
         _cat_to_sub_cat = {get_type(key): get_type(value) for key, value in cat_to_sub_cat.items()}
         if not self._allow_update:
-            raise PermissionError("Replacing categories with sub categories is not allowed")
+            raise RuntimeWarning("Replacing categories with sub categories is not allowed")
         self._categories_update = self.init_categories
         categories = self.get_categories(name_as_key=True)
         cats_or_sub_cats = [
@@ -332,7 +332,7 @@ class DatasetCategories:
         """
 
         if not self._allow_update:
-            raise PermissionError("Filtering categories is not allowed")
+            raise RuntimeWarning("Filtering categories is not allowed")
         if isinstance(categories, (ObjectTypes, str)):
             categories = [get_type(categories)]
         else:

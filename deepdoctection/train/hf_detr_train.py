@@ -97,9 +97,9 @@ class DetrDerivedTrainer(Trainer):
 
     def evaluate(
         self,
-        eval_dataset: Optional[Dataset[Any]] = None,
-        ignore_keys: Optional[List[str]] = None,
-        metric_key_prefix: str = "eval",
+        eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
+        ignore_keys: Optional[List[str]] = None,  # pylint: disable=W0613
+        metric_key_prefix: str = "eval",  # pylint: disable=W0613
     ) -> Dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
@@ -193,9 +193,11 @@ def train_hf_detr(
         "remove_unused_columns": False,
         "per_device_train_batch_size": 2,
         "max_steps": number_samples,
-        "evaluation_strategy": "steps"
-        if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
-        else "no",
+        "evaluation_strategy": (
+            "steps"
+            if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
+            else "no"
+        ),
         "eval_steps": 5000,
     }
 

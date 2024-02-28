@@ -16,7 +16,8 @@ from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
-from .base import DataFlow, DataFlowResetStateNotCalled, RNGDataFlow
+from ..utils.error import DataFlowResetStateNotCalledError
+from .base import DataFlow, RNGDataFlow
 
 
 class DataFromList(RNGDataFlow):
@@ -44,7 +45,7 @@ class DataFromList(RNGDataFlow):
                 for k in idxs:
                     yield self.lst[k]
             else:
-                raise DataFlowResetStateNotCalled()
+                raise DataFlowResetStateNotCalledError()
 
 
 class DataFromIterable(DataFlow):
@@ -63,7 +64,7 @@ class DataFromIterable(DataFlow):
 
     def __len__(self) -> int:
         if self._len is None:
-            raise NotImplementedError
+            raise NotImplementedError()
         return self._len
 
     def __iter__(self) -> Iterator[Any]:
@@ -107,7 +108,7 @@ class FakeData(RNGDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise DataFlowResetStateNotCalled()
+            raise DataFlowResetStateNotCalledError()
         if self.random:
             for _ in range(self._size):
                 val = []

@@ -67,7 +67,7 @@ def image_to_tp_frcnn_training(
         all_categories.append(ann.category_id)
 
         if add_mask:
-            raise NotImplementedError
+            raise NotImplementedError()
 
     output["gt_boxes"] = np.asarray(all_boxes, dtype="float32")
     output["gt_labels"] = np.asarray(all_categories, dtype="int32")
