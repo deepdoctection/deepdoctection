@@ -51,9 +51,11 @@ class DatasetBase(ABC):
         self._dataflow_builder.splits = self._dataset_info.splits
 
         if not self.dataset_available() and self.is_built_in():
-            print(
-                f"Dataset {self._dataset_info.name} not locally found. Please download at {self._dataset_info.url}"
-                f" and place under {self._dataflow_builder.get_workdir()}"
+            logger.warning(
+                LoggingRecord(
+                    f"Dataset {self._dataset_info.name} not locally found. Please download at {self._dataset_info.url}"
+                    f" and place under {self._dataflow_builder.get_workdir()}"
+                )
             )
 
     @property

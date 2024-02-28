@@ -25,6 +25,7 @@ from typing import Any, Callable, List, Optional, Tuple
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..utils.detection_types import JsonDict
+from ..utils.error import DependencyError
 from ..utils.file_utils import Requirement
 
 
@@ -52,7 +53,7 @@ class MetricBase(ABC):
         requirements = cls.get_requirements()
         name = cls.__name__ if hasattr(cls, "__name__") else cls.__class__.__name__
         if not all(requirement[1] for requirement in requirements):
-            raise ImportError(
+            raise DependencyError(
                 "\n".join(
                     [f"{name} has the following dependencies:"]
                     + [requirement[2] for requirement in requirements if not requirement[1]]
@@ -66,7 +67,7 @@ class MetricBase(ABC):
         """
         Get a list of requirements for running the detector
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     @abstractmethod
@@ -80,7 +81,7 @@ class MetricBase(ABC):
         :param dataflow_predictions: Dataflow with predictions.
         :param categories:  DatasetCategories with respect to the underlying dataset.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     @abstractmethod
@@ -95,7 +96,7 @@ class MetricBase(ABC):
         :param dataflow_predictions: Dataflow with predictions.
         :param categories: DatasetCategories with respect to the underlying dataset.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     def result_list_to_dict(cls, results: List[JsonDict]) -> JsonDict:

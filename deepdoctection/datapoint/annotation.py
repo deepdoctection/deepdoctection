@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union, no_type_check
 
 from ..utils.detection_types import JsonDict
+from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
@@ -101,7 +102,7 @@ class Annotation(ABC):
         """
         if self._annotation_id:
             return self._annotation_id
-        raise ValueError("Dump annotation first or pass external_id to create an annotation id")
+        raise AnnotationError("Dump annotation first or pass external_id to create an annotation id")
 
     @annotation_id.setter
     def annotation_id(self, input_id: str) -> None:
@@ -109,13 +110,13 @@ class Annotation(ABC):
         annotation_id setter
         """
         if self._annotation_id is not None:
-            raise AssertionError("Annotation_id already defined and cannot be reset")
+            raise AnnotationError("Annotation_id already defined and cannot be reset")
         if is_uuid_like(input_id):
             self._annotation_id = input_id
         elif isinstance(input_id, property):
             pass
         else:
-            raise ValueError("Annotation_id must be uuid3 string")
+            raise AnnotationError("Annotation_id must be uuid3 string")
 
     @abstractmethod
     def get_defining_attributes(self) -> List[str]:
@@ -132,7 +133,7 @@ class Annotation(ABC):
         defining_attributes = self.get_state_attributes() if state_id else self.get_defining_attributes()
         for attr in defining_attributes:
             if not hasattr(eval("self." + attr), "__str__"):  # pylint: disable=W0123
-                raise AttributeError(f"Attribute {attr} must have __str__ method")
+                raise AnnotationError(f"Attribute {attr} must have __str__ method")
 
     @staticmethod
     def set_annotation_id(annotation: "CategoryAnnotation", *container_id_context: Optional[str]) -> str:
@@ -179,7 +180,7 @@ class Annotation(ABC):
 
         :return: Annotation instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
@@ -189,7 +190,7 @@ class Annotation(ABC):
 
         :return: A list of attributes.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def state_id(self) -> str:
@@ -290,7 +291,12 @@ class CategoryAnnotation(Annotation):
         """
 
         if sub_category_name in self.sub_categories:
-            raise KeyError(f"{sub_category_name} as sub category already defined for " f"{self.annotation_id}")
+            raise AnnotationError(
+                f"sub category {sub_category_name} already defined: "
+                f"annotation_id: {self.annotation_id}, "
+                f"category_name: {self.category_name}, "
+                f"category_id: {self.category_id}"
+            )
 
         if self._annotation_id is not None:
             if annotation._annotation_id is None:  # pylint: disable=W0212
@@ -333,7 +339,7 @@ class CategoryAnnotation(Annotation):
         :param annotation_id: An annotation id
         """
         if not is_uuid_like(annotation_id):
-            raise ValueError("Annotation_id must be uuid")
+            raise UUIDError("Annotation_id must be uuid")
 
         key_type = get_type(key)
         if key not in self.relationships:
@@ -436,14 +442,14 @@ class ImageAnnotation(CategoryAnnotation):
             box = self.bounding_box
         if box:
             return box
-        raise ValueError(f"bounding_box has not been initialized for {self.annotation_id}")
+        raise AnnotationError(f"bounding_box has not been initialized for {self.annotation_id}")
 
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
         """Get summary sub categories from `image`. Raises `ValueError` if `key` is not available"""
         if self.image:
             if self.image.summary:
                 return self.image.summary.get_sub_category(key)
-        raise ValueError(f"Summary does not exist for {self.annotation_id} and key: {key}")
+        raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
 
 
 @dataclass

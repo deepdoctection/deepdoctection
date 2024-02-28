@@ -27,13 +27,16 @@ from pathlib import Path
 from typing import DefaultDict, Dict, List, Optional, Sequence, Union
 
 from jsonlines import Reader, Writer
+from tabulate import tabulate
+from termcolor import colored
 
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict, Pathlike
+from ..utils.error import FileExtensionError
 from ..utils.identifier import get_uuid_from_str
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
-from ..utils.utils import FileExtensionError, is_file_extension
+from ..utils.utils import is_file_extension
 from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
@@ -223,7 +226,7 @@ class SerializerFiles:
         """
         Not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class CocoParser:
@@ -283,8 +286,14 @@ class CocoParser:
         """
         Print information about the annotation file.
         """
+        rows = []
         for key, value in self.dataset["info"].items():
-            print(f"{key}: {value}")
+            row = [key, value]
+            rows.append(row)
+
+        header = ["key", "value"]
+        table = tabulate(rows, headers=header, tablefmt="fancy_grid", stralign="left", numalign="left")
+        print(colored(table, "cyan"))
 
     def get_ann_ids(
         self,
@@ -499,7 +508,7 @@ class SerializerCoco:
         """
         Not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class SerializerPdfDoc:
@@ -547,7 +556,7 @@ class SerializerPdfDoc:
         """
         Not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:

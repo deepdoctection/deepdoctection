@@ -171,7 +171,7 @@ class Evaluator:
                         "metric has no attribute sub_cats and cannot be used for token classification datasets"
                     )
             else:
-                raise NotImplementedError
+                raise NotImplementedError()
 
         else:
             self.wandb_table_agent = None
@@ -271,7 +271,7 @@ class Evaluator:
             sub_cats_to_remove = meta_anns["sub_categories"]
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
-            raise NotImplementedError
+            raise NotImplementedError()
 
         return df_pr
 

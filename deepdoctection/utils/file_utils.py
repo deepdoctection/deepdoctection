@@ -22,6 +22,7 @@ import importlib_metadata
 from packaging import version
 
 from .detection_types import Requirement
+from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
 
@@ -263,7 +264,7 @@ def set_tesseract_path(tesseract_path: str) -> None:
     :param tesseract_path: Tesseract installation path.
     """
     if tesseract_path is None:
-        raise ValueError("tesseract_path is empty.")
+        raise TypeError("tesseract_path cannot be None")
 
     global _TESS_AVAILABLE  # pylint: disable=W0603
     global _TESS_PATH  # pylint: disable=W0603
@@ -288,12 +289,6 @@ def tesseract_available() -> bool:
 # copy paste from https://github.com/madmaze/pytesseract/blob/master/pytesseract/pytesseract.py
 
 
-class TesseractNotFound(BaseException):
-    """
-    Exception class for Tesseract being not found
-    """
-
-
 def get_tesseract_version() -> Union[int, version.Version]:
     """
     Returns Version object of the Tesseract version. We need at least Tesseract 3.05
@@ -306,7 +301,7 @@ def get_tesseract_version() -> Union[int, version.Version]:
             stdin=subprocess.DEVNULL,
         )
     except OSError:
-        raise TesseractNotFound(_TESS_ERR_MSG) from OSError
+        raise DependencyError(_TESS_ERR_MSG) from OSError
 
     raw_version = output.decode("utf-8")
     str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(" ")
@@ -348,12 +343,6 @@ def pdf_to_cairo_available() -> bool:
     return bool(_PDF_TO_CAIRO_AVAILABLE)
 
 
-class PopplerNotFound(BaseException):
-    """
-    Exception class for Poppler being not found
-    """
-
-
 def get_poppler_version() -> Union[int, version.Version]:
     """
     Returns Version object of the Poppler version. We need at least Tesseract 3.05
@@ -371,7 +360,7 @@ def get_poppler_version() -> Union[int, version.Version]:
             [command, "-v"], stderr=subprocess.STDOUT, env=environ, stdin=subprocess.DEVNULL
         )
     except OSError:
-        raise PopplerNotFound() from OSError
+        raise DependencyError(_POPPLER_ERR_MSG) from OSError
 
     raw_version = output.decode("utf-8")
     list_version = raw_version.split("\n", maxsplit=1)[0].split(" ")[-1].split(".")

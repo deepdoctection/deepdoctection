@@ -146,7 +146,7 @@ def image_to_raw_layoutlm_features(
             raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
         word = char_cat.value
         if not isinstance(word, str):
-            raise ValueError(f"word must be of type str but is of type {type(word)}")
+            raise TypeError(f"word must be of type str but is of type {type(word)}")
         all_words.append(word)
 
         box = ann.get_bounding_box(dp.image_id)
