@@ -28,6 +28,7 @@ from pytest import mark, raises
 from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
+from deepdoctection.utils.error import ImageError
 from deepdoctection.utils.settings import get_type
 
 from ..test_utils import anns_to_ids, collect_datapoint_from_dataflow, get_test_path
@@ -82,7 +83,7 @@ class TestImage:
         test_image = Image(file_name=image.file_name, location=image.loc, external_id=image.external_id)
 
         # Act and assert
-        with raises(ValueError):
+        with raises(ImageError):
             test_image.image_id = "ec2aac06-c261-3669-b8bd-4486a54ce740"
 
     @staticmethod
@@ -200,7 +201,7 @@ class TestImage:
         # Act and Assert
         test_image.dump(cat)
 
-        with raises(ValueError):
+        with raises(ImageError):
             test_image.dump(cat)
 
     @staticmethod

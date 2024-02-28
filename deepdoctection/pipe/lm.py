@@ -252,7 +252,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             self.language_model.model.__class__.__name__, use_xlm_tokenizer
         )
         if not isinstance(self.tokenizer, type(tokenizer_reference)):
-            raise ValueError(
+            raise TypeError(
                 f"You want to use {type(self.tokenizer)} but you should use {type(tokenizer_reference)} "
                 f"in this framework"
             )
@@ -366,7 +366,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             self.language_model.model.__class__.__name__, use_xlm_tokenizer
         )
         if not isinstance(self.tokenizer, type(tokenizer_reference)):
-            raise ValueError(
+            raise TypeError(
                 f"You want to use {type(self.tokenizer)} but you should use {type(tokenizer_reference)} "
                 f"in this framework"
             )

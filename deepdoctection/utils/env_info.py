@@ -520,7 +520,7 @@ def get_device(ignore_cpu: bool = True) -> str:
         return "mps"
     if not ignore_cpu:
         return "cpu"
-    raise ValueError("Could not find either GPU nor MPS")
+    raise RuntimeWarning("Could not find either GPU nor MPS")
 
 
 def auto_select_viz_library() -> None:

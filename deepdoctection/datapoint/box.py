@@ -28,6 +28,7 @@ import numpy.typing as npt
 from numpy import float32
 
 from ..utils.detection_types import ImageType
+from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger
 
@@ -138,10 +139,6 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     if cocotools_available():
         return coco_iou(boxes1, boxes2)
     return np_iou(boxes1, boxes2)
-
-
-class BoundingBoxError(BaseException):
-    """Special exception only for `BoundingBox`"""
 
 
 @dataclass

@@ -33,6 +33,7 @@ from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.detection_types import JsonDict
+from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
@@ -302,7 +303,7 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     :return: HTML representation of the table
     """
     if table.image is None:
-        raise ValueError("table.image cannot be None")
+        raise ImageError("table.image cannot be None")
     table_image = table.image
     cells = table_image.get_annotation(
         category_names=[
@@ -412,7 +413,7 @@ class TableSegmentationRefinementService(PipelineComponent):
         tables = dp.get_annotation(category_names=self._table_name)
         for table in tables:
             if table.image is None:
-                raise ValueError("table.image cannot be None")
+                raise ImageError("table.image cannot be None")
             tiles_to_cells_list = tiles_to_cells(dp, table)
             connected_components, tile_to_cell_dict = connected_component_tiles(tiles_to_cells_list)
             rectangle_tiling = generate_rectangle_tiling(connected_components)

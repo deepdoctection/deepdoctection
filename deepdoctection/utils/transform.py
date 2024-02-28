@@ -47,7 +47,7 @@ class BaseTransform(ABC):
     @abstractmethod
     def apply_image(self, img: ImageType) -> ImageType:
         """The transformation that should be applied to the image"""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ResizeTransform(BaseTransform):

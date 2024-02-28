@@ -128,7 +128,7 @@ def prodigy_to_image(
             else:
                 label = span["label"]
             if not isinstance(label, str):
-                raise ValueError("label could not assigned to be a string")
+                raise TypeError("label must be a string")
 
             annotation = ImageAnnotation(
                 category_name=label,

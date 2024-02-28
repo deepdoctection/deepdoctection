@@ -81,7 +81,7 @@ def image_to_hf_detr_training(
         annotations.append(mapped_ann)
 
     if add_mask:
-        raise NotImplementedError
+        raise NotImplementedError("Segmentation in deepdoctection is not supported")
 
     output["annotations"] = annotations
 

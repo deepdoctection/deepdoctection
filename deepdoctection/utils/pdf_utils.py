@@ -32,9 +32,10 @@ from pypdf import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
 from .detection_types import ImageType, Pathlike
-from .file_utils import PopplerNotFound, pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
+from .error import DependencyError, FileExtensionError
+from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
-from .utils import FileExtensionError, is_file_extension
+from .utils import is_file_extension
 from .viz import viz_handler
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
@@ -165,7 +166,7 @@ def _input_to_cli_str(
     elif pdf_to_cairo_available():
         command = "pdftocairo"
     else:
-        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.")
+        raise DependencyError("Poppler not found. Please install or add to your PATH.")
 
     if platform.system() == "Windows":
         command = command + ".exe"
@@ -201,7 +202,7 @@ def _run_poppler(poppler_args: List[str]) -> None:
     except OSError as error:
         if error.errno != ENOENT:
             raise error from error
-        raise PopplerNotFound("Poppler not found. Please install or add to your PATH.") from error
+        raise DependencyError("Poppler not found. Please install or add to your PATH.") from error
 
     with timeout_manager(proc, 0):
         if proc.returncode:

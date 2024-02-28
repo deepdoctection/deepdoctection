@@ -25,6 +25,7 @@ import numpy as np
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
 from ..utils.detection_types import JsonDict
+from ..utils.error import ImageError
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
@@ -79,7 +80,7 @@ class ImageLayoutService(PredictorPipelineComponent):
             if anns:
                 return
         if dp.image is None:
-            raise ValueError("image cannot be None")
+            raise ImageError("image cannot be None")
         np_image = dp.image
         if self.padder:
             np_image = self.padder.apply_image(np_image)
@@ -114,5 +115,5 @@ class ImageLayoutService(PredictorPipelineComponent):
         if self.padder:
             padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
-            raise ValueError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
+            raise TypeError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
         return self.__class__(predictor, self.to_image, self.crop_image, padder_clone, self.skip_if_layout_extracted)
