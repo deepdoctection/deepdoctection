@@ -87,7 +87,7 @@ def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: O
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
     if len(np_label_gt) != len(np_label_pr):
         raise ValueError(
-            f"length of label_gt ({len(np_label_gt)}) and label_predictions" f" ({len(np_label_pr)}) must be equal"
+            f"length label_gt: {len(np_label_gt)}, length label_predictions: ({len(np_label_pr)}) but must be equal"
         )
     if masks is not None:
         np_label_gt, np_label_pr = _mask_some_gt_and_pr_labels(np_label_gt, np_label_pr, masks)

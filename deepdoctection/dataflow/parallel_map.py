@@ -28,8 +28,9 @@ from typing import Any, Callable, Iterator, List, no_type_check
 import zmq
 
 from ..utils.concurrency import StoppableThread, enable_death_signal, start_proc_mask_signal
+from ..utils.error import DataFlowTerminatedError
 from ..utils.logger import LoggingRecord, logger
-from .base import DataFlow, DataFlowReentrantGuard, DataFlowTerminated, ProxyDataFlow
+from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
 from .common import RepeatedData
 from .serialize import PickleSerializer
 
@@ -49,14 +50,14 @@ def _zmq_catch_error(name):
         yield
     except zmq.ContextTerminated as exc:
         logger.info(LoggingRecord(f"_zmq_catch_error: [{name}] Context terminated."))
-        raise DataFlowTerminated() from exc
+        raise DataFlowTerminatedError() from exc
     except zmq.ZMQError as exc:
         if exc.errno == errno.ENOTSOCK:  # socket closed
             logger.info(LoggingRecord(f"_zmq_catch_error: [{name}]  Socket closed."))
-            raise DataFlowTerminated() from exc
-        raise ValueError from exc
+            raise DataFlowTerminatedError() from exc
+        raise ValueError() from exc
     except Exception as exc:
-        raise ValueError from exc
+        raise ValueError() from exc
 
 
 @no_type_check
@@ -78,8 +79,8 @@ def _get_pipe_name(name):
 class _ParallelMapData(ProxyDataFlow, ABC):
     def __init__(self, df: DataFlow, buffer_size: int, strict: bool = False) -> None:
         super().__init__(df)
-        if not buffer_size:
-            raise ValueError("buffer_size must be a positive number")
+        if buffer_size <= 0:
+            raise ValueError(f"buffer_size must be a positive number, got {buffer_size}")
         self._buffer_size = buffer_size
         self._buffer_occupancy = 0  # actual #elements in buffer, only useful in strict mode
         self._strict = strict
@@ -95,12 +96,12 @@ class _ParallelMapData(ProxyDataFlow, ABC):
     @no_type_check
     @abstractmethod
     def _recv(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @no_type_check
     @abstractmethod
     def _send(self, dp: Any):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @no_type_check
     def _recv_filter_none(self):
@@ -398,8 +399,8 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
 
         _ParallelMapData.__init__(self, df, buffer_size, strict)
         _MultiProcessZMQDataFlow.__init__(self)
-        if not num_proc:
-            raise ValueError("num_proc must be a positive number")
+        if num_proc <= 0:
+            raise ValueError(f"num_proc must be a positive number, got {num_proc}")
         self.num_proc = num_proc
         self.map_func = map_func
         self._strict = strict

@@ -34,7 +34,7 @@ from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
-from .utils import FileExtensionError, is_file_extension
+from .utils import is_file_extension
 from .viz import viz_handler
 
 __all__ = [
@@ -44,9 +44,7 @@ __all__ = [
     "maybe_path_or_pdf",
     "download",
     "mkdir_p",
-    "is_file_extension",
     "load_json",
-    "FileExtensionError",
     "sub_path",
     "get_package_path",
     "get_configs_dir_path",
@@ -125,8 +123,8 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
     assert size > 0, f"Downloaded an empty file from {url}!"
 
     if expect_size is not None and size != expect_size:
-        logger.error(LoggingRecord(f"File downloaded from {url} does not match the expected size!"))
-        logger.error(
+        logger.warning(LoggingRecord(f"File downloaded from {url} does not match the expected size!"))
+        logger.warning(
             LoggingRecord("You may have downloaded a broken file, or the upstream may have modified the file.")
         )
 
@@ -210,13 +208,15 @@ def get_load_image_func(
     :return: The function loading the file (and converting to its desired format)
     """
 
-    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: {path}"
+    assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: " f"{path}"
 
     if is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]):
         return load_image_from_file
     if is_file_extension(path, [".pdf"]):
         return load_bytes_from_pdf_file
-    return NotImplemented
+    raise NotImplementedError(
+        "File extension not supported by any loader. Please specify a file type and raise an issue"
+    )
 
 
 def maybe_path_or_pdf(path: Pathlike) -> int:

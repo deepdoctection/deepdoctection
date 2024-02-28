@@ -26,7 +26,7 @@ import pytest
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.tessocr import TesseractOcrDetector, tesseract_line_to_detectresult
 from deepdoctection.utils.detection_types import ImageType
-from deepdoctection.utils.file_utils import TesseractNotFound
+from deepdoctection.utils.error import DependencyError
 from tests.data import Annotations
 
 from .data import WORD_RESULTS
@@ -66,7 +66,7 @@ class TestTesseractOcrDetector:
         """
 
         # Act and Assert
-        with pytest.raises(TesseractNotFound):
+        with pytest.raises(DependencyError):
             TesseractOcrDetector(path_yaml=path_to_tesseract_yaml)
 
     @staticmethod

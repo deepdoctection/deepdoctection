@@ -55,7 +55,7 @@ class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore
 
         :return: Tuple of list input and list output names. The names must coincide with tensor within the model.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class TensorpackPredictor(ABC):
@@ -113,7 +113,7 @@ class TensorpackPredictor(ABC):
         Implement the config generation, its modification and instantiate a version of the model. See
         `pipe.tpfrcnn.TPFrcnnDetector` for an example
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     def predict(self, np_img: Any) -> Any:
@@ -121,7 +121,7 @@ class TensorpackPredictor(ABC):
         Implement, how `self.tp_predictor` is invoked and raw prediction results are generated. Do use only raw
         objects and nothing, which is related to the DD API.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def model(self) -> ModelDescWithConfig:
