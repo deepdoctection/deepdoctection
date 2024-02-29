@@ -110,7 +110,7 @@ class DataFlowBaseBuilder(ABC):
         :param kwargs: A custom set of arguments/values
         :return: dataflow
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_annotation_file(self, split: str) -> str:
         """Get single annotation file."""

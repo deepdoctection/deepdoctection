@@ -25,6 +25,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.detection_types import JsonDict
+from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
@@ -86,7 +87,7 @@ class LanguageDetectionService(PipelineComponent):
             text = page.text_no_line_break
         else:
             if dp.image is None:
-                raise ValueError("dp.image cannot be None")
+                raise ImageError("image cannot be None")
             detect_result_list = self.text_detector.predict(dp.image)
             # this is a concatenation of all detection result. No reading order
             text = " ".join([result.text for result in detect_result_list if result.text is not None])
@@ -98,7 +99,7 @@ class LanguageDetectionService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         predictor = self.predictor.clone()
         if not isinstance(predictor, LanguageDetector):
-            raise ValueError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
+            raise TypeError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
         return self.__class__(
             predictor,
             copy(self.text_container),

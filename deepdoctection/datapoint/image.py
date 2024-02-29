@@ -28,6 +28,7 @@ import numpy as np
 from numpy import uint8
 
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
 from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
@@ -108,7 +109,7 @@ class Image:
         """
         if self._image_id is not None:
             return self._image_id
-        raise ValueError("image_id not set")
+        raise ImageError("image_id not set")
 
     @image_id.setter
     def image_id(self, input_id: str) -> None:
@@ -116,13 +117,13 @@ class Image:
         image_id setter
         """
         if self._image_id is not None:
-            raise ValueError("image_id already defined and cannot be reset")
+            raise ImageError("image_id already defined and cannot be reset")
         if is_uuid_like(input_id):
             self._image_id = input_id
         elif isinstance(input_id, property):
             pass
         else:
-            raise ValueError("image_id must be uuid3 string")
+            raise UUIDError("image_id must be uuid3 string")
 
     @property
     def image(self) -> Optional[ImageType]:
@@ -153,7 +154,7 @@ class Image:
             self._self_embedding()
         else:
             if not isinstance(image, np.ndarray):
-                raise TypeError(f"Cannot load image is of type: {type(image)}")
+                raise ImageError(f"Cannot load image is of type: {type(image)}")
             self._image = image.astype(uint8)
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
@@ -248,7 +249,7 @@ class Image:
         width
         """
         if self._bbox is None:
-            raise ValueError("Width not available. Call set_width_height first")
+            raise ImageError("Width not available. Call set_width_height first")
         return self._bbox.width
 
     @property
@@ -257,7 +258,7 @@ class Image:
         height
         """
         if self._bbox is None:
-            raise ValueError("Height not available. Call set_width_height first")
+            raise ImageError("Height not available. Call set_width_height first")
         return self._bbox.height
 
     def set_width_height(self, width: float, height: float) -> None:
@@ -281,7 +282,7 @@ class Image:
         :param bounding_box: bounding box of this image in terms of the embedding image.
         """
         if not isinstance(bounding_box, BoundingBox):
-            raise TypeError(f"Bounding box must be of type BoundingBox, is of type {type(bounding_box)}")
+            raise BoundingBoxError(f"Bounding box must be of type BoundingBox, is of type {type(bounding_box)}")
         self.embeddings[image_id] = bounding_box
 
     def get_embedding(self, image_id: str) -> BoundingBox:
@@ -307,14 +308,14 @@ class Image:
         :param annotation: image annotation to store
         """
         if not isinstance(annotation, ImageAnnotation):
-            raise TypeError(
+            raise AnnotationError(
                 f"Annotation must be of type ImageAnnotation: "
                 f"{annotation.annotation_id} but is of type {str(type(annotation))}"
             )
         if annotation._annotation_id is None:  # pylint: disable=W0212
             annotation.annotation_id = self.define_annotation_id(annotation)
         if annotation.annotation_id in self._annotation_ids:
-            raise ValueError(f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}")
+            raise ImageError(f"Cannot dump annotation with already taken " f"id {annotation.annotation_id}")
         self._annotation_ids.append(annotation.annotation_id)
         self.annotations.append(annotation)
 
@@ -439,7 +440,7 @@ class Image:
         new_image = Image(file_name=self.file_name, location=self.location, external_id=annotation_id)
 
         if self._bbox is None or ann.bounding_box is None:
-            raise ValueError(f"Bounding box for image and ImageAnnotation ({annotation_id}) must be set")
+            raise ImageError(f"Bounding box for image and ImageAnnotation ({annotation_id}) must be set")
 
         new_bounding_box = intersection_box(self._bbox, ann.bounding_box, self.width, self.height)
         if new_bounding_box.absolute_coords:
@@ -454,7 +455,7 @@ class Image:
         if crop_image and self.image is not None:
             new_image.image = crop_box_from_image(self.image, ann.bounding_box, self.width, self.height)
         elif crop_image and self.image is None:
-            raise ValueError("crop_image = True requires self.image to be not None")
+            raise ImageError("crop_image = True requires self.image to be not None")
 
         ann.image = new_image
 
@@ -472,7 +473,7 @@ class Image:
 
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
         if ann.image is None:
-            raise ValueError("When adding sub images to ImageAnnotation then ImageAnnotation.image must not be None")
+            raise ImageError("When adding sub images to ImageAnnotation then ImageAnnotation.image must not be None")
         assert ann.bounding_box is not None
         box = ann.bounding_box.to_list("xyxy")
         proposals = self.get_annotation(category_names)
@@ -485,7 +486,7 @@ class Image:
         sub_images = self.get_annotation(annotation_ids=selected_ids.tolist())
         for sub_image in sub_images:
             if sub_image.image is None:
-                raise ValueError(
+                raise ImageError(
                     "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None"
                 )
             sub_image.image.set_embedding(

@@ -324,7 +324,9 @@ def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes
     """
     if isinstance(token, TokenClasses) and isinstance(tag, BioTag):
         return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token, tag)]
-    raise TypeError("Token must be of type TokenClasses and tag must be of type BioTag")
+    raise TypeError(
+        f"Token must be of type TokenClasses, is of {type(token)} and tag " f"{type(tag)} must be of type BioTag"
+    )
 
 
 def token_class_with_tag_to_token_class_and_tag(

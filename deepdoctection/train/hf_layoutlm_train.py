@@ -63,6 +63,7 @@ from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
 from ..utils.env_info import get_device
+from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
@@ -180,15 +181,17 @@ class LayoutLMTrainer(Trainer):
 
     def evaluate(
         self,
-        eval_dataset: Optional[Dataset[Any]] = None,
-        ignore_keys: Optional[List[str]] = None,
-        metric_key_prefix: str = "eval",
+        eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
+        ignore_keys: Optional[List[str]] = None,  # pylint: disable=W0613
+        metric_key_prefix: str = "eval",  # pylint: disable=W0613
     ) -> Dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
         """
-        assert self.evaluator is not None
-        assert self.evaluator.pipe_component is not None
+        if self.evaluator is None:
+            raise ValueError("Evaluator not set up. Please use `setup_evaluator` before running evaluation")
+        if self.evaluator.pipe_component is None:
+            raise ValueError("Pipeline component not set up. Please use `setup_evaluator` before running evaluation")
 
         # memory metrics - must set up as early as possible
         self._memory_tracker.start()
@@ -222,7 +225,7 @@ def _get_model_class_and_tokenizer(
         raise KeyError("model_type and architectures not available in configs")
 
     if not model_cls:
-        raise ValueError("model not eligible to run with this framework")
+        raise UserWarning("model not eligible to run with this framework")
 
     return config_cls, model_cls, model_wrapper_cls, tokenizer_fast
 
@@ -347,7 +350,7 @@ def train_hf_layoutlm(
                 name_as_key=True,
             )[LayoutType.word][WordType.token_class]
     else:
-        raise ValueError("Dataset type not supported for training")
+        raise UserWarning("Dataset type not supported for training")
 
     config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
         path_config_json, dataset_type, use_xlm_tokenizer
@@ -374,9 +377,11 @@ def train_hf_layoutlm(
         "remove_unused_columns": False,
         "per_device_train_batch_size": 8,
         "max_steps": number_samples,
-        "evaluation_strategy": "steps"
-        if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
-        else "no",
+        "evaluation_strategy": (
+            "steps"
+            if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
+            else "no"
+        ),
         "eval_steps": 100,
         "use_wandb": False,
         "wandb_project": None,
@@ -416,7 +421,7 @@ def train_hf_layoutlm(
     run = None
     if use_wandb:
         if not wandb_available():
-            raise ModuleNotFoundError("WandB must be installed separately")
+            raise DependencyError("WandB must be installed separately")
         run = wandb.init(project=wandb_project, config=conf_dict)  # type: ignore
         run._label(repo=wandb_repo)  # type: ignore # pylint: disable=W0212
     else:

@@ -75,12 +75,14 @@ def _cell_token(html: Sequence[str]) -> List[List[int]]:
 def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> List[List[int]]:
     item_spans = [
         [
-            int(html[index_cell - 1].replace(item + "=", "").replace('"', ""))
-            if (item in html[index_cell - 1] and html[index_cell] == ">")
-            else (
-                int(html[index_cell - 2].replace(item + "=", "").replace('"', ""))
-                if (item in html[index_cell - 2] and html[index_cell] == ">")
-                else 1
+            (
+                int(html[index_cell - 1].replace(item + "=", "").replace('"', ""))
+                if (item in html[index_cell - 1] and html[index_cell] == ">")
+                else (
+                    int(html[index_cell - 2].replace(item + "=", "").replace('"', ""))
+                    if (item in html[index_cell - 2] and html[index_cell] == ">")
+                    else 1
+                )
             )
             for index_cell in index_cell_per_row
         ]
@@ -210,9 +212,7 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
         items = image.get_annotation(category_names=TableType.item)
         item_type_anns = [ann for ann in items if ann.get_sub_category(TableType.item).category_name == item_type]
         item_type_anns.sort(
-            key=lambda x: x.bounding_box.cx  # type: ignore
-            if item_type == LayoutType.column
-            else x.bounding_box.cy  # type: ignore
+            key=lambda x: (x.bounding_box.cx if item_type == LayoutType.column else x.bounding_box.cy)  # type: ignore
         )
         if table.bounding_box:
             tmp_item_xy = table.bounding_box.uly + 1.0 if item_type == LayoutType.row else table.bounding_box.ulx + 1.0
@@ -389,7 +389,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     with MappingContextManager(str(idx)) as mapping_context:
         max_rs, max_cs = 0, 0
         if idx is None:
-            raise ValueError("No valid datapoint external id")
+            raise TypeError("imgid is None but must be a string")
 
         image = Image(file_name=os.path.split(dp["filename"])[1], location=dp["filename"], external_id=idx)
 

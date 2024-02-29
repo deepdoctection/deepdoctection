@@ -165,4 +165,4 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         return len(self.df)
 
     def __getitem__(self, item: Any) -> None:
-        raise NotImplementedError
+        raise NotImplementedError()

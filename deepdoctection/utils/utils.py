@@ -144,12 +144,6 @@ def get_rng(obj: Any = None) -> np.random.RandomState:
     return np.random.RandomState(seed)
 
 
-class FileExtensionError(BaseException):
-    """
-    An exception indicating that a file does not seem to have an expected type
-    """
-
-
 def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:
     """
     Check if a given file name has a given extension

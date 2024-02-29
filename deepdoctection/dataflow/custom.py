@@ -25,10 +25,11 @@ from typing import Any, Callable, Iterable, Iterator, List, Optional
 
 import numpy as np
 
+from ..utils.error import DataFlowResetStateNotCalledError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import get_rng
-from .base import DataFlow, DataFlowReentrantGuard, DataFlowResetStateNotCalled, ProxyDataFlow
+from .base import DataFlow, DataFlowReentrantGuard, ProxyDataFlow
 from .serialize import DataFromIterable, DataFromList
 
 __all__ = ["CacheData", "CustomDataFromList", "CustomDataFromIterable"]
@@ -65,7 +66,7 @@ class CacheData(ProxyDataFlow):
 
     def __iter__(self) -> Iterator[Any]:
         if self._guard is None:
-            raise DataFlowResetStateNotCalled()
+            raise DataFlowResetStateNotCalledError()
 
         with self._guard:
             if self.buffer:
@@ -139,7 +140,7 @@ class CustomDataFromList(DataFromList):
 
     def __iter__(self) -> Iterator[Any]:
         if self.rng is None:
-            raise DataFlowResetStateNotCalled()
+            raise DataFlowResetStateNotCalledError()
         if self.rebalance_func is not None:
             lst_tmp = self.rebalance_func(self.lst)
             logger.info(LoggingRecord(f"CustomDataFromList: subset size after re-balancing: {len(lst_tmp)}"))

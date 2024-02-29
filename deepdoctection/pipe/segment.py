@@ -33,6 +33,7 @@ from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.detection_types import JsonDict
+from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType
 from .base import PipelineComponent
 from .refine import generate_html_string
@@ -136,12 +137,12 @@ def stretch_item_per_table(
 
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
     if table.image is None:
-        raise ValueError("table.image cannot be None")
+        raise ImageError("table.image cannot be None")
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
     for row in rows:
         if row.image is None:
-            raise ValueError("row.image cannot be None")
+            raise ImageError("row.image cannot be None")
         row_embedding_box = row.get_bounding_box(dp.image_id)
         row_embedding_box.ulx = table_embedding_box.ulx + 1.0
         row_embedding_box.lrx = table_embedding_box.lrx - 1.0
@@ -166,7 +167,7 @@ def stretch_item_per_table(
 
     for col in cols:
         if col.image is None:
-            raise ValueError("row.image cannot be None")
+            raise ImageError("row.image cannot be None")
         col_embedding_box = col.get_bounding_box(dp.image_id)
         col_embedding_box.uly = table_embedding_box.uly + 1.0
         col_embedding_box.lry = table_embedding_box.lry - 1.0
@@ -194,7 +195,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
     dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
 ) -> None:
     if table.image is None:
-        raise ValueError("table.image cannot be None")
+        raise ImageError("table.image cannot be None")
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
@@ -206,7 +207,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
             image_annotation={"category_name": item.category_name, "annotation_id": item.annotation_id},
         ):
             if item.image is None:
-                raise ValueError("item.image cannot be None")
+                raise ImageError("item.image cannot be None")
             item_embedding_box = item.get_bounding_box(dp.image_id)
             if idx != len(items) - 1:
                 next_item_embedding_box = items[idx + 1].get_bounding_box(dp.image_id)
@@ -258,7 +259,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
     dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
 ) -> None:
     if table.image is None:
-        raise ValueError("table.image cannot be None")
+        raise ImageError("table.image cannot be None")
     table_embedding_box = table.get_bounding_box(dp.image_id)
 
     tmp_item_xy = table_embedding_box.uly + 1.0 if item_name == LayoutType.row else table_embedding_box.ulx + 1.0
@@ -270,7 +271,7 @@ def _tile_by_stretching_rows_leftwise_column_downwise(
             image_annotation={"category_name": item.category_name, "annotation_id": item.annotation_id},
         ):
             if item.image is None:
-                raise ValueError("item.image cannot be None")
+                raise ImageError("item.image cannot be None")
             item_embedding_box = item.get_bounding_box(dp.image_id)
             new_embedding_box = BoundingBox(
                 ulx=item_embedding_box.ulx if item_name == LayoutType.row else tmp_item_xy,
@@ -339,9 +340,9 @@ def tile_tables_with_items_per_table(
     items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
 
     items.sort(
-        key=lambda x: x.get_bounding_box(dp.image_id).cx
-        if item_name == LayoutType.column
-        else x.get_bounding_box(dp.image_id).cy
+        key=lambda x: (
+            x.get_bounding_box(dp.image_id).cx if item_name == LayoutType.column else x.get_bounding_box(dp.image_id).cy
+        )
     )
 
     if stretch_rule == "left":
@@ -737,9 +738,11 @@ class TableSegmentationService(PipelineComponent):
 
                 # we will assume that either all or no image attribute has been generated
                 items.sort(
-                    key=lambda x: x.get_bounding_box(dp.image_id).cx  # pylint: disable=W0640
-                    if item_name == LayoutType.column  # pylint: disable=W0640
-                    else x.get_bounding_box(dp.image_id).cy  # pylint: disable=W0640
+                    key=lambda x: (
+                        x.get_bounding_box(dp.image_id).cx  # pylint: disable=W0640
+                        if item_name == LayoutType.column  # pylint: disable=W0640
+                        else x.get_bounding_box(dp.image_id).cy  # pylint: disable=W0640
+                    )
                 )
 
                 for item_number, item in enumerate(items, 1):
@@ -939,9 +942,11 @@ class PubtablesSegmentationService(PipelineComponent):
 
                 # we will assume that either all or no image attribute has been generated
                 items.sort(
-                    key=lambda x: x.get_bounding_box(dp.image_id).cx
-                    if item_name == LayoutType.column  # pylint: disable=W0640
-                    else x.get_bounding_box(dp.image_id).cy
+                    key=lambda x: (
+                        x.get_bounding_box(dp.image_id).cx
+                        if item_name == LayoutType.column  # pylint: disable=W0640
+                        else x.get_bounding_box(dp.image_id).cy
+                    )
                 )
 
                 for item_number, item in enumerate(items, 1):

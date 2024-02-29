@@ -83,10 +83,11 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         self.num_gpu = get_num_gpu()
         self.category_names = category_names
         self.sub_categories = sub_categories
-        assert isinstance(pipeline_component.predictor, TPFrcnnDetector), (
-            f"pipeline_component.predictor must be of "
-            f"type TPFrcnnDetector but is type {type(pipeline_component.predictor)}"
-        )
+        if not isinstance(pipeline_component.predictor, TPFrcnnDetector):
+            raise TypeError(
+                f"pipeline_component.predictor must be of type TPFrcnnDetector but is "
+                f"type {type(pipeline_component.predictor)}"
+            )
         self.cfg = pipeline_component.predictor.model.cfg
         if _use_replicated(self.cfg):
             self.evaluator = Evaluator(dataset, pipeline_component, metric, num_threads=self.num_gpu * 2)
