@@ -102,6 +102,7 @@ class TextExtractionService(PredictorPipelineComponent):
                 "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not compatible"
             )
 
+    # TODO: Modify serve method to after implemented logic for detect_document_type
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
         for text_roi in maybe_batched_text_rois:
@@ -220,3 +221,7 @@ class TextExtractionService(PredictorPipelineComponent):
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
         return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
+
+    # TODO: Talk to Janis about this - 
+    def detect_document_type(self, dp: Image) -> None:
+        pass

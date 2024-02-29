@@ -44,6 +44,7 @@ from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.text import TextExtractionService
+from ..pipe.text_refine import TextRefinementService
 from ..utils.detection_types import Pathlike
 from ..utils.env_info import get_device
 from ..utils.file_utils import (
@@ -111,8 +112,10 @@ def maybe_copy_config_to_cache(
 
 def config_sanity_checks(cfg: AttrDict) -> None:
     """Some config sanity checks"""
-    if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
-        raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
+
+    # TODO: Change this with Janis
+    # if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
+    #     raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
     if cfg.OCR.USE_TESSERACT + cfg.OCR.USE_DOCTR + cfg.OCR.USE_TEXTRACT != 1:
         raise ValueError(
             "Choose either OCR.USE_TESSERACT=True or OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True and set the other two "
@@ -388,6 +391,11 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             paragraph_break=cfg.TEXT_ORDERING.PARAGRAPH_BREAK,
         )
         pipe_component_list.append(order)
+        
+        # Text Refinement Service 
+        if cfg.USE_TEXT_REFINEMENT:
+            text_refine = TextRefinementService()
+            pipe_component_list.append(text_refine)
 
     page_parsing_service = PageParsingService(
         text_container=LayoutType.word,

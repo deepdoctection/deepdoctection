@@ -19,3 +19,4 @@ snippets.py
 /build/
 /wandb/
 .env
+tests/daniel_tests.py
