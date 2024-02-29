@@ -75,7 +75,7 @@ class PipelineComponent(ABC):
         As a simplified interface `serve` does not have to return a dp. The data point is passed on within
         pipelines internally (via `pass_datapoint`).
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def pass_datapoint(self, dp: Image) -> Image:
         """
@@ -109,7 +109,7 @@ class PipelineComponent(ABC):
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     def get_meta_annotation(self) -> JsonDict:
@@ -122,7 +122,7 @@ class PipelineComponent(ABC):
         `summaries` with values: A list of summary sub categories
         :return: Dict with meta infos as just described
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _meta_has_all_types(self) -> None:
         if not {"image_annotations", "sub_categories", "relationships", "summaries"}.issubset(
@@ -154,7 +154,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
 
     @abstractmethod
     def clone(self) -> "PredictorPipelineComponent":
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class LanguageModelPipelineComponent(PipelineComponent, ABC):
@@ -183,7 +183,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ImageTransformPipelineComponent(PipelineComponent, ABC):
@@ -206,7 +206,7 @@ class ImageTransformPipelineComponent(PipelineComponent, ABC):
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class Pipeline(ABC):
@@ -254,7 +254,7 @@ class Pipeline(ABC):
 
         :param kwargs: Arguments, for dynamic customizing of the processing or for the transfer of processing types
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _build_pipe(self, df: DataFlow) -> DataFlow:
         """
@@ -277,7 +277,7 @@ class Pipeline(ABC):
 
         can be triggered.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_meta_annotation(self) -> JsonDict:
         """

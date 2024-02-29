@@ -43,6 +43,7 @@ from ..extern.pt.ptutils import get_num_gpu
 from ..mapper.d2struct import image_to_d2_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
+from ..utils.error import DependencyError
 from ..utils.file_utils import get_wandb_requirement, wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
@@ -153,16 +154,18 @@ class D2Trainer(DefaultTrainer):
         ret = [
             hooks.IterationTimer(),
             hooks.LRScheduler(),
-            hooks.PreciseBN(
-                # Run at the same freq as (but before) evaluation.
-                cfg.TEST.EVAL_PERIOD,
-                self.model,  # pylint: disable=E1101
-                # Build a new data loader to not affect training
-                self.build_train_loader(cfg),
-                cfg.TEST.PRECISE_BN.NUM_ITER,
-            )
-            if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)  # pylint: disable=E1101
-            else None,
+            (
+                hooks.PreciseBN(
+                    # Run at the same freq as (but before) evaluation.
+                    cfg.TEST.EVAL_PERIOD,
+                    self.model,  # pylint: disable=E1101
+                    # Build a new data loader to not affect training
+                    self.build_train_loader(cfg),
+                    cfg.TEST.PRECISE_BN.NUM_ITER,
+                )
+                if cfg.TEST.PRECISE_BN.ENABLED and get_bn_modules(self.model)  # pylint: disable=E1101
+                else None
+            ),
         ]
 
         # Do PreciseBN before checkpointer, because it updates the model and need to
@@ -201,7 +204,7 @@ class D2Trainer(DefaultTrainer):
         if self.cfg.WANDB.USE_WANDB:
             _, _wandb_available, err_msg = get_wandb_requirement()
             if not _wandb_available:
-                raise ImportError(err_msg)
+                raise DependencyError(err_msg)
             if self.cfg.WANDB.PROJECT is None:
                 raise ValueError("When using W&B, you must specify a project, i.e. WANDB.PROJECT")
             writers_list.append(WandbWriter(self.cfg.WANDB.PROJECT, self.cfg.WANDB.REPO, self.cfg))
@@ -269,7 +272,7 @@ class D2Trainer(DefaultTrainer):
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name):  # type: ignore
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 def train_d2_faster_rcnn(
