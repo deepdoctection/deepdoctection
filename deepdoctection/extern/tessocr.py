@@ -305,13 +305,13 @@ class TesseractOcrDetector(ObjectDetector):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = predict_text(
+
+        return predict_text(
             np_img,
             supported_languages=self.config.LANGUAGES,
             text_lines=self.config.LINES,
             config=config_to_cli_str(self.config, "LANGUAGES", "LINES"),
         )
-        return detection_results
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:

@@ -19,9 +19,10 @@
 TP Faster RCNN model as predictor for deepdoctection pipeline
 """
 
+from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import List, Mapping, Optional, Sequence, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Union
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
@@ -36,7 +37,41 @@ if tensorpack_available():
     from .tp.tpfrcnn.predict import tp_predict_image
 
 
-class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
+class TPFrcnnDetectorMixin(ObjectDetector, ABC):
+    """Base class for TP FRCNN detector. This class only implements the basic wrapper functions"""
+
+    def __init__(self, categories: Mapping[str, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
+        self.categories = copy(categories)  # type: ignore
+        if filter_categories:
+            filter_categories = [get_type(cat) for cat in filter_categories]
+        self.filter_categories = filter_categories
+        self._tp_categories = self._map_to_tp_categories(categories)
+
+    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+        """
+        Populating category names to detection results
+
+        :param detection_results: list of detection results
+        :return: List of detection results with attribute class_name populated
+        """
+        filtered_detection_result: List[DetectionResult] = []
+        for result in detection_results:
+            result.class_name = self._tp_categories[str(result.class_id)]
+            if self.filter_categories:
+                if result.class_name not in self.filter_categories:
+                    filtered_detection_result.append(result)
+            else:
+                filtered_detection_result.append(result)
+        return filtered_detection_result
+
+    @staticmethod
+    def _map_to_tp_categories(categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
+        categories = {str(key): get_type(categories[val]) for key, val in enumerate(categories, 1)}
+        categories["0"] = get_type("background")
+        return categories  # type: ignore
+
+
+class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
     """
     Tensorpack Faster-RCNN implementation with FPN and optional Cascade-RCNN. The backbones Resnet-50, Resnet-101 and
     their Resnext counterparts are also available. Normalization options (group normalization, synchronized batch
@@ -94,12 +129,13 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
         if filter_categories:
             filter_categories = [get_type(cat) for cat in filter_categories]
         self.filter_categories = filter_categories
-        model = TPFrcnnDetector.set_model(path_yaml, self.categories, config_overwrite)
-        super().__init__(model, path_weights, ignore_mismatch)
+        model = TPFrcnnDetector.get_wrapped_model(path_yaml, self.categories, config_overwrite)
+        TensorpackPredictor.__init__(self, model, path_weights, ignore_mismatch)
+        TPFrcnnDetectorMixin.__init__(self, categories, filter_categories)
         assert self._number_gpus > 0, "Model only support inference with GPU"
 
     @staticmethod
-    def set_model(
+    def get_wrapped_model(
         path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
     ) -> ResNetFPNModel:
         """
@@ -137,23 +173,6 @@ class TPFrcnnDetector(TensorpackPredictor, ObjectDetector):
             self._model.cfg.MRCNN.ACCURATE_PASTE,
         )
         return self._map_category_names(detection_results)
-
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
-        """
-        Populating category names to detection results
-
-        :param detection_results: list of detection results
-        :return: List of detection results with attribute class_name populated
-        """
-        filtered_detection_result: List[DetectionResult] = []
-        for result in detection_results:
-            result.class_name = self._model.cfg.DATA.CLASS_DICT[str(result.class_id)]
-            if self.filter_categories:
-                if result.class_name not in self.filter_categories:
-                    filtered_detection_result.append(result)
-            else:
-                filtered_detection_result.append(result)
-        return filtered_detection_result
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:

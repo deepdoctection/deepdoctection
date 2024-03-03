@@ -88,8 +88,8 @@ class TestHFDetrDerivedDetector:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.set_model", MagicMock(return_value=MagicMock()))
-    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.set_pre_processor", MagicMock())
+    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_model", MagicMock(return_value=MagicMock()))
+    @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_pre_processor", MagicMock())
     @patch("deepdoctection.extern.hfdetr.PretrainedConfig.from_pretrained", MagicMock())
     def test_hf_detr_predicts_image(detr_categories: Dict[str, ObjectTypes], np_image: ImageType) -> None:
         """

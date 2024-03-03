@@ -106,7 +106,7 @@ class TensorpackPredictor(ABC):
 
     @staticmethod
     @abstractmethod
-    def set_model(
+    def get_wrapped_model(
         path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
     ) -> ModelDescWithConfig:
         """
