@@ -19,6 +19,7 @@
 D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 """
 import io
+from abc import ABC
 from copy import copy
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence
@@ -32,7 +33,7 @@ from ..utils.file_utils import (
     get_pytorch_requirement,
     pytorch_available,
 )
-from ..utils.metacfg import set_config_by_yaml
+from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
 from .base import DetectionResult, ObjectDetector, PredictorBase
@@ -144,7 +145,67 @@ def d2_jit_predict_image(
     return detect_result_list
 
 
-class D2FrcnnDetector(ObjectDetector):
+class D2FrcnnDetectorMixin(ObjectDetector, ABC):
+    """
+    Base class for D2 Faster-RCNN implementation. This class only implements the basic wrapper functions
+    """
+
+    def __init__(
+        self,
+        categories: Mapping[str, TypeOrStr],
+        filter_categories: Optional[Sequence[TypeOrStr]] = None,
+    ):
+        """
+        :param categories: A dict with key (indices) and values (category names). Index 0 must be reserved for a
+                           dummy 'BG' category. Note, that this convention is different from the builtin D2 framework,
+                           where models in the model zoo are trained with 'BG' class having the highest index.
+        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
+                                  be filtered. Pass a list of category names that must not be returned
+        """
+
+        if filter_categories:
+            filter_categories = [get_type(cat) for cat in filter_categories]
+        self.filter_categories = filter_categories
+        self._categories_d2 = self._map_to_d2_categories(copy(categories))
+        self.categories = {idx: get_type(cat) for idx, cat in categories.items()}
+
+    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+        """
+        Populating category names to detection results
+
+        :param detection_results: list of detection results. Will also filter categories
+        :return: List of detection results with attribute class_name populated
+        """
+        filtered_detection_result: List[DetectionResult] = []
+        for result in detection_results:
+            result.class_name = self._categories_d2[str(result.class_id)]
+            if isinstance(result.class_id, int):
+                result.class_id += 1
+            if self.filter_categories:
+                if result.class_name not in self.filter_categories:
+                    filtered_detection_result.append(result)
+            else:
+                filtered_detection_result.append(result)
+        return filtered_detection_result
+
+    @classmethod
+    def _map_to_d2_categories(cls, categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
+        return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
+
+    def possible_categories(self) -> List[ObjectTypes]:
+        return list(self.categories.values())
+
+    @staticmethod
+    def get_inference_resizer(min_size_test: int, max_size_test: int) -> InferenceResize:
+        """Returns the resizer for the inference
+
+        :param min_size_test: minimum size of the resized image
+        :param max_size_test: maximum size of the resized image
+        """
+        return InferenceResize(min_size_test, max_size_test)
+
+
+class D2FrcnnDetector(D2FrcnnDetectorMixin):
     """
     D2 Faster-RCNN implementation with all the available backbones, normalizations throughout the model
     as well as FPN, optional Cascade-RCNN and many more.
@@ -155,6 +216,7 @@ class D2FrcnnDetector(ObjectDetector):
     the standard D2 output that takes into account of the situation that detected objects are disjoint. For more infos
     on this topic, see <https://github.com/facebookresearch/detectron2/issues/978> .
 
+    ```python
         config_path = ModelCatalog.get_full_path_configs("dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model-800000-layout.pkl")
         categories = ModelCatalog.get_profile("item/d2_model-800000-layout.pkl").categories
@@ -162,6 +224,7 @@ class D2FrcnnDetector(ObjectDetector):
         d2_predictor = D2FrcnnDetector(config_path,weights_path,categories,device="cpu")
 
         detection_results = d2_predictor.predict(bgr_image_np_array)
+    ```
     """
 
     def __init__(
@@ -191,30 +254,24 @@ class D2FrcnnDetector(ObjectDetector):
         :param filter_categories: The model might return objects that are not supposed to be predicted and that should
                                   be filtered. Pass a list of category names that must not be returned
         """
-
+        super().__init__(categories, filter_categories)
         self.name = "_".join(Path(path_weights).parts[-3:])
-        self._categories_d2 = self._map_to_d2_categories(copy(categories))
-        self.path_weights = path_weights
-        d2_conf_list = ["MODEL.WEIGHTS", path_weights]
-        config_overwrite = config_overwrite if config_overwrite else []
-        for conf in config_overwrite:
-            key, val = conf.split("=", maxsplit=1)
-            d2_conf_list.extend([key, val])
 
+        self.path_weights = path_weights
         self.path_yaml = path_yaml
-        self.categories = copy(categories)  # type: ignore
+
+        config_overwrite = config_overwrite if config_overwrite else []
         self.config_overwrite = config_overwrite
         if device is not None:
             self.device = device
         else:
             self.device = set_torch_auto_device()
-        if filter_categories:
-            filter_categories = [get_type(cat) for cat in filter_categories]
-        self.filter_categories = filter_categories
+
+        d2_conf_list = self._get_d2_config_list(path_weights, config_overwrite)
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
-        self.d2_predictor = D2FrcnnDetector.set_model(self.cfg)
-        self.resizer = InferenceResize(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
-        self._instantiate_d2_predictor()
+        self.d2_predictor = self._set_model(self.cfg)
+        self._instantiate_d2_predictor(self.d2_predictor, path_weights)
+        self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
 
     @staticmethod
     def _set_config(
@@ -231,7 +288,7 @@ class D2FrcnnDetector(ObjectDetector):
         return cfg
 
     @staticmethod
-    def set_model(config: "CfgNode") -> "GeneralizedRCNN":
+    def _set_model(config: "CfgNode") -> "GeneralizedRCNN":
         """
         Build the D2 model. It uses the available builtin tools of D2
 
@@ -240,9 +297,10 @@ class D2FrcnnDetector(ObjectDetector):
         """
         return build_model(config.clone()).eval()
 
-    def _instantiate_d2_predictor(self) -> None:
-        checkpointer = DetectionCheckpointer(self.d2_predictor)
-        checkpointer.load(self.cfg.MODEL.WEIGHTS)
+    @staticmethod
+    def _instantiate_d2_predictor(wrapped_model: "GeneralizedRCNN", path_weights: str) -> None:
+        checkpointer = DetectionCheckpointer(wrapped_model)
+        checkpointer.load(path_weights)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -259,32 +317,9 @@ class D2FrcnnDetector(ObjectDetector):
         )
         return self._map_category_names(detection_results)
 
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
-        """
-        Populating category names to detection results
-
-        :param detection_results: list of detection results. Will also filter categories
-        :return: List of detection results with attribute class_name populated
-        """
-        filtered_detection_result: List[DetectionResult] = []
-        for result in detection_results:
-            result.class_name = self._categories_d2[str(result.class_id)]
-            if isinstance(result.class_id, int):
-                result.class_id += 1
-            if self.filter_categories:
-                if result.class_name not in self.filter_categories:
-                    filtered_detection_result.append(result)
-            else:
-                filtered_detection_result.append(result)
-        return filtered_detection_result
-
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_detectron2_requirement()]
-
-    @classmethod
-    def _map_to_d2_categories(cls, categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
-        return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
 
     def clone(self) -> PredictorBase:
         return self.__class__(
@@ -296,11 +331,51 @@ class D2FrcnnDetector(ObjectDetector):
             self.filter_categories,
         )
 
-    def possible_categories(self) -> List[ObjectTypes]:
-        return list(self.categories.values())
+    @staticmethod
+    def get_wrapped_model(
+        path_yaml: str, path_weights: str, config_overwrite: List[str], device: Literal["cpu", "cuda"]
+    ) -> "GeneralizedRCNN":
+        """
+        Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
+
+        Example:
+        ```python
+
+            path_yaml = ModelCatalog.get_full_path_configs("dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml")
+            weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model-800000-layout.pkl")
+            model = D2FrcnnDetector.get_wrapped_model(path_yaml,weights_path,["OUTPUT.FRCNN_NMS_THRESH=0.3",
+                                                                              "OUTPUT.RESULT_SCORE_THRESH=0.6"],
+                                                                              "cpu")
+            detect_result_list = d2_predict_image(np_img,model,InferenceResize(800,1333),0.3)
+        ```
+        :param path_yaml: The path to the yaml config. If the model is built using several config files, always use
+                          the highest level .yaml file.
+        :param path_weights: The path to the model checkpoint.
+        :param config_overwrite: Overwrite some hyperparameters defined by the yaml file with some new values. E.g.
+                                 ["OUTPUT.FRCNN_NMS_THRESH=0.3","OUTPUT.RESULT_SCORE_THRESH=0.6"].
+        :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
+        :return: Detectron2 GeneralizedRCNN model
+        """
+
+        if device is None:
+            device = set_torch_auto_device()
+        d2_conf_list = D2FrcnnDetector._get_d2_config_list(path_weights, config_overwrite)
+        cfg = D2FrcnnDetector._set_config(path_yaml, d2_conf_list, device)
+        model = D2FrcnnDetector._set_model(cfg)
+        D2FrcnnDetector._instantiate_d2_predictor(model, path_weights)
+        return model
+
+    @staticmethod
+    def _get_d2_config_list(path_weights: str, config_overwrite: List[str]) -> List[str]:
+        d2_conf_list = ["MODEL.WEIGHTS", path_weights]
+        config_overwrite = config_overwrite if config_overwrite else []
+        for conf in config_overwrite:
+            key, val = conf.split("=", maxsplit=1)
+            d2_conf_list.extend([key, val])
+        return d2_conf_list
 
 
-class D2FrcnnTracingDetector(ObjectDetector):
+class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
     """
     D2 Faster-RCNN exported torchscript model. Using this predictor has the advantage that Detectron2 does not have to
     be installed. The associated config setting only contains parameters that are involved in pre-and post-processing.
@@ -312,6 +387,8 @@ class D2FrcnnTracingDetector(ObjectDetector):
     the standard D2 output that takes into account of the situation that detected objects are disjoint. For more infos
     on this topic, see <https://github.com/facebookresearch/detectron2/issues/978> .
 
+    Example:
+    ```python
         config_path = ModelCatalog.get_full_path_configs("dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml")
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model-800000-layout.pkl")
         categories = ModelCatalog.get_profile("item/d2_model-800000-layout.pkl").categories
@@ -319,6 +396,7 @@ class D2FrcnnTracingDetector(ObjectDetector):
         d2_predictor = D2FrcnnDetector(config_path,weights_path,categories)
 
         detection_results = d2_predictor.predict(bgr_image_np_array)
+    ```
     """
 
     def __init__(
@@ -343,27 +421,26 @@ class D2FrcnnTracingDetector(ObjectDetector):
         :param filter_categories: The model might return objects that are not supposed to be predicted and that should
                                   be filtered. Pass a list of category names that must not be returned
         """
+
+        super().__init__(categories, filter_categories)
         self.name = "_".join(Path(path_weights).parts[-2:])
-        self._categories_d2 = self._map_to_d2_categories(copy(categories))
+
         self.path_weights = path_weights
         self.path_yaml = path_yaml
-        self.categories = copy(categories)  # type: ignore
-        self.config_overwrite = config_overwrite
-        if filter_categories:
-            filter_categories = [get_type(cat) for cat in filter_categories]
-        self.filter_categories = filter_categories
-        self.cfg = set_config_by_yaml(self.path_yaml)
+
+        self.config_overwrite = copy(config_overwrite)
+        self.cfg = self._set_config(self.path_yaml, self.path_weights, self.config_overwrite)
+
+        self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
+        self.d2_predictor = self.get_wrapped_model(self.path_weights)
+
+    @staticmethod
+    def _set_config(path_yaml: str, path_weights: str, config_overwrite: Optional[List[str]]) -> AttrDict:
+        cfg = set_config_by_yaml(path_yaml)
         config_overwrite = config_overwrite if config_overwrite else []
         config_overwrite.extend([f"MODEL.WEIGHTS={path_weights}"])
-        self.cfg.update_args(config_overwrite)
-        self.resizer = InferenceResize(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
-        self.d2_predictor = self._instantiate_d2_predictor()
-
-    def _instantiate_d2_predictor(self) -> Any:
-        with open(self.path_weights, "rb") as file:
-            buffer = io.BytesIO(file.read())
-        # Load all tensors to the original device
-        return torch.jit.load(buffer)
+        cfg.update_args(config_overwrite)
+        return cfg
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -418,3 +495,16 @@ class D2FrcnnTracingDetector(ObjectDetector):
 
     def possible_categories(self) -> List[ObjectTypes]:
         return list(self.categories.values())
+
+    @staticmethod
+    def get_wrapped_model(path_weights: str) -> Any:
+        """
+        Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
+
+        :param path_weights:
+        :return:
+        """
+        with open(path_weights, "rb") as file:
+            buffer = io.BytesIO(file.read())
+        # Load all tensors to the original device
+        return torch.jit.load(buffer)

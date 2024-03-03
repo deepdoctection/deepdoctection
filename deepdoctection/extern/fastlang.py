@@ -18,18 +18,39 @@
 """
 Deepdoctection wrappers for fasttext language detection models
 """
+from abc import ABC
 from copy import copy
-from typing import List, Mapping
+from typing import Any, List, Mapping, Tuple, Union
 
 from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
-from ..utils.settings import TypeOrStr
+from ..utils.settings import TypeOrStr, get_type
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
 if fasttext_available():
     from fasttext import load_model  # type: ignore
 
 
-class FasttextLangDetector(LanguageDetector):
+class FasttextLangDetectorMixin(LanguageDetector, ABC):
+    """
+    Base class for Fasttext language detection implementation. This class only implements the basic wrapper functions.
+    """
+
+    def __init__(self, categories: Mapping[str, TypeOrStr]) -> None:
+        """
+        :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
+        """
+        self.categories = copy({idx: get_type(cat) for idx, cat in categories.items()})
+
+    def output_to_detection_result(self, output: Union[Tuple[Any, Any]]) -> DetectionResult:
+        """
+        Generating `DetectionResult` from model output
+        :param output: FastText model output
+        :return: `DetectionResult` filled with `text` and `score`
+        """
+        return DetectionResult(text=self.categories[output[0][0]], score=output[1][0])
+
+
+class FasttextLangDetector(FasttextLangDetectorMixin):
     """
     Fasttext language detector wrapper. Two models provided in the fasttext library can be used to identify languages.
     The background to the models can be found in the works:
@@ -57,15 +78,14 @@ class FasttextLangDetector(LanguageDetector):
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
                            code.
         """
-
+        super().__init__(categories)
         self.name = "fasttest_lang_detector"
         self.path_weights = path_weights
-        self.model = load_model(self.path_weights)
-        self.categories = copy(categories)  # type: ignore
+        self.model = self.get_wrapped_model(self.path_weights)
 
     def predict(self, text_string: str) -> DetectionResult:
         output = self.model.predict(text_string)
-        return DetectionResult(text=self.categories[output[0][0]], score=output[1][0])
+        return self.output_to_detection_result(output)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -73,3 +93,11 @@ class FasttextLangDetector(LanguageDetector):
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_weights, self.categories)
+
+    @staticmethod
+    def get_wrapped_model(path_weights: str) -> Any:
+        """
+        Get the wrapped model
+        :param path_weights: path to model weights
+        """
+        return load_model(path_weights)

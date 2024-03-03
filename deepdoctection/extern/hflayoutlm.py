@@ -357,10 +357,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMForTokenClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
@@ -387,6 +384,18 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         )
 
         return self._map_category_names(results)
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
 
 
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -445,10 +454,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
-        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMv2ForTokenClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
@@ -488,6 +494,20 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         for some custom setting.
         """
         return {"image_width": 224, "image_height": 224}
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMv2ForTokenClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
 
 
 class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -546,10 +566,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
-        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMv3ForTokenClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
@@ -591,6 +608,20 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
             "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN, dtype=np.float32),
             "pixel_std": np.array(IMAGENET_DEFAULT_STD, dtype=np.float32),
         }
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMv3ForTokenClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
 
 
 class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
@@ -751,6 +782,20 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         result.class_name = self.categories[str(result.class_id)]
         return result
 
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
+
 
 class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
@@ -790,10 +835,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMv2ForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
@@ -817,6 +859,20 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         for some custom setting.
         """
         return {"image_width": 224, "image_height": 224}
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMv2ForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
 
 
 class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
@@ -857,10 +913,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMv3ForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
@@ -890,3 +943,17 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
             "pixel_mean": np.array(IMAGENET_DEFAULT_MEAN, dtype=np.float32),
             "pixel_std": np.array(IMAGENET_DEFAULT_STD, dtype=np.float32),
         }
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LayoutLMv3ForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )

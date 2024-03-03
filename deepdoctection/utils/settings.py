@@ -125,6 +125,7 @@ class LayoutType(ObjectTypes):
     column = "column"
     word = "word"
     line = "line"
+    background = "background"
 
 
 @object_types_registry.register("TableType")
