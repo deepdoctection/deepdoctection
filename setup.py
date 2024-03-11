@@ -104,6 +104,8 @@ _DEPS = [
     "pytest",
     "pytest-cov",
     "wandb",
+    # refinement
+    "pyenchant"
 ]
 
 # lookup table with items like:

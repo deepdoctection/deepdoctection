@@ -391,10 +391,18 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             paragraph_break=cfg.TEXT_ORDERING.PARAGRAPH_BREAK,
         )
         pipe_component_list.append(order)
-        
+                
         # Text Refinement Service 
         if cfg.USE_TEXT_REFINEMENT:
-            text_refine = TextRefinementService()
+            categories_to_refine = [LayoutType.text, LayoutType.title, LayoutType.word] 
+            text_refine = TextRefinementService(
+                language=cfg.LANGUAGE,
+                use_spellcheck_refinement=cfg.TEXT_REFINEMENT.USE_SPELLCHECKER_REFINEMENT,
+                use_nlp_refinement=cfg.TEXT_REFINEMENT.USE_NLP_REFINEMENT,
+                text_refinement_threshold=cfg.TEXT_REFINEMENT.TEXT_REFINEMENT_THRESHOLD,
+                nlp_refinement_model_name=cfg.TEXT_REFINEMENT.NLP_REFINEMENT.MLM_MODEL, # TODO: Add support for custom models
+                categories_to_refine=categories_to_refine) 
+            
             pipe_component_list.append(text_refine)
 
     page_parsing_service = PageParsingService(

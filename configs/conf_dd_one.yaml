@@ -1,3 +1,4 @@
+# conf_dd_one.yaml
 USE_LAYOUT: True
 USE_TABLE_SEGMENTATION: True
 TF:
@@ -47,9 +48,9 @@ SEGMENTATION:
   CELL_CATEGORY_ID: 12
   STRETCH_RULE: equal
 USE_TABLE_REFINEMENT: True
-USE_TEXT_REFINEMENT: True
 USE_PDF_MINER: True
 USE_OCR: True
+USE_TEXT_REFINEMENT: True
 OCR:
   USE_TESSERACT: True
   USE_DOCTR: False
@@ -63,6 +64,13 @@ OCR:
     DOCTR_RECOGNITION:
       TF: doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip
       PT: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
+TEXT_REFINEMENT:
+  USE_SPELLCHECKER_REFINEMENT: True
+  USE_NLP_REFINEMENT: True
+  TEXT_REFINEMENT_THRESHOLD: 0.2
+  NLP_REFINEMENT:
+    MLM_MODEL: bert-base-multilingual-cased # TODO: Download weights locally
+
 WORD_MATCHING:
   PARENTAL_CATEGORIES:
     - text
