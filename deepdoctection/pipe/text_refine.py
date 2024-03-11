@@ -17,20 +17,21 @@
 
 """
 Refines extracted text using both spell checking and NLP-based (BERT) approaches for improved accuracy.
-This script provides a TextRefinementService as part of a text processing pipeline, 
+This module provides a TextRefinementService as part of a text processing pipeline,
 which can be configured to use spell checking, NLP-based refinement, or both, and supports multiple languages.
 """
 
 from copy import deepcopy
-from typing import List, Dict, Optional, Sequence, Union
-from transformers import pipeline, BertTokenizer, BertForMaskedLM, AutoTokenizer, AutoModelForMaskedLM
+from typing import List, Dict, Optional, Union, Tuple
+from transformers import pipeline, AutoTokenizer, AutoModelForMaskedLM
 import torch
+from langdetect import detect
 import enchant
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from ..utils.detection_types import ImageType, JsonDict
-from ..utils.settings import PageType, TypeOrStr, WordType, get_type
+from ..utils.detection_types import JsonDict
+from ..utils.settings import WordType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -42,28 +43,36 @@ __all__ = ["TextRefinementService"]
 
 class TextRefinementService(PipelineComponent):
     """
-    Pipeline component for refining text extraction results using dictionaries, lexicons, or language models.
+    Pipeline component for refining text extraction results using spell checking and NLP-based approaches.
     """
     
-    def __init__(self, 
-                 language: str = "en",
+    def __init__(self,
                  use_spellcheck_refinement: bool = True,
                  use_nlp_refinement: bool = True,
-                 nlp_refinement_model_name = f"bert-base-multilingual-cased",
+                 nlp_refinement_model_name: str = "bert-base-multilingual-cased",
                  text_refinement_threshold: float = 0.8,
-                 categories_to_refine: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None):
+                 categories_to_refine: Optional[Union[List[str], str]] = None):
+        
         """
-        Initializes the TextRefinementService with necessary resources.
+        Initializes the TextRefinementService with the necessary configurations.
+
+        Parameters:
+        - use_spellcheck_refinement (bool): Whether to use spell checking for refinement.
+        - use_nlp_refinement (bool): Whether to use NLP-based refinement.
+        - nlp_refinement_model_name (str): The name of the NLP model to use for refinement.
+        - text_refinement_threshold (float): The confidence threshold for accepting NLP-based refinements.
+        - categories_to_refine (Optional[Union[List[str], str]]): Categories of text annotations to refine.
         """
                 
-        self.language = language
         self.use_spellcheck_refinement = use_spellcheck_refinement
         self.use_nlp_refinement = use_nlp_refinement
         self.text_refinement_threshold = text_refinement_threshold
-        self.categories_to_refine = [get_type(cat) for cat in categories_to_refine] if categories_to_refine else []
-        
-        if self.use_spellcheck_refinement:
-            self.spell_checker = enchant.Dict(language)
+        self.categories_to_refine = [get_type(cat) for cat in 
+                                     (categories_to_refine if isinstance(categories_to_refine, list) else [categories_to_refine])] if categories_to_refine else []
+       
+        # Spell checker is initialized dynamically based on detected language. 
+        # TODO: Do the same with NLP pipeline
+        self.spell_checker = None  # Initialized dynamically based on detected language
         
         if self.use_nlp_refinement:
             # TODO: consider using language-specific models instead of multilingual BERT
@@ -73,33 +82,68 @@ class TextRefinementService(PipelineComponent):
 
         super().__init__("text_refinement")
 
-                
-    def refine_with_spellchecker(self, text: str) -> str:
-        words = text.split()
-        refined_words = [self.spell_checker.suggest(word)[0] if not self.spell_checker.check(word) else word for word in words]
-        return " ".join(refined_words)
     
-    
-    def refine_with_nlp(self, text: str) -> str:
-        # This function needs to be carefully designed to maintain the original structure and punctuation
-        # Here's a simplified example that doesn't handle all cases
-        refined_text = text
-        for masked_index in range(len(refined_text.split())):
-            masked_text = self.create_masked_text(refined_text, masked_index)
-            prediction = self.nlp_pipeline(masked_text)[0]
-            refined_text = self.replace_masked_word(refined_text, masked_index, prediction['token_str'])
-        return refined_text
-    
-    
-    def create_masked_text(self, text: str, masked_index: int) -> str:
-        words = text.split()
-        words[masked_index] = self.tokenizer.mask_token
-        return " ".join(words)
+    def detect_and_set_language(self, text: str):
+        """
+        Detects the language of the provided text and initializes spell checking resources for that language.
 
-    def replace_masked_word(self, text: str, index: int, new_word: str) -> str:
-        words = text.split()
-        words[index] = new_word
-        return " ".join(words)
+        Parameters:
+        - text (str): The text for which the language should be detected.
+        """
+        try:
+            detected_lang = detect(text)
+            self.language = detected_lang
+        except:
+            self.language = "en"  # Default to English if detection fails
+        
+        if self.use_spellcheck_refinement:
+            self.spell_checker = enchant.Dict(self.language)           
+            
+    def refine_text(self, texts: List[str], word_scores: List[Optional[float]]):
+        """
+        Refines a list of texts using spell checking and NLP-based approaches.
+
+        Parameters:
+        - texts (List[str]): The texts to refine.
+        - word_scores (List[Optional[float]]): The scores of the words to refine.
+
+        Returns:
+        - (List[str], List[Optional[float]]): The refined texts and their new scores.
+        """
+        refined_texts = []
+        new_scores = []
+        for i, text in enumerate(texts):
+            if self.use_spellcheck_refinement and self.spell_checker and not self.spell_checker.check(text):
+                suggestions = self.spell_checker.suggest(text)
+                text = suggestions[0] if suggestions else text
+
+            if self.use_nlp_refinement and word_scores[i] is not None and word_scores[i] < self.text_refinement_threshold:
+                masked_text = self.create_masked_text(texts, i)
+                prediction = self.nlp_pipeline(masked_text)[0]
+                text = prediction['token_str']
+                new_scores.append(prediction['score'])
+            else:
+                new_scores.append(word_scores[i])
+            
+            refined_texts.append(text)
+
+        return refined_texts, new_scores
+    
+    def create_masked_text(self, texts: List[str], masked_index: int) -> str:
+        """
+        Creates a text string with a specified index masked, for use in NLP-based refinement.
+
+        Parameters:
+        - texts (List[str]): The list of texts, one of which will be masked.
+        - masked_index (int): The index of the text to mask.
+
+        Returns:
+        - str: The text string with the specified text masked.
+        """
+        texts_copy = deepcopy(texts)
+        texts_copy[masked_index] = self.tokenizer.mask_token
+        return " ".join(texts_copy)
+    
 
     def get_child(self, dp: Image, child_id: str) -> str:
         """
@@ -109,46 +153,46 @@ class TextRefinementService(PipelineComponent):
         child_annotation = child_annotation[0].sub_categories.get(WordType.characters) # TODO: Figure out how/if to incorporate layout element here.
         return child_annotation
     
-    def update_child_annotations(self, dp: Image, child_ids: List[str], refined_text: str):
+    def update_child_annotations(self, dp: Image, child_ids: List[str], refined_texts: List[str], word_scores: List[Optional[float]]):
         """
-        Update child word annotations with refined text. This simplistic approach assigns the entire
-        refined text back to each child, which may not be accurate. Further logic could be added to
-        intelligently distribute the refined text among children based on their original content.
+        Update child word annotations with refined text and potentially updated scores.
+
+        Parameters:
+        dp (Image): The current image datapoint being processed.
+        child_ids (List[str]): List of child annotation IDs to update.
+        refined_texts (List[str]): List of refined texts corresponding to each child ID.
+        word_scores (List[Optional[float]]): List of new scores corresponding to each refined text.
         """
-        for child_id in child_ids:
-            child_annotation = dp.get_annotation(annotation_ids=child_id)
-            child_annotation.set_value(refined_text)  # This needs refinement for accurate text distribution
-    
-    
+        for child_id, new_text, new_score in zip(child_ids, refined_texts, word_scores):
+            # Update the annotation with the new value and score
+            # TODO: Set up new method through Anngen -> update_annotation()
+            dp.datapoint_manager.update_annotation(annotation_id=child_id, new_value=new_text, new_score=new_score)
+
     def serve(self, dp: Image) -> None:
         """
-        Refines the text extraction results for the given document page (Image).
-        This includes individual word corrections and context-aware refinements for larger text blocks.
+        The service method that refines text annotations within the given image datapoint.
+
+        Parameters:
+        - dp (Image): The image datapoint containing text annotations to refine.
         """
+        
         for annotation in dp.get_annotation():
-            # Handle larger text blocks that contain child word annotations
             if annotation.category_name in [cat.value for cat in self.categories_to_refine]:
-                # Collect text from child words for context-aware refinement
                 child_ids = annotation.relationships.get("child", [])
-                children = [self.get_child(dp, child_id) for child_id in child_ids]
-                
-                # Join child texts to form the complete text block
-                complete_text = " ".join(child_texts)
-                # Refine the complete text block
-                refined_complete_text = self.refine_text(complete_text)
-                # Update child annotations with refined text, this part might require custom logic
-                # to distribute the refined text back to individual children if necessary
-                self.update_child_annotations(dp, child_ids, refined_complete_text)
+                children = [(self.get_child(dp, child_id).value, self.get_child(dp, child_id).score) for child_id in child_ids]
+                if children:
+                    children_texts, children_scores = zip(*children)
+                    self.detect_and_set_language(" ".join(children_texts))
+                    refined_texts, new_scores = self.refine_text(children_texts, children_scores)
+                    self.update_child_annotations(dp, child_ids, refined_texts, new_scores)
 
-            # Direct refinement for individual words, if not part of a larger text block
-            elif annotation.category_name == WordType.word.value:
-                original_text = annotation.get_value()
-                refined_text = self.refine_text(original_text)
-                annotation.set_value(refined_text)            
 
-    def clone(self) -> "PipelineComponent":
+    def clone(self) -> "TextRefinementService":
         """
-        Creates a copy of this TextRefinementService instance.
+        Creates a deep copy of the current TextRefinementService instance.
+
+        Returns:
+        - TextRefinementService: A new instance of TextRefinementService with the same configuration.
         """
         return deepcopy(self)
     
@@ -156,13 +200,16 @@ class TextRefinementService(PipelineComponent):
     # TODO: Talk to Janis about this
     def get_meta_annotation(self) -> Dict:
         """
-        Returns metadata annotations related to text refinement.
+        Provides metadata annotations related to text refinement.
+
+        Returns:
+        - Dict: A dictionary of metadata annotations.
         """
         return {
-            "image_annotations": [cat.value for cat in self.categories_to_refine], # Specify the primary focus on relevant types
-            "sub_categories": {},  # Adjust if your service modifies or utilizes specific sub-categories
-            "relationships": {},  # Adjust if your service establishes or modifies relationships between annotations
-            "summaries": []  # Adjust if your service contributes to or modifies summary information
+            "image_annotations": [cat.value for cat in self.categories_to_refine],
+            "sub_categories": {},
+            "relationships": {},
+            "summaries": []
         }
 
 # Register the TextRefinementService component to the pipeline

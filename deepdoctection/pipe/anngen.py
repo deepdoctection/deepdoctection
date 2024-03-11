@@ -70,7 +70,7 @@ class DatapointManager:
         """
         assert that datapoint is passed
         """
-        assert self.datapoint_is_passed, "Pass datapoint to  DatapointManager before creating anns"
+        assert self.datapoint_is_passed, "Pass datapoint to DatapointManager before creating anns"
 
     def maybe_map_category_id(self, category_id: Union[str, int]) -> int:
         """
@@ -323,3 +323,34 @@ class DatapointManager:
     def get_annotation(self, annotation_id: str) -> ImageAnnotation:
         """get single `ImageAnnotation`"""
         return self._cache_anns[annotation_id]
+    
+    # TODO: Check with Janis
+    def update_annotation(self, annotation_id: str, new_value: Union[str, List[str], None] = None, new_score: Optional[float] = None):
+        """Updates the specified annotation with a new value and/or score.
+
+        Parameters:
+        annotation_id (str): The ID of the annotation to update.
+        new_value (Union[str, List[str], None]): The new value to set for the annotation, if applicable.
+        new_score (Optional[float]): The new score to set for the annotation.
+
+        Raises:
+        ValueError: If the annotation_id does not exist within the current datapoint.
+        """
+        # Ensure a datapoint has been set
+        self.assert_datapoint_passed()
+
+        # Find the annotation by ID
+        annotation = self._cache_anns.get(annotation_id)
+        if not annotation:
+            raise ValueError(f"Annotation with ID {annotation_id} not found.")
+
+        # Update the annotation value if provided and applicable
+        if new_value is not None and hasattr(annotation, 'value'):
+            annotation.value = new_value
+        
+        # Update the annotation score if provided
+        if new_score is not None and hasattr(annotation, 'score'):
+            annotation.score = new_score
+
+        # If the annotation is a container or category annotation, and requires specific updates, add those here
+        # For example, updating specific fields based on annotation type

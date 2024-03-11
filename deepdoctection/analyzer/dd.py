@@ -394,9 +394,8 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 
         # Text Refinement Service 
         if cfg.USE_TEXT_REFINEMENT:
-            categories_to_refine = [LayoutType.text, LayoutType.title, LayoutType.word] 
+            categories_to_refine = [LayoutType.text, LayoutType.title] 
             text_refine = TextRefinementService(
-                language=cfg.LANGUAGE,
                 use_spellcheck_refinement=cfg.TEXT_REFINEMENT.USE_SPELLCHECKER_REFINEMENT,
                 use_nlp_refinement=cfg.TEXT_REFINEMENT.USE_NLP_REFINEMENT,
                 text_refinement_threshold=cfg.TEXT_REFINEMENT.TEXT_REFINEMENT_THRESHOLD,
