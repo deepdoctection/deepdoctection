@@ -37,11 +37,13 @@ from ..utils.file_utils import (
     tf_available,
 )
 from ..utils.fs import load_json
-from ..utils.settings import LayoutType, ObjectTypes, TypeOrStr
-from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
+from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.viz import viz_handler
+from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
 from .pt.ptutils import set_torch_auto_device
 
 if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
+    from doctr.models._utils import estimate_orientation
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
     from doctr.models.preprocessor import PreProcessor
@@ -432,3 +434,64 @@ class DoctrTextRecognizer(TextRecognizer):
         device_str = _set_device_str(device)
         DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device_str, lib)
         return doctr_predictor
+
+
+class DocTrRotationTransformer(ImageTransformer):
+    """
+    The `DocTrRotationTransformer` class is a specialized image transformer that is designed to handle image rotation
+    in the context of Optical Character Recognition (OCR) tasks. It inherits from the `ImageTransformer` base class and
+    implements methods for predicting and applying rotation transformations to images.
+
+    The `predict` method determines the angle of the rotated image using the `estimate_orientation` function from the
+    `doctr.models._utils` module. The `n_ct` and `ratio_threshold_for_lines` parameters for this function can be
+    configured when instantiating the class.
+
+    The `transform` method applies the predicted rotation to the image, effectively rotating the image backwards.
+    This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
+
+    This class can be particularly useful in OCR tasks where the orientation of the text in the image matters.
+    The class also provides methods for cloning itself and for getting the requirements of the OCR system.
+
+    **Example:**
+                    transformer = DocTrRotationTransformer()
+                    detection_result = transformer.predict(np_img)
+                    rotated_image = transformer.transform(np_img, detection_result)
+    """
+
+    def __init__(self, number_contours: int = 50, ratio_threshold_for_lines: float = 5):
+        """
+
+        :param number_contours: the number of contours used for the orientation estimation
+        :param ratio_threshold_for_lines: this is the ratio w/h used to discriminates lines
+        """
+        self.number_contours = number_contours
+        self.ratio_threshold_for_lines = ratio_threshold_for_lines
+        self.name = "doctr_rotation_transformer"
+
+    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+        """
+        Applies the predicted rotation to the image, effectively rotating the image backwards.
+        This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
+
+        :param np_img: The input image as a numpy array.
+        :param specification: A `DetectionResult` object containing the predicted rotation angle.
+        :return: The rotated image as a numpy array.
+        """
+        return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
+
+    def predict(self, np_img: ImageType) -> DetectionResult:
+        angle = estimate_orientation(np_img, self.number_contours, self.ratio_threshold_for_lines)
+        if angle < 0:
+            angle += 360
+        return DetectionResult(angle=round(angle, 2))
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_doctr_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
+
+    @staticmethod
+    def possible_category() -> PageType:
+        return PageType.angle

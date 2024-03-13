@@ -53,14 +53,14 @@ class PredictorBase(ABC):
         """
         Get a list of requirements for running the detector
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     def clone(self) -> "PredictorBase":
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 @dataclass
@@ -102,6 +102,7 @@ class DetectionResult:
     line: Optional[str] = None
     uuid: Optional[str] = None
     relationships: Optional[Dict[str, Any]] = None
+    angle: Optional[float] = None
 
 
 class ObjectDetector(PredictorBase):
@@ -133,7 +134,7 @@ class ObjectDetector(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def accepts_batch(self) -> bool:
@@ -174,14 +175,14 @@ class PdfMiner(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
         """
         Abstract method get_width_height
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def clone(self) -> PredictorBase:
         return self.__class__()
@@ -212,7 +213,7 @@ class TextRecognizer(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @property
     def accepts_batch(self) -> bool:
@@ -294,7 +295,7 @@ class LMTokenClassifier(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def possible_tokens(self) -> List[ObjectTypes]:
         """
@@ -307,7 +308,7 @@ class LMTokenClassifier(PredictorBase):
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     def default_kwargs_for_input_mapping() -> JsonDict:
@@ -341,7 +342,7 @@ class LMSequenceClassifier(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def possible_categories(self) -> List[ObjectTypes]:
         """
@@ -354,7 +355,7 @@ class LMSequenceClassifier(PredictorBase):
         """
         Clone an instance
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     def default_kwargs_for_input_mapping() -> JsonDict:
@@ -388,7 +389,7 @@ class LanguageDetector(PredictorBase):
         """
         Abstract method predict
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def possible_languages(self) -> List[ObjectTypes]:
         """
@@ -403,11 +404,26 @@ class ImageTransformer(PredictorBase):
     """
 
     @abstractmethod
-    def transform(self, np_img: ImageType) -> ImageType:
+    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
         """
         Abstract method transform
         """
-        raise NotImplementedError
+        raise NotImplementedError()
+
+    @abstractmethod
+    def predict(self, np_img: ImageType) -> DetectionResult:
+        """
+        Abstract method predict
+        """
+        raise NotImplementedError()
 
     def clone(self) -> PredictorBase:
         return self.__class__()
+
+    @staticmethod
+    @abstractmethod
+    def possible_category() -> ObjectTypes:
+        """
+        Returns a (single) category the `ImageTransformer` can predict
+        """
+        raise NotImplementedError()
