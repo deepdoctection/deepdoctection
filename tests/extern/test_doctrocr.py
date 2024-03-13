@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
+from deepdoctection.extern.doctrocr import DocTrRotationTransformer, DoctrTextlineDetector, DoctrTextRecognizer
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.utils.detection_types import ImageType
 from tests.data import Annotations
@@ -146,3 +146,45 @@ class TestDoctrTextRecognizer:
 
         # Assert
         assert len(results) == 2
+
+
+class TestDocTrRotationTransformer:
+    """
+    Test DocTrRotationTransformer
+    """
+
+    @staticmethod
+    @mark.pt_deps
+    @patch("deepdoctection.extern.doctrocr.estimate_orientation", MagicMock(return_value=180.0))
+    def test_doctr_rotation_transformer_predicts_image(np_image: ImageType) -> None:
+        """
+        DocTrRotationTransformer calls predict and returns correct DetectionResult
+        """
+
+        # Arrange
+        transformer = DocTrRotationTransformer()
+
+        # Act
+        result = transformer.predict(np_image)
+
+        # Assert
+        assert result.angle == 180.0
+
+    @staticmethod
+    @mark.pt_deps
+    def test_doctr_rotation_transformer_rotates_image(
+        np_image: ImageType, angle_detection_result: DetectionResult
+    ) -> None:
+        """
+        DocTrRotationTransformer calls transform and returns rotated image
+        """
+
+        # Arrange
+        transformer = DocTrRotationTransformer()
+
+        # Act
+        np_output = transformer.transform(np_image, angle_detection_result)
+
+        # Assert
+        assert np_output.shape[0] == np_image.shape[1]
+        assert np_output.shape[1] == np_image.shape[0]
