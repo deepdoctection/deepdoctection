@@ -113,19 +113,27 @@ class TextRefinementService(PipelineComponent):
         refined_texts = []
         new_scores = []
         for i, text in enumerate(texts):
-            if self.use_spellcheck_refinement and self.spell_checker and not self.spell_checker.check(text):
-                suggestions = self.spell_checker.suggest(text)
-                text = suggestions[0] if suggestions else text
+            
+            # Separate the core word from its surrounding punctuation
+            core_word = ''.join(filter(str.isalnum, text))
+            prefix = text[:text.find(core_word)]
+            suffix = text[text.find(core_word) + len(core_word):]
+            
+            if self.use_spellcheck_refinement and self.spell_checker and not self.spell_checker.check(core_word):
+                suggestions = self.spell_checker.suggest(core_word)
+                core_word = suggestions[0] if suggestions else core_word
 
             if self.use_nlp_refinement and word_scores[i] is not None and word_scores[i] < self.text_refinement_threshold:
-                masked_text = self.create_masked_text(texts, i)
+                masked_text = self.create_masked_text(core_word, i)
                 prediction = self.nlp_pipeline(masked_text)[0]
-                text = prediction['token_str']
+                core_word = prediction['token_str']
                 new_scores.append(prediction['score'])
             else:
                 new_scores.append(word_scores[i])
             
-            refined_texts.append(text)
+            # Reassemble the word with its original punctuation
+            refined_text = prefix + core_word + suffix
+            refined_texts.append(refined_text)
 
         return refined_texts, new_scores
     
@@ -143,7 +151,6 @@ class TextRefinementService(PipelineComponent):
         texts_copy = deepcopy(texts)
         texts_copy[masked_index] = self.tokenizer.mask_token
         return " ".join(texts_copy)
-    
 
     def get_child(self, dp: Image, child_id: str) -> str:
         """
@@ -166,7 +173,7 @@ class TextRefinementService(PipelineComponent):
         for child_id, new_text, new_score in zip(child_ids, refined_texts, word_scores):
             # Update the annotation with the new value and score
             # TODO: Set up new method through Anngen -> update_annotation()
-            dp.datapoint_manager.update_annotation(annotation_id=child_id, new_value=new_text, new_score=new_score)
+            self.dp_manager.update_annotation(annotation_id=child_id, new_value=new_text, new_score=new_score)
 
     def serve(self, dp: Image) -> None:
         """

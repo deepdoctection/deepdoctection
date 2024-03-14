@@ -324,7 +324,8 @@ class DatapointManager:
         """get single `ImageAnnotation`"""
         return self._cache_anns[annotation_id]
     
-    # TODO: Check with Janis
+    # TODO: Check with Janis, do we need to apply the @setter decorator?
+    # TODO: Make this more generic for other types of annotations
     def update_annotation(self, annotation_id: str, new_value: Union[str, List[str], None] = None, new_score: Optional[float] = None):
         """Updates the specified annotation with a new value and/or score.
 
@@ -349,8 +350,13 @@ class DatapointManager:
             annotation.value = new_value
         
         # Update the annotation score if provided
-        if new_score is not None and hasattr(annotation, 'score'):
+        if new_score is not None:
             annotation.score = new_score
 
-        # If the annotation is a container or category annotation, and requires specific updates, add those here
-        # For example, updating specific fields based on annotation type
+        # Re-save the updated annotation to ensure changes are reflected in the datapoint's annotations list
+        # This step might involve removing the old instance and adding the updated one to the datapoint's annotations list
+        updated_annotations = [ann if ann.annotation_id != annotation_id else annotation for ann in self.datapoint.annotations]
+        self.datapoint.annotations = updated_annotations
+        
+        # Update the cache as well
+        self._cache_anns[annotation_id] = annotation
