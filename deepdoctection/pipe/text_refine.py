@@ -25,13 +25,13 @@ from copy import deepcopy
 from typing import List, Dict, Optional, Union, Tuple
 from transformers import pipeline, AutoTokenizer, AutoModelForMaskedLM
 import torch
-from langdetect import detect
+from langdetect import detect, LangDetectException
 import enchant
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.settings import Languages, WordType, get_type
+from ..utils.settings import Languages, WordType, get_type, get_language_enum_from_enchant_code, get_language_enum_from_langdetect_code
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -55,8 +55,7 @@ class TextRefinementService(PipelineComponent):
                  use_nlp_refinement: bool = True,
                  nlp_refinement_model_name: str = "bert-base-multilingual-cased",
                  text_refinement_threshold: float = 0.8,
-                 default_language: str = 'en',
-                 categories_to_refine: Optional[Union[List[str], str]] = None):
+                 categories_to_refine: Optional[List[str]] = None):
         
         """
         Initializes the TextRefinementService with the necessary configurations.
@@ -72,43 +71,96 @@ class TextRefinementService(PipelineComponent):
         self.use_spellcheck_refinement = use_spellcheck_refinement
         self.use_nlp_refinement = use_nlp_refinement
         self.text_refinement_threshold = text_refinement_threshold
-        self.default_language = default_language
-        self.categories_to_refine = [get_type(cat) for cat in 
-                                     (categories_to_refine if isinstance(categories_to_refine, list) else [categories_to_refine])] if categories_to_refine else []
-       
-        # Spell checker is initialized dynamically based on detected language. 
-        # TODO: Do the same with NLP pipeline
-        self.spell_checker = None  # Initialized dynamically based on detected language
-        
-        if self.use_nlp_refinement:
-            # TODO: consider using language-specific models instead of multilingual BERT
-            self.tokenizer = AutoTokenizer.from_pretrained(nlp_refinement_model_name)
-            self.model = AutoModelForMaskedLM.from_pretrained(nlp_refinement_model_name)
-            self.nlp_pipeline = pipeline("fill-mask", model=self.model, tokenizer=self.tokenizer)
-
+        self.categories_to_refine = [get_type(cat) for cat in (categories_to_refine if categories_to_refine else [])]
+        self.spell_checker = None  # Dynamically initialized
+        self.nlp_pipeline = self.init_nlp_pipeline(nlp_refinement_model_name)
         super().__init__("text_refinement")
 
-    
+    def init_nlp_pipeline(self, model_name: str):
+        """
+        Initializes the NLP pipeline for text refinement.
+        """
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForMaskedLM.from_pretrained(model_name)
+        return pipeline("fill-mask", model=model, tokenizer=tokenizer)
+
     def detect_and_set_language(self, text: str):
         """
-        Detects the language of the provided text and initializes spell checking resources for that language.
-        Tries to gracefully handle cases where the dictionary for the detected language is not available.
+        Detects the language and initializes resources for spell checking if available.
+        Disables spell checking and logs a warning if the dictionary for the detected language is not found.
         """
         try:
             detected_lang = detect(text)
-            # Map detected language codes to those defined in the Languages enum
-            lang_code = Languages[detected_lang].value if detected_lang in Languages.__members__ else "en"
-        except:
-            lang_code = "en"  # Default to English if detection fails or mapping fails
-
-        try:
-            if self.use_spellcheck_refinement:
-                self.spell_checker = enchant.Dict(lang_code)
+            lang_code = detected_lang[:2]
+            self.spell_checker = enchant.Dict(lang_code)
+        except LangDetectException as e:
+            self.spell_checker = None
         except enchant.errors.DictNotFoundError:
-            print(f"Dictionary for language '{lang_code}' could not be found. Falling back to English.")
-            self.spell_checker = enchant.Dict("en")
-       
+            self.spell_checker = None
+
     def refine_text(self, texts: List[str], word_scores: List[Optional[float]]):
+        """
+        Refines texts using spell checking and NLP-based approaches, returning refined texts and their scores.
+        """
+        refined_texts = []
+        new_scores = []
+        for i, text in enumerate(texts):
+            if not text.strip():  # Skip refinement for empty texts
+                refined_texts.append(text)
+                new_scores.append(word_scores[i])
+                continue
+
+            refined_text, new_score = self.refine_individual_text(text, word_scores[i])
+            refined_texts.append(refined_text)
+            new_scores.append(new_score)
+
+        return refined_texts, new_scores
+
+    def refine_individual_text(self, text: str, score: Optional[float]):
+        """
+        Refines an individual text, handling spell checking and NLP-based refinement.
+        """
+        core_word, prefix, suffix = self.extract_core_word(text)
+        if self.use_spellcheck_refinement and self.spell_checker:
+            core_word = self.refine_with_spellchecker(core_word)
+        if self.use_nlp_refinement and score is not None and score < self.text_refinement_threshold:
+            core_word, score = self.refine_with_nlp(core_word)
+
+        refined_text = prefix + core_word + suffix
+        return refined_text, score
+
+    def extract_core_word(self, text: str):
+        """
+        Extracts the core word from the text, preserving surrounding punctuation.
+        """
+        core_word = ''.join(filter(str.isalnum, text))
+        prefix = text[:text.find(core_word)]
+        suffix = text[text.find(core_word) + len(core_word):]
+        return core_word, prefix, suffix
+
+    def refine_with_spellchecker(self, word: str):
+        """
+        Refines a word using the spell checker, returning the first suggestion if available.
+        """
+        
+        # Check if the word is empty or consists only of whitespace
+        if not word.strip():
+            return word
+            
+        if not self.spell_checker.check(word):
+            suggestions = self.spell_checker.suggest(word)
+            if suggestions:  # Check if the suggestions list is not empty
+                return suggestions[0]
+        return word  # Ensure a string is always returned, even if no correction is needed.
+
+    def refine_with_nlp(self, word: str):
+        """
+        Refines a word using the NLP pipeline, returning the refined word and its score.
+        """
+        masked_text = self.create_masked_text([word], 0)
+        prediction = self.nlp_pipeline(masked_text)[0]
+        return prediction['token_str'], prediction['score']
+
         """
         Refines a list of texts using spell checking and NLP-based approaches.
 

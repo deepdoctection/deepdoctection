@@ -399,7 +399,6 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 use_spellcheck_refinement=cfg.TEXT_REFINEMENT.USE_SPELLCHECKER_REFINEMENT,
                 use_nlp_refinement=cfg.TEXT_REFINEMENT.USE_NLP_REFINEMENT,
                 text_refinement_threshold=cfg.TEXT_REFINEMENT.TEXT_REFINEMENT_THRESHOLD,
-                default_language=cfg.DEFAULT_LANGUAGE,
                 nlp_refinement_model_name=cfg.TEXT_REFINEMENT.NLP_REFINEMENT.MLM_MODEL, # TODO: Add support for custom models
                 categories_to_refine=categories_to_refine) 
             

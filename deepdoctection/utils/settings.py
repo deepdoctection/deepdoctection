@@ -283,6 +283,114 @@ class Languages(ObjectTypes):
     not_defined = "nn"
 
 
+_SPELLCHECK_SUPPORTED_LANGUAGES = {
+    'en': Languages.english, 
+    'en_US': Languages.english,
+    'en': Languages.english,
+    'en_AU': Languages.english,
+    'en_CA': Languages.english,
+    'en_GB': Languages.english,
+    'fr': Languages.french,
+    'fr_FR': Languages.french,
+    'fr_LU': Languages.french,
+    'fr_BE': Languages.french,
+    'fr_MC': Languages.french,
+    'fr_CH': Languages.french,
+    'fr_CA': Languages.french,
+    'de': Languages.german,
+    'de_LU': Languages.german,
+    'de_BE': Languages.german,
+    'de_DE': Languages.german
+
+    # TODO: Add additional mappings after installing spellcheck backend
+}
+
+
+_LANGDETECT_SUPPORTED_LANGUAGES = {
+    'af': Languages.not_defined,
+    'ar': Languages.arabic,
+    'bg': Languages.bulgarian,
+    'bn': Languages.not_defined,
+    'ca': Languages.catalan,
+    'cs': Languages.czech,
+    'cy': Languages.not_defined,
+    'da': Languages.danish,
+    'de': Languages.german,
+    'el': Languages.greek,
+    'en': Languages.english,
+    'es': Languages.spanish,
+    'et': Languages.estonian,
+    'fa': Languages.persian,
+    'fi': Languages.finnish,
+    'fr': Languages.french,
+    'gu': Languages.not_defined,
+    'he': Languages.hebrew,
+    'hi': Languages.hindi,
+    'hr': Languages.croatian,
+    'hu': Languages.hungarian,
+    'id': Languages.indonesian,
+    'it': Languages.italian,
+    'ja': Languages.japanese,
+    'kn': Languages.not_defined,
+    'ko': Languages.korean,
+    'lt': Languages.lithuanian,
+    'lv': Languages.not_defined,
+    'mk': Languages.macedonian,
+    'ml': Languages.malayalam,
+    'mr': Languages.marathi,
+    'ne': Languages.not_defined,
+    'nl': Languages.dutch,
+    'no': Languages.norwegian,
+    'pa': Languages.not_defined,
+    'pl': Languages.polish,
+    'pt': Languages.portuguese,
+    'ro': Languages.romanian,
+    'ru': Languages.russian,
+    'sk': Languages.slovak,
+    'sl': Languages.slovenian,
+    'so': Languages.not_defined,
+    'sq': Languages.albanian,
+    'sv': Languages.swedish,
+    'sw': Languages.not_defined,
+    'ta': Languages.tamil,
+    'te': Languages.telugu,
+    'th': Languages.thai,
+    'tl': Languages.not_defined,
+    'tr': Languages.turkish,
+    'uk': Languages.ukrainian,
+    'ur': Languages.urdu,
+    'vi': Languages.vietnamese,
+    'zh-cn': Languages.chinese,
+    'zh-tw': Languages.chinese
+}
+
+    
+def get_language_enum_from_enchant_code(enchant_code: str) -> Languages:
+    """
+    Given an enchant language code, return the corresponding Languages enum value.
+    
+    Args:
+        enchant_code (str): The enchant language code.
+
+    Returns:
+        Languages: The corresponding enum value.
+    """
+    return _SPELLCHECK_SUPPORTED_LANGUAGES.get(enchant_code, Languages.not_defined)
+
+
+def get_language_enum_from_langdetect_code(langdetect_code: str) -> Languages:
+    """
+    Given an langdetect language code, return the corresponding Languages enum value.
+    
+    Args:
+        langdetect_code (str): The langdetect language code.
+
+    Returns:
+        Languages: The corresponding enum value.
+    """
+    return _LANGDETECT_SUPPORTED_LANGUAGES.get(langdetect_code, Languages.not_defined)
+
+
 @object_types_registry.register("DatasetType")
 class DatasetType(ObjectTypes):
     """Dataset types"""
