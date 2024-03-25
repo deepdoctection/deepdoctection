@@ -20,6 +20,7 @@ Torch related utils
 """
 
 
+from ...utils.error import DependencyError
 from ...utils.file_utils import pytorch_available
 
 
@@ -31,7 +32,7 @@ def set_torch_auto_device() -> "torch.device":  # type: ignore
         from torch import cuda, device  # pylint: disable=C0415
 
         return device("cuda" if cuda.is_available() else "cpu")
-    raise ModuleNotFoundError("Pytorch must be installed")
+    raise DependencyError("Pytorch must be installed")
 
 
 def get_num_gpu() -> int:
@@ -45,4 +46,4 @@ def get_num_gpu() -> int:
         from torch import cuda  # pylint: disable=C0415
 
         return cuda.device_count()
-    raise ModuleNotFoundError("Pytorch must be installed")
+    raise DependencyError("Pytorch must be installed")

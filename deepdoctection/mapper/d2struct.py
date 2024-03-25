@@ -93,7 +93,7 @@ def image_to_d2_frcnn_training(
         annotations.append(mapped_ann)
 
         if add_mask:
-            raise NotImplementedError
+            raise NotImplementedError("Segmentation in deepdoctection is not supported")
 
     output["annotations"] = annotations
 

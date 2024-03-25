@@ -75,7 +75,7 @@ class TestD2FrcnnDetector:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.d2detect.D2FrcnnDetector.set_model", MagicMock(return_value=MagicMock))
+    @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._set_model", MagicMock(return_value=MagicMock))
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._instantiate_d2_predictor", MagicMock())
     def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,ObjectTypes],
                                      np_image: ImageType)-> None:

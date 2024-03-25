@@ -26,6 +26,7 @@ from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.detection_types import ImageType, JsonDict
+from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, WordType, get_type
 from .base import PredictorPipelineComponent
 from .registry import pipeline_component_registry
@@ -89,7 +90,10 @@ class TextExtractionService(PredictorPipelineComponent):
         super().__init__(self._get_name(text_extract_detector.name), text_extract_detector)
         if self.extract_from_category:
             if not isinstance(self.predictor, (ObjectDetector, TextRecognizer)):
-                raise TypeError("Predicting from a cropped image requires to pass an ObjectDetector or TextRecognizer.")
+                raise TypeError(
+                    f"Predicting from a cropped image requires to pass an ObjectDetector or "
+                    f"TextRecognizer. Got {type(self.predictor)}"
+                )
         if run_time_ocr_language_selection:
             assert isinstance(
                 self.predictor, TesseractOcrDetector
@@ -172,13 +176,13 @@ class TextExtractionService(PredictorPipelineComponent):
 
         if isinstance(text_roi, ImageAnnotation):
             if text_roi.image is None:
-                raise ValueError("text_roi.image cannot be None")
+                raise ImageError("text_roi.image cannot be None")
             if text_roi.image.image is None:
-                raise ValueError("text_roi.image.image cannot be None")
+                raise ImageError("text_roi.image.image cannot be None")
             return text_roi.image.image
         if isinstance(self.predictor, ObjectDetector):
             if not isinstance(text_roi, Image):
-                raise ValueError("text_roi must be an image")
+                raise ImageError("text_roi must be an image")
             return text_roi.image
         if isinstance(text_roi, list):
             assert all(roi.image is not None for roi in text_roi)
@@ -202,9 +206,11 @@ class TextExtractionService(PredictorPipelineComponent):
             [
                 (
                     "image_annotations",
-                    self.predictor.possible_categories()
-                    if isinstance(self.predictor, (ObjectDetector, PdfMiner))
-                    else [],
+                    (
+                        self.predictor.possible_categories()
+                        if isinstance(self.predictor, (ObjectDetector, PdfMiner))
+                        else []
+                    ),
                 ),
                 ("sub_categories", sub_cat_dict),
                 ("relationships", {}),
@@ -219,7 +225,7 @@ class TextExtractionService(PredictorPipelineComponent):
     def clone(self) -> "PredictorPipelineComponent":
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
-            raise ValueError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
+            raise ImageError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
         return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
 
     # TODO: Talk to Janis about this - 

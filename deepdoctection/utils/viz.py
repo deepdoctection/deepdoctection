@@ -38,6 +38,7 @@ from numpy import float32, uint8
 
 from .detection_types import ImageType
 from .env_info import auto_select_viz_library
+from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement, opencv_available, pillow_available
 
 if opencv_available():
@@ -352,12 +353,12 @@ class VizPackageHandler:
         if maybe_cv2:
             requirements = get_opencv_requirement()
             if not requirements[1]:
-                raise ImportError(requirements[2])
+                raise DependencyError(requirements[2])
             return maybe_cv2
 
         requirements = get_pillow_requirement()
         if not requirements[1]:
-            raise ImportError(requirements[2])
+            raise DependencyError(requirements[2])
         return "pillow"
 
     def _set_vars(self, package: str) -> None:

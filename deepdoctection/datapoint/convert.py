@@ -32,6 +32,7 @@ from pypdf import PdfReader
 
 from ..utils.detection_types import ImageType
 from ..utils.develop import deprecated
+from ..utils.error import DependencyError
 from ..utils.pdf_utils import pdf_to_np_array
 from ..utils.viz import viz_handler
 
@@ -121,7 +122,8 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     """
     from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415, E0401
 
-    assert which("pdftoppm") is not None, "convert_pdf_bytes_to_np_array requires poppler to be installed"
+    if which("pdftoppm") is None:
+        raise DependencyError("convert_pdf_bytes_to_np_array requires poppler to be installed")
 
     with BytesIO(pdf_bytes) as pdf_file:
         pdf = PdfReader(pdf_file).pages[0]

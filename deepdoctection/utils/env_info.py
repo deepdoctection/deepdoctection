@@ -53,7 +53,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
 
 import numpy as np
 from tabulate import tabulate
@@ -420,7 +420,7 @@ def collect_env_info() -> str:
     try:
         import prctl  # type: ignore
 
-        _ = prctl.set_pdeathsig  # noqa
+        _ = prctl.set_pdeathsig  # pylint: disable=E1101
     except ModuleNotFoundError:
         has_prctl = False
     data.append(("python-prctl", str(has_prctl)))
@@ -478,6 +478,9 @@ def auto_select_lib_and_device() -> None:
         logger.warning(
             LoggingRecord("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
         )
+        os.environ["USE_TENSORFLOW"] = "False"
+        os.environ["USE_PYTORCH"] = "False"
+        os.environ["USE_CUDA"] = "False"
     if pytorch_available():
         import torch
 
@@ -505,7 +508,7 @@ def auto_select_lib_and_device() -> None:
     )
 
 
-def get_device(ignore_cpu: bool = True) -> str:
+def get_device(ignore_cpu: bool = True) -> Literal["cuda", "mps", "cpu"]:
     """
     Device checks for running PyTorch with CUDA, MPS or optionall CPU.
     If nothing can be found and if `disable_cpu` is deactivated it will raise a `ValueError`
@@ -520,7 +523,7 @@ def get_device(ignore_cpu: bool = True) -> str:
         return "mps"
     if not ignore_cpu:
         return "cpu"
-    raise ValueError("Could not find either GPU nor MPS")
+    raise RuntimeWarning("Could not find either GPU nor MPS")
 
 
 def auto_select_viz_library() -> None:

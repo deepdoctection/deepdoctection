@@ -19,7 +19,7 @@
 Testing module extern.doctrocr
 """
 
-
+import os
 from typing import List, Tuple
 from unittest.mock import MagicMock, patch
 
@@ -90,6 +90,7 @@ class TestDoctrTextlineDetector:
         path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
             "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip"
         )
+        os.environ["USE_TENSORFLOW"] = "True"
         categories = ModelCatalog.get_profile("doctr/db_resnet50/tf/db_resnet50-adcafc63.zip").categories
         doctr = DoctrTextlineDetector("db_resnet50", path_weights, categories, "cpu")  # type: ignore
 
@@ -137,6 +138,7 @@ class TestDoctrTextRecognizer:
         path_weights = ModelDownloadManager.maybe_download_weights_and_configs(
             "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip"
         )
+        os.environ["USE_TENSORFLOW"] = "True"
         doctr = DoctrTextRecognizer("crnn_vgg16_bn", path_weights, "cpu")
 
         # Act

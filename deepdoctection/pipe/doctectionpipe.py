@@ -82,7 +82,6 @@ def _proto_process(
     else:
         path_tmp = path
     logger.info(LoggingRecord(f"Processing {file_name}", {"path": path_tmp, "df": path_tmp, "file_name": file_name}))
-    # logger.info("Processing %s", file_name, {"path": path_tmp, "df": path_tmp, "file_name": file_name})
     return dp
 
 

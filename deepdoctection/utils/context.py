@@ -61,7 +61,7 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
             proc.terminate()
             proc.kill()
             proc.returncode = -1
-            raise RuntimeError("Tesseract process timeout")  # pylint: disable=W0707
+            raise RuntimeError(f"timeout for process id: {proc.pid}")  # pylint: disable=W0707
     finally:
         if proc.stdin is not None:
             proc.stdin.close()

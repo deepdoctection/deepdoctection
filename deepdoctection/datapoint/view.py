@@ -26,6 +26,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Typ
 import numpy as np
 
 from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
     CellType,
@@ -96,7 +97,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
                 interactive_imshow(np_image)
                 return None
             return np_image
-        raise ValueError(f"base_page.image is None for {self.annotation_id}")
+        raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
     def __getattr__(self, item: str) -> Optional[Union[str, int, List[str]]]:
         """
@@ -115,7 +116,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         :return: value according to the logic described above
         """
         if item not in self.get_attribute_names():
-            raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
+            raise AnnotationError(f"Attribute {item} is not supported for {type(self)}")
         if item in self.sub_categories:
             sub_cat = self.get_sub_category(get_type(item))
             if item != sub_cat.category_name:
@@ -326,7 +327,7 @@ class Table(Layout):
     def text(self) -> str:
         try:
             return str(self)
-        except TypeError:
+        except (TypeError, AnnotationError):
             return super().text
 
     @property
@@ -368,7 +369,7 @@ class Table(Layout):
             for cell in cells:
                 all_words.extend(cell.get_ordered_words())  # type: ignore
             return all_words
-        except TypeError:
+        except (TypeError, AnnotationError):
             return super().get_ordered_words()
 
 
@@ -485,7 +486,7 @@ class Page(Image):
 
     def __getattr__(self, item: str) -> Any:
         if item not in self.get_attribute_names():
-            raise AttributeError(f"Attribute {item} is not supported for {type(self)}")
+            raise ImageError(f"Attribute {item} is not supported for {type(self)}")
         if self.summary is not None:
             if item in self.summary.sub_categories:
                 sub_cat = self.summary.get_sub_category(get_type(item))
@@ -629,10 +630,10 @@ class Page(Image):
         """
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
         if ann.category_name not in self.floating_text_block_categories:
-            raise ValueError(
-                f"Annotation {annotation_id} with category_name {ann.category_name} is not a floating text "
-                f"block category. Cannot get context. Make sure to make this category a floating text "
-                f"block"
+            raise ImageError(
+                f"Cannot get context. Make sure to parametrize this category to a floating text: "
+                f"annotation_id: {annotation_id},"
+                f"category_name: {ann.category_name}"
             )
         block_with_order = self._order("layouts")
         position = block_with_order.index(ann)

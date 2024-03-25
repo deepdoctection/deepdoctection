@@ -18,12 +18,14 @@
 """
 Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
 """
-
+import os
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple
 from zipfile import ZipFile
 
 from ..utils.detection_types import ImageType, Requirement
+from ..utils.env_info import get_device
+from ..utils.error import DependencyError
 from ..utils.file_utils import (
     doctr_available,
     get_doctr_requirement,
@@ -64,7 +66,7 @@ def _set_device_str(device: Optional[str] = None) -> str:
     return device
 
 
-def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: str) -> None:
+def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
     if lib == "PT" and pytorch_available():
         state_dict = torch.load(path_weights, map_location=device)
         for key in list(state_dict.keys()):
@@ -132,7 +134,17 @@ def doctr_predict_text(
     return detection_results
 
 
-class DoctrTextlineDetector(ObjectDetector):
+class DoctrTextlineDetectorMixin(ObjectDetector):
+    """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
+
+    def __init__(self, categories: Mapping[str, TypeOrStr]):
+        self.categories = categories  # type: ignore
+
+    def possible_categories(self) -> List[ObjectTypes]:
+        return [LayoutType.word]
+
+
+class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
     """
     A deepdoctection wrapper of DocTr text line detector. We model text line detection as ObjectDetector
     and assume to use this detector in a ImageLayoutService.
@@ -165,8 +177,6 @@ class DoctrTextlineDetector(ObjectDetector):
 
                  for dp in df:
                      ...
-
-
     """
 
     def __init__(
@@ -175,20 +185,36 @@ class DoctrTextlineDetector(ObjectDetector):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
-        lib: str = "TF",
+        lib: Optional[Literal["PT", "TF"]] = None,
     ) -> None:
+        """
+        :param architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
+        "db_mobilenet_v3_large". The full list can be found here:
+        https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20
+        :param path_weights: Path to the weights of the model
+        :param categories: A dict with the model output label and value
+        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
+        """
+        super().__init__(categories)
+        if lib is None:
+            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
         self.lib = lib
         self.name = "doctr_text_detector"
         self.architecture = architecture
         self.path_weights = path_weights
-        self.doctr_predictor = detection_predictor(
-            arch=self.architecture, pretrained=False, pretrained_backbone=False
-        )  # we will be loading the model
-        # later because there is no easy way in doctr to load a model by giving only a path to its weights
-        self.categories = categories  # type: ignore
+
+        if device is None:
+            if tf_available():
+                device = "cuda" if tf.test.is_gpu_available() else "cpu"
+            if pytorch_available():
+                auto_device = get_device(False)
+                device = "cpu" if auto_device == "mps" else auto_device
         self.device_input = device
         self.device = _set_device_str(device)
-        self.load_model()
+        self.doctr_predictor = self.get_wrapped_model(
+            self.architecture, self.path_weights, self.device_input, self.lib  # type: ignore
+        )
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -211,12 +237,34 @@ class DoctrTextlineDetector(ObjectDetector):
     def clone(self) -> PredictorBase:
         return self.__class__(self.architecture, self.path_weights, self.categories, self.device_input, self.lib)
 
-    def possible_categories(self) -> List[ObjectTypes]:
-        return [LayoutType.word]
-
-    def load_model(self) -> None:
+    @staticmethod
+    def load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
         """Loading model weights"""
-        _load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
+        _load_model(path_weights, doctr_predictor, device, lib)
+
+    @staticmethod
+    def get_wrapped_model(
+        architecture: str, path_weights: str, device: Literal["cpu", "cuda"], lib: Literal["PT", "TF"]
+    ) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
+        "db_mobilenet_v3_large". The full list can be found here:
+        https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20
+        :param path_weights: Path to the weights of the model
+        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used. Make sure,
+                    these variables are set. If not, use
+
+                        deepdoctection.utils.env_info.auto_select_lib_and_device
+
+        :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
+        """
+        doctr_predictor = detection_predictor(arch=architecture, pretrained=False, pretrained_backbone=False)
+        device_str = _set_device_str(device)
+        DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device_str, lib)
+        return doctr_predictor
 
 
 class DoctrTextRecognizer(TextRecognizer):
@@ -261,7 +309,7 @@ class DoctrTextRecognizer(TextRecognizer):
         architecture: str,
         path_weights: str,
         device: Optional[Literal["cpu", "cuda"]] = None,
-        lib: str = "TF",
+        lib: Optional[Literal["PT", "TF"]] = None,
         path_config_json: Optional[str] = None,
     ) -> None:
         """
@@ -270,19 +318,33 @@ class DoctrTextRecognizer(TextRecognizer):
         https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16.
         :param path_weights: Path to the weights of the model
         :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-        :param lib: "TF" or "PT". Will default to "TF".
+        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
         :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
         a model trained on custom vocab.
         """
+        if lib is None:
+            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
         self.lib = lib
         self.name = "doctr_text_recognizer"
         self.architecture = architecture
         self.path_weights = path_weights
-        self.device_input = device
+
+        if device is None:
+            if tf_available():
+                device = "cuda" if tf.test.is_gpu_available() else "cpu"
+            if pytorch_available():
+                auto_device = get_device(False)
+                device = "cpu" if auto_device == "mps" else auto_device
+            else:
+                raise DependencyError("Tensorflow or PyTorch must be installed")
+        self.device_input: Literal["cpu", "cuda"] = device
         self.device = _set_device_str(device)
         self.path_config_json = path_config_json
-        self.doctr_predictor = self.build_model()
-        self.load_model()
+        self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
+        self.load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
+        self.doctr_predictor = self.get_wrapped_model(
+            self.architecture, self.path_weights, self.device_input, self.lib, self.path_config_json
+        )
 
     def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
         """
@@ -306,19 +368,21 @@ class DoctrTextRecognizer(TextRecognizer):
     def clone(self) -> PredictorBase:
         return self.__class__(self.architecture, self.path_weights, self.device_input, self.lib)
 
-    def load_model(self) -> None:
+    @staticmethod
+    def load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
         """Loading model weights"""
-        _load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
+        _load_model(path_weights, doctr_predictor, device, lib)
 
-    def build_model(self) -> "RecognitionPredictor":
+    @staticmethod
+    def build_model(architecture: str, path_config_json: Optional[str] = None) -> "RecognitionPredictor":
         """Building the model"""
 
         # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py
         custom_configs = {}
         batch_size = 32
         recognition_configs = {}
-        if self.path_config_json:
-            custom_configs = load_json(self.path_config_json)
+        if path_config_json:
+            custom_configs = load_json(path_config_json)
             custom_configs.pop("arch", None)
             custom_configs.pop("url", None)
             custom_configs.pop("task", None)
@@ -327,18 +391,44 @@ class DoctrTextRecognizer(TextRecognizer):
             batch_size = custom_configs.pop("batch_size")
         recognition_configs["batch_size"] = batch_size
 
-        if isinstance(self.architecture, str):
-            if self.architecture not in ARCHS:
-                raise ValueError(f"unknown architecture '{self.architecture}'")
+        if isinstance(architecture, str):
+            if architecture not in ARCHS:
+                raise ValueError(f"unknown architecture '{architecture}'")
 
-            model = recognition.__dict__[self.architecture](pretrained=True, pretrained_backbone=True, **custom_configs)
+            model = recognition.__dict__[architecture](pretrained=True, pretrained_backbone=True, **custom_configs)
         else:
             if not isinstance(
-                self.architecture,
+                architecture,
                 (recognition.CRNN, recognition.SAR, recognition.MASTER, recognition.ViTSTR, recognition.PARSeq),
             ):
-                raise ValueError(f"unknown architecture: {type(self.architecture)}")
-            model = self.architecture
+                raise ValueError(f"unknown architecture: {type(architecture)}")
+            model = architecture
 
         input_shape = model.cfg["input_shape"][:2] if tf_available() else model.cfg["input_shape"][-2:]
         return RecognitionPredictor(PreProcessor(input_shape, preserve_aspect_ratio=True, **recognition_configs), model)
+
+    @staticmethod
+    def get_wrapped_model(
+        architecture: str,
+        path_weights: str,
+        device: Literal["cpu", "cuda"],
+        lib: Literal["PT", "TF"],
+        path_config_json: Optional[str] = None,
+    ) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
+        "crnn_mobilenet_v3_small". The full list can be found here:
+        https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16.
+        :param path_weights: Path to the weights of the model
+        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
+        :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
+        a model trained on custom vocab.
+        :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
+        """
+        doctr_predictor = DoctrTextRecognizer.build_model(architecture, path_config_json)
+        device_str = _set_device_str(device)
+        DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device_str, lib)
+        return doctr_predictor

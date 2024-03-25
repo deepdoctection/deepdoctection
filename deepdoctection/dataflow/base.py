@@ -17,25 +17,6 @@ from typing import Any, Iterator, no_type_check
 from ..utils.utils import get_rng
 
 
-class DataFlowTerminated(BaseException):
-    """
-    An exception indicating that the DataFlow is unable to produce any more
-    data, i.e. something wrong happened so that calling `__iter__`
-    cannot give a valid iterator anymore.
-    In most DataFlow this will never be raised.
-    """
-
-
-class DataFlowResetStateNotCalled(BaseException):
-    """
-    An exception indicating that `reset_state()` has not been called before starting
-    iteration.
-    """
-
-    def __init__(self) -> None:
-        super().__init__("Iterating a dataflow requires .reset_state() to be called first")
-
-
 class DataFlowReentrantGuard:
     """
     A tool to enforce non-reentrancy.

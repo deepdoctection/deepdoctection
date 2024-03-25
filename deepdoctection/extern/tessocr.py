@@ -30,7 +30,8 @@ import numpy as np
 
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import _TESS_PATH, TesseractNotFound, get_tesseract_requirement
+from ..utils.error import DependencyError, TesseractError
+from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
@@ -55,18 +56,6 @@ _LANG_CODE_TO_TESS_LANG_CODE = {
     "alb": "nor",
     "nn": "eng",
 }
-
-
-class TesseractError(RuntimeError):
-    """
-    Tesseract Error
-    """
-
-    def __init__(self, status: int, message: str) -> None:
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.args = (status, message)
 
 
 def _subprocess_args() -> Dict[str, Any]:
@@ -109,7 +98,7 @@ def _run_tesseract(tesseract_args: List[str]) -> None:
     except OSError as error:
         if error.errno != ENOENT:
             raise error from error
-        raise TesseractNotFound("Tesseract not found. Please install or add to your PATH.") from error
+        raise DependencyError("Tesseract not found. Please install or add to your PATH.") from error
 
     with timeout_manager(proc, 0) as error_string:
         if proc.returncode:
@@ -316,13 +305,13 @@ class TesseractOcrDetector(ObjectDetector):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = predict_text(
+
+        return predict_text(
             np_img,
             supported_languages=self.config.LANGUAGES,
             text_lines=self.config.LINES,
             config=config_to_cli_str(self.config, "LANGUAGES", "LINES"),
         )
-        return detection_results
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:

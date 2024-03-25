@@ -18,6 +18,7 @@ from tensorpack.dataflow.imgaug import AugmentorList, ImageAugmentor
 
 from ....datapoint.convert import box_to_point4, point4_to_box
 from ....utils.detection_types import ImageType, JsonDict
+from ....utils.error import MalformedData
 from ....utils.logger import log_once
 from .common import filter_boxes_inside_shape, np_iou
 from .modeling.model_fpn import get_all_anchors_fpn
@@ -25,12 +26,6 @@ from .utils.np_box_ops import area as np_area
 from .utils.np_box_ops import ioa as np_ioa
 
 # pylint: enable=import-error
-
-
-class MalformedData(BaseException):
-    """
-    Exception class for malformed data
-    """
 
 
 def augment(dp: JsonDict, imgaug_list: List[ImageAugmentor], add_mask: bool) -> JsonDict:
@@ -62,7 +57,7 @@ def augment(dp: JsonDict, imgaug_list: List[ImageAugmentor], add_mask: bool) -> 
         assert np.min(np_area(gt_boxes)) > 0, "some boxes have zero area"
 
     if add_mask:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     return dp
 
