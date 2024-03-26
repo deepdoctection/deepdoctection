@@ -29,6 +29,8 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 from packaging.version import InvalidVersion, Version, parse
 
+import numpy as np
+
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.error import DependencyError, TesseractError
@@ -254,6 +256,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
     :return: A list of tesseract extractions wrapped in DetectionResult
     """
 
+    np_img = np_img.astype(np.uint8)
     results = image_to_dict(np_img, supported_languages, config)
     all_results = []
 
