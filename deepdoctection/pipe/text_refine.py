@@ -80,9 +80,9 @@ class TextRefinementService(PipelineComponent):
         """
         Initializes the NLP pipeline for text refinement.
         """
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForMaskedLM.from_pretrained(model_name)
-        return pipeline("fill-mask", model=model, tokenizer=tokenizer)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForMaskedLM.from_pretrained(model_name)
+        return pipeline("fill-mask", model=self.model, tokenizer=self.tokenizer)
 
     def detect_and_set_language(self, text: str):
         """
@@ -249,17 +249,14 @@ class TextRefinementService(PipelineComponent):
         Parameters:
         - dp (Image): The image datapoint containing text annotations to refine.
         """
-        print("DEBUG: Entering serve method.")  # Debug 1
         for annotation in dp.get_annotation():
             if annotation.category_name in [cat.value for cat in self.categories_to_refine]:
                 child_ids = annotation.relationships.get("child", [])
-                print(f"DEBUG: Found child IDs: {child_ids}")  # Debug to check child IDs
                 children = [(self.get_child(dp, child_id).value, self.get_child(dp, child_id).score) for child_id in child_ids]
                 if children:
                     children_texts, children_scores = zip(*children)
                     self.detect_and_set_language(" ".join(children_texts))
                     refined_texts, new_scores = self.refine_text(children_texts, children_scores)
-                    print(f"DEBUG: About to update child annotations. Child IDs: {child_ids}, Refined Texts: {refined_texts}, New Scores: {new_scores}")  # Debug 2
                     self.update_child_annotations(dp, child_ids, refined_texts, new_scores)
 
 

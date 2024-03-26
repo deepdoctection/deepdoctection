@@ -66,8 +66,8 @@ OCR:
       PT: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
 TEXT_REFINEMENT:
   USE_SPELLCHECKER_REFINEMENT: True
-  USE_NLP_REFINEMENT: True
-  TEXT_REFINEMENT_THRESHOLD: 0.2
+  USE_NLP_REFINEMENT: False
+  TEXT_REFINEMENT_THRESHOLD: 0.9
   NLP_REFINEMENT:
     MLM_MODEL: bert-base-multilingual-cased # TODO: Download weights locally
 
