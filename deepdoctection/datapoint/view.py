@@ -43,6 +43,7 @@ from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
 from .image import Image
+import PyPDF2
 
 
 class ImageAnnotationBaseView(ImageAnnotation):
@@ -898,3 +899,85 @@ class Page(Image):
             for word in all_words
             if word.token_tag not in (TokenClasses.other, None)
         ]
+
+
+class Document:
+    """
+    Represents a higher-level concept of a document, potentially encompassing multiple pages.
+    This class encapsulates document-wide data and metadata, including multipage entities
+    and XFA information.
+    """
+    def __init__(self, pages: List[Page], 
+                 metadata: Dict[str, Any] = None, 
+                 dynamic_forms: Optional[Any] = None,
+                 ):
+        self.pages = pages
+        self.metadata = metadata if metadata is not None else {}
+        self.dynamic_forms = dynamic_forms
+        self.decision_funcs = self.define_multipage_entity_decision_functions()
+
+    
+    def define_multipage_entity_decision_functions(self, cfg)
+    
+    
+    def get_multipage_entities(self) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Identifies and returns multipage entities like tables or paragraphs that span across multiple pages.
+        """
+        tables = []
+        paragraphs = []
+
+        # Implement logic to detect multipage tables and paragraphs
+        for i, page in enumerate(self.pages):
+            tables.extend(self._detect_multipage_tables(page))
+            paragraphs.extend(self._detect_multipage_paragraphs(page))
+
+        # self.multipage_entities.tables = tables
+        # self.multipage_entities.paragraphs = paragraphs
+        return {
+            "tables": tables,
+            "paragraphs": paragraphs
+        }
+
+    def _detect_multipage_tables(self, page: Page) -> List[Dict[str, Any]]:
+        """
+        Detects tables that span across multiple pages.
+        """
+        # Placeholder for table detection logic
+        return []
+
+    def _detect_multipage_paragraphs(self, page: Page) -> List[Dict[str, Any]]:
+        """
+        Detects paragraphs that span across multiple pages.
+        """
+        # Placeholder for paragraph detection logic
+        return []
+
+    
+    def read_pdf_bytes(self, pdf_file_path):
+        """
+        Reads a PDF file and returns its content as bytes.
+
+        Args:
+            pdf_file_path (str): The path to the PDF file to be read.
+
+        Returns:
+            bytes: The bytes content of the PDF file.
+        """
+        try:
+            with open(pdf_file_path, "rb") as file:
+                pdf_reader = PyPDF2.PdfReader(file)
+                pdf_bytes = file.read()  # Read the entire PDF file as bytes
+                return pdf_bytes
+        except FileNotFoundError:
+            print(f"The file {pdf_file_path} was not found.")
+            return None
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+        
+    @staticmethod
+    def from_pages(pages: List[Page]) -> "Document":
+        return Document(pages)
+
+    # Additional methods as needed
