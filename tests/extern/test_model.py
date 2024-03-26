@@ -64,6 +64,12 @@ class TestModelCatalog:
         # Assert
         assert profile == self.profile
 
+
+class TestModelCatalogNoSetupRequired:
+    """
+    Test ModelCatalog test cases that require not setup methods
+    """
+
     @staticmethod
     @mark.basic
     def test_model_catalog_raises_error_if_model_not_found() -> None:

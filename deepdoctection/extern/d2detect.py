@@ -204,6 +204,11 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
         """
         return InferenceResize(min_size_test, max_size_test)
 
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"detectron2_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
 
 class D2FrcnnDetector(D2FrcnnDetectorMixin):
     """
@@ -255,7 +260,6 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
                                   be filtered. Pass a list of category names that must not be returned
         """
         super().__init__(categories, filter_categories)
-        self.name = "_".join(Path(path_weights).parts[-3:])
 
         self.path_weights = path_weights
         self.path_yaml = path_yaml
@@ -269,6 +273,10 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
         d2_conf_list = self._get_d2_config_list(path_weights, config_overwrite)
         self.cfg = self._set_config(path_yaml, d2_conf_list, device)
+
+        self.name = self.get_name(path_weights, self.cfg.MODEL.META_ARCHITECTURE)
+        self.model_id = self.get_model_id()
+
         self.d2_predictor = self._set_model(self.cfg)
         self._instantiate_d2_predictor(self.d2_predictor, path_weights)
         self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
@@ -423,13 +431,15 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         """
 
         super().__init__(categories, filter_categories)
-        self.name = "_".join(Path(path_weights).parts[-2:])
 
         self.path_weights = path_weights
         self.path_yaml = path_yaml
 
         self.config_overwrite = copy(config_overwrite)
         self.cfg = self._set_config(self.path_yaml, self.path_weights, self.config_overwrite)
+
+        self.name = self.get_name(path_weights, self.cfg.MODEL.META_ARCHITECTURE)
+        self.model_id = self.get_model_id()
 
         self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
         self.d2_predictor = self.get_wrapped_model(self.path_weights)

@@ -92,7 +92,7 @@ _DEPS = [
     "python-dotenv==1.0.0",
     "click",  # version will not break black
     "black==23.7.0",
-    "isort",
+    "isort==5.13.2",
     "pylint==2.17.4",
     "mypy==1.4.1",
     # docs
@@ -101,7 +101,7 @@ _DEPS = [
     "mkdocstrings-python",
     "griffe==0.25.0",
     # test
-    "pytest",
+    "pytest==8.0.2",
     "pytest-cov",
     "wandb",
 ]

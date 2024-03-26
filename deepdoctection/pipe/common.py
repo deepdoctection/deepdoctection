@@ -93,8 +93,8 @@ class MatchingService(PipelineComponent):
 
     def __init__(
         self,
-        parent_categories: Union[TypeOrStr, List[TypeOrStr]],
-        child_categories: Union[TypeOrStr, List[TypeOrStr]],
+        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
         matching_rule: Literal["iou", "ioa"],
         threshold: float,
         use_weighted_intersections: bool = False,
@@ -112,8 +112,16 @@ class MatchingService(PipelineComponent):
                                            value calibrate the ioa.
         :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
-        self.parent_categories = parent_categories
-        self.child_categories = child_categories
+        self.parent_categories = (
+            [get_type(parent_categories)]  # type: ignore
+            if not isinstance(parent_categories, (list, set))
+            else [get_type(parent_category) for parent_category in parent_categories]
+        )
+        self.child_categories = (
+            [get_type(child_categories)]  # type: ignore
+            if not isinstance(child_categories, (list, set))
+            else [get_type(child_category) for child_category in child_categories]
+        )
         assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
         self.matching_rule = matching_rule
         self.threshold = threshold

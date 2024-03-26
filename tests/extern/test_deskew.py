@@ -18,6 +18,8 @@
 """
 Testing module extern.deskew
 """
+import os
+from ast import literal_eval
 
 from numpy.testing import assert_array_equal
 from pytest import mark
@@ -34,14 +36,18 @@ class TestJdeskewer:
 
     @staticmethod
     @mark.additional
-    def test_deskewer_transforms_image() -> None:
+    def test_deskewer_predicts_angle_and_transforms_image() -> None:
         """
         Detector deskews image and rotates it accordingly
         """
 
         # Arrange
         test_path_input_image = get_test_path() / "skewed_input.png"
-        test_path_gt_image = get_test_path() / "skewed_gt.png"
+
+        if literal_eval(os.environ["USE_DD_OPENCV"]):
+            test_path_gt_image = get_test_path() / "skewed_gt_opencv.png"
+        else:
+            test_path_gt_image = get_test_path() / "skewed_gt_pil.png"
 
         image = load_image_from_file(test_path_input_image)
         image_gt = load_image_from_file(test_path_gt_image)
@@ -50,8 +56,12 @@ class TestJdeskewer:
 
         # Act
         assert image is not None
-        output_image = deskewer.transform(image)
+        detect_result = deskewer.predict(image)
 
         # Assert
+        assert detect_result.angle == 4.5326
+
+        # Act
+        output_image = deskewer.transform(image, detect_result)
         assert image_gt is not None
         assert_array_equal(image_gt, output_image)

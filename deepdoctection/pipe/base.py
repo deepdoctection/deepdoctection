@@ -23,12 +23,14 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Set, Union
+from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.context import timed_operation
 from ..utils.detection_types import JsonDict
+from ..utils.identifier import get_uuid_from_str
 from .anngen import DatapointManager
 
 
@@ -58,8 +60,9 @@ class PipelineComponent(ABC):
                      pipeline. Use something that describe the task of the pipeline.
         """
         self.name = name
+        self.service_id = self.get_service_id()
         self._meta_has_all_types()
-        self.dp_manager = DatapointManager()
+        self.dp_manager = DatapointManager(self.service_id)
         self.timer_on = False
 
     @abstractmethod
@@ -133,6 +136,12 @@ class PipelineComponent(ABC):
                 f"Got {self.get_meta_annotation().keys()}"
             )
 
+    def get_service_id(self) -> str:
+        """
+        Get the generating model
+        """
+        return get_uuid_from_str(self.name)[:8]
+
 
 class PredictorPipelineComponent(PipelineComponent, ABC):
     """
@@ -151,6 +160,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         """
         self.predictor = predictor
         super().__init__(name)
+        self.dp_manager = DatapointManager(self.service_id, self.predictor.model_id)
 
     @abstractmethod
     def clone(self) -> "PredictorPipelineComponent":
@@ -175,8 +185,8 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         """
 
         self.tokenizer = tokenizer
-        self.mapping_to_lm_input_func = mapping_to_lm_input_func
         super().__init__(name)
+        self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
     @abstractmethod
     def clone(self) -> "LanguageModelPipelineComponent":
@@ -228,7 +238,7 @@ class Pipeline(ABC):
 
             layout = LayoutPipeComponent(layout_detector ...)
             text = TextExtractPipeComponent(text_detector ...)
-            simple_pipe = MyPipeline (pipeline_component = [layout, text])
+            simple_pipe = MyPipeline(pipeline_component = [layout, text])
             doc_dataflow = simple_pipe.analyze(input = path / to / dir)
 
             for page in doc_dataflow:
@@ -238,6 +248,18 @@ class Pipeline(ABC):
     model or already processed further).
 
     In addition to `analyze`, the internal `_entry` is used to bundle preprocessing steps.
+
+    It is possible to set a session id for the pipeline. This is useful for logging purposes. The session id can be
+    either passed to the pipeline via the `analyze` method or generated automatically.
+
+    To generate a session_id automatically:
+
+    **Example:**
+
+           pipe = MyPipeline(pipeline_component = [layout, text])
+           pipe.set_session_id = True
+
+           df = pipe.analyze(input = "path/to/dir") # session_id is generated automatically
     """
 
     def __init__(self, pipeline_component_list: List[PipelineComponent]) -> None:
@@ -245,6 +267,7 @@ class Pipeline(ABC):
         :param pipeline_component_list: A list of pipeline components.
         """
         self.pipe_component_list = pipeline_component_list
+        self.set_session_id = False
 
     @abstractmethod
     def _entry(self, **kwargs: Any) -> DataFlow:
@@ -256,12 +279,15 @@ class Pipeline(ABC):
         """
         raise NotImplementedError()
 
-    def _build_pipe(self, df: DataFlow) -> DataFlow:
+    def _build_pipe(self, df: DataFlow, session_id: Optional[str] = None) -> DataFlow:
         """
         Composition of the backbone
         """
+        if session_id is None and self.set_session_id:
+            session_id = self.get_session_id()
         for component in self.pipe_component_list:
             component.timer_on = True
+            component.dp_manager.session_id = session_id
             df = component.predict_dataflow(df)
         return df
 
@@ -301,22 +327,30 @@ class Pipeline(ABC):
             for key, value in meta_anns["relationships"].items():
                 pipeline_populations["relationships"][key].update(value)
             pipeline_populations["summaries"].extend(meta_anns["summaries"])  # type: ignore
-
+        pipeline_populations["sub_categories"] = dict(pipeline_populations["sub_categories"])  # type: ignore
+        pipeline_populations["relationships"] = dict(pipeline_populations["relationships"])  # type: ignore
         return pipeline_populations
 
     def get_pipeline_info(
-        self, position: Optional[int] = None, name: Optional[str] = None
-    ) -> Union[Mapping[int, str], str, int]:
+        self, service_id: Optional[str] = None, name: Optional[str] = None
+    ) -> Union[str, Mapping[str, str]]:
         """Get pipeline information: Returns a dictionary with a description of each pipeline component
-        :param position: position of the pipeline component in the pipeline
+        :param service_id: service_id of the pipeline component to search for
         :param name: name of the pipeline component to search for
         :return: Either a full dictionary with position and name of all pipeline components or the name, if the position
                  has been passed or the position if the name has been passed.
         """
-        comp_info = {key: comp.name for key, comp in enumerate(self.pipe_component_list)}
+        comp_info = {comp.service_id: comp.name for comp in self.pipe_component_list}
         comp_info_name_as_key = {value: key for key, value in comp_info.items()}
-        if position is not None:
-            return comp_info[position]
+        if service_id is not None:
+            return comp_info[service_id]
         if name is not None:
             return comp_info_name_as_key[name]
         return comp_info
+
+    @staticmethod
+    def get_session_id() -> str:
+        """
+        Get the generating a session id
+        """
+        return str(uuid1())[:8]

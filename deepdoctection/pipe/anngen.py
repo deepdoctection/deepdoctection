@@ -42,11 +42,14 @@ class DatapointManager:
     The manager is part of each `PipelineComponent`.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, service_id: str, model_id: Optional[str] = None) -> None:
         self._datapoint: Optional[Image] = None
         self._cache_anns: Dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
         self.category_id_mapping: Optional[Mapping[int, int]] = None
+        self.service_id = service_id
+        self.model_id = model_id
+        self.session_id: Optional[str] = None
 
     @property
     def datapoint(self) -> Image:
@@ -55,7 +58,7 @@ class DatapointManager:
         """
         if self._datapoint is not None:
             return self._datapoint
-        raise ValueError("no datapoint passed")
+        raise ValueError("No datapoint passed")
 
     @datapoint.setter
     def datapoint(self, dp: Image) -> None:
@@ -154,6 +157,9 @@ class DatapointManager:
                 bounding_box=box,
                 category_id=str(detect_result.class_id),
                 score=detect_result.score,
+                service_id=self.service_id,
+                model_id=self.model_id,
+                session_id=self.session_id,
             )
             if to_annotation_id is not None:
                 parent_ann = self._cache_anns[to_annotation_id]
@@ -208,7 +214,14 @@ class DatapointManager:
                 "annotation_id": annotation_id,
             },
         ) as annotation_context:
-            cat_ann = CategoryAnnotation(category_name=category_name, category_id=str(category_id), score=score)
+            cat_ann = CategoryAnnotation(
+                category_name=category_name,
+                category_id=str(category_id),
+                score=score,
+                service_id=self.service_id,
+                model_id=self.model_id,
+                session_id=self.session_id,
+            )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cat_ann)
         if annotation_context.context_error:
             return None
@@ -246,7 +259,13 @@ class DatapointManager:
             },
         ) as annotation_context:
             cont_ann = ContainerAnnotation(
-                category_name=category_name, category_id=str(category_id), value=value, score=score
+                category_name=category_name,
+                category_id=str(category_id),
+                value=value,
+                score=score,
+                service_id=self.service_id,
+                model_id=self.model_id,
+                session_id=self.session_id,
             )
             self._cache_anns[annotation_id].dump_sub_category(sub_cat_key, cont_ann)
         if annotation_context.context_error:
@@ -257,7 +276,7 @@ class DatapointManager:
         self,
         summary_key: ObjectTypes,
         summary_name: ObjectTypes,
-        summary_number: int,
+        summary_number: Optional[int] = None,
         summary_value: Optional[str] = None,
         summary_score: Optional[float] = None,
         annotation_id: Optional[str] = None,
@@ -294,16 +313,24 @@ class DatapointManager:
                 "annotation_id": annotation_id,
             },
         ) as annotation_context:
-            if summary_value:
+            if summary_value is not None:
                 ann = ContainerAnnotation(
                     category_name=summary_name,
-                    category_id=str(summary_number),
+                    category_id=str(summary_number) if summary_number is not None else "",
                     value=summary_value,
                     score=summary_score,
+                    service_id=self.service_id,
+                    model_id=self.model_id,
+                    session_id=self.session_id,
                 )
             else:
                 ann = CategoryAnnotation(
-                    category_name=summary_name, category_id=str(summary_number), score=summary_score
+                    category_name=summary_name,
+                    category_id=str(summary_number) if summary_number is not None else "",
+                    score=summary_score,
+                    service_id=self.service_id,
+                    model_id=self.model_id,
+                    session_id=self.session_id,
                 )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 

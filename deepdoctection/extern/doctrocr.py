@@ -19,6 +19,7 @@
 Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
 """
 import os
+from abc import ABC
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple
 from zipfile import ZipFile
@@ -37,11 +38,13 @@ from ..utils.file_utils import (
     tf_available,
 )
 from ..utils.fs import load_json
-from ..utils.settings import LayoutType, ObjectTypes, TypeOrStr
-from .base import DetectionResult, ObjectDetector, PredictorBase, TextRecognizer
+from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.viz import viz_handler
+from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
 from .pt.ptutils import set_torch_auto_device
 
 if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
+    from doctr.models._utils import estimate_orientation
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
     from doctr.models.preprocessor import PreProcessor
@@ -83,6 +86,16 @@ def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Liter
                 doctr_predictor.model.load_weights(params_path / "weights")
         else:
             doctr_predictor.model.load_weights(path_weights)
+
+
+def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
+    """Auto select the DL library from the installed and from environment variables"""
+    if tf_available() and os.environ.get("USE_TF", os.environ.get("USE_TENSORFLOW", False)):
+        os.environ["USE_TF"] = "TRUE"
+        return "TF"
+    if pytorch_available() and os.environ.get("USE_TORCH", os.environ.get("USE_PYTORCH", False)):
+        return "PT"
+    raise DependencyError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
 
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor", device: str) -> List[DetectionResult]:
@@ -134,14 +147,25 @@ def doctr_predict_text(
     return detection_results
 
 
-class DoctrTextlineDetectorMixin(ObjectDetector):
+class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
     """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr]):
+    def __init__(self, categories: Mapping[str, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
         self.categories = categories  # type: ignore
+        self.lib = lib if lib is not None else self.auto_select_lib()
 
     def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
+
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
+    @staticmethod
+    def auto_select_lib() -> Literal["PT", "TF"]:
+        """Auto select the DL library from the installed and from environment variables"""
+        return auto_select_lib_for_doctr()
 
 
 class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
@@ -196,25 +220,25 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
         :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
         """
-        super().__init__(categories)
-        if lib is None:
-            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
-        self.lib = lib
-        self.name = "doctr_text_detector"
+        super().__init__(categories, lib)
         self.architecture = architecture
         self.path_weights = path_weights
 
+        self.name = self.get_name(self.path_weights, self.architecture)
+        self.model_id = self.get_model_id()
+
         if device is None:
-            if tf_available():
+            if self.lib == "TF":
                 device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            if pytorch_available():
+            elif self.lib == "PT":
                 auto_device = get_device(False)
                 device = "cpu" if auto_device == "mps" else auto_device
+            else:
+                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+
         self.device_input = device
         self.device = _set_device_str(device)
-        self.doctr_predictor = self.get_wrapped_model(
-            self.architecture, self.path_weights, self.device_input, self.lib  # type: ignore
-        )
+        self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device_input, self.lib)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -322,22 +346,25 @@ class DoctrTextRecognizer(TextRecognizer):
         :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
         a model trained on custom vocab.
         """
-        if lib is None:
-            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
-        self.lib = lib
-        self.name = "doctr_text_recognizer"
+
+        self.lib = lib if lib is not None else self.auto_select_lib()
+
         self.architecture = architecture
         self.path_weights = path_weights
 
+        self.name = self.get_name(self.path_weights, self.architecture)
+        self.model_id = self.get_model_id()
+
         if device is None:
-            if tf_available():
+            if self.lib == "TF":
                 device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            if pytorch_available():
+            if self.lib == "PT":
                 auto_device = get_device(False)
                 device = "cpu" if auto_device == "mps" else auto_device
             else:
-                raise DependencyError("Tensorflow or PyTorch must be installed")
-        self.device_input: Literal["cpu", "cuda"] = device
+                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+
+        self.device_input = device
         self.device = _set_device_str(device)
         self.path_config_json = path_config_json
         self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
@@ -432,3 +459,74 @@ class DoctrTextRecognizer(TextRecognizer):
         device_str = _set_device_str(device)
         DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device_str, lib)
         return doctr_predictor
+
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
+    @staticmethod
+    def auto_select_lib() -> Literal["PT", "TF"]:
+        """Auto select the DL library from the installed and from environment variables"""
+        return auto_select_lib_for_doctr()
+
+
+class DocTrRotationTransformer(ImageTransformer):
+    """
+    The `DocTrRotationTransformer` class is a specialized image transformer that is designed to handle image rotation
+    in the context of Optical Character Recognition (OCR) tasks. It inherits from the `ImageTransformer` base class and
+    implements methods for predicting and applying rotation transformations to images.
+
+    The `predict` method determines the angle of the rotated image using the `estimate_orientation` function from the
+    `doctr.models._utils` module. The `n_ct` and `ratio_threshold_for_lines` parameters for this function can be
+    configured when instantiating the class.
+
+    The `transform` method applies the predicted rotation to the image, effectively rotating the image backwards.
+    This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
+
+    This class can be particularly useful in OCR tasks where the orientation of the text in the image matters.
+    The class also provides methods for cloning itself and for getting the requirements of the OCR system.
+
+    **Example:**
+                    transformer = DocTrRotationTransformer()
+                    detection_result = transformer.predict(np_img)
+                    rotated_image = transformer.transform(np_img, detection_result)
+    """
+
+    def __init__(self, number_contours: int = 50, ratio_threshold_for_lines: float = 5):
+        """
+
+        :param number_contours: the number of contours used for the orientation estimation
+        :param ratio_threshold_for_lines: this is the ratio w/h used to discriminates lines
+        """
+        self.number_contours = number_contours
+        self.ratio_threshold_for_lines = ratio_threshold_for_lines
+        self.name = "doctr_rotation_transformer"
+
+    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+        """
+        Applies the predicted rotation to the image, effectively rotating the image backwards.
+        This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
+
+        :param np_img: The input image as a numpy array.
+        :param specification: A `DetectionResult` object containing the predicted rotation angle.
+        :return: The rotated image as a numpy array.
+        """
+        return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
+
+    def predict(self, np_img: ImageType) -> DetectionResult:
+        angle = estimate_orientation(np_img, self.number_contours, self.ratio_threshold_for_lines)
+        if angle < 0:
+            angle += 360
+        return DetectionResult(angle=round(angle, 2))
+
+    @classmethod
+    def get_requirements(cls) -> List[Requirement]:
+        return [get_doctr_requirement()]
+
+    def clone(self) -> PredictorBase:
+        return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
+
+    @staticmethod
+    def possible_category() -> PageType:
+        return PageType.angle
