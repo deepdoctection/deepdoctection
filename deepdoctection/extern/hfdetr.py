@@ -20,6 +20,7 @@ HF Detr model for object detection.
 """
 
 from abc import ABC
+from pathlib import Path
 from typing import List, Literal, Mapping, Optional, Sequence
 
 from ..utils.detection_types import ImageType, Requirement
@@ -130,6 +131,11 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
 
         return filtered_detection_result
 
+    @staticmethod
+    def get_name(path_weights: str) -> str:
+        """Returns the name of the model"""
+        return "Transformers_Tatr_" + "_".join(Path(path_weights).parts[-2:])
+
 
 class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
     """
@@ -176,11 +182,13 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
                                   be filtered. Pass a list of category names that must not be returned
         """
         super().__init__(categories, filter_categories)
-        self.name = "Detr"
 
         self.path_config = path_config_json
         self.path_weights = path_weights
         self.path_feature_extractor_config = path_feature_extractor_config_json
+
+        self.name = self.get_name(self.path_weights)
+        self.model_id = self.get_model_id()
 
         self.config = self.get_config(path_config_json)
 
@@ -210,6 +218,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         Builds the Detr model
 
         :param path_weights: The path to the model checkpoint.
+        :param config: `PretrainedConfig`
         :return: TableTransformerForObjectDetection instance
         """
         return TableTransformerForObjectDetection.from_pretrained(

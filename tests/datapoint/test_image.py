@@ -228,32 +228,67 @@ class TestImage:
             category_id="1",
             bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
         )
+        cat_4 = ImageAnnotation(
+            category_name="BLI",
+            category_id="3",
+            bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
+            service_id="test_service",
+        )
+        cat_5 = ImageAnnotation(
+            category_name="BLU",
+            category_id="5",
+            bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
+            model_id="test_model",
+        )
 
         test_image.dump(cat_1)
         test_image.dump(cat_2)
         test_image.dump(cat_3)
+        test_image.dump(cat_4)
+        test_image.dump(cat_5)
 
         # Act
         filtered_anns_1 = test_image.get_annotation(category_names="FOO")
         filtered_anns_1_ids = anns_to_ids(filtered_anns_1)
+
         filtered_anns_2 = test_image.get_annotation(category_names="BLA")
         filtered_anns_2_ids = anns_to_ids(filtered_anns_2)
-        filtered_anns_3 = test_image.get_annotation(annotation_ids=[cat_1.annotation_id, cat_3.annotation_id])
 
+        filtered_anns_3 = test_image.get_annotation(annotation_ids=[cat_1.annotation_id, cat_3.annotation_id])
         filtered_anns_3_ids = anns_to_ids(filtered_anns_3)
+
         filtered_anns_4 = test_image.get_annotation(
             annotation_ids=[cat_2.annotation_id, cat_3.annotation_id],
         )
         filtered_anns_4_ids = anns_to_ids(filtered_anns_4)
+
         filtered_anns_5 = test_image.get_annotation_iter()
         filtered_anns_5_ids = anns_to_ids(filtered_anns_5)
+
+        filtered_anns_6 = test_image.get_annotation(service_id="test_service")
+        filtered_anns_6_ids = anns_to_ids(filtered_anns_6)
+
+        filtered_anns_7 = test_image.get_annotation(model_id="test_model")
+        filtered_anns_7_ids = anns_to_ids(filtered_anns_7)
+
+        filtered_anns_8 = test_image.get_annotation(service_id="test_model", annotation_ids=[cat_2.annotation_id])
+        filtered_anns_8_ids = anns_to_ids(filtered_anns_8)
 
         # Assert
         assert set(filtered_anns_1_ids) == {cat_1.annotation_id}
         assert set(filtered_anns_2_ids) == set()
         assert set(filtered_anns_3_ids) == {cat_1.annotation_id, cat_3.annotation_id}
         assert set(filtered_anns_4_ids) == {cat_2.annotation_id, cat_3.annotation_id}
-        assert set(filtered_anns_5_ids) == {cat_1.annotation_id, cat_2.annotation_id, cat_3.annotation_id}
+        assert set(filtered_anns_5_ids) == {
+            cat_1.annotation_id,
+            cat_2.annotation_id,
+            cat_3.annotation_id,
+            cat_4.annotation_id,
+            cat_5.annotation_id,
+        }
+        assert set(filtered_anns_6_ids) == {cat_4.annotation_id}
+        assert set(filtered_anns_7_ids) == {cat_5.annotation_id}
+        assert set(filtered_anns_8_ids) == set()
 
     @staticmethod
     @mark.basic
@@ -303,6 +338,16 @@ class TestImage:
         test class from_file returns an image
         """
         test_file_path = get_test_path() / "test_image.json"
+        image = Image.from_file(test_file_path.as_posix())
+        assert isinstance(image, Image)
+
+    @staticmethod
+    @mark.basic
+    def test_load_image_from_legacy_test_file() -> None:
+        """
+        test class from_file returns an image
+        """
+        test_file_path = get_test_path() / "legacy_test_image.json"
         image = Image.from_file(test_file_path.as_posix())
         assert isinstance(image, Image)
 

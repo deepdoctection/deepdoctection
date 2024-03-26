@@ -452,6 +452,20 @@ def collect_env_info() -> str:
     return env_str
 
 
+def set_env(name: str, value: str) -> None:
+    """
+    Set an environment variable if it is not already set.
+
+    :param name: The name of the environment variable
+    :param value: The value of the environment variable
+    """
+
+    if os.environ.get(name):
+        return
+    os.environ[name] = value
+    return
+
+
 def auto_select_lib_and_device() -> None:
     """
     Select the DL library and subsequently the device.
@@ -461,44 +475,60 @@ def auto_select_lib_and_device() -> None:
     is not installed raise ImportError.
     """
 
+    # USE_TF and USE_TORCH are env variables that steer DL library selection for Doctr.
     if tf_available() and tensorpack_available():
         from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
 
         if get_num_gpu() >= 1:
-            os.environ["USE_TENSORFLOW"] = "True"
-            os.environ["USE_PYTORCH"] = "False"
-            os.environ["USE_CUDA"] = "True"
-            os.environ["USE_MPS"] = "False"
+            set_env("USE_TENSORFLOW", "True")
+            set_env("USE_PYTORCH", "False")
+            set_env("USE_CUDA", "True")
+            set_env("USE_MPS", "False")
+            set_env("USE_TF", "TRUE")
+            set_env("USE_TORCH", "False")
             return
         if pytorch_available():
-            os.environ["USE_TENSORFLOW"] = "False"
-            os.environ["USE_PYTORCH"] = "True"
-            os.environ["USE_CUDA"] = "False"
+            set_env("USE_TENSORFLOW", "False")
+            set_env("USE_PYTORCH", "True")
+            set_env("USE_CUDA", "False")
+            set_env("USE_TF", "False")
+            set_env("USE_TORCH", "TRUE")
             return
         logger.warning(
             LoggingRecord("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
         )
-        os.environ["USE_TENSORFLOW"] = "False"
-        os.environ["USE_PYTORCH"] = "False"
-        os.environ["USE_CUDA"] = "False"
+    if tf_available():
+        set_env("USE_TENSORFLOW", "False")
+        set_env("USE_PYTORCH", "False")
+        set_env("USE_CUDA", "False")
+        set_env("USE_TF", "AUTO")
+        set_env("USE_TORCH", "AUTO")
+        return
+
     if pytorch_available():
         import torch
 
         if torch.cuda.is_available():
-            os.environ["USE_TENSORFLOW"] = "False"
-            os.environ["USE_PYTORCH"] = "True"
-            os.environ["USE_CUDA"] = "True"
+            set_env("USE_TENSORFLOW", "False")
+            set_env("USE_PYTORCH", "True")
+            set_env("USE_CUDA", "True")
+            set_env("USE_TF", "False")
+            set_env("USE_TORCH", "TRUE")
             return
         if torch.backends.mps.is_available():
-            os.environ["USE_TENSORFLOW"] = "False"
-            os.environ["USE_PYTORCH"] = "True"
-            os.environ["USE_CUDA"] = "False"
-            os.environ["USE_MPS"] = "True"
+            set_env("USE_TENSORFLOW", "False")
+            set_env("USE_PYTORCH", "True")
+            set_env("USE_CUDA", "False")
+            set_env("USE_MPS", "True")
+            set_env("USE_TF", "False")
+            set_env("USE_TORCH", "TRUE")
             return
-        os.environ["USE_TENSORFLOW"] = "False"
-        os.environ["USE_PYTORCH"] = "True"
-        os.environ["USE_CUDA"] = "False"
-        os.environ["USE_MPS"] = "False"
+        set_env("USE_TENSORFLOW", "False")
+        set_env("USE_PYTORCH", "True")
+        set_env("USE_CUDA", "False")
+        set_env("USE_MPS", "False")
+        set_env("USE_TF", "AUTO")
+        set_env("USE_TORCH", "AUTO")
         return
     logger.warning(
         LoggingRecord(

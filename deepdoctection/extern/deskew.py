@@ -38,7 +38,8 @@ class Jdeskewer(ImageTransformer):
     """
 
     def __init__(self, min_angle_rotation: float = 2.0):
-        self.name = "jdeskew_transform"
+        self.name = "jdeskewer"
+        self.model_id = self.get_model_id()
         self.min_angle_rotation = min_angle_rotation
 
     def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
