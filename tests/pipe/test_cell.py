@@ -67,6 +67,7 @@ class TestSubImageLayoutService:
         """
 
         self._cell_detector = MagicMock(spec=ObjectDetector)
+        self._cell_detector.model_id = "test_model"
         self._cell_detector.name = "mock_cell_detector"
 
         self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
@@ -121,3 +122,23 @@ class TestSubImageLayoutService:
         assert global_box_stfc == exp_global_boxes_scd_table[0]
         local_box_stfc = second_table_first_cell.get_bounding_box(second_table_ann.annotation_id)
         assert local_box_stfc == second_table_first_cell.bounding_box
+
+    def test_pass_datapoint_when_sub_images_do_not_have_a_crop(
+        self,
+        dp_image_with_layout_anns: Image,
+        cell_detect_results: List[List[DetectionResult]],
+    ) -> None:
+        """If an sub image does not have a crop, a ValueError was raised previously. Now it should be fixed."""
+
+        # Arrange
+        self._cell_detector.predict = MagicMock(side_effect=cell_detect_results)
+        for ann in dp_image_with_layout_anns.get_annotation():
+            if ann.image is not None:
+                ann.image.clear_image()
+
+        # Act
+
+        try:
+            self.sub_image_layout_service.pass_datapoint(dp_image_with_layout_anns)
+        except ValueError:
+            assert False, "ValueError was raised, because the sub image does not have a crop"

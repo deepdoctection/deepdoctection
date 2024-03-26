@@ -37,7 +37,16 @@ def ann_from_dict(cls, **kwargs):
     """
     A factory function to create subclasses of annotations from a given dict
     """
-    ann = cls(kwargs.get("external_id"), kwargs.get("category_name"), kwargs.get("category_id"), kwargs.get("score"))
+    _init_kwargs = {
+        "external_id": kwargs.get("external_id"),
+        "category_name": kwargs.get("category_name"),
+        "category_id": kwargs.get("category_id"),
+        "score": kwargs.get("score"),
+        "service_id": kwargs.get("service_id"),
+        "model_id": kwargs.get("model_id"),
+        "session_id": kwargs.get("session_id"),
+    }
+    ann = cls(**_init_kwargs)
     ann.active = kwargs.get("active")
     ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
     if isinstance(kwargs.get("sub_categories"), dict):
@@ -75,11 +84,17 @@ class Annotation(ABC):
     id will not depend on the defining attributes.
 
     `_annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
+    `service_id`: Service that generated the annotation. This will be the name of a pipeline component
+    `model_id`: Model that generated the annotation. This will be the name of particular model
+    `session_id`: Session id for the annotation. This will be the id of the session in which the annotation was created.
     """
 
     active: bool = field(default=True, init=False, repr=True)
     external_id: Optional[Union[str, int]] = field(default=None, init=True, repr=False)
     _annotation_id: Optional[str] = field(default=None, init=False, repr=True)
+    service_id: Optional[str] = field(default=None)
+    model_id: Optional[str] = field(default=None)
+    session_id: Optional[str] = field(default=None)
 
     def __post_init__(self) -> None:
         """
@@ -127,7 +142,7 @@ class Annotation(ABC):
 
         :return: A list of attributes.
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def _assert_attributes_have_str(self, state_id: bool = False) -> None:
         defining_attributes = self.get_state_attributes() if state_id else self.get_defining_attributes()

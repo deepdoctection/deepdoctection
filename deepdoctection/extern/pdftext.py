@@ -65,7 +65,8 @@ class PdfPlumberTextDetector(PdfMiner):
     """
 
     def __init__(self, x_tolerance: int=3, y_tolerance: int=3) -> None:
-        self.name = "pdfplumber"
+        self.name = "Pdfplumber"
+        self.model_id = self.get_model_id()
         self.categories = {"1": LayoutType.word}
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
