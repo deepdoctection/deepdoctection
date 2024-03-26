@@ -65,6 +65,7 @@ class PageType(ObjectTypes):
 
     document_type = "document_type"
     language = "language"
+    angle = "angle"
 
 
 @object_types_registry.register("SummaryType")

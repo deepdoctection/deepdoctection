@@ -323,7 +323,10 @@ class Image:
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
-        annotation_types: Optional[Union[str, Sequence[str]]] = None,
+        service_id: Optional[Union[str, Sequence[str]]] = None,
+        model_id: Optional[Union[str, Sequence[str]]] = None,
+        session_ids: Optional[Union[str, Sequence[str]]] = None,
+        ignore_inactive: bool = True,
     ) -> List[ImageAnnotation]:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying
@@ -334,27 +337,45 @@ class Image:
 
         :param category_names: A single name or list of names
         :param annotation_ids: A single id or list of ids
-        :param annotation_types: A type name or list of type names.
+        :param service_id: A single service name or list of service names
+        :param model_id: A single model name or list of model names
+        :param session_ids: A single session id or list of session ids
+        :param ignore_inactive: If set to `True` only active annotations are returned.
+
         :return: A (possibly empty) list of Annotations
         """
 
-        cat_names = [category_names] if isinstance(category_names, (ObjectTypes, str)) else category_names
-        if cat_names is not None:
-            cat_names = [get_type(cat_name) for cat_name in cat_names]
+        if category_names is not None:
+            category_names = (
+                [get_type(cat_name) for cat_name in category_names]
+                if isinstance(category_names, (list, set))
+                else [get_type(category_names)]  # type:ignore
+            )
+
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
-        ann_types = [annotation_types] if isinstance(annotation_types, str) else annotation_types
+        service_id = [service_id] if isinstance(service_id, str) else service_id
+        model_id = [model_id] if isinstance(model_id, str) else model_id
+        session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
-        anns = filter(lambda x: x.active, self.annotations)
+        if ignore_inactive:
+            anns = filter(lambda x: x.active, self.annotations)
+        else:
+            anns = self.annotations  # type:ignore
 
-        if ann_types is not None:
-            for type_name in ann_types:
-                anns = filter(lambda x: isinstance(x, eval(type_name)), anns)  # pylint: disable=W0123, W0640
-
-        if cat_names is not None:
-            anns = filter(lambda x: x.category_name in cat_names, anns)  # type:ignore
+        if category_names is not None:
+            anns = filter(lambda x: x.category_name in category_names, anns)  # type:ignore
 
         if ann_ids is not None:
             anns = filter(lambda x: x.annotation_id in ann_ids, anns)  # type:ignore
+
+        if service_id is not None:
+            anns = filter(lambda x: x.service_id in service_id, anns)  # type:ignore
+
+        if model_id is not None:
+            anns = filter(lambda x: x.model_id in model_id, anns)  # type:ignore
+
+        if session_id is not None:
+            anns = filter(lambda x: x.session_id in session_id, anns)  # type:ignore
 
         return list(anns)
 
@@ -362,19 +383,34 @@ class Image:
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
-        annotation_types: Optional[Union[str, Sequence[str]]] = None,
+        service_id: Optional[Union[str, Sequence[str]]] = None,
+        model_id: Optional[Union[str, Sequence[str]]] = None,
+        session_ids: Optional[Union[str, Sequence[str]]] = None,
+        ignore_inactive: bool = True,
     ) -> Iterable[ImageAnnotation]:
         """
         Get annotation as an iterator. Same as `get_annotation` but returns an iterator instead of a list.
 
         :param category_names: A single name or list of names
         :param annotation_ids: A single id or list of ids
-        :param annotation_types: A type name or list of type names.
+        :param service_id: A single service name or list of service names
+        :param model_id: A single model name or list of model names
+        :param session_ids: A single session id or list of session ids
+        :param ignore_inactive: If set to `True` only active annotations are returned.
 
         :return: A (possibly empty) list of annotations
         """
 
-        return iter(self.get_annotation(category_names, annotation_ids, annotation_types))
+        return iter(
+            self.get_annotation(
+                category_names=category_names,
+                annotation_ids=annotation_ids,
+                service_id=service_id,
+                model_id=model_id,
+                session_ids=session_ids,
+                ignore_inactive=ignore_inactive,
+            )
+        )
 
     def as_dict(self) -> Dict[str, Any]:
         """

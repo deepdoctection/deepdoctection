@@ -40,6 +40,7 @@ class TestImageLayoutService:
 
         self._layout_detector = MagicMock(spec=ObjectDetector)
         self._layout_detector.name = "mock_cell_detector"
+        self._layout_detector.model_id = "test_model"
         self.image_layout_service = ImageLayoutService(self._layout_detector, to_image=True)
 
     @mark.basic

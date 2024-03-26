@@ -120,6 +120,8 @@ class TextractOcrDetector(ObjectDetector):
         :param credentials_kwargs: `aws_access_key_id`, `aws_secret_access_key` or `aws_session_token`
         """
         self.name = "textract"
+        self.model_id = self.get_model_id()
+
         self.text_lines = text_lines
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:

@@ -46,8 +46,8 @@ def test_dataset_funsd_returns_image_and_annotations() -> None:
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list) == 5  # the first four images coming from files not related to funsd data
-    dp = df_list[3]
+    assert len(df_list) == 6  # the first four images coming from files not related to funsd data
+    dp = [dp for dp in df_list if dp.file_name == "test_file_funsd.png"][0]
     word = dp.get_annotation(category_names=LayoutType.word)[0]
     assert word.get_sub_category(WordType.token_class) is not None
     assert word.get_sub_category(WordType.characters) is not None
