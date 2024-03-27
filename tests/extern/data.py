@@ -87,6 +87,8 @@ WORD_RESULTS = [
     ),
 ]
 
+ANGLE_RESULT = DetectionResult(angle=90.0, score=8.73)
+
 
 def get_detr_categories() -> JsonDict:
     """detr_categories"""

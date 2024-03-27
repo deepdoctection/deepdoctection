@@ -257,7 +257,7 @@ class DatapointManager:
         self,
         summary_key: ObjectTypes,
         summary_name: ObjectTypes,
-        summary_number: int,
+        summary_number: Optional[int] = None,
         summary_value: Optional[str] = None,
         summary_score: Optional[float] = None,
         annotation_id: Optional[str] = None,
@@ -294,16 +294,18 @@ class DatapointManager:
                 "annotation_id": annotation_id,
             },
         ) as annotation_context:
-            if summary_value:
+            if summary_value is not None:
                 ann = ContainerAnnotation(
                     category_name=summary_name,
-                    category_id=str(summary_number),
+                    category_id=str(summary_number) if summary_number is not None else "",
                     value=summary_value,
                     score=summary_score,
                 )
             else:
                 ann = CategoryAnnotation(
-                    category_name=summary_name, category_id=str(summary_number), score=summary_score
+                    category_name=summary_name,
+                    category_id=str(summary_number) if summary_number is not None else "",
+                    score=summary_score,
                 )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 
