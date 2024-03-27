@@ -22,11 +22,12 @@ from typing import List
 
 from pytest import fixture
 
+from deepdoctection.extern.base import DetectionResult
 from deepdoctection.utils.detection_types import JsonDict
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
-from .data import PDF_BYTES, PDF_BYTES_2, get_detr_categories
+from .data import ANGLE_RESULT, PDF_BYTES, PDF_BYTES_2, get_detr_categories
 
 
 @fixture(name="layoutlm_input_for_predictor")
@@ -89,6 +90,14 @@ def fixture_pdf_bytes_page_2() -> bytes:
     fixture pdf bytes
     """
     return PDF_BYTES_2
+
+
+@fixture(name="angle_detection_result")
+def fixture_angle_detection_result() -> DetectionResult:
+    """
+    fixture detection result for running rotation image transformation
+    """
+    return ANGLE_RESULT
 
 
 @fixture(name="detr_categories")

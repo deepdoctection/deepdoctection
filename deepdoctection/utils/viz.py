@@ -308,6 +308,7 @@ class VizPackageHandler:
             "draw_text": "_cv2_draw_text",
             "interactive_imshow": "_cv2_interactive_imshow",
             "encode": "_cv2_encode",
+            "rotate_image": "_cv2_rotate_image",
         },
         "pillow": {
             "read_image": "_pillow_read_image",
@@ -320,6 +321,7 @@ class VizPackageHandler:
             "draw_text": "_pillow_draw_text",
             "interactive_imshow": "_pillow_interactive_imshow",
             "encode": "_pillow_encode",
+            "rotate_image": "_pillow_rotate_image",
         },
     }
 
@@ -690,6 +692,45 @@ class VizPackageHandler:
         name = "q, x: quit / s: save"
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.show(name)
+
+    def rotate_image(self, np_image: ImageType, angle: int) -> ImageType:
+        """Rotating an image by some angle"""
+        return getattr(self, self.pkg_func_dict["rotate_image"])(np_image, angle)
+
+    @staticmethod
+    def _cv2_rotate_image(np_image: ImageType, angle: float) -> ImageType:
+        # copy & paste from https://stackoverflow.com/questions/43892506
+        # /opencv-python-rotate-image-without-cropping-sides
+
+        height, width = np_image.shape[:2]
+        image_center = (width / 2, height / 2)
+        rotation_mat = cv2.getRotationMatrix2D(center=image_center, angle=angle, scale=1.0)
+
+        # rotation calculates the cos and sin, taking absolutes of those.
+        abs_cos = abs(rotation_mat[0, 0])
+        abs_sin = abs(rotation_mat[0, 1])
+
+        # find the new width and height bounds
+        bound_w = int(height * abs_sin + width * abs_cos)
+        bound_h = int(height * abs_cos + width * abs_sin)
+
+        # subtract old image center (bringing image back to origo) and adding the new image center coordinates
+        rotation_mat[0, 2] += bound_w / 2 - image_center[0]
+        rotation_mat[1, 2] += bound_h / 2 - image_center[1]
+
+        np_image = cv2.warpAffine(  # type: ignore
+            src=np_image,
+            M=rotation_mat,
+            dsize=(bound_w, bound_h),
+        )
+
+        return np_image
+
+    @staticmethod
+    def _pillow_rotate_image(np_image: ImageType, angle: int) -> ImageType:
+        pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
+        pil_image_rotated = pil_image.rotate(angle, expand=True)
+        return np.array(pil_image_rotated)[:, :, ::-1]
 
 
 auto_select_viz_library()

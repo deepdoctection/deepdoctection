@@ -23,7 +23,6 @@ on images (e.g. deskew, de-noising or more general GAN like operations.
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
 from ..utils.detection_types import JsonDict
-from ..utils.logger import LoggingRecord, logger
 from .base import ImageTransformPipelineComponent
 from .registry import pipeline_component_registry
 
@@ -49,16 +48,24 @@ class SimpleTransformService(ImageTransformPipelineComponent):
 
     def serve(self, dp: Image) -> None:
         if dp.annotations:
-            logger.warning(
-                LoggingRecord(
-                    f"{self.name} has already received image with image annotations. These annotations "
-                    f"will not be transformed and might cause unexpected output in your pipeline."
-                )
+            raise RuntimeError(
+                "SimpleTransformService receives datapoints with ÌmageAnnotations. This violates the "
+                "pipeline building API but this can currently be catched only at runtime. "
+                "Please make sure that this component is the first one in the pipeline."
             )
+
         if dp.image is not None:
-            np_image_transform = self.transform_predictor.transform(dp.image)
+            detection_result = self.transform_predictor.predict(dp.image)
+            transformed_image = self.transform_predictor.transform(dp.image, detection_result)
             self.dp_manager.datapoint.clear_image(True)
-            self.dp_manager.datapoint.image = np_image_transform
+            self.dp_manager.datapoint.image = transformed_image
+            self.dp_manager.set_summary_annotation(
+                summary_key=self.transform_predictor.possible_category(),
+                summary_name=self.transform_predictor.possible_category(),
+                summary_number=None,
+                summary_value=getattr(detection_result, self.transform_predictor.possible_category().value, None),
+                summary_score=detection_result.score,
+            )
 
     def clone(self) -> "SimpleTransformService":
         return self.__class__(self.transform_predictor)
@@ -69,7 +76,7 @@ class SimpleTransformService(ImageTransformPipelineComponent):
                 ("image_annotations", []),
                 ("sub_categories", {}),
                 ("relationships", {}),
-                ("summaries", []),
+                ("summaries", [self.transform_predictor.possible_category()]),
             ]
         )
 

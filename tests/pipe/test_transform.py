@@ -28,6 +28,7 @@ from pytest import mark
 from deepdoctection.datapoint.image import Image
 from deepdoctection.extern.base import ImageTransformer
 from deepdoctection.pipe.transform import SimpleTransformService
+from deepdoctection.utils.settings import PageType
 
 
 class TestSimpleTransformService:
@@ -41,6 +42,7 @@ class TestSimpleTransformService:
         """
 
         self._transform_predictor = MagicMock(spec=ImageTransformer)
+        self._transform_predictor.possible_category = MagicMock(return_value=PageType.angle)
         self._transform_predictor.name = "mock_transform"
         self.simple_transform = SimpleTransformService(self._transform_predictor)
 
