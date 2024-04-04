@@ -49,8 +49,8 @@ SEGMENTATION:
 USE_TABLE_REFINEMENT: True
 USE_PDF_MINER: False
 PDF_MINER:
-  x_tolerance: 3
-  y_tolerance: 3
+  X_TOLERANCE: 3
+  Y_TOLERANCE: 3
 USE_OCR: True
 OCR:
   USE_TESSERACT: True
