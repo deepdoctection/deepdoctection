@@ -57,37 +57,37 @@ _DEPS = [
     "pycocotools>=2.0.2",
     "pypdf>=3.16.0",
     "python-prctl",
-    "pyyaml==6.0",
+    "pyyaml>=6.0.1",
     "pyzmq>=16",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
     "tqdm==4.64.0",
     # type-stubs
-    "types-PyYAML",
-    "types-termcolor==1.1.3",
-    "types-tabulate",
-    "types-tqdm",
-    "types-Pillow",
-    "types-urllib3",
-    "lxml-stubs",
+    "types-PyYAML>=6.0.12.12",
+    "types-termcolor>=1.1.3",
+    "types-tabulate>=0.9.0.3",
+    "types-tqdm>=4.66.0.5",
+    "types-Pillow>=10.2.0.20240406",
+    "types-urllib3>=1.26.25.14",
+    "lxml-stubs>=0.5.1",
     # Tensorflow related dependencies
     "protobuf==3.20.1",
-    "tensorpack",
+    "tensorpack==0.11",
     # PyTorch related dependencies
-    "timm",
+    "timm>=0.9.16",
     "transformers>=4.36.0",
-    "accelerate",
+    "accelerate>=0.29.1",
     # As maintenance of Detectron2 decreases, we will now use our own Fork the keep updating after rigorous testing.
     # This will hopefully prevent from issues like 233
-    "detectron2 @ git+https://github.com/deepdoctection/detectron2.git",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     # other third party related dependencies (services or DL libraries). Must be installed by users
-    "jdeskew",
+    "jdeskew>=0.2.2",
     "boto3",
     "pdfplumber>=0.7.1",
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
     "python-doctr==0.7.0",
-    "fasttext",
+    "fasttext==0.9.2",
     # dev dependencies
     "python-dotenv==1.0.0",
     "click",  # version will not break black
@@ -153,7 +153,7 @@ tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "p
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr")
 
-source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
+source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/facebookresearch/detectron2.git")
 
 # Putting all together
 tf_deps = dist_deps + tf_deps + additional_deps
