@@ -470,7 +470,6 @@ class DoctrTextRecognizer(TextRecognizer):
         """Auto select the DL library from the installed and from environment variables"""
         return auto_select_lib_for_doctr()
 
-
 class DocTrRotationTransformer(ImageTransformer):
     """
     The `DocTrRotationTransformer` class is a specialized image transformer that is designed to handle image rotation
