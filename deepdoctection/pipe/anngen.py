@@ -331,7 +331,6 @@ class DatapointManager:
                     service_id=self.service_id,
                     model_id=self.model_id,
                     session_id=self.session_id,
-
                 )
             image.summary.dump_sub_category(summary_key, ann, image.image_id)
 
