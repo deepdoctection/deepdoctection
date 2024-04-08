@@ -156,7 +156,6 @@ def image_to_angle(image: ImageType) -> Mapping[str, str]:
     }
 
 
-
 def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
     This is more or less pytesseract.image_to_data with a dict as returned value.
