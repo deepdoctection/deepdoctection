@@ -154,6 +154,7 @@ def image_to_angle(image: ImageType) -> Mapping[str, str]:
         key_value[0]: key_value[1] for key_value in (line.split(": ") for line in output.split("\n") if len(line) >= 2)
     }
 
+
 def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
     This is more or less pytesseract.image_to_data with a dict as returned value.
