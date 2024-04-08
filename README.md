@@ -42,7 +42,9 @@ pipelines. Its core function does not depend on any specific deep learning libra
    Check this [notebook](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Configuration.ipynb) or the 
    [docs](https://deepdoctection.readthedocs.io/en/latest/tutorials/analyzer_configuration_notebook/) for more infos.
  - Document layout analysis and table recognition now runs with Torchscript (CPU) as well and Detectron2 is 
-   not required anymore for basic inference. 
+   not required anymore for basic inference.
+ - [**new**] More angle predictors for determining the rotation of a document based on Tesseract and DocTr 
+   (not contained in the built-in Analyzer).
 
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 

@@ -14,41 +14,103 @@ permissions:
 
 jobs:
   tests:
-    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master'"
+    if: "contains(github.event.head_commit.message, '[force ci]') || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'"
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8-basic-tf', python: '3.8', os: ubuntu-20.04,
-              dll: tensorflow==2.9, extras: ,
-              test_cases: test-basic }
-          - { name: '3.8-basic-pt', python: '3.8', os: ubuntu-20.04,
-              dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
+          - { name: '3.8-basic-tf',
+              python: '3.8',
+              pip: '24.0',
+              os: ubuntu-20.04,
+              dll: tensorflow==2.9,
+              detectron2: false,
               extras: ,
-              test_cases: test-basic-pt }
-          - { name: '3.8-tf', python: '3.8', os: ubuntu-20.04,
-              dll: tensorflow==2.9, extras: tf,
-              test_cases: test-tf }
-          - { name: '3.8-pt', python: '3.8', os: ubuntu-20.04,
-              dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
-              extras: source-pt,
-              test_cases: test-pt }
-          - { name: '3.10-basic-tf', python: '3.10', os: ubuntu-22.04,
-              dll: tensorflow==2.9, extras: ,
+              test: test,
               test_cases: test-basic }
-          - { name: '3.10-basic-pt', python: '3.10', os: ubuntu-22.04,
-              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+          - { name: '3.8-basic-pt',
+              python: '3.8',
+              pip: '24.0',
+              os: ubuntu-20.04,
+              dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: false,
               extras: ,
+              test: test,
               test_cases: test-basic-pt }
-          - { name: '3.10-tf', python: '3.10', os: ubuntu-22.04,
-              dll: tensorflow==2.9, extras: tf,
+          - { name: '3.8-tf',
+              python: '3.8',
+              pip: '24.0',
+              os: ubuntu-20.04,
+              dll: tensorflow==2.9,
+              detectron2: false,
+              extras: tf,
+              test: test,
               test_cases: test-tf }
-          - { name: '3.10-pt', python: '3.10', os: ubuntu-22.04,
-              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-              extras: source-pt,
+          - { name: '3.8-pt',
+              python: '3.8',
+              pip: '24.0',
+              os: ubuntu-20.04,
+              dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: true,
+              extras: pt,
+              test: test,
               test_cases: test-pt }
+          - { name: '3.10-basic-tf',
+              python: '3.10',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: tensorflow==2.9,
+              detectron2: false,
+              extras: ,
+              test: test,
+              test_cases: test-basic }
+          - { name: '3.10-basic-pt',
+              python: '3.10',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: false,
+              extras: ,
+              test: test,
+              test_cases: test-basic-pt }
+          - { name: '3.10-tf',
+              python: '3.10',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: tensorflow==2.9,
+              detectron2: false,
+              extras: tf,
+              test: test,
+              test_cases: test-tf }
+          - { name: '3.10-pt',
+              python: '3.10',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: true,
+              extras: pt,
+              test: test,
+              test_cases: test-pt }
+          - { name: '3.11-pt',
+              python: '3.11',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: true,
+              extras: pt,
+              test: test,
+              test_cases: test-pt }
+          #- { name: '3.12-pt',
+          #    python: '3.12',
+          #    pip: '24.0',
+          #    os: ubuntu-22.04,
+          #    dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+          #    detectron2: true,
+          #    extras: pt,
+          #    test: test,
+          #    test_cases: test-pt }
 
     steps:
       - uses: actions/checkout@v3
@@ -59,7 +121,12 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Upgrade pip
-        run: python3 -m pip install pip==22.1.2
+        run: python3 -m pip install pip==${{ matrix.pip }} && 
+             python3 -m pip install wheel
+
+      #- name: Install setuptools
+      #  if: matrix.python == '3.12'
+      #  run: python3 -m pip install setuptools
 
       - name: Install libcap
         run: sudo apt-get install build-essential libcap-dev
@@ -79,6 +146,10 @@ jobs:
       - name: cd
         run: cd deepdoctection
 
+      - name: Install detectron2
+        if: matrix.detectron2
+        run: pip install --no-build-isolation detectron2@git+https://github.com/facebookresearch/detectron2.git
+
       - name: Test deepdoctection package installation
         if: matrix.extras == ''
         run: pip install "."
@@ -88,7 +159,7 @@ jobs:
         run:  pip install ".[${{ matrix.extras }}]"
 
       - name: Install test suite
-        run: pip install pytest pytest-cov
+        run: pip install ".[${{ matrix.test }}]"
 
       - name: Run tests
         run: make ${{ matrix.test_cases }}

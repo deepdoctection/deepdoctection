@@ -668,8 +668,8 @@ class DatapointCoco:
     """
 
     dp = _SAMPLE_COCO
-    white_image: ImageType = np.ones((794, 596, 3), dtype=np.int32) * 255  # type: ignore
-    white_image_string = convert_np_array_to_b64(white_image)
+    white_image = np.ones((794, 596, 3), dtype=np.uint8) * 255
+    white_image_string = convert_np_array_to_b64(white_image)  # type: ignore
     categories = {
         "1": LayoutType.text,
         "2": LayoutType.title,
@@ -686,7 +686,7 @@ class DatapointCoco:
         """
         if path == self.dp["file_name"]:
             if type_id == "np":
-                return self.white_image
+                return self.white_image # type: ignore
             return self.white_image_string
         return None
 
@@ -737,8 +737,8 @@ class DatapointPubtabnet:
     categories = {"1": LayoutType.cell, "2": TableType.item, "3": LayoutType.table, "4": LayoutType.word}
     categories_as_names = {v: k for k, v in categories.items()}
     first_ann_box = Box(475, 162, 10, 9)
-    white_image: ImageType = np.ones((1334, 996, 3), dtype=np.int32) * 255  # type: ignore
-    white_image_string = convert_np_array_to_b64(white_image)
+    white_image = np.ones((1334, 996, 3), dtype=np.uint8) * 255
+    white_image_string = convert_np_array_to_b64(white_image)  # type: ignore
 
     def get_white_image(self, path: str, type_id: str = "np") -> Union[str, ImageType]:
         """
@@ -747,7 +747,7 @@ class DatapointPubtabnet:
         """
         assert path is not None
         if type_id == "np":
-            return self.white_image
+            return self.white_image  # type: ignore
         return self.white_image_string
 
     def get_width(self) -> float:
