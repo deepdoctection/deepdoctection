@@ -148,7 +148,6 @@ def image_to_angle(image: ImageType) -> Mapping[str, str]:
         _run_tesseract(_input_to_cli_str("osd", "--psm 0", 0, input_file_name, tmp_name))
         with open(tmp_name + ".osd", "rb") as output_file:
             output = output_file.read().decode("utf-8")
-
     return {
         key_value[0]: key_value[1] for key_value in (line.split(": ") for line in output.split("\n") if len(line) >= 2)
     }
