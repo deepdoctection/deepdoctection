@@ -19,12 +19,17 @@
 Tesseract OCR engine for text extraction
 """
 import shlex
+import string
 import subprocess
 import sys
 from errno import ENOENT
 from itertools import groupby
 from os import environ
 from typing import Any, Dict, List, Mapping, Optional, Union
+
+from packaging.version import InvalidVersion, Version, parse
+
+import numpy as np
 
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.detection_types import ImageType, Requirement
@@ -107,6 +112,33 @@ def _run_tesseract(tesseract_args: List[str]) -> None:
             )
 
 
+def get_tesseract_version() -> Version:
+    """
+    Returns Version object of the Tesseract version
+    """
+    try:
+        output = subprocess.check_output(
+            ["tesseract", "--version"],
+            stderr=subprocess.STDOUT,
+            env=environ,
+            stdin=subprocess.DEVNULL,
+        )
+    except OSError as error:
+        raise DependencyError("Tesseract not found. Please install or add to your PATH.") from error
+
+    raw_version = output.decode("utf-8")
+    str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(" ")
+    str_version, *_ = str_version.partition("-")
+
+    try:
+        version = parse(str_version)
+        assert version >= Version("3.05")
+    except (AssertionError, InvalidVersion) as error:
+        raise SystemExit(f'Invalid tesseract version: "{raw_version}"') from error
+
+    return version
+
+
 def image_to_angle(image: ImageType) -> Mapping[str, str]:
     """
     Generating a tmp file and running tesseract to get the orientation of the image.
@@ -118,9 +150,9 @@ def image_to_angle(image: ImageType) -> Mapping[str, str]:
         _run_tesseract(_input_to_cli_str("osd", "--psm 0", 0, input_file_name, tmp_name))
         with open(tmp_name + ".osd", "rb") as output_file:
             output = output_file.read().decode("utf-8")
-
-    return {key_value[0]: key_value[1] for key_value in (line.split(": ") for line in output.split("\n") if len(line)>=2) }
-
+    return {
+        key_value[0]: key_value[1] for key_value in (line.split(": ") for line in output.split("\n") if len(line) >= 2)
+    }
 
 def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
@@ -304,7 +336,9 @@ class TesseractOcrDetector(ObjectDetector):
         :param config_overwrite: Overwrite config parameters defined by the yaml file with new values.
                                  E.g. ["oem=14"]
         """
-        self.name = _TESS_PATH
+        self.name = self.get_name()
+        self.model_id = self.get_model_id()
+
         if config_overwrite is None:
             config_overwrite = []
 
@@ -354,6 +388,11 @@ class TesseractOcrDetector(ObjectDetector):
         :param language: `Languages`
         """
         self.config.LANGUAGES = _LANG_CODE_TO_TESS_LANG_CODE.get(language, language.value)
+
+    @staticmethod
+    def get_name() -> str:
+        """Returns the name of the model"""
+        return f"Tesseract_{get_tesseract_version()}"
 
 
 class TesseractRotationTransformer(ImageTransformer):

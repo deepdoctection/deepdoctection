@@ -59,24 +59,32 @@ class Annotations:
             score=0.63,
             category_name=LayoutType.title,
             category_id="2",
+            model_id="test_model",
+            service_id="d0b8e9f3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=50.0, uly=50.0, lrx=150.0, lry=200.0, absolute_coords=True),
             score=0.97,
             category_name=LayoutType.table,
             category_id="4",
+            model_id="test_model",
+            service_id="d0b8e9f3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=320.0, lrx=150.0, lry=350.0, absolute_coords=True),
             score=0.53,
             category_name=LayoutType.text,
             category_id="1",
+            model_id="test_model",
+            service_id="d0b8e9f3",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=200.0, uly=50.0, lrx=250.0, lry=200.0, absolute_coords=True),
             score=0.83,
             category_name=LayoutType.table,
             category_id="4",
+            model_id="test_model",
+            service_id="d0b8e9f3",
         ),
     ]
 
@@ -86,12 +94,16 @@ class Annotations:
             score=0.9,
             category_name=LayoutType.title,
             category_id="2",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=300.0, lrx=250.0, lry=350.0, absolute_coords=True),
             score=0.8,
             category_name=LayoutType.text,
             category_id="1",
+            model_id="test_model",
+            service_id="test_service",
         ),
     ]
 
@@ -110,12 +122,16 @@ class Annotations:
                 category_id="1",
                 category_name=CellType.header,
                 score=0.8,
+                model_id="test_model",
+                service_id="test_service",
             ),
             ImageAnnotation(
                 bounding_box=BoundingBox(ulx=40.0, uly=40.0, lrx=50.0, lry=50.0, absolute_coords=True),
                 category_id="2",
                 category_name=CellType.body,
                 score=0.53,
+                model_id="test_model",
+                service_id="test_service",
             ),
         ],
         [
@@ -124,6 +140,8 @@ class Annotations:
                 category_id="1",
                 category_name=CellType.body,
                 score=0.4,
+                model_id="test_model",
+                service_id="test_service",
             )
         ],
     ]
@@ -142,6 +160,8 @@ class Annotations:
             score=0.97,
             category_name=LayoutType.table,
             category_id="2",
+            model_id="test_model",
+            service_id="test_service",
         )
     ]
 
@@ -151,30 +171,40 @@ class Annotations:
             score=0.8,
             category_name=LayoutType.cell,
             category_id="3",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=200.0, lrx=20.0, lry=250.0, absolute_coords=True),
             score=0.7,
             category_name=LayoutType.cell,
             category_id="3",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=100.0, lrx=50.0, lry=150.0, absolute_coords=True),
             score=0.6,
             category_name=LayoutType.cell,
             category_id="3",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=200.0, lrx=50.0, lry=250.0, absolute_coords=True),
             score=0.5,
             category_name=LayoutType.cell,
             category_id="3",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=80.0, uly=260.0, lrx=90.0, lry=280.0, absolute_coords=True),
             score=0.4,
             category_name=LayoutType.cell,
             category_id="3",
+            model_id="test_model",
+            service_id="test_service",
         ),
     ]
 
@@ -184,12 +214,16 @@ class Annotations:
             score=0.8,
             category_name=LayoutType.row,
             category_id="6",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=200.0, lrx=70.0, lry=240.0, absolute_coords=True),
             score=0.7,
             category_name=LayoutType.row,
             category_id="6",
+            model_id="test_model",
+            service_id="test_service",
         ),
     ]
 
@@ -204,12 +238,16 @@ class Annotations:
             score=0.3,
             category_name=LayoutType.column,
             category_id="7",
+            model_id="test_model",
+            service_id="test_service",
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=20.0, lrx=50.0, lry=240.0, absolute_coords=True),
             score=0.2,
             category_name=LayoutType.column,
             category_id="7",
+            model_id="test_model",
+            service_id="test_service",
         ),
     ]
 
@@ -219,86 +257,86 @@ class Annotations:
     ]
 
     row_sub_cats = [
-        CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
-        CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
+        CategoryAnnotation(category_name=CellType.row_number, category_id="1", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
     ]
 
     col_sub_cats = [
-        CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
-        CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
+        CategoryAnnotation(category_name=CellType.column_number, category_id="1", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
     ]
 
     cell_sub_cats = [
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="0"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="0"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="0"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="0"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="0", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="0", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="0", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="0", service_id="dbf4f87c"),
         ),
     ]
 
     cell_sub_cats_when_table_fully_tiled = [
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
         (
-            CategoryAnnotation(category_name=CellType.row_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.column_number, category_id="2"),
-            CategoryAnnotation(category_name=CellType.row_span, category_id="1"),
-            CategoryAnnotation(category_name=CellType.column_span, category_id="1"),
+            CategoryAnnotation(category_name=CellType.row_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_number, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.row_span, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.column_span, category_id="1", service_id="dbf4f87c"),
         ),
     ]
 
     summary_sub_cat_when_table_fully_tiled = (
-        CategoryAnnotation(category_name=TableType.number_of_rows, category_id="2"),
-        CategoryAnnotation(category_name=TableType.number_of_columns, category_id="2"),
-        CategoryAnnotation(category_name=TableType.max_row_span, category_id="1"),
-        CategoryAnnotation(category_name=TableType.max_col_span, category_id="1"),
+        CategoryAnnotation(category_name=TableType.number_of_rows, category_id="2", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=TableType.number_of_columns, category_id="2", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=TableType.max_row_span, category_id="1", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=TableType.max_col_span, category_id="1", service_id="dbf4f87c"),
     )
 
     summary_htab_sub_cat = ContainerAnnotation(
@@ -1564,10 +1602,12 @@ class TestType(ObjectTypes):
     BAK_21 = "BAK_21"
     BAK_22 = "BAK_22"
     BLA = "BLA"
+    BLU = "BLU"
     cat = "cat"
     FOO_1 = "FOO_1"
     FOO_2 = "FOO_2"
     FOO_3 = "FOO_3"
+    BLI = "BLI"
     FOOBAK = "FOOBAK"
     Test = "TEST"
     TEST_SUMMARY = "TEST_SUMMARY"

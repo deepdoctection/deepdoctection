@@ -70,6 +70,11 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         categories["0"] = get_type("background")
         return categories  # type: ignore
 
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"Tensorpack_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
 
 class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
     """
@@ -122,8 +127,8 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         :param filter_categories: The model might return objects that are not supposed to be predicted and that should
                                   be filtered. Pass a list of category names that must not be returned
         """
-        self.name = "_".join(Path(path_weights).parts[-3:])
         self.path_yaml = path_yaml
+
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
         if filter_categories:
@@ -132,6 +137,9 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         model = TPFrcnnDetector.get_wrapped_model(path_yaml, self.categories, config_overwrite)
         TensorpackPredictor.__init__(self, model, path_weights, ignore_mismatch)
         TPFrcnnDetectorMixin.__init__(self, categories, filter_categories)
+
+        self.name = self.get_name(path_weights, self._model.cfg.TAG)
+        self.model_id = self.get_model_id()
         assert self._number_gpus > 0, "Model only support inference with GPU"
 
     @staticmethod

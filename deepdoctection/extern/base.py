@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from ..utils.detection_types import ImageType, JsonDict, Requirement
+from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
 
@@ -34,6 +35,7 @@ class PredictorBase(ABC):
     """
 
     name: str
+    model_id: str
 
     def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
         requirements = cls.get_requirements()
@@ -61,6 +63,15 @@ class PredictorBase(ABC):
         Clone an instance
         """
         raise NotImplementedError()
+
+    def get_model_id(self) -> str:
+        """
+        Get the generating model
+        """
+        if self.name is not None:
+            return get_uuid_from_str(self.name)[:8]
+        raise ValueError("name must be set before calling get_model_id")
+
 
 
 @dataclass

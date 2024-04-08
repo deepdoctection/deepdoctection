@@ -18,6 +18,8 @@
 """
 Testing module extern.deskew
 """
+import os
+from ast import literal_eval
 
 from numpy.testing import assert_array_equal
 from pytest import mark
@@ -41,7 +43,11 @@ class TestJdeskewer:
 
         # Arrange
         test_path_input_image = get_test_path() / "skewed_input.png"
-        test_path_gt_image = get_test_path() / "skewed_gt_opencv.png"
+
+        if literal_eval(os.environ["USE_DD_OPENCV"]):
+            test_path_gt_image = get_test_path() / "skewed_gt_opencv.png"
+        else:
+            test_path_gt_image = get_test_path() / "skewed_gt_pil.png"
 
         image = load_image_from_file(test_path_input_image)
         image_gt = load_image_from_file(test_path_gt_image)

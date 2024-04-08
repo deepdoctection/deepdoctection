@@ -19,6 +19,7 @@
 Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
 """
 import os
+from abc import ABC
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple
 from zipfile import ZipFile
@@ -87,6 +88,16 @@ def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Liter
             doctr_predictor.model.load_weights(path_weights)
 
 
+def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
+    """Auto select the DL library from the installed and from environment variables"""
+    if tf_available() and os.environ.get("USE_TF", os.environ.get("USE_TENSORFLOW", False)):
+        os.environ["USE_TF"] = "TRUE"
+        return "TF"
+    if pytorch_available() and os.environ.get("USE_TORCH", os.environ.get("USE_PYTORCH", False)):
+        return "PT"
+    raise DependencyError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
+
+
 def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor", device: str) -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
@@ -136,14 +147,25 @@ def doctr_predict_text(
     return detection_results
 
 
-class DoctrTextlineDetectorMixin(ObjectDetector):
+class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
     """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr]):
+    def __init__(self, categories: Mapping[str, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
         self.categories = categories  # type: ignore
+        self.lib = lib if lib is not None else self.auto_select_lib()
 
     def possible_categories(self) -> List[ObjectTypes]:
         return [LayoutType.word]
+
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
+    @staticmethod
+    def auto_select_lib() -> Literal["PT", "TF"]:
+        """Auto select the DL library from the installed and from environment variables"""
+        return auto_select_lib_for_doctr()
 
 
 class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
@@ -198,25 +220,25 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
         :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
         """
-        super().__init__(categories)
-        if lib is None:
-            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
-        self.lib = lib
-        self.name = "doctr_text_detector"
+        super().__init__(categories, lib)
         self.architecture = architecture
         self.path_weights = path_weights
 
+        self.name = self.get_name(self.path_weights, self.architecture)
+        self.model_id = self.get_model_id()
+
         if device is None:
-            if tf_available():
+            if self.lib == "TF":
                 device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            if pytorch_available():
+            elif self.lib == "PT":
                 auto_device = get_device(False)
                 device = "cpu" if auto_device == "mps" else auto_device
+            else:
+                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+
         self.device_input = device
         self.device = _set_device_str(device)
-        self.doctr_predictor = self.get_wrapped_model(
-            self.architecture, self.path_weights, self.device_input, self.lib  # type: ignore
-        )
+        self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device_input, self.lib)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -324,22 +346,25 @@ class DoctrTextRecognizer(TextRecognizer):
         :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
         a model trained on custom vocab.
         """
-        if lib is None:
-            lib = "TF" if os.environ["USE_TENSORFLOW"] else "PT"
-        self.lib = lib
-        self.name = "doctr_text_recognizer"
+
+        self.lib = lib if lib is not None else self.auto_select_lib()
+
         self.architecture = architecture
         self.path_weights = path_weights
 
+        self.name = self.get_name(self.path_weights, self.architecture)
+        self.model_id = self.get_model_id()
+
         if device is None:
-            if tf_available():
+            if self.lib == "TF":
                 device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            if pytorch_available():
+            if self.lib == "PT":
                 auto_device = get_device(False)
                 device = "cpu" if auto_device == "mps" else auto_device
             else:
-                raise DependencyError("Tensorflow or PyTorch must be installed")
-        self.device_input: Literal["cpu", "cuda"] = device
+                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+
+        self.device_input = device
         self.device = _set_device_str(device)
         self.path_config_json = path_config_json
         self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
@@ -435,6 +460,15 @@ class DoctrTextRecognizer(TextRecognizer):
         DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device_str, lib)
         return doctr_predictor
 
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
+
+    @staticmethod
+    def auto_select_lib() -> Literal["PT", "TF"]:
+        """Auto select the DL library from the installed and from environment variables"""
+        return auto_select_lib_for_doctr()
 
 class DocTrRotationTransformer(ImageTransformer):
     """

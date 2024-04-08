@@ -42,6 +42,7 @@ class TestTextExtractionService:
 
         self._text_extract_detector = MagicMock(spec=ObjectDetector)
         self._text_extract_detector.name = "mock_text_extractor"
+        self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
     @mark.basic
@@ -78,6 +79,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
 
         self._text_extract_detector = MagicMock(spec=PdfMiner)
         self._text_extract_detector.name = "mock_pdfminer"
+        self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(self._text_extract_detector)
 
     @mark.basic
@@ -113,6 +115,7 @@ def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> 
     # Arrange
     text_extract_detector = MagicMock(spec=PdfMiner)
     text_extract_detector.name = "mock_pdfminer"
+    text_extract_detector.model_id = "test_model"
 
     # Act and Assert
     with raises(TypeError):
@@ -132,6 +135,7 @@ class TestTextExtractionServiceWithSubImage:
 
         self._text_extract_detector = MagicMock(spec=ObjectDetector, accepts_batch=False)
         self._text_extract_detector.name = "mock_text_extractor"
+        self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(
             self._text_extract_detector, extract_from_roi=LayoutType.table
         )

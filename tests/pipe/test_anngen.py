@@ -43,7 +43,7 @@ class TestDatapointManager:
         test set_image_annotation
         """
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="d0b8e9f3", model_id="test_model")
         dp_manager.datapoint = dp_image
 
         # Act
@@ -63,7 +63,7 @@ class TestDatapointManager:
         test set_image_annotation with image_ann_to_image
         """
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="test_service", model_id="test_model")
         dp_manager.datapoint = dp_image
 
         # Act
@@ -82,7 +82,7 @@ class TestDatapointManager:
         """
 
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="test_service", model_id="test_model")
         dp_manager.datapoint = dp_image
         img_ann_id = dp_manager.set_image_annotation(layout_detect_results[0], to_image=True)
 
@@ -106,7 +106,7 @@ class TestDatapointManager:
         """
 
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="test_service", model_id="test_model")
         dp_manager.datapoint = dp_image
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0])
 
@@ -130,7 +130,7 @@ class TestDatapointManager:
         """
 
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="test_service", model_id="test_model")
         dp_manager.datapoint = dp_image
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0])
 
@@ -158,7 +158,7 @@ class TestDatapointManager:
         """
 
         # Arrange
-        dp_manager = DatapointManager()
+        dp_manager = DatapointManager(service_id="test_service", model_id="test_model")
         dp_manager.datapoint = dp_image
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0], to_image=True)
 
