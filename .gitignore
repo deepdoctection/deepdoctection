@@ -19,4 +19,6 @@ snippets.py
 /build/
 /wandb/
 .env
+/divs/dummy_2.py
+/divs/
 /dummy_2.py

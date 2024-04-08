@@ -200,7 +200,6 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         :param device: The device (cpu,"cuda"), where to place the model.
         """
 
-        self.name = "_".join(Path(path_weights).parts[-3:])
         if categories is None:
             if categories_semantics is None:
                 raise ValueError("If categories is None then categories_semantics cannot be None")
@@ -302,6 +301,11 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             self.device,
         )
 
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
+
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
     """
@@ -357,6 +361,8 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
+        self.name = self.get_name(path_weights, "LayoutLM")
+        self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
@@ -454,6 +460,8 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
+        self.name = self.get_name(path_weights, "LayoutLMv2")
+        self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
@@ -566,6 +574,8 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
         """
+        self.name = self.get_name(path_weights, "LayoutLMv3")
+        self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
@@ -638,7 +648,6 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
-        self.name = "_".join(Path(path_weights).parts[-3:])
         self.path_config = path_config_json
         self.path_weights = path_weights
         self.categories = copy(categories)  # type: ignore
@@ -722,6 +731,11 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         boxes = boxes.to(self.device)
         return input_ids, attention_mask, token_type_ids, boxes
 
+    @staticmethod
+    def get_name(path_weights: str, architecture: str) -> str:
+        """Returns the name of the model"""
+        return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
+
 
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
@@ -761,6 +775,8 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        self.name = self.get_name(path_weights, "LayoutLM")
+        self.model_id = self.get_model_id()
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         self.model = LayoutLMForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
@@ -835,6 +851,8 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        self.name = self.get_name(path_weights, "LayoutLMv2")
+        self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device)
 
@@ -913,6 +931,8 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
     ):
+        self.name = self.get_name(path_weights, "LayoutLMv3")
+        self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device)
 

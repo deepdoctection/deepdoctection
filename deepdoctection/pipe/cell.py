@@ -24,9 +24,11 @@ from typing import Dict, List, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
+from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from ..utils.detection_types import JsonDict
+from ..utils.detection_types import ImageType, JsonDict
 from ..utils.settings import ObjectTypes, Relationships
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
@@ -181,18 +183,14 @@ class SubImageLayoutService(PredictorPipelineComponent):
         """
         sub_image_anns = dp.get_annotation_iter(category_names=self.sub_image_name)
         for sub_image_ann in sub_image_anns:
-            if sub_image_ann.image is None:
-                raise ValueError("sub_image_ann.image is None, but must be an image")
-            np_image = sub_image_ann.image.image
-            if self.padder:
-                np_image = self.padder.apply_image(np_image)
-            detect_result_list = self.predictor.predict(np_image)
+            np_image = self.prepare_np_image(sub_image_ann)
+            detect_result_list = self.predictor.predict(np_image)  # type: ignore
             if self.padder and detect_result_list:
                 boxes = np.array([detect_result.box for detect_result in detect_result_list])
                 boxes_orig = self.padder.inverse_apply_coords(boxes)
                 for idx, detect_result in enumerate(detect_result_list):
                     detect_result.box = boxes_orig[idx, :].tolist()
-            if self.detect_result_generator:
+            if self.detect_result_generator and sub_image_ann.image:
                 self.detect_result_generator.width = sub_image_ann.image.width
                 self.detect_result_generator.height = sub_image_ann.image.height
                 detect_result_list = self.detect_result_generator.create_detection_result(detect_result_list)
@@ -235,3 +233,26 @@ class SubImageLayoutService(PredictorPipelineComponent):
             deepcopy(self.detect_result_generator),
             padder_clone,
         )
+
+    def prepare_np_image(self, sub_image_ann: ImageAnnotation) -> ImageType:
+        """Maybe crop and pad a np_array before passing it to the predictor.
+
+        Note that we currently assume to a two level hierachy of images, e.g. we can crop a sub-image from the base
+        image, e.g. the original input but we cannot crop a sub-image from an image which is itself a sub-image.
+
+        :param sub_image_ann: ImageAnnotation to be processed
+        :return: processed np_image
+        """
+        if sub_image_ann.image is None:
+            raise ValueError("sub_image_ann.image is None, but must be an datapoint.Image")
+        np_image = sub_image_ann.image.image
+        if np_image is None and self.dp_manager.datapoint.image is not None:
+            np_image = crop_box_from_image(
+                self.dp_manager.datapoint.image,
+                sub_image_ann.get_bounding_box(self.dp_manager.datapoint.image_id),
+                self.dp_manager.datapoint.width,
+                self.dp_manager.datapoint.height,
+            )
+        if self.padder:
+            np_image = self.padder.apply_image(np_image)
+        return np_image
