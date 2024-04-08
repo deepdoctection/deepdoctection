@@ -19,5 +19,7 @@ snippets.py
 /build/
 /wandb/
 .env
+<<<<<<< HEAD
 /divs/dummy_2.py
 /divs/
+/dummy_2.py
