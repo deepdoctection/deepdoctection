@@ -73,6 +73,7 @@ class PredictorBase(ABC):
         raise ValueError("name must be set before calling get_model_id")
 
 
+
 @dataclass
 class DetectionResult:
     """
