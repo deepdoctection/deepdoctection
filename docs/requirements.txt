@@ -4,7 +4,7 @@
 #
 #    pip-compile --extra=docs --output-file=docs/requirements.txt setup.py
 #
-accelerate==0.25.0
+accelerate==0.29.1
     # via deepdoctection (setup.py)
 attrs==22.2.0
     # via jsonlines
@@ -14,7 +14,7 @@ botocore==1.29.35
     # via
     #   boto3
     #   s3transfer
-catalogue==2.0.7
+catalogue==2.0.10
     # via deepdoctection (setup.py)
 certifi==2022.12.7
     # via requests
@@ -59,7 +59,7 @@ importlib-metadata==5.2.0
     #   deepdoctection (setup.py)
     #   markdown
     #   mkdocs
-jdeskew==0.2.0
+jdeskew==0.2.2
     # via deepdoctection (setup.py)
 jinja2==3.0.3
     # via
@@ -72,11 +72,11 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsonlines==3.0.0
+jsonlines==3.1.0
     # via deepdoctection (setup.py)
 lxml==4.9.2
     # via deepdoctection (setup.py)
-lxml-stubs==0.4.0
+lxml-stubs==0.5.1
     # via deepdoctection (setup.py)
 markdown==3.3.7
     # via
@@ -126,7 +126,7 @@ numpy==1.24.0
     #   deepdoctection (setup.py)
     #   jdeskew
     #   msgpack-numpy
-    #   opencv-python
+    #   opencv-python-headless
     #   tensorpack
     #   transformers
 nvidia-cublas-cu12==12.1.3.1
@@ -160,7 +160,7 @@ nvidia-nvjitlink-cu12==12.3.101
     #   nvidia-cusparse-cu12
 nvidia-nvtx-cu12==12.1.105
     # via torch
-opencv-python==4.5.4.60
+opencv-python-headless==4.9.0.80
     # via jdeskew
 packaging==21.3
     # via
@@ -197,7 +197,7 @@ python-dateutil==2.8.2
     # via
     #   botocore
     #   ghp-import
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   accelerate
     #   deepdoctection (setup.py)
