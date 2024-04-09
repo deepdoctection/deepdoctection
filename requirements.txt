@@ -6,7 +6,7 @@
 #
 attrs==21.4.0
     # via jsonlines
-catalogue==2.0.7
+catalogue==2.0.10
     # via deepdoctection (setup.py)
 certifi==2021.10.8
     # via requests
@@ -20,9 +20,9 @@ huggingface-hub==0.17.2
     # via deepdoctection (setup.py)
 idna==3.3
     # via requests
-importlib-metadata==4.11.2
+importlib-metadata==7.1.0
     # via deepdoctection (setup.py)
-jsonlines==3.0.0
+jsonlines==3.1.0
     # via deepdoctection (setup.py)
 mock==4.0.3
     # via deepdoctection (setup.py)
@@ -40,7 +40,7 @@ pyparsing==3.0.7
     # via packaging
 pypdf==3.17.3
     # via deepdoctection (setup.py)
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   deepdoctection (setup.py)
     #   huggingface-hub
