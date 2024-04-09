@@ -72,13 +72,13 @@ install-jupyterlab-setup: check-venv
 	@echo "--> Done installing Jupyter Lab"
 
 install-kernel-dd: check-venv
-	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
+	@echo "--> Installing IPkernel setup and setup kernel deepdoctection"
 	pip install --user ipykernel
 	$(PYTHON) -m ipykernel install --user --name=deep-doc
 	@echo "--> Done installing kernel deep-doc"
 
 install-kernel-dd-mac: check-venv
-	@echo "--> Installing IPkernel setup and setup kernel deep-doctection"
+	@echo "--> Installing IPkernel setup and setup kernel deepdoctection"
 	pip install ipykernel
 	$(PYTHON) -m ipykernel install --name=deep-doc
 	@echo "--> Done installing kernel deep-doc"

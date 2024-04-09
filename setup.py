@@ -42,10 +42,10 @@ sys.path.insert(0, ROOT)
 _DEPS = [
     # the minimum requirements to run pipelines without considering DL models specific dependencies
     "apted==1.0.3",
-    "catalogue==2.0.7",
+    "catalogue==2.0.10",
     "distance==0.1.3",
     "huggingface_hub>=0.12.0",
-    "importlib-metadata>=4.11.2",
+    "importlib-metadata>=5.0.0",
     "jsonlines==3.1.0",
     "lxml>=4.9.1",
     "mock==4.0.3",
@@ -213,7 +213,6 @@ EXTRA_DEPS = {
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
-    "hf": pt_deps,
 }
 
 setup(
