@@ -45,6 +45,10 @@ pipelines. Its core function does not depend on any specific deep learning libra
    not required anymore for basic inference.
  - [**new**] More angle predictors for determining the rotation of a document based on Tesseract and DocTr 
    (not contained in the built-in Analyzer).
+ - [**new**] Token classification with LiLT. We have added a model wrapper for token classification with LiLT and 
+   added a some LiLT models to the model catalog that seem to look promising, especially if you want to
+   train a model on non-english data. The training script for LayoutLM can be used for LiLT as well and we will
+   be providing a notebook on how to train a model on a custom dataset soon.
 
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 

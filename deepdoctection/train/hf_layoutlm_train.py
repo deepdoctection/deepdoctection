@@ -31,7 +31,6 @@ from transformers import (
     IntervalStrategy,
     LayoutLMForSequenceClassification,
     LayoutLMForTokenClassification,
-    LayoutLMTokenizerFast,
     LayoutLMv2Config,
     LayoutLMv2ForSequenceClassification,
     LayoutLMv2ForTokenClassification,
@@ -40,8 +39,6 @@ from transformers import (
     LayoutLMv3ForTokenClassification,
     PretrainedConfig,
     PreTrainedModel,
-    RobertaTokenizerFast,
-    XLMRobertaTokenizerFast,
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -57,10 +54,12 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv2TokenClassifier,
     HFLayoutLmv3SequenceClassifier,
     HFLayoutLmv3TokenClassifier,
+    HFLiltTokenClassifier,
+    LiltForTokenClassification,
+    get_tokenizer_from_model_class,
 )
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features
 from ..pipe.base import LanguageModelPipelineComponent
-from ..pipe.lm import get_tokenizer_from_architecture
 from ..pipe.registry import pipeline_component_registry
 from ..utils.env_info import get_device
 from ..utils.error import DependencyError
@@ -88,6 +87,11 @@ _ARCHITECTURES_TO_MODEL_CLASS = {
         LayoutLMv2ForSequenceClassification,
         HFLayoutLmv2SequenceClassifier,
         LayoutLMv2Config,
+    ),
+    "LiltModel": (
+        LiltForTokenClassification,
+        HFLiltTokenClassifier,
+        PretrainedConfig,
     ),
 }
 
@@ -123,12 +127,11 @@ _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
         HFLayoutLmv3TokenClassifier,
         LayoutLMv3Config,
     ),
-}
-_MODEL_TYPE_TO_TOKENIZER = {
-    ("layoutlm", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    ("layoutlmv2", False): LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased"),
-    ("layoutlmv2", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base", add_prefix_space=True),
-    ("layoutlmv3", False): RobertaTokenizerFast.from_pretrained("roberta-base", add_prefix_space=True),
+    ("lilt", DatasetType.token_classification): (
+        LiltForTokenClassification,
+        HFLiltTokenClassifier,
+        PretrainedConfig,
+    ),
 }
 
 
@@ -217,16 +220,12 @@ def _get_model_class_and_tokenizer(
 
     if architectures := config_json.get("architectures"):
         model_cls, model_wrapper_cls, config_cls = _ARCHITECTURES_TO_MODEL_CLASS[architectures[0]]
-        tokenizer_fast = get_tokenizer_from_architecture(architectures[0], use_xlm_tokenizer)
     elif model_type:
         model_cls, model_wrapper_cls, config_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS[(model_type, dataset_type)]
-        tokenizer_fast = _MODEL_TYPE_TO_TOKENIZER[(model_type, use_xlm_tokenizer)]
     else:
-        raise KeyError("model_type and architectures not available in configs")
+        raise KeyError("model_type and architectures not available in configs. It seems that the config is not valid")
 
-    if not model_cls:
-        raise UserWarning("model not eligible to run with this framework")
-
+    tokenizer_fast = get_tokenizer_from_model_class(model_cls.__name__, use_xlm_tokenizer)
     return config_cls, model_cls, model_wrapper_cls, tokenizer_fast
 
 
@@ -476,6 +475,7 @@ def train_hf_layoutlm(
             path_weights=path_weights,
             categories=categories,
             device=get_device(),
+            use_xlm_tokenizer=use_xlm_tokenizer,
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.sequence_classification:

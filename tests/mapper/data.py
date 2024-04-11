@@ -686,7 +686,7 @@ class DatapointCoco:
         """
         if path == self.dp["file_name"]:
             if type_id == "np":
-                return self.white_image # type: ignore
+                return self.white_image  # type: ignore
             return self.white_image_string
         return None
 
