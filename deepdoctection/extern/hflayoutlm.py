@@ -56,14 +56,55 @@ if transformers_available():
     from transformers import (
         LayoutLMForSequenceClassification,
         LayoutLMForTokenClassification,
+        LayoutLMTokenizerFast,
         LayoutLMv2Config,
         LayoutLMv2ForSequenceClassification,
         LayoutLMv2ForTokenClassification,
         LayoutLMv3Config,
         LayoutLMv3ForSequenceClassification,
         LayoutLMv3ForTokenClassification,
+        LiltForTokenClassification,
         PretrainedConfig,
+        RobertaTokenizerFast,
+        XLMRobertaTokenizerFast,
     )
+
+
+def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) -> Any:
+    """
+    We do not use the tokenizer for a particular model that the transformer library provides. Thie mapping therefore
+    returns the tokenizer that should be used for a particular model.
+
+    :param model_class: The model as stated in the transformer library.
+    :param use_xlm_tokenizer: True if one uses the LayoutXLM. (The model cannot be distinguished from LayoutLMv2).
+    :return: Tokenizer instance to use.
+    """
+    return {
+        ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForSequenceClassification", False): LayoutLMTokenizerFast.from_pretrained(
+            "microsoft/layoutlm-base-uncased"
+        ),
+        ("LayoutLMv2ForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LayoutLMv2ForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LayoutLMv3ForSequenceClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
+        ("LayoutLMv3ForTokenClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
+        ("LiltForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LiltForTokenClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
+    }[(model_class, use_xlm_tokenizer)]
 
 
 def predict_token_classes(
@@ -187,6 +228,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -198,6 +240,8 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
                                consistent with detectors use only values>0. Conversion will be done internally.
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
+        :param use_xlm_tokenizer: True if one uses the LayoutXLM or a lilt model built with a xlm language model, e.g.
+                                  info-xlm or roberta-xlm. (LayoutXLM cannot be distinguished from LayoutLMv2).
         """
 
         if categories is None:
@@ -223,6 +267,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -306,6 +351,14 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
+    def get_tokenizer_class_name(self, use_xlm_tokenizer: bool) -> str:
+        """A refinement for adding the tokenizer class name to the model configs.
+
+        :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
+        """
+        tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
+        return tokenizer.__class__.__name__
+
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
     """
@@ -349,6 +402,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -360,11 +414,15 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
                                consistent with detectors use only values>0. Conversion will be done internally.
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
+        :param use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLM model with a different
+                                  Tokenizer.
         """
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
         """
@@ -448,6 +506,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -459,11 +518,15 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
                                consistent with detectors use only values>0. Conversion will be done internally.
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
+        :param use_xlm_tokenizer: Set to True if you use a LayoutXLM model. If you use a LayoutLMv2 model keep the
+                                  default value.
         """
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
         """
@@ -562,6 +625,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -573,11 +637,15 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
                                consistent with detectors use only values>0. Conversion will be done internally.
         :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
         :param device: The device (cpu,"cuda"), where to place the model.
+        :param use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLMv3 model with a different
+                                  tokenizer.
         """
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
         """
@@ -647,6 +715,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         self.path_config = path_config_json
         self.path_weights = path_weights
@@ -657,6 +726,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
         input_ids = encodings.get("input_ids")
@@ -736,6 +806,14 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
+    def get_tokenizer_class_name(self, use_xlm_tokenizer: bool) -> str:
+        """A refinement for adding the tokenizer class name to the model configs.
+
+        :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
+        """
+        tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
+        return tokenizer.__class__.__name__
+
 
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
@@ -774,14 +852,12 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        self.model = LayoutLMForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
-        super().__init__(path_config_json, path_weights, categories, device)
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -850,11 +926,12 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -930,11 +1007,12 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
     def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -977,3 +1055,103 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return LayoutLMv3ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
         )
+
+
+class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
+    """
+    A wrapper class for `transformers.LiltForTokenClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/model_doc/lilt> for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
+    classification and other things please use another model of the family.
+
+    **Example**
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and token classifier
+            tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
+            lilt = HFLiltTokenClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                               'E-header', 'E-question', 'I-answer', 'I-header',
+                                                               'I-question', 'O', 'S-answer', 'S-header',
+                                                               'S-question'])
+
+            # token classification service
+            lilt_service = LMTokenClassifierService(tokenizer,lilt)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
+
+    def __init__(
+        self,
+        path_config_json: str,
+        path_weights: str,
+        categories_semantics: Optional[Sequence[TypeOrStr]] = None,
+        categories_bio: Optional[Sequence[TypeOrStr]] = None,
+        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
+    ):
+        """
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
+                                     entities self. To be consistent with detectors use only values >0. Conversion will
+                                     be done internally.
+        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
+                               consistent with detectors use only values>0. Conversion will be done internally.
+        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
+        :param device: The device (cpu,"cuda"), where to place the model.
+        """
+        self.name = self.get_name(path_weights, "LiLT")
+        self.model_id = self.get_model_id()
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
+
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
+        """
+        Launch inference on LayoutLm for token classification. Pass the following arguments
+
+        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+
+        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+
+        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
+
+        `boxes:` Torch tensor of bounding boxes of type 'xyxy'
+
+        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
+
+        :return: A list of TokenClassResults
+        """
+
+        ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
+
+        results = predict_token_classes(
+            ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
+        )
+
+        return self._map_category_names(results)
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LiltForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)

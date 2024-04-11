@@ -36,13 +36,13 @@ from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.cell import DetectResultGenerator, SubImageLayoutService
 from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
+from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..utils.detection_types import Pathlike
 from ..utils.env_info import get_device
