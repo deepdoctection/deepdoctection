@@ -759,6 +759,11 @@ class Page(Image):
         box_stack = []
         cells_found = False
 
+        if self.image is None and interactive:
+            logger.warning(
+                LoggingRecord("No image provided. Cannot display image in interactive mode", {"page_id": self.image_id})
+            )
+
         if debug_kwargs:
             anns = self.get_annotation(category_names=list(debug_kwargs.keys()))
             for ann in anns:
