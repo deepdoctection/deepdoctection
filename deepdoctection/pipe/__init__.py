@@ -22,7 +22,6 @@ Contains pipeline components that can be plugged into each other and predictors 
 
 from .anngen import *
 from .base import *
-from .cell import *
 from .common import *
 from .concurrency import *
 from .doctectionpipe import *
@@ -33,5 +32,6 @@ from .order import *
 from .refine import *
 from .registry import *
 from .segment import *
+from .sub_layout import *
 from .text import *
 from .transform import *

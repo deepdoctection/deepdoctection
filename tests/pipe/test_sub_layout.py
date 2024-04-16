@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: test_cell.py
+# File: test_sub_layout.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -28,7 +28,7 @@ from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.base import ObjectDetector
-from deepdoctection.pipe.cell import DetectResultGenerator, SubImageLayoutService
+from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import LayoutType
 
 

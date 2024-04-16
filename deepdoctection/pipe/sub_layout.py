@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: cell.py
+# File: sub_layout.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #

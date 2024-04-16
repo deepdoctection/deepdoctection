@@ -71,7 +71,7 @@ class NerBuilder(dd.DataFlowBaseBuilder):
 ner = dd.CustomDataset(name = "FRFPE",
                  dataset_type=dd.DatasetType.token_classification,
                  location="FRFPE",
-                 init_categories=[dd.Layout.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
+                 init_categories=[dd.LayoutType.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
                                   dd.LayoutType.figure, dd.LayoutType.line, dd.LayoutType.word],
                  init_sub_categories={dd.LayoutType.word: {dd.WordType.token_class: [FundsFirstPage.report_date,
                                                                                      FundsFirstPage.report_type,
