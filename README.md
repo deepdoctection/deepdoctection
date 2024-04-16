@@ -31,7 +31,8 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Text mining for native PDFs with  [**pdfplumber**](https://github.com/jsvine/pdfplumber), 
  - Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
  - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew). 
- - Document and token classification with all LayoutLM models provided by the Transformer library. 
+ - Document and token classification with all LayoutLM models provided by the 
+   [**Transformer library**](https://github.com/huggingface/transformers). 
    (Yes, you can use any LayoutLM-model with any of the provided OCR-or pdfplumber tools straight away!).
  - Table detection and table structure recognition with 
    [**table-transformer**](https://github.com/microsoft/table-transformer). 
@@ -41,14 +42,16 @@ pipelines. Its core function does not depend on any specific deep learning libra
  - Comprehensive configuration of **analyzer** like choosing different models, output parsing, OCR selection.
    Check this [notebook](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Configuration.ipynb) or the 
    [docs](https://deepdoctection.readthedocs.io/en/latest/tutorials/analyzer_configuration_notebook/) for more infos.
- - Document layout analysis and table recognition now runs with Torchscript (CPU) as well and Detectron2 is 
-   not required anymore for basic inference.
- - [**new**] More angle predictors for determining the rotation of a document based on Tesseract and DocTr 
+ - Document layout analysis and table recognition now runs with 
+   [**Torchscript**](https://pytorch.org/docs/stable/jit.html) (CPU) as well and [**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2) is not required 
+   anymore for basic inference.
+ - [**new**] More angle predictors for determining the rotation of a document based on [**Tesseract**](https://github.com/tesseract-ocr/tesseract) and [**DocTr**](https://github.com/mindee/doctr)
    (not contained in the built-in Analyzer).
- - [**new**] Token classification with LiLT. We have added a model wrapper for token classification with LiLT and 
-   added a some LiLT models to the model catalog that seem to look promising, especially if you want to
-   train a model on non-english data. The training script for LayoutLM can be used for LiLT as well and we will
-   be providing a notebook on how to train a model on a custom dataset soon.
+ - [**new**] Token classification with [**LiLT**](https://github.com/jpWang/LiLT) via 
+   [**transformers**](https://github.com/huggingface/transformers). 
+   We have added a model wrapper for token classification with LiLT and added a some LiLT models to the model catalog 
+   that seem to look promising, especially if you want to train a model on non-english data. The training script for 
+   LayoutLM can be used for LiLT as well and we will be providing a notebook on how to train a model on a custom dataset soon.
 
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
