@@ -31,6 +31,7 @@ from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmv2TokenClassifier,
     HFLayoutLmv3SequenceClassifier,
     HFLayoutLmv3TokenClassifier,
+    HFLiltTokenClassifier,
 )
 from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
@@ -71,6 +72,13 @@ def get_sequence_class_result(  # type: ignore
     return DatapointXfund().get_sequence_class_results()
 
 
+def get_mock_patch(name: str) -> MagicMock:
+    """Generating a mock object with a specific name"""
+    mock =  MagicMock()
+    mock.__class__.__name__ = name
+    return mock
+
+
 class TestHFLayoutLmTokenClassifier:
     """
     Test HFLayoutLmTokenClassifier
@@ -81,8 +89,6 @@ class TestHFLayoutLmTokenClassifier:
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
-    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
         """
         HFLayoutLmTokenClassifier needs pytorch. Construction fails, when requirement is not satisfied
@@ -94,8 +100,6 @@ class TestHFLayoutLmTokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
         """
         HFLayoutLmTokenClassifier creates a full category set depending on semantics, tagging or by passing the
@@ -103,8 +107,9 @@ class TestHFLayoutLmTokenClassifier:
         """
 
         # Arrange, Act & Assert
-        with raises(ValueError):
-            HFLayoutLmTokenClassifier("path/to/json", "path/to/model", ["foo"], None)
+        HFLayoutLmTokenClassifier.get_wrapped_model = ( # type: ignore
+            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification")))
+
 
         # Arrange
         categories_semantics = [TokenClasses.header]
@@ -120,20 +125,17 @@ class TestHFLayoutLmTokenClassifier:
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
+        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model",
+                                          categories=categories_explicit)
 
         # Assert
         assert model.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForTokenClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
         layoutlm_input_for_predictor: JsonDict,
-        categories_semantics: List[str],
-        categories_bio: List[str],
         token_class_names: List[str],
     ) -> None:
         """
@@ -141,9 +143,12 @@ class TestHFLayoutLmTokenClassifier:
         """
 
         # Arrange
+        HFLayoutLmTokenClassifier.get_wrapped_model = (  # type: ignore
+            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification")))
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
-        layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model",
+                                             categories_semantics, categories_bio)
         layoutlm.model.device = "cpu"
 
         # Act
@@ -177,8 +182,6 @@ class TestHFLayoutLmv2TokenClassifier:
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
         """
         HFLayoutLmv2TokenClassifier needs pytorch. Construction fails, when requirement is not satisfied
@@ -190,19 +193,15 @@ class TestHFLayoutLmv2TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
         """
         HFLayoutLmv2TokenClassifier creates a full category set depending on semantics, tagging or by passing the
         set of categories directly
         """
 
-        # Arrange, Act & Assert
-        with raises(ValueError):
-            HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", ["foo"], None)
-
         # Arrange
+        HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv2ForTokenClassification"))
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
@@ -223,13 +222,9 @@ class TestHFLayoutLmv2TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForTokenClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
         layoutlm_v2_input: JsonDict,
-        categories_semantics: List[str],
-        categories_bio: List[str],
         token_class_names: List[str],
     ) -> None:
         """
@@ -237,6 +232,8 @@ class TestHFLayoutLmv2TokenClassifier:
         """
 
         # Arrange
+        HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv2ForTokenClassification"))
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         layoutlm_v2 = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
@@ -274,8 +271,6 @@ class TestHFLayoutLmv3TokenClassifier:
     @patch(
         "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
     )
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForTokenClassification.from_pretrained", MagicMock())
     def test_hf_layout_lm_does_not_build_when_pt_not_available() -> None:
         """
         HFLayoutLmv3TokenClassifier needs pytorch. Construction fails, when requirement is not satisfied
@@ -287,24 +282,23 @@ class TestHFLayoutLmv3TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForTokenClassification.from_pretrained", MagicMock())
     def test_categories_are_constructed_properly() -> None:
         """
         HFLayoutLmv3TokenClassifier creates a full category set depending on semantics, tagging or by passing the
         set of categories directly
         """
 
-        # Arrange, Act & Assert
-        with raises(ValueError):
-            HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", ["foo"], None)
-
         # Arrange
+        HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv3ForTokenClassification"))
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
         # Act
-        model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        model = HFLayoutLmv3TokenClassifier("path/to/json",
+                                            "path/to/model",
+                                            categories_semantics,
+                                            categories_bio)
 
         # Assert
         assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
@@ -320,13 +314,9 @@ class TestHFLayoutLmv3TokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForTokenClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
     @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
     def test_hf_layout_lm_predicts_token(
         layoutlm_v2_input: JsonDict,
-        categories_semantics: List[str],
-        categories_bio: List[str],
         token_class_names: List[str],
     ) -> None:
         """
@@ -334,6 +324,8 @@ class TestHFLayoutLmv3TokenClassifier:
         """
 
         # Arrange
+        HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv3ForTokenClassification"))
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         layoutlm_v3 = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
@@ -368,8 +360,6 @@ class TestHFLayoutLmSequenceClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMForSequenceClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.PretrainedConfig.from_pretrained", MagicMock())
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result)
     )
@@ -381,6 +371,8 @@ class TestHFLayoutLmSequenceClassifier:
         """
 
         # Arrange
+        HFLayoutLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMForSequenceClassification"))
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
@@ -411,8 +403,6 @@ class TestHFLayoutLmv2SequenceClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2ForSequenceClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv2Config.from_pretrained", MagicMock())
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result)
     )
@@ -424,6 +414,8 @@ class TestHFLayoutLmv2SequenceClassifier:
         """
 
         # Arrange
+        HFLayoutLmv2SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv2ForSequenceClassification"))
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm_v2 = HFLayoutLmv2SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v2.model.device = "cpu"
@@ -455,8 +447,6 @@ class TestHFLayoutLmv3SequenceClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3ForSequenceClassification.from_pretrained", MagicMock())
-    @patch("deepdoctection.extern.hflayoutlm.LayoutLMv3Config.from_pretrained", MagicMock())
     @patch(
         "deepdoctection.extern.hflayoutlm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result)
     )
@@ -468,6 +458,8 @@ class TestHFLayoutLmv3SequenceClassifier:
         """
 
         # Arrange
+        HFLayoutLmv3SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LayoutLMv3ForSequenceClassification"))
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm_v3 = HFLayoutLmv3SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v3.model.device = "cpu"
@@ -490,3 +482,92 @@ class TestHFLayoutLmv3SequenceClassifier:
 
         # Assert
         assert results.class_name == "BAK"
+
+
+class TestHFLiltTokenClassifier:
+    """
+    Test HFLiltTokenClassifier
+    """
+
+    @staticmethod
+    @mark.pt_deps
+    @patch(
+        "deepdoctection.extern.hflayoutlm.get_pytorch_requirement", MagicMock(return_value=("torch", False, "DUMMY"))
+    )
+    def test_hf_lilt_does_not_build_when_pt_not_available() -> None:
+        """
+        HFLiltTokenClassifier needs pytorch. Construction fails, when requirement is not satisfied
+        """
+
+        # Arrange, Act & Assert
+        with raises(ImportError):
+            HFLiltTokenClassifier("path/to/json", "path/to/model", ["foo"], ["B", "I", "O"])
+
+    @staticmethod
+    @mark.pt_deps
+    def test_categories_are_constructed_properly() -> None:
+        """
+        HFLiltTokenClassifier creates a full category set depending on semantics, tagging or by passing the
+        set of categories directly
+        """
+
+
+        # Arrange
+        HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LiltForTokenClassification"))
+        categories_semantics = [TokenClasses.header]
+        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+
+        # Act
+        model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+
+        # Assert
+        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+
+        # Arrange
+        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+
+        # Act
+        model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
+
+        # Assert
+        assert model.categories == categories_explicit
+
+    @staticmethod
+    @mark.pt_deps
+    @patch("deepdoctection.extern.hflayoutlm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
+    def test_lilt_predicts_token(
+        layoutlm_input_for_predictor: JsonDict,
+        token_class_names: List[str],
+    ) -> None:
+        """
+        HFLiltTokenClassifier calls predict_token_classes and post processes TokenClassResult correctly
+        """
+
+        # Arrange
+        HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
+            return_value=get_mock_patch("LiltForTokenClassification"))
+        categories_semantics = [TokenClasses.header]
+        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        lilt = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
+        lilt.model.device = "cpu"
+
+        # Act
+        inputs = {
+            "image_ids": layoutlm_input_for_predictor["image_ids"],
+            "width": layoutlm_input_for_predictor["width"],
+            "height": layoutlm_input_for_predictor["height"],
+            "ann_ids": layoutlm_input_for_predictor["ann_ids"],
+            "tokens": layoutlm_input_for_predictor["tokens"],
+            "bbox": torch.tensor(layoutlm_input_for_predictor["bbox"]),
+            "input_ids": torch.tensor(layoutlm_input_for_predictor["input_ids"]),
+            "attention_mask": torch.tensor(layoutlm_input_for_predictor["attention_mask"]),
+            "token_type_ids": torch.tensor(layoutlm_input_for_predictor["token_type_ids"]),
+        }
+
+        results = lilt.predict(**inputs)
+
+        # Assert
+        assert len(results) == 18
+        class_names = [res.class_name for res in results]
+        assert class_names == token_class_names

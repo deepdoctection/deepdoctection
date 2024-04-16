@@ -58,7 +58,7 @@ class TestLMTokenClassifierService:
         language_model.default_kwargs_for_input_mapping = MagicMock(return_value={})
         language_model.model = MagicMock(spec=LayoutLMForTokenClassification)
         language_model.model.config = MagicMock()
-        language_model.model.config.tokenizer_class = None
+        language_model.model.config.tokenizer_class = "LayoutLMTokenizerFast"
         lm_service = LMTokenClassifierService(tokenizer_fast, language_model)
 
         dp = dp_image_with_layout_and_word_annotations
@@ -105,7 +105,7 @@ class TestLMSequenceClassifierService:
         language_model = MagicMock()
         language_model.model = MagicMock(spec=LayoutLMForSequenceClassification)
         language_model.model.config = MagicMock()
-        language_model.model.config.tokenizer_class = None
+        language_model.model.config.tokenizer_class = "LayoutLMTokenizerFast"
         language_model.predict = MagicMock(return_value=sequence_class_result)
         lm_service = LMSequenceClassifierService(tokenizer_fast, language_model)
 
