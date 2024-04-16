@@ -64,10 +64,12 @@ class PdfPlumberTextDetector(PdfMiner):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, x_tolerance: int=3, y_tolerance: int=3) -> None:
         self.name = "Pdfplumber"
         self.model_id = self.get_model_id()
         self.categories = {"1": LayoutType.word}
+        self.x_tolerance = x_tolerance
+        self.y_tolerance = y_tolerance
 
     def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
         """
@@ -82,7 +84,7 @@ class PdfPlumberTextDetector(PdfMiner):
                 _pdf = PDF(fin)
                 self._page = _pdf.pages[0]
                 self._pdf_bytes = pdf_bytes
-                words = self._page.extract_words()
+                words = self._page.extract_words(x_tolerance=self.x_tolerance, y_tolerance=self.y_tolerance)
         detect_results = list(map(_to_detect_result, words))
         return detect_results
 

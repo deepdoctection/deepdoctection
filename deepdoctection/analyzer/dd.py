@@ -348,7 +348,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 pipe_component_list.append(table_segmentation_refinement)
 
     if cfg.USE_PDF_MINER:
-        pdf_text = PdfPlumberTextDetector()
+        pdf_text = PdfPlumberTextDetector(x_tolerance=cfg.PDF_MINER.X_TOLERANCE, y_tolerance=cfg.PDF_MINER.Y_TOLERANCE)
         d_text = TextExtractionService(pdf_text)
         pipe_component_list.append(d_text)
 

@@ -1,38 +1,38 @@
 USE_LAYOUT: True
 USE_TABLE_SEGMENTATION: True
 TF:
-   LAYOUT:
-      WEIGHTS: layout/model-800000_inf_only.data-00000-of-00001
-      FILTER:
-   CELL:
-      WEIGHTS: cell/model-1800000_inf_only.data-00000-of-00001
-      FILTER:
-   ITEM:
-      WEIGHTS: item/model-1620000_inf_only.data-00000-of-00001
-      FILTER:
+  LAYOUT:
+    WEIGHTS: layout/model-800000_inf_only.data-00000-of-00001
+    FILTER:
+  CELL:
+    WEIGHTS: cell/model-1800000_inf_only.data-00000-of-00001
+    FILTER:
+  ITEM:
+    WEIGHTS: item/model-1620000_inf_only.data-00000-of-00001
+    FILTER:
 PT:
-   LAYOUT:
-      WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
-      WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
-      FILTER:
-      PAD:
-        TOP: 60
-        RIGHT: 60
-        BOTTOM: 60
-        LEFT: 60
-   ITEM:
-     WEIGHTS: item/d2_model_1639999_item_inf_only.pt
-     WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
-     FILTER:
-     PAD:
-        TOP: 60
-        RIGHT: 60
-        BOTTOM: 60
-        LEFT: 60
-   CELL:
-      WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
-      WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
-      FILTER:
+  LAYOUT:
+    WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
+    WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
+    FILTER:
+    PAD:
+      TOP: 60
+      RIGHT: 60
+      BOTTOM: 60
+      LEFT: 60
+  ITEM:
+    WEIGHTS: item/d2_model_1639999_item_inf_only.pt
+    WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
+    FILTER:
+    PAD:
+      TOP: 60
+      RIGHT: 60
+      BOTTOM: 60
+      LEFT: 60
+  CELL:
+    WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
+    WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
+    FILTER:
 LAYOUT_NMS_PAIRS:
   COMBINATIONS:
   THRESHOLDS:
@@ -48,6 +48,9 @@ SEGMENTATION:
   STRETCH_RULE: equal
 USE_TABLE_REFINEMENT: True
 USE_PDF_MINER: False
+PDF_MINER:
+  X_TOLERANCE: 3
+  Y_TOLERANCE: 3
 USE_OCR: True
 OCR:
   USE_TESSERACT: True
