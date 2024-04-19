@@ -401,7 +401,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
 
 def get_dd_analyzer(
-    reset_config_file: bool = False,
+    reset_config_file: bool = True,
     config_overwrite: Optional[List[str]] = None,
     path_config_file: Optional[Pathlike] = None,
 ) -> DoctectionPipe:

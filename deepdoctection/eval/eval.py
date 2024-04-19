@@ -292,6 +292,8 @@ class Evaluator:
         show_layouts = kwargs.pop("show_layouts", True)
         show_table_structure = kwargs.pop("show_table_structure", True)
         show_words = kwargs.pop("show_words", False)
+        show_token_class = kwargs.pop("show_token_class", True)
+        ignore_default_token_class = kwargs.pop("ignore_default_token_class", False)
 
         df_gt = self.dataset.dataflow.build(**kwargs)
         df_pr = self.dataset.dataflow.build(**kwargs)
@@ -321,17 +323,21 @@ class Evaluator:
                 show_layouts=show_layouts,
                 show_table_structure=show_table_structure,
                 show_words=show_words,
+                show_token_class=show_token_class,
+                ignore_default_token_class= ignore_default_token_class
             ), dp_pred.viz(
                 show_tables=show_tables,
                 show_layouts=show_layouts,
                 show_table_structure=show_table_structure,
                 show_words=show_words,
+                show_token_class=show_token_class,
+                ignore_default_token_class= ignore_default_token_class
             )
             img_concat = np.concatenate((img_gt, img_pred), axis=1)
             if interactive:
                 interactive_imshow(img_concat)
             else:
-                return img_concat
+                yield img_concat
         return None
 
 

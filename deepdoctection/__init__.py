@@ -190,6 +190,7 @@ _IMPORT_STRUCTURE = {
         "HFLayoutLmSequenceClassifier",
         "HFLayoutLmv2SequenceClassifier",
         "HFLayoutLmv3SequenceClassifier",
+        "LiltForTokenClassification",
         "ModelProfile",
         "ModelCatalog",
         "print_model_infos",
