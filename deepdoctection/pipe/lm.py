@@ -180,7 +180,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                     )
 
     def clone(self) -> "LMTokenClassifierService":
-        #ToDo: replace copying of tokenizer with a proper clone method. Otherwise we cannot run the evaluation with
+        # ToDo: replace copying of tokenizer with a proper clone method. Otherwise we cannot run the evaluation with
         # multiple threads
         return self.__class__(
             copy(self.tokenizer),

@@ -23,7 +23,7 @@ Module for `Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Mapping, Optional, Type, Union, overload
+from typing import Any, Dict, List, Literal, Mapping, Optional, Type, Union, overload, Generator
 
 import numpy as np
 
@@ -275,7 +275,7 @@ class Evaluator:
 
         return df_pr
 
-    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Optional[ImageType]:
+    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[ImageType, None, None]:
         """
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.
@@ -324,21 +324,20 @@ class Evaluator:
                 show_table_structure=show_table_structure,
                 show_words=show_words,
                 show_token_class=show_token_class,
-                ignore_default_token_class= ignore_default_token_class
+                ignore_default_token_class=ignore_default_token_class,
             ), dp_pred.viz(
                 show_tables=show_tables,
                 show_layouts=show_layouts,
                 show_table_structure=show_table_structure,
                 show_words=show_words,
                 show_token_class=show_token_class,
-                ignore_default_token_class= ignore_default_token_class
+                ignore_default_token_class=ignore_default_token_class,
             )
             img_concat = np.concatenate((img_gt, img_pred), axis=1)
             if interactive:
                 interactive_imshow(img_concat)
             else:
                 yield img_concat
-        return None
 
 
 class WandbTableAgent:

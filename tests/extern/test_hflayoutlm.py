@@ -74,7 +74,7 @@ def get_sequence_class_result(  # type: ignore
 
 def get_mock_patch(name: str) -> MagicMock:
     """Generating a mock object with a specific name"""
-    mock =  MagicMock()
+    mock = MagicMock()
     mock.__class__.__name__ = name
     return mock
 
@@ -107,9 +107,9 @@ class TestHFLayoutLmTokenClassifier:
         """
 
         # Arrange, Act & Assert
-        HFLayoutLmTokenClassifier.get_wrapped_model = ( # type: ignore
-            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification")))
-
+        HFLayoutLmTokenClassifier.get_wrapped_model = (  # type: ignore
+            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification"))
+        )
 
         # Arrange
         categories_semantics = [TokenClasses.header]
@@ -125,8 +125,7 @@ class TestHFLayoutLmTokenClassifier:
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
 
         # Act
-        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model",
-                                          categories=categories_explicit)
+        model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
         assert model.categories == categories_explicit
@@ -144,11 +143,11 @@ class TestHFLayoutLmTokenClassifier:
 
         # Arrange
         HFLayoutLmTokenClassifier.get_wrapped_model = (  # type: ignore
-            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification")))
+            MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification"))
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
-        layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model",
-                                             categories_semantics, categories_bio)
+        layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm.model.device = "cpu"
 
         # Act
@@ -201,7 +200,8 @@ class TestHFLayoutLmv2TokenClassifier:
 
         # Arrange
         HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv2ForTokenClassification"))
+            return_value=get_mock_patch("LayoutLMv2ForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
@@ -233,7 +233,8 @@ class TestHFLayoutLmv2TokenClassifier:
 
         # Arrange
         HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv2ForTokenClassification"))
+            return_value=get_mock_patch("LayoutLMv2ForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         layoutlm_v2 = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
@@ -290,15 +291,13 @@ class TestHFLayoutLmv3TokenClassifier:
 
         # Arrange
         HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv3ForTokenClassification"))
+            return_value=get_mock_patch("LayoutLMv3ForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
         # Act
-        model = HFLayoutLmv3TokenClassifier("path/to/json",
-                                            "path/to/model",
-                                            categories_semantics,
-                                            categories_bio)
+        model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
         assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
@@ -325,7 +324,8 @@ class TestHFLayoutLmv3TokenClassifier:
 
         # Arrange
         HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv3ForTokenClassification"))
+            return_value=get_mock_patch("LayoutLMv3ForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         layoutlm_v3 = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
@@ -372,7 +372,8 @@ class TestHFLayoutLmSequenceClassifier:
 
         # Arrange
         HFLayoutLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMForSequenceClassification"))
+            return_value=get_mock_patch("LayoutLMForSequenceClassification")
+        )
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
@@ -415,7 +416,8 @@ class TestHFLayoutLmv2SequenceClassifier:
 
         # Arrange
         HFLayoutLmv2SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv2ForSequenceClassification"))
+            return_value=get_mock_patch("LayoutLMv2ForSequenceClassification")
+        )
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm_v2 = HFLayoutLmv2SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v2.model.device = "cpu"
@@ -459,7 +461,8 @@ class TestHFLayoutLmv3SequenceClassifier:
 
         # Arrange
         HFLayoutLmv3SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LayoutLMv3ForSequenceClassification"))
+            return_value=get_mock_patch("LayoutLMv3ForSequenceClassification")
+        )
         categories = {"1": get_type("FOO"), "2": get_type("BAK")}
         layoutlm_v3 = HFLayoutLmv3SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v3.model.device = "cpu"
@@ -511,10 +514,10 @@ class TestHFLiltTokenClassifier:
         set of categories directly
         """
 
-
         # Arrange
         HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LiltForTokenClassification"))
+            return_value=get_mock_patch("LiltForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
 
@@ -546,7 +549,8 @@ class TestHFLiltTokenClassifier:
 
         # Arrange
         HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
-            return_value=get_mock_patch("LiltForTokenClassification"))
+            return_value=get_mock_patch("LiltForTokenClassification")
+        )
         categories_semantics = [TokenClasses.header]
         categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
         lilt = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
