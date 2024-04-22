@@ -452,6 +452,7 @@ class Page(Image):
         "document_id",
         "page_number",
     }
+    include_residual_text_container: bool = True
 
     def get_annotation(  # type: ignore
         self,
@@ -615,6 +616,7 @@ class Page(Image):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
         page.floating_text_block_categories = floating_text_block_categories  # type: ignore
         page.text_container = text_container  # type: ignore
+        page.include_residual_text_container = include_residual_text_container
         return page
 
     def _order(self, block: str) -> List[ImageAnnotationBaseView]:
@@ -934,3 +936,11 @@ class Page(Image):
             for word in all_words
             if word.token_tag not in (TokenClasses.other, None)
         ]
+
+    def __copy__(self) -> "Page":
+        return self.__class__.from_image(
+            self.image_orig,
+            self.text_container,
+            self.floating_text_block_categories,
+            self.include_residual_text_container,
+        )

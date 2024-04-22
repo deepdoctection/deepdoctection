@@ -974,9 +974,11 @@ class ModelDownloadManager:
                 else:
                     file_names.append(model_name)
             if profile.hf_repo_id:
-                ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
+                if not os.path.isfile(absolute_path_weights):
+                    ModelDownloadManager.load_model_from_hf_hub(profile, absolute_path_weights, file_names)
                 absolute_path_configs = ModelCatalog.get_full_path_configs(name)
-                ModelDownloadManager.load_configs_from_hf_hub(profile, absolute_path_configs)
+                if not os.path.isfile(absolute_path_configs):
+                    ModelDownloadManager.load_configs_from_hf_hub(profile, absolute_path_configs)
             else:
                 ModelDownloadManager._load_from_gd(profile, absolute_path_weights, file_names)
 
