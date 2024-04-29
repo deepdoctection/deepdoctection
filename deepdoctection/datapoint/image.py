@@ -531,12 +531,16 @@ class Image:
             )
             ann.image.dump(sub_image)
 
-    def remove_image_from_lower_hierachy(self) -> None:
+    def remove_image_from_lower_hierachy(self, pixel_values_only: bool = False) -> None:
         """Will remove all images from image annotations."""
         for ann in self.annotations:
-            absolute_bounding_box = ann.get_bounding_box(self.image_id)
-            ann.bounding_box = absolute_bounding_box
-            ann.image = None
+            if pixel_values_only:
+                if ann.image is not None:
+                    ann.image.clear_image()
+            else:
+                absolute_bounding_box = ann.get_bounding_box(self.image_id)
+                ann.bounding_box = absolute_bounding_box
+                ann.image = None
 
     @classmethod
     @no_type_check
