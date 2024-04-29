@@ -282,8 +282,6 @@ class SequenceClassResult:
     class_name_orig: Optional[str] = None
 
 
-
-
 class LMTokenClassifier(PredictorBase):
     """
     Abstract base class for token classifiers. If you want to connect external token classifiers with Deepdoctection
