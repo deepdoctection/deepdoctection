@@ -23,7 +23,7 @@ Module for `Evaluator`
 __all__ = ["Evaluator"]
 
 from copy import deepcopy
-from typing import Any, Dict, List, Literal, Mapping, Optional, Type, Union, overload, Generator
+from typing import Any, Dict, Generator, List, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 
