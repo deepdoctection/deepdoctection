@@ -504,5 +504,6 @@ class ContainerAnnotation(CategoryAnnotation):
     @classmethod
     def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
         container_ann = ann_from_dict(cls, **kwargs)
-        container_ann.value = kwargs.get("value")
+        value = kwargs.get("value")
+        container_ann.value = value if isinstance(value, str) else [el for el in value]
         return container_ann
