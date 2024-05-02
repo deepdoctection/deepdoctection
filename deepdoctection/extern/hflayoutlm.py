@@ -64,6 +64,7 @@ if transformers_available():
         LayoutLMv3ForSequenceClassification,
         LayoutLMv3ForTokenClassification,
         LiltForTokenClassification,
+        LiltForSequenceClassification,
         PretrainedConfig,
         RobertaTokenizerFast,
         XLMRobertaTokenizerFast,
@@ -1155,3 +1156,78 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return LiltForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
+
+
+class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
+    """
+    A wrapper class for `transformers.LiLTForSequenceClassification` to use within a pipeline component.
+    Check <https://huggingface.co/docs/transformers/model_doc/lilt> for documentation of the model itself.
+    Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
+    classification and other things please use another model of the family.
+
+    **Example**
+
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
+
+            # hf tokenizer and sequence classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            lilt = HFLiltSequenceClassifier("path/to/config.json",
+                                                "path/to/model.bin",
+                                                categories=["handwritten", "presentation", "resume"])
+
+            # sequence classification service
+            lilt_service = LMSequenceClassifierService(tokenizer,lilt)
+
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
+
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
+
+            for dp in df:
+                ...
+    """
+
+    def __init__(
+        self,
+        path_config_json: str,
+        path_weights: str,
+        categories: Mapping[str, TypeOrStr],
+        device: Optional[Literal["cpu", "cuda"]] = None,
+        use_xlm_tokenizer: bool = False,
+    ):
+        self.name = self.get_name(path_weights, "LiLT")
+        self.model_id = self.get_model_id()
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+
+    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+        input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
+
+        result = predict_sequence_classes(
+            input_ids,
+            attention_mask,
+            token_type_ids,
+            boxes,
+            self.model,
+        )
+
+        result.class_id += 1
+        result.class_name = self.categories[str(result.class_id)]
+        return result
+
+    @staticmethod
+    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+        """
+        Get the inner (wrapped) model.
+
+        :param path_config_json: path to .json config file
+        :param path_weights: path to model artifact
+        :return: 'nn.Module'
+        """
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return LiltForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights, config=config
+        )
