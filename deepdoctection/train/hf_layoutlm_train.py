@@ -39,6 +39,8 @@ from transformers import (
     LayoutLMv3ForTokenClassification,
     PretrainedConfig,
     PreTrainedModel,
+    LiltForTokenClassification,
+    LiltForSequenceClassification,
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -55,7 +57,7 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv3SequenceClassifier,
     HFLayoutLmv3TokenClassifier,
     HFLiltTokenClassifier,
-    LiltForTokenClassification,
+    HFLiltSequenceClassifier,
     get_tokenizer_from_model_class,
 )
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features
@@ -71,32 +73,16 @@ from ..utils.utils import string_to_dict
 if wandb_available():
     import wandb
 
-_ARCHITECTURES_TO_MODEL_CLASS = {
-    "LayoutLMForTokenClassification": (LayoutLMForTokenClassification, HFLayoutLmTokenClassifier, PretrainedConfig),
-    "LayoutLMForSequenceClassification": (
-        LayoutLMForSequenceClassification,
-        HFLayoutLmSequenceClassifier,
-        PretrainedConfig,
-    ),
-    "LayoutLMv2ForTokenClassification": (
-        LayoutLMv2ForTokenClassification,
-        HFLayoutLmv2TokenClassifier,
-        LayoutLMv2Config,
-    ),
-    "LayoutLMv2ForSequenceClassification": (
-        LayoutLMv2ForSequenceClassification,
-        HFLayoutLmv2SequenceClassifier,
-        LayoutLMv2Config,
-    ),
-    "LiltModel": (
-        LiltForTokenClassification,
-        HFLiltTokenClassifier,
-        PretrainedConfig,
-    ),
-}
 
+def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> Tuple[Any, Any, Any]:
+    """
+    Get the model architecture, model wrapper and config class for a given model type and dataset type.
 
-_MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
+    :param model_type: The model type
+    :param dataset_type: The dataset type
+    :return: Tuple of model architecture, model wrapper and config class
+    """
+    return  {
     ("layoutlm", DatasetType.sequence_classification): (
         LayoutLMForSequenceClassification,
         HFLayoutLmSequenceClassifier,
@@ -132,7 +118,11 @@ _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS: Mapping[Tuple[str, ObjectTypes], Any] = {
         HFLiltTokenClassifier,
         PretrainedConfig,
     ),
-}
+    ("lilt", DatasetType.sequence_classification): (
+        LiltForSequenceClassification,
+        HFLiltSequenceClassifier,
+        PretrainedConfig,
+    ),}[(model_type, dataset_type)]
 
 
 class LayoutLMTrainer(Trainer):
@@ -211,19 +201,15 @@ class LayoutLMTrainer(Trainer):
 
 
 def _get_model_class_and_tokenizer(
-    path_config_json: str, dataset_type: ObjectTypes, use_xlm_tokenizer: bool
+    path_config_json: str, dataset_type: DatasetType, use_xlm_tokenizer: bool
 ) -> Tuple[Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
-    model_type = config_json.get("model_type")
-
-    if architectures := config_json.get("architectures"):
-        model_cls, model_wrapper_cls, config_cls = _ARCHITECTURES_TO_MODEL_CLASS[architectures[0]]
-    elif model_type:
-        model_cls, model_wrapper_cls, config_cls = _MODEL_TYPE_AND_TASK_TO_MODEL_CLASS[(model_type, dataset_type)]
+    if model_type := config_json.get("model_type"):
+        model_cls, model_wrapper_cls, config_cls = get_model_architectures_and_configs(model_type, dataset_type)
     else:
-        raise KeyError("model_type and architectures not available in configs. It seems that the config is not valid")
+        raise KeyError("model_type not available in configs. It seems that the config is not valid")
 
     tokenizer_fast = get_tokenizer_from_model_class(model_cls.__name__, use_xlm_tokenizer)
     return config_cls, model_cls, model_wrapper_cls, tokenizer_fast
