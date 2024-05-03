@@ -105,6 +105,10 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
         ("LiltForTokenClassification", False): RobertaTokenizerFast.from_pretrained(
             "roberta-base", add_prefix_space=True
         ),
+        ("LiltForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
+        ("LiltForSequenceClassification", False): RobertaTokenizerFast.from_pretrained(
+            "roberta-base", add_prefix_space=True
+        ),
     }[(model_class, use_xlm_tokenizer)]
 
 
@@ -191,6 +195,7 @@ def predict_sequence_classes(
     :param images: A list of torch image tensors or None
     :return: SequenceClassResult
     """
+
     if images is None:
         outputs = model(input_ids=input_ids, bbox=boxes, attention_mask=attention_mask, token_type_ids=token_type_ids)
     elif isinstance(model, LayoutLMv2ForSequenceClassification):
