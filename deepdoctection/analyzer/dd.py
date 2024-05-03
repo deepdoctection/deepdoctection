@@ -35,6 +35,7 @@ from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
+from ..extern.cloud_vision import CloudVisionOCRDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
@@ -114,10 +115,10 @@ def config_sanity_checks(cfg: AttrDict) -> None:
     if cfg.USE_PDF_MINER and cfg.USE_OCR and cfg.OCR.USE_DOCTR:
         raise ValueError("Configuration USE_PDF_MINER= True and USE_OCR=True and USE_DOCTR=True is not allowed")
     if cfg.USE_OCR:
-        if cfg.OCR.USE_TESSERACT + cfg.OCR.USE_DOCTR + cfg.OCR.USE_TEXTRACT != 1:
+        if cfg.OCR.USE_TESSERACT + cfg.OCR.USE_DOCTR + cfg.OCR.USE_TEXTRACT + cfg.USE_CLOUD_VISION != 1:
             raise ValueError(
-                "Choose either OCR.USE_TESSERACT=True or OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True "
-                "and set the other two to False. Only one OCR system can be activated."
+                "Choose either OCR.USE_TESSERACT=True or OCR.USE_DOCTR=True or OCR.USE_TEXTRACT=True or OCR.USE_CLOUD_VISION=True "
+                "and set the other three to False. Only one OCR system can be activated."
             )
 
 
@@ -218,7 +219,7 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
     )
 
 
-def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, CloudVisionOCRDetector]:
     """
     Building OCR predictor
     :param cfg: Config
@@ -246,7 +247,9 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
             "config": Config(region_name=environ.get("REGION")),
         }
         return TextractOcrDetector(**credentials_kwargs)
-    raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
+    if cfg.OCR.USE_CLOUD_VISION:
+        return CloudVisionOCRDetector()
+    raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT, USE_CLOUD_VISION is set to False")
 
 
 def build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:

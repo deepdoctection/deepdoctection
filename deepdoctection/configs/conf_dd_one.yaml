@@ -56,6 +56,7 @@ OCR:
   USE_TESSERACT: True
   USE_DOCTR: False
   USE_TEXTRACT: False
+  USE_CLOUD_VISION: False
   CONFIG:
     TESSERACT: dd/conf_tesseract.yaml
   WEIGHTS:

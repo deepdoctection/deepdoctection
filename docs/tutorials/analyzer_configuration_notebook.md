@@ -161,6 +161,7 @@ OCR:
   USE_TESSERACT: True
   USE_DOCTR: False
   USE_TEXTRACT: False
+  USE_CLOUD_VISION: False
 ```
 
 ### Tesseract
@@ -191,6 +192,9 @@ OCR:
 
 Textract is the AWS OCR solution that can be accessed via an API. This is a paid service and requires an AWS account, 
 installation of the AWS CLI, and a token. We refer to the official documentation to access the service via API.
+
+### Google Cloud Vision
+Google Cloud Vision is a paid service that can be accessed via an API. It requires a Google Cloud account, with access permissions set. The authentication is handled by the Google SDK which checks for credentials in [common locations](https://cloud.google.com/docs/authentication/application-default-credentials). We refer to the official documentation to access the service via API.
 
 ## Word matching
 
