@@ -513,10 +513,12 @@ def get_aws_requirement() -> Requirement:
     """
     return "aws", aws_available(), _AWS_ERR_MSG
 
+
 # CloudVision related dependencies
 
 _CLOUD_VISION_AVAILABLE = importlib.util.find_spec("google.cloud.vision") is not None
 _CLOUD_VISION_ERR_MSG = f"Google Cloud Vision must be installed. {_GENERIC_ERR_MSG}"
+
 
 def cloud_vision_available() -> bool:
     """
@@ -524,13 +526,12 @@ def cloud_vision_available() -> bool:
     """
     return bool(_CLOUD_VISION_AVAILABLE)
 
+
 def get_cloud_vision_requirement() -> Requirement:
     """
     Return Google Cloud Vision requirement
     """
     return "google-cloud-vision", cloud_vision_available(), _CLOUD_VISION_ERR_MSG
-
-
 
 
 # DocTr related dependencies

@@ -30,12 +30,12 @@ from shutil import copyfile
 from typing import List, Optional, Union
 
 from ..extern.base import ObjectDetector
+from ..extern.cloud_vision import CloudVisionOCRDetector
 from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
-from ..extern.cloud_vision import CloudVisionOCRDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
@@ -219,7 +219,9 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
     )
 
 
-def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, CloudVisionOCRDetector]:
+def build_ocr(
+    cfg: AttrDict,
+) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector, CloudVisionOCRDetector]:
     """
     Building OCR predictor
     :param cfg: Config
@@ -249,7 +251,9 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
         return TextractOcrDetector(**credentials_kwargs)
     if cfg.OCR.USE_CLOUD_VISION:
         return CloudVisionOCRDetector()
-    raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT, USE_CLOUD_VISION is set to False")
+    raise ValueError(
+        "You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT, USE_CLOUD_VISION is set to False"
+    )
 
 
 def build_doctr_word(cfg: AttrDict) -> DoctrTextlineDetector:
