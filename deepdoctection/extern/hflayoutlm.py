@@ -183,6 +183,7 @@ def predict_sequence_classes(
         "LayoutLMForSequenceClassification",
         "LayoutLMv2ForSequenceClassification",
         "LayoutLMv3ForSequenceClassification",
+        "LiltForSequenceClassification"
     ],
     images: Optional["Tensor"] = None,
 ) -> SequenceClassResult:
@@ -191,7 +192,7 @@ def predict_sequence_classes(
     :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
     :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
     :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-    :param model: layoutlm model for token classification
+    :param model: layoutlm model for sequence classification
     :param images: A list of torch image tensors or None
     :return: SequenceClassResult
     """
@@ -364,6 +365,10 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         """
         tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
+
+    @staticmethod
+    def get_image_to_raw_features_mapping() -> str:
+        return "image_to_raw_layoutlm_features"
 
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -734,41 +739,6 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
-        input_ids = encodings.get("input_ids")
-        attention_mask = encodings.get("attention_mask")
-        token_type_ids = encodings.get("token_type_ids")
-        boxes = encodings.get("bbox")
-
-        if isinstance(input_ids, torch.Tensor):
-            input_ids = input_ids.to(self.device)
-        else:
-            raise ValueError(f"input_ids must be list but is {type(input_ids)}")
-        if isinstance(attention_mask, torch.Tensor):
-            attention_mask = attention_mask.to(self.device)
-        else:
-            raise ValueError(f"attention_mask must be list but is {type(attention_mask)}")
-        if isinstance(token_type_ids, torch.Tensor):
-            token_type_ids = token_type_ids.to(self.device)
-        else:
-            raise ValueError(f"token_type_ids must be list but is {type(token_type_ids)}")
-        if isinstance(boxes, torch.Tensor):
-            boxes = boxes.to(self.device)
-        else:
-            raise ValueError(f"boxes must be list but is {type(boxes)}")
-
-        result = predict_sequence_classes(
-            input_ids,
-            attention_mask,
-            token_type_ids,
-            boxes,
-            self.model,
-        )
-
-        result.class_id += 1
-        result.class_name = self.categories[str(result.class_id)]
-        return result
-
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
@@ -819,6 +789,10 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         """
         tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
+
+    @staticmethod
+    def image_to_raw_features_mapping() -> str:
+        return "image_to_raw_layoutlm_features"
 
 
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):

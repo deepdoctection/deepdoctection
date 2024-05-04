@@ -41,6 +41,7 @@ from transformers import (
     PreTrainedModel,
     LiltForTokenClassification,
     LiltForSequenceClassification,
+    XLMRobertaForSequenceClassification
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -60,7 +61,8 @@ from ..extern.hflayoutlm import (
     HFLiltSequenceClassifier,
     get_tokenizer_from_model_class,
 )
-from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features
+from ..extern.hflm import HFLmSequenceClassifier
+from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_lm_features
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.env_info import get_device
@@ -122,7 +124,11 @@ def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetTy
         LiltForSequenceClassification,
         HFLiltSequenceClassifier,
         PretrainedConfig,
-    ),}[(model_type, dataset_type)]
+    ),
+    ("xlm-roberta", DatasetType.sequence_classification):
+    (XLMRobertaForSequenceClassification,
+     HFLmSequenceClassifier,
+     PretrainedConfig)}[(model_type, dataset_type)]
 
 
 class LayoutLMTrainer(Trainer):
@@ -213,6 +219,11 @@ def _get_model_class_and_tokenizer(
 
     tokenizer_fast = get_tokenizer_from_model_class(model_cls.__name__, use_xlm_tokenizer)
     return config_cls, model_cls, model_wrapper_cls, tokenizer_fast
+
+
+def get_image_to_raw_features_mapping(input_str: str) -> Any:
+    return {"image_to_raw_layoutlm_features": image_to_raw_layoutlm_features,
+            "image_to_lm_features": image_to_lm_features}[input_str]
 
 
 def train_hf_layoutlm(
@@ -340,14 +351,18 @@ def train_hf_layoutlm(
     config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
         path_config_json, dataset_type, use_xlm_tokenizer
     )
-    image_to_raw_layoutlm_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
+    image_to_raw_features_func = get_image_to_raw_features_mapping(
+        model_wrapper_cls.image_to_raw_features_mapping())
+    image_to_raw_features_kwargs = {"dataset_type": dataset_type,
+                                    "use_token_tag": use_token_tag}
     if segment_positions:
-        image_to_raw_layoutlm_kwargs["segment_positions"] = segment_positions  # type: ignore
-    image_to_raw_layoutlm_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
+        image_to_raw_features_kwargs["segment_positions"] = segment_positions  # type: ignore
+    image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
+
     dataset = DatasetAdapter(
         dataset_train,
         True,
-        image_to_raw_layoutlm_features(**image_to_raw_layoutlm_kwargs),
+        image_to_raw_features_func(**image_to_raw_features_kwargs),
         use_token_tag,
         **build_train_dict,
     )
