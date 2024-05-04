@@ -30,6 +30,7 @@ from .model import *
 from .pdftext import *
 from .tessocr import *
 from .texocr import *  # type: ignore
+from .cloud_vision import *
 
 if tensorpack_available():
     from .tpdetect import *
