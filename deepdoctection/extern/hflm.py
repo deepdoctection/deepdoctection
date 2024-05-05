@@ -163,6 +163,10 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
+        return "image_to_raw_lm_features"
+
+    @staticmethod
+    def image_to_features_mapping() -> str:
         return "image_to_lm_features"
 
 

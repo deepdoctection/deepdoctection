@@ -62,7 +62,7 @@ from ..extern.hflayoutlm import (
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier
-from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_lm_features
+from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.env_info import get_device
@@ -223,7 +223,7 @@ def _get_model_class_and_tokenizer(
 
 def get_image_to_raw_features_mapping(input_str: str) -> Any:
     return {"image_to_raw_layoutlm_features": image_to_raw_layoutlm_features,
-            "image_to_lm_features": image_to_lm_features}[input_str]
+            "image_to_raw_lm_features": image_to_raw_lm_features}[input_str]
 
 
 def train_hf_layoutlm(
