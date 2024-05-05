@@ -71,7 +71,7 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
     )
 
     # Assert
-    assert page.text == "hello world\nbye world\n"
+    assert page.text == "hello world\nbye world"
 
 
 @mark.basic

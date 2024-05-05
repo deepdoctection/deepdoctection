@@ -403,7 +403,7 @@ def _tokenize_with_sliding_window(
 
 
 def raw_features_to_layoutlm_features(
-    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[RawLayoutLMFeatures, RawLMFeatures]],
+    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[Union[RawLayoutLMFeatures, RawLMFeatures]]],
     tokenizer: "PreTrainedTokenizerFast",
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
@@ -765,7 +765,7 @@ def image_to_raw_lm_features(
     page = Page.from_image(dp,
                            text_container,
                            floating_text_block_categories,
-                           include_residual_text_container )
+                           include_residual_text_container)
 
     text_ = page.text_
 

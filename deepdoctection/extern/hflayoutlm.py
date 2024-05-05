@@ -367,8 +367,12 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         return tokenizer.__class__.__name__
 
     @staticmethod
-    def get_image_to_raw_features_mapping() -> str:
+    def image_to_raw_features_mapping() -> str:
         return "image_to_raw_layoutlm_features"
+
+    @staticmethod
+    def image_to_features_mapping() -> str:
+        return "image_to_layoutlm_features"
 
 
 class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -793,6 +797,10 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     @staticmethod
     def image_to_raw_features_mapping() -> str:
         return "image_to_raw_layoutlm_features"
+
+    @staticmethod
+    def image_to_features_mapping() -> str:
+        return "image_to_layoutlm_features"
 
 
 class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):

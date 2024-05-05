@@ -215,10 +215,10 @@ class Layout(ImageAnnotationBaseView):
                word.annotation_id,
                word.token_class,
                word.token_tag,
-               word.get_sub_category(WordType.token_class).category_id if WordType.token_class in word.sub_categories
-               else None,
-               word.get_sub_category(WordType.token_tag).category_id) if WordType.token_tag in word.sub_categories
-                                                                                                  else None
+               (word.get_sub_category(WordType.token_class).category_id if WordType.token_class in word.sub_categories
+               else None),
+               (word.get_sub_category(WordType.token_tag).category_id) if WordType.token_tag in word.sub_categories
+                                                                                                  else None)
                                                                                                   for word in words])
         return {
             "text": " ".join(characters),  # type: ignore
@@ -658,7 +658,7 @@ class Page(Image):
         break_str = "\n" if line_break else " "
         for block in block_with_order:
             text += f"{block.text}{break_str}"
-        return text
+        return text[:-1]
 
     @property
     def text(self) -> str:
@@ -681,7 +681,7 @@ class Page(Image):
         token_class_ids: List[str] = []
         token_tag_ids: List[str] = []
         for block in block_with_order:
-            text.extend(block.text_["text"])
+            text.append(block.text_["text"])
             words.extend(block.text_["words"])
             ann_ids.extend(block.text_["ann_ids"])
             token_classes.extend(block.text_["token_classes"])
