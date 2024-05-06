@@ -24,18 +24,17 @@ from copy import copy
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
 
-from .base import LMSequenceClassifier, SequenceClassResult
-from .pt.ptutils import set_torch_auto_device
-from ..utils.detection_types import Requirement, JsonDict
+from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import (
     get_pytorch_requirement,
     get_transformers_requirement,
     pytorch_available,
     transformers_available,
 )
-from ..utils.settings import (
-    TypeOrStr,
-)
+from ..utils.settings import TypeOrStr
+from .base import LMSequenceClassifier, SequenceClassResult
+from .hflayoutlm import get_tokenizer_from_model_class
+from .pt.ptutils import set_torch_auto_device
 
 if pytorch_available():
     import torch
@@ -43,20 +42,12 @@ if pytorch_available():
     from torch import Tensor  # pylint: disable=W0611
 
 if transformers_available():
-    from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
-    from transformers import (
-        XLMRobertaForSequenceClassification,
-        PretrainedConfig,
-        AutoModelForSequenceClassification,
-        XLMRobertaTokenizerFast
-    )
+    from transformers import PretrainedConfig, XLMRobertaForSequenceClassification
 
 
 def predict_sequence_classes(
-    input_ids: "Tensor",
-    attention_mask: "Tensor",
-    token_type_ids: "Tensor",
-    model
+    input_ids: "Tensor", attention_mask: "Tensor", token_type_ids: "Tensor", model: Union[
+        "XLMRobertaForSequenceClassification"]
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -72,22 +63,6 @@ def predict_sequence_classes(
     sequence_class_predictions = outputs.logits.argmax(-1).squeeze().tolist()
 
     return SequenceClassResult(class_id=sequence_class_predictions, score=float(score))  # type: ignore
-
-
-def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) -> Any:
-    """
-    We do not use the tokenizer for a particular model that the transformer library provides. Thie mapping therefore
-    returns the tokenizer that should be used for a particular model.
-
-    :param model_class: The model as stated in the transformer library.
-    :param use_xlm_tokenizer: True if one uses the LayoutXLM. (The model cannot be distinguished from LayoutLMv2).
-    :return: Tokenizer instance to use.
-    """
-    return {
-        ("XLMRobertaForSequenceClassification", False): XLMRobertaTokenizerFast.from_pretrained(
-            "FacebookAI/xlm-roberta-base"
-        )
-    }[(model_class, use_xlm_tokenizer)]
 
 
 class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
@@ -163,10 +138,12 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
+        """Returns the mapping function to convert images into raw features."""
         return "image_to_raw_lm_features"
 
     @staticmethod
     def image_to_features_mapping() -> str:
+        """Returns the mapping function to convert images into features."""
         return "image_to_lm_features"
 
 
@@ -208,7 +185,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Literal["cpu", "cuda"]] = None,
-        use_xlm_tokenizer: bool = False,
+        use_xlm_tokenizer: bool = True,
     ):
         self.name = self.get_name(path_weights, "bert-like")
         self.model_id = self.get_model_id()
@@ -239,7 +216,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         :return: 'nn.Module'
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        return AutoModelForSequenceClassification.from_pretrained(
+        return XLMRobertaForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=path_weights, config=config
         )
 

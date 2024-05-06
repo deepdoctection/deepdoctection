@@ -38,6 +38,7 @@ from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
 
 from ..mapper.data import DatapointXfund
+from ..test_utils import get_mock_patch
 
 if pytorch_available():
     import torch
@@ -72,11 +73,11 @@ def get_sequence_class_result(  # type: ignore
     return DatapointXfund().get_sequence_class_results()
 
 
-def get_mock_patch(name: str) -> MagicMock:
-    """Generating a mock object with a specific name"""
-    mock = MagicMock()
-    mock.__class__.__name__ = name
-    return mock
+# def get_mock_patch(name: str) -> MagicMock:
+#    """Generating a mock object with a specific name"""
+#    mock = MagicMock()
+#    mock.__class__.__name__ = name
+#    return mock
 
 
 class TestHFLayoutLmTokenClassifier:

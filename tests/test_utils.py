@@ -22,6 +22,7 @@ Module for methods that might be helpful for testing
 import os
 from pathlib import Path
 from typing import Any, Iterable, Iterator, List, Optional, Union
+from unittest.mock import MagicMock
 
 from deepdoctection.dataflow import DataFlow
 from deepdoctection.datapoint import Annotation
@@ -80,3 +81,10 @@ def set_num_gpu_to_one() -> int:
     set gpu number to one
     """
     return 1
+
+
+def get_mock_patch(name: str) -> MagicMock:
+    """Generating a mock object with a specific name"""
+    mock = MagicMock()
+    mock.__class__.__name__ = name
+    return mock

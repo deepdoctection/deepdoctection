@@ -23,7 +23,7 @@ import copy
 import json
 import os
 import pprint
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from torch.nn import Module
 from torch.utils.data import Dataset
@@ -37,11 +37,11 @@ from transformers import (
     LayoutLMv3Config,
     LayoutLMv3ForSequenceClassification,
     LayoutLMv3ForTokenClassification,
+    LiltForSequenceClassification,
+    LiltForTokenClassification,
     PretrainedConfig,
     PreTrainedModel,
-    LiltForTokenClassification,
-    LiltForSequenceClassification,
-    XLMRobertaForSequenceClassification
+    XLMRobertaForSequenceClassification,
 )
 from transformers.trainer import Trainer, TrainingArguments
 
@@ -57,8 +57,8 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv2TokenClassifier,
     HFLayoutLmv3SequenceClassifier,
     HFLayoutLmv3TokenClassifier,
-    HFLiltTokenClassifier,
     HFLiltSequenceClassifier,
+    HFLiltTokenClassifier,
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier
@@ -69,7 +69,7 @@ from ..utils.env_info import get_device
 from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DatasetType, LayoutType, ObjectTypes, WordType
+from ..utils.settings import DatasetType, LayoutType, WordType
 from ..utils.utils import string_to_dict
 
 if wandb_available():
@@ -84,51 +84,58 @@ def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetTy
     :param dataset_type: The dataset type
     :return: Tuple of model architecture, model wrapper and config class
     """
-    return  {
-    ("layoutlm", DatasetType.sequence_classification): (
-        LayoutLMForSequenceClassification,
-        HFLayoutLmSequenceClassifier,
-        PretrainedConfig,
-    ),
-    ("layoutlm", DatasetType.token_classification): (
-        LayoutLMForTokenClassification,
-        HFLayoutLmTokenClassifier,
-        PretrainedConfig,
-    ),
-    ("layoutlmv2", DatasetType.sequence_classification): (
-        LayoutLMv2ForSequenceClassification,
-        HFLayoutLmv2SequenceClassifier,
-        LayoutLMv2Config,
-    ),
-    ("layoutlmv2", DatasetType.token_classification): (
-        LayoutLMv2ForTokenClassification,
-        HFLayoutLmv2TokenClassifier,
-        LayoutLMv2Config,
-    ),
-    ("layoutlmv3", DatasetType.sequence_classification): (
-        LayoutLMv3ForSequenceClassification,
-        HFLayoutLmv3SequenceClassifier,
-        LayoutLMv3Config,
-    ),
-    ("layoutlmv3", DatasetType.token_classification): (
-        LayoutLMv3ForTokenClassification,
-        HFLayoutLmv3TokenClassifier,
-        LayoutLMv3Config,
-    ),
-    ("lilt", DatasetType.token_classification): (
-        LiltForTokenClassification,
-        HFLiltTokenClassifier,
-        PretrainedConfig,
-    ),
-    ("lilt", DatasetType.sequence_classification): (
-        LiltForSequenceClassification,
-        HFLiltSequenceClassifier,
-        PretrainedConfig,
-    ),
-    ("xlm-roberta", DatasetType.sequence_classification):
-    (XLMRobertaForSequenceClassification,
-     HFLmSequenceClassifier,
-     PretrainedConfig)}[(model_type, dataset_type)]
+    return {
+        ("layoutlm", DatasetType.sequence_classification): (
+            LayoutLMForSequenceClassification,
+            HFLayoutLmSequenceClassifier,
+            PretrainedConfig,
+        ),
+        ("layoutlm", DatasetType.token_classification): (
+            LayoutLMForTokenClassification,
+            HFLayoutLmTokenClassifier,
+            PretrainedConfig,
+        ),
+        ("layoutlmv2", DatasetType.sequence_classification): (
+            LayoutLMv2ForSequenceClassification,
+            HFLayoutLmv2SequenceClassifier,
+            LayoutLMv2Config,
+        ),
+        ("layoutlmv2", DatasetType.token_classification): (
+            LayoutLMv2ForTokenClassification,
+            HFLayoutLmv2TokenClassifier,
+            LayoutLMv2Config,
+        ),
+        ("layoutlmv3", DatasetType.sequence_classification): (
+            LayoutLMv3ForSequenceClassification,
+            HFLayoutLmv3SequenceClassifier,
+            LayoutLMv3Config,
+        ),
+        ("layoutlmv3", DatasetType.token_classification): (
+            LayoutLMv3ForTokenClassification,
+            HFLayoutLmv3TokenClassifier,
+            LayoutLMv3Config,
+        ),
+        ("lilt", DatasetType.token_classification): (
+            LiltForTokenClassification,
+            HFLiltTokenClassifier,
+            PretrainedConfig,
+        ),
+        ("lilt", DatasetType.sequence_classification): (
+            LiltForSequenceClassification,
+            HFLiltSequenceClassifier,
+            PretrainedConfig,
+        ),
+        ("xlm-roberta", DatasetType.sequence_classification): (
+            XLMRobertaForSequenceClassification,
+            HFLmSequenceClassifier,
+            PretrainedConfig,
+        ),
+    }[(model_type, dataset_type)]
+
+
+def maybe_remove_bounding_box_features(model_type: str) -> bool:
+    """Listing of models that do not need bounding box features."""
+    return {"xlm-roberta": True}.get(model_type, False)
 
 
 class LayoutLMTrainer(Trainer):
@@ -208,22 +215,26 @@ class LayoutLMTrainer(Trainer):
 
 def _get_model_class_and_tokenizer(
     path_config_json: str, dataset_type: DatasetType, use_xlm_tokenizer: bool
-) -> Tuple[Any, Any, Any, Any]:
+) -> Tuple[Any, Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
     if model_type := config_json.get("model_type"):
         model_cls, model_wrapper_cls, config_cls = get_model_architectures_and_configs(model_type, dataset_type)
+        remove_box_features = maybe_remove_bounding_box_features(model_type)
     else:
         raise KeyError("model_type not available in configs. It seems that the config is not valid")
 
     tokenizer_fast = get_tokenizer_from_model_class(model_cls.__name__, use_xlm_tokenizer)
-    return config_cls, model_cls, model_wrapper_cls, tokenizer_fast
+    return config_cls, model_cls, model_wrapper_cls, tokenizer_fast, remove_box_features
 
 
 def get_image_to_raw_features_mapping(input_str: str) -> Any:
-    return {"image_to_raw_layoutlm_features": image_to_raw_layoutlm_features,
-            "image_to_raw_lm_features": image_to_raw_lm_features}[input_str]
+    """Replacing eval functions"""
+    return {
+        "image_to_raw_layoutlm_features": image_to_raw_layoutlm_features,
+        "image_to_raw_lm_features": image_to_raw_lm_features,
+    }[input_str]
 
 
 def train_hf_layoutlm(
@@ -348,13 +359,11 @@ def train_hf_layoutlm(
     else:
         raise UserWarning("Dataset type not supported for training")
 
-    config_cls, model_cls, model_wrapper_cls, tokenizer_fast = _get_model_class_and_tokenizer(
+    config_cls, model_cls, model_wrapper_cls, tokenizer_fast, remove_box_features = _get_model_class_and_tokenizer(
         path_config_json, dataset_type, use_xlm_tokenizer
     )
-    image_to_raw_features_func = get_image_to_raw_features_mapping(
-        model_wrapper_cls.image_to_raw_features_mapping())
-    image_to_raw_features_kwargs = {"dataset_type": dataset_type,
-                                    "use_token_tag": use_token_tag}
+    image_to_raw_features_func = get_image_to_raw_features_mapping(model_wrapper_cls.image_to_raw_features_mapping())
+    image_to_raw_features_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
     if segment_positions:
         image_to_raw_features_kwargs["segment_positions"] = segment_positions  # type: ignore
     image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
@@ -453,6 +462,7 @@ def train_hf_layoutlm(
         return_tensors="pt",
         sliding_window_stride=sliding_window_stride,  # type: ignore
         max_batch_size=max_batch_size,  # type: ignore
+        remove_bounding_box_features=remove_box_features,
     )
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
 

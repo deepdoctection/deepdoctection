@@ -63,8 +63,8 @@ if transformers_available():
         LayoutLMv3Config,
         LayoutLMv3ForSequenceClassification,
         LayoutLMv3ForTokenClassification,
-        LiltForTokenClassification,
         LiltForSequenceClassification,
+        LiltForTokenClassification,
         PretrainedConfig,
         RobertaTokenizerFast,
         XLMRobertaTokenizerFast,
@@ -108,6 +108,9 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
         ("LiltForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base"),
         ("LiltForSequenceClassification", False): RobertaTokenizerFast.from_pretrained(
             "roberta-base", add_prefix_space=True
+        ),
+        ("XLMRobertaForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained(
+            "FacebookAI/xlm-roberta-base"
         ),
     }[(model_class, use_xlm_tokenizer)]
 
@@ -183,7 +186,7 @@ def predict_sequence_classes(
         "LayoutLMForSequenceClassification",
         "LayoutLMv2ForSequenceClassification",
         "LayoutLMv3ForSequenceClassification",
-        "LiltForSequenceClassification"
+        "LiltForSequenceClassification",
     ],
     images: Optional["Tensor"] = None,
 ) -> SequenceClassResult:
@@ -368,10 +371,12 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
+        """Returns the mapping function to convert images into raw features."""
         return "image_to_raw_layoutlm_features"
 
     @staticmethod
     def image_to_features_mapping() -> str:
+        """Returns the mapping function to convert images into features."""
         return "image_to_layoutlm_features"
 
 
@@ -796,10 +801,12 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
+        """Returns the mapping function to convert images into raw features."""
         return "image_to_raw_layoutlm_features"
 
     @staticmethod
     def image_to_features_mapping() -> str:
+        """Returns the mapping function to convert images into features."""
         return "image_to_layoutlm_features"
 
 
@@ -1215,6 +1222,4 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         :return: 'nn.Module'
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        return LiltForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
-        )
+        return LiltForSequenceClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
