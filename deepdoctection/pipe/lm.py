@@ -20,7 +20,7 @@ Module for token classification pipeline
 """
 
 from copy import copy
-from typing import Any, List, Literal, Optional, Sequence, Union, Callable
+from typing import Any, Callable, List, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
@@ -217,8 +217,10 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
     @staticmethod
     def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:
-        return {"image_to_layoutlm_features": image_to_layoutlm_features,
-                "image_to_lm_features": image_to_lm_features}[mapping_str]
+        """Replacing eval functions"""
+        return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
+            mapping_str
+        ]
 
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
@@ -331,5 +333,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
 
     @staticmethod
     def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:
-        return {"image_to_layoutlm_features": image_to_layoutlm_features,
-                "image_to_lm_features": image_to_lm_features}[mapping_str]
+        """Replacing eval functions"""
+        return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
+            mapping_str
+        ]

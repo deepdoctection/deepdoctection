@@ -205,24 +205,33 @@ class Layout(ImageAnnotationBaseView):
         return words_with_reading_order
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         """Returns a dict `{"text": text string,
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
         words = self.get_ordered_words()
-        characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids  = zip(*[(
-               word.characters,
-               word.annotation_id,
-               word.token_class,
-               word.token_tag,
-               (word.get_sub_category(WordType.token_class).category_id if WordType.token_class in word.sub_categories
-               else None),
-               (word.get_sub_category(WordType.token_tag).category_id) if WordType.token_tag in word.sub_categories
-                                                                                                  else None)
-                                                                                                  for word in words])
+        characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
+            *[
+                (
+                    word.characters,
+                    word.annotation_id,
+                    word.token_class,
+                    word.token_tag,
+                    (
+                        word.get_sub_category(WordType.token_class).category_id
+                        if WordType.token_class in word.sub_categories
+                        else None
+                    ),
+                    (word.get_sub_category(WordType.token_tag).category_id)
+                    if WordType.token_tag in word.sub_categories
+                    else None,
+                )
+                for word in words
+            ]
+        )
         return {
-            "text": " ".join(characters),  # type: ignore
-            "words": characters,  # type: ignore
+            "text": " ".join(characters),
+            "words": characters,
             "ann_ids": ann_ids,
             "token_classes": token_classes,
             "token_tags": token_tags,
@@ -345,7 +354,7 @@ class Table(Layout):
             return super().text
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         cells = self.cells
         if not cells:
             return super().text_
@@ -357,16 +366,16 @@ class Table(Layout):
         token_class_ids: List[str] = []
         token_tag_ids: List[str] = []
         for cell in cells:
-            text.extend(cell.text_["text"])
-            words.extend(cell.text_["words"])
-            ann_ids.extend(cell.text_["ann_ids"])
-            token_classes.extend(cell.text_["token_classes"])
-            token_tags.extend(cell.text_["token_tags"])
-            token_class_ids.extend(cell.text_["token_class_ids"])
-            token_tag_ids.extend(cell.text_["token_tag_ids"])
+            text.extend(cell.text_["text"])  # type: ignore
+            words.extend(cell.text_["words"])  # type: ignore
+            ann_ids.extend(cell.text_["ann_ids"])  # type: ignore
+            token_classes.extend(cell.text_["token_classes"])  # type: ignore
+            token_tags.extend(cell.text_["token_tags"])  # type: ignore
+            token_class_ids.extend(cell.text_["token_class_ids"])  # type: ignore
+            token_tag_ids.extend(cell.text_["token_tag_ids"])  # type: ignore
         return {
-            "text": " ".join(text),  # type: ignore
-            "words": words,  # type: ignore
+            "text": " ".join(text),
+            "words": words,
             "ann_ids": ann_ids,
             "token_classes": token_classes,
             "token_tags": token_tags,
@@ -668,7 +677,7 @@ class Page(Image):
         return self._make_text()
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         """Returns a dict `{"text": text string,
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
@@ -681,16 +690,16 @@ class Page(Image):
         token_class_ids: List[str] = []
         token_tag_ids: List[str] = []
         for block in block_with_order:
-            text.append(block.text_["text"])
-            words.extend(block.text_["words"])
-            ann_ids.extend(block.text_["ann_ids"])
-            token_classes.extend(block.text_["token_classes"])
-            token_tags.extend(block.text_["token_tags"])
-            token_class_ids.extend(block.text_["token_class_ids"])
-            token_tag_ids.extend(block.text_["token_tag_ids"])
+            text.append(block.text_["text"])  # type: ignore
+            words.extend(block.text_["words"])  # type: ignore
+            ann_ids.extend(block.text_["ann_ids"])  # type: ignore
+            token_classes.extend(block.text_["token_classes"])  # type: ignore
+            token_tags.extend(block.text_["token_tags"])  # type: ignore
+            token_class_ids.extend(block.text_["token_class_ids"])  # type: ignore
+            token_tag_ids.extend(block.text_["token_tag_ids"])  # type: ignore
         return {
-            "text": " ".join(text),  # type: ignore
-            "words": words,  # type: ignore
+            "text": " ".join(text),
+            "words": words,
             "ann_ids": ann_ids,
             "token_classes": token_classes,
             "token_tags": token_tags,

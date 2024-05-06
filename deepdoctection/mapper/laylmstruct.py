@@ -41,10 +41,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import (  # pylint: disable=W0611
-        BatchEncoding,
-        PreTrainedTokenizerFast,
-    )
+    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -55,7 +52,6 @@ __all__ = [
     "LayoutLMFeatures",
     "image_to_raw_lm_features",
     "image_to_lm_features",
-
 ]
 
 RawLayoutLMFeatures = NewType("RawLayoutLMFeatures", JsonDict)
@@ -221,7 +217,8 @@ def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatu
     """
 
     _image_key = "pixel_values" if "pixel_values" in features else "image"
-    features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
+    if "bbox" in features:
+        features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
     if _image_key in features:
@@ -235,7 +232,7 @@ def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatu
 
 
 def _tokenize_with_sliding_window(
-    raw_features: List[RawLayoutLMFeatures],
+    raw_features: List[Union[RawLayoutLMFeatures, RawLMFeatures]],
     tokenizer: "PreTrainedTokenizerFast",
     sliding_window_stride: int,
     max_batch_size: int,
@@ -412,6 +409,7 @@ def raw_features_to_layoutlm_features(
     remove_columns_for_training: bool = False,
     sliding_window_stride: int = 0,
     max_batch_size: int = 0,
+    remove_bounding_boxes: bool = False,
 ) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
@@ -568,6 +566,9 @@ def raw_features_to_layoutlm_features(
         input_dict.pop("ann_ids")
         input_dict.pop("tokens")
 
+    if remove_bounding_boxes:
+        input_dict.pop("bbox")
+
     if return_tensors == "pt":
         return layoutlm_features_to_pt_tensors(LayoutLMFeatures(input_dict))
     return LayoutLMFeatures(input_dict)
@@ -607,6 +608,7 @@ class LayoutLMDataCollator:
     return_tensors: Optional[Literal["pt"]] = field(default=None)
     sliding_window_stride: int = field(default=0)
     max_batch_size: int = field(default=0)
+    remove_bounding_box_features: bool = field(default=False)
 
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
@@ -625,7 +627,7 @@ class LayoutLMDataCollator:
                  token_type_ids, attention_masks, boxes, labels`.
         """
         return raw_features_to_layoutlm_features(
-            raw_features,
+            raw_features,  # type: ignore
             self.tokenizer,
             self.padding,
             self.truncation,
@@ -634,6 +636,7 @@ class LayoutLMDataCollator:
             True,
             self.sliding_window_stride,
             self.max_batch_size,
+            self.remove_bounding_box_features,
         )
 
 
@@ -762,13 +765,11 @@ def image_to_raw_lm_features(
 
     raw_features: RawLMFeatures = RawLMFeatures({})
 
-    page = Page.from_image(dp,
-                           text_container,
-                           floating_text_block_categories,
-                           include_residual_text_container)
+    page = Page.from_image(dp, text_container, floating_text_block_categories, include_residual_text_container)
 
     text_ = page.text_
 
+    # pylint: disable=E1137  #3162
     raw_features["image_id"] = page.image_id
     raw_features["width"] = page.width
     raw_features["height"] = page.height
@@ -776,18 +777,21 @@ def image_to_raw_lm_features(
     raw_features["words"] = text_["words"]
     # We use a dummy bounding box for all bounding boxes so that we can pass the raw features to
     # raw_features_to_layoutlm_features
-    raw_features["bbox"] = [_CLS_BOX]*len(text_["words"])
+    raw_features["bbox"] = [_CLS_BOX] * len(text_["words"])
     raw_features["dataset_type"] = dataset_type
 
-    if use_token_tag and text_["token_tag"]:
-        raw_features["labels"] = text_["token_tag"]
-    elif text_["token_class"]:
-        raw_features["labels"] = text_["token_class"]
-    elif page.documet_type is not None:
-        raw_features["labels"] = [page.documet_type]
+
+    if use_token_tag and text_["token_tags"]:
+        raw_features["labels"] = text_["token_tags"]
+    elif text_["token_classes"]:
+        raw_features["labels"] = text_["token_classes"]
+    elif page.document_type is not None:
+        document_type_id = (
+                int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1)  # type: ignore
+        raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type
-
+    # pylint: enable=E1137
     return raw_features
 
 
@@ -842,13 +846,13 @@ def image_to_lm_features(
                                             `word` when building text strings.
     :return: A dict of lm features
     """
-    raw_features = image_to_raw_lm_features(
+    raw_features = image_to_raw_lm_features(  # pylint: disable=E1102
         dataset_type=None,
         use_token_tag=True,
         text_container=text_container,
         floating_text_block_categories=floating_text_block_categories,
-        include_residual_text_container=include_residual_text_container
-)(dp)
+        include_residual_text_container=include_residual_text_container,
+    )(dp)
     if raw_features is None:
         return None
     features = raw_features_to_layoutlm_features(

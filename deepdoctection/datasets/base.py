@@ -33,7 +33,7 @@ from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image
 from ..utils.detection_types import Pathlike
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type, DatasetType
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
@@ -423,7 +423,7 @@ class CustomDataset(DatasetBase):
         """
 
         self.name = name
-        self.type = get_type(dataset_type)
+        self.type: DatasetType = get_type(dataset_type)  # type: ignore
         self.location = location
         self.init_categories = init_categories
         if init_sub_categories is None:
