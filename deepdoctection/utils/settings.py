@@ -293,6 +293,7 @@ class DatasetType(ObjectTypes):
     sequence_classification = "sequence_classification"
     token_classification = "token_classification"
     publaynet = "publaynet"
+    default = "default"
 
 
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {

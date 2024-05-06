@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, no_type_check, overload
 
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
 
 __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
@@ -89,7 +89,7 @@ class DatasetInfo:
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")
     splits: Mapping[str, str] = field(default_factory=dict)
-    type: ObjectTypes = field(default=DefaultType.default_type)
+    type: DatasetType = field(default=DatasetType.default)
 
     def get_split(self, key: str) -> str:
         """
