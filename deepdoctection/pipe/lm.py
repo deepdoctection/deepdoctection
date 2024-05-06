@@ -20,11 +20,11 @@ Module for token classification pipeline
 """
 
 from copy import copy
-from typing import Any, List, Literal, Optional, Sequence, Union
+from typing import Any, Callable, List, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
-from ..mapper.laylmstruct import image_to_layoutlm_features
+from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils.detection_types import JsonDict
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
 from .base import LanguageModelPipelineComponent
@@ -115,7 +115,8 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             else:
                 self.default_key = TokenClasses.other
             self.other_name_as_key = {self.default_key: categories_name_as_key[self.default_key]}
-        super().__init__(self._get_name(), tokenizer, image_to_layoutlm_features)
+        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), tokenizer, image_to_features_func)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -214,6 +215,13 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 f"in this framework"
             )
 
+    @staticmethod
+    def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:
+        """Replacing eval functions"""
+        return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
+            mapping_str
+        ]
+
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
 class LMSequenceClassifierService(LanguageModelPipelineComponent):
@@ -272,7 +280,8 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.padding = padding
         self.truncation = truncation
         self.return_overflowing_tokens = return_overflowing_tokens
-        super().__init__(self._get_name(), tokenizer, image_to_layoutlm_features)
+        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), tokenizer, image_to_features_func)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -321,3 +330,10 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
                 f"You want to use {type(self.tokenizer)} but you should use {tokenizer_class_name} "
                 f"in this framework"
             )
+
+    @staticmethod
+    def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:
+        """Replacing eval functions"""
+        return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
+            mapping_str
+        ]

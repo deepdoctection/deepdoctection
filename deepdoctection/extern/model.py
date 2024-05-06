@@ -529,6 +529,19 @@ class ModelCatalog:
             model_wrapper="DoctrTextRecognizer",
             architecture="crnn_vgg16_bn",
         ),
+        "FacebookAI/xlm-roberta-base": ModelProfile(
+            name="FacebookAI/xlm-roberta-base/pytorch_model.bin",
+            description="XLM-RoBERTa model pre-trained on 2.5TB of filtered CommonCrawl data containing 100 languages."
+            " It was introduced in the paper Unsupervised Cross-lingual Representation Learning at Scale"
+            " by Conneau et al. and first released in this repository.",
+            size=[1115590446],
+            tp_model=False,
+            config="FacebookAI/xlm-roberta-base/config.json",
+            hf_repo_id="FacebookAI/xlm-roberta-base",
+            hf_model_name="pytorch_model.bin",
+            hf_config_file=["config.json"],
+            dl_library="PT",
+        ),
         "fasttext/lid.176.bin": ModelProfile(
             name="fasttext/lid.176.bin",
             description="Fasttext language detection model",

@@ -205,15 +205,38 @@ class Layout(ImageAnnotationBaseView):
         return words_with_reading_order
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         """Returns a dict `{"text": text string,
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
         words = self.get_ordered_words()
+        characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
+            *[
+                (
+                    word.characters,
+                    word.annotation_id,
+                    word.token_class,
+                    word.token_tag,
+                    (
+                        word.get_sub_category(WordType.token_class).category_id
+                        if WordType.token_class in word.sub_categories
+                        else None
+                    ),
+                    (word.get_sub_category(WordType.token_tag).category_id)
+                    if WordType.token_tag in word.sub_categories
+                    else None,
+                )
+                for word in words
+            ]
+        )
         return {
-            "text": " ".join([word.characters for word in words]),  # type: ignore
-            "text_list": [word.characters for word in words],  # type: ignore
-            "annotation_ids": [word.annotation_id for word in words],
+            "text": " ".join(characters),
+            "words": characters,
+            "ann_ids": ann_ids,
+            "token_classes": token_classes,
+            "token_tags": token_tags,
+            "token_class_ids": token_classes_ids,
+            "token_tag_ids": token_tag_ids,
         }
 
     def get_attribute_names(self) -> Set[str]:
@@ -331,19 +354,33 @@ class Table(Layout):
             return super().text
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         cells = self.cells
         if not cells:
             return super().text_
-        text_list: List[str] = []
-        annotation_id_list: List[str] = []
+        text: List[str] = []
+        words: List[str] = []
+        ann_ids: List[str] = []
+        token_classes: List[str] = []
+        token_tags: List[str] = []
+        token_class_ids: List[str] = []
+        token_tag_ids: List[str] = []
         for cell in cells:
-            text_list.extend(cell.text_["text_list"])  # type: ignore
-            annotation_id_list.extend(cell.text_["annotation_ids"])  # type: ignore
+            text.extend(cell.text_["text"])  # type: ignore
+            words.extend(cell.text_["words"])  # type: ignore
+            ann_ids.extend(cell.text_["ann_ids"])  # type: ignore
+            token_classes.extend(cell.text_["token_classes"])  # type: ignore
+            token_tags.extend(cell.text_["token_tags"])  # type: ignore
+            token_class_ids.extend(cell.text_["token_class_ids"])  # type: ignore
+            token_tag_ids.extend(cell.text_["token_tag_ids"])  # type: ignore
         return {
-            "text": " ".join([cell.text for cell in cells]),  # type: ignore
-            "text_list": text_list,
-            "annotation_ids": annotation_id_list,
+            "text": " ".join(text),
+            "words": words,
+            "ann_ids": ann_ids,
+            "token_classes": token_classes,
+            "token_tags": token_tags,
+            "token_class_ids": token_class_ids,
+            "token_tag_ids": token_tag_ids,
         }
 
     @property
@@ -630,7 +667,7 @@ class Page(Image):
         break_str = "\n" if line_break else " "
         for block in block_with_order:
             text += f"{block.text}{break_str}"
-        return text
+        return text[:-1]
 
     @property
     def text(self) -> str:
@@ -640,17 +677,35 @@ class Page(Image):
         return self._make_text()
 
     @property
-    def text_(self) -> Dict[str, Union[str, List[str]]]:
+    def text_(self) -> JsonDict:
         """Returns a dict `{"text": text string,
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
         block_with_order = self._order("layouts")
-        text_list: List[str] = []
-        annotation_id_list: List[str] = []
+        text: List[str] = []
+        words: List[str] = []
+        ann_ids: List[str] = []
+        token_classes: List[str] = []
+        token_tags: List[str] = []
+        token_class_ids: List[str] = []
+        token_tag_ids: List[str] = []
         for block in block_with_order:
-            text_list.extend(block.text_["text_list"])  # type: ignore
-            annotation_id_list.extend(block.text_["annotation_ids"])  # type: ignore
-        return {"text": self.text, "text_list": text_list, "annotation_ids": annotation_id_list}
+            text.append(block.text_["text"])  # type: ignore
+            words.extend(block.text_["words"])  # type: ignore
+            ann_ids.extend(block.text_["ann_ids"])  # type: ignore
+            token_classes.extend(block.text_["token_classes"])  # type: ignore
+            token_tags.extend(block.text_["token_tags"])  # type: ignore
+            token_class_ids.extend(block.text_["token_class_ids"])  # type: ignore
+            token_tag_ids.extend(block.text_["token_tag_ids"])  # type: ignore
+        return {
+            "text": " ".join(text),
+            "words": words,
+            "ann_ids": ann_ids,
+            "token_classes": token_classes,
+            "token_tags": token_tags,
+            "token_class_ids": token_class_ids,
+            "token_tag_ids": token_tag_ids,
+        }
 
     def get_layout_context(self, annotation_id: str, context_size: int = 3) -> List[ImageAnnotationBaseView]:
         """For a given `annotation_id` get a list of `ImageAnnotation` that are nearby in terms of reading order.

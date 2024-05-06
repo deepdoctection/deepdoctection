@@ -30,6 +30,7 @@ import numpy.typing as npt
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
+from ..datapoint.view import Page
 from ..utils.detection_types import JsonDict
 from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
@@ -40,12 +41,7 @@ if pytorch_available():
     import torch
 
 if transformers_available():
-    from transformers import (  # pylint: disable=W0611
-        BatchEncoding,
-        PreTrainedTokenizerFast,
-        RobertaTokenizerFast,
-        XLMRobertaTokenizerFast,
-    )
+    from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
 
 __all__ = [
     "image_to_raw_layoutlm_features",
@@ -54,11 +50,16 @@ __all__ = [
     "image_to_layoutlm_features",
     "DataCollator",
     "LayoutLMFeatures",
+    "image_to_raw_lm_features",
+    "image_to_lm_features",
 ]
 
 RawLayoutLMFeatures = NewType("RawLayoutLMFeatures", JsonDict)
+RawLMFeatures = NewType("RawLMFeatures", JsonDict)
 LayoutLMFeatures = NewType("LayoutLMFeatures", JsonDict)
+LMFeatures = NewType("LMFeatures", JsonDict)
 InputDataClass = NewType("InputDataClass", JsonDict)
+
 
 """
 <https://github.com/huggingface/transformers/src/transformers/data/data_collator.py>
@@ -208,7 +209,7 @@ def image_to_raw_layoutlm_features(
     return raw_features
 
 
-def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
+def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     """
     Converting list of floats to pytorch tensors
     :param features: LayoutLMFeatures
@@ -216,7 +217,8 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     """
 
     _image_key = "pixel_values" if "pixel_values" in features else "image"
-    features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
+    if "bbox" in features:
+        features["bbox"] = torch.tensor(features["bbox"], dtype=torch.long)
     if "labels" in features:
         features["labels"] = torch.tensor(features["labels"], dtype=torch.long)
     if _image_key in features:
@@ -230,7 +232,7 @@ def features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
 
 
 def _tokenize_with_sliding_window(
-    raw_features: List[RawLayoutLMFeatures],
+    raw_features: List[Union[RawLayoutLMFeatures, RawLMFeatures]],
     tokenizer: "PreTrainedTokenizerFast",
     sliding_window_stride: int,
     max_batch_size: int,
@@ -398,7 +400,7 @@ def _tokenize_with_sliding_window(
 
 
 def raw_features_to_layoutlm_features(
-    raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]],
+    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[Union[RawLayoutLMFeatures, RawLMFeatures]]],
     tokenizer: "PreTrainedTokenizerFast",
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
@@ -407,6 +409,7 @@ def raw_features_to_layoutlm_features(
     remove_columns_for_training: bool = False,
     sliding_window_stride: int = 0,
     max_batch_size: int = 0,
+    remove_bounding_boxes: bool = False,
 ) -> LayoutLMFeatures:
     """
     Mapping raw features to tokenized input sequences for LayoutLM models.
@@ -563,8 +566,11 @@ def raw_features_to_layoutlm_features(
         input_dict.pop("ann_ids")
         input_dict.pop("tokens")
 
+    if remove_bounding_boxes:
+        input_dict.pop("bbox")
+
     if return_tensors == "pt":
-        return features_to_pt_tensors(LayoutLMFeatures(input_dict))
+        return layoutlm_features_to_pt_tensors(LayoutLMFeatures(input_dict))
     return LayoutLMFeatures(input_dict)
 
 
@@ -602,6 +608,7 @@ class LayoutLMDataCollator:
     return_tensors: Optional[Literal["pt"]] = field(default=None)
     sliding_window_stride: int = field(default=0)
     max_batch_size: int = field(default=0)
+    remove_bounding_box_features: bool = field(default=False)
 
     def __post_init__(self) -> None:
         assert isinstance(self.tokenizer, PreTrainedTokenizerFast), "Tokenizer must be a fast tokenizer"
@@ -620,7 +627,7 @@ class LayoutLMDataCollator:
                  token_type_ids, attention_masks, boxes, labels`.
         """
         return raw_features_to_layoutlm_features(
-            raw_features,
+            raw_features,  # type: ignore
             self.tokenizer,
             self.padding,
             self.truncation,
@@ -629,6 +636,7 @@ class LayoutLMDataCollator:
             True,
             self.sliding_window_stride,
             self.max_batch_size,
+            self.remove_bounding_box_features,
         )
 
 
@@ -711,6 +719,139 @@ def image_to_layoutlm_features(
         pixel_std,
         True,
         segment_positions,
+    )(dp)
+    if raw_features is None:
+        return None
+    features = raw_features_to_layoutlm_features(
+        raw_features,
+        tokenizer,
+        padding,
+        truncation,
+        return_overflowing_tokens,
+        return_tensors=return_tensors,
+        sliding_window_stride=sliding_window_stride,
+    )
+    return features
+
+
+@curry
+def image_to_raw_lm_features(
+    dp: Image,
+    dataset_type: Optional[Literal["sequence_classification", "token_classification"]] = None,
+    use_token_tag: bool = True,
+    text_container: Optional[LayoutType] = LayoutType.word,
+    floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
+    include_residual_text_container: bool = False,
+) -> Optional[RawLMFeatures]:
+    """
+    Mapping a datapoint into an intermediate format for bert-like models. Features will be provided into a dict and
+    this mapping can be used for sequence or token classification as well as for inference. To generate input features
+    for the model please `use raw_features_to_layoutlm_features`.
+
+
+    :param dp: Image
+    :param dataset_type: Either SEQUENCE_CLASSIFICATION or TOKEN_CLASSIFICATION. When using a built-in dataset use
+    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
+                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
+                          `WordType.token_class`.
+    :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
+    :param floating_text_block_categories: A list of top level layout objects
+    :param include_residual_text_container: This will regard synthetic text line annotations as floating text
+                                            blocks and therefore incorporate all image annotations of category
+                                            `word` when building text strings.
+    :return: dictionary with the following arguments:
+            'image_id', 'width', 'height', 'ann_ids', 'words', 'bbox' and 'dataset_type'.
+    """
+
+    raw_features: RawLMFeatures = RawLMFeatures({})
+
+    page = Page.from_image(dp, text_container, floating_text_block_categories, include_residual_text_container)
+
+    text_ = page.text_
+
+    # pylint: disable=E1137  #3162
+    raw_features["image_id"] = page.image_id
+    raw_features["width"] = page.width
+    raw_features["height"] = page.height
+    raw_features["ann_ids"] = text_["ann_ids"]
+    raw_features["words"] = text_["words"]
+    # We use a dummy bounding box for all bounding boxes so that we can pass the raw features to
+    # raw_features_to_layoutlm_features
+    raw_features["bbox"] = [_CLS_BOX] * len(text_["words"])
+    raw_features["dataset_type"] = dataset_type
+
+
+    if use_token_tag and text_["token_tags"]:
+        raw_features["labels"] = text_["token_tags"]
+    elif text_["token_classes"]:
+        raw_features["labels"] = text_["token_classes"]
+    elif page.document_type is not None:
+        document_type_id = (
+                int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1)  # type: ignore
+        raw_features["labels"] = [document_type_id]
+
+    raw_features["dataset_type"] = dataset_type
+    # pylint: enable=E1137
+    return raw_features
+
+
+@curry
+def image_to_lm_features(
+    dp: Image,
+    tokenizer: "PreTrainedTokenizerFast",
+    padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
+    truncation: bool = True,
+    return_overflowing_tokens: bool = False,
+    return_tensors: Optional[Literal["pt"]] = "pt",
+    sliding_window_stride: int = 0,
+    text_container: Optional[LayoutType] = LayoutType.word,
+    floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
+    include_residual_text_container: bool = False,
+) -> Optional[LayoutLMFeatures]:
+    """
+    Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
+    `LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
+    with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
+    used internally in `LMTokenClassifierService`.
+
+            tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
+            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+                                                  categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
+
+            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
+
+    :param dp: Image datapoint
+    :param tokenizer: Tokenizer compatible with the language model
+    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
+                    `do_not_pad`.
+    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
+                       maximum acceptable input length for the model if that argument is not provided. This will
+                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
+                       sequences (or a batch of pairs) is provided.
+                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
+                       model maximum admissible input size).
+    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
+                                      can be returned as an additional batch element. Not that in this case, the number
+                                      of input batch samples will be smaller than the output batch samples.
+    :param return_tensors: Output tensor features. Either 'pt' for PyTorch models or None, if features should be
+                           returned in list objects.
+    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length a sliding
+                                  windows will be created with each window having max_length sequence input. When using
+                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
+                                  with windows shifted `sliding_window_stride` to the right.
+    :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
+    :param floating_text_block_categories: A list of top level layout objects
+    :param include_residual_text_container: This will regard synthetic text line annotations as floating text
+                                            blocks and therefore incorporate all image annotations of category
+                                            `word` when building text strings.
+    :return: A dict of lm features
+    """
+    raw_features = image_to_raw_lm_features(  # pylint: disable=E1102
+        dataset_type=None,
+        use_token_tag=True,
+        text_container=text_container,
+        floating_text_block_categories=floating_text_block_categories,
+        include_residual_text_container=include_residual_text_container,
     )(dp)
     if raw_features is None:
         return None
