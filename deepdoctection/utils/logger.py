@@ -134,6 +134,7 @@ class FileFormatter(logging.Formatter):
 _LOG_DIR = None
 _CONFIG_DICT: Dict[str, Any] = {
     "version": 1,
+    "disable_existing_loggers": False,
     "filters": {"customfilter": {"()": lambda: CustomFilter()}},  # pylint: disable=W0108
     "formatters": {
         "streamformatter": {"()": lambda: StreamFormatter(datefmt="%m%d %H:%M.%S")},
