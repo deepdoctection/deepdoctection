@@ -85,6 +85,7 @@ layer. This includes:
   recognition only.
 - **Boto3**, the AWS SDK for Python to provide an API to AWS Textract (only OCR service). This is a paid service and 
   requires an AWS account.
+- **google-cloud-vision**, Google SDK for the Google Vision API. (only OCR service). This is a paid service and requires a Google cloud account.
 - **Tensorpack**, if the Tensorflow setting has been installed. Tensorpack is a library for training models and also 
   provides many examples. We only use the object detection model.
 - **Transformers**, if the PyTorch setting has been installed. The library provides a lot of different models in various
