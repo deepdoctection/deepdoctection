@@ -23,14 +23,16 @@ import sys
 import traceback
 from typing import List
 
+from lazy_imports import try_import
+
 from ..datapoint.convert import convert_np_array_to_b64_b
 from ..utils.detection_types import ImageType, JsonDict, Requirement
-from ..utils.file_utils import boto3_available, get_boto3_requirement
+from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, ObjectDetector, PredictorBase
 
-if boto3_available():
+with try_import() as import_guard:
     import boto3  # type:ignore
 
 

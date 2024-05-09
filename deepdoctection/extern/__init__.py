@@ -19,8 +19,8 @@
 Wrappers for models of external libraries as well as implementation of the Cascade-RCNN model of Tensorpack.
 """
 
-from ..utils.file_utils import detectron2_available, tensorpack_available
 from .base import *
+from .d2detect import *
 from .deskew import *
 from .doctrocr import *
 from .fastlang import *
@@ -30,9 +30,4 @@ from .model import *
 from .pdftext import *
 from .tessocr import *
 from .texocr import *  # type: ignore
-
-if tensorpack_available():
-    from .tpdetect import *
-
-if detectron2_available():
-    from .d2detect import *
+from .tpdetect import *

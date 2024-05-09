@@ -18,6 +18,8 @@
 """
 Utility functions related to mapping tasks
 """
+from __future__ import annotations
+
 import functools
 import itertools
 import traceback
@@ -55,7 +57,7 @@ class MappingContextManager:
         self.context_error = True
         self.kwargs = kwargs
 
-    def __enter__(self) -> "MappingContextManager":
+    def __enter__(self) -> MappingContextManager:
         """
         context enter
         """

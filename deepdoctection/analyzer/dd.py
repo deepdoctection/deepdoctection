@@ -29,12 +29,18 @@ from os import environ
 from shutil import copyfile
 from typing import List, Optional, Union
 
+from lazy_imports import try_import
+
 from ..extern.base import ObjectDetector
 from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
+from ..extern.tp.tfutils import disable_tp_layer_logging
+from ..extern.tpdetect import TPFrcnnDetector
+from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
+from ..extern.hfdetr import HFDetrDerivedDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
@@ -47,11 +53,8 @@ from ..pipe.text import TextExtractionService
 from ..utils.detection_types import Pathlike
 from ..utils.env_info import get_device
 from ..utils.file_utils import (
-    boto3_available,
     detectron2_available,
-    pytorch_available,
     tensorpack_available,
-    tf_available,
 )
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
 from ..utils.logger import LoggingRecord, logger
@@ -59,15 +62,7 @@ from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import CellType, LayoutType
 from ..utils.transform import PadTransform
 
-if tf_available() and tensorpack_available():
-    from ..extern.tp.tfutils import disable_tp_layer_logging
-    from ..extern.tpdetect import TPFrcnnDetector
-
-if pytorch_available():
-    from ..extern.d2detect import D2FrcnnDetector, D2FrcnnTracingDetector
-    from ..extern.hfdetr import HFDetrDerivedDetector
-
-if boto3_available():
+with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
 
 
@@ -344,7 +339,16 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
             pipe_component_list.append(table_segmentation)
 
             if cfg.USE_TABLE_REFINEMENT:
-                table_segmentation_refinement = TableSegmentationRefinementService()
+                table_segmentation_refinement = TableSegmentationRefinementService([LayoutType.table,
+                                                                                    LayoutType.table_rotated],
+                                                                                   [
+                                                                                       LayoutType.cell,
+                                                                                       CellType.column_header,
+                                                                                       CellType.projected_row_header,
+                                                                                       CellType.spanning,
+                                                                                       CellType.row_header,
+                                                                                   ]
+                                                                                   )
                 pipe_component_list.append(table_segmentation_refinement)
 
     if cfg.USE_PDF_MINER:

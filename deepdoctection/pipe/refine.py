@@ -23,7 +23,7 @@ from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
 from itertools import chain, product
-from typing import DefaultDict, List, Optional, Set, Tuple, Union
+from typing import DefaultDict, List, Optional, Set, Tuple, Union, Sequence
 
 import networkx as nx  # type: ignore
 
@@ -34,7 +34,7 @@ from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.detection_types import JsonDict
 from ..utils.error import AnnotationError, ImageError
-from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type
+from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type, ObjectTypes
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -398,19 +398,13 @@ class TableSegmentationRefinementService(PipelineComponent):
 
     """
 
-    def __init__(self) -> None:
-        self._table_name = [LayoutType.table, LayoutType.table_rotated]
-        self._cell_names = [
-            LayoutType.cell,
-            CellType.column_header,
-            CellType.projected_row_header,
-            CellType.spanning,
-            CellType.row_header,
-        ]
+    def __init__(self, table_name: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]) -> None:
+        self.table_name = table_name
+        self.cell_names = cell_names
         super().__init__("table_segment_refine")
 
     def serve(self, dp: Image) -> None:
-        tables = dp.get_annotation(category_names=self._table_name)
+        tables = dp.get_annotation(category_names=self.table_name)
         for table in tables:
             if table.image is None:
                 raise ImageError("table.image cannot be None")
@@ -458,7 +452,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                         for cell in cells:
                             cell.deactivate()
 
-            cells = table.image.get_annotation(category_names=self._cell_names)
+            cells = table.image.get_annotation(category_names=self.cell_names)
             number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
             number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
             max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)

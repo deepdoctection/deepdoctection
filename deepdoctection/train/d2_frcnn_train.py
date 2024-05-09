@@ -18,19 +18,12 @@
 """
 Module for training Detectron2 `GeneralizedRCNN`
 """
-
+from __future__ import annotations
 
 import copy
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Type, Union
 
-from detectron2.config import CfgNode, get_cfg
-from detectron2.data import DatasetMapper, build_detection_train_loader
-from detectron2.data.transforms import RandomFlip, ResizeShortestEdge
-from detectron2.engine import DefaultTrainer, HookBase, default_writers, hooks
-from detectron2.utils import comm
-from detectron2.utils.events import EventWriter, get_event_storage
-from fvcore.nn.precise_bn import get_bn_modules  # type: ignore
-from torch.utils.data import DataLoader, IterableDataset
+from lazy_imports import try_import
 
 from ..datasets.adapter import DatasetAdapter
 from ..datasets.base import DatasetBase
@@ -48,7 +41,19 @@ from ..utils.file_utils import get_wandb_requirement, wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
 
-if wandb_available():
+with try_import() as d2_import_guard:
+    from detectron2.config import CfgNode, get_cfg
+    from detectron2.data import DatasetMapper, build_detection_train_loader
+    from detectron2.data.transforms import RandomFlip, ResizeShortestEdge
+    from detectron2.engine import DefaultTrainer, HookBase, default_writers, hooks
+    from detectron2.utils import comm
+    from detectron2.utils.events import EventWriter, get_event_storage
+    from fvcore.nn.precise_bn import get_bn_modules  # type: ignore
+
+with try_import() as pt_import_guard:
+    from torch.utils.data import DataLoader, IterableDataset
+
+with try_import() as wb_import_guard:
     import wandb
 
 

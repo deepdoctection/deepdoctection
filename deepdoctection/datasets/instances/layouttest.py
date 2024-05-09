@@ -24,6 +24,7 @@ Module for Testlayout dataset. Install the dataset following the folder structur
     ├── test
     │ ├── xrf_layout_test.jsonl
 """
+from __future__ import annotations
 
 from typing import Mapping, Union
 
@@ -77,7 +78,7 @@ class LayoutTest(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
 
-    def _builder(self) -> "LayoutTestBuilder":
+    def _builder(self) -> LayoutTestBuilder:
         return LayoutTestBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

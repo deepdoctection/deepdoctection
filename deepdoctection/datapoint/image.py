@@ -18,6 +18,8 @@
 """
 Dataclass Image
 """
+from __future__ import annotations
+
 import json
 from dataclasses import dataclass, field
 from os import environ
@@ -202,7 +204,7 @@ class Image:
             self._bbox = None
             self.embeddings.pop(self.image_id)
 
-    def get_image(self) -> "_Img":  # type: ignore
+    def get_image(self) -> _Img:  # type: ignore
         """
         Get the image either in base64 string representation or as np.array.
 
@@ -544,7 +546,7 @@ class Image:
 
     @classmethod
     @no_type_check
-    def from_dict(cls, **kwargs) -> "Image":
+    def from_dict(cls, **kwargs) -> Image:
         """
         Create `Image` instance from dict.
 
@@ -575,7 +577,7 @@ class Image:
 
     @classmethod
     @no_type_check
-    def from_file(cls, file_path: str) -> "Image":
+    def from_file(cls, file_path: str) -> Image:
         """
         Create `Image` instance from .json file.
 

@@ -18,6 +18,8 @@
 """
 Module for common pipeline components
 """
+from __future__ import annotations
+
 from copy import copy, deepcopy
 from typing import List, Literal, Mapping, Optional, Sequence, Union
 
@@ -26,20 +28,20 @@ import numpy as np
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS, Page
+
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import detectron2_available, pytorch_available, tf_available
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
+from ..utils.file_utils import pytorch_available, tf_available
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
-if tf_available():
-    from ..mapper.tpstruct import tf_nms_image_annotations as nms_image_annotations
-
-elif pytorch_available() and detectron2_available():
+if pytorch_available():
     from ..mapper.d2struct import pt_nms_image_annotations as nms_image_annotations
+elif tf_available():
+    from ..mapper.tpstruct import tf_nms_image_annotations as nms_image_annotations
 
 
 @pipeline_component_registry.register("ImageCroppingService")
@@ -64,7 +66,7 @@ class ImageCroppingService(PipelineComponent):
         for ann in dp.get_annotation(category_names=self.category_names):
             dp.image_ann_to_image(ann.annotation_id, crop_image=True)
 
-    def clone(self) -> "PipelineComponent":
+    def clone(self) -> PipelineComponent:
         return self.__class__(self.category_names)
 
     def get_meta_annotation(self) -> JsonDict:
@@ -225,7 +227,7 @@ class PageParsingService:
         """
         return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
 
-    def clone(self) -> "PageParsingService":
+    def clone(self) -> PageParsingService:
         """clone"""
         return self.__class__(
             deepcopy(self.text_container),
@@ -292,7 +294,7 @@ class AnnotationNmsService(PipelineComponent):
                 if ann.annotation_id not in ann_ids_to_keep:
                     self.dp_manager.deactivate_annotation(ann.annotation_id)
 
-    def clone(self) -> "PipelineComponent":
+    def clone(self) -> PipelineComponent:
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
     def get_meta_annotation(self) -> JsonDict:
@@ -326,7 +328,7 @@ class ImageParsingService:
         """
         return MapData(df, self.pass_datapoint)
 
-    def clone(self) -> "ImageParsingService":
+    def clone(self) -> ImageParsingService:
         """clone"""
         return self.__class__(self.dpi)
 

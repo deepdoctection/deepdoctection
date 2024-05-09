@@ -30,6 +30,7 @@ Module for Fintabnet dataset. Place the dataset as follows
     ├── FinTabNet_1.0.0_table_train.jsonl
     ├── FinTabNet_1.0.0_table_val.jsonl
 """
+from __future__ import annotations
 
 from pathlib import Path
 from typing import List, Mapping, Sequence, Union
@@ -133,7 +134,7 @@ class Fintabnet(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self) -> "FintabnetBuilder":
+    def _builder(self) -> FintabnetBuilder:
         return FintabnetBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

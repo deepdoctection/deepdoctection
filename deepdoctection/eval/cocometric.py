@@ -22,6 +22,8 @@ Module for metrics that require the COCOeval class.
 from copy import copy
 from typing import Dict, List, Optional, Tuple, Union
 
+from lazy_imports import try_import
+
 import numpy as np
 
 from ..dataflow import DataFlow
@@ -33,7 +35,7 @@ from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_r
 from .base import MetricBase
 from .registry import metric_registry
 
-if cocotools_available():
+with try_import() as cc_import_guard:
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
 

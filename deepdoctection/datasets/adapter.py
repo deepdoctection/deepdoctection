@@ -22,6 +22,8 @@ Module for wrapping datasets into a pytorch dataset framework.
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
+from lazy_imports import try_import
+
 from ..dataflow import CacheData, CustomDataFromList, MapData, RepeatedData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
@@ -33,7 +35,7 @@ from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, Wor
 from ..utils.tqdm import get_tqdm
 from .registry import get_dataset
 
-if pytorch_available():
+with try_import() as import_guard:
     from torch.utils.data import IterableDataset
 
 
