@@ -37,9 +37,12 @@ Module for PubTables1M-Detection-PASCAL-VOC dataset. Install the dataset followi
     ├── PubTables-1M-Structure_Annotations_Test
     ├── PubTables-1M-Structure_Images_Test
 """
+from __future__ import annotations
 
 import os
 from typing import Mapping, Union
+
+from lazy_imports import try_import
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
@@ -56,7 +59,7 @@ from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 from ..registry import dataset_registry
 
-if lxml_available():
+with try_import() as import_guard:
     from lxml import etree
 
 _NAME = "pubtables1m_det"
@@ -102,7 +105,7 @@ class Pubtables1MDet(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES_DET)
 
-    def _builder(self) -> "Pubtables1MBuilder":
+    def _builder(self) -> Pubtables1MBuilder:
         return Pubtables1MBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 
@@ -225,7 +228,7 @@ class Pubtables1MStruct(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES_STRUCT)
 
-    def _builder(self) -> "Pubtables1MBuilderStruct":
+    def _builder(self) -> Pubtables1MBuilderStruct:
         return Pubtables1MBuilderStruct(location=_LOCATION, annotation_files=_ANNOTATION_FILES_STRUCT)
 
 

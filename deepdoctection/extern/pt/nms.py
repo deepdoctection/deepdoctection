@@ -18,9 +18,13 @@
 """
 Module for custom NMS functions.
 """
+from __future__ import annotations
 
-import torch
-from torchvision.ops import boxes as box_ops  # type: ignore
+from lazy_imports import try_import
+
+with try_import() as import_guard:
+    import torch
+    from torchvision.ops import boxes as box_ops  # type: ignore
 
 
 # Copy & paste from https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/nms.py

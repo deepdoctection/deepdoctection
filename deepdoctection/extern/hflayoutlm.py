@@ -18,6 +18,7 @@
 """
 HF Layoutlm model for diverse downstream tasks.
 """
+from __future__ import annotations
 
 from abc import ABC
 from collections import defaultdict
@@ -31,8 +32,6 @@ from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import (
     get_pytorch_requirement,
     get_transformers_requirement,
-    pytorch_available,
-    transformers_available,
 )
 from ..utils.settings import (
     BioTag,
@@ -46,12 +45,11 @@ from ..utils.settings import (
 from .base import LMSequenceClassifier, LMTokenClassifier, SequenceClassResult, TokenClassResult
 from .pt.ptutils import set_torch_auto_device
 
-if pytorch_available():
+with try_import() as pt_import_guard:
     import torch
     import torch.nn.functional as F
-    from torch import Tensor  # pylint: disable=W0611
 
-if transformers_available():
+with try_import() as tr_import_guard:
     from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
     from transformers import (
         LayoutLMForSequenceClassification,
@@ -117,15 +115,15 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
 
 def predict_token_classes(
     uuids: List[List[str]],
-    input_ids: "Tensor",
-    attention_mask: "Tensor",
-    token_type_ids: "Tensor",
-    boxes: "Tensor",
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    token_type_ids: torch.Tensor,
+    boxes: torch.Tensor,
     tokens: List[List[str]],
     model: Union[
-        "LayoutLMForTokenClassification", "LayoutLMv2ForTokenClassification", "LayoutLMv3ForTokenClassification"
+        LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LayoutLMv3ForTokenClassification
     ],
-    images: Optional["Tensor"] = None,
+    images: Optional[torch.Tensor] = None,
 ) -> List[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token
@@ -178,17 +176,17 @@ def predict_token_classes(
 
 
 def predict_sequence_classes(
-    input_ids: "Tensor",
-    attention_mask: "Tensor",
-    token_type_ids: "Tensor",
-    boxes: "Tensor",
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    token_type_ids: torch.Tensor,
+    boxes: torch.Tensor,
     model: Union[
-        "LayoutLMForSequenceClassification",
-        "LayoutLMv2ForSequenceClassification",
-        "LayoutLMv3ForSequenceClassification",
-        "LiltForSequenceClassification",
+        LayoutLMForSequenceClassification,
+        LayoutLMv2ForSequenceClassification,
+        LayoutLMv3ForSequenceClassification,
+        LiltForSequenceClassification,
     ],
-    images: Optional["Tensor"] = None,
+    images: Optional[torch.Tensor] = None,
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -228,7 +226,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
     """
 
-    model: Union["LayoutLMForTokenClassification", "LayoutLMv2ForTokenClassification"]
+    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification]
 
     def __init__(
         self,
@@ -312,7 +310,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     def _validate_encodings(
         self, **encodings: Any
     ) -> Tuple[
-        List[List[str]], List[str], "torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor", List[List[str]]
+        List[List[str]], List[str], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[List[str]]
     ]:
         image_ids = encodings.get("image_ids", [])
         ann_ids = encodings.get("ann_ids")
@@ -346,7 +344,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
         return ann_ids, image_ids, input_ids, attention_mask, token_type_ids, boxes, tokens
 
-    def clone(self) -> "HFLayoutLmTokenClassifierBase":
+    def clone(self) -> HFLayoutLmTokenClassifierBase:
         return self.__class__(
             self.path_config,
             self.path_weights,
@@ -444,7 +442,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -548,7 +546,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -667,7 +665,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -727,7 +725,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     Abstract base class for wrapping LayoutLM models  for sequence classification into the deepdoctection framework.
     """
 
-    model: Union["LayoutLMForSequenceClassification", "LayoutLMv2ForSequenceClassification"]
+    model: Union[LayoutLMForSequenceClassification, LayoutLMv2ForSequenceClassification]
 
     def __init__(
         self,
@@ -752,12 +750,12 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def clone(self) -> "HFLayoutLmSequenceClassifierBase":
+    def clone(self) -> HFLayoutLmSequenceClassifierBase:
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
 
     def _validate_encodings(
-        self, **encodings: Union[List[List[str]], "torch.Tensor"]
-    ) -> Tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor"]:
+        self, **encodings: Union[List[List[str]], torch.Tensor]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -854,7 +852,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -928,7 +926,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("image")
         if isinstance(images, torch.Tensor):
@@ -1009,7 +1007,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("pixel_values")
         if isinstance(images, torch.Tensor):
@@ -1114,7 +1112,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -1197,7 +1195,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(

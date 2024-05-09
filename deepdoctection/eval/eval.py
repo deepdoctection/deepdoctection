@@ -19,17 +19,18 @@
 """
 Module for `Evaluator`
 """
-
-__all__ = ["Evaluator"]
+from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any, Dict, Generator, List, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
+from lazy_imports import try_import
 
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
+from ..mapper.d2struct import to_wandb_image
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
@@ -37,18 +38,16 @@ from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.detection_types import ImageType
-from ..utils.file_utils import detectron2_available, wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
-if wandb_available():
+with try_import() as wb_import_guard:
     import wandb  # pylint:disable=W0611
     from wandb import Artifact, Table
 
-if wandb_available() and detectron2_available():
-    from ..mapper.d2struct import to_wandb_image
+__all__ = ["Evaluator"]
 
 
 class Evaluator:
@@ -94,7 +93,7 @@ class Evaluator:
         component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
         metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
-        run: Optional["wandb.sdk.wandb_run.Run"] = None,
+        run: Optional[wandb.sdk.wandb_run.Run] = None,
     ) -> None:
         """
         Evaluating a pipeline component on a dataset with a given metric.
@@ -355,7 +354,7 @@ class WandbTableAgent:
 
     def __init__(
         self,
-        wandb_run: "wandb.sdk.wandb_run.Run",
+        wandb_run: wandb.sdk.wandb_run.Run,
         dataset_name: str,
         num_samples: int,
         categories: Mapping[str, TypeOrStr],
@@ -414,7 +413,7 @@ class WandbTableAgent:
         self._table_rows = []
         self._counter = 0
 
-    def _build_table(self) -> "Table":
+    def _build_table(self) -> Table:
         """
         Builds wandb.Table object for logging evaluation
 

@@ -23,8 +23,9 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Union
 
+from lazy_imports import try_import
+
 import numpy as np
-from transformers import BatchFeature, DetrFeatureExtractor
 
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
@@ -33,6 +34,8 @@ from ..utils.detection_types import JsonDict
 from ..utils.settings import ObjectTypes
 from ..utils.transform import PadTransform
 
+with try_import() as tr_import_guard:
+    from transformers import BatchFeature, DetrFeatureExtractor
 
 @curry
 def image_to_hf_detr_training(

@@ -29,6 +29,7 @@ Module for Publaynet dataset. Place the dataset as follows
     │ ├── train.txt
     │ ├── val.txt
 """
+from __future__ import annotations
 
 import os
 from typing import Mapping, Union
@@ -102,7 +103,7 @@ class Rvlcdip(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
 
-    def _builder(self) -> "RvlcdipBuilder":
+    def _builder(self) -> RvlcdipBuilder:
         return RvlcdipBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

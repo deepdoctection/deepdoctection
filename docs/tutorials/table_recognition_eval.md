@@ -59,7 +59,15 @@ image datapoints with layout objects and in particular tables.
             cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
         )
         pipe_component_list.append(table_segmentation)
-        table_segmentation_refinement = dd.TableSegmentationRefinementService()
+        table_segmentation_refinement = dd.TableSegmentationRefinementService([LayoutType.table, 
+                                                                                    LayoutType.table_rotated],
+                                                                                   [
+                                                                                       LayoutType.cell,
+                                                                                       CellType.column_header,
+                                                                                       CellType.projected_row_header,
+                                                                                       CellType.spanning,
+                                                                                       CellType.row_header,
+                                                                                   ])
         pipe_component_list.append(table_segmentation_refinement)
         tess_ocr_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TESS_OCR)
         d_tess_ocr = dd.TesseractOcrDetector(tess_ocr_config_path)

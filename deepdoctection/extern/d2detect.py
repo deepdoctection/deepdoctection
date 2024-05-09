@@ -18,20 +18,21 @@
 """
 D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 """
+from __future__ import annotations
+
 import io
 from abc import ABC
 from copy import copy
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence
 
+from lazy_imports import try_import
 import numpy as np
 
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import (
-    detectron2_available,
     get_detectron2_requirement,
     get_pytorch_requirement,
-    pytorch_available,
 )
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
@@ -40,12 +41,12 @@ from .base import DetectionResult, ObjectDetector, PredictorBase
 from .pt.nms import batched_nms
 from .pt.ptutils import set_torch_auto_device
 
-if pytorch_available():
+with try_import() as pt_import_guard:
     import torch
     import torch.cuda
     from torch import nn  # pylint: disable=W0611
 
-if detectron2_available():
+with try_import() as d2_import_guard:
     from detectron2.checkpoint import DetectionCheckpointer
     from detectron2.config import CfgNode, get_cfg  # pylint: disable=W0611
     from detectron2.modeling import GeneralizedRCNN, build_model  # pylint: disable=W0611
@@ -53,8 +54,8 @@ if detectron2_available():
 
 
 def _d2_post_processing(
-    predictions: Dict[str, "Instances"], nms_thresh_class_agnostic: float
-) -> Dict[str, "Instances"]:
+    predictions: Dict[str, Instances], nms_thresh_class_agnostic: float
+) -> Dict[str, Instances]:
     """
     D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
     Apply a class agnostic NMS.
@@ -72,7 +73,7 @@ def _d2_post_processing(
 
 def d2_predict_image(
     np_img: ImageType,
-    predictor: "nn.Module",
+    predictor: nn.Module,
     resizer: InferenceResize,
     nms_thresh_class_agnostic: float,
 ) -> List[DetectionResult]:
@@ -107,7 +108,7 @@ def d2_predict_image(
 
 
 def d2_jit_predict_image(
-    np_img: ImageType, d2_predictor: "nn.Module", resizer: InferenceResize, nms_thresh_class_agnostic: float
+    np_img: ImageType, d2_predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
 ) -> List[DetectionResult]:
     """
     Run detection on an image using torchscript. It will also handle the preprocessing internally which
@@ -284,7 +285,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
     @staticmethod
     def _set_config(
         path_yaml: str, d2_conf_list: List[str], device: Optional[Literal["cpu", "cuda"]] = None
-    ) -> "CfgNode":
+    ) -> CfgNode:
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
@@ -296,7 +297,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         return cfg
 
     @staticmethod
-    def _set_model(config: "CfgNode") -> "GeneralizedRCNN":
+    def _set_model(config: CfgNode) -> GeneralizedRCNN:
         """
         Build the D2 model. It uses the available builtin tools of D2
 
@@ -306,7 +307,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         return build_model(config.clone()).eval()
 
     @staticmethod
-    def _instantiate_d2_predictor(wrapped_model: "GeneralizedRCNN", path_weights: str) -> None:
+    def _instantiate_d2_predictor(wrapped_model: GeneralizedRCNN, path_weights: str) -> None:
         checkpointer = DetectionCheckpointer(wrapped_model)
         checkpointer.load(path_weights)
 
@@ -342,7 +343,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
     @staticmethod
     def get_wrapped_model(
         path_yaml: str, path_weights: str, config_overwrite: List[str], device: Literal["cpu", "cuda"]
-    ) -> "GeneralizedRCNN":
+    ) -> GeneralizedRCNN:
         """
         Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
 
