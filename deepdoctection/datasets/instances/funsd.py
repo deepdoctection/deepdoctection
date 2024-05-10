@@ -32,6 +32,7 @@ Module for Funsd dataset.  Install the dataset following the folder structure
     │ ├── images
     │ │ ├── ...
 """
+from __future__ import annotations
 
 import os
 from typing import Dict, List, Mapping, Union
@@ -120,7 +121,7 @@ class Funsd(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self) -> "FunsdBuilder":
+    def _builder(self) -> FunsdBuilder:
         return FunsdBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

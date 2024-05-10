@@ -19,13 +19,16 @@
 Module for EvalCallback in Tensorpack
 """
 
+from __future__ import annotations
+
 from itertools import count
 from typing import Mapping, Optional, Sequence, Type, Union
+
+from lazy_imports import try_import
 
 from ..datasets import DatasetBase
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PredictorPipelineComponent
-from ..utils.file_utils import tensorpack_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict
 from ..utils.settings import ObjectTypes
@@ -33,11 +36,14 @@ from .base import MetricBase
 from .eval import Evaluator
 
 # pylint: disable=import-error
-if tensorpack_available():
+with try_import() as import_guard:
     from tensorpack.callbacks import Callback
     from tensorpack.predict import OnlinePredictor
     from tensorpack.utils.gpu import get_num_gpu
 # pylint: enable=import-error
+
+if not import_guard.is_successful():
+    from ..utils.mocks import Callback
 
 
 # The following class is modified from
@@ -53,7 +59,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
 
     _chief_only = False
 
-    def __init__(
+    def __init__(   # pylint: disable=W0231
         self,
         dataset: DatasetBase,
         category_names: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]],

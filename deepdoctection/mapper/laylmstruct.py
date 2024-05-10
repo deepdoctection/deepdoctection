@@ -20,27 +20,29 @@ Module for mapping annotations from image to layout lm input structure. Heavily 
 <https://github.com/NielsRogge/Transformers-Tutorials>
 """
 
+from __future__ import annotations
+
 import random
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
+from lazy_imports import try_import
 
 from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import pytorch_available, transformers_available
 from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
 from ..utils.transform import ResizeTransform, normalize_image
 from .maputils import curry
 
-if pytorch_available():
+with try_import() as import_guard:
     import torch
 
-if transformers_available():
+with try_import() as tr_import_guard:
     from transformers import BatchEncoding, PreTrainedTokenizerFast  # pylint: disable=W0611
 
 __all__ = [
@@ -233,11 +235,11 @@ def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatu
 
 def _tokenize_with_sliding_window(
     raw_features: List[Union[RawLayoutLMFeatures, RawLMFeatures]],
-    tokenizer: "PreTrainedTokenizerFast",
+    tokenizer: PreTrainedTokenizerFast,
     sliding_window_stride: int,
     max_batch_size: int,
     return_tensors: Optional[Literal["pt"]] = None,
-) -> Union[JsonDict, "BatchEncoding"]:
+) -> Union[JsonDict, BatchEncoding]:
     """
     Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
     If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
@@ -401,7 +403,7 @@ def _tokenize_with_sliding_window(
 
 def raw_features_to_layoutlm_features(
     raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[Union[RawLayoutLMFeatures, RawLMFeatures]]],
-    tokenizer: "PreTrainedTokenizerFast",
+    tokenizer: PreTrainedTokenizerFast,
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
     return_overflowing_tokens: bool = False,
@@ -601,7 +603,7 @@ class LayoutLMDataCollator:
                            with windows shifted `sliding_window_stride` to the right.
     """
 
-    tokenizer: "PreTrainedTokenizerFast"
+    tokenizer: PreTrainedTokenizerFast
     padding: Literal["max_length", "do_not_pad", "longest"] = field(default="max_length")
     truncation: bool = field(default=True)
     return_overflowing_tokens: bool = field(default=False)
@@ -643,7 +645,7 @@ class LayoutLMDataCollator:
 @curry
 def image_to_layoutlm_features(
     dp: Image,
-    tokenizer: "PreTrainedTokenizerFast",
+    tokenizer: PreTrainedTokenizerFast,
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
     return_overflowing_tokens: bool = False,
@@ -780,14 +782,14 @@ def image_to_raw_lm_features(
     raw_features["bbox"] = [_CLS_BOX] * len(text_["words"])
     raw_features["dataset_type"] = dataset_type
 
-
     if use_token_tag and text_["token_tags"]:
         raw_features["labels"] = text_["token_tags"]
     elif text_["token_classes"]:
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
         document_type_id = (
-                int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1)  # type: ignore
+            int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1  # type: ignore
+        )
         raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type
@@ -798,7 +800,7 @@ def image_to_raw_lm_features(
 @curry
 def image_to_lm_features(
     dp: Image,
-    tokenizer: "PreTrainedTokenizerFast",
+    tokenizer: PreTrainedTokenizerFast,
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
     return_overflowing_tokens: bool = False,

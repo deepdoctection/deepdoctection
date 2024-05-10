@@ -27,6 +27,7 @@ Module for Pubtabnet dataset. Place the dataset as follows
     │ ├── PMC3.png
     ├── PubTabNet_2.0.0.jsonl
 """
+from __future__ import annotations
 
 from typing import Dict, List, Mapping, Union
 
@@ -119,7 +120,7 @@ class Pubtabnet(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self) -> "PubtabnetBuilder":
+    def _builder(self) -> PubtabnetBuilder:
         return PubtabnetBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

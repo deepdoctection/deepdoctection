@@ -19,6 +19,7 @@
 Subclasses for ImageAnnotation and Image objects with various properties. These classes
 simplify consumption
 """
+from __future__ import annotations
 
 from copy import copy
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
@@ -64,7 +65,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
     base_page: `Page` class instantiated by the lowest hierarchy `Image`
     """
 
-    base_page: "Page"
+    base_page: Page
 
     @property
     def bbox(self) -> List[float]:
@@ -148,7 +149,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         return attribute_names
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotationBaseView":
+    def from_dict(cls, **kwargs: JsonDict) -> ImageAnnotationBaseView:
         """
         Identical to its base class method for having correct return types. If the base class changes, please
         change this method as well.
@@ -594,8 +595,8 @@ class Page(Image):
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
-        base_page: Optional["Page"] = None,
-    ) -> "Page":
+        base_page: Optional[Page] = None,
+    ) -> Page:
         """
         Factory function for generating a `Page` instance from `image_orig` .
 
@@ -968,7 +969,7 @@ class Page(Image):
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[List[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
-    ) -> "Page":
+    ) -> Page:
         """Reading JSON file and building a `Page` object with given config.
         :param file_path: Path to file
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
@@ -992,7 +993,7 @@ class Page(Image):
             if word.token_tag not in (TokenClasses.other, None)
         ]
 
-    def __copy__(self) -> "Page":
+    def __copy__(self) -> Page:
         return self.__class__.from_image(
             self.image_orig,
             self.text_container,

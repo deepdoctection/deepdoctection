@@ -8,20 +8,25 @@
 This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/predict.py>
 """
+from __future__ import annotations
 
 from typing import List
 
-import cv2
 import numpy as np
-from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
+from lazy_imports import try_import
 
-from ....utils.file_utils import scipy_available
 from ....utils.transform import InferenceResize
 from ...base import DetectionResult
 from .common import clip_boxes
 
-if scipy_available():
+with try_import() as import_guard:
+    from tensorpack.predict.base import OfflinePredictor  # pylint: disable=E0401
+
+with try_import() as sp_import_guard:
     from scipy import interpolate
+
+with try_import() as cv2_import_guard:
+    import cv2
 
 
 def _scale_box(box, scale):

@@ -18,8 +18,10 @@
 """
 Tensorflow related utils.
 """
+from lazy_imports import try_import
 
-from tensorpack.models import disable_layer_logging  # pylint: disable=E0401
+with try_import() as import_guard:
+    from tensorpack.models import disable_layer_logging  # pylint: disable=E0401
 
 
 def is_tfv2() -> bool:

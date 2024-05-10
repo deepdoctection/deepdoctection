@@ -23,11 +23,13 @@ from copy import copy
 from pathlib import Path
 from typing import Any, List, Mapping, Tuple, Union
 
-from ..utils.file_utils import Requirement, fasttext_available, get_fasttext_requirement
+from lazy_imports import try_import
+
+from ..utils.file_utils import Requirement, get_fasttext_requirement
 from ..utils.settings import TypeOrStr, get_type
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
-if fasttext_available():
+with try_import() as import_guard:
     from fasttext import load_model  # type: ignore
 
 

@@ -18,21 +18,24 @@
 """
 Compatibility classes and methods related to Tensorpack package
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Any, List, Mapping, Tuple, Union
 
-from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
-from tensorpack.tfutils import SmartInit  # pylint: disable=E0401
-
-# pylint: disable=import-error
-from tensorpack.train.model_desc import ModelDesc
-from tensorpack.utils.gpu import get_num_gpu
+from lazy_imports import try_import
 
 from ...utils.metacfg import AttrDict
 from ...utils.settings import ObjectTypes
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
+    from tensorpack.tfutils import SmartInit  # pylint: disable=E0401
+    from tensorpack.train.model_desc import ModelDesc  # pylint: disable=E0401
+    from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
+
+if not import_guard.is_successful():
+    from ...utils.mocks import ModelDesc
 
 
 class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore

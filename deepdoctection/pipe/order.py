@@ -18,6 +18,7 @@
 """
 Module for ordering text and layout segments pipeline components
 """
+from __future__ import annotations
 
 import os
 from abc import ABC
@@ -538,7 +539,7 @@ class TextLineService(TextLineServiceMixin):
             paragraph_break=paragraph_break,
         )
 
-    def clone(self) -> "PipelineComponent":
+    def clone(self) -> PipelineComponent:
         """
         This method returns a new instance of the class with the same configuration.
         """

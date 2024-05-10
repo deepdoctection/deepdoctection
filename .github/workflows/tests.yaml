@@ -21,8 +21,8 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.8-basic-tf',
-              python: '3.8',
+          - { name: '3.9-basic-tf',
+              python: '3.9',
               pip: '24.0',
               os: ubuntu-20.04,
               dll: tensorflow==2.9,
@@ -30,8 +30,8 @@ jobs:
               extras: ,
               test: test,
               test_cases: test-basic }
-          - { name: '3.8-basic-pt',
-              python: '3.8',
+          - { name: '3.9-basic-pt',
+              python: '3.9',
               pip: '24.0',
               os: ubuntu-20.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
@@ -39,8 +39,8 @@ jobs:
               extras: ,
               test: test,
               test_cases: test-basic-pt }
-          - { name: '3.8-tf',
-              python: '3.8',
+          - { name: '3.9-tf',
+              python: '3.9',
               pip: '24.0',
               os: ubuntu-20.04,
               dll: tensorflow==2.9,
@@ -48,8 +48,8 @@ jobs:
               extras: tf,
               test: test,
               test_cases: test-tf }
-          - { name: '3.8-pt',
-              python: '3.8',
+          - { name: '3.9-pt',
+              python: '3.9',
               pip: '24.0',
               os: ubuntu-20.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',

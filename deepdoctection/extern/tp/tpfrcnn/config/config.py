@@ -191,16 +191,19 @@ import os
 from typing import List, Mapping, Tuple
 
 import numpy as np
-from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401
-from tensorpack.utils import logger  # pylint: disable=E0401
-
-# pylint: disable=import-error
-from tensorpack.utils.gpu import get_num_gpu
+from lazy_imports import try_import
 
 from .....utils.metacfg import AttrDict
 from .....utils.settings import ObjectTypes
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401
+    from tensorpack.utils import logger  # pylint: disable=E0401
+
+    # pylint: disable=import-error
+    from tensorpack.utils.gpu import get_num_gpu
+
+    # pylint: enable=import-error
 
 
 __all__ = ["train_frcnn_config", "model_frcnn_config"]

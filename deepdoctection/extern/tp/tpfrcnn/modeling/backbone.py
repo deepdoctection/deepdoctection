@@ -12,22 +12,30 @@ This file is modified from
 from contextlib import ExitStack, contextmanager
 
 import numpy as np
+from lazy_imports import try_import
 
 # pylint: disable=import-error
-import tensorflow as tf
-from tensorpack import tfv1
-from tensorpack.models import BatchNorm, Conv2D, MaxPooling, layer_register
-from tensorpack.tfutils import argscope
-from tensorpack.tfutils.varreplace import custom_getter_scope, freeze_variables
+
+with try_import() as import_guard:
+    import tensorflow as tf
+    from tensorpack import tfv1
+    from tensorpack.models import BatchNorm, Conv2D, MaxPooling, layer_register
+    from tensorpack.tfutils import argscope
+    from tensorpack.tfutils.varreplace import custom_getter_scope, freeze_variables
 
 # pylint: enable=import-error
 
+if not import_guard.is_successful():
+    from .....utils.mocks import layer_register
+
 
 @layer_register(log_shape=True)
-def GroupNorm(x, group=32, gamma_initializer=tf.constant_initializer(1.0)):
+def GroupNorm(x, group=32, gamma_initializer=None):
     """
     More code that reproduces the paper can be found at <https://github.com/ppwwyyxx/GroupNorm-reproduce/>.
     """
+    if gamma_initializer is None:
+        gamma_initializer = tf.constant_initializer(1.0)
     shape = x.get_shape().as_list()
     ndims = len(shape)
     assert ndims == 4, shape
@@ -153,7 +161,7 @@ def get_norm(cfg, zero_init=False):
     return lambda x: norm(layer_name, x, gamma_initializer=tf.zeros_initializer() if zero_init else None)
 
 
-def resnet_shortcut(l, n_out, stride, activation=tf.identity):
+def resnet_shortcut(l, n_out, stride, activation=None):
     """
     Defining the skip connection in bottleneck
 
@@ -163,6 +171,8 @@ def resnet_shortcut(l, n_out, stride, activation=tf.identity):
     :param activation: An activation function
     :return: tf.Tensor
     """
+    if activation is None:
+        activation = tf.identity
     n_in = l.shape[1]
     if n_in != n_out:  # change dimension when channel is not the same
         return Conv2D("convshortcut", l, n_out, 1, strides=stride, activation=activation)  # pylint: disable=E1124

@@ -19,19 +19,22 @@
 Module for small mapping functions
 """
 
+from __future__ import annotations
+
 import ast
 import os
 from typing import List, Mapping, Optional, Sequence, Union
 
+from lazy_imports import try_import
+
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import lxml_available
 from ..utils.fs import get_load_image_func, load_image_from_file
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry
 
-if lxml_available():
+with try_import() as import_guard:
     from lxml import etree  # pylint: disable=W0611
 
 
@@ -175,7 +178,7 @@ def maybe_ann_to_sub_image(
 
 
 @curry
-def xml_to_dict(dp: JsonDict, xslt_obj: "etree.XSLT") -> JsonDict:
+def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
     Convert a xml object into a dict using a xsl style sheet.
 

@@ -22,25 +22,7 @@ Module for training Tensorpack `GeneralizedRCNN`
 import os
 from typing import Dict, List, Optional, Sequence, Type, Union
 
-# pylint: disable=import-error
-from tensorpack.callbacks import (
-    EstimatedTimeLeft,
-    GPUMemoryTracker,
-    GPUUtilizationTracker,
-    HostMemoryTracker,
-    ModelSaver,
-    PeriodicCallback,
-    ScheduledHyperParamSetter,
-    SessionRunTimeout,
-    ThroughputTracker,
-)
-
-# todo: check how dataflow import is directly possible without having AssertionError
-from tensorpack.dataflow import ProxyDataFlow, imgaug
-from tensorpack.input_source import QueueInput
-from tensorpack.tfutils import SmartInit
-from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
-from tensorpack.utils import logger
+from lazy_imports import try_import
 
 from ..dataflow.base import DataFlow
 from ..dataflow.common import MapData
@@ -67,6 +49,26 @@ from ..utils.logger import log_once
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import string_to_dict
+
+with try_import() as tp_import_guard:
+    # todo: check how dataflow import is directly possible without having an AssertionError
+    # pylint: disable=import-error
+    from tensorpack.callbacks import (
+        EstimatedTimeLeft,
+        GPUMemoryTracker,
+        GPUUtilizationTracker,
+        HostMemoryTracker,
+        ModelSaver,
+        PeriodicCallback,
+        ScheduledHyperParamSetter,
+        SessionRunTimeout,
+        ThroughputTracker,
+    )
+    from tensorpack.dataflow import ProxyDataFlow, imgaug
+    from tensorpack.input_source import QueueInput
+    from tensorpack.tfutils import SmartInit
+    from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
+    from tensorpack.utils import logger
 
 __all__ = ["train_faster_rcnn"]
 

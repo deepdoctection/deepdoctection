@@ -19,20 +19,12 @@
 Module for training Hugging Face Detr implementation. Note, that this scripts only trans Tabletransformer like Detr
 models that are a slightly different from the plain Detr model that are provided by the transformer library.
 """
+from __future__ import annotations
 
 import copy
 from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
-from torch.nn import Module
-from torch.utils.data import Dataset
-from transformers import (
-    AutoFeatureExtractor,
-    IntervalStrategy,
-    PretrainedConfig,
-    PreTrainedModel,
-    TableTransformerForObjectDetection,
-)
-from transformers.trainer import Trainer, TrainingArguments
+from lazy_imports import try_import
 
 from ..datasets.adapter import DatasetAdapter
 from ..datasets.base import DatasetBase
@@ -46,6 +38,21 @@ from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
+
+with try_import() as pt_import_guard:
+    from torch import nn
+    from torch.utils.data import Dataset
+
+with try_import() as hf_import_guard:
+    from transformers import (
+        AutoFeatureExtractor,
+        IntervalStrategy,
+        PretrainedConfig,
+        PreTrainedModel,
+        TableTransformerForObjectDetection,
+        Trainer,
+        TrainingArguments,
+    )
 
 
 class DetrDerivedTrainer(Trainer):
@@ -61,7 +68,7 @@ class DetrDerivedTrainer(Trainer):
 
     def __init__(
         self,
-        model: Union[PreTrainedModel, Module],
+        model: Union[PreTrainedModel, nn.Module],
         args: TrainingArguments,
         data_collator: DetrDataCollator,
         train_dataset: Dataset[Any],

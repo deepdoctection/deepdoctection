@@ -18,6 +18,7 @@
 """
 Module for multithreading tasks
 """
+from __future__ import annotations
 
 import itertools
 import queue
@@ -221,7 +222,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
     def serve(self, dp: Image) -> None:
         raise NotImplementedError("MultiThreadPipelineComponent does not follow the PipelineComponent implementation")
 
-    def clone(self) -> "MultiThreadPipelineComponent":
+    def clone(self) -> MultiThreadPipelineComponent:
         raise NotImplementedError("MultiThreadPipelineComponent does not allow cloning")
 
     def get_meta_annotation(self) -> JsonDict:

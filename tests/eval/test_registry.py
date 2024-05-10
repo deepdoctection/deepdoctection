@@ -29,7 +29,6 @@ from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.eval import metric_registry
 from deepdoctection.eval.base import MetricBase
 from deepdoctection.utils.detection_types import JsonDict
-from deepdoctection.utils.file_utils import apted_available
 
 
 @mark.basic
@@ -37,11 +36,8 @@ def test_metric_registry_has_all_build_in_metric_registered() -> None:
     """
     test metric registry has all metrics registered
     """
-    if apted_available():
-        # cannot register when apted not installed
-        assert len(metric_registry.get_all()) == 10
-    else:
-        assert len(metric_registry.get_all()) == 9
+
+    assert len(metric_registry.get_all()) == 10
 
 
 @mark.basic

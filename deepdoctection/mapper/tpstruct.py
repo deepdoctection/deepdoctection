@@ -22,15 +22,15 @@ import os.path
 from typing import Optional, Sequence, Union
 
 import numpy as np
+from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import tf_available
 from ..utils.settings import ObjectTypes
 from .maputils import curry
 
-if tf_available():
+with try_import() as import_guard:
     from tensorflow import convert_to_tensor, uint8  # type: ignore # pylint: disable=E0401
     from tensorflow.image import non_max_suppression  # type: ignore # pylint: disable=E0401
 

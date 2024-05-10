@@ -263,7 +263,16 @@ class TestTableSegmentationRefinementService:
         setup necessary components
         """
 
-        self.table_segmentation_refinement_service = TableSegmentationRefinementService()
+        self.table_segmentation_refinement_service = TableSegmentationRefinementService(
+            [LayoutType.table, LayoutType.table_rotated],
+            [
+                LayoutType.cell,
+                CellType.column_header,
+                CellType.projected_row_header,
+                CellType.spanning,
+                CellType.row_header,
+            ],
+        )
 
     @mark.basic
     def test_integration_pipeline_component(self, dp_image_fully_segmented_fully_tiled: Image) -> None:
@@ -289,7 +298,7 @@ class TestTableSegmentationRefinementService:
         ]
         summary_html = table.get_sub_category(TableType.html)
         cells = dp.get_annotation(
-            category_names=self.table_segmentation_refinement_service._cell_names  # pylint: disable=W0212
+            category_names=self.table_segmentation_refinement_service.cell_names  # pylint: disable=W0212
         )
         row_numbers = {cell.get_sub_category(CellType.row_number).category_id for cell in cells}
         col_numbers = {cell.get_sub_category(CellType.column_number).category_id for cell in cells}

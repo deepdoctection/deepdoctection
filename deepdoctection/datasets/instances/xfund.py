@@ -27,6 +27,7 @@ Module for XFUND dataset. Install the dataset following the folder structure
     │ ├── de_val_0.jpg
     ├── es_train
 """
+from __future__ import annotations
 
 import json
 import os
@@ -108,7 +109,7 @@ class Xfund(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self) -> "XfundBuilder":
+    def _builder(self) -> XfundBuilder:
         return XfundBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

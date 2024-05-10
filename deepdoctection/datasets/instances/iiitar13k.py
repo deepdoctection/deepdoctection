@@ -35,9 +35,12 @@ Module for IIITar13K dataset. Install the dataset following the folder structure
     │ ├── ...
 
 """
+from __future__ import annotations
 
 import os
 from typing import Mapping, Union
+
+from lazy_imports import try_import
 
 from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
@@ -53,7 +56,7 @@ from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 from ..registry import dataset_registry
 
-if lxml_available():
+with try_import() as import_guard:
     from lxml import etree
 
 _NAME = "iiitar13k"
@@ -99,7 +102,7 @@ class IIITar13K(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
 
-    def _builder(self) -> "IIITar13KBuilder":
+    def _builder(self) -> IIITar13KBuilder:
         return IIITar13KBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

@@ -15,8 +15,16 @@ and
 """
 
 # pylint: disable=import-error
-import tensorflow as tf
-from tensorpack.tfutils.scope_utils import under_name_scope
+
+from lazy_imports import try_import
+
+with try_import() as tf_import_guard:
+    import tensorflow as tf
+    from tensorpack.tfutils.scope_utils import under_name_scope
+
+if not tf_import_guard.is_successful():
+    from .....utils.mocks import under_name_scope
+
 
 # pylint: enable=import-error
 
