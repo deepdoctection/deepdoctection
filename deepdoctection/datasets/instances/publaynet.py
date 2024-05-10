@@ -28,7 +28,7 @@ Module for Publaynet dataset. Place the dataset as follows
     ├── train.json
     ├── val.json
 """
-
+from __future__ import annotations
 
 from typing import Mapping, Union
 
@@ -84,7 +84,7 @@ class Publaynet(_BuiltInDataset):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
 
-    def _builder(self) -> "PublaynetBuilder":
+    def _builder(self) -> PublaynetBuilder:
         return PublaynetBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

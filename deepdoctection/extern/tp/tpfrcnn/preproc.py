@@ -8,13 +8,12 @@
 This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/1a79d595f7eda9dc9dc8428f4461680ed2222ab6/examples/FasterRCNN/data.py>
 """
+from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple
 
 import numpy as np
-
-# pylint: disable=import-error
-from tensorpack.dataflow.imgaug import AugmentorList, ImageAugmentor
+from lazy_imports import try_import
 
 from ....datapoint.convert import box_to_point4, point4_to_box
 from ....utils.detection_types import ImageType, JsonDict
@@ -25,6 +24,12 @@ from .modeling.model_fpn import get_all_anchors_fpn
 from .utils.np_box_ops import area as np_area
 from .utils.np_box_ops import ioa as np_ioa
 
+# pylint: disable=import-error
+
+
+
+with try_import() as import_guard:
+    from tensorpack.dataflow.imgaug import AugmentorList, ImageAugmentor
 # pylint: enable=import-error
 
 

@@ -18,36 +18,35 @@
 """
 Wrapper for the Hugging Face Language Model for sequence and token  classification
 """
+from __future__ import annotations
 
 from abc import ABC
 from copy import copy
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
 
+from lazy_imports import try_import
+
 from ..utils.detection_types import JsonDict, Requirement
-from ..utils.file_utils import (
-    get_pytorch_requirement,
-    get_transformers_requirement,
-    pytorch_available,
-    transformers_available,
-)
+from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
 from .base import LMSequenceClassifier, SequenceClassResult
 from .hflayoutlm import get_tokenizer_from_model_class
 from .pt.ptutils import set_torch_auto_device
 
-if pytorch_available():
+with try_import() as pt_import_guard:
     import torch
     import torch.nn.functional as F
-    from torch import Tensor  # pylint: disable=W0611
 
-if transformers_available():
+with try_import() as tr_import_guard:
     from transformers import PretrainedConfig, XLMRobertaForSequenceClassification
 
 
 def predict_sequence_classes(
-    input_ids: "Tensor", attention_mask: "Tensor", token_type_ids: "Tensor", model: Union[
-        "XLMRobertaForSequenceClassification"]
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    token_type_ids: torch.Tensor,
+    model: Union[XLMRobertaForSequenceClassification],
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -70,14 +69,14 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     Abstract base class for wrapping Bert-type models  for sequence classification into the deepdoctection framework.
     """
 
-    model: Union["XLMRobertaForSequenceClassification"]
+    model: Union[XLMRobertaForSequenceClassification]
 
     def __init__(
         self,
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
         self.path_config = path_config_json
@@ -85,7 +84,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.categories = copy(categories)  # type: ignore
 
         if device is not None:
-            self.device = device
+            self.device = torch.device(device)
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)
@@ -95,12 +94,12 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     def get_requirements(cls) -> List[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
-    def clone(self) -> "HFLmSequenceClassifierBase":
+    def clone(self) -> HFLmSequenceClassifierBase:
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
 
     def _validate_encodings(
-        self, **encodings: Union[List[List[str]], "torch.Tensor"]
-    ) -> Tuple["torch.Tensor", "torch.Tensor", "torch.Tensor"]:
+        self, **encodings: Union[List[List[str]], torch.Tensor]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -192,7 +191,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(

@@ -9,9 +9,10 @@ Everything in the overview listed below the **deep**doctection layer are necessa
 by the user. 
 
 - Linux **or** macOS. (Windows is not supported but there is [Dockerfile](../docker/pytorch-cpu-jupyter/Dockerfile) available)
-- Python >=  3.8
+- Python >=  3.9
 - [Poppler](https://poppler.freedesktop.org/)
-- 1.12 <= PyTorch < 2.0 **or** Tensorflow >=2.11 and CUDA (it does seem to work on CPU starting from TF 2.13 onwards ..)
+- 1.13 <= PyTorch **or** 2.11 <= Tensorflow <2.16. On lower Tensorflow versions the code will only run inference on 
+a GPU. In general, if you want to train or fine-tune models, a GPU is required.
 
 With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).

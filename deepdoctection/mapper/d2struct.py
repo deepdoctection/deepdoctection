@@ -19,26 +19,28 @@
 Module for mapping annotations into standard Detectron2 dataset dict. Also providing some tools for W&B mapping and
 visualising
 """
-
+from __future__ import annotations
 
 import os.path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-import torch
+from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import detectron2_available, wandb_available
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 
-if detectron2_available():
+with try_import() as pt_import_guard:
+    import torch
+
+with try_import() as d2_import_guard:
     from detectron2.structures import BoxMode
 
-if wandb_available():
+with try_import() as wb_import_guard:
     from wandb import Classes
     from wandb import Image as Wbimage
 
@@ -163,7 +165,7 @@ def to_wandb_image(
     categories: Mapping[str, TypeOrStr],
     sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
     cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
-) -> Tuple[str, "Wbimage"]:
+) -> Tuple[str, Wbimage]:
     """
     Converting a deepdoctection image into a wandb image
 

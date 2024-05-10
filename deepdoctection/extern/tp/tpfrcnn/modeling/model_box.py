@@ -11,12 +11,17 @@ This file is modified from
 from collections import namedtuple
 
 import numpy as np
+from lazy_imports import try_import
 
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack.tfutils.scope_utils import under_name_scope
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack.tfutils.scope_utils import under_name_scope
 
-# pylint: enable=import-error
+    # pylint: enable=import-error
+
+if not import_guard.is_successful():
+    from .....utils.mocks import under_name_scope
 
 
 @under_name_scope()

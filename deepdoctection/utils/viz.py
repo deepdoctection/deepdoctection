@@ -34,17 +34,18 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, no_type_check
 
 import numpy as np
 import numpy.typing as npt
+from lazy_imports import try_import
 from numpy import float32, uint8
 
 from .detection_types import ImageType
 from .env_info import auto_select_viz_library
 from .error import DependencyError
-from .file_utils import get_opencv_requirement, get_pillow_requirement, opencv_available, pillow_available
+from .file_utils import get_opencv_requirement, get_pillow_requirement
 
-if opencv_available():
+with try_import() as cv2_import_guard:
     import cv2
 
-if pillow_available():
+with try_import() as pil_import_guard:
     from PIL import Image, ImageDraw
 
 

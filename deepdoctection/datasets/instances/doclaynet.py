@@ -25,6 +25,7 @@ Module for DocLayNet dataset. Place the dataset as follows
     ├── PNG
     │ ├── 0a0d43e301facee9e99cc33b9b16e732dd207135f4027e75f6aea2bf117535a2.png
 """
+from __future__ import annotations
 
 import os
 from typing import Mapping, Sequence, Union
@@ -109,7 +110,7 @@ class DocLayNet(DatasetBase):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
 
-    def _builder(self) -> "DocLayNetBuilder":
+    def _builder(self) -> DocLayNetBuilder:
         return DocLayNetBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 
@@ -209,7 +210,7 @@ class DocLayNetSeq(DatasetBase):
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES_SEQ)
 
-    def _builder(self) -> "DocLayNetSeqBuilder":
+    def _builder(self) -> DocLayNetSeqBuilder:
         return DocLayNetSeqBuilder(location=_LOCATION, annotation_files=_ANNOTATION_FILES)
 
 

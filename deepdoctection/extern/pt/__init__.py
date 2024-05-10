@@ -19,7 +19,5 @@
 Init file for pytorch compatibility package
 """
 
+from .nms import *
 from .ptutils import *
-
-if pytorch_available():
-    from .nms import *

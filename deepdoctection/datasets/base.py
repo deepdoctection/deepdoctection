@@ -18,6 +18,8 @@
 """
 Module for the base class of datasets.
 """
+from __future__ import annotations
+
 import json
 import os
 import pprint
@@ -33,7 +35,7 @@ from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image
 from ..utils.detection_types import Pathlike
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type, DatasetType
+from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
@@ -449,7 +451,7 @@ class CustomDataset(DatasetBase):
         return self.dataflow_builder
 
     @staticmethod
-    def from_dataset_card(file_path: str, dataflow_builder: Type[DataFlowBaseBuilder]) -> "CustomDataset":
+    def from_dataset_card(file_path: str, dataflow_builder: Type[DataFlowBaseBuilder]) -> CustomDataset:
         """
         This static method creates a CustomDataset instance from a dataset card.
 

@@ -9,12 +9,8 @@ This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/generalized_rcnn.py>
 """
 
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack import tfv1
-from tensorpack.models import l2_regularizer, regularize_cost
-from tensorpack.tfutils import optimizer
-from tensorpack.tfutils.summary import add_moving_summary
+
+from lazy_imports import try_import
 
 from ...tpcompat import ModelDescWithConfig
 from ..utils.box_ops import area as tf_area
@@ -39,6 +35,16 @@ from .model_frcnn import (
 )
 from .model_mrcnn import maskrcnn_loss, unpackbits_masks
 from .model_rpn import rpn_head
+
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack import tfv1
+    from tensorpack.models import l2_regularizer, regularize_cost
+    from tensorpack.tfutils import optimizer
+    from tensorpack.tfutils.summary import add_moving_summary
+
+    # pylint: enable=import-error
 
 
 class GeneralizedRCNN(ModelDescWithConfig):

@@ -11,12 +11,16 @@ This file is modified from
 
 
 import numpy as np
-from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform  # pylint: disable=E0401
+from lazy_imports import try_import
 
-from ....utils.file_utils import cocotools_available
+with try_import() as import_guard:
+    from tensorpack.dataflow.imgaug import ImageAugmentor, ResizeTransform  # pylint: disable=E0401
 
-if cocotools_available():
+with try_import() as cc_import_guard:
     import pycocotools.mask as coco_mask
+
+if not import_guard.is_successful():
+    from ....utils.mocks import ImageAugmentor
 
 
 class CustomResize(ImageAugmentor):

@@ -18,6 +18,7 @@
 """
 Module for training Huggingface implementation of LayoutLm
 """
+from __future__ import annotations
 
 import copy
 import json
@@ -25,25 +26,7 @@ import os
 import pprint
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
-from torch.nn import Module
-from torch.utils.data import Dataset
-from transformers import (
-    IntervalStrategy,
-    LayoutLMForSequenceClassification,
-    LayoutLMForTokenClassification,
-    LayoutLMv2Config,
-    LayoutLMv2ForSequenceClassification,
-    LayoutLMv2ForTokenClassification,
-    LayoutLMv3Config,
-    LayoutLMv3ForSequenceClassification,
-    LayoutLMv3ForTokenClassification,
-    LiltForSequenceClassification,
-    LiltForTokenClassification,
-    PretrainedConfig,
-    PreTrainedModel,
-    XLMRobertaForSequenceClassification,
-)
-from transformers.trainer import Trainer, TrainingArguments
+from lazy_imports import try_import
 
 from ..datasets.adapter import DatasetAdapter
 from ..datasets.base import DatasetBase
@@ -72,7 +55,30 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, WordType
 from ..utils.utils import string_to_dict
 
-if wandb_available():
+with try_import() as pt_import_guard:
+    from torch import nn
+    from torch.utils.data import Dataset
+
+with try_import() as tr_import_guard:
+    from transformers import (
+        IntervalStrategy,
+        LayoutLMForSequenceClassification,
+        LayoutLMForTokenClassification,
+        LayoutLMv2Config,
+        LayoutLMv2ForSequenceClassification,
+        LayoutLMv2ForTokenClassification,
+        LayoutLMv3Config,
+        LayoutLMv3ForSequenceClassification,
+        LayoutLMv3ForTokenClassification,
+        LiltForSequenceClassification,
+        LiltForTokenClassification,
+        PretrainedConfig,
+        PreTrainedModel,
+        XLMRobertaForSequenceClassification,
+    )
+    from transformers.trainer import Trainer, TrainingArguments
+
+with try_import() as wb_import_guard:
     import wandb
 
 
@@ -151,7 +157,7 @@ class LayoutLMTrainer(Trainer):
 
     def __init__(
         self,
-        model: Union[PreTrainedModel, Module],
+        model: Union[PreTrainedModel, nn.Module],
         args: TrainingArguments,
         data_collator: LayoutLMDataCollator,
         train_dataset: Dataset[Any],
@@ -165,7 +171,7 @@ class LayoutLMTrainer(Trainer):
         dataset_val: DatasetBase,
         pipeline_component: LanguageModelPipelineComponent,
         metric: Union[Type[ClassificationMetric], ClassificationMetric],
-        run: Optional["wandb.sdk.wandb_run.Run"] = None,
+        run: Optional[wandb.sdk.wandb_run.Run] = None,
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """

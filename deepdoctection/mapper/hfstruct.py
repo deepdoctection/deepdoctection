@@ -19,12 +19,14 @@
 Module for mapping annotations into standard Huggingface Detr input structure for training
 """
 
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Union
 
 import numpy as np
-from transformers import BatchFeature, DetrFeatureExtractor
+from lazy_imports import try_import
 
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
@@ -32,6 +34,9 @@ from ..mapper.misc import get_load_image_func
 from ..utils.detection_types import JsonDict
 from ..utils.settings import ObjectTypes
 from ..utils.transform import PadTransform
+
+with try_import() as tr_import_guard:
+    from transformers import BatchFeature, DetrFeatureExtractor
 
 
 @curry

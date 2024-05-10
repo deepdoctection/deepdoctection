@@ -9,17 +9,20 @@ This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_cascade.py>
 """
 
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack import tfv1
-from tensorpack.tfutils import get_current_tower_context
+from lazy_imports import try_import
 
 from ..utils.box_ops import area as tf_area
 from ..utils.box_ops import pairwise_iou
 from .model_box import clip_boxes
 from .model_frcnn import BoxProposals, FastRCNNHead, fastrcnn_outputs
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack import tfv1
+    from tensorpack.tfutils import get_current_tower_context
+
+    # pylint: enable=import-error
 
 
 class CascadeRCNNHead:

@@ -18,6 +18,7 @@
 """
 Module for token classification pipeline
 """
+from __future__ import annotations
 
 from copy import copy
 from typing import Any, Callable, List, Literal, Optional, Sequence, Union
@@ -180,7 +181,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                         word.annotation_id,
                     )
 
-    def clone(self) -> "LMTokenClassifierService":
+    def clone(self) -> LMTokenClassifierService:
         # ToDo: replace copying of tokenizer with a proper clone method. Otherwise we cannot run the evaluation with
         # multiple threads
         return self.__class__(
@@ -301,7 +302,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             PageType.document_type, lm_output.class_name, lm_output.class_id, None, lm_output.score
         )
 
-    def clone(self) -> "LMSequenceClassifierService":
+    def clone(self) -> LMSequenceClassifierService:
         return self.__class__(
             copy(self.tokenizer),
             self.language_model.clone(),

@@ -23,6 +23,7 @@ from copy import copy
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
+from lazy_imports import try_import
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
@@ -33,7 +34,7 @@ from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_r
 from .base import MetricBase
 from .registry import metric_registry
 
-if cocotools_available():
+with try_import() as cc_import_guard:
     from pycocotools.coco import COCO
     from pycocotools.cocoeval import COCOeval
 

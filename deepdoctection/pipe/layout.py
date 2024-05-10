@@ -18,6 +18,8 @@
 """
 Module for layout pipeline component
 """
+from __future__ import annotations
+
 from typing import Optional
 
 import numpy as np
@@ -109,7 +111,7 @@ class ImageLayoutService(PredictorPipelineComponent):
     def _get_name(predictor_name: str) -> str:
         return f"image_{predictor_name}"
 
-    def clone(self) -> "PredictorPipelineComponent":
+    def clone(self) -> PredictorPipelineComponent:
         predictor = self.predictor.clone()
         padder_clone = None
         if self.padder:

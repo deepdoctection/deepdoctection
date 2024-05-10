@@ -18,23 +18,25 @@
 """
 Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
 """
+from __future__ import annotations
+
 import os
 from abc import ABC
 from pathlib import Path
 from typing import Any, List, Literal, Mapping, Optional, Tuple
 from zipfile import ZipFile
 
+from lazy_imports import try_import
+
 from ..utils.detection_types import ImageType, Requirement
 from ..utils.env_info import get_device
 from ..utils.error import DependencyError
 from ..utils.file_utils import (
-    doctr_available,
     get_doctr_requirement,
     get_pytorch_requirement,
     get_tensorflow_requirement,
     get_tf_addons_requirements,
     pytorch_available,
-    tf_addons_available,
     tf_available,
 )
 from ..utils.fs import load_json
@@ -43,7 +45,13 @@ from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
 from .pt.ptutils import set_torch_auto_device
 
-if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_available()):
+with try_import() as pt_import_guard:
+    import torch
+
+with try_import() as tf_import_guard:
+    import tensorflow as tf  # type: ignore  # pylint: disable=E0401
+
+with try_import() as doctr_import_guard:
     from doctr.models._utils import estimate_orientation
     from doctr.models.detection.predictor import DetectionPredictor  # pylint: disable=W0611
     from doctr.models.detection.zoo import detection_predictor
@@ -51,19 +59,17 @@ if doctr_available() and ((tf_addons_available() and tf_available()) or pytorch_
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
     from doctr.models.recognition.zoo import ARCHS, recognition
 
-if pytorch_available():
-    import torch
-
-if tf_available():
-    import tensorflow as tf  # type: ignore  # pylint: disable=E0401
-
 
 def _set_device_str(device: Optional[str] = None) -> str:
     if device is not None:
         if tf_available():
             device = "/" + device.replace("cuda", "gpu") + ":0"
+        elif pytorch_available():
+            device = str(set_torch_auto_device())
+        else:
+            raise DependencyError("Tensorflow or PyTorch must be installed.")
     elif pytorch_available():
-        device = set_torch_auto_device()
+        device = str(set_torch_auto_device())
     else:
         device = "/gpu:0"  # we impose to install tensorflow-gpu because of Tensorpack models
     return device
@@ -98,7 +104,7 @@ def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
     raise DependencyError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
 
-def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor", device: str) -> List[DetectionResult]:
+def doctr_predict_text_lines(np_img: ImageType, predictor: DetectionPredictor, device: str) -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
 
@@ -122,7 +128,7 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: "DetectionPredictor",
 
 
 def doctr_predict_text(
-    inputs: List[Tuple[str, ImageType]], predictor: "RecognitionPredictor", device: str
+    inputs: List[Tuple[str, ImageType]], predictor: RecognitionPredictor, device: str
 ) -> List[DetectionResult]:
     """
     Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
