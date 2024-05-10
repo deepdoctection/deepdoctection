@@ -28,11 +28,7 @@ from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
 from lazy_imports import try_import
 
 from ..utils.detection_types import JsonDict, Requirement
-from ..utils.file_utils import (
-    get_pytorch_requirement,
-    get_transformers_requirement,
-)
-
+from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
 from .base import LMSequenceClassifier, SequenceClassResult
 from .hflayoutlm import get_tokenizer_from_model_class
@@ -47,8 +43,10 @@ with try_import() as tr_import_guard:
 
 
 def predict_sequence_classes(
-    input_ids: torch.Tensor, attention_mask: torch.Tensor, token_type_ids: torch.Tensor, model: Union[
-        XLMRobertaForSequenceClassification]
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    token_type_ids: torch.Tensor,
+    model: Union[XLMRobertaForSequenceClassification],
 ) -> SequenceClassResult:
     """
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -78,7 +76,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
         self.path_config = path_config_json
@@ -86,7 +84,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.categories = copy(categories)  # type: ignore
 
         if device is not None:
-            self.device = device
+            self.device = torch.device(device)
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)

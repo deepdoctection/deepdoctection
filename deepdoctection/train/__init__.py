@@ -19,7 +19,14 @@
 Init module for train package
 """
 
-from .tp_frcnn_train import train_faster_rcnn
-from .d2_frcnn_train import train_d2_faster_rcnn
-from .hf_detr_train import train_hf_detr
-from .hf_layoutlm_train import train_hf_layoutlm
+from ..utils.file_utils import tensorpack_available, transformers_available, detectron2_available
+
+if detectron2_available():
+    from .d2_frcnn_train import train_d2_faster_rcnn
+
+if transformers_available():
+    from .hf_detr_train import train_hf_detr
+    from .hf_layoutlm_train import train_hf_layoutlm
+
+if tensorpack_available():
+    from .tp_frcnn_train import train_faster_rcnn

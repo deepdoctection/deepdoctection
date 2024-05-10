@@ -24,7 +24,7 @@ from typing import List
 from lazy_imports import try_import
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_jdeskew_requirement, jdeskew_available
+from ..utils.file_utils import get_jdeskew_requirement
 from ..utils.settings import PageType
 from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer

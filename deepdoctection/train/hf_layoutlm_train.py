@@ -220,9 +220,7 @@ class LayoutLMTrainer(Trainer):
 
 
 def _get_model_class_and_tokenizer(
-    path_config_json: str,
-        dataset_type: DatasetType,
-        use_xlm_tokenizer: bool
+    path_config_json: str, dataset_type: DatasetType, use_xlm_tokenizer: bool
 ) -> Tuple[Any, Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)

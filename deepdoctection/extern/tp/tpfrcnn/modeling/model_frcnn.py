@@ -8,21 +8,28 @@
 This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_frcnn.py>
 """
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack import tfv1
-from tensorpack.models import Conv2D, FullyConnected, layer_register
-from tensorpack.tfutils.argscope import argscope
-from tensorpack.tfutils.common import get_tf_version_tuple
-from tensorpack.tfutils.scope_utils import under_name_scope
-from tensorpack.tfutils.summary import add_moving_summary
-from tensorpack.utils.argtools import memoized_method
+
+from lazy_imports import try_import
 
 from ..utils.box_ops import pairwise_iou
 from .backbone import GroupNorm
 from .model_box import decode_bbox_target, encode_bbox_target
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack import tfv1
+    from tensorpack.models import Conv2D, FullyConnected, layer_register
+    from tensorpack.tfutils.argscope import argscope
+    from tensorpack.tfutils.common import get_tf_version_tuple
+    from tensorpack.tfutils.scope_utils import under_name_scope
+    from tensorpack.tfutils.summary import add_moving_summary
+    from tensorpack.utils.argtools import memoized_method
+
+    # pylint: enable=import-error
+
+if not import_guard.is_successful():
+    from .....utils.mocks import layer_register, memoized_method, under_name_scope
 
 
 @under_name_scope()

@@ -24,16 +24,13 @@ import io
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Union
 
-from lazy_imports import try_import
 import numpy as np
+from lazy_imports import try_import
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import (
-    get_detectron2_requirement,
-    get_pytorch_requirement,
-)
+from ..utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
@@ -53,9 +50,7 @@ with try_import() as d2_import_guard:
     from detectron2.structures import Instances  # pylint: disable=W0611
 
 
-def _d2_post_processing(
-    predictions: Dict[str, Instances], nms_thresh_class_agnostic: float
-) -> Dict[str, Instances]:
+def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agnostic: float) -> Dict[str, Instances]:
     """
     D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
     Apply a class agnostic NMS.
@@ -239,7 +234,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[List[str]] = None,
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
@@ -268,12 +263,12 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         config_overwrite = config_overwrite if config_overwrite else []
         self.config_overwrite = config_overwrite
         if device is not None:
-            self.device = device
+            self.device = torch.device(device)
         else:
             self.device = set_torch_auto_device()
 
         d2_conf_list = self._get_d2_config_list(path_weights, config_overwrite)
-        self.cfg = self._set_config(path_yaml, d2_conf_list, device)
+        self.cfg = self._set_config(path_yaml, d2_conf_list, self.device)
 
         self.name = self.get_name(path_weights, self.cfg.MODEL.META_ARCHITECTURE)
         self.model_id = self.get_model_id()
@@ -284,14 +279,14 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
     @staticmethod
     def _set_config(
-        path_yaml: str, d2_conf_list: List[str], device: Optional[Literal["cpu", "cuda"]] = None
+        path_yaml: str, d2_conf_list: List[str], device: Optional[torch.device] = None
     ) -> CfgNode:
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
         cfg.merge_from_file(path_yaml)
         cfg.merge_from_list(d2_conf_list)
-        if not torch.cuda.is_available() or device == "cpu":
+        if not torch.cuda.is_available() or str(device) == "cpu":
             cfg.MODEL.DEVICE = "cpu"
         cfg.freeze()
         return cfg
@@ -342,7 +337,8 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: str, path_weights: str, config_overwrite: List[str], device: Literal["cpu", "cuda"]
+        path_yaml: str, path_weights: str, config_overwrite: List[str],
+            device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None
     ) -> GeneralizedRCNN:
         """
         Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
@@ -368,6 +364,8 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
         if device is None:
             device = set_torch_auto_device()
+        else:
+            device = torch.device(device)
         d2_conf_list = D2FrcnnDetector._get_d2_config_list(path_weights, config_overwrite)
         cfg = D2FrcnnDetector._set_config(path_yaml, d2_conf_list, device)
         model = D2FrcnnDetector._set_model(cfg)

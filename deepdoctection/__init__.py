@@ -449,10 +449,10 @@ if TYPE_CHECKING:
     from .analyzer import *
     from .dataflow import *
     from .datapoint import *
-    from .datasets import *
+    from .datasets import *  # type: ignore
     from .eval import *
-    from .extern import *
-    from .mapper import *
+    from .extern import *  # type: ignore
+    from .mapper import *  # type: ignore
     from .pipe import *
     from .train import *
     from .utils import *

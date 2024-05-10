@@ -44,14 +44,15 @@ with try_import() as pt_import_guard:
     from torch.utils.data import Dataset
 
 with try_import() as hf_import_guard:
-    from transformers import (Trainer,
-    TrainingArguments,
-    AutoFeatureExtractor,
-    IntervalStrategy,
-    PretrainedConfig,
-    PreTrainedModel,
-    TableTransformerForObjectDetection
-                              )
+    from transformers import (
+        AutoFeatureExtractor,
+        IntervalStrategy,
+        PretrainedConfig,
+        PreTrainedModel,
+        TableTransformerForObjectDetection,
+        Trainer,
+        TrainingArguments,
+    )
 
 
 class DetrDerivedTrainer(Trainer):

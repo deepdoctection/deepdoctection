@@ -18,7 +18,7 @@
 """
 Wrappers for models of external libraries as well as implementation of the Cascade-RCNN model of Tensorpack.
 """
-
+from ..utils.file_utils import tensorpack_available
 from .base import *
 from .d2detect import *
 from .deskew import *

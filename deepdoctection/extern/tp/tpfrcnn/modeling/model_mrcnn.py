@@ -9,17 +9,23 @@ This file is modified from
 <https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/modeling/model_mrcnn.py>
 """
 
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack.models import Conv2D, Conv2DTranspose, layer_register
-from tensorpack.tfutils.argscope import argscope
-from tensorpack.tfutils.common import get_tf_version_tuple
-from tensorpack.tfutils.scope_utils import under_name_scope
-from tensorpack.tfutils.summary import add_moving_summary
+from lazy_imports import try_import
 
 from .backbone import GroupNorm
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack.models import Conv2D, Conv2DTranspose, layer_register
+    from tensorpack.tfutils.argscope import argscope
+    from tensorpack.tfutils.common import get_tf_version_tuple
+    from tensorpack.tfutils.scope_utils import under_name_scope
+    from tensorpack.tfutils.summary import add_moving_summary
+
+    # pylint: enable=import-error
+
+if not import_guard.is_successful():
+    from .....utils.mocks import layer_register, under_name_scope
 
 
 @under_name_scope()

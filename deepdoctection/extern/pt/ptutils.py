@@ -18,13 +18,18 @@
 """
 Torch related utils
 """
+from __future__ import annotations
 
+from lazy_imports import try_import
 
 from ...utils.error import DependencyError
 from ...utils.file_utils import pytorch_available
 
+with try_import() as import_guard:
+    import torch
 
-def set_torch_auto_device() -> "torch.device":  # type: ignore
+
+def set_torch_auto_device() -> torch.device:
     """
     Returns cuda device if available, otherwise cpu
     """

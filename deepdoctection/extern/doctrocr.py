@@ -64,8 +64,12 @@ def _set_device_str(device: Optional[str] = None) -> str:
     if device is not None:
         if tf_available():
             device = "/" + device.replace("cuda", "gpu") + ":0"
+        elif pytorch_available():
+            device = str(set_torch_auto_device())
+        else:
+            raise DependencyError("Tensorflow or PyTorch must be installed.")
     elif pytorch_available():
-        device = set_torch_auto_device()
+        device = str(set_torch_auto_device())
     else:
         device = "/gpu:0"  # we impose to install tensorflow-gpu because of Tensorpack models
     return device

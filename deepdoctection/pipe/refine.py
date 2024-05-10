@@ -23,7 +23,7 @@ from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
 from itertools import chain, product
-from typing import DefaultDict, List, Optional, Set, Tuple, Union, Sequence
+from typing import DefaultDict, List, Optional, Sequence, Set, Tuple, Union
 
 import networkx as nx  # type: ignore
 
@@ -34,7 +34,7 @@ from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.detection_types import JsonDict
 from ..utils.error import AnnotationError, ImageError
-from ..utils.settings import CellType, LayoutType, Relationships, TableType, get_type, ObjectTypes
+from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
@@ -494,7 +494,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_container_annotation(TableType.html, -1, TableType.html, table.annotation_id, html)
 
     def clone(self) -> PipelineComponent:
-        return self.__class__()
+        return self.__class__(self.table_name, self.cell_names)
 
     def get_meta_annotation(self) -> JsonDict:
         return dict(

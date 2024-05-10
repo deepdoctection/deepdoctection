@@ -26,12 +26,7 @@ from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datapoint.view import Page
 from ..datasets.base import DatasetCategories
 from ..utils.detection_types import JsonDict
-from ..utils.file_utils import (
-    Requirement,
-    get_apted_requirement,
-    get_distance_requirement,
-    get_lxml_requirement,
-)
+from ..utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType
 from .base import MetricBase
@@ -40,6 +35,11 @@ from .registry import metric_registry
 with try_import() as ap_import_guard:
     from apted import APTED, Config  # type: ignore
     from apted.helpers import Tree  # type: ignore
+
+
+if not ap_import_guard.is_successful():
+    from ..utils.mocks import Config, Tree
+
 
 with try_import() as ds_import_guard:
     import distance  # type: ignore

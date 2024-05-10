@@ -30,8 +30,8 @@ from lazy_imports import try_import
 from ..dataflow import CacheData, DataFlow, DataFromList, MapData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
-from ..mapper.d2struct import to_wandb_image
 from ..mapper.cats import filter_cat, remove_cats
+from ..mapper.d2struct import to_wandb_image
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
 from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
 from ..pipe.common import PageParsingService

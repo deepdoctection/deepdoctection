@@ -25,7 +25,7 @@ from lazy_imports import try_import
 
 from ..utils.context import save_tmp_file
 from ..utils.detection_types import Requirement
-from ..utils.file_utils import get_pdfplumber_requirement, pdfplumber_available
+from ..utils.file_utils import get_pdfplumber_requirement
 from ..utils.settings import LayoutType, ObjectTypes
 from .base import DetectionResult, PdfMiner
 
