@@ -34,6 +34,5 @@ from .pubstruct import *
 from .tpstruct import *
 from .xfundstruct import *
 
-
 # Mapper
 Mapper = Callable[[Image], Optional[Image]]

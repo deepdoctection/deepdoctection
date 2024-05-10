@@ -204,7 +204,7 @@ class Image:
             self._bbox = None
             self.embeddings.pop(self.image_id)
 
-    def get_image(self) -> _Img:  # type: ignore
+    def get_image(self) -> _Img:  # type: ignore # pylint: disable=E0602
         """
         Get the image either in base64 string representation or as np.array.
 

@@ -22,9 +22,8 @@ Module for metrics that require the COCOeval class.
 from copy import copy
 from typing import Dict, List, Optional, Tuple, Union
 
-from lazy_imports import try_import
-
 import numpy as np
+from lazy_imports import try_import
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories

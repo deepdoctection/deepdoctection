@@ -12,23 +12,28 @@ This file is modified from
 import itertools
 
 import numpy as np
-
-# pylint: disable=import-error
-import tensorflow as tf
-from tensorpack import tfv1
-from tensorpack.models import Conv2D, FixedUnPooling, MaxPooling, layer_register
-from tensorpack.tfutils.argscope import argscope
-from tensorpack.tfutils.scope_utils import under_name_scope
-from tensorpack.tfutils.summary import add_moving_summary
-from tensorpack.tfutils.tower import get_current_tower_context
-from tensorpack.utils.argtools import memoized
+from lazy_imports import try_import
 
 from ..utils.box_ops import area as tf_area
 from .backbone import GroupNorm
 from .model_box import roi_align
 from .model_rpn import generate_rpn_proposals, get_all_anchors, rpn_losses
 
-# pylint: enable=import-error
+with try_import() as import_guard:
+    # pylint: disable=import-error
+    import tensorflow as tf
+    from tensorpack import tfv1
+    from tensorpack.models import Conv2D, FixedUnPooling, MaxPooling, layer_register
+    from tensorpack.tfutils.argscope import argscope
+    from tensorpack.tfutils.scope_utils import under_name_scope
+    from tensorpack.tfutils.summary import add_moving_summary
+    from tensorpack.tfutils.tower import get_current_tower_context
+    from tensorpack.utils.argtools import memoized
+
+    # pylint: enable=import-error
+
+if not import_guard.is_successful():
+    from .....utils.mocks import layer_register, memoized, under_name_scope
 
 
 @layer_register(log_shape=True)

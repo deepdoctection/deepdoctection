@@ -27,12 +27,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from lazy_imports import try_import
 
 from ..utils.detection_types import JsonDict, Requirement
-from ..utils.file_utils import (
-    get_pytorch_requirement,
-    get_transformers_requirement,
-)
+from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import (
     BioTag,
     ObjectTypes,
@@ -120,9 +118,7 @@ def predict_token_classes(
     token_type_ids: torch.Tensor,
     boxes: torch.Tensor,
     tokens: List[List[str]],
-    model: Union[
-        LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LayoutLMv3ForTokenClassification
-    ],
+    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LayoutLMv3ForTokenClassification],
     images: Optional[torch.Tensor] = None,
 ) -> List[TokenClassResult]:
     """
@@ -235,7 +231,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
         """
@@ -271,7 +267,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
                 self.categories_semantics, self.categories_bio  # type: ignore
             )
         if device is not None:
-            self.device = device
+            self.device = torch.device(device)
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)
@@ -309,9 +305,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
     def _validate_encodings(
         self, **encodings: Any
-    ) -> Tuple[
-        List[List[str]], List[str], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[List[str]]
-    ]:
+    ) -> Tuple[List[List[str]], List[str], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[List[str]]]:
         image_ids = encodings.get("image_ids", [])
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
@@ -732,7 +726,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
         self.path_config = path_config_json
@@ -740,7 +734,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.categories = copy(categories)  # type: ignore
 
         if device is not None:
-            self.device = device
+            self.device =  torch.device(device)
         else:
             self.device = set_torch_auto_device()
         self.model.to(self.device)

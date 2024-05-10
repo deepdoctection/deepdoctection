@@ -19,5 +19,5 @@
 Init file for pytorch compatibility package
 """
 
-from .ptutils import *
 from .nms import *
+from .ptutils import *

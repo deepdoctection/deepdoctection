@@ -25,7 +25,6 @@ import os.path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-
 from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation

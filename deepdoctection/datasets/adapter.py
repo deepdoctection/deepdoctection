@@ -29,7 +29,6 @@ from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
 from ..utils.detection_types import DP, JsonDict
-from ..utils.file_utils import pytorch_available
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm
@@ -37,6 +36,8 @@ from .registry import get_dataset
 
 with try_import() as import_guard:
     from torch.utils.data import IterableDataset
+if not import_guard.is_successful():
+    from ..utils.mocks import IterableDataset  # type: ignore
 
 
 class DatasetAdapter(IterableDataset):  # type: ignore

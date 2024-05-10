@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.8]
+        python: [3.9]
         dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
         pip: [24.0]
     steps:
@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.8]
+        python: [3.9]
     steps:
       - uses: actions/checkout@v2
 
@@ -68,7 +68,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.8]
+        python: [3.9]
     steps:
       - uses: actions/checkout@v2
 
@@ -89,7 +89,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.8]
+        python: [3.9]
         dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
         pip: [24.0]
     steps:

@@ -19,6 +19,8 @@
 Module for EvalCallback in Tensorpack
 """
 
+from __future__ import annotations
+
 from itertools import count
 from typing import Mapping, Optional, Sequence, Type, Union
 
@@ -40,6 +42,9 @@ with try_import() as import_guard:
     from tensorpack.utils.gpu import get_num_gpu
 # pylint: enable=import-error
 
+if not import_guard.is_successful():
+    from ..utils.mocks import Callback
+
 
 # The following class is modified from
 # https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/eval.py
@@ -54,7 +59,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
 
     _chief_only = False
 
-    def __init__(
+    def __init__(   # pylint: disable=W0231
         self,
         dataset: DatasetBase,
         category_names: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]],

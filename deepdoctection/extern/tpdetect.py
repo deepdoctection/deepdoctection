@@ -24,19 +24,15 @@ from copy import copy
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Union
 
-from lazy_imports import try_import
-
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement, tensorpack_available
+from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from .base import DetectionResult, ObjectDetector, PredictorBase
-
-with try_import() as import_guard:
-    from .tp.tpcompat import TensorpackPredictor
-    from .tp.tpfrcnn.config.config import model_frcnn_config
-    from .tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
-    from .tp.tpfrcnn.predict import tp_predict_image
+from .tp.tpcompat import TensorpackPredictor
+from .tp.tpfrcnn.config.config import model_frcnn_config
+from .tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel
+from .tp.tpfrcnn.predict import tp_predict_image
 
 
 class TPFrcnnDetectorMixin(ObjectDetector, ABC):

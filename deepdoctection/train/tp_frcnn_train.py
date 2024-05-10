@@ -52,11 +52,6 @@ from ..utils.utils import string_to_dict
 
 with try_import() as tp_import_guard:
     # todo: check how dataflow import is directly possible without having an AssertionError
-    from tensorpack.dataflow import ProxyDataFlow, imgaug
-    from tensorpack.input_source import QueueInput
-    from tensorpack.tfutils import SmartInit
-    from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
-    from tensorpack.utils import logger
     # pylint: disable=import-error
     from tensorpack.callbacks import (
         EstimatedTimeLeft,
@@ -69,6 +64,11 @@ with try_import() as tp_import_guard:
         SessionRunTimeout,
         ThroughputTracker,
     )
+    from tensorpack.dataflow import ProxyDataFlow, imgaug
+    from tensorpack.input_source import QueueInput
+    from tensorpack.tfutils import SmartInit
+    from tensorpack.train import SyncMultiGPUTrainerReplicated, TrainConfig, launch_train_with_config
+    from tensorpack.utils import logger
 
 __all__ = ["train_faster_rcnn"]
 

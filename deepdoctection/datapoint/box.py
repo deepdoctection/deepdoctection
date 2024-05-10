@@ -25,8 +25,8 @@ from typing import List, Optional, Sequence, no_type_check
 
 import numpy as np
 import numpy.typing as npt
-from numpy import float32
 from lazy_imports import try_import
+from numpy import float32
 
 from ..utils.detection_types import ImageType
 from ..utils.error import BoundingBoxError

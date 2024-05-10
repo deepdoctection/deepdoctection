@@ -20,13 +20,14 @@ Module for mapping annotations from image to layout lm input structure. Heavily 
 <https://github.com/NielsRogge/Transformers-Tutorials>
 """
 
+from __future__ import annotations
+
 import random
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
-
 from lazy_imports import try_import
 
 from ..datapoint.annotation import ContainerAnnotation
@@ -781,14 +782,14 @@ def image_to_raw_lm_features(
     raw_features["bbox"] = [_CLS_BOX] * len(text_["words"])
     raw_features["dataset_type"] = dataset_type
 
-
     if use_token_tag and text_["token_tags"]:
         raw_features["labels"] = text_["token_tags"]
     elif text_["token_classes"]:
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
         document_type_id = (
-                int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1)  # type: ignore
+            int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1  # type: ignore
+        )
         raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type
