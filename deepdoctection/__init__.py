@@ -19,11 +19,9 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from packaging import version
-
-from .utils.env_info import auto_select_lib_and_device
+from .utils.env_info import collect_env_info
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
-from .utils.logger import logger
+from .utils.logger import LoggingRecord, logger
 
 # pylint: enable=wrong-import-position
 
@@ -301,8 +299,6 @@ _IMPORT_STRUCTURE = {
         "save_tmp_file",
         "timed_operation",
         "collect_env_info",
-        "get_device",
-        "auto_select_lib_and_device",
         "auto_select_viz_library",
         "get_tensorflow_requirement",
         "tf_addons_available",
@@ -423,25 +419,31 @@ _IMPORT_STRUCTURE = {
     ],
 }
 
-
-# disable TF warnings for versions > 2.4.1
-if tf_available():
-    if version.parse(get_tf_version()) > version.parse("2.4.1"):
-        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-    try:
-        import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402
-
-        deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
-    except Exception:  # pylint: disable=W0703
-        try:
-            from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401
-
-            deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
-        except Exception:  # pylint: disable=W0703
-            pass
-
 # Setting some environment variables so that standard functions can be invoked with available hardware
-auto_select_lib_and_device()
+env_info = collect_env_info()
+logger.debug(LoggingRecord(msg=env_info))
+
+if os.environ.get("PYTORCH_AVAILABLE") and os.environ.get("DD_USE_TORCH") is None:
+    os.environ["DD_USE_TORCH"] = "1"
+    os.environ["USE_TORCH"] = "1"
+if os.environ.get("TENSORFLOW_AVAILABLE") and os.environ.get("DD_USE_TF") is None:
+    os.environ["DD_USE_TF"] = "1"
+    os.environ["USE_TF"] = "1"
+if os.environ.get("DD_USE_TORCH") and os.environ.get("DD_USE_TF"):
+    logger.warning(
+        "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
+        "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
+    )
+    os.environ.pop("DD_USE_TF")
+    os.environ.pop("USE_TF")
+
+if not os.environ.get("PYTORCH_AVAILABLE") and not os.environ.get("TENSORFLOW_AVAILABLE"):
+    logger.warning(
+        LoggingRecord(
+            msg="Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
+            "model from the library."
+        )
+    )
 
 
 # Direct imports for type-checking

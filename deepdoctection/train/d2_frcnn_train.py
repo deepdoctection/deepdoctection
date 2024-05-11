@@ -32,7 +32,6 @@ from ..eval.base import MetricBase
 from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.d2detect import D2FrcnnDetector
-from ..extern.pt.ptutils import get_num_gpu
 from ..mapper.d2struct import image_to_d2_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
@@ -51,6 +50,7 @@ with try_import() as d2_import_guard:
     from fvcore.nn.precise_bn import get_bn_modules  # type: ignore
 
 with try_import() as pt_import_guard:
+    from torch import cuda
     from torch.utils.data import DataLoader, IterableDataset
 
 with try_import() as wb_import_guard:
@@ -264,7 +264,7 @@ class D2Trainer(DefaultTrainer):
             dataset_val,
             pipeline_component,
             metric,
-            num_threads=get_num_gpu() * 2,
+            num_threads=cuda.device_count() * 2,
             run=run,
         )
         if build_val_dict:
@@ -340,7 +340,7 @@ def train_d2_faster_rcnn(
     :param pipeline_component_name: A pipeline component name to use for validation.
     """
 
-    assert get_num_gpu() > 0, "Has to train with GPU!"
+    assert cuda.device_count() > 0, "Has to train with GPU!"
 
     build_train_dict: Dict[str, str] = {}
     if build_train_config is not None:

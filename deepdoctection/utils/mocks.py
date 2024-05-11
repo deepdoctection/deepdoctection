@@ -24,6 +24,7 @@ from deepdoctection.utils.error import DependencyError
 
 def layer_register(log_shape):  # pylint: disable=W0613
     """Mock layer_register function from tensorpack."""
+
     def inner(inputs):  # pylint: disable=W0613
         pass
 
@@ -32,6 +33,7 @@ def layer_register(log_shape):  # pylint: disable=W0613
 
 def under_name_scope():
     """Mock under_name_scope function from tensorpack."""
+
     def inner(inputs):  # pylint: disable=W0613
         pass
 
@@ -54,32 +56,38 @@ def auto_reuse_variable_scope(inputs):  # pylint: disable=W0613
 
 class ModelDesc:  # pylint: disable=R0903
     """Mock ModelDesc class from tensorpack."""
+
     def __init__(self) -> None:
         raise DependencyError("Tensorpack not found.")
 
 
 class ImageAugmentor:  # pylint: disable=R0903
     """Mock ImageAugmentor class from tensorpack."""
+
     def __init__(self) -> None:
         raise DependencyError("Tensorpack not found.")
 
 
 class Callback:  # pylint: disable=R0903
     """Mock Callback class from tensor"""
+
     def __init__(self) -> None:
         raise DependencyError("Tensorpack not found.")
 
 
 class Config:  # pylint: disable=R0903
     """Mock class for Config"""
-    pass   # pylint: disable=W0107
+
+    pass  # pylint: disable=W0107
 
 
 class Tree:  # pylint: disable=R0903
     """Mock class for Tree"""
-    pass   # pylint: disable=W0107
+
+    pass  # pylint: disable=W0107
 
 
 class IterableDataset:  # pylint: disable=R0903
     """Mock class for IterableDataset"""
-    pass   # pylint: disable=W0107
+
+    pass  # pylint: disable=W0107

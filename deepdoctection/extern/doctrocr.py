@@ -23,13 +23,12 @@ from __future__ import annotations
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Any, List, Literal, Mapping, Optional, Tuple
+from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from lazy_imports import try_import
 
 from ..utils.detection_types import ImageType, Requirement
-from ..utils.env_info import get_device
 from ..utils.error import DependencyError
 from ..utils.file_utils import (
     get_doctr_requirement,
@@ -43,7 +42,8 @@ from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
 from ..utils.viz import viz_handler
 from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
-from .pt.ptutils import set_torch_auto_device
+from .pt.ptutils import get_torch_device
+from .tp.tfutils import get_tf_device
 
 with try_import() as pt_import_guard:
     import torch
@@ -60,29 +60,18 @@ with try_import() as doctr_import_guard:
     from doctr.models.recognition.zoo import ARCHS, recognition
 
 
-def _set_device_str(device: Optional[str] = None) -> str:
-    if device is not None:
-        if tf_available():
-            device = "/" + device.replace("cuda", "gpu") + ":0"
-        elif pytorch_available():
-            device = str(set_torch_auto_device())
-        else:
-            raise DependencyError("Tensorflow or PyTorch must be installed.")
-    elif pytorch_available():
-        device = str(set_torch_auto_device())
-    else:
-        device = "/gpu:0"  # we impose to install tensorflow-gpu because of Tensorpack models
-    return device
-
-
-def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
-    if lib == "PT" and pytorch_available():
+def _load_model(
+    path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+) -> None:
+    """Loading a model either in TF or PT. We only shift the model to the device when using PyTorch. The shift of
+    the model to the device in Tensorflow is done in the predict function."""
+    if lib == "PT":
         state_dict = torch.load(path_weights, map_location=device)
         for key in list(state_dict.keys()):
             state_dict["model." + key] = state_dict.pop(key)
         doctr_predictor.load_state_dict(state_dict)
         doctr_predictor.to(device)
-    elif lib == "TF" and tf_available():
+    elif lib == "TF":
         # Unzip the archive
         params_path = Path(path_weights).parent
         is_zip_path = path_weights.endswith(".zip")
@@ -95,29 +84,33 @@ def _load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Liter
 
 
 def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
-    """Auto select the DL library from the installed and from environment variables"""
-    if tf_available() and os.environ.get("USE_TF", os.environ.get("USE_TENSORFLOW", False)):
-        os.environ["USE_TF"] = "TRUE"
-        return "TF"
-    if pytorch_available() and os.environ.get("USE_TORCH", os.environ.get("USE_PYTORCH", False)):
+    """Auto select the DL library from environment variables"""
+    if os.environ.get("USE_TORCH"):
         return "PT"
-    raise DependencyError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
+    if os.environ.get("USE_TF"):
+        return "TF"
+    raise DependencyError("At least one of the env variables USE_TORCH or USE_TF must be set.")
 
 
-def doctr_predict_text_lines(np_img: ImageType, predictor: DetectionPredictor, device: str) -> List[DetectionResult]:
+def doctr_predict_text_lines(
+    np_img: ImageType, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
+) -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
 
     :param np_img: Image in np.array.
     :param predictor: `doctr.models.detection.predictor.DetectionPredictor`
     :param device: Will only be used in tensorflow settings. Either /gpu:0 or /cpu:0
+    :param lib: "TF" or "PT"
     :return: A list of text line detection results (without text).
     """
-    if tf_available() and device is not None:
-        with tf.device(device):
+    if lib == "TF":
+        with device:  # type: ignore
             raw_output = predictor([np_img])
-    else:
+    elif lib == "PT":
         raw_output = predictor([np_img])
+    else:
+        raise DependencyError("Tensorflow or PyTorch must be installed.")
     detection_results = [
         DetectionResult(
             box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word
@@ -128,7 +121,10 @@ def doctr_predict_text_lines(np_img: ImageType, predictor: DetectionPredictor, d
 
 
 def doctr_predict_text(
-    inputs: List[Tuple[str, ImageType]], predictor: RecognitionPredictor, device: str
+    inputs: List[Tuple[str, ImageType]],
+    predictor: RecognitionPredictor,
+    device: Union[torch.device, tf.device],
+    lib: Literal["TF", "PT"],
 ) -> List[DetectionResult]:
     """
     Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
@@ -138,15 +134,18 @@ def doctr_predict_text(
                    text line
     :param predictor: `doctr.models.detection.predictor.RecognitionPredictor`
     :param device: Will only be used in tensorflow settings. Either /gpu:0 or /cpu:0
+    :param lib: "TF" or "PT"
     :return: A list of DetectionResult containing recognized text.
     """
 
     uuids, images = list(zip(*inputs))
-    if tf_available() and device is not None:
-        with tf.device(device):
+    if lib == "TF":
+        with device:  # type: ignore
             raw_output = predictor(list(images))
-    else:
+    elif lib == "PT":
         raw_output = predictor(list(images))
+    else:
+        raise DependencyError("Tensorflow or PyTorch must be installed.")
     detection_results = [
         DetectionResult(score=output[1], text=output[0], uuid=uuid) for uuid, output in zip(uuids, raw_output)
     ]
@@ -214,7 +213,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         architecture: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device, tf.device]] = None,
         lib: Optional[Literal["PT", "TF"]] = None,
     ) -> None:
         """
@@ -223,7 +222,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20
         :param path_weights: Path to the weights of the model
         :param categories: A dict with the model output label and value
-        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+        :param device: "cpu" or "cuda" or any tf.device or torch.device. The device must be compatible with the dll
         :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
         """
         super().__init__(categories, lib)
@@ -233,18 +232,12 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         self.name = self.get_name(self.path_weights, self.architecture)
         self.model_id = self.get_model_id()
 
-        if device is None:
-            if self.lib == "TF":
-                device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            elif self.lib == "PT":
-                auto_device = get_device(False)
-                device = "cpu" if auto_device == "mps" else auto_device
-            else:
-                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+        if self.lib == "TF":
+            self.device = get_tf_device(device)
+        if self.lib == "PT":
+            self.device = get_torch_device(device)
 
-        self.device_input = device
-        self.device = _set_device_str(device)
-        self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device_input, self.lib)
+        self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device, self.lib)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
         """
@@ -253,28 +246,30 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = doctr_predict_text_lines(np_img, self.doctr_predictor, self.device)
+        detection_results = doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
         return detection_results
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        if tf_available():
+        if os.environ.get("DD_USE_TF"):
             return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-        if pytorch_available():
+        if os.environ.get("DD_USE_TORCH"):
             return [get_pytorch_requirement(), get_doctr_requirement()]
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.architecture, self.path_weights, self.categories, self.device_input, self.lib)
+        return self.__class__(self.architecture, self.path_weights, self.categories, self.device, self.lib)
 
     @staticmethod
-    def load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
+    def load_model(
+        path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+    ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
 
     @staticmethod
     def get_wrapped_model(
-        architecture: str, path_weights: str, device: Literal["cpu", "cuda"], lib: Literal["PT", "TF"]
+        architecture: str, path_weights: str, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
     ) -> Any:
         """
         Get the inner (wrapped) model.
@@ -292,8 +287,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
         """
         doctr_predictor = detection_predictor(arch=architecture, pretrained=False, pretrained_backbone=False)
-        device_str = _set_device_str(device)
-        DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device_str, lib)
+        DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device, lib)
         return doctr_predictor
 
 
@@ -331,14 +325,13 @@ class DoctrTextRecognizer(TextRecognizer):
 
                  for dp in df:
                      ...
-
     """
 
     def __init__(
         self,
         architecture: str,
         path_weights: str,
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device, tf.device]] = None,
         lib: Optional[Literal["PT", "TF"]] = None,
         path_config_json: Optional[str] = None,
     ) -> None:
@@ -361,22 +354,16 @@ class DoctrTextRecognizer(TextRecognizer):
         self.name = self.get_name(self.path_weights, self.architecture)
         self.model_id = self.get_model_id()
 
-        if device is None:
-            if self.lib == "TF":
-                device = "cuda" if tf.test.is_gpu_available() else "cpu"
-            if self.lib == "PT":
-                auto_device = get_device(False)
-                device = "cpu" if auto_device == "mps" else auto_device
-            else:
-                raise DependencyError("Cannot select device automatically. Please set the device manually.")
+        if self.lib == "TF":
+            self.device = get_tf_device(device)
+        if self.lib == "PT":
+            self.device = get_torch_device(device)
 
-        self.device_input = device
-        self.device = _set_device_str(device)
         self.path_config_json = path_config_json
         self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
         self.load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
         self.doctr_predictor = self.get_wrapped_model(
-            self.architecture, self.path_weights, self.device_input, self.lib, self.path_config_json
+            self.architecture, self.path_weights, self.device, self.lib, self.path_config_json
         )
 
     def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
@@ -387,7 +374,7 @@ class DoctrTextRecognizer(TextRecognizer):
         :return: A list of DetectionResult
         """
         if images:
-            return doctr_predict_text(images, self.doctr_predictor, self.device)
+            return doctr_predict_text(images, self.doctr_predictor, self.device, self.lib)
         return []
 
     @classmethod
@@ -399,10 +386,12 @@ class DoctrTextRecognizer(TextRecognizer):
         raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
     def clone(self) -> PredictorBase:
-        return self.__class__(self.architecture, self.path_weights, self.device_input, self.lib)
+        return self.__class__(self.architecture, self.path_weights, self.device, self.lib)
 
     @staticmethod
-    def load_model(path_weights: str, doctr_predictor: Any, device: str, lib: Literal["PT", "TF"]) -> None:
+    def load_model(
+        path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+    ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
 
@@ -444,7 +433,7 @@ class DoctrTextRecognizer(TextRecognizer):
     def get_wrapped_model(
         architecture: str,
         path_weights: str,
-        device: Literal["cpu", "cuda"],
+        device: Union[torch.device, tf.device],
         lib: Literal["PT", "TF"],
         path_config_json: Optional[str] = None,
     ) -> Any:
@@ -462,8 +451,7 @@ class DoctrTextRecognizer(TextRecognizer):
         :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
         """
         doctr_predictor = DoctrTextRecognizer.build_model(architecture, path_config_json)
-        device_str = _set_device_str(device)
-        DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device_str, lib)
+        DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device, lib)
         return doctr_predictor
 
     @staticmethod

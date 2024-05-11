@@ -32,7 +32,7 @@ from deepdoctection.utils.detection_types import ImageType
 from tests.data import Annotations
 
 
-def get_mock_word_results(np_img: ImageType, predictor, device) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
+def get_mock_word_results(np_img: ImageType, predictor, device, lib) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
     """
     Returns WordResults attr: word_results_list
     """
@@ -40,7 +40,7 @@ def get_mock_word_results(np_img: ImageType, predictor, device) -> List[Detectio
 
 
 def get_mock_text_line_results(  # type: ignore
-    inputs: List[Tuple[str, ImageType]], predictor, device  # pylint: disable=W0613
+    inputs: List[Tuple[str, ImageType]], predictor, device, lib  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns two DetectionResult

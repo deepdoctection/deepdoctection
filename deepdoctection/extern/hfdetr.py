@@ -30,7 +30,7 @@ from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr, get_type
 from .base import DetectionResult, ObjectDetector
-from .pt.ptutils import set_torch_auto_device
+from .pt.ptutils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch  # pylint: disable=W0611
@@ -166,7 +166,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         path_weights: str,
         path_feature_extractor_config_json: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Union[Literal["cpu", "cuda"],torch.device ]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
@@ -193,10 +193,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         self.hf_detr_predictor = self.get_model(self.path_weights, self.config)
         self.feature_extractor = self.get_pre_processor(self.path_feature_extractor_config)
 
-        if device is not None:
-            self.device = torch.device(device)
-        else:
-            self.device = set_torch_auto_device()
+        self.device = get_torch_device(device)
         self.hf_detr_predictor.to(self.device)
 
     def predict(self, np_img: ImageType) -> List[DetectionResult]:
@@ -257,7 +254,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_config_json: str, path_weights: str, device: Optional[Union[Literal["cpu", "cuda"],torch.device]] = None
+        path_config_json: str, path_weights: str, device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None
     ) -> TableTransformerForObjectDetection:
         """
         Get the wrapped model
@@ -269,6 +266,5 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         """
         config = HFDetrDerivedDetector.get_config(path_config_json)
         hf_detr_predictor = HFDetrDerivedDetector.get_model(path_weights, config)
-        if device is None:
-            device = set_torch_auto_device()
+        device = get_torch_device()
         return hf_detr_predictor.to(device)

@@ -27,7 +27,6 @@ from .utils.np_box_ops import ioa as np_ioa
 # pylint: disable=import-error
 
 
-
 with try_import() as import_guard:
     from tensorpack.dataflow.imgaug import AugmentorList, ImageAugmentor
 # pylint: enable=import-error
