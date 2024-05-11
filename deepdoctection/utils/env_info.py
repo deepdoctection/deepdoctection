@@ -46,16 +46,16 @@ can store an (absolute) path to a `.jsonl` file.
 
 """
 
-import ast
 import importlib
 import os
 import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Literal, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
+from packaging import version
 from tabulate import tabulate
 
 from .file_utils import (
@@ -68,6 +68,7 @@ from .file_utils import (
     fasttext_available,
     get_poppler_version,
     get_tesseract_version,
+    get_tf_version,
     jdeskew_available,
     lxml_available,
     opencv_available,
@@ -84,13 +85,9 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
-from .logger import LoggingRecord, logger
 
 __all__ = [
-    "collect_torch_env",
     "collect_env_info",
-    "get_device",
-    "auto_select_lib_and_device",
     "auto_select_viz_library",
 ]
 
@@ -270,7 +267,22 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     if tf_available():
         import tensorflow as tf  # type: ignore # pylint: disable=E0401
 
+        os.environ["TENSORFLOW_AVAILABLE"] = "1"
+
         data.append(("Tensorflow", tf.__version__))
+        if version.parse(get_tf_version()) > version.parse("2.4.1"):
+            os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+        try:
+            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402
+
+            deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
+        except Exception:  # pylint: disable=W0703
+            try:
+                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401
+
+                deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
+            except Exception:  # pylint: disable=W0703
+                pass
     else:
         data.append(("Tensorflow", "None"))
         return data
@@ -279,12 +291,18 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
     try:
         for key, value in list(build_info.build_info.items()):
-            if key == "cuda_version":
+            if key == "is_cuda_build":
+                data.append(("TF compiled with CUDA", value))
+                if value:
+                    os.environ["USE_CUDA"] = "1"
+            elif key == "cuda_version":
                 data.append(("TF built with CUDA", value))
             elif key == "cudnn_version":
                 data.append(("TF built with CUDNN", value))
             elif key == "cuda_compute_capabilities":
                 data.append(("TF compute capabilities", ",".join([k.replace("compute_", "") for k in value])))
+            elif key == "is_rocm_build":
+                data.append(("TF compiled with ROCM", value))
         return data
     except AttributeError:
         pass
@@ -306,6 +324,13 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
     if pytorch_available():
         import torch
+
+        os.environ["PYTORCH_AVAILABLE"] = "1"
+
+    else:
+        data.append(("PyTorch", "None"))
+        return []
+
     has_gpu = torch.cuda.is_available()  # true for both CUDA & ROCM
     has_mps = torch.backends.mps.is_available()
 
@@ -331,12 +356,9 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     data.append(("PyTorch", torch_version + " @" + os.path.dirname(torch.__file__)))
     data.append(("PyTorch debug build", str(torch.version.debug)))
 
-    if not has_gpu:
-        has_gpu_text = "No: torch.cuda.is_available() == False"
-    else:
-        has_gpu_text = "Yes"
-    data.append(("GPU available", has_gpu_text))
     if has_gpu:
+        os.environ["USE_CUDA"] = "1"
+        has_gpu_text = "Yes"
         devices = defaultdict(list)
         for k in range(torch.cuda.device_count()):
             cap = ".".join((str(x) for x in torch.cuda.get_device_capability(k)))
@@ -362,6 +384,10 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
             cuda_arch_list = os.environ.get("TORCH_CUDA_ARCH_LIST", None)
             if cuda_arch_list:
                 data.append(("TORCH_CUDA_ARCH_LIST", cuda_arch_list))
+    else:
+        has_gpu_text = "No: torch.cuda.is_available() == False"
+
+    data.append(("GPU available", has_gpu_text))
 
     mps_build = "No: torch.backends.mps.is_built() == False"
     if not has_mps:
@@ -369,9 +395,11 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     else:
         has_mps_text = "Yes"
         mps_build = str(torch.backends.mps.is_built())
+        if mps_build == "True":
+            os.environ["USE_MPS"] = "1"
 
     data.append(("MPS available", has_mps_text))
-    data.append(("MPS available", mps_build))
+    data.append(("MPS built", mps_build))
 
     try:
         import torchvision  # type: ignore
@@ -450,110 +478,6 @@ def collect_env_info() -> str:
         env_str += collect_torch_env()
 
     return env_str
-
-
-def set_env(name: str, value: str) -> None:
-    """
-    Set an environment variable if it is not already set.
-
-    :param name: The name of the environment variable
-    :param value: The value of the environment variable
-    """
-
-    if os.environ.get(name):
-        return
-    os.environ[name] = value
-    return
-
-
-def auto_select_lib_and_device() -> None:
-    """
-    Select the DL library and subsequently the device.
-    This will set environment variable `USE_TENSORFLOW`, `USE_PYTORCH` and `USE_CUDA`
-
-    If TF is available, use TF unless a GPU is not available, in which case choose PT. If CUDA is not available and PT
-    is not installed raise ImportError.
-    """
-
-    # USE_TF and USE_TORCH are env variables that steer DL library selection for Doctr.
-    if tf_available() and tensorpack_available():
-        from tensorpack.utils.gpu import get_num_gpu  # pylint: disable=E0401
-
-        if get_num_gpu() >= 1:
-            set_env("USE_TENSORFLOW", "True")
-            set_env("USE_PYTORCH", "False")
-            set_env("USE_CUDA", "True")
-            set_env("USE_MPS", "False")
-            set_env("USE_TF", "TRUE")
-            set_env("USE_TORCH", "False")
-            return
-        if pytorch_available():
-            set_env("USE_TENSORFLOW", "False")
-            set_env("USE_PYTORCH", "True")
-            set_env("USE_CUDA", "False")
-            set_env("USE_TF", "False")
-            set_env("USE_TORCH", "TRUE")
-            return
-        logger.warning(
-            LoggingRecord("You have Tensorflow installed but no GPU is available. All Tensorflow models require a GPU.")
-        )
-    if tf_available():
-        set_env("USE_TENSORFLOW", "False")
-        set_env("USE_PYTORCH", "False")
-        set_env("USE_CUDA", "False")
-        set_env("USE_TF", "AUTO")
-        set_env("USE_TORCH", "AUTO")
-        return
-
-    if pytorch_available():
-        import torch
-
-        if torch.cuda.is_available():
-            set_env("USE_TENSORFLOW", "False")
-            set_env("USE_PYTORCH", "True")
-            set_env("USE_CUDA", "True")
-            set_env("USE_TF", "False")
-            set_env("USE_TORCH", "TRUE")
-            return
-        if torch.backends.mps.is_available():
-            set_env("USE_TENSORFLOW", "False")
-            set_env("USE_PYTORCH", "True")
-            set_env("USE_CUDA", "False")
-            set_env("USE_MPS", "True")
-            set_env("USE_TF", "False")
-            set_env("USE_TORCH", "TRUE")
-            return
-        set_env("USE_TENSORFLOW", "False")
-        set_env("USE_PYTORCH", "True")
-        set_env("USE_CUDA", "False")
-        set_env("USE_MPS", "False")
-        set_env("USE_TF", "AUTO")
-        set_env("USE_TORCH", "AUTO")
-        return
-    logger.warning(
-        LoggingRecord(
-            "Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
-            "model from the library."
-        )
-    )
-
-
-def get_device(ignore_cpu: bool = True) -> Literal["cuda", "mps", "cpu"]:
-    """
-    Device checks for running PyTorch with CUDA, MPS or optionall CPU.
-    If nothing can be found and if `disable_cpu` is deactivated it will raise a `ValueError`
-
-    :param ignore_cpu: Will not consider `cpu` as valid return value
-    :return: Either cuda or mps
-    """
-
-    if ast.literal_eval(os.environ.get("USE_CUDA", "True")):
-        return "cuda"
-    if ast.literal_eval(os.environ.get("USE_MPS", "True")):
-        return "mps"
-    if not ignore_cpu:
-        return "cpu"
-    raise RuntimeWarning("Could not find either GPU nor MPS")
 
 
 def auto_select_viz_library() -> None:

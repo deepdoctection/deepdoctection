@@ -18,10 +18,19 @@
 """
 Tensorflow related utils.
 """
+
+from __future__ import annotations
+
+import os
+from typing import Optional, Union
+
 from lazy_imports import try_import
 
 with try_import() as import_guard:
     from tensorpack.models import disable_layer_logging  # pylint: disable=E0401
+
+with try_import() as tf_import_guard:
+    import tensorflow as tf  # pylint: disable=E0401
 
 
 def is_tfv2() -> bool:
@@ -40,16 +49,13 @@ def disable_tfv2() -> bool:
     """
     Disable TF in V2 mode.
     """
-    try:
-        import tensorflow as tf  # pylint: disable=C0415
 
-        tfv1 = tf.compat.v1
-        if is_tfv2():
-            tfv1.disable_v2_behavior()
-            tfv1.disable_eager_execution()
+    tfv1 = tf.compat.v1
+    if is_tfv2():
+        tfv1.disable_v2_behavior()
+        tfv1.disable_eager_execution()
         return True
-    except ModuleNotFoundError:
-        return False
+    return False
 
 
 def disable_tp_layer_logging() -> None:
@@ -57,3 +63,29 @@ def disable_tp_layer_logging() -> None:
     Disables TP layer logging, if not already set
     """
     disable_layer_logging()
+
+
+def get_tf_device(device: Optional[Union[str, tf.device]] = None) -> tf.device:
+    """
+    Selecting a device on which to load a model. The selection follows a cascade of priorities:
+
+    - If a device string is provided, it is used. If the string is "cuda" or "GPU", the first GPU is used.
+    - If the environment variable "USE_CUDA" is set, a GPU is used. If more GPUs are available it will use the first one
+
+    :param device: Device string
+    :return: Tensorflow device
+    """
+    if device is not None:
+        if isinstance(device, tf.device):
+            return device
+        if isinstance(device, str):
+            if device in ("cuda", "GPU"):
+                device_names = [device.name for device in tf.config.list_physical_devices(device_type="GPU")]
+                return tf.device(device_names[0])
+            # The input must be something sensible
+            return tf.device(device)
+    if os.environ.get("USE_CUDA"):
+        device_names = [device.name for device in tf.config.list_physical_devices(device_type="GPU")]
+        return tf.device(device_names[0])
+    device_names = [device.name for device in tf.config.list_physical_devices(device_type="CPU")]
+    return tf.device(device_names[0])
