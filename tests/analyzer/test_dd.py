@@ -51,7 +51,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
 
 
 @mark.tf_integration
-def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
+def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
     """
@@ -95,7 +95,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
-    assert len(page.tables[0].cells) in {15, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {15, 16}
     # first html for tp model, second for d2 model
     assert page.tables[0].html in {
         "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
@@ -110,7 +110,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
 
 
 @mark.tf_integration
-def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
+def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting USE_OCR = False
     """
@@ -130,7 +130,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
-    assert len(page.tables[0].cells) in {15, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {15, 16}
     # first html for tp model, second for d2 model
     assert page.tables[0].html in {
         "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
@@ -165,7 +165,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
-    assert len(page.tables[0].cells) in {15, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {15, 16}
     # first html for tp model, second for d2 model
     assert page.tables[0].html in {
         "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
@@ -197,7 +197,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
 
 
 @mark.tf_integration
-def test_dd_analyzer_builds_and_process_image_correctly() -> None:
+def test_dd_tf_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = True and USE_OCR = True
     """
@@ -217,7 +217,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(page.layouts) in {9, 10, 12, 16}
     assert len(page.tables) == 1
     # 15 cells for d2 and 16 for tp model
-    assert len(page.tables[0].cells) in {15, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {15, 16}
     # first html for tp model, second for d2 model
     assert page.tables[0].html in {
         "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
@@ -315,7 +315,7 @@ def test_dd_analyzer_with_doctr() -> None:
 
 
 @mark.tf_integration
-def test_dd_analyzer_with_doctr() -> None:
+def test_dd_tf_analyzer_with_doctr() -> None:
     """
     Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True
     """
