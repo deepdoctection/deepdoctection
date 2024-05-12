@@ -22,7 +22,7 @@ Tensorflow related utils.
 from __future__ import annotations
 
 import os
-from typing import Optional, Union
+from typing import Optional, Union, ContextManager
 
 from lazy_imports import try_import
 
@@ -76,16 +76,16 @@ def get_tf_device(device: Optional[Union[str, tf.device]] = None) -> tf.device:
     :return: Tensorflow device
     """
     if device is not None:
-        if isinstance(device, tf.device):
+        if isinstance(device, ContextManager):
             return device
         if isinstance(device, str):
             if device in ("cuda", "GPU"):
-                device_names = [device.name for device in tf.config.list_physical_devices(device_type="GPU")]
-                return tf.device(device_names[0])
+                device_names = [device.name for device in tf.config.list_logical_devices(device_type="GPU")]
+                return tf.device(device_names[0].name)
             # The input must be something sensible
             return tf.device(device)
     if os.environ.get("USE_CUDA"):
-        device_names = [device.name for device in tf.config.list_physical_devices(device_type="GPU")]
+        device_names = [device.name for device in tf.config.list_logical_devices(device_type="GPU")]
         return tf.device(device_names[0])
-    device_names = [device.name for device in tf.config.list_physical_devices(device_type="CPU")]
+    device_names = [device.name for device in tf.config.list_logical_devices(device_type="CPU")]
     return tf.device(device_names[0])
