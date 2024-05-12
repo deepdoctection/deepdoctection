@@ -36,7 +36,7 @@ from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
 from .base import DetectionResult, ObjectDetector, PredictorBase
 from .pt.nms import batched_nms
-from .pt.ptutils import set_torch_auto_device
+from .pt.ptutils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch
@@ -262,10 +262,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
         config_overwrite = config_overwrite if config_overwrite else []
         self.config_overwrite = config_overwrite
-        if device is not None:
-            self.device = torch.device(device)
-        else:
-            self.device = set_torch_auto_device()
+        self.device = get_torch_device(device)
 
         d2_conf_list = self._get_d2_config_list(path_weights, config_overwrite)
         self.cfg = self._set_config(path_yaml, d2_conf_list, self.device)
@@ -278,16 +275,13 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
 
     @staticmethod
-    def _set_config(
-        path_yaml: str, d2_conf_list: List[str], device: Optional[torch.device] = None
-    ) -> CfgNode:
+    def _set_config(path_yaml: str, d2_conf_list: List[str], device: torch.device) -> CfgNode:
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
         cfg.merge_from_file(path_yaml)
         cfg.merge_from_list(d2_conf_list)
-        if not torch.cuda.is_available() or str(device) == "cpu":
-            cfg.MODEL.DEVICE = "cpu"
+        cfg.MODEL.DEVICE = str(device)
         cfg.freeze()
         return cfg
 
@@ -337,8 +331,10 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: str, path_weights: str, config_overwrite: List[str],
-            device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None
+        path_yaml: str,
+        path_weights: str,
+        config_overwrite: List[str],
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ) -> GeneralizedRCNN:
         """
         Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
@@ -362,10 +358,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         :return: Detectron2 GeneralizedRCNN model
         """
 
-        if device is None:
-            device = set_torch_auto_device()
-        else:
-            device = torch.device(device)
+        device = get_torch_device(device)
         d2_conf_list = D2FrcnnDetector._get_d2_config_list(path_weights, config_overwrite)
         cfg = D2FrcnnDetector._set_config(path_yaml, d2_conf_list, device)
         model = D2FrcnnDetector._set_model(cfg)

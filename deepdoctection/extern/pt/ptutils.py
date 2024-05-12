@@ -20,35 +20,38 @@ Torch related utils
 """
 from __future__ import annotations
 
-from lazy_imports import try_import
+import os
+from typing import Optional, Union
 
-from ...utils.error import DependencyError
-from ...utils.file_utils import pytorch_available
+from lazy_imports import try_import
 
 with try_import() as import_guard:
     import torch
 
 
-def set_torch_auto_device() -> torch.device:
+def get_torch_device(device: Optional[Union[str, torch.device]] = None) -> torch.device:
     """
-    Returns cuda device if available, otherwise cpu
+    Selecting a device on which to load a model. The selection follows a cascade of priorities:
+
+    - If a device string is provided, it is used.
+    - If the environment variable "USE_CUDA" is set, a GPU is used. If more GPUs are available, it will use all of them
+      unless something else is specified by CUDA_VISIBLE_DEVICES:
+
+          https://stackoverflow.com/questions/54216920/how-to-use-multiple-gpus-in-pytorch
+
+    - If an MPS device is available, it is used.
+    - Otherwise, the CPU is used.
+
+    :param device: Device either as string or torch.device
+    :return: Tensorflow device
     """
-    if pytorch_available():
-        from torch import cuda, device  # pylint: disable=C0415
-
-        return device("cuda" if cuda.is_available() else "cpu")
-    raise DependencyError("Pytorch must be installed")
-
-
-def get_num_gpu() -> int:
-    """
-    Returns number of CUDA devices if pytorch is available
-
-    :return:
-    """
-
-    if pytorch_available():
-        from torch import cuda  # pylint: disable=C0415
-
-        return cuda.device_count()
-    raise DependencyError("Pytorch must be installed")
+    if device is not None:
+        if isinstance(device, torch.device):
+            return device
+        if isinstance(device, str):
+            return torch.device(device)
+    if os.environ.get("USE_CUDA"):
+        return torch.device("cuda")
+    if os.environ.get("USE_MPS"):
+        return torch.device("mps")
+    return torch.device("cpu")

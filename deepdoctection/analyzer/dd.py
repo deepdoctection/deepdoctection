@@ -23,7 +23,6 @@ Module for **deep**doctection analyzer.
 -user factory with a reduced config setting
 """
 
-import ast
 import os
 from os import environ
 from shutil import copyfile
@@ -37,9 +36,10 @@ from ..extern.doctrocr import DoctrTextlineDetector, DoctrTextRecognizer
 from ..extern.hfdetr import HFDetrDerivedDetector
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
+from ..extern.pt.ptutils import get_torch_device
 from ..extern.tessocr import TesseractOcrDetector
 from ..extern.texocr import TextractOcrDetector
-from ..extern.tp.tfutils import disable_tp_layer_logging
+from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
 from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
@@ -51,7 +51,7 @@ from ..pipe.segment import PubtablesSegmentationService, TableSegmentationServic
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..utils.detection_types import Pathlike
-from ..utils.env_info import get_device
+from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
 from ..utils.logger import LoggingRecord, logger
@@ -431,8 +431,13 @@ def get_dd_analyzer(
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if ast.literal_eval(os.environ.get("USE_TENSORFLOW", "False")) else "PT"
-    device = get_device(False)
+    lib = "TF" if os.environ.get("DD_USE_TF") else "PT"
+    if lib == "TF":
+        device = get_tf_device()
+    elif lib == "PT":
+        device = get_torch_device()
+    else:
+        raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
     dd_one_config_path = maybe_copy_config_to_cache(
         get_package_path(), get_configs_dir_path(), _DD_ONE, reset_config_file
     )

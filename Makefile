@@ -121,7 +121,6 @@ test-basic-pt: test-integration
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
 test-tf:
-	export USE_TF=TRUE
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or tf_deps" tests
 
 test-pt: test-integration-additional

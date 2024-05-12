@@ -32,7 +32,7 @@ from ..utils.file_utils import get_pytorch_requirement, get_transformers_require
 from ..utils.settings import TypeOrStr
 from .base import LMSequenceClassifier, SequenceClassResult
 from .hflayoutlm import get_tokenizer_from_model_class
-from .pt.ptutils import set_torch_auto_device
+from .pt.ptutils import get_torch_device
 
 with try_import() as pt_import_guard:
     import torch
@@ -83,10 +83,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.path_weights = path_weights
         self.categories = copy(categories)  # type: ignore
 
-        if device is not None:
-            self.device = torch.device(device)
-        else:
-            self.device = set_torch_auto_device()
+        self.device = get_torch_device(device)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
@@ -183,7 +180,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         path_config_json: str,
         path_weights: str,
         categories: Mapping[str, TypeOrStr],
-        device: Optional[Literal["cpu", "cuda"]] = None,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = True,
     ):
         self.name = self.get_name(path_weights, "bert-like")

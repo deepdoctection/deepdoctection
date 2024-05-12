@@ -22,7 +22,7 @@ Testing module extern.tpdetect
 from typing import Dict, List
 from unittest.mock import MagicMock, patch
 
-from pytest import mark, raises
+from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.utils.detection_types import ImageType
@@ -70,18 +70,6 @@ class TestTPFrcnnDetector:
     Test TPFrcnnDetector constructor
     """
 
-    @staticmethod
-    @mark.tf_deps
-    @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_zero))
-    def test_tp_frcnn_does_not_build_when_no_gpu(
-        path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]
-    ) -> None:
-        """
-        TP FRCNN needs one GPU for predicting. Construction fails, when no GPU is found
-        """
-        # Arrange, Act & Assert
-        with raises(AssertionError):
-            TPFrcnnDetector(path_yaml=path_to_tp_frcnn_yaml, path_weights="", categories=categories)
 
     @staticmethod
     @mark.tf_deps
