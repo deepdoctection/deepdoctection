@@ -25,7 +25,7 @@ from copy import deepcopy
 from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Set, Union
 from uuid import uuid1
 
-from ..dataflow import DataFlow, MapData, MultiThreadMapData
+from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.context import timed_operation
