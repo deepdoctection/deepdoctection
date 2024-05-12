@@ -293,7 +293,7 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         for key, value in list(build_info.build_info.items()):
             if key == "is_cuda_build":
                 data.append(("TF compiled with CUDA", value))
-                if value:
+                if value and len(tf.config.list_physical_devices('GPU')):
                     os.environ["USE_CUDA"] = "1"
             elif key == "cuda_version":
                 data.append(("TF built with CUDA", value))
