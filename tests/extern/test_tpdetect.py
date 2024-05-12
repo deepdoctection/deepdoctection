@@ -22,7 +22,7 @@ Testing module extern.tpdetect
 from typing import Dict, List
 from unittest.mock import MagicMock, patch
 
-from pytest import mark, raises
+from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.utils.detection_types import ImageType
