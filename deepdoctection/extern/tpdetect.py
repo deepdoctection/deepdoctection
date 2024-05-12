@@ -138,7 +138,6 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
         self.name = self.get_name(path_weights, self._model.cfg.TAG)
         self.model_id = self.get_model_id()
-        assert self._number_gpus > 0, "Model only support inference with GPU"
 
     @staticmethod
     def get_wrapped_model(

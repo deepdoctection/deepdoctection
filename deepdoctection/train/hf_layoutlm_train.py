@@ -45,10 +45,10 @@ from ..extern.hflayoutlm import (
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier
+from ..extern.pt.ptutils import get_torch_device
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
 from ..pipe.base import LanguageModelPipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.env_info import get_device
 from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
@@ -491,7 +491,7 @@ def train_hf_layoutlm(
             path_config_json=path_config_json,
             path_weights=path_weights,
             categories=categories,
-            device=get_device(),
+            device=get_torch_device(),
             use_xlm_tokenizer=use_xlm_tokenizer,
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)

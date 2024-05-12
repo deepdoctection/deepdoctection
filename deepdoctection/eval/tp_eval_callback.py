@@ -59,7 +59,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
 
     _chief_only = False
 
-    def __init__(   # pylint: disable=W0231
+    def __init__(  # pylint: disable=W0231
         self,
         dataset: DatasetBase,
         category_names: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]],
