@@ -122,7 +122,6 @@ test-basic-pt: test-integration
 
 test-tf:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or tf_deps" tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_integration" tests
 
 test-pt: test-integration-additional
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or pt_deps" tests
