@@ -415,7 +415,7 @@ You can use the `save` method to save the result of the analyzer in a `.json` fi
 page.save(image_to_json=True, path="/path/to/dir/test.json")
 ```
 
-Having saved the results you can easily parse the file into the `Page` format without loosing any information. 
+Having saved the results you can easily parse the file into the `Page` format without losing any information. 
 
 
 ```python
