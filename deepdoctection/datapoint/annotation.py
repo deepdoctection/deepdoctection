@@ -18,6 +18,7 @@
 """
 Dataclass for annotations and their derived classes.
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -151,7 +152,7 @@ class Annotation(ABC):
                 raise AnnotationError(f"Attribute {attr} must have __str__ method")
 
     @staticmethod
-    def set_annotation_id(annotation: "CategoryAnnotation", *container_id_context: Optional[str]) -> str:
+    def set_annotation_id(annotation: CategoryAnnotation, *container_id_context: Optional[str]) -> str:
         """
         Defines the `annotation_id` by attributes of the annotation class as well as by external parameters given by a
         tuple or list of container id contexts.
@@ -187,7 +188,7 @@ class Annotation(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "Annotation":
+    def from_dict(cls, **kwargs: JsonDict) -> Annotation:
         """
         Method to initialize a derived class from dict.
 
@@ -272,7 +273,7 @@ class CategoryAnnotation(Annotation):
     _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
-    sub_categories: Dict[ObjectTypes, "CategoryAnnotation"] = field(default_factory=dict, init=False, repr=True)
+    sub_categories: Dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)
     relationships: Dict[ObjectTypes, List[str]] = field(default_factory=dict, init=False, repr=True)
 
     @property  # type: ignore
@@ -293,7 +294,7 @@ class CategoryAnnotation(Annotation):
         super().__post_init__()
 
     def dump_sub_category(
-        self, sub_category_name: TypeOrStr, annotation: "CategoryAnnotation", *container_id_context: Optional[str]
+        self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
     ) -> None:
         """
         Storage of sub-categories. As sub-categories usually only depend on very few attributes and the parent
@@ -324,7 +325,7 @@ class CategoryAnnotation(Annotation):
                 )
         self.sub_categories[get_type(sub_category_name)] = annotation
 
-    def get_sub_category(self, sub_category_name: ObjectTypes) -> "CategoryAnnotation":
+    def get_sub_category(self, sub_category_name: ObjectTypes) -> CategoryAnnotation:
         """
         Return a sub category by its key.
 
@@ -407,7 +408,7 @@ class CategoryAnnotation(Annotation):
         return []
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "CategoryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> CategoryAnnotation:
         category_ann = ann_from_dict(cls, **kwargs)
         return category_ann
 
@@ -432,13 +433,13 @@ class ImageAnnotation(CategoryAnnotation):
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
-    image: Optional["Image"] = field(default=None, init=False, repr=False)  # type: ignore
+    image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore
 
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "bounding_box"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "ImageAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> ImageAnnotation:
         image_ann = ann_from_dict(cls, **kwargs)
         if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
@@ -481,7 +482,7 @@ class SummaryAnnotation(CategoryAnnotation):
         super().__post_init__()
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> SummaryAnnotation:
         summary_ann = ann_from_dict(cls, **kwargs)
         summary_ann.category_name = SummaryType.summary
         return summary_ann
@@ -502,7 +503,7 @@ class ContainerAnnotation(CategoryAnnotation):
         return ["category_name", "value"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> "SummaryAnnotation":
+    def from_dict(cls, **kwargs: JsonDict) -> ContainerAnnotation:
         container_ann = ann_from_dict(cls, **kwargs)
         value = kwargs.get("value", "")
         container_ann.value = value if isinstance(value, str) else list(value)
