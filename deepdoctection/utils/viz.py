@@ -544,7 +544,7 @@ class VizPackageHandler:
         self, np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Tuple[int, int, int], thickness: int
     ) -> ImageType:
         """
-        Drawing a rectangle into an image with a given color (b,g,r) and given thickness
+        Drawing a rectangle into an image with a given color (b,g,r) and given thickness.
 
         :param np_image: image
         :param box: box (x_min, y_min, x_max, y_max)
