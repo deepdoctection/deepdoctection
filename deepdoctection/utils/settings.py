@@ -127,6 +127,8 @@ class LayoutType(ObjectTypes):
     word = "word"
     line = "line"
     background = "background"
+    page_number = "page_number"
+    key_value_area = "key_value_area"
 
 
 @object_types_registry.register("TableType")

@@ -433,7 +433,7 @@ class ImageAnnotation(CategoryAnnotation):
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
-    image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore
+    image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore  # pylint: disable=E0602
 
     def get_defining_attributes(self) -> List[str]:
         return ["category_name", "bounding_box"]
