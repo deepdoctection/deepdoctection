@@ -85,6 +85,7 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
+from .logger import logger, LoggingRecord
 
 __all__ = [
     "collect_env_info",
@@ -423,6 +424,44 @@ def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     return data
 
 
+def set_dl_env_vars() -> None:
+    """Set the environment variables that steer the selection of the DL framework.
+    If both PyTorch and TensorFlow are available, PyTorch will be selected by default.
+    It is possible that for testing purposes, e.g. on Colab you can find yourself with a pre-installed Tensorflow
+    version. If you want to enforce PyTorch you must set:
+
+    os.environ["DD_USE_TORCH"] = "1"
+    os.environ["USE_TORCH"] = "1"      # necessary if you make use of DocTr's OCR engine
+    os.environ["DD_USE_TF"] = "0"
+    os.environ["USE_TF"] = "0"      # it's better to explcitly disable Tensorflow
+
+
+    """
+
+    if os.environ.get("PYTORCH_AVAILABLE") and os.environ.get("DD_USE_TORCH") is None:
+        os.environ["DD_USE_TORCH"] = "1"
+        os.environ["USE_TORCH"] = "1"
+    if os.environ.get("TENSORFLOW_AVAILABLE") and os.environ.get("DD_USE_TF") is None:
+        os.environ["DD_USE_TF"] = "1"
+        os.environ["USE_TF"] = "1"
+
+    if os.environ.get("DD_USE_TORCH", "0") == "1" and os.environ.get("DD_USE_TF", "0") == "1":
+        logger.warning(
+            "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
+            "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
+        )
+        os.environ["DD_USE_TF"] = "0"
+        os.environ["USE_TF"] = "0"
+
+    if not os.environ.get("PYTORCH_AVAILABLE") and not os.environ.get("TENSORFLOW_AVAILABLE"):
+        logger.warning(
+            LoggingRecord(
+                msg="Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
+                    "model from the library."
+            )
+        )
+
+
 def collect_env_info() -> str:
     """
 
@@ -469,6 +508,7 @@ def collect_env_info() -> str:
 
     data = pt_info(data)
     data = tf_info(data)
+    set_dl_env_vars()
 
     data = collect_installed_dependencies(data)
 

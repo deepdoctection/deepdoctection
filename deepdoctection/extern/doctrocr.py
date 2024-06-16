@@ -35,8 +35,6 @@ from ..utils.file_utils import (
     get_pytorch_requirement,
     get_tensorflow_requirement,
     get_tf_addons_requirements,
-    pytorch_available,
-    tf_available,
 )
 from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
@@ -58,6 +56,14 @@ with try_import() as doctr_import_guard:
     from doctr.models.preprocessor import PreProcessor
     from doctr.models.recognition.predictor import RecognitionPredictor  # pylint: disable=W0611
     from doctr.models.recognition.zoo import ARCHS, recognition
+
+
+def _get_doctr_requirements() -> List[Requirement]:
+    if os.environ.get("DD_USE_TF", "0") == "1":
+        return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
+    if os.environ.get("DD_USE_TORCH", "0") == "1":
+        return [get_pytorch_requirement(), get_doctr_requirement()]
+    raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
 
 def _load_model(
@@ -85,9 +91,9 @@ def _load_model(
 
 def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
     """Auto select the DL library from environment variables"""
-    if os.environ.get("USE_TORCH"):
+    if os.environ.get("USE_TORCH", "0") == "1":
         return "PT"
-    if os.environ.get("USE_TF"):
+    if os.environ.get("USE_TF", "0") == "1":
         return "TF"
     raise DependencyError("At least one of the env variables USE_TORCH or USE_TF must be set.")
 
@@ -251,11 +257,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        if os.environ.get("DD_USE_TF"):
-            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-        if os.environ.get("DD_USE_TORCH"):
-            return [get_pytorch_requirement(), get_doctr_requirement()]
-        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextlineDetector")
+        return _get_doctr_requirements()
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.architecture, self.path_weights, self.categories, self.device, self.lib)
@@ -360,7 +362,7 @@ class DoctrTextRecognizer(TextRecognizer):
             self.device = get_torch_device(device)
 
         self.path_config_json = path_config_json
-        self.doctr_predictor = self.build_model(self.architecture, self.path_config_json)
+        self.doctr_predictor = self.build_model(self.architecture, self.lib, self.path_config_json)
         self.load_model(self.path_weights, self.doctr_predictor, self.device, self.lib)
         self.doctr_predictor = self.get_wrapped_model(
             self.architecture, self.path_weights, self.device, self.lib, self.path_config_json
@@ -379,11 +381,7 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
-        if tf_available():
-            return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-        if pytorch_available():
-            return [get_pytorch_requirement(), get_doctr_requirement()]
-        raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
+        return _get_doctr_requirements()
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.architecture, self.path_weights, self.device, self.lib)
@@ -396,7 +394,8 @@ class DoctrTextRecognizer(TextRecognizer):
         _load_model(path_weights, doctr_predictor, device, lib)
 
     @staticmethod
-    def build_model(architecture: str, path_config_json: Optional[str] = None) -> "RecognitionPredictor":
+    def build_model(architecture: str, lib: Literal["TF", "PT"],
+                    path_config_json: Optional[str] = None) -> "RecognitionPredictor":
         """Building the model"""
 
         # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py
@@ -426,7 +425,7 @@ class DoctrTextRecognizer(TextRecognizer):
                 raise ValueError(f"unknown architecture: {type(architecture)}")
             model = architecture
 
-        input_shape = model.cfg["input_shape"][:2] if tf_available() else model.cfg["input_shape"][-2:]
+        input_shape = model.cfg["input_shape"][:2] if lib == "TF" else model.cfg["input_shape"][-2:]
         return RecognitionPredictor(PreProcessor(input_shape, preserve_aspect_ratio=True, **recognition_configs), model)
 
     @staticmethod
@@ -450,7 +449,7 @@ class DoctrTextRecognizer(TextRecognizer):
         a model trained on custom vocab.
         :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
         """
-        doctr_predictor = DoctrTextRecognizer.build_model(architecture, path_config_json)
+        doctr_predictor = DoctrTextRecognizer.build_model(architecture, lib, path_config_json)
         DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device, lib)
         return doctr_predictor
 
