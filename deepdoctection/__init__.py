@@ -423,27 +423,7 @@ _IMPORT_STRUCTURE = {
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
 
-if os.environ.get("PYTORCH_AVAILABLE") and os.environ.get("DD_USE_TORCH") is None:
-    os.environ["DD_USE_TORCH"] = "1"
-    os.environ["USE_TORCH"] = "1"
-if os.environ.get("TENSORFLOW_AVAILABLE") and os.environ.get("DD_USE_TF") is None:
-    os.environ["DD_USE_TF"] = "1"
-    os.environ["USE_TF"] = "1"
-if os.environ.get("DD_USE_TORCH") and os.environ.get("DD_USE_TF"):
-    logger.warning(
-        "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
-        "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
-    )
-    os.environ.pop("DD_USE_TF")
-    os.environ.pop("USE_TF")
 
-if not os.environ.get("PYTORCH_AVAILABLE") and not os.environ.get("TENSORFLOW_AVAILABLE"):
-    logger.warning(
-        LoggingRecord(
-            msg="Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
-            "model from the library."
-        )
-    )
 
 
 # Direct imports for type-checking
