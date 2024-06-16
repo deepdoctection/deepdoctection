@@ -431,7 +431,7 @@ def get_dd_analyzer(
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if os.environ.get("DD_USE_TF") else "PT"
+    lib = "TF" if os.environ.get("DD_USE_TF", "0") == "1" else "PT"
     if lib == "TF":
         device = get_tf_device()
     elif lib == "PT":
