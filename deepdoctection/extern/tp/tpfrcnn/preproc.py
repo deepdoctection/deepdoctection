@@ -16,7 +16,7 @@ import numpy as np
 from lazy_imports import try_import
 
 from ....datapoint.convert import box_to_point4, point4_to_box
-from ....utils.detection_types import ImageType, JsonDict
+from ....utils._types import ImageType, JsonDict
 from ....utils.error import MalformedData
 from ....utils.logger import log_once
 from .common import filter_boxes_inside_shape, np_iou

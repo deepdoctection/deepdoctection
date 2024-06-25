@@ -26,7 +26,7 @@ from pytest import fixture
 
 from deepdoctection.datapoint import BoundingBox, convert_np_array_to_b64
 from deepdoctection.utils import get_uuid
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 
 
 @dataclass

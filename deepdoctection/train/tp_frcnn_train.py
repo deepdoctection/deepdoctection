@@ -42,7 +42,7 @@ from ..mapper.maputils import LabelSummarizer
 from ..mapper.tpstruct import image_to_tp_frcnn_training
 from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.file_utils import set_mp_spawn
 from ..utils.fs import get_load_image_func
 from ..utils.logger import log_once

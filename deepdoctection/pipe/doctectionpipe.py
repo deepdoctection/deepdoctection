@@ -28,7 +28,7 @@ from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..mapper.misc import to_image
-from ..utils.detection_types import Pathlike
+from ..utils._types import Pathlike
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType

@@ -33,7 +33,7 @@ from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent
 from .registry import pipeline_component_registry

@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple,
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils.detection_types import JsonDict, Requirement
+from ..utils._types import JsonDict, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import (
     BioTag,

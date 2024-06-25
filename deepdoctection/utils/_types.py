@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: detection_types.py
+# File: _types.py
 
 # Copyright 2021 Dr. Janis Meyer. All rights reserved.
 #
@@ -21,7 +21,7 @@ Typing sheet for the whole package
 
 import queue
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union, TypeAlias
 
 import numpy.typing as npt
 import tqdm
@@ -53,16 +53,15 @@ if TYPE_CHECKING:
     QueueType = queue.Queue[Any]  # pylint: disable=E1136
     TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
     BaseExceptionType = Type[BaseException]
+
 else:
     BaseExceptionType = bool
     QueueType = queue.Queue
     TqdmType = tqdm.tqdm
 
-JsonDict = Dict[str, Any]
-
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
+PackageAvailable: TypeAlias = bool
+
 Requirement = Tuple[str, bool, str]
 
-# Pathlike, use this typing for everything where a path (absolute/relative) is involved
-Pathlike = Union[str, Path]

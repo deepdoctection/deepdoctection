@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.mapper.pascalstruct import pascal_voc_dict_to_image
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils._types import JsonDict
 
 from .data import IIITar13KJson
 

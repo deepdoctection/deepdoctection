@@ -23,7 +23,7 @@ from typing import Dict, Optional, Union
 
 from tqdm import tqdm
 
-from .detection_types import TqdmType
+from ._types import TqdmType
 
 __all__ = ["get_tqdm", "get_tqdm_default_kwargs"]
 

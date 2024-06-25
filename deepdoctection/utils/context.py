@@ -30,7 +30,7 @@ from typing import Any, Generator, Iterator, Optional, Tuple, Union
 
 import numpy as np
 
-from .detection_types import ImageType
+from ._types import ImageType
 from .logger import LoggingRecord, logger
 from .viz import viz_handler
 
