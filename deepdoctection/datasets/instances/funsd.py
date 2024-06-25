@@ -41,7 +41,7 @@ from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
-from ...utils.detection_types import JsonDict, Pathlike
+from ...utils._types import JsonDict, Pathlike
 from ...utils.fs import load_json
 from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from ..base import _BuiltInDataset

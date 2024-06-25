@@ -31,7 +31,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 
 with try_import() as pt_import_guard:

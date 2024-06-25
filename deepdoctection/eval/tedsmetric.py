@@ -25,7 +25,7 @@ from lazy_imports import try_import
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datapoint.view import Page
 from ..datasets.base import DatasetCategories
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType

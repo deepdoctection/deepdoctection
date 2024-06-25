@@ -24,7 +24,7 @@ from typing import Any, Dict, Mapping, Optional, Union
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
-from deepdoctection.utils.detection_types import ImageType, JsonDict
+from deepdoctection.utils._types import ImageType, JsonDict
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
 
 from .data import (

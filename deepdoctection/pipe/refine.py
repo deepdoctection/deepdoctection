@@ -32,7 +32,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import PipelineComponent

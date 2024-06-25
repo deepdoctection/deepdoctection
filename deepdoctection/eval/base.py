@@ -24,7 +24,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.error import DependencyError
 from ..utils.file_utils import Requirement
 

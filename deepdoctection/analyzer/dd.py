@@ -50,7 +50,7 @@ from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
-from ..utils.detection_types import Pathlike
+from ..utils._types import Pathlike
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p

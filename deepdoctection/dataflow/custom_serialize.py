@@ -31,7 +31,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.context import timed_operation
-from ..utils.detection_types import JsonDict, Pathlike
+from ..utils._types import JsonDict, Pathlike
 from ..utils.error import FileExtensionError
 from ..utils.identifier import get_uuid_from_str
 from ..utils.pdf_utils import PDFStreamer

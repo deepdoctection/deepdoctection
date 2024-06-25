@@ -43,7 +43,7 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
-from ...utils.detection_types import JsonDict
+from ...utils._types import JsonDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType

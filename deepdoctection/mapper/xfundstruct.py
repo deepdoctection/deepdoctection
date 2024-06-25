@@ -25,7 +25,7 @@ from itertools import chain
 from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import (
     BioTag,

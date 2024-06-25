@@ -31,7 +31,7 @@ from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
-from .detection_types import ImageType, Pathlike
+from ._types import ImageType, Pathlike
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger

@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 from deepdoctection.utils.file_utils import pytorch_available, transformers_available
 from deepdoctection.utils.settings import ObjectTypes
 

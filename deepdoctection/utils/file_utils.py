@@ -21,7 +21,7 @@ from typing import Any, Tuple, Union, no_type_check
 import importlib_metadata
 from packaging import version
 
-from .detection_types import Requirement
+from ._types import Requirement
 from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict

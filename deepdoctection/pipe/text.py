@@ -25,7 +25,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
-from ..utils.detection_types import ImageType, JsonDict
+from ..utils._types import ImageType, JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, WordType, get_type
 from .base import PredictorPipelineComponent
