@@ -28,7 +28,7 @@ from ..dataflow import CacheData, CustomDataFromList, MapData, RepeatedData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
-from ..utils.detection_types import DP, JsonDict
+from ..utils._types import DP, JsonDict
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import DatasetType, LayoutType, ObjectTypes, PageType, WordType
 from ..utils.tqdm import get_tqdm

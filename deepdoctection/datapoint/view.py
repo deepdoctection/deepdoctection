@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Typ
 
 import numpy as np
 
-from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils._types import ImageType, JsonDict, Pathlike
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (

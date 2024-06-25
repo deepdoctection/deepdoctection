@@ -26,7 +26,7 @@ from pytest import mark
 
 from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper import image_to_prodigy, prodigy_to_image
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils._types import JsonDict
 
 from .data import DatapointImage, DatapointProdigy
 

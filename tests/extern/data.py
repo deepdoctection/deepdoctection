@@ -19,7 +19,7 @@
 Some data samples in a separate module
 """
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils._types import JsonDict
 from deepdoctection.utils.settings import CellType, LayoutType
 
 PDF_BYTES = (

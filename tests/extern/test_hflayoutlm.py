@@ -33,7 +33,7 @@ from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltTokenClassifier,
 )
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils._types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
 

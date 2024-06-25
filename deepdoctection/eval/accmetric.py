@@ -32,7 +32,7 @@ from termcolor import colored
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.file_utils import Requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type

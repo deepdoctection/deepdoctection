@@ -27,7 +27,7 @@ from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import JsonDict, Requirement
+from ..utils._types import JsonDict, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
 from .base import LMSequenceClassifier, SequenceClassResult

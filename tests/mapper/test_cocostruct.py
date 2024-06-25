@@ -29,7 +29,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import Image
 from deepdoctection.mapper import coco_to_image, image_to_coco
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils._types import JsonDict
 
 from .conftest import get_coco_white_image
 from .data import DatapointCoco, DatapointImage

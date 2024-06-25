@@ -26,7 +26,7 @@ from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.settings import ObjectTypes
 from .maputils import curry
 

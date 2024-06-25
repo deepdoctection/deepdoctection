@@ -29,7 +29,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Union, no
 import numpy as np
 from numpy import uint8
 
-from ..utils.detection_types import ImageType, JsonDict, Pathlike
+from ..utils._types import ImageType, JsonDict, Pathlike
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type

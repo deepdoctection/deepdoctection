@@ -28,7 +28,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from .detection_types import ImageType
+from ._types import ImageType
 from .viz import viz_handler
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]

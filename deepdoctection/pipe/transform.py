@@ -22,7 +22,7 @@ on images (e.g. deskew, de-noising or more general GAN like operations.
 
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from .base import ImageTransformPipelineComponent
 from .registry import pipeline_component_registry
 

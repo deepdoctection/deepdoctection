@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 from packaging.version import InvalidVersion, Version, parse
 
 from ..utils.context import save_tmp_file, timeout_manager
-from ..utils.detection_types import ImageType, Requirement
+from ..utils._types import ImageType, Requirement
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml

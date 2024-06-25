@@ -41,7 +41,7 @@ from typing import Any, Dict, Optional, Union, no_type_check
 
 from termcolor import colored
 
-from .detection_types import Pathlike
+from ._types import Pathlike
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 

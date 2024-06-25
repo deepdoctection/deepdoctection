@@ -37,7 +37,7 @@ from ..extern.base import DetectionResult
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 

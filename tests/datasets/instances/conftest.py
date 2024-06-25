@@ -23,7 +23,7 @@ from typing import Optional
 
 import numpy as np
 
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 
 
 def get_white_image(path: str) -> Optional[ImageType]:

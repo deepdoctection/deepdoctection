@@ -28,7 +28,7 @@ from zipfile import ZipFile
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils._types import ImageType, Requirement
 from ..utils.error import DependencyError
 from ..utils.file_utils import (
     get_doctr_requirement,

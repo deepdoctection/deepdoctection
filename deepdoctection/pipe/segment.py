@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType
 from .base import PipelineComponent
