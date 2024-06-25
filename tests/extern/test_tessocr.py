@@ -29,7 +29,7 @@ from deepdoctection.extern.tessocr import (
     TesseractRotationTransformer,
     tesseract_line_to_detectresult,
 )
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 from deepdoctection.utils.error import DependencyError
 from tests.data import Annotations
 

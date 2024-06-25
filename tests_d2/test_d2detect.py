@@ -27,7 +27,7 @@ from pytest import mark, raises
 from deepdoctection.utils.file_utils import pytorch_available, detectron2_available
 
 from deepdoctection.extern.d2detect import D2FrcnnDetector
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 from deepdoctection.utils.settings import ObjectTypes
 
 

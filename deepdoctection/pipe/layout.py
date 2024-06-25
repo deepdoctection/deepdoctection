@@ -26,7 +26,7 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent

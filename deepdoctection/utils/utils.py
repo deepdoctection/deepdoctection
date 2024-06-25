@@ -27,7 +27,7 @@ from typing import Any, Callable, Dict, List, Sequence, Set, Union
 
 import numpy as np
 
-from .detection_types import Pathlike
+from ._types import Pathlike
 
 
 def delete_keys_from_dict(

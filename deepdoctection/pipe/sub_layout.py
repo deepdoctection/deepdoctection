@@ -28,7 +28,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from ..utils.detection_types import ImageType, JsonDict
+from ..utils._types import ImageType, JsonDict
 from ..utils.settings import ObjectTypes, Relationships
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent

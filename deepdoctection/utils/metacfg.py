@@ -24,7 +24,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from .detection_types import Pathlike
+from ._types import Pathlike
 
 
 # Copyright (c) Tensorpack Contributors

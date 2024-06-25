@@ -29,7 +29,7 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import re_assign_cat_ids
 from ..mapper.cocostruct import image_to_coco
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
 from .base import MetricBase
 from .registry import metric_registry

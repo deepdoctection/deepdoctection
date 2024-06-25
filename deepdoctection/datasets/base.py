@@ -33,7 +33,7 @@ import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image
-from ..utils.detection_types import Pathlike
+from ..utils._types import Pathlike
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder

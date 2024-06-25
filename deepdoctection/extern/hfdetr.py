@@ -26,7 +26,7 @@ from typing import List, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils._types import ImageType, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr, get_type
 from .base import DetectionResult, ObjectDetector

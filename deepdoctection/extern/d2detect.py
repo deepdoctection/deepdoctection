@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils._types import ImageType, Requirement
 from ..utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type

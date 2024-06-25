@@ -31,7 +31,7 @@ import tqdm
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..utils.context import timed_operation
-from ..utils.detection_types import JsonDict, QueueType, TqdmType
+from ..utils._types import JsonDict, QueueType, TqdmType
 from ..utils.tqdm import get_tqdm
 from .base import PipelineComponent
 from .common import ImageParsingService, PageParsingService

@@ -24,7 +24,7 @@ from copy import copy
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Union
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils._types import ImageType, Requirement
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type

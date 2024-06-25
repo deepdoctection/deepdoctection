@@ -47,7 +47,7 @@ from ...datasets.info import DatasetInfo
 from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
-from ...utils.detection_types import JsonDict
+from ...utils._types import JsonDict
 from ...utils.file_utils import lxml_available
 from ...utils.fs import get_package_path
 from ...utils.settings import DatasetType, LayoutType

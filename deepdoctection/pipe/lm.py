@@ -26,7 +26,7 @@ from typing import Any, Callable, List, Literal, Optional, Sequence, Union
 from ..datapoint.image import Image
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
-from ..utils.detection_types import JsonDict
+from ..utils._types import JsonDict
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
 from .base import LanguageModelPipelineComponent
 from .registry import pipeline_component_registry

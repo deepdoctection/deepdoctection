@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
     merge_boxes,
     rescale_coords,
 )
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils._types import ImageType
 
 from .conftest import Box
 

@@ -28,7 +28,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
 
-from ..utils.detection_types import ImageType
+from ..utils._types import ImageType
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger

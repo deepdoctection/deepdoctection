@@ -37,7 +37,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from .detection_types import ImageType
+from ._types import ImageType
 from .env_info import auto_select_viz_library
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
