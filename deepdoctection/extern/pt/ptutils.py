@@ -25,6 +25,8 @@ from typing import Optional, Union
 
 from lazy_imports import try_import
 
+from ...utils.env_info import ENV_VARS_TRUE
+
 with try_import() as import_guard:
     import torch
 
@@ -50,8 +52,8 @@ def get_torch_device(device: Optional[Union[str, torch.device]] = None) -> torch
             return device
         if isinstance(device, str):
             return torch.device(device)
-    if os.environ.get("USE_CUDA"):
+    if os.environ.get("USE_CUDA", "False") in ENV_VARS_TRUE:
         return torch.device("cuda")
-    if os.environ.get("USE_MPS"):
+    if os.environ.get("USE_MPS", "False") in ENV_VARS_TRUE:
         return torch.device("mps")
     return torch.device("cpu")

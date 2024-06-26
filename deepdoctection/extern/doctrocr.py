@@ -30,6 +30,7 @@ from lazy_imports import try_import
 
 from ..utils._types import ImageType, Requirement
 from ..utils.error import DependencyError
+from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.file_utils import (
     get_doctr_requirement,
     get_pytorch_requirement,
@@ -59,9 +60,9 @@ with try_import() as doctr_import_guard:
 
 
 def _get_doctr_requirements() -> List[Requirement]:
-    if os.environ.get("DD_USE_TF", "0") == "1":
+    if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
         return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-    if os.environ.get("DD_USE_TORCH", "0") == "1":
+    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
         return [get_pytorch_requirement(), get_doctr_requirement()]
     raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
@@ -91,9 +92,9 @@ def _load_model(
 
 def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
     """Auto select the DL library from environment variables"""
-    if os.environ.get("USE_TORCH", "0") == "1":
+    if os.environ.get("USE_TORCH", "0") in ENV_VARS_TRUE:
         return "PT"
-    if os.environ.get("USE_TF", "0") == "1":
+    if os.environ.get("USE_TF", "0") in ENV_VARS_TRUE:
         return "TF"
     raise DependencyError("At least one of the env variables USE_TORCH or USE_TF must be set.")
 
@@ -252,8 +253,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
-        return detection_results
+        return  doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:

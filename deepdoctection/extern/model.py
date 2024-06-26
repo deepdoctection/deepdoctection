@@ -1055,7 +1055,7 @@ class ModelDownloadManager:
     @staticmethod
     def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str, force_download: bool = False) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
-        token = os.environ.get("HF_CREDENTIALS")
+        token = os.environ.get("HF_CREDENTIALS", None)
         f_path = cached_download(
             url,
             cache_dir=cache_directory,

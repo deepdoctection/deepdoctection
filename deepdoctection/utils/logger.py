@@ -25,7 +25,6 @@ Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 `STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
 """
 
-import ast
 import errno
 import functools
 import json
@@ -42,6 +41,7 @@ from typing import Any, Dict, Optional, Union, no_type_check
 from termcolor import colored
 
 from ._types import Pathlike
+from .env_info import ENV_VARS_TRUE
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
@@ -66,7 +66,7 @@ class LoggingRecord:
 class CustomFilter(logging.Filter):
     """A custom filter"""
 
-    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
 
     def filter(self, record: logging.LogRecord) -> bool:
         if self.filter_third_party_lib:
@@ -79,7 +79,7 @@ class CustomFilter(logging.Filter):
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
-    std_out_verbose = ast.literal_eval(os.environ.get("STD_OUT_VERBOSE", "False"))
+    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False") in ENV_VARS_TRUE
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
@@ -109,7 +109,7 @@ class StreamFormatter(logging.Formatter):
 class FileFormatter(logging.Formatter):
     """A custom formatter to produce a loggings in json format"""
 
-    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
@@ -145,7 +145,7 @@ _CONFIG_DICT: Dict[str, Any] = {
     "root": {
         "handlers": ["streamhandler"],
         "level": os.environ.get("LOG_LEVEL", "INFO"),
-        "propagate": ast.literal_eval(os.environ.get("LOG_PROPAGATE", "False")),
+        "propagate": os.environ.get("LOG_PROPAGATE", "False") in ENV_VARS_TRUE,
     },
 }
 

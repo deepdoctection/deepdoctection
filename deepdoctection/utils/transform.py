@@ -21,6 +21,8 @@ of coordinates. Most have the ideas have been taken from
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/transform.py> .
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Literal, Optional, Union
 
@@ -214,6 +216,6 @@ class PadTransform(BaseTransform):
             coords[:, 1] = np.maximum(coords[:, 1] - self.top, np.zeros(coords[:, 1].shape))
         return coords
 
-    def clone(self) -> "PadTransform":
+    def clone(self) -> PadTransform:
         """clone"""
         return self.__class__(self.top, self.right, self.bottom, self.left, self.mode)

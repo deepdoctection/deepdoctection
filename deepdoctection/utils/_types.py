@@ -59,9 +59,11 @@ else:
     QueueType = queue.Queue
     TqdmType = tqdm.tqdm
 
+JsonDict = Dict[str, Any]
+
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
 PackageAvailable: TypeAlias = bool
 
 Requirement = Tuple[str, bool, str]
-
+Pathlike = Union[str, Path]
