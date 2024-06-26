@@ -18,10 +18,11 @@
 """
 Typing sheet for the whole package
 """
+from __future__ import annotations
 
 import queue
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union, NewType
+from typing import TYPE_CHECKING, Any, Protocol, Tuple, Type, TypeVar
 from typing_extensions import TypeAlias
 import numpy.typing as npt
 import tqdm
@@ -34,11 +35,11 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
     type hint for general dataclass
     """
 
-    __dataclass_fields__: Dict[Any, Any]
+    __dataclass_fields__: dict[Any, Any]
 
 
 # Type for category dict of the DatasetCategories class
-KeyValue = Union[str, int]
+KeyValue = str | int
 
 # Numpy image type
 ImageType = npt.NDArray[uint8]
@@ -59,7 +60,7 @@ else:
     QueueType = queue.Queue
     TqdmType = tqdm.tqdm
 
-JsonDict = Dict[str, Any]
+JsonDict = dict[str, Any]
 
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
@@ -67,4 +68,4 @@ PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
 Requirement = Tuple[str, PackageAvailable, ErrorMsg]
 
-Pathlike = Union[str, Path]
+Pathlike = str | Path
