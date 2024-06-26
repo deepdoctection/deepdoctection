@@ -64,6 +64,7 @@ JsonDict = Dict[str, Any]
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
 PackageAvailable: TypeAlias = bool
+ErrorMsg: TypeAlias = str
 
-Requirement = Tuple[str, bool, str]
+Requirement = Tuple[str, PackageAvailable, ErrorMsg]
 Pathlike = Union[str, Path]
