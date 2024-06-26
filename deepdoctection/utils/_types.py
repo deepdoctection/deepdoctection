@@ -18,10 +18,11 @@
 """
 Typing sheet for the whole package
 """
-from __future__ import annotations
 
+from pathlib import Path
 import queue
-from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar
+
+from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union
 from typing_extensions import TypeAlias
 import numpy.typing as npt
 import tqdm
@@ -64,4 +65,4 @@ PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
 Requirement = tuple[str, PackageAvailable, ErrorMsg]
 
-Pathlike = 'str | Path'
+Pathlike = Union[str,Path]
