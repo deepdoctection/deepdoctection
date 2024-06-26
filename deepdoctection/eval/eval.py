@@ -37,7 +37,7 @@ from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineCompone
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils._types import ImageType
+from ..utils._types import PixelValues
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
 from ..utils.viz import interactive_imshow
@@ -274,7 +274,7 @@ class Evaluator:
 
         return df_pr
 
-    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[ImageType, None, None]:
+    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[PixelValues, None, None]:
         """
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.

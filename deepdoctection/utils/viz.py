@@ -36,7 +36,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from ._types import ImageType
+from ._types import PixelValues
 from .env_info import auto_select_viz_library, ENV_VARS_TRUE
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
@@ -198,14 +198,14 @@ def random_color(rgb: bool = True, maximum: int = 255) -> Tuple[int, int, int]:
 
 
 def draw_boxes(
-    np_image: ImageType,
+    np_image: PixelValues,
     boxes: npt.NDArray[float32],
     category_names_list: Optional[List[Optional[str]]] = None,
     color: Optional[Tuple[int, int, int]] = None,
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
     box_color_by_category: bool = True,
-) -> ImageType:
+) -> PixelValues:
     """
     Dray bounding boxes with category names into image.
 
@@ -279,7 +279,7 @@ def draw_boxes(
 
 
 @no_type_check
-def interactive_imshow(img: ImageType) -> None:
+def interactive_imshow(img: PixelValues) -> None:
     """
     Display an image in a pop-up window
 
@@ -386,7 +386,7 @@ class VizPackageHandler:
         package = self._select_package()
         self._set_vars(package)
 
-    def read_image(self, path: str) -> ImageType:
+    def read_image(self, path: str) -> PixelValues:
         """Reading an image from file and returning a np.array
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -394,16 +394,16 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["read_image"])(path)
 
     @staticmethod
-    def _cv2_read_image(path: str) -> ImageType:
+    def _cv2_read_image(path: str) -> PixelValues:
         return cv2.imread(path, cv2.IMREAD_COLOR)
 
     @staticmethod
-    def _pillow_read_image(path: str) -> ImageType:
+    def _pillow_read_image(path: str) -> PixelValues:
         with Image.open(path).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
-    def write_image(self, path: str, image: ImageType) -> None:
+    def write_image(self, path: str, image: PixelValues) -> None:
         """Writing an image as np.array to a file.
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -412,15 +412,15 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["write_image"])(path, image)
 
     @staticmethod
-    def _cv2_write_image(path: str, image: ImageType) -> None:
+    def _cv2_write_image(path: str, image: PixelValues) -> None:
         cv2.imwrite(path, image)
 
     @staticmethod
-    def _pillow_write_image(path: str, image: ImageType) -> None:
+    def _pillow_write_image(path: str, image: PixelValues) -> None:
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
         pil_image.save(path)
 
-    def encode(self, np_image: ImageType) -> bytes:
+    def encode(self, np_image: PixelValues) -> bytes:
         """Converting an image as np.array into a b64 representation
 
         :param np_image: Image as np.array
@@ -428,19 +428,19 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["encode"])(np_image)
 
     @staticmethod
-    def _cv2_encode(np_image: ImageType) -> bytes:
+    def _cv2_encode(np_image: PixelValues) -> bytes:
         np_encode = cv2.imencode(".png", np_image)
         b_image = np_encode[1].tobytes()
         return b_image
 
     @staticmethod
-    def _pillow_encode(np_image: ImageType) -> bytes:
+    def _pillow_encode(np_image: PixelValues) -> bytes:
         buffered = BytesIO()
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.save(buffered, format="PNG")
         return buffered.getvalue()
 
-    def convert_np_to_b64(self, image: ImageType) -> str:
+    def convert_np_to_b64(self, image: PixelValues) -> str:
         """Converting an image given as np.array into a b64 encoded string
 
         :param image: Image as np.array
@@ -448,18 +448,18 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["convert_np_to_b64"])(image)
 
     @staticmethod
-    def _cv2_convert_np_to_b64(image: ImageType) -> str:
+    def _cv2_convert_np_to_b64(image: PixelValues) -> str:
         np_encode = cv2.imencode(".png", image)
         return base64.b64encode(np_encode[1]).decode("utf-8")  # type: ignore
 
     @staticmethod
-    def _pillow_convert_np_to_b64(np_image: ImageType) -> str:
+    def _pillow_convert_np_to_b64(np_image: PixelValues) -> str:
         buffered = BytesIO()
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-    def convert_b64_to_np(self, image: str) -> ImageType:
+    def convert_b64_to_np(self, image: str) -> PixelValues:
         """
         Converting an image as b64 encoded string into np.array
 
@@ -469,19 +469,19 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["convert_b64_to_np"])(image)
 
     @staticmethod
-    def _cv2_convert_b64_to_np(image: str) -> ImageType:
+    def _cv2_convert_b64_to_np(image: str) -> PixelValues:
         np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
         np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
         return np_array.astype(uint8)
 
     @staticmethod
-    def _pillow_convert_b64_to_np(image: str) -> ImageType:
+    def _pillow_convert_b64_to_np(image: str) -> PixelValues:
         array = base64.b64decode(image)
         im_file = BytesIO(array)
         pil_image = Image.open(im_file)
         return np.array(pil_image)[:, :, ::-1]
 
-    def resize(self, image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
+    def resize(self, image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
         """
         Resize a given image to new width, height. Specifying an interpolation method is required. Depending on the
         chosen image library use one of the following:
@@ -498,7 +498,7 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["resize"])(image, width, height, interpolation)
 
     @staticmethod
-    def _cv2_resize(image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
+    def _cv2_resize(image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
         intpol_method_dict = {
             "INTER_NEAREST": cv2.INTER_NEAREST,
             "INTER_LINEAR": cv2.INTER_LINEAR,
@@ -508,7 +508,7 @@ class VizPackageHandler:
         return cv2.resize(image, (width, height), interpolation=intpol_method_dict[interpolation])
 
     @staticmethod
-    def _pillow_resize(image: ImageType, width: int, height: int, interpolation: str) -> ImageType:
+    def _pillow_resize(image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
         intpol_method_dict = {
             "NEAREST": Image.Resampling.NEAREST,
             "BOX": Image.Resampling.BOX,
@@ -540,8 +540,8 @@ class VizPackageHandler:
         return width, height
 
     def draw_rectangle(
-        self, np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Tuple[int, int, int], thickness: int
-    ) -> ImageType:
+        self, np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Tuple[int, int, int], thickness: int
+    ) -> PixelValues:
         """
         Drawing a rectangle into an image with a given color (b,g,r) and given thickness.
 
@@ -555,15 +555,15 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_draw_rectangle(
-        np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
-    ) -> ImageType:
+        np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+    ) -> PixelValues:
         cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=thickness)
         return np_image
 
     @staticmethod
     def _pillow_draw_rectangle(
-        np_image: ImageType, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
-    ) -> ImageType:
+        np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+    ) -> PixelValues:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         draw = ImageDraw.Draw(pil_image)
         draw.rectangle(box, outline=color, width=thickness)  # type: ignore
@@ -572,13 +572,13 @@ class VizPackageHandler:
 
     def draw_text(
         self,
-        np_image: ImageType,
+        np_image: PixelValues,
         pos: Tuple[Any, Any],
         text: str,
         color: Tuple[int, int, int],
         font_scale: float,
         rectangle_thickness: int = 1,
-    ) -> ImageType:
+    ) -> PixelValues:
         """
         Drawing a text into a numpy image. The result will differ between PIL and CV2 (and will not look that good when
         using PIL).
@@ -597,13 +597,13 @@ class VizPackageHandler:
 
     def _cv2_draw_text(
         self,
-        np_image: ImageType,
+        np_image: PixelValues,
         pos: Tuple[Any, Any],
         text: str,
         color: Tuple[int, int, int],
         font_scale: float,
         rectangle_thickness: int,
-    ) -> ImageType:
+    ) -> PixelValues:
         """
         Draw text on an image.
 
@@ -641,13 +641,13 @@ class VizPackageHandler:
 
     @staticmethod
     def _pillow_draw_text(
-        np_image: ImageType,
+        np_image: PixelValues,
         pos: Tuple[Any, Any],
         text: str,
         color: Tuple[int, int, int],  # pylint: disable=W0613
         font_scale: float,  # pylint: disable=W0613
         rectangle_thickness: int,  # pylint: disable=W0613
-    ) -> ImageType:
+    ) -> PixelValues:
         """Draw a text in an image using PIL."""
         # using PIL default font size that does not scale to larger image sizes.
         # Compare with https://github.com/python-pillow/Pillow/issues/6622
@@ -656,11 +656,11 @@ class VizPackageHandler:
         draw.text(pos, text, fill=(0, 0, 0), anchor="lb")
         return np.array(pil_image)[:, :, ::-1]
 
-    def interactive_imshow(self, np_image: ImageType) -> None:
+    def interactive_imshow(self, np_image: PixelValues) -> None:
         """Displaying an image in a separate window"""
         return getattr(self, self.pkg_func_dict["interactive_imshow"])(np_image)
 
-    def _cv2_interactive_imshow(self, np_image: ImageType) -> None:
+    def _cv2_interactive_imshow(self, np_image: PixelValues) -> None:
         """
         Display an image in a pop-up window
 
@@ -688,17 +688,17 @@ class VizPackageHandler:
             self._cv2_interactive_imshow(np_image)
 
     @staticmethod
-    def _pillow_interactive_imshow(np_image: ImageType) -> None:
+    def _pillow_interactive_imshow(np_image: PixelValues) -> None:
         name = "q, x: quit / s: save"
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.show(name)
 
-    def rotate_image(self, np_image: ImageType, angle: int) -> ImageType:
+    def rotate_image(self, np_image: PixelValues, angle: int) -> PixelValues:
         """Rotating an image by some angle"""
         return getattr(self, self.pkg_func_dict["rotate_image"])(np_image, angle)
 
     @staticmethod
-    def _cv2_rotate_image(np_image: ImageType, angle: float) -> ImageType:
+    def _cv2_rotate_image(np_image: PixelValues, angle: float) -> PixelValues:
         # copy & paste from https://stackoverflow.com/questions/43892506
         # /opencv-python-rotate-image-without-cropping-sides
 
@@ -727,7 +727,7 @@ class VizPackageHandler:
         return np_image
 
     @staticmethod
-    def _pillow_rotate_image(np_image: ImageType, angle: int) -> ImageType:
+    def _pillow_rotate_image(np_image: PixelValues, angle: int) -> PixelValues:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image_rotated = pil_image.rotate(angle, expand=True)
         return np.array(pil_image_rotated)[:, :, ::-1]

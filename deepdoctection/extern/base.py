@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
-from ..utils._types import ImageType, JsonDict, Requirement
+from ..utils._types import PixelValues, JsonDict, Requirement
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
@@ -140,7 +140,7 @@ class ObjectDetector(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Abstract method predict
         """
@@ -219,7 +219,7 @@ class TextRecognizer(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
+    def predict(self, images: List[Tuple[str, PixelValues]]) -> List[DetectionResult]:
         """
         Abstract method predict
         """
@@ -414,14 +414,14 @@ class ImageTransformer(PredictorBase):
     """
 
     @abstractmethod
-    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Abstract method transform
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def predict(self, np_img: ImageType) -> DetectionResult:
+    def predict(self, np_img: PixelValues) -> DetectionResult:
         """
         Abstract method predict
         """

@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.utils._types import ImageType, JsonDict
+from deepdoctection.utils._types import PixelValues, JsonDict
 from deepdoctection.utils.settings import (
     BioTag,
     CellType,
@@ -679,7 +679,7 @@ class DatapointCoco:
     }
     first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
 
-    def get_white_image(self, path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+    def get_white_image(self, path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
         """
         white image
         :return: np.array
@@ -740,7 +740,7 @@ class DatapointPubtabnet:
     white_image = np.ones((1334, 996, 3), dtype=np.uint8) * 255
     white_image_string = convert_np_array_to_b64(white_image)  # type: ignore
 
-    def get_white_image(self, path: str, type_id: str = "np") -> Union[str, ImageType]:
+    def get_white_image(self, path: str, type_id: str = "np") -> Union[str, PixelValues]:
         """
         white image
         :return: np.array
@@ -967,7 +967,7 @@ class DatapointImage:
 
     def __init__(self) -> None:
         self.image: Image = Image(file_name="sample.png", location="/to/path")
-        _img_np: ImageType = np.ones((34, 96, 3), dtype=np.int32) * 255  # type: ignore
+        _img_np: PixelValues = np.ones((34, 96, 3), dtype=np.int32) * 255  # type: ignore
         self.image.image = _img_np
         box = BoundingBox(ulx=2.6, uly=3.7, lrx=4.6, lry=5.7, absolute_coords=True)
         ann = ImageAnnotation(category_name="FOO", bounding_box=box, score=0.53, category_id="1")

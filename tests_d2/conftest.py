@@ -27,7 +27,7 @@ import numpy as np
 from pytest import fixture
 
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
-from deepdoctection.utils._types import ImageType
+from deepdoctection.utils._types import PixelValues
 
 from tests.test_utils import get_test_path
 
@@ -49,7 +49,7 @@ def fixture_categories() -> Dict[str, ObjectTypes]:
 
 
 @fixture(name="np_image")
-def fixture_np_image() -> ImageType:
+def fixture_np_image() -> PixelValues:
     """
     np_array image
     """

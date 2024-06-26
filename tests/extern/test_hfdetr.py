@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.hfdetr import HFDetrDerivedDetector
-from deepdoctection.utils._types import ImageType
+from deepdoctection.utils._types import PixelValues
 from deepdoctection.utils.file_utils import pytorch_available, transformers_available
 from deepdoctection.utils.settings import ObjectTypes
 
@@ -91,7 +91,7 @@ class TestHFDetrDerivedDetector:
     @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_model", MagicMock(return_value=MagicMock()))
     @patch("deepdoctection.extern.hfdetr.HFDetrDerivedDetector.get_pre_processor", MagicMock())
     @patch("deepdoctection.extern.hfdetr.PretrainedConfig.from_pretrained", MagicMock())
-    def test_hf_detr_predicts_image(detr_categories: Dict[str, ObjectTypes], np_image: ImageType) -> None:
+    def test_hf_detr_predicts_image(detr_categories: Dict[str, ObjectTypes], np_image: PixelValues) -> None:
         """
         D2 FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names
         """

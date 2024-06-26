@@ -23,7 +23,7 @@ from typing import List
 
 from lazy_imports import try_import
 
-from ..utils._types import ImageType, Requirement
+from ..utils._types import PixelValues, Requirement
 from ..utils.file_utils import get_jdeskew_requirement
 from ..utils.settings import PageType
 from ..utils.viz import viz_handler
@@ -44,7 +44,7 @@ class Jdeskewer(ImageTransformer):
         self.model_id = self.get_model_id()
         self.min_angle_rotation = min_angle_rotation
 
-    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Rotation of the image according to the angle determined by the jdeskew estimator.
 
@@ -61,7 +61,7 @@ class Jdeskewer(ImageTransformer):
             return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
         return np_img
 
-    def predict(self, np_img: ImageType) -> DetectionResult:
+    def predict(self, np_img: PixelValues) -> DetectionResult:
         """
         Predict the angle of the image to deskew it.
 

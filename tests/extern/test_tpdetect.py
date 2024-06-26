@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils._types import ImageType
+from deepdoctection.utils._types import PixelValues
 from deepdoctection.utils.file_utils import tensorpack_available, tf_available
 from deepdoctection.utils.settings import ObjectTypes
 
@@ -49,7 +49,7 @@ def set_num_gpu_to_one() -> int:
 
 
 def get_mock_detection_results(  # type: ignore
-    np_img: ImageType,  # pylint: disable=W0613
+    np_img: PixelValues,  # pylint: disable=W0613
     predictor,  # pylint: disable=W0613
     preproc_short_edge_size,  # pylint: disable=W0613
     preproc_max_size,  # pylint: disable=W0613
@@ -91,7 +91,7 @@ class TestTPFrcnnDetector:
     @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor.get_predictor", MagicMock())
     @patch("deepdoctection.extern.tpdetect.tp_predict_image", MagicMock(side_effect=get_mock_detection_results))
     def test_tp_frcnn_predicts_image(
-        path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes], np_image: ImageType
+        path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes], np_image: PixelValues
     ) -> None:
         """
         TP FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names

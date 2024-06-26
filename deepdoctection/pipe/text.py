@@ -25,7 +25,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
-from ..utils._types import ImageType, JsonDict
+from ..utils._types import PixelValues, JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, WordType, get_type
 from .base import PredictorPipelineComponent
@@ -164,7 +164,7 @@ class TextExtractionService(PredictorPipelineComponent):
 
     def get_predictor_input(
         self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
-    ) -> Optional[Union[bytes, ImageType, List[Tuple[str, ImageType]], int]]:
+    ) -> Optional[Union[bytes, PixelValues, List[Tuple[str, PixelValues]], int]]:
         """
         Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.

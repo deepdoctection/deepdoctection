@@ -27,7 +27,7 @@ from pytest import mark, raises
 from deepdoctection.utils.file_utils import pytorch_available, detectron2_available
 
 from deepdoctection.extern.d2detect import D2FrcnnDetector
-from deepdoctection.utils._types import ImageType
+from deepdoctection.utils._types import PixelValues
 from deepdoctection.utils.settings import ObjectTypes
 
 
@@ -78,7 +78,7 @@ class TestD2FrcnnDetector:
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._set_model", MagicMock(return_value=MagicMock))
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._instantiate_d2_predictor", MagicMock())
     def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,ObjectTypes],
-                                     np_image: ImageType)-> None:
+                                     np_image: PixelValues)-> None:
         """
         D2 FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names
         """

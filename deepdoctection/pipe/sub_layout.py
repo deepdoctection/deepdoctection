@@ -28,7 +28,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from ..utils._types import ImageType, JsonDict
+from ..utils._types import PixelValues, JsonDict
 from ..utils.settings import ObjectTypes, Relationships
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent
@@ -234,7 +234,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
             padder_clone,
         )
 
-    def prepare_np_image(self, sub_image_ann: ImageAnnotation) -> ImageType:
+    def prepare_np_image(self, sub_image_ann: ImageAnnotation) -> PixelValues:
         """Maybe crop and pad a np_array before passing it to the predictor.
 
         Note that we currently assume to a two level hierachy of images, e.g. we can crop a sub-image from the base

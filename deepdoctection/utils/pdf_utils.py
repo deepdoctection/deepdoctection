@@ -31,7 +31,7 @@ from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
-from ._types import ImageType, Pathlike
+from ._types import PixelValues, Pathlike
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
@@ -209,7 +209,7 @@ def _run_poppler(poppler_args: List[str]) -> None:
             raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> ImageType:
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.

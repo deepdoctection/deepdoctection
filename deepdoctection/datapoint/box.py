@@ -28,7 +28,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
 
-from ..utils._types import ImageType
+from ..utils._types import PixelValues
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger
@@ -398,8 +398,8 @@ def intersection_box(
 
 
 def crop_box_from_image(
-    np_image: ImageType, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
-) -> ImageType:
+    np_image: PixelValues, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> PixelValues:
     """
     Crop a box (the crop_box) from a np_image. Will floor the left  and ceil the right coordinate point.
 

@@ -21,8 +21,7 @@ Typing sheet for the whole package
 from __future__ import annotations
 
 import queue
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar
 from typing_extensions import TypeAlias
 import numpy.typing as npt
 import tqdm
@@ -38,18 +37,15 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
     __dataclass_fields__: dict[Any, Any]
 
 
-# Type for category dict of the DatasetCategories class
-KeyValue = str | int
-
 # Numpy image type
-ImageType = npt.NDArray[uint8]
+PixelValues = npt.NDArray[uint8]
 
 # typing for curry decorator
 DP = TypeVar("DP")
 S = TypeVar("S")
 T = TypeVar("T")
 
-# Some type hints that must be distinguished when runnning mypy and linters
+# Some type hints that must be distinguished when running mypy and linters
 if TYPE_CHECKING:
     QueueType = queue.Queue[Any]  # pylint: disable=E1136
     TqdmType = tqdm.tqdm[Any]  # pylint: disable=E1136
@@ -66,6 +62,6 @@ JsonDict = dict[str, Any]
 # available
 PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
-Requirement = Tuple[str, PackageAvailable, ErrorMsg]
+Requirement = tuple[str, PackageAvailable, ErrorMsg]
 
-Pathlike = str | Path
+Pathlike = 'str | Path'

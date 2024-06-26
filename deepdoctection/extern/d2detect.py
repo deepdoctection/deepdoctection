@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils._types import ImageType, Requirement
+from ..utils._types import PixelValues, Requirement
 from ..utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
@@ -67,7 +67,7 @@ def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agno
 
 
 def d2_predict_image(
-    np_img: ImageType,
+    np_img: PixelValues,
     predictor: nn.Module,
     resizer: InferenceResize,
     nms_thresh_class_agnostic: float,
@@ -103,7 +103,7 @@ def d2_predict_image(
 
 
 def d2_jit_predict_image(
-    np_img: ImageType, d2_predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
+    np_img: PixelValues, d2_predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
 ) -> List[DetectionResult]:
     """
     Run detection on an image using torchscript. It will also handle the preprocessing internally which
@@ -300,7 +300,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         checkpointer = DetectionCheckpointer(wrapped_model)
         checkpointer.load(path_weights)
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Prediction per image.
 
@@ -444,7 +444,7 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         cfg.update_args(config_overwrite)
         return cfg
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Prediction per image.
 

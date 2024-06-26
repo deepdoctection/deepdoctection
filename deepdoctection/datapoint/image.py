@@ -29,7 +29,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Union, no
 import numpy as np
 from numpy import uint8
 
-from ..utils._types import ImageType, JsonDict, Pathlike
+from ..utils._types import PixelValues, JsonDict, Pathlike
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
@@ -86,7 +86,7 @@ class Image:
     page_number: int = field(default=0, init=False, repr=False)
     external_id: Optional[Union[str, int]] = field(default=None, repr=False)
     _image_id: Optional[str] = field(default=None, init=False, repr=True)
-    _image: Optional[ImageType] = field(default=None, init=False, repr=False)
+    _image: Optional[PixelValues] = field(default=None, init=False, repr=False)
     _bbox: Optional[BoundingBox] = field(default=None, init=False, repr=False)
     embeddings: Dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
     annotations: List[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
@@ -128,14 +128,14 @@ class Image:
             raise UUIDError("image_id must be uuid3 string")
 
     @property
-    def image(self) -> Optional[ImageType]:
+    def image(self) -> Optional[PixelValues]:
         """
         image
         """
         return self._image
 
     @image.setter
-    def image(self, image: Optional[Union[str, ImageType, bytes]]) -> None:
+    def image(self, image: Optional[Union[str, PixelValues, bytes]]) -> None:
         """
         Sets the image for internal storage. Will convert to numpy array before storing internally.
         Note: If the input is an np.array, ensure that the image is in BGR-format as this is the standard
@@ -222,10 +222,10 @@ class Image:
             Helper class. Do not use it in your code.
             """
 
-            def __init__(self, img: Optional[ImageType]):
+            def __init__(self, img: Optional[PixelValues]):
                 self.img = img
 
-            def to_np_array(self) -> Optional[ImageType]:
+            def to_np_array(self) -> Optional[PixelValues]:
                 """
                 Returns image as numpy array
 

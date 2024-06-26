@@ -24,7 +24,7 @@ from typing import Any, Dict, Mapping, Optional, Union
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
-from deepdoctection.utils._types import ImageType, JsonDict
+from deepdoctection.utils._types import PixelValues, JsonDict
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
 
 from .data import (
@@ -55,7 +55,7 @@ def fixture_categories_coco() -> Mapping[str, ObjectTypes]:
     return DatapointCoco().categories
 
 
-def get_coco_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_coco_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -98,7 +98,7 @@ def fixture_pubtabnet_results() -> DatapointPubtabnet:
     return DatapointPubtabnet()
 
 
-def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -110,7 +110,7 @@ def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[
     return None
 
 
-def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -122,7 +122,7 @@ def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional
 
 def get_always_pubtabnet_white_image_from_bytes(
     pdf_bytes: str, dpi: Optional[int] = None
-) -> Optional[Union[str, ImageType]]:
+) -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     """

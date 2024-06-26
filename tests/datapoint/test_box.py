@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
     merge_boxes,
     rescale_coords,
 )
-from deepdoctection.utils._types import ImageType
+from deepdoctection.utils._types import PixelValues
 
 from .conftest import Box
 
@@ -178,7 +178,7 @@ def test_intersection_box_with_diff_abs_coords(
     assert output_box == expected_box
 
 
-def get_np_array_for_cropping() -> ImageType:
+def get_np_array_for_cropping() -> PixelValues:
     """
     numpy array for cropping
     """
@@ -220,11 +220,11 @@ def get_np_array_for_cropping() -> ImageType:
     ],
 )
 def test_crop_image(
-    np_image: ImageType,
+    np_image: PixelValues,
     crop_box: BoundingBox,
     width: Optional[float],
     height: Optional[float],
-    expected_np_array: ImageType,
+    expected_np_array: PixelValues,
 ) -> None:
     """
     Testing func: crop_image returns np_image coorectly

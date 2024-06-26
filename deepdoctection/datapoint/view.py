@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Typ
 
 import numpy as np
 
-from ..utils._types import ImageType, JsonDict, Pathlike
+from ..utils._types import PixelValues, JsonDict, Pathlike
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -79,7 +79,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
             bounding_box = bounding_box.transform(self.base_page.width, self.base_page.height, absolute_coords=True)
         return bounding_box.to_list(mode="xyxy")
 
-    def viz(self, interactive: bool = False) -> Optional[ImageType]:
+    def viz(self, interactive: bool = False) -> Optional[PixelValues]:
         """
         Display the annotation (without any sub-layout elements).
 
@@ -787,7 +787,7 @@ class Page(Image):
         ignore_default_token_class: bool = False,
         interactive: bool = False,
         **debug_kwargs: str,
-    ) -> Optional[ImageType]:
+    ) -> Optional[PixelValues]:
         """
         Display a page with detected bounding boxes of various types.
 
