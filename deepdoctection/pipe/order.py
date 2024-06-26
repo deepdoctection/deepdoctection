@@ -329,7 +329,7 @@ class OrderGenerator:
     @staticmethod
     def _make_column_detect_results(columns: Sequence[BoundingBox]) -> Sequence[DetectionResult]:
         column_detect_result_list = []
-        if os.environ.get("LOG_LEVEL") == "DEBUG":
+        if os.environ.get("LOG_LEVEL", "INFO") == "DEBUG":
             for box in columns:
                 column_detect_result_list.append(
                     DetectionResult(
