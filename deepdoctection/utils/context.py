@@ -30,7 +30,7 @@ from typing import Any, Generator, Iterator, Optional, Tuple, Union
 
 import numpy as np
 
-from ._types import ImageType
+from ._types import PixelValues
 from .logger import LoggingRecord, logger
 from .viz import viz_handler
 
@@ -72,7 +72,7 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
 
 
 @contextmanager
-def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[Tuple[str, str]]:
+def save_tmp_file(image: Union[str, PixelValues, bytes], prefix: str) -> Iterator[Tuple[str, str]]:
     """
     Save image temporarily and handle the clean-up once not necessary anymore
 

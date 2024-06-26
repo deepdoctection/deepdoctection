@@ -30,7 +30,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from ._types import ImageType
+from ._types import PixelValues
 from .viz import viz_handler
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]
@@ -47,7 +47,7 @@ class BaseTransform(ABC):
     """
 
     @abstractmethod
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         """The transformation that should be applied to the image"""
         raise NotImplementedError()
 
@@ -79,7 +79,7 @@ class ResizeTransform(BaseTransform):
         self.new_w = int(new_w)
         self.interp = interp
 
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         assert img.shape[:2] == (self.h, self.w)
         ret = viz_handler.resize(img, self.new_w, self.new_h, self.interp)
         if img.ndim == 3 and ret.ndim == 2:
@@ -108,7 +108,7 @@ class InferenceResize:
         self.max_size = max_size
         self.interp = interp
 
-    def get_transform(self, img: ImageType) -> ResizeTransform:
+    def get_transform(self, img: PixelValues) -> ResizeTransform:
         """
         get transform
         """
@@ -131,7 +131,7 @@ class InferenceResize:
         return ResizeTransform(h, w, new_h, new_w, self.interp)
 
 
-def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_std: npt.NDArray[float32]) -> ImageType:
+def normalize_image(image: PixelValues, pixel_mean: npt.NDArray[float32], pixel_std: npt.NDArray[float32]) -> PixelValues:
     """
     Preprocess pixel values of an image by rescaling.
 
@@ -142,7 +142,7 @@ def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_st
     return (image - pixel_mean) * (1.0 / pixel_std)
 
 
-def pad_image(image: ImageType, top: int, right: int, bottom: int, left: int) -> ImageType:
+def pad_image(image: PixelValues, top: int, right: int, bottom: int, left: int) -> PixelValues:
     """Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
     currently supported
 
@@ -183,7 +183,7 @@ class PadTransform(BaseTransform):
         self.image_height: Optional[int] = None
         self.mode = mode
 
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         """Apply padding to image"""
         self.image_width = img.shape[1]
         self.image_height = img.shape[0]

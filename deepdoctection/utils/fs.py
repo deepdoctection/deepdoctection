@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
-from ._types import ImageType, JsonDict, Pathlike
+from ._types import PixelValues, JsonDict, Pathlike
 from .develop import deprecated
 from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
@@ -133,7 +133,7 @@ def download(url: str, directory: Pathlike, file_name: Optional[str] = None, exp
 
 
 @overload
-def load_image_from_file(path: Pathlike, type_id: Literal["np"] = "np") -> Optional[ImageType]:
+def load_image_from_file(path: Pathlike, type_id: Literal["np"] = "np") -> Optional[PixelValues]:
     ...
 
 
@@ -142,7 +142,7 @@ def load_image_from_file(path: Pathlike, type_id: Literal["b64"]) -> Optional[st
     ...
 
 
-def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -> Optional[Union[str, ImageType]]:
+def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -> Optional[Union[str, PixelValues]]:
     """
     Loads an image from path and passes back an encoded base64 string, a numpy array or None if file is not found
     or a conversion error occurs.
@@ -151,7 +151,7 @@ def load_image_from_file(path: Pathlike, type_id: Literal["np", "b64"] = "np") -
     :param type_id:  "np" or "b64".
     :return: image of desired representation
     """
-    image: Optional[Union[str, ImageType]] = None
+    image: Optional[Union[str, PixelValues]] = None
     path = path.as_posix() if isinstance(path, Path) else path
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".tif"]), f"image type not allowed: {path}"
@@ -194,7 +194,7 @@ class LoadImageFunc(Protocol):
     Protocol for typing load_image_from_file
     """
 
-    def __call__(self, path: Pathlike) -> Optional[ImageType]:
+    def __call__(self, path: Pathlike) -> Optional[PixelValues]:
         ...
 
 

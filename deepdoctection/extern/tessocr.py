@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 from packaging.version import InvalidVersion, Version, parse
 
 from ..utils.context import save_tmp_file, timeout_manager
-from ..utils._types import ImageType, Requirement
+from ..utils._types import PixelValues, Requirement
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
@@ -137,7 +137,7 @@ def get_tesseract_version() -> Version:
     return version
 
 
-def image_to_angle(image: ImageType) -> Mapping[str, str]:
+def image_to_angle(image: PixelValues) -> Mapping[str, str]:
     """
     Generating a tmp file and running tesseract to get the orientation of the image.
 
@@ -154,7 +154,7 @@ def image_to_angle(image: ImageType) -> Mapping[str, str]:
     }
 
 
-def image_to_dict(image: ImageType, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
+def image_to_dict(image: PixelValues, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
     """
     This is more or less pytesseract.image_to_data with a dict as returned value.
     What happens under the hood is:
@@ -242,7 +242,7 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
     return detect_result_list
 
 
-def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, config: str) -> List[DetectionResult]:
+def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool, config: str) -> List[DetectionResult]:
     """
     Calls tesseract directly with some given configs. Requires Tesseract to be installed.
 
@@ -283,7 +283,7 @@ def predict_text(np_img: ImageType, supported_languages: str, text_lines: bool, 
     return all_results
 
 
-def predict_rotation(np_img: ImageType) -> Mapping[str, str]:
+def predict_rotation(np_img: PixelValues) -> Mapping[str, str]:
     """
     Predicts the rotation of an image using the Tesseract OCR engine.
 
@@ -355,7 +355,7 @@ class TesseractOcrDetector(ObjectDetector):
         else:
             self.categories = {"1": LayoutType.word}
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Transfer of a numpy array and call of pytesseract. Return of the detection results.
 
@@ -420,7 +420,7 @@ class TesseractRotationTransformer(ImageTransformer):
     def __init__(self) -> None:
         self.name = _TESS_PATH + "-rotation"
 
-    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
@@ -431,7 +431,7 @@ class TesseractRotationTransformer(ImageTransformer):
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 
-    def predict(self, np_img: ImageType) -> DetectionResult:
+    def predict(self, np_img: PixelValues) -> DetectionResult:
         """
         Determines the angle of the rotated image. It can only handle angles that are multiples of 90 degrees.
         This method uses the Tesseract OCR engine to predict the rotation angle of an image.

@@ -28,7 +28,7 @@ from zipfile import ZipFile
 
 from lazy_imports import try_import
 
-from ..utils._types import ImageType, Requirement
+from ..utils._types import PixelValues, Requirement
 from ..utils.error import DependencyError
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.file_utils import (
@@ -100,7 +100,7 @@ def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
 
 
 def doctr_predict_text_lines(
-    np_img: ImageType, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
+    np_img: PixelValues, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
 ) -> List[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
@@ -128,7 +128,7 @@ def doctr_predict_text_lines(
 
 
 def doctr_predict_text(
-    inputs: List[Tuple[str, ImageType]],
+    inputs: List[Tuple[str, PixelValues]],
     predictor: RecognitionPredictor,
     device: Union[torch.device, tf.device],
     lib: Literal["TF", "PT"],
@@ -246,7 +246,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
 
         self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device, self.lib)
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Prediction per image.
 
@@ -368,7 +368,7 @@ class DoctrTextRecognizer(TextRecognizer):
             self.architecture, self.path_weights, self.device, self.lib, self.path_config_json
         )
 
-    def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
+    def predict(self, images: List[Tuple[str, PixelValues]]) -> List[DetectionResult]:
         """
         Prediction on a batch of text lines
 
@@ -496,7 +496,7 @@ class DocTrRotationTransformer(ImageTransformer):
         self.ratio_threshold_for_lines = ratio_threshold_for_lines
         self.name = "doctr_rotation_transformer"
 
-    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
@@ -507,7 +507,7 @@ class DocTrRotationTransformer(ImageTransformer):
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 
-    def predict(self, np_img: ImageType) -> DetectionResult:
+    def predict(self, np_img: PixelValues) -> DetectionResult:
         angle = estimate_orientation(np_img, self.number_contours, self.ratio_threshold_for_lines)
         if angle < 0:
             angle += 360

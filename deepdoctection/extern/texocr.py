@@ -26,7 +26,7 @@ from typing import List
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_np_array_to_b64_b
-from ..utils._types import ImageType, JsonDict, Requirement
+from ..utils._types import PixelValues, JsonDict, Requirement
 from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
@@ -60,7 +60,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
     return all_results
 
 
-def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
+def predict_text(np_img: PixelValues, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
     """
     Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
@@ -131,7 +131,7 @@ class TextractOcrDetector(ObjectDetector):
         else:
             self.categories = {"1": LayoutType.word}
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         """
         Transfer of a numpy array and call textract client. Return of the detection results.
 

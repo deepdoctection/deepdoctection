@@ -26,7 +26,7 @@ from typing import List, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from ..utils._types import ImageType, Requirement
+from ..utils._types import PixelValues, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr, get_type
 from .base import DetectionResult, ObjectDetector
@@ -52,7 +52,7 @@ def _detr_post_processing(
 
 
 def detr_predict_image(
-    np_img: ImageType,
+    np_img: PixelValues,
     predictor: TableTransformerForObjectDetection,
     feature_extractor: DetrFeatureExtractor,
     device: torch.device,
@@ -196,7 +196,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         self.device = get_torch_device(device)
         self.hf_detr_predictor.to(self.device)
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
         results = detr_predict_image(
             np_img,
             self.hf_detr_predictor,
