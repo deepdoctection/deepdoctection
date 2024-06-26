@@ -90,10 +90,12 @@ from .logger import logger, LoggingRecord
 __all__ = [
     "collect_env_info",
     "auto_select_viz_library",
+    "ENV_VARS_TRUE"
 ]
 
 # pylint: disable=import-outside-toplevel
 
+ENV_VARS_TRUE = {"1", "True", "TRUE", "true", "yes"}
 
 def collect_torch_env() -> str:
     """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
@@ -445,7 +447,7 @@ def set_dl_env_vars() -> None:
         os.environ["DD_USE_TF"] = "1"
         os.environ["USE_TF"] = "1"
 
-    if os.environ.get("DD_USE_TORCH", "0") == "1" and os.environ.get("DD_USE_TF", "0") == "1":
+    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE and os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
         logger.warning(
             "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
             "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
@@ -453,11 +455,11 @@ def set_dl_env_vars() -> None:
         os.environ["DD_USE_TF"] = "0"
         os.environ["USE_TF"] = "0"
 
-    if not os.environ.get("PYTORCH_AVAILABLE") and not os.environ.get("TENSORFLOW_AVAILABLE"):
+    if (os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE and
+            os.environ.get("TENSORFLOW_AVAILABLE") not in ENV_VARS_TRUE):
         logger.warning(
             LoggingRecord(
-                msg="Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
-                    "model from the library."
+                msg="Neither Tensorflow or Pytorch are available."
             )
         )
 

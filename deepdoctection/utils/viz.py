@@ -25,7 +25,6 @@ and
 <https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
 """
 
-import ast
 import base64
 import os
 import sys
@@ -38,7 +37,7 @@ from lazy_imports import try_import
 from numpy import float32, uint8
 
 from ._types import ImageType
-from .env_info import auto_select_viz_library
+from .env_info import auto_select_viz_library, ENV_VARS_TRUE
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
 
@@ -340,8 +339,8 @@ class VizPackageHandler:
         Otherwise it will use Pillow as default package
         :return: either 'pillow' or 'cv2'
         """
-        maybe_cv2 = "cv2" if ast.literal_eval(os.environ.get("USE_DD_OPENCV", "False")) else None
-        maybe_pil = "pillow" if ast.literal_eval(os.environ.get("USE_DD_PILLOW", "True")) else None
+        maybe_cv2 = "cv2" if os.environ.get("USE_DD_OPENCV", "False") in ENV_VARS_TRUE else None
+        maybe_pil = "pillow" if os.environ.get("USE_DD_PILLOW", "True") in ENV_VARS_TRUE else None
 
         if not maybe_cv2 and not maybe_pil:
             raise EnvironmentError(

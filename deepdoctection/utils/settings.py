@@ -18,6 +18,7 @@
 """
 Module for funcs and constants that maintain general settings
 """
+from __future__ import annotations
 
 import os
 from enum import Enum
@@ -34,7 +35,7 @@ class ObjectTypes(str, Enum):
         return f"<{self.__class__.__name__}.{self.name}>"
 
     @classmethod
-    def from_value(cls, value: str) -> "ObjectTypes":
+    def from_value(cls, value: str) -> ObjectTypes:
         """Getting the enum member from a given string value
 
         :param value: string value to get the enum member
