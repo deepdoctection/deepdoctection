@@ -38,7 +38,7 @@ __all__: List[str] = ["deprecated"]
 _DEPRECATED_LOG_NUM = defaultdict(int)  # type: ignore
 
 
-def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> None:
+def log_deprecated(name: str, text: str, eos: str = "", max_num_warnings: Optional[int] = None) -> None:
     """
     Log deprecation warning.
 

@@ -120,8 +120,7 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         df = SerializerCoco.load(path, max_datapoints=max_datapoints)
 
         # Map
-        df = MapDataComponent(df, lambda dp: (self.get_workdir() / self.get_split(split) / dp).as_posix(),
-                              "file_name")
+        df = MapDataComponent(df, lambda dp: (self.get_workdir() / self.get_split(split) / dp).as_posix(), "file_name")
         coco_mapper = coco_to_image(  # pylint: disable=E1120  # 259
             self.categories.get_categories(init=True),
             load_image,

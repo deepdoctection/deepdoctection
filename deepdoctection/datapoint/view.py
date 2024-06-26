@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Typ
 
 import numpy as np
 
-from ..utils._types import PixelValues, JsonDict, Pathlike
+from ..utils._types import JsonDict, Pathlike, PixelValues
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -646,11 +646,11 @@ class Page(Image):
                 if image_dict:
                     image = Image.from_dict(**image_dict)
                     layout_ann.image = cls.from_image(
-                        image_orig= image,
+                        image_orig=image,
                         text_container=text_container,
                         floating_text_block_categories=floating_text_block_categories,
                         include_residual_text_container=include_residual_text_container,
-                        base_page=page
+                        base_page=page,
                     )
             layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)

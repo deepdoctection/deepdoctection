@@ -52,12 +52,13 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Optional, Tuple, Set
+from typing import Optional, Set
 
 import numpy as np
 from packaging import version
 from tabulate import tabulate
 
+from ._types import KeyValEnvInfos
 from .file_utils import (
     apted_available,
     aws_available,
@@ -85,17 +86,14 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
-from .logger import logger, LoggingRecord
+from .logger import LoggingRecord, logger
 
-__all__ = [
-    "collect_env_info",
-    "auto_select_viz_library",
-    "ENV_VARS_TRUE"
-]
+__all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
 
 ENV_VARS_TRUE: Set[str] = {"1", "True", "TRUE", "true", "yes"}
+
 
 def collect_torch_env() -> str:
     """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
@@ -110,7 +108,7 @@ def collect_torch_env() -> str:
         return get_pretty_env_info()
 
 
-def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Collect installed dependencies for all third party libraries.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -261,7 +259,7 @@ def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str
 
 
 # Copied from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/tfutils/collect_env.py
-def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Returns a list of (key, value) pairs containing tensorflow information.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -296,7 +294,7 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         for key, value in list(build_info.build_info.items()):
             if key == "is_cuda_build":
                 data.append(("TF compiled with CUDA", value))
-                if value and len(tf.config.list_physical_devices('GPU')):
+                if value and len(tf.config.list_physical_devices("GPU")):
                     os.environ["USE_CUDA"] = "1"
             elif key == "cuda_version":
                 data.append(("TF built with CUDA", value))
@@ -318,7 +316,7 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
 
 # Heavily inspired by https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/collect_env.py
-def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Returns a list of (key, value) pairs containing Pytorch information.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -455,13 +453,11 @@ def set_dl_env_vars() -> None:
         os.environ["DD_USE_TF"] = "0"
         os.environ["USE_TF"] = "0"
 
-    if (os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE and
-            os.environ.get("TENSORFLOW_AVAILABLE") not in ENV_VARS_TRUE):
-        logger.warning(
-            LoggingRecord(
-                msg="Neither Tensorflow or Pytorch are available."
-            )
-        )
+    if (
+        os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE
+        and os.environ.get("TENSORFLOW_AVAILABLE") not in ENV_VARS_TRUE
+    ):
+        logger.warning(LoggingRecord(msg="Neither Tensorflow or Pytorch are available."))
 
 
 def collect_env_info() -> str:

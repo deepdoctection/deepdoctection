@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
-from ._types import PixelValues, JsonDict, Pathlike
+from ._types import JsonDict, Pathlike, PixelValues
 from .develop import deprecated
 from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer

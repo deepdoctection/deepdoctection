@@ -29,8 +29,8 @@ from zipfile import ZipFile
 from lazy_imports import try_import
 
 from ..utils._types import PixelValues, Requirement
-from ..utils.error import DependencyError
 from ..utils.env_info import ENV_VARS_TRUE
+from ..utils.error import DependencyError
 from ..utils.file_utils import (
     get_doctr_requirement,
     get_pytorch_requirement,
@@ -253,7 +253,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        return  doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
+        return doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
 
     @classmethod
     def get_requirements(cls) -> List[Requirement]:
@@ -394,8 +394,9 @@ class DoctrTextRecognizer(TextRecognizer):
         _load_model(path_weights, doctr_predictor, device, lib)
 
     @staticmethod
-    def build_model(architecture: str, lib: Literal["TF", "PT"],
-                    path_config_json: Optional[str] = None) -> "RecognitionPredictor":
+    def build_model(
+        architecture: str, lib: Literal["TF", "PT"], path_config_json: Optional[str] = None
+    ) -> "RecognitionPredictor":
         """Building the model"""
 
         # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py

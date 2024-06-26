@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.texocr import TextractOcrDetector
-from deepdoctection.utils._types import PixelValues, JsonDict
+from deepdoctection.utils._types import JsonDict, PixelValues
 
 
 class TestTextractOcrDetector:

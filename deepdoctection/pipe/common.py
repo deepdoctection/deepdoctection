@@ -21,7 +21,6 @@ Module for common pipeline components
 from __future__ import annotations
 
 import os
-
 from copy import copy, deepcopy
 from typing import List, Literal, Mapping, Optional, Sequence, Union
 

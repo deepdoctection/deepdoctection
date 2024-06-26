@@ -26,7 +26,7 @@ from typing import List
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_np_array_to_b64_b
-from ..utils._types import PixelValues, JsonDict, Requirement
+from ..utils._types import JsonDict, PixelValues, Requirement
 from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes

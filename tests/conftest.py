@@ -35,7 +35,7 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils._types import PixelValues, JsonDict
+from deepdoctection.utils._types import JsonDict, PixelValues
 from deepdoctection.utils.fs import get_package_path
 from deepdoctection.utils.settings import (
     CellType,

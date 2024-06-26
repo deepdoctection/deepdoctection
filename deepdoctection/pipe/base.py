@@ -28,8 +28,8 @@ from uuid import uuid1
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
-from ..utils.context import timed_operation
 from ..utils._types import JsonDict
+from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
 from .anngen import DatapointManager
 

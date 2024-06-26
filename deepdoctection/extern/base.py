@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
-from ..utils._types import PixelValues, JsonDict, Requirement
+from ..utils._types import JsonDict, PixelValues, Requirement
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
