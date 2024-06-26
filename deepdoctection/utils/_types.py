@@ -65,6 +65,6 @@ JsonDict = Dict[str, Any]
 # available
 PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
-
 Requirement = Tuple[str, PackageAvailable, ErrorMsg]
+
 Pathlike = Union[str, Path]
