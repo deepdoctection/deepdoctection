@@ -58,7 +58,7 @@ else:
     TqdmType = tqdm.tqdm
 
 # A dict converted from a generic JSON object
-JsonDict = dict[str, object]
+JsonDict = dict[str, Any]
 
 
 # mainly used in utils
