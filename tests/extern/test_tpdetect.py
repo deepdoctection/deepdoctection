@@ -70,7 +70,6 @@ class TestTPFrcnnDetector:
     Test TPFrcnnDetector constructor
     """
 
-
     @staticmethod
     @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))

@@ -36,7 +36,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, no_type_check, Set
+from typing import Any, Dict, Optional, Set, Union, no_type_check
 
 from termcolor import colored
 
@@ -45,6 +45,7 @@ from ._types import Pathlike
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
 ENV_VARS_TRUE: Set[str] = {"1", "True", "TRUE", "true", "yes"}
+
 
 @dataclass
 class LoggingRecord:

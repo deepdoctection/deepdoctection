@@ -424,8 +424,6 @@ env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
 
 
-
-
 # Direct imports for type-checking
 if TYPE_CHECKING:
     from .analyzer import *

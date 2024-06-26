@@ -22,8 +22,8 @@ Module for small mapping functions
 from __future__ import annotations
 
 import ast
-import os
 import json
+import os
 from typing import List, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
@@ -197,7 +197,6 @@ def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
 
     output = str(xslt_obj(dp["xml"]))
-    output = ast.literal_eval(output.replace('<?xml version="1.0"?>', ""))
     dp.pop("xml")
-    dp["json"] = json.loads(output)
+    dp["json"] = ast.literal_eval(output.replace('<?xml version="1.0"?>', ""))
     return dp

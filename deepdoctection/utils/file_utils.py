@@ -16,7 +16,7 @@ import sys
 from os import environ, path
 from shutil import which
 from types import ModuleType
-from typing import Any, Tuple, Union, no_type_check
+from typing import Any, Union, no_type_check
 
 import importlib_metadata
 from packaging import version
@@ -52,7 +52,7 @@ def get_tf_version() -> str:
     """
     tf_version = "0.0"
     if tf_available():
-        candidates: Tuple[str, ...] = (
+        candidates: tuple[str, ...] = (
             "tensorflow",
             "tensorflow-cpu",
             "tensorflow-gpu",

@@ -19,14 +19,14 @@
 Typing sheet for the whole package
 """
 
-from pathlib import Path
 import queue
-
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union
-from typing_extensions import TypeAlias
+
 import numpy.typing as npt
 import tqdm
 from numpy import uint8
+from typing_extensions import TypeAlias
 
 
 # Type for a general dataclass
@@ -41,7 +41,7 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
 # Numpy image type
 PixelValues = npt.NDArray[uint8]
 
-# typing for curry decorator
+# Typing for curry decorator
 DP = TypeVar("DP")
 S = TypeVar("S")
 T = TypeVar("T")
@@ -57,12 +57,17 @@ else:
     QueueType = queue.Queue
     TqdmType = tqdm.tqdm
 
-JsonDict = dict[str, Any]
+# A dict converted from a generic JSON object
+JsonDict = dict[str, object]
 
+
+# mainly used in utils
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
 # available
 PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
 Requirement = tuple[str, PackageAvailable, ErrorMsg]
 
-Pathlike = Union[str,Path]
+# A type to collect key val pairs of environ information. Mainly used in env_info.py
+KeyValEnvInfos: TypeAlias = list[tuple[str, str]]
+Pathlike = Union[str, Path]

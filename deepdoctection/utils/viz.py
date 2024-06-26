@@ -37,7 +37,7 @@ from lazy_imports import try_import
 from numpy import float32, uint8
 
 from ._types import PixelValues
-from .env_info import auto_select_viz_library, ENV_VARS_TRUE
+from .env_info import ENV_VARS_TRUE, auto_select_viz_library
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
 
