@@ -52,7 +52,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Set
 
 import numpy as np
 from packaging import version
@@ -95,7 +95,7 @@ __all__ = [
 
 # pylint: disable=import-outside-toplevel
 
-ENV_VARS_TRUE = {"1", "True", "TRUE", "true", "yes"}
+ENV_VARS_TRUE: Set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 def collect_torch_env() -> str:
     """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
