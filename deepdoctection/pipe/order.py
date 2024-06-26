@@ -25,7 +25,7 @@ from abc import ABC
 from copy import copy
 from itertools import chain
 from logging import DEBUG
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Union
 
 import numpy as np
 
@@ -35,9 +35,8 @@ from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..extern.base import DetectionResult
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
-from ..pipe.base import PipelineComponent
+from ..pipe.base import MetaAnnotation, PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils._types import JsonDict
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
@@ -70,7 +69,7 @@ class OrderGenerator:
     @staticmethod
     def group_words_into_lines(
         word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
-    ) -> List[Tuple[int, int, str]]:
+    ) -> list[tuple[int, int, str]]:
         """Arranging words into horizontal text lines and sorting text lines vertically in order to give
         an enumeration of words that is used for establishing the reading order. Using this reading order arragement
         makes only sense for words within a rectangle and needs to be revised in more complex appearances.
@@ -78,7 +77,7 @@ class OrderGenerator:
         id)`.
         """
         reading_lines = []
-        rows: List[Dict[str, float]] = []
+        rows: list[dict[str, float]] = []
         for word in word_anns:
             bounding_box = word.get_bounding_box(image_id)
             row_found = False
@@ -117,13 +116,13 @@ class OrderGenerator:
     @staticmethod
     def group_lines_into_lines(
         line_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
-    ) -> List[Tuple[int, int, str]]:
+    ) -> list[tuple[int, int, str]]:
         """
         Sorting reading lines. Returns for a list of `ImageAnnotation` an list of tuples (each tuple containing the
         reading order and the `annotation_id` for each list element.
         :param line_anns: text line `ImageAnnotation`
         :param image_id: image_id of underyling image (to find get the bounding boxes)
-        :return: `List[(reading_order, reading_order,annotation_id)]`
+        :return: `list[(reading_order, reading_order,annotation_id)]`
         """
         reading_lines = []
         for ann in line_anns:
@@ -134,9 +133,9 @@ class OrderGenerator:
         return [(idx + 1, idx + 1, line[1]) for idx, line in enumerate(reading_lines)]
 
     @staticmethod
-    def _connected_components(columns: List[BoundingBox]) -> List[Dict[str, Any]]:
+    def _connected_components(columns: list[BoundingBox]) -> list[dict[str, Any]]:
         # building connected components of columns
-        connected_components: List[Dict[str, Any]] = []
+        connected_components: list[dict[str, Any]] = []
         for idx, col in enumerate(columns):
             col_dict = {"id": idx, "box": col}
             component_found = False
@@ -171,8 +170,8 @@ class OrderGenerator:
         return connected_components
 
     def order_blocks(
-        self, anns: List[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
-    ) -> Sequence[Tuple[int, str]]:
+        self, anns: list[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
+    ) -> Sequence[tuple[int, str]]:
         """
         Determining a text ordering of text blocks. These text blocks should be larger sections than barely words.
         It will first try to detect columns, then try to consolidate columns and finally try to detecting connected
@@ -184,12 +183,12 @@ class OrderGenerator:
         :param image_width: image width (to re-calculate bounding boxes into relative coords)
         :param image_height: image height (to re-calculate bounding boxes into relative coords)
         :param image_id: image id
-        :return: List of tuples with reading order position and `annotation_id`
+        :return: list of tuples with reading order position and `annotation_id`
         """
         if not anns:
             return []
         reading_blocks = []
-        columns: List[BoundingBox] = []
+        columns: list[BoundingBox] = []
         anns.sort(
             key=lambda x: (
                 x.bounding_box.transform(image_width, image_height).cy,  # type: ignore
@@ -270,7 +269,7 @@ class OrderGenerator:
         blocks.sort(key=lambda x: x[0])  # type: ignore
         sorted_blocks = []
         max_block_number = max(list(columns_dict.values()))
-        filtered_blocks: Sequence[Tuple[int, str]]
+        filtered_blocks: Sequence[tuple[int, str]]
         for idx in range(max_block_number + 1):
             filtered_blocks = list(filter(lambda x: x[0] == idx, blocks))  # type: ignore # pylint: disable=W0640
             sorted_blocks.extend(self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height))
@@ -289,7 +288,7 @@ class OrderGenerator:
             )
         return reading_blocks
 
-    def _consolidate_columns(self, columns: List[BoundingBox]) -> Dict[int, int]:
+    def _consolidate_columns(self, columns: list[BoundingBox]) -> dict[int, int]:
         if not columns:
             return {}
         np_boxes = np.array([col.to_list(mode="xyxy") for col in columns])
@@ -310,8 +309,8 @@ class OrderGenerator:
 
     @staticmethod
     def _sort_anns_grouped_by_blocks(
-        block: Sequence[Tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
-    ) -> List[Tuple[int, str]]:
+        block: Sequence[tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
+    ) -> list[tuple[int, str]]:
         if not block:
             return []
         anns_and_blocks_numbers = list(zip(*block))
@@ -336,7 +335,7 @@ class OrderGenerator:
                         box=box.to_list(mode="xyxy"),
                         absolute_coords=box.absolute_coords,
                         class_id=99,
-                        class_name=LayoutType.column,
+                        class_name=LayoutType.COLUMN,
                     )
                 )
         return column_detect_result_list
@@ -364,10 +363,10 @@ class TextLineGenerator:
         self.make_sub_lines = make_sub_lines
         self.paragraph_break = paragraph_break
 
-    def _make_detect_result(self, box: BoundingBox, relationships: Dict[str, List[str]]) -> DetectionResult:
+    def _make_detect_result(self, box: BoundingBox, relationships: dict[str, list[str]]) -> DetectionResult:
         return DetectionResult(
             box=box.to_list(mode="xyxy"),
-            class_name=LayoutType.line,
+            class_name=LayoutType.LINE,
             class_id=self.line_category_id,
             absolute_coords=box.absolute_coords,
             relationships=relationships,
@@ -507,7 +506,7 @@ class TextLineServiceMixin(PipelineComponent, ABC):
                 line_ann = self.dp_manager.get_annotation(ann_id)
                 child_ann_id_list = detect_result.relationships["child"]  # type: ignore
                 for child_ann_id in child_ann_id_list:
-                    line_ann.dump_relationship(Relationships.child, child_ann_id)
+                    line_ann.dump_relationship(Relationships.CHILD, child_ann_id)
                 line_anns.append(line_ann)
         return line_anns
 
@@ -539,27 +538,25 @@ class TextLineService(TextLineServiceMixin):
             paragraph_break=paragraph_break,
         )
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TextLineService:
         """
         This method returns a new instance of the class with the same configuration.
         """
         return self.__class__(self.line_category_id, self.text_line_generator.paragraph_break)
 
     def serve(self, dp: Image) -> None:
-        text_container_anns = dp.get_annotation(category_names=LayoutType.word)
+        text_container_anns = dp.get_annotation(category_names=LayoutType.WORD)
         self._create_lines_for_words(text_container_anns)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         This method returns metadata about the annotations created by this pipeline component.
         """
-        return dict(
-            [
-                ("image_annotations", [LayoutType.line]),
-                ("sub_categories", {LayoutType.line: {Relationships.child}}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+        return MetaAnnotation(
+            image_annotations=(LayoutType.LINE,),
+            sub_categories={LayoutType.LINE: {Relationships.CHILD}},
+            relationships={},
+            summaries=(),
         )
 
 
@@ -637,17 +634,17 @@ class TextOrderService(TextLineServiceMixin):
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
-            text_block_categories = [text_block_categories]
+            text_block_categories = (get_type(text_block_categories),)
         if text_block_categories is None:
             text_block_categories = IMAGE_DEFAULTS["text_block_categories"]
-        self.text_block_categories = [get_type(category) for category in text_block_categories]
+        self.text_block_categories = tuple((get_type(category) for category in text_block_categories))
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
-            floating_text_block_categories = [floating_text_block_categories]
+            floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
             floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
-        self.floating_text_block_categories = [get_type(category) for category in floating_text_block_categories]
+        self.floating_text_block_categories = tuple((get_type(category) for category in floating_text_block_categories))
         if include_residual_text_container:
-            self.floating_text_block_categories.append(LayoutType.line)
+            self.floating_text_block_categories = self.floating_text_block_categories + (LayoutType.LINE,)
         self.include_residual_text_container = include_residual_text_container
         self.order_generator = OrderGenerator(starting_point_tolerance, broken_line_tolerance, height_tolerance)
         self.text_line_generator = TextLineGenerator(
@@ -666,12 +663,12 @@ class TextOrderService(TextLineServiceMixin):
         text_block_anns = dp.get_annotation(category_names=self.text_block_categories)
         if self.include_residual_text_container:
             mapped_text_container_ids = list(
-                chain(*[text_block.get_relationship(Relationships.child) for text_block in text_block_anns])
+                chain(*[text_block.get_relationship(Relationships.CHILD) for text_block in text_block_anns])
             )
             residual_text_container_anns = [
                 ann for ann in text_container_anns if ann.annotation_id not in mapped_text_container_ids
             ]
-            if self.text_container == LayoutType.word:
+            if self.text_container == LayoutType.WORD:
                 text_block_anns.extend(self._create_lines_for_words(residual_text_container_anns))
             else:
                 text_block_anns.extend(residual_text_container_anns)
@@ -689,7 +686,7 @@ class TextOrderService(TextLineServiceMixin):
                 annotation_id = self.dp_manager.set_image_annotation(detect_result)
                 if annotation_id:
                     self.dp_manager.set_category_annotation(
-                        Relationships.reading_order, idx, Relationships.reading_order, annotation_id
+                        Relationships.READING_ORDER, idx, Relationships.READING_ORDER, annotation_id
                     )
 
     def order_text_in_text_block(self, text_block_ann: ImageAnnotation) -> None:
@@ -699,11 +696,11 @@ class TextOrderService(TextLineServiceMixin):
 
         :param text_block_ann: text block annotation (category one of `text_block_categories`).
         """
-        text_container_ids = text_block_ann.get_relationship(Relationships.child)
+        text_container_ids = text_block_ann.get_relationship(Relationships.CHILD)
         text_container_ann = self.dp_manager.datapoint.get_annotation(
             annotation_ids=text_container_ids, category_names=self.text_container
         )
-        if self.text_container == LayoutType.word:
+        if self.text_container == LayoutType.WORD:
             word_order_list = self.order_generator.group_words_into_lines(
                 text_container_ann, self.dp_manager.datapoint.image_id
             )
@@ -713,10 +710,10 @@ class TextOrderService(TextLineServiceMixin):
             )
         for word_order in word_order_list:
             self.dp_manager.set_category_annotation(
-                Relationships.reading_order, word_order[0], Relationships.reading_order, word_order[2]
+                Relationships.READING_ORDER, word_order[0], Relationships.READING_ORDER, word_order[2]
             )
 
-    def order_blocks(self, text_block_anns: List[ImageAnnotation]) -> None:
+    def order_blocks(self, text_block_anns: list[ImageAnnotation]) -> None:
         """
         Ordering of text blocks. Will use the internal order generator.
 
@@ -727,42 +724,40 @@ class TextOrderService(TextLineServiceMixin):
         )
         for word_order in block_order_list:
             self.dp_manager.set_category_annotation(
-                Relationships.reading_order, word_order[0], Relationships.reading_order, word_order[1]
+                Relationships.READING_ORDER, word_order[0], Relationships.READING_ORDER, word_order[1]
             )
 
     def _init_sanity_checks(self) -> None:
-        assert self.text_container in (LayoutType.word, LayoutType.line), (
-            f"text_container must be either {LayoutType.word} or " f"{LayoutType.line}"
+        assert self.text_container in (LayoutType.WORD, LayoutType.LINE), (
+            f"text_container must be either {LayoutType.WORD} or " f"{LayoutType.LINE}"
         )
         add_category = []
         if self.include_residual_text_container:
-            add_category.append(LayoutType.line)
+            add_category.append(LayoutType.LINE)
 
         assert set(self.floating_text_block_categories) <= set(
-            self.text_block_categories + add_category  # type: ignore
+            self.text_block_categories + tuple(add_category)
         ), "floating_text_block_categories must be a subset of text_block_categories"
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         add_category = [self.text_container]
-        image_annotations = []
-        if self.include_residual_text_container and self.text_container == LayoutType.word:
-            add_category.append(LayoutType.line)
-            image_annotations.append(LayoutType.line)
+        image_annotations: list[ObjectTypes] = []
+        if self.include_residual_text_container and self.text_container == LayoutType.WORD:
+            add_category.append(LayoutType.LINE)
+            image_annotations.append(LayoutType.LINE)
         anns_with_reading_order = list(copy(self.floating_text_block_categories)) + add_category
-        return dict(
-            [
-                ("image_annotations", image_annotations),
-                ("sub_categories", {category: {Relationships.reading_order} for category in anns_with_reading_order}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+        return MetaAnnotation(
+            image_annotations=tuple(image_annotations),
+            sub_categories={category: {Relationships.READING_ORDER} for category in anns_with_reading_order},
+            relationships={},
+            summaries=(),
         )
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TextOrderService:
         return self.__class__(
-            copy(self.text_container),
-            copy(self.text_block_categories),
-            copy(self.floating_text_block_categories),
+            self.text_container,
+            self.text_block_categories,
+            self.floating_text_block_categories,
             self.include_residual_text_container,
             self.order_generator.starting_point_tolerance,
             self.order_generator.broken_line_tolerance,
@@ -770,3 +765,6 @@ class TextOrderService(TextLineServiceMixin):
             self.text_line_generator.paragraph_break,
             self.text_line_generator.line_category_id,
         )
+
+    def clear_predictor(self) -> None:
+        pass

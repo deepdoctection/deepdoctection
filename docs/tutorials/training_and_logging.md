@@ -38,7 +38,7 @@ def scale_transform(dp, scaler, apply_image=False):
 
 
 def filter_list_images(dp):
-    if dp.summary.get_sub_category(dd.LayoutType.list).category_id != "0":
+    if dp.summary.get_sub_category(dd.LayoutType.LIST).category_id != 0:
         return None
     return dp
 ```
@@ -73,50 +73,49 @@ how the annotation style in Publaynet: Doclaynet labels each list item separatel
     
 After buffering annotations (no images (!)) we shuffle all datapoints and build `train`, `val` and `test` split.
 
-
 ```python
 doclaynet = dd.get_dataset("doclaynet")
 
 doclaynet.dataflow.categories.set_cat_to_sub_cat({
-dd.LayoutType.caption: dd.DatasetType.publaynet,
-dd.LayoutType.footnote: dd.DatasetType.publaynet,
-dd.LayoutType.formula: dd.DatasetType.publaynet,
-dd.LayoutType.list: dd.DatasetType.publaynet,
-dd.LayoutType.page_footer: dd.DatasetType.publaynet,
-dd.LayoutType.page_header: dd.DatasetType.publaynet,
-dd.LayoutType.figure: dd.DatasetType.publaynet,
-dd.LayoutType.section_header: dd.DatasetType.publaynet,
-dd.LayoutType.table: dd.DatasetType.publaynet,
-dd.LayoutType.text: dd.DatasetType.publaynet,
-dd.LayoutType.title: dd.DatasetType.publaynet})
+    dd.LayoutType.CAPTION: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.FOOTNOTE: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.FORMULA: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.LIST: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.PAGE_FOOTER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.PAGE_HEADER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.FIGURE: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.SECTION_HEADER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.TABLE: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.TEXT: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.TITLE: dd.DatasetType.PUBLAYNET})
 
-doclaynet.dataflow.categories._categories_update = [dd.LayoutType.text,
-                                                        dd.LayoutType.title,
-                                                        dd.LayoutType.list,
-                                                        dd.LayoutType.table,
-                                                        dd.LayoutType.figure]
+doclaynet.dataflow.categories._categories_update = [dd.LayoutType.TEXT,
+                                                    dd.LayoutType.TITLE,
+                                                    dd.LayoutType.LIST,
+                                                    dd.LayoutType.TABLE,
+                                                    dd.LayoutType.FIGURE]
 
-df_doc = doclaynet.dataflow.build(split="train",resized=True)   # requires to create resized images
-df_doc_val = doclaynet.dataflow.build(split="val",resized=True)  # requires to create resized images
-df_doc_test = doclaynet.dataflow.build(split="test",resized=True)  # requires to create resized images
+df_doc = doclaynet.dataflow.build(split="train", resized=True)  # requires to create resized images
+df_doc_val = doclaynet.dataflow.build(split="val", resized=True)  # requires to create resized images
+df_doc_test = doclaynet.dataflow.build(split="test", resized=True)  # requires to create resized images
 
 scaler = ScaleTransform(h=1025,
-                            w=1025,
-                            new_h=2339,
-                            new_w=1654,
-                            interp="bilinear")
+                        w=1025,
+                        new_h=2339,
+                        new_w=1654,
+                        interp="bilinear")
 
-df_doc = dd.MapData(df_doc,filter_list_images)
+df_doc = dd.MapData(df_doc, filter_list_images)
 df_doc = dd.MapData(df_doc, scale_transform(scaler))
 
-df_doc_val = dd.MapData(df_doc_val,filter_list_images)
+df_doc_val = dd.MapData(df_doc_val, filter_list_images)
 df_doc_val = dd.MapData(df_doc_val, scale_transform(scaler))
 
-df_doc_test = dd.MapData(df_doc_test,filter_list_images)
+df_doc_test = dd.MapData(df_doc_test, filter_list_images)
 df_doc_test = dd.MapData(df_doc_test, scale_transform(scaler))
 
 publaynet = dd.get_dataset("publaynet")
-df_pub = publaynet.dataflow.build(split="train",max_datapoints=25000)
+df_pub = publaynet.dataflow.build(split="train", max_datapoints=25000)
 
 merge = dd.MergeDataset(publaynet)
 merge.explicit_dataflows(df_doc, df_doc_val, df_doc_test, df_pub)
@@ -166,10 +165,14 @@ coco = dd.metric_registry.get("coco")
 dd.train_d2_faster_rcnn(path_config,
                         merge,
                         path_weights,
-                        ["SOLVER.IMS_PER_BATCH=2", "SOLVER.MAX_ITER=240000", "SOLVER.CHECKPOINT_PERIOD=4000",
-                         "SOLVER.STEPS=(160000, 190000)", "TEST.EVAL_PERIOD=4000", 
+                        ["SOLVER.IMS_PER_BATCH=2", 
+                         "SOLVER.MAX_ITER=240000", 
+                         "SOLVER.CHECKPOINT_PERIOD=4000",
+                         "SOLVER.STEPS=(160000, 190000)", 
+                         "TEST.EVAL_PERIOD=4000", 
                          "MODEL.BACKBONE.FREEZE_AT=0",
-                         "WANDB.USE_WANDB=True", "WANDB.PROJECT=layout_detection"],
+                         "WANDB.USE_WANDB=True", 
+                         "WANDB.PROJECT=layout_detection"],
                          "/path/to/dir",
                          None,
                          merge,
@@ -204,10 +207,13 @@ merge.create_split_by_id(split_dict)
 dd.train_d2_faster_rcnn(path_config,
                         merge,
                         path_weights,
-                        ["SOLVER.IMS_PER_BATCH=2", "SOLVER.MAX_ITER=240000", "SOLVER.CHECKPOINT_PERIOD=4000",
-                         "SOLVER.STEPS=(160000, 190000)", "TEST.EVAL_PERIOD=4000", 
+                        ["SOLVER.IMS_PER_BATCH=2", "SOLVER.MAX_ITER=240000", 
+                         "SOLVER.CHECKPOINT_PERIOD=4000",
+                         "SOLVER.STEPS=(160000, 190000)", 
+                         "TEST.EVAL_PERIOD=4000", 
                          "MODEL.BACKBONE.FREEZE_AT=0",
-                         "WANDB.USE_WANDB=True", "WANDB.PROJECT=layout_detection"],
+                         "WANDB.USE_WANDB=True", 
+                         "WANDB.PROJECT=layout_detection"],
                          "/path/to/dir",
                          None,
                          merge,

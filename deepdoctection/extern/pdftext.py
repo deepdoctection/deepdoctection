@@ -19,26 +19,26 @@
 PDFPlumber text extraction engine
 """
 
-from typing import Dict, List, Tuple
+from typing import Optional
 
 from lazy_imports import try_import
 
 from ..utils.context import save_tmp_file
-from ..utils._types import Requirement
 from ..utils.file_utils import get_pdfplumber_requirement
 from ..utils.settings import LayoutType, ObjectTypes
-from .base import DetectionResult, PdfMiner
+from ..utils.types import Requirement
+from .base import DetectionResult, ModelCategories, PdfMiner
 
 with try_import() as import_guard:
-    from pdfplumber.pdf import PDF
+    from pdfplumber.pdf import PDF, Page
 
 
-def _to_detect_result(word: Dict[str, str]) -> DetectionResult:
+def _to_detect_result(word: dict[str, str]) -> DetectionResult:
     return DetectionResult(
         box=[float(word["x0"]), float(word["top"]), float(word["x1"]), float(word["bottom"])],
         class_id=1,
         text=word["text"],
-        class_name=LayoutType.word,
+        class_name=LayoutType.WORD,
     )
 
 
@@ -69,11 +69,12 @@ class PdfPlumberTextDetector(PdfMiner):
     def __init__(self, x_tolerance: int = 3, y_tolerance: int = 3) -> None:
         self.name = "Pdfplumber"
         self.model_id = self.get_model_id()
-        self.categories = {"1": LayoutType.word}
+        self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
+        self._page: Optional[Page] = None
 
-    def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
+    def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
         """
         Call pdfminer.six and returns detected text as detection results
 
@@ -83,25 +84,24 @@ class PdfPlumberTextDetector(PdfMiner):
 
         with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, _):
             with open(tmp_name, "rb") as fin:
-                _pdf = PDF(fin)
-                self._page = _pdf.pages[0]
+                self._page = PDF(fin).pages[0]
                 self._pdf_bytes = pdf_bytes
                 words = self._page.extract_words(x_tolerance=self.x_tolerance, y_tolerance=self.y_tolerance)
         detect_results = list(map(_to_detect_result, words))
         return detect_results
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pdfplumber_requirement()]
 
-    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
+    def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Get the width and height of the full page
         :param pdf_bytes: pdf_bytes generating the pdf
         :return: width and height
         """
 
-        if self._pdf_bytes == pdf_bytes:
+        if self._pdf_bytes == pdf_bytes and self._page is not None:
             return self._page.bbox[2], self._page.bbox[3]
         # if the pdf bytes is not equal to the cached pdf, will recalculate values
         with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, _):
@@ -111,5 +111,5 @@ class PdfPlumberTextDetector(PdfMiner):
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
 
-    def possible_categories(self) -> List[ObjectTypes]:
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)

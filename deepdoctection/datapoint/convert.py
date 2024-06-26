@@ -30,10 +30,10 @@ from numpy import uint8
 from numpy.typing import NDArray
 from pypdf import PdfReader
 
-from ..utils._types import ImageType
 from ..utils.develop import deprecated
 from ..utils.error import DependencyError
 from ..utils.pdf_utils import pdf_to_np_array
+from ..utils.types import PixelValues
 from ..utils.viz import viz_handler
 
 __all__ = [
@@ -75,7 +75,7 @@ def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
     return copy.deepcopy(obj)
 
 
-def convert_b64_to_np_array(image: str) -> ImageType:
+def convert_b64_to_np_array(image: str) -> PixelValues:
     """
     Converts an image in base4 string encoding representation to a numpy array of shape (width,height,channel).
 
@@ -86,7 +86,7 @@ def convert_b64_to_np_array(image: str) -> ImageType:
     return viz_handler.convert_b64_to_np(image).astype(uint8)
 
 
-def convert_np_array_to_b64(np_image: ImageType) -> str:
+def convert_np_array_to_b64(np_image: PixelValues) -> str:
     """
     Converts an image from numpy array into a base64 string encoding representation
 
@@ -97,7 +97,7 @@ def convert_np_array_to_b64(np_image: ImageType) -> str:
 
 
 @no_type_check
-def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
+def convert_np_array_to_b64_b(np_image: PixelValues) -> bytes:
     """
     Converts an image from numpy array into a base64 bytes encoding representation
 
@@ -108,7 +108,7 @@ def convert_np_array_to_b64_b(np_image: ImageType) -> bytes:
 
 
 @deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
-def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
+def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
     """
     Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed.
     Please check the installation guides at https://poppler.freedesktop.org/ . If no value for dpi is provided
@@ -143,7 +143,7 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     return np_array.astype(uint8)
 
 
-def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None) -> ImageType:
+def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
     """
     Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed. This
     function, however does not rely on the wrapper pdf2image but uses a function of this lib which calls poppler

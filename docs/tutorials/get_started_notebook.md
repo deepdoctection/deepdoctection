@@ -53,13 +53,13 @@ plt.imshow(image)
 
 Next, we instantiate the **deep**doctection analyzer. The analyzer is an example of a pipeline that can be built depending on the problem you want to tackle. This particular pipeline is built from various building blocks. We will come back to this later. 
 
-Because the document is german we will be using Tesseract's model trained on german text (`language='deu'`). If you have a document in a different language choose one by entering its ISO-639-1-Codes. Here are some examples: `fre`, `dut`, `chi`, `cze`, `per`, `gre`, `mac`, `rum`, `arm`, `geo`. 
+Because the document is german we will be using Tesseract's model trained on german text (config_overwrite=["LANGUAGE='deu'"]). If you have a document in a different language choose one by entering its [LangCode](https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html). Here are some examples: `fra`, `nld`, `chi_sim`, `ces`, `fas`, `ell`, `mkd`, `ron`, `hye`, `kat`. 
 
 This will give you, depending on your language, much better results than using the default english model.
 
 
 ```python
-analyzer = dd.get_dd_analyzer(language='deu')
+analyzer = dd.get_dd_analyzer(config_overwrite=["LANGUAGE='deu'"])
 ```
 
 ## Analyze methods
@@ -75,6 +75,8 @@ path = Path.cwd() / "pics/samples/sample_2"
 df = analyzer.analyze(path=path)
 df.reset_state()  # This method must be called just before starting the iteration. It is part of the API.
 ```
+
+    |                                                                                                                                                                                                                                                                                                                                  |1/?[00:00<00:00,1439.86it/s]
 
 
 You can see, when activating the cell, that not much has happened yet. The reason is that `analyze` is a [generator function](https://wiki.python.org/moin/Generators). It does not return instantly any results. Instead it returns a `Dataflow`. 
@@ -113,8 +115,8 @@ print(f" height: {page.height} \n width: {page.width} \n file_name: {page.file_n
      height: 2339.0 
      width: 1654.0 
      file_name: sample_2.png 
-     document_id: 2aa98b36-196e-3cdf-af09-8f2d885d5f88 
-     image_id: 2aa98b36-196e-3cdf-af09-8f2d885d5f88
+     document_id: d0e3f4cc-f604-3f08-9dc6-95c04bb6c51b 
+     image_id: d0e3f4cc-f604-3f08-9dc6-95c04bb6c51b
     
 
 
@@ -130,11 +132,12 @@ page.get_attribute_names()
 
 
 
-    {'chunks',
+    {<PageType.ANGLE>,
+     'chunks',
      'document_id',
-     <PageType.document_type>,
+     <PageType.DOCUMENT_TYPE>,
      'file_name',
-     <PageType.language>,
+     <PageType.LANGUAGE>,
      'layouts',
      'location',
      'page_number',
@@ -158,8 +161,7 @@ page.document_type, page.language
 
 `page.document_type` and `page.language` both return None. The reason is that the analyzer has no component for predicting a document type or a language.
 
-You can easily build a custom analyzer/pipeline containing a document classifier, though. Check this
-[notebook](using_layoutlm_for_sequence_classification_notebook.md) for further information.
+You can easily build a custom analyzer/pipeline containing a document classifier, though. Check this [notebook](using_layoutlm_for_sequence_classification_notebook.md) for further information.
 
 ## Layout segments
 
@@ -196,7 +198,6 @@ print(page.text)
     Gemäß Gesetz vom 17. Dezember 2010 über die Organismen für gemeinsame Anlagen (in seiner jeweils gültigen Fassung) sowie den ESMA-Leitlinien unter Berücksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt („Risikoträger"). Das Identifizierungsverfahren basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr verwalteten Fonds: (a) Geschäftsführung/Senior Management, (b) Portfolio-/ Investmentmanager, (c) Kontrollfunktionen, (d) Mitarbeiter mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikoträger) mit wesentlichem Einfluss, (f} sonstige Mitarbeiter in der gleichen Vergütungsstufe wie sonstige Risikoträger. Mindestens 40 % der VV für Risikoträger werden aufgeschoben vergeben. Des Weiteren werden für wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewährt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfallbedingungen unterworfen, um eine angemessene nachträgliche Risikoadjustierung zu gewähr- leisten. Bei einem VV-Betrag von weniger als EUR 50.000 erhalten Risikoträger ihre gesamte \VV in bar und ohne Aufschub.
     Zusammenfassung der Informationen zur Vergütung für die Gesellschaft für 2018 '
     \ Vergütungsdaten für Delegierte, die die Gesellschaft Portfolio- oder Risikomanagementaufgaben übertragen hat, sind nicht der Tabelle erfasst. an in Unter Berücksichtigung diverser Vergütungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeiträge) oder Nicht-(direkte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergütungen für Fahrzeuge, Mobiltelefone, usw.) umfassen 3 „Senior Management” umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfüllt die Definition als Führungskräfte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Führungskräfte identifiziert.
-    
 
 
 You can get the individual layout segments like `text`, `title`, `list` or `figure`. 
@@ -223,12 +224,12 @@ page.chunks[0]
 
 
 
-    ('2aa98b36-196e-3cdf-af09-8f2d885d5f88',
-     '2aa98b36-196e-3cdf-af09-8f2d885d5f88',
+    ('d0e3f4cc-f604-3f08-9dc6-95c04bb6c51b',
+     'd0e3f4cc-f604-3f08-9dc6-95c04bb6c51b',
      0,
-     '215a633f-c16c-3e04-bbc2-78f9e00d524e',
-     17,
-     <LayoutType.title>,
+     '47673133-ec40-3ef8-ad94-8549fe9eb0af',
+     1,
+     <LayoutType.TITLE>,
      'Festlegung der VV und angemessene Risikoadjustierung')
 
 
@@ -239,6 +240,9 @@ Tables cannot be retrieved from `page.layouts`. They have a special `page.tables
 ```python
 len(page.tables)
 ```
+
+
+
 
     1
 
@@ -259,13 +263,14 @@ table.get_attribute_names()
      'cells',
      'columns',
      'csv',
-     <TableType.html>,
-     <TableType.item>,
-     <TableType.max_col_span>,
-     <TableType.max_row_span>,
-     <TableType.number_of_columns>,
-     <TableType.number_of_rows>,
-     <Relationships.reading_order>,
+     <TableType.HTML>,
+     <TableType.ITEM>,
+     <TableType.MAX_COL_SPAN>,
+     <TableType.MAX_ROW_SPAN>,
+     'np_image',
+     <TableType.NUMBER_OF_COLUMNS>,
+     <TableType.NUMBER_OF_ROWS>,
+     <Relationships.READING_ORDER>,
      'rows',
      'text',
      'words'}
@@ -306,14 +311,14 @@ table.csv
 
 
 
-    [['Jahresdurchschnitt der Mitarbeiterzahl', '139'],
-     ['Gesamtvergütung ?', 'EUR 15.315.952'],
-     ['Fixe Vergütung', 'EUR 13.151.856'],
-     ['Variable Vergütung', 'EUR 2.164.096'],
-     ['davon: Carried Interest', 'EURO'],
-     ['Gesamtvergütung für Senior Management ®', 'EUR 1.468.434'],
-     ['Gesamtvergütung für sonstige Risikoträger', 'EUR 324.229'],
-     ['Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen', 'EUR 554.046']]
+    [['Jahresdurchschnitt der Mitarbeiterzahl ', '139 '],
+     ['Gesamtvergütung ? ', 'EUR 15.315.952 '],
+     ['Fixe Vergütung ', 'EUR 13.151.856 '],
+     ['Variable Vergütung ', 'EUR 2.164.096 '],
+     ['davon: Carried Interest ', 'EURO '],
+     ['Gesamtvergütung für Senior Management ® ', 'EUR 1.468.434 '],
+     ['Gesamtvergütung für sonstige Risikoträger ', 'EUR 324.229 '],
+     ['Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen ', 'EUR 554.046 ']]
 
 
 
@@ -325,7 +330,7 @@ table.text
 
 
 
-    'Jahresdurchschnitt der Mitarbeiterzahl 139 \n Gesamtvergütung ? EUR 15.315.952 \n Fixe Vergütung EUR 13.151.856 \n Variable Vergütung EUR 2.164.096 \n davon: Carried Interest EURO \n Gesamtvergütung für Senior Management ® EUR 1.468.434 \n Gesamtvergütung für sonstige Risikoträger EUR 324.229 \n Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen EUR 554.046 \n'
+    'Jahresdurchschnitt der Mitarbeiterzahl  139  \n Gesamtvergütung ?  EUR 15.315.952  \n Fixe Vergütung  EUR 13.151.856  \n Variable Vergütung  EUR 2.164.096  \n davon: Carried Interest  EURO  \n Gesamtvergütung für Senior Management ®  EUR 1.468.434  \n Gesamtvergütung für sonstige Risikoträger  EUR 324.229  \n Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen  EUR 554.046  \n'
 
 
 
@@ -341,17 +346,18 @@ cell.get_attribute_names()
 
 
     {'bbox',
-     <CellType.body>,
-     <CellType.column_header>,
-     <CellType.column_number>,
-     <CellType.column_span>,
-     <CellType.header>,
-     <CellType.projected_row_header>,
-     <Relationships.reading_order>,
-     <CellType.row_header>,
-     <CellType.row_number>,
-     <CellType.row_span>,
-     <CellType.spanning>,
+     <CellType.BODY>,
+     <CellType.COLUMN_HEADER>,
+     <CellType.COLUMN_NUMBER>,
+     <CellType.COLUMN_SPAN>,
+     <CellType.HEADER>,
+     'np_image',
+     <CellType.PROJECTED_ROW_HEADER>,
+     <Relationships.READING_ORDER>,
+     <CellType.ROW_HEADER>,
+     <CellType.ROW_NUMBER>,
+     <CellType.ROW_SPAN>,
+     <CellType.SPANNING>,
      'text',
      'words'}
 
@@ -365,7 +371,7 @@ print(f"column number: {cell.column_number} \n row_number: {cell.row_number} \n 
     column number: 1 
      row_number: 8 
      text: Gesamtvergütung für Mitarbeiter mit Kontrollfunktionen 
-     annotation_id: 8a6224cb-fc75-32db-be30-983e8f9b42c1
+     annotation_id: e631e4bc-4740-335f-8618-699bd19a822f
 
 
 Still not down yet, we have a list of words that is responsible to generate the text string.
@@ -380,13 +386,17 @@ word.get_attribute_names()
 
 
     {'bbox',
-     <WordType.block>,
-     <WordType.characters>,
-     <Relationships.reading_order>,
-     <WordType.tag>,
-     <WordType.text_line>,
-     <WordType.token_class>,
-     <WordType.token_tag>}
+     <WordType.BLOCK>,
+     <WordType.CHARACTER_TYPE>,
+     <WordType.CHARACTERS>,
+     <WordType.HANDWRITTEN>,
+     'np_image',
+     <WordType.PRINTED>,
+     'reading_order',
+     <WordType.TAG>,
+     <WordType.TEXT_LINE>,
+     <WordType.TOKEN_CLASS>,
+     <WordType.TOKEN_TAG>}
 
 
 
@@ -412,14 +422,14 @@ You can use the `save` method to save the result of the analyzer in a `.json` fi
 
 
 ```python
-page.save(image_to_json=True, path="/path/to/dir/test.json")
+page.save(image_to_json=True, path="/home/janis/Downloads/test.json") #path="/path/to/dir/test.json")
 ```
 
-Having saved the results you can easily parse the file into the `Page` format without losing any information. 
+Having saved the results you can easily parse the file into the `Page` format without loosing any information. 
 
 
 ```python
-page = dd.Page.from_file(file_path="/path/to/dir/test.json")
+page = dd.Page.from_file(file_path="/home/janis/Downloads/test.json")
 ```
 
 The `Page` object is read-only and even though you can change the value it will not be persisted.
@@ -429,15 +439,18 @@ The `Page` object is read-only and even though you can change the value it will 
 word.token_class = "ORG"
 ```
 
+It might look like that the string has been saved however, this is something that is being added by iPython and will not be persisted
+in any means.
+
 
 ```python
-word #  __repr__ of the base object does carry <WordType.token_class> information.  
+word.token_class #  __repr__ of the base object does carry <WordType.token_class> information.  
 ```
 
 
 
 
-    Word(active=True, _annotation_id='844631a5-5ddb-3ba8-b81a-bb9f05604d58', category_name=<LayoutType.word>, _category_name=<LayoutType.word>, category_id='1', score=0.91, sub_categories={<WordType.characters>: ContainerAnnotation(active=True, _annotation_id='ded39c8a-72c0-335b-853f-e6c8b50fbfbc', category_name=<WordType.characters>, _category_name=<WordType.characters>, category_id='None', score=0.91, sub_categories={}, relationships={}, value='Gesamtvergütung'), <Relationships.reading_order>: CategoryAnnotation(active=True, _annotation_id='9a2ced50-d1b6-378e-bbb7-49b8d3cfee61', category_name=<Relationships.reading_order>, _category_name=<Relationships.reading_order>, category_id='1', score=None, sub_categories={}, relationships={})}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=146, uly=1481, lrx=277, lry=1496, height=15, width=131))
+    'ORG'
 
 
 
@@ -446,8 +459,3 @@ There is no easy way yet to modify results. In tutorial **Diving deeper into the
 ## Where to go from here
 
 If you want to get a deeper understanding how a pipeline is composed, we suggest to look at the [pipeline notebook](pipelines_notebook.md).
-
-
-```python
-
-```

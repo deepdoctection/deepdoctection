@@ -33,9 +33,9 @@ from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltTokenClassifier,
 )
-from deepdoctection.utils._types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
+from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund
 from ..test_utils import get_mock_patch
@@ -113,23 +113,23 @@ class TestHFLayoutLmTokenClassifier:
         )
 
         # Arrange
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -146,8 +146,8 @@ class TestHFLayoutLmTokenClassifier:
         HFLayoutLmTokenClassifier.get_wrapped_model = (  # type: ignore
             MagicMock(return_value=get_mock_patch("LayoutLMForTokenClassification"))
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
         layoutlm = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm.model.device = "cpu"
 
@@ -203,23 +203,23 @@ class TestHFLayoutLmv2TokenClassifier:
         HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv2ForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
 
         # Act
         model = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -236,8 +236,8 @@ class TestHFLayoutLmv2TokenClassifier:
         HFLayoutLmv2TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv2ForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
         layoutlm_v2 = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm_v2.model.device = "cpu"
 
@@ -294,23 +294,23 @@ class TestHFLayoutLmv3TokenClassifier:
         HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv3ForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
 
         # Act
         model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -327,8 +327,8 @@ class TestHFLayoutLmv3TokenClassifier:
         HFLayoutLmv3TokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv3ForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
         layoutlm_v3 = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         layoutlm_v3.model.device = "cpu"
 
@@ -375,7 +375,7 @@ class TestHFLayoutLmSequenceClassifier:
         HFLayoutLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 
@@ -419,7 +419,7 @@ class TestHFLayoutLmv2SequenceClassifier:
         HFLayoutLmv2SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv2ForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm_v2 = HFLayoutLmv2SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v2.model.device = "cpu"
 
@@ -464,7 +464,7 @@ class TestHFLayoutLmv3SequenceClassifier:
         HFLayoutLmv3SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv3ForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm_v3 = HFLayoutLmv3SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v3.model.device = "cpu"
 
@@ -519,23 +519,23 @@ class TestHFLiltTokenClassifier:
         HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LiltForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
 
         # Act
         model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -552,8 +552,8 @@ class TestHFLiltTokenClassifier:
         HFLiltTokenClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LiltForTokenClassification")
         )
-        categories_semantics = [TokenClasses.header]
-        categories_bio = [BioTag.begin, BioTag.inside, BioTag.outside]
+        categories_semantics = [TokenClasses.HEADER]
+        categories_bio = [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
         lilt = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
         lilt.model.device = "cpu"
 

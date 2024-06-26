@@ -16,15 +16,15 @@ import sys
 from os import environ, path
 from shutil import which
 from types import ModuleType
-from typing import Any, Tuple, Union, no_type_check
+from typing import Any, Union, no_type_check
 
 import importlib_metadata
 from packaging import version
 
-from ._types import Requirement
 from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
+from .types import PathLikeOrStr, Requirement
 
 _GENERIC_ERR_MSG = "Please check the required version either in the docs or in the setup file"
 
@@ -52,7 +52,7 @@ def get_tf_version() -> str:
     """
     tf_version = "0.0"
     if tf_available():
-        candidates: Tuple[str, ...] = (
+        candidates: tuple[str, ...] = (
             "tensorflow",
             "tensorflow-cpu",
             "tensorflow-gpu",
@@ -250,31 +250,26 @@ def get_detectron2_requirement() -> Requirement:
 # Tesseract related dependencies
 _TESS_AVAILABLE = which("tesseract") is not None
 # Tesseract installation path
-_TESS_PATH = "tesseract"
+_TESS_PATH: PathLikeOrStr = "tesseract"
 _TESS_ERR_MSG = (
     "Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
     "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 )
 
 
-def set_tesseract_path(tesseract_path: str) -> None:
+def set_tesseract_path(tesseract_path: PathLikeOrStr) -> None:
     """Set the Tesseract path. If you have tesseract installed in Anaconda,
        you can use this function to set tesseract path.
 
     :param tesseract_path: Tesseract installation path.
     """
-    if tesseract_path is None:
-        raise TypeError("tesseract_path cannot be None")
 
     global _TESS_AVAILABLE  # pylint: disable=W0603
     global _TESS_PATH  # pylint: disable=W0603
 
     tesseract_flag = which(tesseract_path)
 
-    if tesseract_flag is None:
-        _TESS_AVAILABLE = False
-    else:
-        _TESS_AVAILABLE = True
+    _TESS_AVAILABLE = False if tesseract_flag is not None else True  # pylint: disable=W0603,R1719
 
     _TESS_PATH = tesseract_path
 

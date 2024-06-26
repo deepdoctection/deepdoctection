@@ -44,7 +44,7 @@ def test_dataset_pubtabnet_returns_image() -> None:
 
     # Act
     df_list = collect_datapoint_from_dataflow(df)
-    assert len(df_list) == 3
+    assert len(df_list) == 3, len(df_list)
 
 
 @mark.basic

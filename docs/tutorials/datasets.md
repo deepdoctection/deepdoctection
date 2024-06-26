@@ -166,7 +166,7 @@ We assume that in *custom_dataset* the data set was physically placed in the fol
             return dd.DatasetCategories(init_categories=_CATEGORIES)
 
         def _builder(self):
-            return CustomDataFlowBuilder(location=_LOCATION,annotation_files=_ANNOTATION_FILES)
+            return dd.CustomDataFlowBuilder(location=_LOCATION,annotation_files=_ANNOTATION_FILES)
 ```
 
 
@@ -199,14 +199,14 @@ define a `ObjectTypes` for new categories and initialize `DatasetCategories`.
 
 ```python
 
-    @object_types_registry.register("TableCellType")  # we need to register the ObjectType
+    @dd.object_types_registry.register("TableCellType")  # we need to register the ObjectType
     class CellType(ObjectTypes):
-        table_cell = "TABLE_CELL"
-        table_header = "TABLE_HEADER"
-        table_body = "TABLE_BODY"
+        TABLE_CELL = "table_cell"
+        TABLE_HEADER = "table_header"
+        TABLE_BODY = "table_body"
 
-    DatasetCategories(init_categories=[CellType.table_cell],
-                      init_sub_categories={CellType.table_cell:[CellType.table_header, CellType.table_body]}).
+    dd.DatasetCategories(init_categories=[CellType.TABLE_CELL],
+                      init_sub_categories={CellType.TABLE_CELL:[CellType.TABLE_HEADER, CellType.TABLE_BODY]}).
 
 ```
 

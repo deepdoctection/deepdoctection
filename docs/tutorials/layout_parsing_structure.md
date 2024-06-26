@@ -41,7 +41,7 @@ layout blocks.
     import deepdoctection as dd
 
     # setting up layout detector and layout service
-    categories_layout = {"1": "text", "2": "title", "3": "list", "4": "table", "5": "figure"}
+    categories_layout = {1: "text", 2: "title", 3: "list", 4: "table", 5: "figure"}
 
     layout_config_path = dd.ModelCatalog.get_full_path_configs("dd/tp/conf_frcnn_layout.yaml")
     layout_weights_path = "/path/to/dir/model-820000.data-00000-of-00001" # some model trained on custom dataset
@@ -67,20 +67,20 @@ on parent categories (layout blocks), child categories (words) and a matching ru
 a parental/child relationship will be established provided once a given threshold has been exceeded.
 
 Note, that we haven't added `dd.LayoutType.figure` to the `parent_categories`. This will ignore all figure-type
-layout section and keep all words within as orphan. 
+layout section and keep all words within as orphan.
 
 ```python3
-    
-    match = dd.MatchingService(
-            parent_categories=[dd.LayoutType.text,
-                               dd.LayoutType.title,
-                               dd.LayoutType.list,
-                               dd.LayoutType.table],
-            child_categories=dd.LayoutType.word,
-            matching_rule="ioa",
-            threshold=0.9
-            )
-    pipe_comp.append(match)
+
+match = dd.MatchingService(
+    parent_categories=[dd.LayoutType.TEXT,
+                       dd.LayoutType.TITLE,
+                       dd.LayoutType.LIST,
+                       dd.LayoutType.TABLE],
+    child_categories=dd.LayoutType.WORD,
+    matching_rule="ioa",
+    threshold=0.9
+)
+pipe_comp.append(match)
 ``` 
 
 ## Text order service
@@ -142,14 +142,14 @@ text. Finally, we want to have orphan words to be in narrative text. The configu
 
 ```python    
     text_order = dd.TextOrderService(text_container="line",
-                                     text_block_categories= [dd.LayoutType.text,
-                                                             dd.LayoutType.title,
-                                                             dd.LayoutType.list,
-                                                             dd.LayoutType.table],
-                                     floating_text_block_categories=[dd.LayoutType.text,
-                                                             dd.LayoutType.title,
-                                                             dd.LayoutType.list,
-                                                             dd.LayoutType.table],
+                                     text_block_categories= [dd.LayoutType.TEXT,
+                                                             dd.LayoutType.TITLE,
+                                                             dd.LayoutType.LIST,
+                                                             dd.LayoutType.TABLE],
+                                     floating_text_block_categories=[dd.LayoutType.TEXT,
+                                                             dd.LayoutType.TITLE,
+                                                             dd.LayoutType.LIST,
+                                                             dd.LayoutType.TABLE],
                                      include_residual_text_container=True)
     pipe_comp.append(text_order)
 ```
@@ -179,10 +179,10 @@ because these would not contain a `reading_order` attribute and the processing w
 ```python
     
     page_parsing = dd.PageParsingService(text_container="word",
-                                         floating_text_block_categories=[dd.LayoutType.text,
-                                                                         dd.LayoutType.title,
-                                                                         dd.LayoutType.list,
-                                                                         dd.LayoutType.table],
+                                         floating_text_block_categories=[dd.LayoutType.TEXT,
+                                                                         dd.LayoutType.TITLE,
+                                                                         dd.LayoutType.LIST,
+                                                                         dd.LayoutType.TABLE],
                                          include_residual_text_container=True)
     
     pipe = dd.DoctectionPipe(pipeline_component_list=pipe_comp,

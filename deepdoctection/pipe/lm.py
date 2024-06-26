@@ -21,19 +21,20 @@ Module for token classification pipeline
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Callable, List, Literal, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
-from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
-from ..utils._types import JsonDict
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
-from .base import LanguageModelPipelineComponent
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
+
+if TYPE_CHECKING:
+    from ..extern.hflayoutlm import HfLayoutSequenceModels, HfLayoutTokenModels
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
-class LMTokenClassifierService(LanguageModelPipelineComponent):
+class LMTokenClassifierService(PipelineComponent):
     """
     Pipeline component for token classification
 
@@ -65,7 +66,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HFLayoutLmTokenClassifierBase,
+        language_model: HfLayoutTokenModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -109,15 +110,16 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         self.segment_positions = segment_positions
         self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
-            categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
+            categories_name_as_key = {val: key for key, val in self.language_model.categories.categories.items()}
             self.default_key: ObjectTypes
-            if BioTag.outside in categories_name_as_key:
-                self.default_key = BioTag.outside
+            if BioTag.OUTSIDE in categories_name_as_key:
+                self.default_key = BioTag.OUTSIDE
             else:
-                self.default_key = TokenClasses.other
+                self.default_key = TokenClasses.OTHER
             self.other_name_as_key = {self.default_key: categories_name_as_key[self.default_key]}
-        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
-        super().__init__(self._get_name(), tokenizer, image_to_features_func)
+        self.tokenizer = tokenizer
+        self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), self.language_model.model_id)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -127,7 +129,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             "segment_positions": self.segment_positions,
             "sliding_window_stride": self.sliding_window_stride,
         }
-        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        self.required_kwargs.update(self.language_model.default_kwargs_for_image_to_features_mapping())
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
@@ -145,7 +147,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             and not token.token.startswith("##")
         ]
 
-        words_populated: List[str] = []
+        words_populated: list[str] = []
         for token in lm_output:
             if token.uuid not in words_populated:
                 if token.class_name == token.semantic_name:
@@ -153,31 +155,31 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
                 else:
                     token_class_name_id = None
                 self.dp_manager.set_category_annotation(
-                    token.semantic_name, token_class_name_id, WordType.token_class, token.uuid
+                    token.semantic_name, token_class_name_id, WordType.TOKEN_CLASS, token.uuid
                 )
-                self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.tag, token.uuid)
+                self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.TAG, token.uuid)
                 self.dp_manager.set_category_annotation(
-                    token.class_name, token.class_id, WordType.token_tag, token.uuid
+                    token.class_name, token.class_id, WordType.TOKEN_TAG, token.uuid
                 )
                 words_populated.append(token.uuid)
 
         if self.use_other_as_default_category:
-            word_anns = dp.get_annotation(LayoutType.word)
+            word_anns = dp.get_annotation(LayoutType.WORD)
             for word in word_anns:
-                if WordType.token_class not in word.sub_categories:
+                if WordType.TOKEN_CLASS not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
-                        TokenClasses.other,
+                        TokenClasses.OTHER,
                         self.other_name_as_key[self.default_key],
-                        WordType.token_class,
+                        WordType.TOKEN_CLASS,
                         word.annotation_id,
                     )
-                if WordType.tag not in word.sub_categories:
-                    self.dp_manager.set_category_annotation(BioTag.outside, None, WordType.tag, word.annotation_id)
-                if WordType.token_tag not in word.sub_categories:
+                if WordType.TAG not in word.sub_categories:
+                    self.dp_manager.set_category_annotation(BioTag.OUTSIDE, None, WordType.TAG, word.annotation_id)
+                if WordType.TOKEN_TAG not in word.sub_categories:
                     self.dp_manager.set_category_annotation(
                         self.default_key,
                         self.other_name_as_key[self.default_key],
-                        WordType.token_tag,
+                        WordType.TOKEN_TAG,
                         word.annotation_id,
                     )
 
@@ -195,14 +197,12 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             self.sliding_window_stride,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {LayoutType.word: {WordType.token_class, WordType.tag, WordType.token_tag}}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={LayoutType.WORD: {WordType.TOKEN_CLASS, WordType.TAG, WordType.TOKEN_TAG}},
+            relationships={},
+            summaries=(),
         )
 
     def _get_name(self) -> str:
@@ -223,9 +223,12 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             mapping_str
         ]
 
+    def clear_predictor(self) -> None:
+        self.language_model.clear_model()
+
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
-class LMSequenceClassifierService(LanguageModelPipelineComponent):
+class LMSequenceClassifierService(PipelineComponent):
     """
     Pipeline component for sequence classification
 
@@ -257,7 +260,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HFLayoutLmSequenceClassifierBase,
+        language_model: HfLayoutSequenceModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -281,8 +284,9 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.padding = padding
         self.truncation = truncation
         self.return_overflowing_tokens = return_overflowing_tokens
-        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
-        super().__init__(self._get_name(), tokenizer, image_to_features_func)
+        self.tokenizer = tokenizer
+        self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), self.language_model.model_id)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -290,7 +294,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             "return_overflowing_tokens": self.return_overflowing_tokens,
             "return_tensors": "pt",
         }
-        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        self.required_kwargs.update(self.language_model.default_kwargs_for_image_to_features_mapping())
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
@@ -299,7 +303,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             return
         lm_output = self.language_model.predict(**lm_input)
         self.dp_manager.set_summary_annotation(
-            PageType.document_type, lm_output.class_name, lm_output.class_id, None, lm_output.score
+            PageType.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
         )
 
     def clone(self) -> LMSequenceClassifierService:
@@ -311,14 +315,9 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             self.return_overflowing_tokens,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", [PageType.document_type]),
-            ]
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(
+            image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.DOCUMENT_TYPE,)
         )
 
     def _get_name(self) -> str:
@@ -338,3 +337,6 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
             mapping_str
         ]
+
+    def clear_predictor(self) -> None:
+        self.language_model.clear_model()

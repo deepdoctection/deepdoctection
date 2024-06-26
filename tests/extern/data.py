@@ -18,9 +18,11 @@
 """
 Some data samples in a separate module
 """
+
+from typing import Mapping
+
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils._types import JsonDict
-from deepdoctection.utils.settings import CellType, LayoutType
+from deepdoctection.utils.settings import CellType, LayoutType, ObjectTypes
 
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "
@@ -74,7 +76,7 @@ WORD_RESULTS = [
         block="1",
         line="2",
         class_id=1,
-        class_name=LayoutType.word,
+        class_name=LayoutType.WORD,
     ),
     DetectionResult(
         box=[30.0, 10.0, 38.0, 24.0],
@@ -83,20 +85,20 @@ WORD_RESULTS = [
         block="1",
         line="2",
         class_id=1,
-        class_name=LayoutType.word,
+        class_name=LayoutType.WORD,
     ),
 ]
 
 ANGLE_RESULT = DetectionResult(angle=90.0, score=8.73)
 
 
-def get_detr_categories() -> JsonDict:
+def get_detr_categories() -> Mapping[int, ObjectTypes]:
     """detr_categories"""
     return {
-        "1": LayoutType.table,
-        "2": LayoutType.column,
-        "3": LayoutType.row,
-        "4": CellType.column_header,
-        "5": CellType.projected_row_header,
-        "6": CellType.spanning,
+        1: LayoutType.TABLE,
+        2: LayoutType.COLUMN,
+        3: LayoutType.ROW,
+        4: CellType.COLUMN_HEADER,
+        5: CellType.PROJECTED_ROW_HEADER,
+        6: CellType.SPANNING,
     }

@@ -25,8 +25,8 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image
-from deepdoctection.utils._types import JsonDict
 from deepdoctection.utils.settings import CellType, LayoutType, ObjectTypes, TokenClasses, WordType
+from deepdoctection.utils.types import JsonDict
 
 from .conftest import get_always_pubtabnet_white_image
 
@@ -53,16 +53,16 @@ def test_xfund_to_image(
 
     # Assert
     assert img
-    word_anns = img.get_annotation(category_names=LayoutType.word)
-    words = [ann.get_sub_category(WordType.characters).value for ann in word_anns]  # type: ignore
+    word_anns = img.get_annotation(category_names=LayoutType.WORD)
+    words = [ann.get_sub_category(WordType.CHARACTERS).value for ann in word_anns]  # type: ignore
     assert words == ["Akademisches", "Auslandsamt", "Bewerbungsformular"]
 
-    sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in word_anns]
-    assert sub_cats_category_names == [TokenClasses.other, TokenClasses.other, CellType.header]
+    sub_cats_category_names = [ann.get_sub_category(WordType.TOKEN_CLASS).category_name for ann in word_anns]
+    assert sub_cats_category_names == [TokenClasses.OTHER, TokenClasses.OTHER, CellType.HEADER]
 
-    sub_cats_ner_tags = [ann.get_sub_category(WordType.tag).category_name for ann in word_anns]
+    sub_cats_ner_tags = [ann.get_sub_category(WordType.TAG).category_name for ann in word_anns]
     assert sub_cats_ner_tags == ["O", "O", "B"]
 
-    text_anns = img.get_annotation(category_names=LayoutType.text)
-    sub_cats_category_names = [ann.get_sub_category(WordType.token_class).category_name for ann in text_anns]
-    assert sub_cats_category_names == [TokenClasses.other, TokenClasses.header]
+    text_anns = img.get_annotation(category_names=LayoutType.TEXT)
+    sub_cats_category_names = [ann.get_sub_category(WordType.TOKEN_CLASS).category_name for ann in text_anns]
+    assert sub_cats_category_names == [TokenClasses.OTHER, TokenClasses.HEADER]

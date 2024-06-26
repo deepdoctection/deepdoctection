@@ -29,9 +29,9 @@ from pytest import mark
 from deepdoctection.datapoint import Image
 from deepdoctection.mapper.laylmstruct import image_to_raw_layoutlm_features, raw_features_to_layoutlm_features
 from deepdoctection.mapper.xfundstruct import xfund_to_image
-from deepdoctection.utils._types import JsonDict
 from deepdoctection.utils.file_utils import transformers_available
 from deepdoctection.utils.settings import DatasetType, ObjectTypes, WordType
+from deepdoctection.utils.types import JsonDict
 
 if transformers_available():
     from transformers import LayoutLMTokenizerFast
@@ -56,7 +56,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     )
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(image)
+    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(image)
 
     # Assert
     assert raw_features is not None
@@ -92,12 +92,12 @@ def test_image_to_raw_layoutlm_features_for_inference(
     assert image is not None
 
     for ann in image.get_annotation():
-        ann.remove_sub_category(WordType.token_class)
-        ann.remove_sub_category(WordType.tag)
-        ann.remove_sub_category(WordType.token_tag)
+        ann.remove_sub_category(WordType.TOKEN_CLASS)
+        ann.remove_sub_category(WordType.TAG)
+        ann.remove_sub_category(WordType.TOKEN_TAG)
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(image)
+    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(image)
 
     # Assert
     assert raw_features is not None
