@@ -21,8 +21,8 @@ Typing sheet for the whole package
 
 import queue
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union, TypeAlias
-
+from typing import TYPE_CHECKING, Any, Dict, Protocol, Tuple, Type, TypeVar, Union, NewType
+from typing_extensions import TypeAlias
 import numpy.typing as npt
 import tqdm
 from numpy import uint8
