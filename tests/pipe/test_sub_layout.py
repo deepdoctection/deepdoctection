@@ -26,8 +26,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
-from deepdoctection.extern.base import DetectionResult
-from deepdoctection.pipe.base import ObjectDetector
+from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import LayoutType
 
@@ -42,7 +41,7 @@ def test_detect_result_generator(
 
     # Arrange
     categories = dataset_categories.get_categories()
-    detect_result_generator = DetectResultGenerator(categories, [["1"], ["2"], ["3"], ["4"], ["5"]])
+    detect_result_generator = DetectResultGenerator(categories, [[1], [2], [3], [4], [5]])
 
     # Act
     detect_result_generator.width = 600
@@ -70,7 +69,7 @@ class TestSubImageLayoutService:
         self._cell_detector.model_id = "test_model"
         self._cell_detector.name = "mock_cell_detector"
 
-        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
+        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.TABLE)
 
     @mark.basic
     def test_pass_datapoint(
@@ -88,7 +87,7 @@ class TestSubImageLayoutService:
 
         # Act
         dp = self.sub_image_layout_service.pass_datapoint(dp_image_with_layout_anns)
-        anns = dp.get_annotation(category_names=LayoutType.table)
+        anns = dp.get_annotation(category_names=LayoutType.TABLE)
 
         # Assert
         assert len(anns) == 2

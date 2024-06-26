@@ -23,10 +23,12 @@ Module for **deep**doctection analyzer.
 -user factory with a reduced config setting
 """
 
+from __future__ import annotations
+
 import os
 from os import environ
 from shutil import copyfile
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from lazy_imports import try_import
 
@@ -50,7 +52,6 @@ from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
-from ..utils._types import Pathlike
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
@@ -59,6 +60,7 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import CellType, LayoutType
 from ..utils.transform import PadTransform
+from ..utils.types import PathLikeOrStr
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
@@ -82,7 +84,7 @@ _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
 def maybe_copy_config_to_cache(
-    package_path: Pathlike, configs_dir_path: Pathlike, file_name: str, force_copy: bool = True
+    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
 ) -> str:
     """
     Initial copying of various files
@@ -116,7 +118,7 @@ def config_sanity_checks(cfg: AttrDict) -> None:
 
 def build_detector(
     cfg: AttrDict, mode: str
-) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector", "D2FrcnnTracingDetector"]:
+) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
     """Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
     the config
 
@@ -134,8 +136,8 @@ def build_detector(
     config_path = ModelCatalog.get_full_path_configs(weights)
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
-    categories = profile.categories
-    assert categories is not None
+    categories = profile.categories if profile.categories is not None else {}
+
     if profile.model_wrapper in ("TPFrcnnDetector",):
         return TPFrcnnDetector(config_path, weights_path, categories, filter_categories=filter_categories)
     if profile.model_wrapper in ("D2FrcnnDetector",):
@@ -203,11 +205,13 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
     padder = None
     if mode == "ITEM":
         if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
-            exclude_category_ids.extend(["1", "3", "4", "5", "6"])
+            exclude_category_ids.extend([1, 3, 4, 5, 6])
             padder = build_padder(cfg, mode)
-    detect_result_generator = DetectResultGenerator(detector.categories, exclude_category_ids=exclude_category_ids)
+    detect_result_generator = DetectResultGenerator(
+        categories=detector.categories.categories, exclude_category_ids=exclude_category_ids
+    )
     return SubImageLayoutService(
-        detector, [LayoutType.table, LayoutType.table_rotated], None, detect_result_generator, padder
+        detector, [LayoutType.TABLE, LayoutType.TABLE_ROTATED], None, detect_result_generator, padder
     )
 
 
@@ -261,7 +265,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     :param cfg: A configuration
     :return: Analyzer pipeline
     """
-    pipe_component_list: List[PipelineComponent] = []
+    pipe_component_list: list[PipelineComponent] = []
 
     if cfg.USE_LAYOUT:
         d_layout = build_detector(cfg, "LAYOUT")
@@ -301,22 +305,22 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
                 cfg.SEGMENTATION.CELL_CATEGORY_ID,
-                LayoutType.table,
+                LayoutType.TABLE,
                 [
-                    CellType.spanning,
-                    CellType.row_header,
-                    CellType.column_header,
-                    CellType.projected_row_header,
-                    LayoutType.cell,
+                    CellType.SPANNING,
+                    CellType.ROW_HEADER,
+                    CellType.COLUMN_HEADER,
+                    CellType.PROJECTED_ROW_HEADER,
+                    LayoutType.CELL,
                 ],
                 [
-                    CellType.spanning,
-                    CellType.row_header,
-                    CellType.column_header,
-                    CellType.projected_row_header,
+                    CellType.SPANNING,
+                    CellType.ROW_HEADER,
+                    CellType.COLUMN_HEADER,
+                    CellType.PROJECTED_ROW_HEADER,
                 ],
-                [LayoutType.row, LayoutType.column],
-                [CellType.row_number, CellType.column_number],
+                [LayoutType.ROW, LayoutType.COLUMN],
+                [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER],
                 stretch_rule=cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(pubtables)
@@ -328,23 +332,23 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.FULL_TABLE_TILING,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-                LayoutType.table,
-                [CellType.header, CellType.body, LayoutType.cell],
-                [LayoutType.row, LayoutType.column],
-                [CellType.row_number, CellType.column_number],
+                LayoutType.TABLE,
+                [CellType.HEADER, CellType.BODY, LayoutType.CELL],
+                [LayoutType.ROW, LayoutType.COLUMN],
+                [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER],
                 cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(table_segmentation)
 
             if cfg.USE_TABLE_REFINEMENT:
                 table_segmentation_refinement = TableSegmentationRefinementService(
-                    [LayoutType.table, LayoutType.table_rotated],
+                    [LayoutType.TABLE, LayoutType.TABLE_ROTATED],
                     [
-                        LayoutType.cell,
-                        CellType.column_header,
-                        CellType.projected_row_header,
-                        CellType.spanning,
-                        CellType.row_header,
+                        LayoutType.CELL,
+                        CellType.COLUMN_HEADER,
+                        CellType.PROJECTED_ROW_HEADER,
+                        CellType.SPANNING,
+                        CellType.ROW_HEADER,
                     ],
                 )
                 pipe_component_list.append(table_segmentation_refinement)
@@ -364,7 +368,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
         ocr = build_ocr(cfg)
         skip_if_text_extracted = cfg.USE_PDF_MINER
-        extract_from_roi = LayoutType.word if cfg.OCR.USE_DOCTR else None
+        extract_from_roi = LayoutType.WORD if cfg.OCR.USE_DOCTR else None
         text = TextExtractionService(
             ocr, skip_if_text_extracted=skip_if_text_extracted, extract_from_roi=extract_from_roi
         )
@@ -373,7 +377,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     if cfg.USE_PDF_MINER or cfg.USE_OCR:
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=LayoutType.word,
+            child_categories=LayoutType.WORD,
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.THRESHOLD,
             max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
@@ -381,7 +385,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(match)
 
         order = TextOrderService(
-            text_container=LayoutType.word,
+            text_container=LayoutType.WORD,
             text_block_categories=cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
             floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
             include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
@@ -393,7 +397,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(order)
 
     page_parsing_service = PageParsingService(
-        text_container=LayoutType.word,
+        text_container=LayoutType.WORD,
         floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
         include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
     )
@@ -404,8 +408,8 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
 def get_dd_analyzer(
     reset_config_file: bool = True,
-    config_overwrite: Optional[List[str]] = None,
-    path_config_file: Optional[Pathlike] = None,
+    config_overwrite: Optional[list[str]] = None,
+    path_config_file: Optional[PathLikeOrStr] = None,
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.

@@ -51,7 +51,7 @@ class TestCategoryAnnotation:
         """
 
         # Arrange
-        test_cat = CategoryAnnotation(category_name="FOO", category_id="1", external_id=external_id)
+        test_cat = CategoryAnnotation(category_name="FOO", category_id=1, external_id=external_id)
 
         # Assert
         assert test_cat.annotation_id == expected
@@ -64,9 +64,9 @@ class TestCategoryAnnotation:
         """
 
         # Arrange
-        cat = CategoryAnnotation(category_name="FOO", category_id="1")
-        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
-        sub_cat_2 = CategoryAnnotation(category_name="BAZ", category_id="3")
+        cat = CategoryAnnotation(category_name="FOO", category_id=1)
+        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id=2)
+        sub_cat_2 = CategoryAnnotation(category_name="BAZ", category_id=3)
 
         # Act
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
@@ -91,9 +91,9 @@ class TestCategoryAnnotation:
         """
 
         # Arrange
-        cat = CategoryAnnotation(category_name="FOO", category_id="1")
+        cat = CategoryAnnotation(category_name="FOO", category_id=1)
         sub_cat_1 = CategoryAnnotation(
-            category_name="FOOBAK", category_id="2", external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="FOOBAK", category_id=2, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         # Act
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
@@ -112,8 +112,8 @@ class TestCategoryAnnotation:
         """
 
         # Arrange
-        cat = CategoryAnnotation(category_name="FOO", category_id="1")
-        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
+        cat = CategoryAnnotation(category_name="FOO", category_id=1)
+        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id=2)
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
 
         # Act
@@ -131,11 +131,9 @@ class TestCategoryAnnotation:
         """
 
         # Arrange
-        cat = CategoryAnnotation(
-            category_name="FOO", category_id="1", external_id="c822f8c3-1148-30c4-90eb-cb4896b1e222"
-        )
+        cat = CategoryAnnotation(category_name="FOO", category_id=1, external_id="c822f8c3-1148-30c4-90eb-cb4896b1e222")
         sub_cat_1 = CategoryAnnotation(
-            category_name="FOOBAK", category_id="2", external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
+            category_name="FOOBAK", category_id=2, external_id="c822f8c3-1148-30c4-90eb-cb4896b1ebe5"
         )
         # Act
         cat.dump_sub_category(get_type("bak"), sub_cat_1)
@@ -153,7 +151,7 @@ class TestCategoryAnnotation:
         # Arrange
         cat = ImageAnnotation(
             category_name="FOO",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
         )
         cat.image = Image(location=image.loc, file_name=image.file_name)

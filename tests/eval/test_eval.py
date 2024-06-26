@@ -60,7 +60,7 @@ class TestEvaluator:
         self._dataset.dataset_info = MagicMock()
         self._dataset.dataflow.build = MagicMock(return_value=DataFromList([image_with_anns]))
         self._dataset.dataflow.categories = categories
-        self._dataset.dataset_info.type = DatasetType.object_detection
+        self._dataset.dataset_info.type = DatasetType.OBJECT_DETECTION
 
         self._layout_detector = TPFrcnnDetector(
             path_yaml=path_to_tp_frcnn_yaml,

@@ -22,31 +22,34 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union, no_type_check
+from typing import Optional, Union, no_type_check
 
-from ..utils._types import JsonDict
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.types import AnnotationDict
 from .box import BoundingBox
 from .convert import as_dict
 
 
 @no_type_check
-def ann_from_dict(cls, **kwargs):
+def ann_from_dict(cls, **kwargs: AnnotationDict):
     """
     A factory function to create subclasses of annotations from a given dict
     """
     _init_kwargs = {
         "external_id": kwargs.get("external_id"),
         "category_name": kwargs.get("category_name"),
-        "category_id": kwargs.get("category_id"),
+        "category_id": kwargs.get("category_id", DEFAULT_CATEGORY_ID),
         "score": kwargs.get("score"),
         "service_id": kwargs.get("service_id"),
         "model_id": kwargs.get("model_id"),
         "session_id": kwargs.get("session_id"),
     }
+    _init_kwargs["category_id"] = (
+        int(_init_kwargs["category_id"]) if (_init_kwargs)["category_id"] not in ("None", "") else DEFAULT_CATEGORY_ID
+    )
     ann = cls(**_init_kwargs)
     ann.active = kwargs.get("active")
     ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
@@ -135,7 +138,7 @@ class Annotation(ABC):
             raise AnnotationError("Annotation_id must be uuid3 string")
 
     @abstractmethod
-    def get_defining_attributes(self) -> List[str]:
+    def get_defining_attributes(self) -> list[str]:
         """
         Defining attributes of an annotation instance are attributes, of which you think that they uniquely
         describe the annotation object. If you do not provide an external id, only the defining attributes will be used
@@ -168,7 +171,7 @@ class Annotation(ABC):
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
         return get_uuid(*attributes_values, *container_id_context)  # type: ignore
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> AnnotationDict:
         """
         Returning the full dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes defined by
         `remove_keys`.
@@ -188,7 +191,7 @@ class Annotation(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, **kwargs: JsonDict) -> Annotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> Annotation:
         """
         Method to initialize a derived class from dict.
 
@@ -200,7 +203,7 @@ class Annotation(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_state_attributes() -> List[str]:
+    def get_state_attributes() -> list[str]:
         """
         Similar to `get_defining_attributes` but for `state_id`
 
@@ -243,6 +246,9 @@ class Annotation(ABC):
         return get_uuid(self.annotation_id, *container_ids)
 
 
+DEFAULT_CATEGORY_ID = -1
+
+
 @dataclass
 class CategoryAnnotation(Annotation):
     """
@@ -269,12 +275,12 @@ class CategoryAnnotation(Annotation):
     `dump_relationship` instead.
     """
 
-    category_name: TypeOrStr = field(default=DefaultType.default_type)
-    _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
-    category_id: str = field(default="")
+    category_name: TypeOrStr = field(default=DefaultType.DEFAULT_TYPE)
+    _category_name: ObjectTypes = field(default=DefaultType.DEFAULT_TYPE, init=False)
+    category_id: int = field(default=DEFAULT_CATEGORY_ID)
     score: Optional[float] = field(default=None)
-    sub_categories: Dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)
-    relationships: Dict[ObjectTypes, List[str]] = field(default_factory=dict, init=False, repr=True)
+    sub_categories: dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)
+    relationships: dict[ObjectTypes, list[str]] = field(default_factory=dict, init=False, repr=True)
 
     @property  # type: ignore
     def category_name(self) -> ObjectTypes:
@@ -288,8 +294,6 @@ class CategoryAnnotation(Annotation):
             self._category_name = get_type(category_name)
 
     def __post_init__(self) -> None:
-        self.category_id = str(self.category_id)
-        assert self.category_name
         self._assert_attributes_have_str(state_id=True)
         super().__post_init__()
 
@@ -363,7 +367,7 @@ class CategoryAnnotation(Annotation):
         if annotation_id not in self.relationships[key_type]:
             self.relationships[key_type].append(annotation_id)
 
-    def get_relationship(self, key: ObjectTypes) -> List[str]:
+    def get_relationship(self, key: ObjectTypes) -> list[str]:
         """
         Returns a list of annotation ids stored with a given relationship key.
 
@@ -374,7 +378,7 @@ class CategoryAnnotation(Annotation):
             return self.relationships[key]
         return []
 
-    def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[List[str], str]] = None) -> None:
+    def remove_relationship(self, key: ObjectTypes, annotation_ids: Optional[Union[list[str], str]] = None) -> None:
         """
         Remove relationship by some given keys and ids. If no annotation ids are provided all relationship according
         to the key will be removed.
@@ -395,25 +399,25 @@ class CategoryAnnotation(Annotation):
         else:
             self.relationships[key].clear()
 
-    def get_defining_attributes(self) -> List[str]:
+    def get_defining_attributes(self) -> list[str]:
         return ["category_name", "category_id"]
 
     @staticmethod
-    def remove_keys() -> List[str]:
+    def remove_keys() -> list[str]:
         """
         A list of attributes to suspend from as_dict creation.
 
-        :return: List of attributes.
+        :return: list of attributes.
         """
         return []
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> CategoryAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> CategoryAnnotation:
         category_ann = ann_from_dict(cls, **kwargs)
         return category_ann
 
     @staticmethod
-    def get_state_attributes() -> List[str]:
+    def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships"]
 
 
@@ -435,18 +439,18 @@ class ImageAnnotation(CategoryAnnotation):
     bounding_box: Optional[BoundingBox] = field(default=None)
     image: Optional[Image] = field(default=None, init=False, repr=False)  # type: ignore  # pylint: disable=E0602
 
-    def get_defining_attributes(self) -> List[str]:
+    def get_defining_attributes(self) -> list[str]:
         return ["category_name", "bounding_box"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> ImageAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotation:
         image_ann = ann_from_dict(cls, **kwargs)
         if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
         return image_ann
 
     @staticmethod
-    def get_state_attributes() -> List[str]:
+    def get_state_attributes() -> list[str]:
         return ["active", "sub_categories", "relationships", "image"]
 
     def get_bounding_box(self, image_id: Optional[str] = None) -> BoundingBox:
@@ -463,29 +467,8 @@ class ImageAnnotation(CategoryAnnotation):
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
         """Get summary sub categories from `image`. Raises `ValueError` if `key` is not available"""
         if self.image:
-            if self.image.summary:
-                return self.image.summary.get_sub_category(key)
+            return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
-
-
-@dataclass
-class SummaryAnnotation(CategoryAnnotation):
-    """
-    A dataclass for adding summaries. The various summaries can be stored as sub categories.
-
-    Summary annotations should be stored in the attribute provided: `image.Image.summary`  and should not be
-    dumped as a category.
-    """
-
-    def __post_init__(self) -> None:
-        self._category_name = SummaryType.summary
-        super().__post_init__()
-
-    @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> SummaryAnnotation:
-        summary_ann = ann_from_dict(cls, **kwargs)
-        summary_ann.category_name = SummaryType.summary
-        return summary_ann
 
 
 @dataclass
@@ -497,13 +480,13 @@ class ContainerAnnotation(CategoryAnnotation):
      value: Attribute to store the value. Use strings.
     """
 
-    value: Optional[Union[List[str], str]] = field(default=None)
+    value: Optional[Union[list[str], str]] = field(default=None)
 
-    def get_defining_attributes(self) -> List[str]:
+    def get_defining_attributes(self) -> list[str]:
         return ["category_name", "value"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> ContainerAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> ContainerAnnotation:
         container_ann = ann_from_dict(cls, **kwargs)
         value = kwargs.get("value", "")
         container_ann.value = value if isinstance(value, str) else list(value)

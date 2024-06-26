@@ -42,14 +42,14 @@ class TestLanguageDetectionService:
 
         self._language_detector = MagicMock()
         self._text_order_service = TextOrderService(
-            text_container=LayoutType.word,
+            text_container=LayoutType.WORD,
             text_block_categories=[
-                LayoutType.title,
-                LayoutType.text,
-                LayoutType.list,
-                LayoutType.cell,
+                LayoutType.TITLE,
+                LayoutType.TEXT,
+                LayoutType.LIST,
+                LayoutType.CELL,
             ],
-            floating_text_block_categories=[LayoutType.title, LayoutType.text, LayoutType.list],
+            floating_text_block_categories=[LayoutType.TITLE, LayoutType.TEXT, LayoutType.LIST],
         )
         self.language_detection_service = LanguageDetectionService(self._language_detector)
 
@@ -69,8 +69,7 @@ class TestLanguageDetectionService:
         dp = self.language_detection_service.pass_datapoint(dp_with_text_ordered)
 
         # Assert
-        assert dp.summary is not None
-        assert dp.summary.get_sub_category(PageType.language).category_name == "language"
-        container_ann = dp.summary.get_sub_category(PageType.language)
+        assert dp.summary.get_sub_category(PageType.LANGUAGE).category_name == "language"
+        container_ann = dp.summary.get_sub_category(PageType.LANGUAGE)
         assert isinstance(container_ann, ContainerAnnotation)
         assert container_ann.value == "eng"

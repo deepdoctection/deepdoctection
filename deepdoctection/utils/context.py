@@ -26,12 +26,12 @@ from glob import iglob
 from os import path, remove
 from tempfile import NamedTemporaryFile
 from time import perf_counter as timer
-from typing import Any, Generator, Iterator, Optional, Tuple, Union
+from typing import Any, Generator, Iterator, Optional, Union
 
 import numpy as np
 
-from ._types import ImageType
 from .logger import LoggingRecord, logger
+from .types import B64, B64Str, PixelValues
 from .viz import viz_handler
 
 __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
@@ -72,7 +72,7 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
 
 
 @contextmanager
-def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[Tuple[str, str]]:
+def save_tmp_file(image: Union[B64Str, PixelValues, B64], prefix: str) -> Iterator[tuple[str, str]]:
     """
     Save image temporarily and handle the clean-up once not necessary anymore
 
@@ -112,13 +112,20 @@ def save_tmp_file(image: Union[str, ImageType, bytes], prefix: str) -> Iterator[
 @contextmanager
 def timed_operation(message: str, log_start: bool = False) -> Generator[Any, None, None]:
     """
-    Contextmanager with a timer. Can therefore be used in a with statement.
+    Contextmanager with a timer.
 
-    :param message: a log to print
+    ... code-block:: python
+
+        with timed_operation(message="Your stdout message", log_start=True):
+
+            with open("log.txt", "a") as file:
+               ...
+
+
+    :param message: a log to stdout
     :param log_start: whether to print also the beginning
     """
 
-    assert len(message)
     if log_start:
         logger.info(LoggingRecord(f"start task: {message} ..."))
     start = timer()

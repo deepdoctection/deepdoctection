@@ -20,20 +20,21 @@ Module for saving
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils._types import JsonDict, Pathlike
 from ..utils.fs import mkdir_p
+from ..utils.types import ImageDict, PathLikeOrStr
 from ..utils.viz import viz_handler
 
 
 def dataflow_to_json(
     df: DataFlow,
-    path: Pathlike,
+    path: PathLikeOrStr,
     single_files: bool = False,
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,
@@ -53,8 +54,7 @@ def dataflow_to_json(
     :param save_image_in_json: Will save the image to the JSON object
     :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
     """
-    if isinstance(path, str):
-        path = Path(path)
+    path = Path(path)
     if single_files:
         mkdir_p(path)
     if not save_image_in_json:
@@ -68,8 +68,8 @@ def dataflow_to_json(
         df = MapData(df, _remove_hh)
     df = MapData(df, lambda dp: dp.as_dict())
 
-    def _path_to_str(dp: JsonDict) -> JsonDict:
-        dp["location"] = str(dp["location"])
+    def _path_to_str(dp: ImageDict) -> ImageDict:
+        dp["location"] = os.fspath(dp["location"])
         return dp
 
     df = MapData(df, _path_to_str)

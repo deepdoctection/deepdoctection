@@ -22,7 +22,7 @@ Module for `Evaluator`
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict, Generator, List, Literal, Mapping, Optional, Type, Union, overload
+from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 from lazy_imports import try_import
@@ -33,13 +33,13 @@ from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.d2struct import to_wandb_image
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
-from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils._types import ImageType
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
+from ..utils.types import PixelValues
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
 
@@ -90,7 +90,7 @@ class Evaluator:
     def __init__(
         self,
         dataset: DatasetBase,
-        component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
+        component_or_pipeline: Union[PipelineComponent, DoctectionPipe],
         metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
         run: Optional[wandb.sdk.wandb_run.Run] = None,
@@ -108,14 +108,14 @@ class Evaluator:
         self.pipe: Optional[DoctectionPipe] = None
 
         # when passing a component, we will process prediction on num_threads
-        if isinstance(component_or_pipeline, (PredictorPipelineComponent, LanguageModelPipelineComponent)):
+        if isinstance(component_or_pipeline, PipelineComponent):
             logger.info(
                 LoggingRecord(
                     f"Building multi threading pipeline component to increase prediction throughput. "
                     f"Using {num_threads} threads"
                 )
             )
-            pipeline_components: List[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
+            pipeline_components: list[PipelineComponent] = []
 
             for _ in range(num_threads - 1):
                 copy_pipe_component = component_or_pipeline.clone()
@@ -139,14 +139,14 @@ class Evaluator:
 
         self.wandb_table_agent: Optional[WandbTableAgent]
         if run is not None:
-            if self.dataset.dataset_info.type == DatasetType.object_detection:
+            if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
                 self.wandb_table_agent = WandbTableAgent(
                     run,
                     self.dataset.dataset_info.name,
                     50,
                     self.dataset.dataflow.categories.get_categories(filtered=True),
                 )
-            elif self.dataset.dataset_info.type == DatasetType.token_classification:
+            elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
                 if hasattr(self.metric, "sub_cats"):
                     sub_cat_key, sub_cat_val_list = list(self.metric.sub_cats.items())[0]
                     sub_cat_val = sub_cat_val_list[0]
@@ -178,16 +178,16 @@ class Evaluator:
     @overload
     def run(
         self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> List[Dict[str, float]]:
+    ) -> list[dict[str, float]]:
         ...
 
     @overload
-    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> Dict[str, float]:
+    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> dict[str, float]:
         ...
 
     def run(
         self, output_as_dict: bool = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> Union[List[Dict[str, float]], Dict[str, float]]:
+    ) -> Union[list[dict[str, float]], dict[str, float]]:
         """
         Start evaluation process and return the results.
 
@@ -246,11 +246,11 @@ class Evaluator:
         possible_cats_in_datapoint = self.dataset.dataflow.categories.get_categories(as_dict=False, filtered=True)
 
         # clean-up procedure depends on the dataset type
-        if self.dataset.dataset_info.type == DatasetType.object_detection:
+        if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
             # we keep all image annotations that will not be generated through processing
-            anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
-            sub_cats_to_remove = meta_anns["sub_categories"]
-            relationships_to_remove = meta_anns["relationships"]
+            anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns.image_annotations}
+            sub_cats_to_remove = meta_anns.sub_categories
+            relationships_to_remove = meta_anns.relationships
             # removing annotations takes place in three steps: First we remove all image annotations. Then, with all
             # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and
             # remove it as well, if necessary. In the last step we remove all sub categories and relationships, if
@@ -262,19 +262,19 @@ class Evaluator:
                 remove_cats(sub_categories=sub_cats_to_remove, relationships=relationships_to_remove),
             )
 
-        elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
-            summary_sub_cats_to_remove = meta_anns["summaries"]
+        elif self.dataset.dataset_info.type == DatasetType.SEQUENCE_CLASSIFICATION:
+            summary_sub_cats_to_remove = meta_anns.summaries
             df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
-        elif self.dataset.dataset_info.type == DatasetType.token_classification:
-            sub_cats_to_remove = meta_anns["sub_categories"]
+        elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
+            sub_cats_to_remove = meta_anns.sub_categories
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
             raise NotImplementedError()
 
         return df_pr
 
-    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[ImageType, None, None]:
+    def compare(self, interactive: bool = False, **kwargs: Union[str, int]) -> Generator[PixelValues, None, None]:
         """
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.
@@ -301,7 +301,7 @@ class Evaluator:
         df_pr = MapData(df_pr, deepcopy)
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
 
-        page_parsing_component = PageParsingService(text_container=LayoutType.word)
+        page_parsing_component = PageParsingService(text_container=LayoutType.WORD)
         df_gt = page_parsing_component.predict_dataflow(df_gt)
 
         if self.pipe_component:
@@ -357,8 +357,8 @@ class WandbTableAgent:
         wandb_run: wandb.sdk.wandb_run.Run,
         dataset_name: str,
         num_samples: int,
-        categories: Mapping[str, TypeOrStr],
-        sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Mapping[int, TypeOrStr],
+        sub_categories: Optional[Mapping[int, TypeOrStr]] = None,
         cat_to_sub_cat: Optional[Mapping[TypeOrStr, TypeOrStr]] = None,
     ):
         """
@@ -385,8 +385,8 @@ class WandbTableAgent:
         self._counter = 0
 
         # Table logging utils
-        self._table_cols: List[str] = ["file_name", "image"]
-        self._table_rows: List[Any] = []
+        self._table_cols: list[str] = ["file_name", "image"]
+        self._table_rows: list[Any] = []
         self._table_ref = None
 
     def dump(self, dp: Image) -> Image:
@@ -439,4 +439,4 @@ class WandbTableAgent:
         eval_art.add(self._build_table(), self.dataset_name)
         self._run.use_artifact(eval_art)
         eval_art.wait()
-        self._table_ref = eval_art.get(self.dataset_name).data  # type:ignore
+        self._table_ref = eval_art.get(self.dataset_name).data  # type: ignore

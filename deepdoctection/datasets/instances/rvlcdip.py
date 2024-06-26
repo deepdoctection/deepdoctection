@@ -36,12 +36,12 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerTabsepFiles
-from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
+from ...datapoint.annotation import CategoryAnnotation
 from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, PageType, TypeOrStr
+from ...utils.settings import DatasetType, DocumentType, PageType, SummaryType, TypeOrStr
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -64,27 +64,27 @@ _LICENSE = (
 _URL = "https://www.cs.cmu.edu/~aharley/rvl-cdip/"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.sequence_classification
+_TYPE = DatasetType.SEQUENCE_CLASSIFICATION
 _LOCATION = "rvl-cdip"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "labels/train.txt", "val": "labels/val.txt", "test": "labels/test.txt"}
 _INIT_CATEGORIES = [
-    DocumentType.letter,
-    DocumentType.form,
-    DocumentType.email,
-    DocumentType.handwritten,
-    DocumentType.advertisement,
-    DocumentType.scientific_report,
-    DocumentType.scientific_publication,
-    DocumentType.specification,
-    DocumentType.file_folder,
-    DocumentType.news_article,
-    DocumentType.budget,
-    DocumentType.invoice,
-    DocumentType.presentation,
-    DocumentType.questionnaire,
-    DocumentType.resume,
-    DocumentType.memo,
+    DocumentType.LETTER,
+    DocumentType.FORM,
+    DocumentType.EMAIL,
+    DocumentType.HANDWRITTEN,
+    DocumentType.ADVERTISEMENT,
+    DocumentType.SCIENTIFIC_REPORT,
+    DocumentType.SCIENTIFIC_PUBLICATION,
+    DocumentType.SPECIFICATION,
+    DocumentType.FILE_FOLDER,
+    DocumentType.NEWS_ARTICLE,
+    DocumentType.BUDGET,
+    DocumentType.INVOICE,
+    DocumentType.PRESENTATION,
+    DocumentType.QUESTIONNAIRE,
+    DocumentType.RESUME,
+    DocumentType.MEMO,
 ]
 
 
@@ -139,15 +139,15 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
 
         @curry
         def _map_str_to_image(dp: str, load_img: bool) -> Image:
-            location, label = dp.split()[0], dp.split()[1]
-            label = str(int(label) + 1)
+            location, label_str = dp.split()[0], dp.split()[1]
+            label = int(label_str) + 1
             file_name = os.path.split(location)[1]
             image = Image(location=(self.get_workdir() / "images" / location).as_posix(), file_name=file_name)
             image.image = load_image_from_file(image.location)
-            summary = SummaryAnnotation()
+            summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                PageType.document_type, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
+                PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
             )
             image.summary = summary
             if not load_img:
@@ -159,15 +159,14 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageType.document_type: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageType.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
             @curry
-            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
-                if dp.summary:
-                    if PageType.document_type in dp.summary.sub_categories:
-                        summary_cat = dp.summary.get_sub_category(PageType.document_type)
-                        summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
+            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
+                if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
+                    summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
+                    summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 
             df = MapData(df, _re_map_cat_ids(self.categories.get_categories(filtered=True, name_as_key=True)))

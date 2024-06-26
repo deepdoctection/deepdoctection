@@ -21,9 +21,8 @@ Module for common pipeline components
 from __future__ import annotations
 
 import os
-
-from copy import copy, deepcopy
-from typing import List, Literal, Mapping, Optional, Sequence, Union
+from copy import deepcopy
+from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
@@ -33,9 +32,8 @@ from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
-from ..utils._types import JsonDict
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
-from .base import PipelineComponent
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 if os.environ.get("DD_USE_TORCH"):
@@ -57,20 +55,25 @@ class ImageCroppingService(PipelineComponent):
         :param category_names: A single name or a list of category names to crop
         """
 
-        if isinstance(category_names, str):
-            category_names = [category_names]
-        self.category_names = [get_type(category_name) for category_name in category_names]
+        self.category_names = (
+            (category_names,)
+            if isinstance(category_names, str)
+            else tuple(get_type(category_name) for category_name in category_names)
+        )
         super().__init__("image_crop")
 
     def serve(self, dp: Image) -> None:
         for ann in dp.get_annotation(category_names=self.category_names):
             dp.image_ann_to_image(ann.annotation_id, crop_image=True)
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> ImageCroppingService:
         return self.__class__(self.category_names)
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -115,16 +118,18 @@ class MatchingService(PipelineComponent):
         :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
         self.parent_categories = (
-            [get_type(parent_categories)]  # type: ignore
-            if not isinstance(parent_categories, (list, set))
-            else [get_type(parent_category) for parent_category in parent_categories]
+            (get_type(parent_categories),)
+            if isinstance(parent_categories, str)
+            else tuple(get_type(category_name) for category_name in parent_categories)
         )
         self.child_categories = (
-            [get_type(child_categories)]  # type: ignore
-            if not isinstance(child_categories, (list, set))
-            else [get_type(child_category) for child_category in child_categories]
+            (get_type(child_categories),)
+            if isinstance(child_categories, str)
+            else (tuple(get_type(category_name) for category_name in child_categories))
         )
-        assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
+        if matching_rule not in ("iou", "ioa"):
+            raise ValueError("segment rule must be either iou or ioa")
+
         self.matching_rule = matching_rule
         self.threshold = threshold
         self.use_weighted_intersections = use_weighted_intersections
@@ -152,24 +157,25 @@ class MatchingService(PipelineComponent):
             matched_child_anns = np.take(child_anns, child_index)  # type: ignore
             matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(Relationships.child, matched_child_anns[idx].annotation_id)
+                parent.dump_relationship(Relationships.CHILD, matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {parent: {Relationships.child} for parent in self.parent_categories}),
-                ("summaries", []),
-            ]
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={},
+            relationships={parent: {Relationships.CHILD} for parent in self.parent_categories},
+            summaries=(),
         )
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("PageParsingService")
-class PageParsingService:
+class PageParsingService(PipelineComponent):
     """
     A "pseudo" pipeline component that can be added to a pipeline to convert `Image`s into `Page` formats. It allows a
     custom parsing depending on customizing options of other pipeline components.
@@ -188,14 +194,20 @@ class PageParsingService:
         """
         self.name = "page_parser"
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
-            floating_text_block_categories = [floating_text_block_categories]
+            floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
-            floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])
+            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
 
         self.text_container = get_type(text_container)
-        self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
+        self.floating_text_block_categories = tuple(
+            (get_type(text_block) for text_block in floating_text_block_categories)
+        )
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
+        super().__init__(self.name)
+
+    def serve(self, dp: Image) -> None:
+        raise NotImplementedError("PageParsingService is not meant to be used in serve method")
 
     def pass_datapoint(self, dp: Image) -> Page:
         """
@@ -205,27 +217,17 @@ class PageParsingService:
         """
         return Page.from_image(dp, self.text_container, self.floating_text_block_categories)
 
-    def predict_dataflow(self, df: DataFlow) -> DataFlow:
-        """
-        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
-
-        :param df: An input dataflow
-        :return: A output dataflow
-        """
-        return MapData(df, self.pass_datapoint)
-
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
-            LayoutType.word,
-            LayoutType.line,
-        ), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
+            LayoutType.WORD,
+            LayoutType.LINE,
+        ), f"text_container must be either {LayoutType.WORD} or {LayoutType.LINE}"
 
-    @staticmethod
-    def get_meta_annotation() -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         meta annotation. We do not generate any new annotations here
         """
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
     def clone(self) -> PageParsingService:
         """clone"""
@@ -234,6 +236,9 @@ class PageParsingService:
             deepcopy(self.floating_text_block_categories),
             self.include_residual_text_container,
         )
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("AnnotationNmsService")
@@ -259,8 +264,8 @@ class AnnotationNmsService(PipelineComponent):
     def __init__(
         self,
         nms_pairs: Sequence[Sequence[TypeOrStr]],
-        thresholds: Union[float, List[float]],
-        priority: Optional[List[Union[Optional[TypeOrStr]]]] = None,
+        thresholds: Union[float, list[float]],
+        priority: Optional[list[Union[Optional[TypeOrStr]]]] = None,
     ):
         """
         :param nms_pairs: Groups of categories, either as string or by `ObjectType`.
@@ -297,8 +302,11 @@ class AnnotationNmsService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("ImageParsingService")
@@ -333,8 +341,11 @@ class ImageParsingService:
         return self.__class__(self.dpi)
 
     @staticmethod
-    def get_meta_annotation() -> JsonDict:
+    def get_meta_annotation() -> MetaAnnotation:
         """
         meta annotation. We do not generate any new annotations here
         """
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
+
+    def clear_predictor(self) -> None:
+        """clear predictor. Will do nothing"""

@@ -20,19 +20,15 @@ import wandb
 from transformers import RobertaTokenizerFast
 ```
 
-    /home/janis/Public/deepdoctection_pt/venv/lib/python3.8/site-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-
-
 
 ```python
 @dd.object_types_registry.register("ner_first_page")
 class FundsFirstPage(dd.ObjectTypes):
 
-    report_date = "report_date"
-    umbrella = "umbrella"
-    report_type = "report_type"
-    fund_name = "fund_name"
+    REPORT_DATE = "report_date"
+    UMBRELLA = "umbrella"
+    REPORT_TYPE = "report_type"
+    FUND_NAME = "fund_name"
 
 dd.update_all_types_dict()
 
@@ -67,8 +63,8 @@ class NerBuilder(dd.DataFlowBaseBuilder):
                 ),
             )
         df = dd.MapData(df,dd.re_assign_cat_ids(cat_to_sub_cat_mapping=self.categories.get_sub_categories(
-                                                 categories=dd.LayoutType.word,
-                                                 sub_categories={dd.LayoutType.word: dd.WordType.token_class},
+                                                 categories=dd.LayoutType.WORD,
+                                                 sub_categories={dd.LayoutType.WORD: dd.WordType.TOKEN_CLASS},
                                                  keys = False,
                                                  values_as_dict=True,
                                                  name_as_key=True)))
@@ -80,18 +76,22 @@ class NerBuilder(dd.DataFlowBaseBuilder):
         return df
     
 ner = dd.CustomDataset(name = "FRFPE",
-                 dataset_type=dd.DatasetType.token_classification,
+                 dataset_type=dd.DatasetType.TOKEN_CLASSIFICATION,
                  location="FRFPE",
-                 init_categories=[dd.LayoutType.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
-                                  dd.LayoutType.figure, dd.LayoutType.line, dd.LayoutType.word],
-                 init_sub_categories={dd.LayoutType.word: {dd.WordType.token_class: [FundsFirstPage.report_date,
-                                                                                     FundsFirstPage.report_type,
-                                                                                     FundsFirstPage.umbrella,
-                                                                                     FundsFirstPage.fund_name,
-                                                                                     dd.TokenClasses.other],
-                                                           dd.WordType.tag: []}},
+                 init_categories=[dd.LayoutType.TEXT, dd.LayoutType.TITLE, dd.LayoutType.LIST, dd.LayoutType.TABLE,
+                                  dd.LayoutType.FIGURE, dd.LayoutType.LINE, dd.LayoutType.WORD],
+                 init_sub_categories={dd.LayoutType.WORD: {dd.WordType.TOKEN_CLASS: [FundsFirstPage.REPORT_DATE,
+                                                                                     FundsFirstPage.REPORT_TYPE,
+                                                                                     FundsFirstPage.UMBRELLA,
+                                                                                     FundsFirstPage.FUND_NAME,
+                                                                                     dd.TokenClasses.OTHER],
+                                                           dd.WordType.TAG: []}},
                  dataflow_builder=NerBuilder)
 ```
+
+    [32m[0608 19:15.35 @file_utils.py:33][0m  [32mINF[0m  [97mPyTorch version 1.9.0+cu111 available.[0m
+
+
 
 ```python
 df = ner.dataflow.build(load_image=True)
@@ -101,12 +101,18 @@ merge.explicit_dataflows(df)
 merge.buffer_datasets()
 ```
 
+    |                                                                                                                                                                                              |357/?[00:00<00:00,53473.56it/s]
+    [32m[0608 19:15.37 @base.py:250][0m  [32mINF[0m  [97mWill used dataflow from previously explicitly passed configuration[0m
+    |                                                                                                                                                                                                 |357/?[00:29<00:00,12.28it/s]
+
+
 
 ```python
 wandb.init(project="FRFPE_layoutlmv1", resume=True)
 artifact = wandb.use_artifact('jm76/FRFPE_layoutlmv1/merge_FRFPE:v0', type='dataset')
 table = artifact.get("split")
 ```
+
 
 ```python
 split_dict = defaultdict(list)
@@ -116,11 +122,14 @@ for row in table.data:
 merge.create_split_by_id(split_dict)
 ```
 
+    [32m[0608 19:16.09 @base.py:250][0m  [32mINF[0m  [97mWill used dataflow from previously explicitly passed configuration[0m
+    |                                                                                                                                                                                                 |357/?[00:28<00:00,12.69it/s]
+
+
 
 ```python
 wandb.finish()
 ```
-
 
 So not forget to download the model if it is not in you .cache yet.
 
@@ -146,46 +155,16 @@ dd.train_hf_layoutlm(path_config_json,
                      metric=metric,
                      use_token_tag=False,
                      pipeline_component_name="LMTokenClassifierService",
-                     segment_positions=[dd.LayoutType.title, 
-                                        dd.LayoutType.text, 
-                                        dd.LayoutType.table, 
-                                        dd.LayoutType.list])
+                     segment_positions=[dd.LayoutType.TITLE, 
+                                        dd.LayoutType.TEXT, 
+                                        dd.LayoutType.TABLE, 
+                                        dd.LayoutType.LIST])
 ```
-
-    [32m[0608 19:16.48 @adapter.py:77][0m  [32mINF[0m  [97mYielding dataflow into memory and create torch dataset[0m
-    |                                                                                                                                                                                                           |0/?[00:00<?,?it/s][32m[0608 19:16.48 @logger.py:253][0m  [5m[35mWRN[0m  [97mDatapoint have images as np arrays stored and they will be loaded into memory. To avoid OOM set 'load_image'=False in dataflow build config. This will load images when needed and reduce memory costs!!![0m
-    |                                                                                                                                                                                               |305/?[00:00<00:00,5006.70it/s]
-    [32m[0608 19:16.48 @maputils.py:222][0m  [32mINF[0m  [97mGround-Truth category distribution:
-     [36m|  category   | #box   |  category   | #box   |  category  | #box   |
-    |:-----------:|:-------|:-----------:|:-------|:----------:|:-------|
-    | report_date | 1017   | report_type | 682    |  umbrella  | 843    |
-    |  fund_name  | 1721   |    other    | 10692  |            |        |
-    |    total    | 14955  |             |        |            |        |[0m[0m
-    |                                                                                                                                                                                             |305/?[00:00<00:00,911155.78it/s]
-
-
-
-     {0: <FundsFirstPage.report_date>,
-     1: <FundsFirstPage.report_type>,
-     2: <FundsFirstPage.umbrella>,
-     3: <FundsFirstPage.fund_name>,
-     4: <TokenClasses.other>}[0m
-    
-     [36m|     key     | category_id   | val      | num_samples   |
-    |:-----------:|:--------------|:---------|:--------------|
-    |    word     | 1             | 1        | 2538          |
-    | token_class | 1             | 0.980645 | 79            |
-    | token_class | 2             | 0.87234  | 48            |
-    | token_class | 3             | 0.722689 | 71            |
-    | token_class | 4             | 0.851485 | 95            |
-    | token_class | 5             | 0.991567 | 2245          |[0m[0m
-
 
 
 ```python
 wandb.finish()
 ```
-
 
 ## Evaluation
 
@@ -199,8 +178,8 @@ categories = ner.dataflow.categories.get_sub_categories(categories="word",
                                                         sub_categories={"word": ["token_class"]},
                                                         keys=False)["word"]["token_class"]
 
-path_config_json = "/path/to/dir/FRFPE/layoutlmv3/checkpoint-2000/config.json"
-path_weights = "/path/to/dir/FRFPE/layoutlmv3/checkpoint-1600/pytorch_model.bin"
+path_config_json = "/path/to/dir/Experiments/FRFPE/layoutlmv3/checkpoint-2000/config.json"
+path_weights = "/path/to/dir/Experiments/FRFPE/layoutlmv3/checkpoint-1600/model.safetensors"
 
 layoutlm_classifier = dd.HFLayoutLmv3TokenClassifier(path_config_json,
                                                      path_weights,
@@ -267,6 +246,4 @@ evaluator.compare(interactive=True, split="test", show_words=True)
 
 The results show that LayoutLMv3 is not the best choice for this dataset and it is being outperformed by LayoutXLM.
 
-It is likely to get better results with text line segment bounding boxes. This assumption is backed by the fact that 
-the model has difficulties to deliver consistent results especially when the segment bounding box is too large. 
-To confirm this assumption, however, one would have to adjust the dataset.
+It is likely to get better results with text line segment bounding boxes. This assumption is backed by the fact that the model has difficulties to deliver consistent results especially when the segment bounding box is too large. To confirm this assumption, however, one would have to adjust the dataset.

@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
+from typing import Any, Callable, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -34,9 +34,9 @@ from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..datapoint.view import Page
-from ..utils._types import JsonDict
 from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
 from ..utils.transform import ResizeTransform, normalize_image
+from ..utils.types import JsonDict
 from .maputils import curry
 
 with try_import() as import_guard:
@@ -69,7 +69,7 @@ A DataCollator is a function that takes a list of samples from a Dataset and col
 of PyTorch/TensorFlow tensors or NumPy arrays.
 """
 
-DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])  # type: ignore
+DataCollator = NewType("DataCollator", Callable[[list[InputDataClass]], dict[str, Any]])  # type: ignore
 
 _CLS_BOX = [0.0, 0.0, 1000.0, 1000.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]
@@ -125,9 +125,9 @@ def image_to_raw_layoutlm_features(
     all_ann_ids = []
     all_words = []
     all_boxes = []
-    all_labels: List[int] = []
+    all_labels: list[int] = []
 
-    anns = dp.get_annotation_iter(category_names=LayoutType.word)
+    anns = dp.get_annotation_iter(category_names=LayoutType.WORD)
 
     word_id_to_segment_box = {}
     if segment_positions:
@@ -139,12 +139,12 @@ def image_to_raw_layoutlm_features(
             if not bounding_box.absolute_coords:
                 bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
             word_id_to_segment_box.update(
-                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.child)}
+                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.CHILD)}
             )
 
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
-        char_cat = ann.get_sub_category(WordType.characters)
+        char_cat = ann.get_sub_category(WordType.CHARACTERS)
         if not isinstance(char_cat, ContainerAnnotation):
             raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
         word = char_cat.value
@@ -158,15 +158,15 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
-            WordType.token_tag in ann.sub_categories or WordType.token_class in ann.sub_categories
-        ) and dataset_type == DatasetType.token_classification:
+            WordType.TOKEN_TAG in ann.sub_categories or WordType.TOKEN_CLASS in ann.sub_categories
+        ) and dataset_type == DatasetType.TOKEN_CLASSIFICATION:
             if use_token_tag:
-                all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
+                all_labels.append(ann.get_sub_category(WordType.TOKEN_TAG).category_id - 1)
             else:
-                all_labels.append(int(ann.get_sub_category(WordType.token_class).category_id) - 1)
+                all_labels.append(ann.get_sub_category(WordType.TOKEN_CLASS).category_id - 1)
 
-    if dp.summary is not None and dataset_type == DatasetType.sequence_classification:
-        all_labels.append(int(dp.summary.get_sub_category(PageType.document_type).category_id) - 1)
+    if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+        all_labels.append(dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -234,7 +234,7 @@ def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatu
 
 
 def _tokenize_with_sliding_window(
-    raw_features: List[Union[RawLayoutLMFeatures, RawLMFeatures]],
+    raw_features: list[Union[RawLayoutLMFeatures, RawLMFeatures]],
     tokenizer: PreTrainedTokenizerFast,
     sliding_window_stride: int,
     max_batch_size: int,
@@ -385,7 +385,7 @@ def _tokenize_with_sliding_window(
                 )
             )
 
-    slided_tokenized_inputs: Dict[str, Union[List[Union[str, int]], torch.Tensor]] = {}
+    slided_tokenized_inputs: dict[str, Union[list[Union[str, int]], torch.Tensor]] = {}
     if return_tensors == "pt":
         slided_tokenized_inputs["overflow_to_sample_mapping"] = torch.tensor(overflow_to_sample_mapping)
         slided_tokenized_inputs["input_ids"] = torch.tensor(all_input_ids)
@@ -402,7 +402,7 @@ def _tokenize_with_sliding_window(
 
 
 def raw_features_to_layoutlm_features(
-    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[Union[RawLayoutLMFeatures, RawLMFeatures]]],
+    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, list[Union[RawLayoutLMFeatures, RawLMFeatures]]],
     tokenizer: PreTrainedTokenizerFast,
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
@@ -447,11 +447,11 @@ def raw_features_to_layoutlm_features(
         raw_features = [raw_features]
 
     _has_token_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.token_classification
+        raw_features[0]["dataset_type"] == DatasetType.TOKEN_CLASSIFICATION
         and raw_features[0].get("labels") is not None
     )
     _has_sequence_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.sequence_classification
+        raw_features[0]["dataset_type"] == DatasetType.SEQUENCE_CLASSIFICATION
         and raw_features[0].get("labels") is not None
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
@@ -620,7 +620,7 @@ class LayoutLMDataCollator:
         if self.return_overflowing_tokens:
             assert self.truncation, self.truncation
 
-    def __call__(self, raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
+    def __call__(self, raw_features: Union[RawLayoutLMFeatures, list[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
         """
         Calling the DataCollator to form model inputs for training and inference. Takes a single raw
         :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
@@ -741,7 +741,7 @@ def image_to_raw_lm_features(
     dp: Image,
     dataset_type: Optional[Literal["sequence_classification", "token_classification"]] = None,
     use_token_tag: bool = True,
-    text_container: Optional[LayoutType] = LayoutType.word,
+    text_container: Optional[LayoutType] = LayoutType.WORD,
     floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
     include_residual_text_container: bool = False,
 ) -> Optional[RawLMFeatures]:
@@ -787,9 +787,7 @@ def image_to_raw_lm_features(
     elif text_["token_classes"]:
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
-        document_type_id = (
-            int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1  # type: ignore
-        )
+        document_type_id = page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id - 1
         raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type
@@ -806,7 +804,7 @@ def image_to_lm_features(
     return_overflowing_tokens: bool = False,
     return_tensors: Optional[Literal["pt"]] = "pt",
     sliding_window_stride: int = 0,
-    text_container: Optional[LayoutType] = LayoutType.word,
+    text_container: Optional[LayoutType] = LayoutType.WORD,
     floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
     include_residual_text_container: bool = False,
 ) -> Optional[LayoutLMFeatures]:

@@ -155,14 +155,6 @@ plt.axis('off')
 plt.imshow(np_image)
 ```
 
-
-
-
-    <matplotlib.image.AxesImage at 0x7fed0f58bf10>
-
-
-
-
     
 ![png](./_imgs/tatr_2.png)
     
@@ -804,12 +796,9 @@ plt.imshow(np_image)
 
     
 ![png](./_imgs/tatr_7.png)
-    
-
-
 
 ```python
-HTML(dp.tables[0].html)
+HTML(dp.tables[0].HTML)
 ```
 
 
@@ -817,11 +806,8 @@ HTML(dp.tables[0].html)
 
 <table><tr><td colspan=2>Gattungsbezeichnung Stuick bzw. Kâufe/ Verkâufe/ Volumen Anteile bzw. Zugànge Abgânge in1.000 Whg. in1.000</td><td></td><td></td><td></td></tr><tr><td colspan=2>Terminkontrakte</td><td></td><td></td><td></td></tr><tr><td colspan=2>Zinsterminkontrakte</td><td></td><td></td><td></td></tr><tr><td colspan=2>Verkaufte Kontrakte</td><td></td><td></td><td></td></tr><tr><td>(Basiswerte:</td><td>EUR</td><td></td><td></td><td>32.350</td></tr><tr><td colspan=2>Euro Bund Future</td><td></td><td></td><td></td></tr><tr><td colspan=2>Euro Buxl Future</td><td></td><td></td><td></td></tr><tr><td>Euro-BTP Future)</td><td></td><td></td><td></td><td></td></tr></table>
 
-
-
-
 ```python
-HTML(dp.tables[1].html)
+HTML(dp.tables[1].HTML)
 ```
 
     [32m[1229 17:13.41 @view.py:296][0m  [5m[35mWRN[0m  [97mhtml construction not possible[0m
@@ -880,24 +866,16 @@ plt.imshow(np_image)
 
     
 ![png](./_imgs/tatr_8.png)
-    
-
-
 
 ```python
-HTML(dp.tables[0].html)
+HTML(dp.tables[0].HTML)
 ```
-
-
 
 
 <table><tr><td>Gattungsbezeichnung</td><td>Stuick bzw. Anteile bzw. Whg. in1.000</td><td>Kâufe/ Zugànge</td><td>Verkâufe/ Abgânge</td><td>Volumen in1.000</td></tr><tr><td>Terminkontrakte</td><td></td><td></td><td></td><td></td></tr><tr><td>Zinsterminkontrakte</td><td></td><td></td><td></td><td></td></tr><tr><td>Verkaufte Kontrakte</td><td></td><td></td><td></td><td></td></tr><tr><td>(Basiswerte:</td><td>EUR</td><td></td><td></td><td>32.350</td></tr><tr><td>Euro Bund Future</td><td></td><td></td><td></td><td></td></tr><tr><td>Euro Buxl Future</td><td></td><td></td><td></td><td></td></tr><tr><td>Euro-BTP Future)</td><td></td><td></td><td></td><td></td></tr></table>
 
-
-
-
 ```python
-HTML(dp.tables[1].html)
+HTML(dp.tables[1].HTML)
 ```
 
 
@@ -905,11 +883,8 @@ HTML(dp.tables[1].html)
 
 <table><tr><td></td><td></td><td>Anteile bzw. Whg. in 1.000</td><td>30.06.2021</td><td>Zugânge Abgânge im Berichtszeitraum</td><td></td><td>inEUR</td><td>Fonds- vermogens</td></tr><tr><td>Derivate (Bei den mit Minus gekennzeichneten</td><td>Bestânden</td><td>handelt es sich um</td><td>verkaufte Positionen.)</td><td>EUR</td><td></td><td>-167.820,00</td><td>-0,35</td></tr><tr><td>Zins-Derivate</td><td></td><td></td><td></td><td>EUR</td><td></td><td>-167.820,00</td><td>-0,35</td></tr><tr><td>Fanterungen/erindidieiten</td><td></td><td></td><td></td><td>EUR</td><td></td><td>-167.820,00</td><td>-0,35</td></tr><tr><td>Zinsterminkontrakte</td><td></td><td></td><td></td><td>EUR</td><td></td><td>-167.820,00</td><td>-0,35</td></tr><tr><td>4,000% Euro Buxl Future 09/21</td><td>EDT</td><td>EUR</td><td>-6.000.000</td><td></td><td></td><td>-151.320,00</td><td>-0,32</td></tr><tr><td>6,000% Euro Bund Future 09/21</td><td>EDT</td><td>EUR</td><td>-1.500.000</td><td></td><td></td><td>-16.500,00</td><td>-0,03</td></tr><tr><td>Bankguthaben</td><td></td><td></td><td></td><td>EUR</td><td></td><td>236.074,42</td><td>0,50</td></tr><tr><td>EUR-Guthaben bei:</td><td></td><td></td><td></td><td>EUR</td><td></td><td>236.074,42</td><td>0,50</td></tr><tr><td>CACEIS Bank S.A. [Germany Branch] (Verwahrstelle)</td><td></td><td>EUR</td><td>236.074,42</td><td>%</td><td>100,0000</td><td>236.074,42</td><td>0,50</td></tr><tr><td>Sonstige Vermogensgegenstande</td><td></td><td></td><td></td><td>EUR</td><td></td><td>822.350,39</td><td>1,74</td></tr><tr><td>Zinsanspriiche</td><td></td><td></td><td></td><td>EUR</td><td></td><td>221.297,49</td><td>0,47</td></tr><tr><td></td><td></td><td>EUR</td><td>221.297,49</td><td></td><td></td><td>221.297,49</td><td>0,47</td></tr><tr><td>Einschusse (Initial Margins)</td><td></td><td></td><td></td><td>EUR</td><td></td><td>433.232,90</td><td>0,92</td></tr><tr><td></td><td></td><td>EUR</td><td>433.232,90</td><td></td><td></td><td>433.232,90</td><td>0,92</td></tr><tr><td>Variation Margin</td><td></td><td></td><td></td><td>EUR</td><td></td><td>167.820,00</td><td>0,35</td></tr><tr><td></td><td></td><td>EUR</td><td>167.820,00</td><td></td><td></td><td>167.820,00</td><td>0,35</td></tr><tr><td>Sonstige Verbindlichkeiten</td><td></td><td></td><td></td><td>EUR</td><td></td><td>-11.213,76</td><td>-0,02</td></tr><tr><td>Kostenabgrenzung</td><td></td><td></td><td></td><td>EUR</td><td></td><td>-11.213,76</td><td>-0,02</td></tr><tr><td></td><td></td><td>EUR</td><td>-1.213,76</td><td></td><td></td><td>-1.213,76</td><td>-0,02</td></tr><tr><td>Fondsvermogen</td><td></td><td></td><td></td><td>EUR</td><td></td><td>47.274.011,19</td><td>100,003</td></tr><tr><td>Anteilwert Amundi BKK Rent</td><td></td><td></td><td></td><td>EUR</td><td></td><td>68,04</td><td></td></tr><tr><td>Umlaufende Anteile Amundi BKK Rent</td><td></td><td></td><td></td><td>STK</td><td></td><td>694.796,00</td><td></td></tr></table>
 
-
-
-
 ```python
-HTML(dp.tables[2].html)
+HTML(dp.tables[2].HTML)
 ```
 
 

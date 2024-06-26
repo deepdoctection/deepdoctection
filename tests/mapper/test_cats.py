@@ -23,12 +23,10 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
+from deepdoctection.datapoint import CategoryAnnotation, Image
 from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
-from deepdoctection.utils._types import JsonDict
-
-# from deepdoctection.utils.settings import names
-from deepdoctection.utils.settings import CellType, LayoutType, TableType, get_type
+from deepdoctection.utils.settings import CellType, LayoutType, SummaryType, TableType, get_type
+from deepdoctection.utils.types import JsonDict
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet
@@ -41,17 +39,17 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
     # Arrange
-    categories_name_as_key_init = {LayoutType.cell: "1", TableType.item: "2"}
+    categories_name_as_key_init = {LayoutType.CELL: 1, TableType.ITEM: 2}
     pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
     categories = MagicMock()
     categories._cat_to_sub_cat = {  # pylint: disable=W0212
-        LayoutType.cell: CellType.header,
-        TableType.item: TableType.item,
+        LayoutType.CELL: CellType.HEADER,
+        TableType.ITEM: TableType.ITEM,
     }
     categories.get_categories = Mock(
-        return_value={CellType.header: "1", CellType.body: "2", LayoutType.row: "3", LayoutType.column: "4"}
+        return_value={CellType.HEADER: 1, CellType.BODY: 2, LayoutType.ROW: 3, LayoutType.COLUMN: 4}
     )
 
     datapoint = pubtabnet_results
@@ -64,16 +62,16 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         dp = cat_to_sub_cat_mapper(dp)
 
     if dp is not None:
-        heads = dp.get_annotation(category_names=CellType.header)
-        bodies = dp.get_annotation(category_names=CellType.body)
-        rows = dp.get_annotation(category_names=LayoutType.row)
-        cols = dp.get_annotation(category_names=LayoutType.column)
+        heads = dp.get_annotation(category_names=CellType.HEADER)
+        bodies = dp.get_annotation(category_names=CellType.BODY)
+        rows = dp.get_annotation(category_names=LayoutType.ROW)
+        cols = dp.get_annotation(category_names=LayoutType.COLUMN)
 
         # Assert
         assert len(heads) == datapoint.get_number_of_heads()
         assert len(bodies) == datapoint.get_number_of_bodies()
-        assert str(len(rows)) == datapoint.get_summary_ann_sub_category_rows_id()
-        assert str(len(cols)) == datapoint.get_summary_ann_sub_category_col_id()
+        assert len(rows) == datapoint.get_summary_ann_sub_category_rows_id()
+        assert len(cols) == datapoint.get_summary_ann_sub_category_col_id()
 
 
 @pytest.mark.basic
@@ -84,13 +82,13 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     """
 
     # Arrange
-    categories_name_as_key_init = {LayoutType.cell: "1", TableType.item: "2"}
+    categories_name_as_key_init = {LayoutType.CELL: 1, TableType.ITEM: 2}
     pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
 
     categories = MagicMock()
-    categories.get_categories = Mock(return_value=[TableType.item])
+    categories.get_categories = Mock(return_value=[TableType.ITEM])
 
     datapoint = pubtabnet_results
 
@@ -101,14 +99,14 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     )
     dp = filter_cat_mapper(dp)
 
-    items = dp.get_annotation(category_names=TableType.item)
-    cells = dp.get_annotation(category_names=LayoutType.cell)
+    items = dp.get_annotation(category_names=TableType.ITEM)
+    cells = dp.get_annotation(category_names=LayoutType.CELL)
 
     # Assert
-    assert len(items) == int(datapoint.get_summary_ann_sub_category_rows_id()) + int(
-        datapoint.get_summary_ann_sub_category_col_id()
+    assert (
+        len(items) == datapoint.get_summary_ann_sub_category_rows_id() + datapoint.get_summary_ann_sub_category_col_id()
     )
-    assert items[0].category_id == "1"
+    assert items[0].category_id == 1
     assert len(cells) == 0
 
 
@@ -145,14 +143,14 @@ def test_image_to_cat_id_1(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    category_names = LayoutType.table
+    category_names = LayoutType.TABLE
     expected_output = [2]
 
     # Act
     output, _ = image_to_cat_id(category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
-    assert output[LayoutType.table] == expected_output
+    assert output[LayoutType.TABLE] == expected_output
 
 
 @pytest.mark.basic
@@ -162,16 +160,16 @@ def test_image_to_cat_id_2(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    category_names = [LayoutType.table, LayoutType.row, LayoutType.column]
-    expected_output = {LayoutType.table: [2], LayoutType.row: [6, 6], LayoutType.column: [7, 7]}
+    category_names = [LayoutType.TABLE, LayoutType.ROW, LayoutType.COLUMN]
+    expected_output = {LayoutType.TABLE: [2], LayoutType.ROW: [6, 6], LayoutType.COLUMN: [7, 7]}
 
     # Act
     output, _ = image_to_cat_id(category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
-    assert output[LayoutType.table] == expected_output[LayoutType.table]
-    assert output[LayoutType.row] == expected_output[LayoutType.row]
-    assert output[LayoutType.column] == expected_output[LayoutType.column]
+    assert output[LayoutType.TABLE] == expected_output[LayoutType.TABLE]
+    assert output[LayoutType.ROW] == expected_output[LayoutType.ROW]
+    assert output[LayoutType.COLUMN] == expected_output[LayoutType.COLUMN]
 
 
 @pytest.mark.basic
@@ -181,14 +179,14 @@ def test_image_to_cat_id_3(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    sub_category_names = {LayoutType.cell: CellType.row_span}
-    expected_output = {CellType.row_span: [1, 1, 1, 1, 0]}
+    sub_category_names = {LayoutType.CELL: CellType.ROW_SPAN}
+    expected_output = {CellType.ROW_SPAN: [1, 1, 1, 1, 0]}
 
     # Act
     output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
-    assert output[CellType.row_span] == expected_output[CellType.row_span]
+    assert output[CellType.ROW_SPAN] == expected_output[CellType.ROW_SPAN]
 
 
 @pytest.mark.basic
@@ -199,23 +197,23 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
 
     # Arrange
     sub_category_names = {
-        LayoutType.cell: [CellType.row_number, CellType.row_span, CellType.column_number, CellType.column_span]
+        LayoutType.CELL: [CellType.ROW_NUMBER, CellType.ROW_SPAN, CellType.COLUMN_NUMBER, CellType.COLUMN_SPAN]
     }
     expected_output = {
-        CellType.row_number: [1, 2, 1, 2, 0],
-        CellType.row_span: [1, 1, 1, 1, 0],
-        CellType.column_number: [1, 1, 2, 2, 0],
-        CellType.column_span: [1, 1, 1, 1, 0],
+        CellType.ROW_NUMBER: [1, 2, 1, 2, 0],
+        CellType.ROW_SPAN: [1, 1, 1, 1, 0],
+        CellType.COLUMN_NUMBER: [1, 1, 2, 2, 0],
+        CellType.COLUMN_SPAN: [1, 1, 1, 1, 0],
     }
 
     # Act
     output, _ = image_to_cat_id(sub_categories=sub_category_names)(dp_image_fully_segmented)  # pylint: disable = E1102
 
     # Assert
-    assert output[CellType.row_number] == expected_output[CellType.row_number]
-    assert output[CellType.row_span] == expected_output[CellType.row_span]
-    assert output[CellType.column_number] == expected_output[CellType.column_number]
-    assert output[CellType.column_span] == expected_output[CellType.column_span]
+    assert output[CellType.ROW_NUMBER] == expected_output[CellType.ROW_NUMBER]
+    assert output[CellType.ROW_SPAN] == expected_output[CellType.ROW_SPAN]
+    assert output[CellType.COLUMN_NUMBER] == expected_output[CellType.COLUMN_NUMBER]
+    assert output[CellType.COLUMN_SPAN] == expected_output[CellType.COLUMN_SPAN]
 
 
 @pytest.mark.basic
@@ -225,14 +223,14 @@ def test_remove_cats(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    categories = LayoutType.row
+    categories = LayoutType.ROW
 
     # Act
     remove_cats_mapper = remove_cats(category_names=categories)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
 
     # Assert
-    anns = dp.get_annotation(category_names=LayoutType.row)
+    anns = dp.get_annotation(category_names=LayoutType.ROW)
     assert len(anns) == 0
 
 
@@ -243,15 +241,15 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     """
 
     # Arrange
-    sub_categories = {LayoutType.cell: [CellType.row_number, CellType.row_span], LayoutType.row: CellType.row_number}
+    sub_categories = {LayoutType.CELL: [CellType.ROW_NUMBER, CellType.ROW_SPAN], LayoutType.ROW: CellType.ROW_NUMBER}
 
     # Act
     remove_cats_mapper = remove_cats(sub_categories=sub_categories)  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
 
     # Assert
-    anns_row = dp.get_annotation(category_names=LayoutType.row)
-    anns_cell = dp.get_annotation(category_names=LayoutType.cell)
+    anns_row = dp.get_annotation(category_names=LayoutType.ROW)
+    anns_cell = dp.get_annotation(category_names=LayoutType.CELL)
 
     assert len(anns_row) == 2
     assert len(anns_cell) == 5
@@ -259,28 +257,28 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     first_ann_row = anns_row[0]
 
     with pytest.raises(Exception):
-        first_ann_row.get_sub_category(CellType.row_number)
+        first_ann_row.get_sub_category(CellType.ROW_NUMBER)
 
     first_ann_cell = anns_cell[0]
     scd_ann_cell = anns_cell[1]
 
     with pytest.raises(Exception):
-        first_ann_cell.get_sub_category(CellType.row_number)
+        first_ann_cell.get_sub_category(CellType.ROW_NUMBER)
 
     with pytest.raises(Exception):
-        first_ann_cell.get_sub_category(CellType.row_span)
+        first_ann_cell.get_sub_category(CellType.ROW_SPAN)
 
-    assert isinstance(first_ann_cell.get_sub_category(CellType.column_number), CategoryAnnotation)
-    assert isinstance(first_ann_cell.get_sub_category(CellType.column_span), CategoryAnnotation)
-
-    with pytest.raises(Exception):
-        scd_ann_cell.get_sub_category(CellType.row_number)
+    assert isinstance(first_ann_cell.get_sub_category(CellType.COLUMN_NUMBER), CategoryAnnotation)
+    assert isinstance(first_ann_cell.get_sub_category(CellType.COLUMN_SPAN), CategoryAnnotation)
 
     with pytest.raises(Exception):
-        scd_ann_cell.get_sub_category(CellType.row_span)
+        scd_ann_cell.get_sub_category(CellType.ROW_NUMBER)
 
-    assert isinstance(scd_ann_cell.get_sub_category(CellType.column_number), CategoryAnnotation)
-    assert isinstance(scd_ann_cell.get_sub_category(CellType.column_span), CategoryAnnotation)
+    with pytest.raises(Exception):
+        scd_ann_cell.get_sub_category(CellType.ROW_SPAN)
+
+    assert isinstance(scd_ann_cell.get_sub_category(CellType.COLUMN_NUMBER), CategoryAnnotation)
+    assert isinstance(scd_ann_cell.get_sub_category(CellType.COLUMN_SPAN), CategoryAnnotation)
 
 
 @pytest.mark.basic
@@ -291,14 +289,13 @@ def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
 
     # Arrange
     sub_category_ann = CategoryAnnotation(category_name="TEST")
-    summary = SummaryAnnotation()
+    summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
     summary.dump_sub_category(get_type("TEST_SUMMARY"), sub_category_ann)
     dp_image_fully_segmented.summary = summary
 
     # Act
     remove_cats_mapper = remove_cats(summary_sub_categories="TEST_SUMMARY")  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
-    assert dp.summary is not None
 
     # Assert
     with pytest.raises(Exception):

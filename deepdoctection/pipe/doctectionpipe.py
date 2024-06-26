@@ -26,18 +26,18 @@ from typing import List, Mapping, Optional, Sequence, Tuple, Union
 from ..dataflow import DataFlow, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
+from ..datapoint.view import IMAGE_DEFAULTS
 from ..mapper.maputils import curry
 from ..mapper.misc import to_image
-from ..utils._types import Pathlike
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import LayoutType
-from .base import Pipeline, PipelineComponent, PredictorPipelineComponent
+from ..utils.types import PathLikeOrStr
+from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 
 
 def _collect_from_kwargs(
-    **kwargs: Union[str, DataFlow, bool, int, Pathlike, Union[str, List[str]]]
+    **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
 ) -> Tuple[Optional[str], Optional[str], bool, int, str, DataFlow]:
     dataset_dataflow = kwargs.get("dataset_dataflow")
     path = kwargs.get("path")
@@ -69,7 +69,7 @@ def _collect_from_kwargs(
 
 @curry
 def _proto_process(
-    dp: Union[str, Mapping[str, str]], path: Optional[str], doc_path: Optional[str]
+    dp: Union[str, Mapping[str, str]], path: Optional[PathLikeOrStr], doc_path: Optional[PathLikeOrStr]
 ) -> Union[str, Mapping[str, str]]:
     if isinstance(dp, str):
         file_name = Path(dp).name
@@ -78,10 +78,14 @@ def _proto_process(
     else:
         file_name = dp["file_name"]
     if path is None:
-        path_tmp = doc_path
+        path_tmp = doc_path or ""
     else:
         path_tmp = path
-    logger.info(LoggingRecord(f"Processing {file_name}", {"path": path_tmp, "df": path_tmp, "file_name": file_name}))
+    logger.info(
+        LoggingRecord(
+            f"Processing {file_name}", {"path": os.fspath(path_tmp), "df": os.fspath(path_tmp), "file_name": file_name}
+        )
+    )
     return dp
 
 
@@ -90,7 +94,7 @@ def _to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int
     return to_image(dp, dpi)
 
 
-def _doc_to_dataflow(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
     if not os.path.isfile(path):
         raise FileExistsError(f"{path} not a file")
 
@@ -127,19 +131,18 @@ class DoctectionPipe(Pipeline):
 
     def __init__(
         self,
-        pipeline_component_list: List[Union[PipelineComponent]],
+        pipeline_component_list: List[PipelineComponent],
         page_parsing_service: Optional[PageParsingService] = None,
     ):
-        if page_parsing_service is None:
-            self.page_parser = PageParsingService(text_container=LayoutType.word)
-        else:
-            self.page_parser = page_parsing_service
-        assert all(
-            isinstance(element, (PipelineComponent, PredictorPipelineComponent)) for element in pipeline_component_list
+        self.page_parser = (
+            PageParsingService(text_container=IMAGE_DEFAULTS["text_container"])
+            if page_parsing_service is None
+            else page_parsing_service
         )
+
         super().__init__(pipeline_component_list)
 
-    def _entry(self, **kwargs: Union[str, DataFlow, bool, int, Pathlike, Union[str, List[str]]]) -> DataFlow:
+    def _entry(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
         path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow = _collect_from_kwargs(**kwargs)
 
         df: DataFlow
@@ -147,7 +150,7 @@ class DoctectionPipe(Pipeline):
         if isinstance(path, (str, Path)):
             if not isinstance(file_type, (str, list)):
                 raise TypeError(f"file_type must be of type string or list, but is of type {type(file_type)}")
-            df = DoctectionPipe.path_to_dataflow(path, file_type, shuffle=shuffle)
+            df = DoctectionPipe.path_to_dataflow(path=path, file_type=file_type, shuffle=shuffle)
         elif isinstance(doc_path, (str, Path)):
             df = DoctectionPipe.doc_to_dataflow(
                 path=doc_path, max_datapoints=int(max_datapoints) if max_datapoints is not None else None
@@ -164,7 +167,7 @@ class DoctectionPipe(Pipeline):
 
     @staticmethod
     def path_to_dataflow(
-        path: Pathlike,
+        path: PathLikeOrStr,
         file_type: Union[str, Sequence[str]],
         max_datapoints: Optional[int] = None,
         shuffle: bool = False,
@@ -179,12 +182,12 @@ class DoctectionPipe(Pipeline):
         :return: dataflow
         """
         if not os.path.isdir(path):
-            raise NotADirectoryError(f"{path} not a directory")
+            raise NotADirectoryError(f"{os.fspath(path)} not a directory")
         df = SerializerFiles.load(path, file_type, max_datapoints, shuffle)
         return df
 
     @staticmethod
-    def doc_to_dataflow(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+    def doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Processing method for documents
 
@@ -203,7 +206,7 @@ class DoctectionPipe(Pipeline):
         """
         return self.page_parser.predict_dataflow(df)
 
-    def analyze(self, **kwargs: Union[str, DataFlow, bool, int, Pathlike, Union[str, List[str]]]) -> DataFlow:
+    def analyze(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
         """
         `kwargs key dataset_dataflow:` Transfer a dataflow of a dataset via its dataflow builder
 

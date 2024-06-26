@@ -21,16 +21,16 @@ Module for small mapping functions
 
 from __future__ import annotations
 
+import ast
 import os
-import json
-from typing import List, Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils._types import JsonDict
 from ..utils.fs import get_load_image_func, load_image_from_file
+from ..utils.types import JsonDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry
 
@@ -135,7 +135,7 @@ def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[s
     return dp
 
 
-def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_image: bool = True) -> Image:
+def image_ann_to_image(dp: Image, category_names: Union[str, list[str]], crop_image: bool = True) -> Image:
     """
     Adds `image` to annotations with given category names
 
@@ -154,7 +154,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
 
 @curry
 def maybe_ann_to_sub_image(
-    dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]], add_summary: bool
+    dp: Image, category_names_sub_image: Union[str, list[str]], category_names: Union[str, list[str]], add_summary: bool
 ) -> Image:
     """
     Assigns to sub image with given category names all annotations with given category names whose bounding box lie
@@ -196,7 +196,6 @@ def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
 
     output = str(xslt_obj(dp["xml"]))
-    output = output.replace('<?xml version="1.0"?>', "")
     dp.pop("xml")
-    dp["json"] = json.loads(output)
+    dp["json"] = ast.literal_eval(output.replace('<?xml version="1.0"?>', ""))
     return dp

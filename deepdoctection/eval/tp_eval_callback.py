@@ -27,8 +27,7 @@ from typing import Mapping, Optional, Sequence, Type, Union
 from lazy_imports import try_import
 
 from ..datasets import DatasetBase
-from ..extern.tpdetect import TPFrcnnDetector
-from ..pipe.base import PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict
 from ..utils.settings import ObjectTypes
@@ -65,9 +64,10 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         category_names: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]],
         sub_categories: Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]],
         metric: Union[Type[MetricBase], MetricBase],
-        pipeline_component: PredictorPipelineComponent,
+        pipeline_component: PipelineComponent,
         in_names: str,
         out_names: str,
+        cfg: AttrDict,
         **build_eval_kwargs: str,
     ) -> None:
         """
@@ -89,12 +89,7 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         self.num_gpu = get_num_gpu()
         self.category_names = category_names
         self.sub_categories = sub_categories
-        if not isinstance(pipeline_component.predictor, TPFrcnnDetector):
-            raise TypeError(
-                f"pipeline_component.predictor must be of type TPFrcnnDetector but is "
-                f"type {type(pipeline_component.predictor)}"
-            )
-        self.cfg = pipeline_component.predictor.model.cfg
+        self.cfg = cfg
         if _use_replicated(self.cfg):
             self.evaluator = Evaluator(dataset, pipeline_component, metric, num_threads=self.num_gpu * 2)
         else:
@@ -105,13 +100,9 @@ class EvalCallback(Callback):  # pylint: disable=R0903
             if self.evaluator.pipe_component is None:
                 raise TypeError("self.evaluator.pipe_component cannot be None")
             for idx, comp in enumerate(self.evaluator.pipe_component.pipe_components):
-                if not isinstance(comp, PredictorPipelineComponent):
-                    raise TypeError(f"comp must be of type PredictorPipelineComponent but is type {type(comp)}")
-                if not isinstance(comp.predictor, TPFrcnnDetector):
-                    raise TypeError(
-                        f"comp.predictor mus be of type TPFrcnnDetector but is of type {type(comp.predictor)}"
-                    )
-                comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
+                if hasattr(comp, "predictor"):
+                    if hasattr(comp.predictor, "tp_predictor"):
+                        comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
 
     def _build_predictor(self, idx: int) -> OnlinePredictor:
         return self.trainer.get_predictor(self.in_names, self.out_names, device=idx)

@@ -29,8 +29,8 @@ from deepdoctection.extern.tessocr import (
     TesseractRotationTransformer,
     tesseract_line_to_detectresult,
 )
-from deepdoctection.utils._types import ImageType
 from deepdoctection.utils.error import DependencyError
+from deepdoctection.utils.types import PixelValues
 from tests.data import Annotations
 
 from .data import WORD_RESULTS
@@ -45,7 +45,7 @@ def fixture_pdf_bytes_page_2() -> List[DetectionResult]:
 
 
 def get_mock_word_results(
-    np_img: ImageType, supported_languages: str, text_lines: bool, config: str  # pylint: disable=W0613
+    np_img: PixelValues, supported_languages: str, text_lines: bool, config: str  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns WordResults attr: word_results_list
@@ -77,7 +77,7 @@ class TestTesseractOcrDetector:
     @pytest.mark.basic
     @patch("deepdoctection.utils.file_utils.get_tesseract_version", MagicMock(return_value=3.15))
     @patch("deepdoctection.extern.tessocr.predict_text", MagicMock(side_effect=get_mock_word_results))
-    def test_tesseract_ocr_predicts_image(path_to_tesseract_yaml: str, np_image: ImageType) -> None:
+    def test_tesseract_ocr_predicts_image(path_to_tesseract_yaml: str, np_image: PixelValues) -> None:
         """
         Detector calls predict_text
         """
@@ -129,7 +129,7 @@ class TestTesseractRotationTransformer:
             }
         ),
     )
-    def test_tesseract_rotation_transformer_predicts_image(np_image: ImageType) -> None:
+    def test_tesseract_rotation_transformer_predicts_image(np_image: PixelValues) -> None:
         """
         TesseractRotationTransformer calls predict and returns correct DetectionResult
         """
@@ -147,7 +147,7 @@ class TestTesseractRotationTransformer:
     @staticmethod
     @pytest.mark.basic
     def test_tesseract_rotation_transformer_rotates_image(
-        np_image: ImageType, angle_detection_result: DetectionResult
+        np_image: PixelValues, angle_detection_result: DetectionResult
     ) -> None:
         """
         TesseractRotationTransformer rotates image according to angle_detection_result

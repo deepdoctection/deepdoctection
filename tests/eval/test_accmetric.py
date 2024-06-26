@@ -86,7 +86,7 @@ class TestAccuracyMetric:
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
         accuracy_metric = AccuracyMetric()
-        accuracy_metric.set_categories(sub_category_names={"cell": [CellType.row_number, CellType.column_span]})
+        accuracy_metric.set_categories(sub_category_names={"cell": [CellType.ROW_NUMBER, CellType.COLUMN_SPAN]})
 
         # Arrange
         output = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
@@ -150,31 +150,31 @@ class TestConfusionMetric:
         assert len(output) == 98
         assert output[3] == {
             "key": "table",
-            "category_id_gt": 2,
+            "category_id": 2,
             "category_id_pr": 2,
             "val": 1.0,
-            "num_samples_gt": 1,
+            "num_samples": 1,
         }
         assert output[12] == {
             "key": "cell",
-            "category_id_gt": 3,
+            "category_id": 3,
             "category_id_pr": 3,
             "val": 5.0,
-            "num_samples_gt": 5,
+            "num_samples": 5,
         }
         assert output[48] == {
             "key": "row",
-            "category_id_gt": 6,
+            "category_id": 6,
             "category_id_pr": 6,
             "val": 2.0,
-            "num_samples_gt": 2,
+            "num_samples": 2,
         }
         assert output[97] == {
             "key": "column",
-            "category_id_gt": 7,
+            "category_id": 7,
             "category_id_pr": 7,
             "val": 2.0,
-            "num_samples_gt": 2,
+            "num_samples": 2,
         }
 
 

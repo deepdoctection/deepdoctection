@@ -18,9 +18,10 @@
 """
 Module for metrics that require the COCOeval class.
 """
+from __future__ import annotations
 
 from copy import copy
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -29,8 +30,8 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import re_assign_cat_ids
 from ..mapper.cocostruct import image_to_coco
-from ..utils._types import JsonDict
 from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
+from ..utils.types import JsonDict, MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -120,15 +121,15 @@ class CocoMetric(MetricBase):
 
     name = "mAP and mAR"
     metric = COCOeval if cocotools_available() else None
-    mapper = image_to_coco  # type: ignore
+    mapper = image_to_coco
     _f1_score = None
     _f1_iou = None
-    _params: Dict[str, Union[List[int], List[List[int]]]] = {}
+    _params: dict[str, Union[list[int], list[list[int]]]] = {}
 
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> Tuple["COCO", "COCO"]:
+    ) -> tuple[COCO, COCO]:
         cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True, filtered=True).items()]
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
@@ -137,11 +138,11 @@ class CocoMetric(MetricBase):
         dataflow_predictions.reset_state()
 
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            img_gt, ann_gt = cls.mapper(dp_gt)  # type: ignore
+            img_gt, ann_gt = cls.mapper(dp_gt)
             dp_pred = re_assign_cat_ids(categories.get_categories(as_dict=True, filtered=True, name_as_key=True))(
                 dp_pred
             )
-            img_pr, ann_pr = cls.mapper(dp_pred)  # type: ignore
+            img_pr, ann_pr = cls.mapper(dp_pred)
             imgs_gt.append(img_gt)
             imgs_pr.append(img_pr)
             anns_gt.extend(ann_gt)
@@ -162,7 +163,7 @@ class CocoMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[MetricResults]:
         coco_gt, coco_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         metric = cls.metric(coco_gt, coco_predictions, iouType="bbox")
@@ -192,7 +193,7 @@ class CocoMetric(MetricBase):
         return results
 
     @classmethod
-    def get_summary_default_parameters(cls) -> List[JsonDict]:
+    def get_summary_default_parameters(cls) -> list[JsonDict]:
         """
         Returns default parameters of evaluation results. May differ from other CocoMetric classes.
 
@@ -215,8 +216,8 @@ class CocoMetric(MetricBase):
     @classmethod
     def set_params(
         cls,
-        max_detections: Optional[List[int]] = None,
-        area_range: Optional[List[List[int]]] = None,
+        max_detections: Optional[list[int]] = None,
+        area_range: Optional[list[list[int]]] = None,
         f1_score: bool = False,
         f1_iou: float = 0.9,
     ) -> None:
@@ -239,5 +240,5 @@ class CocoMetric(MetricBase):
         cls._f1_iou = f1_iou
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_cocotools_requirement()]

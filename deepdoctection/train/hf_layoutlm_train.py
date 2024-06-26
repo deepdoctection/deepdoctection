@@ -24,7 +24,7 @@ import copy
 import json
 import os
 import pprint
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
@@ -47,12 +47,13 @@ from ..extern.hflayoutlm import (
 from ..extern.hflm import HFLmSequenceClassifier
 from ..extern.pt.ptutils import get_torch_device
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
-from ..pipe.base import LanguageModelPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, WordType
+from ..utils.types import PathLikeOrStr
 from ..utils.utils import string_to_dict
 
 with try_import() as pt_import_guard:
@@ -82,7 +83,7 @@ with try_import() as wb_import_guard:
     import wandb
 
 
-def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> Tuple[Any, Any, Any]:
+def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> tuple[Any, Any, Any]:
     """
     Get the model architecture, model wrapper and config class for a given model type and dataset type.
 
@@ -91,47 +92,47 @@ def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetTy
     :return: Tuple of model architecture, model wrapper and config class
     """
     return {
-        ("layoutlm", DatasetType.sequence_classification): (
+        ("layoutlm", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMForSequenceClassification,
             HFLayoutLmSequenceClassifier,
             PretrainedConfig,
         ),
-        ("layoutlm", DatasetType.token_classification): (
+        ("layoutlm", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMForTokenClassification,
             HFLayoutLmTokenClassifier,
             PretrainedConfig,
         ),
-        ("layoutlmv2", DatasetType.sequence_classification): (
+        ("layoutlmv2", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMv2ForSequenceClassification,
             HFLayoutLmv2SequenceClassifier,
             LayoutLMv2Config,
         ),
-        ("layoutlmv2", DatasetType.token_classification): (
+        ("layoutlmv2", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMv2ForTokenClassification,
             HFLayoutLmv2TokenClassifier,
             LayoutLMv2Config,
         ),
-        ("layoutlmv3", DatasetType.sequence_classification): (
+        ("layoutlmv3", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMv3ForSequenceClassification,
             HFLayoutLmv3SequenceClassifier,
             LayoutLMv3Config,
         ),
-        ("layoutlmv3", DatasetType.token_classification): (
+        ("layoutlmv3", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMv3ForTokenClassification,
             HFLayoutLmv3TokenClassifier,
             LayoutLMv3Config,
         ),
-        ("lilt", DatasetType.token_classification): (
+        ("lilt", DatasetType.TOKEN_CLASSIFICATION): (
             LiltForTokenClassification,
             HFLiltTokenClassifier,
             PretrainedConfig,
         ),
-        ("lilt", DatasetType.sequence_classification): (
+        ("lilt", DatasetType.SEQUENCE_CLASSIFICATION): (
             LiltForSequenceClassification,
             HFLiltSequenceClassifier,
             PretrainedConfig,
         ),
-        ("xlm-roberta", DatasetType.sequence_classification): (
+        ("xlm-roberta", DatasetType.SEQUENCE_CLASSIFICATION): (
             XLMRobertaForSequenceClassification,
             HFLmSequenceClassifier,
             PretrainedConfig,
@@ -163,13 +164,13 @@ class LayoutLMTrainer(Trainer):
         train_dataset: Dataset[Any],
     ):
         self.evaluator: Optional[Evaluator] = None
-        self.build_eval_kwargs: Optional[Dict[str, Any]] = None
+        self.build_eval_kwargs: Optional[dict[str, Any]] = None
         super().__init__(model, args, data_collator, train_dataset)
 
     def setup_evaluator(
         self,
         dataset_val: DatasetBase,
-        pipeline_component: LanguageModelPipelineComponent,
+        pipeline_component: PipelineComponent,
         metric: Union[Type[ClassificationMetric], ClassificationMetric],
         run: Optional[wandb.sdk.wandb_run.Run] = None,
         **build_eval_kwargs: Union[str, int],
@@ -188,15 +189,15 @@ class LayoutLMTrainer(Trainer):
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.language_model.model = None  # type: ignore
+            comp.clear_predictor()
         self.build_eval_kwargs = build_eval_kwargs
 
     def evaluate(
         self,
         eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
-        ignore_keys: Optional[List[str]] = None,  # pylint: disable=W0613
+        ignore_keys: Optional[list[str]] = None,  # pylint: disable=W0613
         metric_key_prefix: str = "eval",  # pylint: disable=W0613
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
         """
@@ -220,8 +221,8 @@ class LayoutLMTrainer(Trainer):
 
 
 def _get_model_class_and_tokenizer(
-    path_config_json: str, dataset_type: DatasetType, use_xlm_tokenizer: bool
-) -> Tuple[Any, Any, Any, Any, Any]:
+    path_config_json: PathLikeOrStr, dataset_type: DatasetType, use_xlm_tokenizer: bool
+) -> tuple[Any, Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
@@ -244,11 +245,11 @@ def get_image_to_raw_features_mapping(input_str: str) -> Any:
 
 
 def train_hf_layoutlm(
-    path_config_json: str,
+    path_config_json: PathLikeOrStr,
     dataset_train: Union[str, DatasetBase],
-    path_weights: str,
-    config_overwrite: Optional[List[str]] = None,
-    log_dir: str = "train_log/layoutlm",
+    path_weights: PathLikeOrStr,
+    config_overwrite: Optional[list[str]] = None,
+    log_dir: PathLikeOrStr = "train_log/layoutlm",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -323,13 +324,13 @@ def train_hf_layoutlm(
                               appear as child, it will use the word bounding box.
     """
 
-    build_train_dict: Dict[str, str] = {}
+    build_train_dict: dict[str, str] = {}
     if build_train_config is not None:
         build_train_dict = string_to_dict(",".join(build_train_config))
     if "split" not in build_train_dict:
         build_train_dict["split"] = "train"
 
-    build_val_dict: Dict[str, str] = {}
+    build_val_dict: dict[str, str] = {}
     if build_val_config is not None:
         build_val_dict = string_to_dict(",".join(build_val_config))
     if "split" not in build_val_dict:
@@ -343,25 +344,25 @@ def train_hf_layoutlm(
 
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
-    if dataset_type == DatasetType.sequence_classification:
+    if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
-    elif dataset_type == DatasetType.token_classification:
+    elif dataset_type == DatasetType.TOKEN_CLASSIFICATION:
         if use_token_tag:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.word,
-                sub_categories={LayoutType.word: [WordType.token_tag]},
+                categories=LayoutType.WORD,
+                sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.word][WordType.token_tag]
+            )[LayoutType.WORD][WordType.TOKEN_TAG]
         else:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.word,
-                sub_categories={LayoutType.word: [WordType.token_class]},
+                categories=LayoutType.WORD,
+                sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.word][WordType.token_class]
+            )[LayoutType.WORD][WordType.TOKEN_CLASS]
     else:
         raise UserWarning("Dataset type not supported for training")
 
@@ -372,13 +373,14 @@ def train_hf_layoutlm(
     image_to_raw_features_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
     if segment_positions:
         image_to_raw_features_kwargs["segment_positions"] = segment_positions  # type: ignore
-    image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
+    image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_image_to_features_mapping())
 
     dataset = DatasetAdapter(
         dataset_train,
         True,
         image_to_raw_features_func(**image_to_raw_features_kwargs),
         use_token_tag,
+        number_repetitions=-1,
         **build_train_dict,
     )
 
@@ -388,7 +390,7 @@ def train_hf_layoutlm(
     # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
     # that are necessary for the tokenizer.
     conf_dict = {
-        "output_dir": log_dir,
+        "output_dir": os.fspath(log_dir),
         "remove_unused_columns": False,
         "per_device_train_batch_size": 8,
         "max_steps": number_samples,
@@ -429,16 +431,16 @@ def train_hf_layoutlm(
         )
 
     use_wandb = conf_dict.pop("use_wandb")
-    wandb_project = conf_dict.pop("wandb_project")
-    wandb_repo = conf_dict.pop("wandb_repo")
+    wandb_project = str(conf_dict.pop("wandb_project"))
+    wandb_repo = str(conf_dict.pop("wandb_repo"))
 
     # Initialize Wandb, if necessary
     run = None
     if use_wandb:
         if not wandb_available():
             raise DependencyError("WandB must be installed separately")
-        run = wandb.init(project=wandb_project, config=conf_dict)  # type: ignore
-        run._label(repo=wandb_repo)  # type: ignore # pylint: disable=W0212
+        run = wandb.init(project=wandb_project, config=conf_dict)
+        run._label(repo=wandb_repo)  # pylint: disable=W0212
     else:
         os.environ["WANDB_DISABLED"] = "True"
 
@@ -474,19 +476,19 @@ def train_hf_layoutlm(
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         assert metric is not None  # silence mypy
-        if dataset_type == DatasetType.sequence_classification:
+        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
             if use_token_tag:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
-                )[LayoutType.word][WordType.token_tag]
-                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_tag"]})
+                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]}, keys=False
+                )[LayoutType.WORD][WordType.TOKEN_TAG]
+                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_tag"]})
             else:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
-                )[LayoutType.word][WordType.token_class]
-                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_class"]})
+                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]}, keys=False
+                )[LayoutType.WORD][WordType.TOKEN_CLASS]
+                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_class"]})
         dd_model = model_wrapper_cls(
             path_config_json=path_config_json,
             path_weights=path_weights,
@@ -495,7 +497,7 @@ def train_hf_layoutlm(
             use_xlm_tokenizer=use_xlm_tokenizer,
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        if dataset_type == DatasetType.sequence_classification:
+        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model)
         else:
             pipeline_component = pipeline_component_cls(
@@ -504,7 +506,6 @@ def train_hf_layoutlm(
                 use_other_as_default_category=True,
                 sliding_window_stride=sliding_window_stride,
             )
-        assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, run, **build_val_dict)  # type: ignore
 

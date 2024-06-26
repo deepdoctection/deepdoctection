@@ -26,15 +26,14 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
-from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.transform import PadTransform
-from .base import PredictorPipelineComponent
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
 @pipeline_component_registry.register("ImageLayoutService")
-class ImageLayoutService(PredictorPipelineComponent):
+class ImageLayoutService(PipelineComponent):
     """
     Pipeline component for determining the layout. Which layout blocks are determined depends on the Detector and thus
     usually on the data set on which the Detector was pre-trained. If the Detector has been trained on Publaynet, these
@@ -65,6 +64,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         :param crop_image: Do not only populate `ImageAnnotation.image` but also crop the detected block according
                            to its bounding box and populate the resulting sub image to
                            `ImageAnnotation.image.image`.
+        :param padder: If not `None`, will apply the padder to the image before prediction and inverse apply the padder
         :param skip_if_layout_extracted: When `True` will check, if there are already `ImageAnnotation` of a category
                                          available that will be predicted by the `layout_detector`. If yes, will skip
                                          the prediction process.
@@ -73,11 +73,12 @@ class ImageLayoutService(PredictorPipelineComponent):
         self.crop_image = crop_image
         self.padder = padder
         self.skip_if_layout_extracted = skip_if_layout_extracted
-        super().__init__(self._get_name(layout_detector.name), layout_detector)
+        self.predictor = layout_detector
+        super().__init__(self._get_name(layout_detector.name), self.predictor.model_id)
 
     def serve(self, dp: Image) -> None:
         if self.skip_if_layout_extracted:
-            categories = self.predictor.possible_categories()  # type: ignore
+            categories = self.predictor.get_category_names()
             anns = dp.get_annotation(category_names=categories)
             if anns:
                 return
@@ -86,7 +87,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         np_image = dp.image
         if self.padder:
             np_image = self.padder.apply_image(np_image)
-        detect_result_list = self.predictor.predict(np_image)  # type: ignore
+        detect_result_list = self.predictor.predict(np_image)
         if self.padder and detect_result_list:
             boxes = np.array([detect_result.box for detect_result in detect_result_list])
             boxes_orig = self.padder.inverse_apply_coords(boxes)
@@ -96,22 +97,20 @@ class ImageLayoutService(PredictorPipelineComponent):
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
 
-    def get_meta_annotation(self) -> JsonDict:
-        assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
-        return dict(
-            [
-                ("image_annotations", self.predictor.possible_categories()),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+    def get_meta_annotation(self) -> MetaAnnotation:
+        if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
+            raise TypeError(
+                f"self.predictor must be of type ObjectDetector or PdfMiner but is of type " f"{type(self.predictor)}"
+            )
+        return MetaAnnotation(
+            image_annotations=self.predictor.get_category_names(), sub_categories={}, relationships={}, summaries=()
         )
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"image_{predictor_name}"
 
-    def clone(self) -> PredictorPipelineComponent:
+    def clone(self) -> ImageLayoutService:
         predictor = self.predictor.clone()
         padder_clone = None
         if self.padder:
@@ -119,3 +118,6 @@ class ImageLayoutService(PredictorPipelineComponent):
         if not isinstance(predictor, ObjectDetector):
             raise TypeError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
         return self.__class__(predictor, self.to_image, self.crop_image, padder_clone, self.skip_if_layout_extracted)
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()
