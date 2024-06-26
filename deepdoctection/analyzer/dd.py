@@ -51,6 +51,7 @@ from ..pipe.segment import PubtablesSegmentationService, TableSegmentationServic
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..utils._types import Pathlike
+from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
@@ -233,9 +234,9 @@ def build_ocr(cfg: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer,
         )
     if cfg.OCR.USE_TEXTRACT:
         credentials_kwargs = {
-            "aws_access_key_id": environ.get("ACCESS_KEY"),
-            "aws_secret_access_key": environ.get("SECRET_KEY"),
-            "config": Config(region_name=environ.get("REGION")),
+            "aws_access_key_id": environ.get("ACCESS_KEY", None),
+            "aws_secret_access_key": environ.get("SECRET_KEY", None),
+            "config": Config(region_name=environ.get("REGION", None)),
         }
         return TextractOcrDetector(**credentials_kwargs)
     raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
@@ -431,7 +432,7 @@ def get_dd_analyzer(
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if os.environ.get("DD_USE_TF", "0") == "1" else "PT"
+    lib = "TF" if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE else "PT"
     if lib == "TF":
         device = get_tf_device()
     elif lib == "PT":
