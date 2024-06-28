@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import os
 from copy import copy, deepcopy
-from typing import List, Literal, Mapping, Optional, Sequence, Union
+from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 
@@ -258,8 +258,8 @@ class AnnotationNmsService(PipelineComponent):
     def __init__(
         self,
         nms_pairs: Sequence[Sequence[TypeOrStr]],
-        thresholds: Union[float, List[float]],
-        priority: Optional[List[Union[Optional[TypeOrStr]]]] = None,
+        thresholds: Union[float, list[float]],
+        priority: Optional[list[Union[Optional[TypeOrStr]]]] = None,
     ):
         """
         :param nms_pairs: Groups of categories, either as string or by `ObjectType`.

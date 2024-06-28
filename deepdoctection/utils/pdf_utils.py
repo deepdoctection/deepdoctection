@@ -25,12 +25,12 @@ import sys
 from errno import ENOENT
 from io import BytesIO
 from shutil import copyfile
-from typing import Generator, List, Optional, Tuple
+from typing import Generator, Optional
 
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
-from ._types import Pathlike, PixelValues
+from ._types import StrOrPathLike, PixelValues
 from .context import save_tmp_file, timeout_manager
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
@@ -41,7 +41,7 @@ from .viz import viz_handler
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
 
-def decrypt_pdf_document(path: Pathlike) -> bool:
+def decrypt_pdf_document(path: StrOrPathLike) -> bool:
     """
     Decrypting a pdf. As copying a pdf document removes the password that protects pdf, this method
     generates a copy and decrypts the copy using qpdf. The result is saved as the original
@@ -73,7 +73,7 @@ def decrypt_pdf_document(path: Pathlike) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: Pathlike) -> PdfReader:
+def get_pdf_file_reader(path: StrOrPathLike) -> PdfReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
@@ -133,7 +133,7 @@ class PDFStreamer:
 
     """
 
-    def __init__(self, path: Pathlike) -> None:
+    def __init__(self, path: StrOrPathLike) -> None:
         """
         :param path: to a pdf.
         """
@@ -143,7 +143,7 @@ class PDFStreamer:
     def __len__(self) -> int:
         return len(self.file_reader.pages)
 
-    def __iter__(self) -> Generator[Tuple[bytes, int], None, None]:
+    def __iter__(self) -> Generator[tuple[bytes, int], None, None]:
         for k in range(len(self)):
             buffer = BytesIO()
             writer = get_pdf_file_writer()
@@ -157,9 +157,9 @@ class PDFStreamer:
 
 
 def _input_to_cli_str(
-    input_file_name: Pathlike, output_file_name: Pathlike, dpi: int, size: Optional[Tuple[int, int]] = None
-) -> List[str]:
-    cmd_args: List[str] = []
+    input_file_name: StrOrPathLike, output_file_name: StrOrPathLike, dpi: int, size: Optional[tuple[int, int]] = None
+) -> list[str]:
+    cmd_args: list[str] = []
 
     if pdf_to_ppm_available():
         command = "pdftoppm"
@@ -196,7 +196,7 @@ class PopplerError(RuntimeError):
         self.args = (status, message)
 
 
-def _run_poppler(poppler_args: List[str]) -> None:
+def _run_poppler(poppler_args: list[str]) -> None:
     try:
         proc = subprocess.Popen(poppler_args)  # pylint: disable=R1732
     except OSError as error:
@@ -209,7 +209,7 @@ def _run_poppler(poppler_args: List[str]) -> None:
             raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[Tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.

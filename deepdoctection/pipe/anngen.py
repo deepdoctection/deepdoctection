@@ -19,7 +19,7 @@
 Module for datapoint populating helpers
 """
 from dataclasses import asdict
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Mapping, Optional, Union
 
 import numpy as np
 
@@ -44,7 +44,7 @@ class DatapointManager:
 
     def __init__(self, service_id: str, model_id: Optional[str] = None) -> None:
         self._datapoint: Optional[Image] = None
-        self._cache_anns: Dict[str, ImageAnnotation] = {}
+        self._cache_anns: dict[str, ImageAnnotation] = {}
         self.datapoint_is_passed: bool = False
         self.category_id_mapping: Optional[Mapping[int, int]] = None
         self.service_id = service_id
@@ -233,7 +233,7 @@ class DatapointManager:
         category_id: Optional[Union[str, int]],
         sub_cat_key: ObjectTypes,
         annotation_id: str,
-        value: Union[str, List[str]],
+        value: Union[str, list[str]],
         score: Optional[float] = None,
     ) -> Optional[str]:
         """

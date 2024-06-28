@@ -24,12 +24,13 @@ import subprocess
 import sys
 from errno import ENOENT
 from itertools import groupby
+from pathlib import Path
 from os import environ
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 from packaging.version import InvalidVersion, Version, parse
 
-from ..utils._types import PixelValues, Requirement
+from ..utils._types import PixelValues, Requirement, StrOrPathLike
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
@@ -60,7 +61,7 @@ _LANG_CODE_TO_TESS_LANG_CODE = {
 }
 
 
-def _subprocess_args() -> Dict[str, Any]:
+def _subprocess_args() -> dict[str, Any]:
     # See https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
     # for reference and comments.
 
@@ -75,11 +76,15 @@ def _subprocess_args() -> Dict[str, Any]:
     return kwargs
 
 
-def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, output_file_name_base: str) -> List[str]:
+def _input_to_cli_str(lang: str,
+                      config: str,
+                      nice: int,
+                      input_file_name: str,
+                      output_file_name_base: str) -> list[str]:
     """
     Generates a tesseract cmd as list of string with given inputs
     """
-    cmd_args: List[str] = []
+    cmd_args: list[str] = []
 
     if not sys.platform.startswith("win32") and nice != 0:
         cmd_args += ("nice", "-n", str(nice))
@@ -94,7 +99,7 @@ def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, o
     return cmd_args
 
 
-def _run_tesseract(tesseract_args: List[str]) -> None:
+def _run_tesseract(tesseract_args: list[str]) -> None:
     try:
         proc = subprocess.Popen(tesseract_args, **_subprocess_args())  # pylint: disable=R1732
     except OSError as error:
@@ -154,7 +159,7 @@ def image_to_angle(image: PixelValues) -> Mapping[str, str]:
     }
 
 
-def image_to_dict(image: PixelValues, lang: str, config: str) -> Dict[str, List[Union[str, int, float]]]:
+def image_to_dict(image: PixelValues, lang: str, config: str) -> dict[str, list[Union[str, int, float]]]:
     """
     This is more or less pytesseract.image_to_data with a dict as returned value.
     What happens under the hood is:
@@ -177,7 +182,7 @@ def image_to_dict(image: PixelValues, lang: str, config: str) -> Dict[str, List[
         _run_tesseract(_input_to_cli_str(lang, config, 0, input_file_name, tmp_name))
         with open(tmp_name + ".tsv", "rb") as output_file:
             output = output_file.read().decode("utf-8")
-        result: Dict[str, List[Union[str, int, float]]] = {}
+        result: dict[str, list[Union[str, int, float]]] = {}
         rows = [row.split("\t") for row in output.strip().split("\n")]
         if len(rows) < 2:
             return result
@@ -208,7 +213,7 @@ def image_to_dict(image: PixelValues, lang: str, config: str) -> Dict[str, List[
         return result
 
 
-def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
+def tesseract_line_to_detectresult(detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
     """
     Generating text line DetectionResult based on Tesseract word grouping. It generates line bounding boxes from
     word bounding boxes.
@@ -216,7 +221,7 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
     :return: An extended list of detection result
     """
 
-    line_detect_result: List[DetectionResult] = []
+    line_detect_result: list[DetectionResult] = []
     for _, block_group_iter in groupby(detect_result_list, key=lambda x: x.block):
         block_group = []
         for _, line_group_iter in groupby(list(block_group_iter), key=lambda x: x.line):
@@ -242,7 +247,7 @@ def tesseract_line_to_detectresult(detect_result_list: List[DetectionResult]) ->
     return detect_result_list
 
 
-def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool, config: str) -> List[DetectionResult]:
+def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool, config: str) -> list[DetectionResult]:
     """
     Calls tesseract directly with some given configs. Requires Tesseract to be installed.
 
@@ -326,8 +331,8 @@ class TesseractOcrDetector(ObjectDetector):
 
     def __init__(
         self,
-        path_yaml: str,
-        config_overwrite: Optional[List[str]] = None,
+        path_yaml: StrOrPathLike,
+        config_overwrite: Optional[list[str]] = None,
     ):
         """
         Set up the configuration which is stored in a yaml-file, that need to be passed through.
@@ -346,7 +351,7 @@ class TesseractOcrDetector(ObjectDetector):
         if len(config_overwrite):
             hyper_param_config.update_args(config_overwrite)
 
-        self.path_yaml = path_yaml
+        self.path_yaml = Path(path_yaml)
         self.config_overwrite = config_overwrite
         self.config = hyper_param_config
 
@@ -355,7 +360,7 @@ class TesseractOcrDetector(ObjectDetector):
         else:
             self.categories = {"1": LayoutType.word}
 
-    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Transfer of a numpy array and call of pytesseract. Return of the detection results.
 
@@ -371,13 +376,13 @@ class TesseractOcrDetector(ObjectDetector):
         )
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_tesseract_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_yaml, self.config_overwrite)
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         if self.config.LINES:
             return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]
@@ -445,7 +450,7 @@ class TesseractRotationTransformer(ImageTransformer):
         )
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_tesseract_requirement()]
 
     def clone(self) -> PredictorBase:

@@ -21,7 +21,7 @@ from typing import Any, Union, no_type_check
 import importlib_metadata
 from packaging import version
 
-from ._types import Requirement
+from ._types import Requirement, StrOrPathLike
 from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
@@ -257,14 +257,12 @@ _TESS_ERR_MSG = (
 )
 
 
-def set_tesseract_path(tesseract_path: str) -> None:
+def set_tesseract_path(tesseract_path: StrOrPathLike) -> None:
     """Set the Tesseract path. If you have tesseract installed in Anaconda,
        you can use this function to set tesseract path.
 
     :param tesseract_path: Tesseract installation path.
     """
-    if tesseract_path is None:
-        raise TypeError("tesseract_path cannot be None")
 
     global _TESS_AVAILABLE  # pylint: disable=W0603
     global _TESS_PATH  # pylint: disable=W0603

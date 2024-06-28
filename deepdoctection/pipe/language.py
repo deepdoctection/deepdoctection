@@ -102,8 +102,8 @@ class LanguageDetectionService(PipelineComponent):
             raise TypeError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
         return self.__class__(
             predictor,
-            copy(self.text_container),
-            deepcopy(self.text_detector),
+            self.text_container,
+            self.text_detector.clone(),
             deepcopy(self.floating_text_block_categories),
         )
 

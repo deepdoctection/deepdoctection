@@ -23,11 +23,11 @@ from __future__ import annotations
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
+from typing import Literal, Mapping, Optional, Union
 
 from lazy_imports import try_import
 
-from ..utils._types import JsonDict, Requirement
+from ..utils._types import JsonDict, Requirement, StrOrPathLike
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
 from .base import LMSequenceClassifier, SequenceClassResult
@@ -73,14 +73,14 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        self.path_config = path_config_json
-        self.path_weights = path_weights
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
         self.categories = copy(categories)  # type: ignore
 
         self.device = get_torch_device(device)
@@ -88,15 +88,15 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFLmSequenceClassifierBase:
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
 
     def _validate_encodings(
-        self, **encodings: Union[List[List[str]], torch.Tensor]
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        self, **encodings: Union[list[list[str]], torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -120,7 +120,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return input_ids, attention_mask, token_type_ids
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
@@ -177,8 +177,8 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = True,
@@ -188,7 +188,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -203,7 +203,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> XLMRobertaForSequenceClassification:
         """
         Get the inner (wrapped) model.
 

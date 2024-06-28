@@ -20,7 +20,7 @@ Module for training Tensorpack `GeneralizedRCNN`
 """
 
 import os
-from typing import Dict, List, Optional, Sequence, Type, Union
+from typing import Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
@@ -49,6 +49,7 @@ from ..utils.logger import log_once
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import string_to_dict
+from ..utils._types import StrOrPathLike
 
 with try_import() as tp_import_guard:
     # todo: check how dataflow import is directly possible without having an AssertionError
@@ -185,11 +186,11 @@ def get_train_dataflow(
 
 
 def train_faster_rcnn(
-    path_config_yaml: str,
+    path_config_yaml: StrOrPathLike,
     dataset_train: DatasetBase,
-    path_weights: str = "",
-    config_overwrite: Optional[List[str]] = None,
-    log_dir: str = "train_log/frcnn",
+    path_weights: StrOrPathLike,
+    config_overwrite: Optional[list[str]] = None,
+    log_dir: StrOrPathLike = "train_log/frcnn",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -224,13 +225,13 @@ def train_faster_rcnn(
 
     assert disable_tfv2()  # TP works only in Graph mode
 
-    build_train_dict: Dict[str, str] = {}
+    build_train_dict: dict[str, str] = {}
     if build_train_config is not None:
         build_train_dict = string_to_dict(",".join(build_train_config))
     if "split" not in build_train_dict:
         build_train_dict["split"] = "train"
 
-    build_val_dict: Dict[str, str] = {}
+    build_val_dict: dict[str, str] = {}
     if build_val_config is not None:
         build_val_dict = string_to_dict(",".join(build_val_config))
     if "split" not in build_val_dict:
@@ -238,7 +239,7 @@ def train_faster_rcnn(
 
     config_overwrite = [] if config_overwrite is None else config_overwrite
 
-    log_dir = "TRAIN.LOG_DIR=" + log_dir
+    log_dir = "TRAIN.LOG_DIR=" + os.fspath(log_dir)
     config_overwrite.append(log_dir)
 
     config = set_config_by_yaml(path_config_yaml)

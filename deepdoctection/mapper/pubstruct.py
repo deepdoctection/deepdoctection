@@ -20,7 +20,7 @@ Module for mapping annotations in pubtabnet style structure
 """
 import itertools
 import os
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, Optional, Sequence
 
 import numpy as np
 
@@ -59,7 +59,7 @@ def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
     return annotation
 
 
-def _cell_token(html: Sequence[str]) -> List[List[int]]:
+def _cell_token(html: Sequence[str]) -> list[list[int]]:
     index_rows = [i for i, tag in enumerate(html) if tag == "<tr>"]
     index_cells = [i for i, tag in enumerate(html) if tag in ("<td>", ">")]
     index_rows_tmp = [(index_rows[i], index_rows[i + 1]) for i in range(len(index_rows) - 1)]
@@ -72,7 +72,7 @@ def _cell_token(html: Sequence[str]) -> List[List[int]]:
     return index_cells_tmp
 
 
-def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> List[List[int]]:
+def _item_spans(html: Sequence[str], index_cells: Sequence[Sequence[int]], item: str) -> list[list[int]]:
     item_spans = [
         [
             (
@@ -102,7 +102,7 @@ def _end_of_header(html: Sequence[str]) -> int:
     return 0
 
 
-def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[int]]) -> List[List[int]]:
+def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[int]]) -> list[list[int]]:
     """
     Tiles a table according the row and column span scheme. A table can be represented as a list of list, where each
     inner list has the same length. Each cell with a cell id can be located according to their row and column spans in
@@ -153,7 +153,7 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
     return tiling
 
 
-def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, str], pubtables_like: bool) -> Image:
+def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, str], pubtables_like: bool) -> Image:
     item_number = CellType.row_number if item_type == LayoutType.row else CellType.column_number
     item_span = CellType.row_span if item_type == LayoutType.row else CellType.column_span
 
@@ -255,7 +255,7 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: Dict[str, s
     return image
 
 
-def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
+def row_col_cell_ids(tiling: list[list[int]]) -> list[tuple[int, int, int]]:
     """
     Infers absolute rows and columns for every cell from the tiling of a table.
 
@@ -271,7 +271,7 @@ def row_col_cell_ids(tiling: List[List[int]]) -> List[Tuple[int, int, int]]:
     return rows_col_cell_ids
 
 
-def embedding_in_image(dp: Image, html: List[str], categories_name_as_key: Dict[str, str]) -> Image:
+def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[str, str]) -> Image:
     """
     Generating an image, that resembles the output of an analyzer. The layout of the image is table spanning
     the full page, i.e. there is one table image annotation. Moreover, the table annotation has an image, with cells
@@ -330,7 +330,7 @@ def nth_index(iterable: Iterable[str], value: str, n: int) -> Optional[int]:
 
 def pub_to_image_uncur(  # pylint: disable=R0914
     dp: JsonDict,
-    categories_name_as_key: Dict[str, str],
+    categories_name_as_key: dict[str, str],
     load_image: bool,
     fake_score: bool,
     rows_and_cols: bool,

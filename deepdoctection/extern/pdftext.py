@@ -19,8 +19,6 @@
 PDFPlumber text extraction engine
 """
 
-from typing import Dict, List, Tuple
-
 from lazy_imports import try_import
 
 from ..utils._types import Requirement
@@ -33,7 +31,7 @@ with try_import() as import_guard:
     from pdfplumber.pdf import PDF
 
 
-def _to_detect_result(word: Dict[str, str]) -> DetectionResult:
+def _to_detect_result(word: dict[str, str]) -> DetectionResult:
     return DetectionResult(
         box=[float(word["x0"]), float(word["top"]), float(word["x1"]), float(word["bottom"])],
         class_id=1,
@@ -73,7 +71,7 @@ class PdfPlumberTextDetector(PdfMiner):
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
 
-    def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
+    def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
         """
         Call pdfminer.six and returns detected text as detection results
 
@@ -91,10 +89,10 @@ class PdfPlumberTextDetector(PdfMiner):
         return detect_results
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pdfplumber_requirement()]
 
-    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
+    def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Get the width and height of the full page
         :param pdf_bytes: pdf_bytes generating the pdf
@@ -111,5 +109,5 @@ class PdfPlumberTextDetector(PdfMiner):
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         return [LayoutType.word]

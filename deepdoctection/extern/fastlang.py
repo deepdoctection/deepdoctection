@@ -21,12 +21,13 @@ Deepdoctection wrappers for fasttext language detection models
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, Mapping, Union
 
 from lazy_imports import try_import
 
 from ..utils.file_utils import Requirement, get_fasttext_requirement
 from ..utils.settings import TypeOrStr, get_type
+from ..utils._types import StrOrPathLike
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
 with try_import() as import_guard:
@@ -44,7 +45,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         """
         self.categories = copy({idx: get_type(cat) for idx, cat in categories.items()})
 
-    def output_to_detection_result(self, output: Union[Tuple[Any, Any]]) -> DetectionResult:
+    def output_to_detection_result(self, output: Union[tuple[Any, Any]]) -> DetectionResult:
         """
         Generating `DetectionResult` from model output
         :param output: FastText model output
@@ -53,7 +54,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         return DetectionResult(text=self.categories[output[0][0]], score=output[1][0])
 
     @staticmethod
-    def get_name(path_weights: str) -> str:
+    def get_name(path_weights: StrOrPathLike) -> str:
         """Returns the name of the model"""
         return "fasttext_" + "_".join(Path(path_weights).parts[-2:])
 
@@ -80,7 +81,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
 
     """
 
-    def __init__(self, path_weights: str, categories: Mapping[str, TypeOrStr]):
+    def __init__(self, path_weights: StrOrPathLike, categories: Mapping[str, TypeOrStr]):
         """
         :param path_weights: path to model weights
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
@@ -88,7 +89,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
         """
         super().__init__(categories)
 
-        self.path_weights = path_weights
+        self.path_weights = Path(path_weights)
 
         self.name = self.get_name(self.path_weights)
         self.model_id = self.get_model_id()
@@ -100,14 +101,14 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
         return self.output_to_detection_result(output)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_fasttext_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__(self.path_weights, self.categories)
 
     @staticmethod
-    def get_wrapped_model(path_weights: str) -> Any:
+    def get_wrapped_model(path_weights: StrOrPathLike) -> Any:
         """
         Get the wrapped model
         :param path_weights: path to model weights

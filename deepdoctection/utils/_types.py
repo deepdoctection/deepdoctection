@@ -19,6 +19,7 @@
 Typing sheet for the whole package
 """
 
+import os
 import queue
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union
@@ -40,6 +41,10 @@ class IsDataclass(Protocol):  # pylint: disable=R0903
 
 # Numpy image type
 PixelValues = npt.NDArray[uint8]
+# b64 encoded image as string
+B64Str: TypeAlias = str
+# b64 encoded image in bytes
+B64: TypeAlias = bytes
 
 # Typing for curry decorator
 DP = TypeVar("DP")
@@ -60,6 +65,8 @@ else:
 # A dict converted from a generic JSON object
 JsonDict = dict[str, Any]
 
+# A path to a file, directory etc. can be given as a string or Path object
+StrOrPathLike: TypeAlias = Union[str, os.PathLike]
 
 # mainly used in utils
 # Type for requirements. A requirement is a Tuple of string and a callable that returns True if the requirement is
@@ -68,6 +75,8 @@ PackageAvailable: TypeAlias = bool
 ErrorMsg: TypeAlias = str
 Requirement = tuple[str, PackageAvailable, ErrorMsg]
 
+BGR: TypeAlias = tuple[int, int, int]
+
 # A type to collect key val pairs of environ information. Mainly used in env_info.py
 KeyValEnvInfos: TypeAlias = list[tuple[str, str]]
-Pathlike = Union[str, Path]
+#Pathlike = Union[str, Path]

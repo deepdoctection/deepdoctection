@@ -20,7 +20,7 @@ Module for mapping annotations in iiitar13k style structure
 """
 
 import os
-from typing import Dict, Optional
+from typing import Optional
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox
@@ -34,11 +34,11 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 @curry
 def pascal_voc_dict_to_image(
     dp: JsonDict,
-    categories_name_as_key: Dict[str, str],
+    categories_name_as_key: dict[str, str],
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,
-    category_name_mapping: Optional[Dict[str, str]] = None,
+    category_name_mapping: Optional[dict[str, str]] = None,
 ) -> Optional[Image]:
     """
     Map a dataset in a structure equivalent to iiitar13k annotation style to image format

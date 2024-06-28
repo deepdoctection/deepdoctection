@@ -22,7 +22,7 @@ ious/ioas of rows and columns.
 
 
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Sequence, Tuple, Union
+from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 
@@ -57,10 +57,10 @@ class SegmentationResult:
 
 def choose_items_by_iou(
     dp: Image,
-    item_proposals: List[ImageAnnotation],
+    item_proposals: list[ImageAnnotation],
     iou_threshold: float,
     above_threshold: bool = True,
-    reference_item_proposals: Optional[List[ImageAnnotation]] = None,
+    reference_item_proposals: Optional[list[ImageAnnotation]] = None,
 ) -> Image:
     """
     Deactivate image annotations that have ious with each other above some threshold. It will deactivate an annotation
@@ -192,7 +192,7 @@ def stretch_item_per_table(
 
 
 def _tile_by_stretching_rows_left_and_rightwise(
-    dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
+    dp: Image, items: list[ImageAnnotation], table: ImageAnnotation, item_name: str
 ) -> None:
     if table.image is None:
         raise ImageError("table.image cannot be None")
@@ -256,7 +256,7 @@ def _tile_by_stretching_rows_left_and_rightwise(
 
 
 def _tile_by_stretching_rows_leftwise_column_downwise(
-    dp: Image, items: List[ImageAnnotation], table: ImageAnnotation, item_name: str
+    dp: Image, items: list[ImageAnnotation], table: ImageAnnotation, item_name: str
 ) -> None:
     if table.image is None:
         raise ImageError("table.image cannot be None")
@@ -380,7 +380,7 @@ def stretch_items(
     return dp
 
 
-def _default_segment_table(cells: List[ImageAnnotation]) -> List[SegmentationResult]:
+def _default_segment_table(cells: list[ImageAnnotation]) -> list[SegmentationResult]:
     """
     Error segmentation handling when segmentation goes wrong. It will generate a default segmentation, e.g. no real
     segmentation.
@@ -404,7 +404,7 @@ def segment_table(
     segment_rule: Literal["iou", "ioa"],
     threshold_rows: float,
     threshold_cols: float,
-) -> List[SegmentationResult]:
+) -> list[SegmentationResult]:
     """
     Segments a table,i.e. produces for each cell a SegmentationResult. It uses numbered rows and columns that have to
     be predicted by an appropriate detector. E.g. for calculating row and rwo spans it first infers the iou of a cell
@@ -492,7 +492,7 @@ def create_intersection_cells(
     table_annotation_id: str,
     cell_class_id: int,
     sub_item_names: Sequence[CellType],
-) -> Tuple[Sequence[DetectionResult], Sequence[SegmentationResult]]:
+) -> tuple[Sequence[DetectionResult], Sequence[SegmentationResult]]:
     """
     Given rows and columns with row- and column number sub categories, create a list of `DetectionResult` and
     `SegmentationResult` as intersection of all their intersection rectangles.
@@ -545,7 +545,7 @@ def segment_pubtables(
     segment_rule: Literal["iou", "ioa"],
     threshold_rows: float,
     threshold_cols: float,
-) -> List[SegmentationResult]:
+) -> list[SegmentationResult]:
     """
     Segment a table based on the results of `table-transformer-structure-recognition`. The processing assumes that cells
     have already been generated from the intersection of columns and rows and that column and row numbers have been

@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any,Literal, Mapping, Optional, Sequence, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.image import Image
@@ -32,8 +32,8 @@ from .maputils import LabelSummarizer, curry
 @curry
 def cat_to_sub_cat(
     dp: Image,
-    categories_dict_names_as_key: Dict[TypeOrStr, str],
-    cat_to_sub_cat_dict: Optional[Dict[TypeOrStr, TypeOrStr]] = None,
+    categories_dict_names_as_key: dict[TypeOrStr, str],
+    cat_to_sub_cat_dict: Optional[dict[TypeOrStr, TypeOrStr]] = None,
 ) -> Image:
     """
     Replace some category with its affiliated sub category of CategoryAnnotations. Suppose your category name is `foo`
@@ -63,7 +63,7 @@ def cat_to_sub_cat(
 @curry
 def re_assign_cat_ids(
     dp: Image,
-    categories_dict_name_as_key: Optional[Dict[TypeOrStr, str]] = None,
+    categories_dict_name_as_key: Optional[dict[TypeOrStr, str]] = None,
     cat_to_sub_cat_mapping: Optional[Mapping[ObjectTypes, Any]] = None,
 ) -> Image:
     """
@@ -89,7 +89,7 @@ def re_assign_cat_ids(
     :return: Image
     """
 
-    anns_to_remove: List[ImageAnnotation] = []
+    anns_to_remove: list[ImageAnnotation] = []
     for ann in dp.get_annotation_iter():
         if categories_dict_name_as_key is not None:
             if ann.category_name in categories_dict_name_as_key:
@@ -113,7 +113,7 @@ def re_assign_cat_ids(
 
 @curry
 def filter_cat(
-    dp: Image, categories_as_list_filtered: List[TypeOrStr], categories_as_list_unfiltered: List[TypeOrStr]
+    dp: Image, categories_as_list_filtered: list[TypeOrStr], categories_as_list_unfiltered: list[TypeOrStr]
 ) -> Image:
     """
     Filters category annotations based on the on a list of categories to be kept and a list of all possible
@@ -179,7 +179,7 @@ def image_to_cat_id(
     sub_categories: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
     summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     id_name_or_value: Literal["id", "name", "value"] = "id",
-) -> Tuple[Dict[TypeOrStr, Union[List[int], List[int]]], str]:
+) -> tuple[dict[TypeOrStr, Union[list[int], list[int]]], str]:
     """
     Extracts all category_ids, sub category information or summary sub category information with given names into a
     defaultdict. This mapping is useful when running evaluation with e.g. an accuracy metric.
@@ -238,7 +238,7 @@ def image_to_cat_id(
     if not summary_sub_category_names:
         summary_sub_category_names = []
 
-    tmp_sub_category_names: Dict[str, Sequence[str]] = {}
+    tmp_sub_category_names: dict[str, Sequence[str]] = {}
 
     if sub_categories is not None:
         for key, val in sub_categories.items():

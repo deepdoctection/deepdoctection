@@ -22,7 +22,8 @@ models that are a slightly different from the plain Detr model that are provided
 from __future__ import annotations
 
 import copy
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+import os
+from typing import Any, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
@@ -38,6 +39,7 @@ from ..pipe.base import PredictorPipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
+from ..utils._types import StrOrPathLike
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -74,7 +76,7 @@ class DetrDerivedTrainer(Trainer):
         train_dataset: Dataset[Any],
     ):
         self.evaluator: Optional[Evaluator] = None
-        self.build_eval_kwargs: Optional[Dict[str, Any]] = None
+        self.build_eval_kwargs: Optional[dict[str, Any]] = None
         super().__init__(model, args, data_collator, train_dataset)
 
     def setup_evaluator(
@@ -105,9 +107,9 @@ class DetrDerivedTrainer(Trainer):
     def evaluate(
         self,
         eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
-        ignore_keys: Optional[List[str]] = None,  # pylint: disable=W0613
+        ignore_keys: Optional[list[str]] = None,  # pylint: disable=W0613
         metric_key_prefix: str = "eval",  # pylint: disable=W0613
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
         """
@@ -129,12 +131,12 @@ class DetrDerivedTrainer(Trainer):
 
 
 def train_hf_detr(
-    path_config_json: str,
+    path_config_json: StrOrPathLike,
     dataset_train: Union[str, DatasetBase],
-    path_weights: str,
+    path_weights: StrOrPathLike,
     path_feature_extractor_config_json: str,
-    config_overwrite: Optional[List[str]] = None,
-    log_dir: str = "train_log/detr",
+    config_overwrite: Optional[list[str]] = None,
+    log_dir: StrOrPathLike = "train_log/detr",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -169,13 +171,13 @@ def train_hf_detr(
     :param pipeline_component_name: A pipeline component name to use for validation
     """
 
-    build_train_dict: Dict[str, str] = {}
+    build_train_dict: dict[str, str] = {}
     if build_train_config is not None:
         build_train_dict = string_to_dict(",".join(build_train_config))
     if "split" not in build_train_dict:
         build_train_dict["split"] = "train"
 
-    build_val_dict: Dict[str, str] = {}
+    build_val_dict: dict[str, str] = {}
     if build_val_config is not None:
         build_val_dict = string_to_dict(",".join(build_val_config))
     if "split" not in build_val_dict:
@@ -196,7 +198,7 @@ def train_hf_detr(
 
     number_samples = len(dataset)
     conf_dict = {
-        "output_dir": log_dir,
+        "output_dir": os.fspath(log_dir),
         "remove_unused_columns": False,
         "per_device_train_batch_size": 2,
         "max_steps": number_samples,

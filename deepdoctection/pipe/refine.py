@@ -23,7 +23,7 @@ from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
 from itertools import chain, product
-from typing import DefaultDict, List, Optional, Sequence, Set, Tuple, Union
+from typing import DefaultDict, Optional, Sequence, Union
 
 import networkx as nx  # type: ignore
 
@@ -41,7 +41,7 @@ from .registry import pipeline_component_registry
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
-def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, int], str]]:
+def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, int], str]]:
     """
     Creation of a table parquet: A table is divided into a tile parquet with the (number of rows) x
     (the number of columns) tiles.
@@ -73,15 +73,15 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
 
 
 def connected_component_tiles(
-    tile_to_cell_list: List[Tuple[Tuple[int, int], str]]
-) -> Tuple[List[Set[Tuple[int, int]]], DefaultDict[Tuple[int, int], List[str]]]:
+    tile_to_cell_list: list[tuple[tuple[int, int], str]]
+) -> tuple[list[set[tuple[int, int]]], DefaultDict[tuple[int, int], list[str]]]:
     """
     The assignment of bricks to their cell occupancy induces a graph, with bricks as corners and cell edges. Cells that
     lie on top of several bricks connect the underlying bricks. The graph generated according to this procedure is
     usually multiple connected. The related components and the tile/cell ids assignment are determined.
 
-    :param tile_to_cell_list: List of tuples with tile position and cell ids
-    :return: List of set with tiles that belong to the same connected component and a dict with tiles as keys and
+    :param tile_to_cell_list: list of tuples with tile position and cell ids
+    :return: list of set with tiles that belong to the same connected component and a dict with tiles as keys and
              assigned list of cell ids as values.
     """
     cell_to_tile_list = [(cell_position[1], cell_position[0]) for cell_position in tile_to_cell_list]
@@ -107,7 +107,7 @@ def connected_component_tiles(
     connected_components_tiles = []
 
     for component in connected_components_cell:
-        tiles: Set[Tuple[int, int]] = set()
+        tiles: set[tuple[int, int]] = set()
         for cell in component:
             tiles = tiles.union(set(cell_to_tile_dict[cell]))  # type: ignore
         connected_components_tiles.append(tiles)
@@ -115,7 +115,7 @@ def connected_component_tiles(
     return connected_components_tiles, tile_to_cell_dict
 
 
-def _missing_tile(inputs: Set[Tuple[int, int]]) -> Optional[Tuple[int, int]]:
+def _missing_tile(inputs: set[tuple[int, int]]) -> Optional[tuple[int, int]]:
     min_x, min_y, max_x, max_y = (
         min(a[0] for a in inputs),
         min(a[1] for a in inputs),
@@ -131,15 +131,15 @@ def _missing_tile(inputs: Set[Tuple[int, int]]) -> Optional[Tuple[int, int]]:
 
 
 def _find_component(
-    tile: Tuple[int, int], reduced_connected_tiles: List[Set[Tuple[int, int]]]
-) -> Optional[Set[Tuple[int, int]]]:
+    tile: tuple[int, int], reduced_connected_tiles: list[set[tuple[int, int]]]
+) -> Optional[set[tuple[int, int]]]:
     for comp in reduced_connected_tiles:
         if tile in comp:
             return comp
     return None
 
 
-def _merge_components(reduced_connected_tiles: List[Set[Tuple[int, int]]]) -> List[Set[Tuple[int, int]]]:
+def _merge_components(reduced_connected_tiles: list[set[tuple[int, int]]]) -> list[set[tuple[int, int]]]:
     new_reduced_connected_tiles = []
     for connected_tile in reduced_connected_tiles:
         out = _missing_tile(connected_tile)
@@ -161,17 +161,17 @@ def _merge_components(reduced_connected_tiles: List[Set[Tuple[int, int]]]) -> Li
     return new_reduced_connected_tiles
 
 
-def generate_rectangle_tiling(connected_components_tiles: List[Set[Tuple[int, int]]]) -> List[Set[Tuple[int, int]]]:
+def generate_rectangle_tiling(connected_components_tiles: list[set[tuple[int, int]]]) -> list[set[tuple[int, int]]]:
     """
     The determined connected components imply that all cells have to be combined which are above a connected component.
     In addition, however, it must also be taken into account that cells must be rectangular. This means that related
     components have to be combined whose combined cells above do not create a rectangular tiling. All tiles are combined
     in such a way that all cells above them combine to form a rectangular scheme.
 
-    :param connected_components_tiles: List of set with tiles that belong to the same connected component
-    :return: List of sets with tiles, the cells on top of which together form a rectangular scheme
+    :param connected_components_tiles: list of set with tiles that belong to the same connected component
+    :return: list of sets with tiles, the cells on top of which together form a rectangular scheme
     """
-    rectangle_tiling: List[Set[Tuple[int, int]]] = []
+    rectangle_tiling: list[set[tuple[int, int]]] = []
     inputs = connected_components_tiles
 
     while rectangle_tiling != inputs:
@@ -183,25 +183,25 @@ def generate_rectangle_tiling(connected_components_tiles: List[Set[Tuple[int, in
 
 
 def rectangle_cells(
-    rectangle_tiling: List[Set[Tuple[int, int]]], tile_to_cell_dict: DefaultDict[Tuple[int, int], List[str]]
-) -> List[Set[str]]:
+    rectangle_tiling: list[set[tuple[int, int]]], tile_to_cell_dict: DefaultDict[tuple[int, int], list[str]]
+) -> list[set[str]]:
     """
     All cells are determined that are located above combined connected components and form a rectangular scheme.
 
-    :param rectangle_tiling: List of sets with tiles, the cells on top of which together form a rectangular scheme
+    :param rectangle_tiling: list of sets with tiles, the cells on top of which together form a rectangular scheme
     :param tile_to_cell_dict: Dict with tiles as keys and assigned list of cell ids as values.
-    :return: List of set of cell ids that form a rectangular scheme
+    :return: list of set of cell ids that form a rectangular scheme
     """
-    rectangle_tiling_cells: List[Set[str]] = []
+    rectangle_tiling_cells: list[set[str]] = []
     for rect_tiling_component in rectangle_tiling:
-        rect_cell_component: Set[str] = set()
+        rect_cell_component: set[str] = set()
         for el in rect_tiling_component:
             rect_cell_component = rect_cell_component.union(set(tile_to_cell_dict[el]))
         rectangle_tiling_cells.append(rect_cell_component)
     return rectangle_tiling_cells
 
 
-def _tiling_to_cell_position(inputs: Set[Tuple[int, int]]) -> Tuple[int, int, int, int]:
+def _tiling_to_cell_position(inputs: set[tuple[int, int]]) -> tuple[int, int, int, int]:
     row_number = min(a[0] for a in inputs)
     col_number = min(a[1] for a in inputs)
     row_span = max(abs(a[0] - b[0]) + 1 for a in inputs for b in inputs)
@@ -210,8 +210,8 @@ def _tiling_to_cell_position(inputs: Set[Tuple[int, int]]) -> Tuple[int, int, in
 
 
 def _html_cell(
-    cell_position: Union[Tuple[int, int, int, int], Tuple[()]], position_filled_list: List[Tuple[int, int]]
-) -> List[str]:
+    cell_position: Union[tuple[int, int, int, int], tuple[()]], position_filled_list: list[tuple[int, int]]
+) -> list[str]:
     """
     Html table cell string generation
     """
@@ -238,12 +238,12 @@ def _html_cell(
 
 
 def _html_row(
-    row_list: List[Tuple[int, int, int, int]],
-    position_filled_list: List[Tuple[int, int]],
+    row_list: list[tuple[int, int, int, int]],
+    position_filled_list: list[tuple[int, int]],
     this_row: int,
     number_of_cols: int,
-    row_ann_id_list: List[str],
-) -> List[str]:
+    row_ann_id_list: list[str],
+) -> list[str]:
     """
     Html table row string generation
     """
@@ -275,16 +275,16 @@ def _html_row(
 
 
 def _html_table(
-    table_list: List[Tuple[int, List[Tuple[int, int, int, int]]]],
-    cells_ann_list: List[Tuple[int, List[str]]],
+    table_list: list[tuple[int, list[tuple[int, int, int, int]]]],
+    cells_ann_list: list[tuple[int, list[str]]],
     number_of_rows: int,
     number_of_cols: int,
-) -> List[str]:
+) -> list[str]:
     """
     Html table string generation
     """
     html = ["<table>"]
-    position_filled: List[Tuple[int, int]] = []
+    position_filled: list[tuple[int, int]] = []
     for idx in range(1, number_of_rows + 1):
         row_idx = list(filter(lambda x: x[0] == idx, table_list))[0][1]  # pylint:disable=W0640
         row_ann_ids = list(filter(lambda x: x[0] == idx, cells_ann_list))[0][1]  # pylint:disable=W0640
@@ -294,7 +294,7 @@ def _html_table(
     return html
 
 
-def generate_html_string(table: ImageAnnotation) -> List[str]:
+def generate_html_string(table: ImageAnnotation) -> list[str]:
     """
     Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
     representation.

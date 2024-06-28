@@ -52,13 +52,13 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import Optional, Set
+from typing import Optional
 
 import numpy as np
 from packaging import version
 from tabulate import tabulate
 
-from ._types import KeyValEnvInfos
+from ._types import KeyValEnvInfos, StrOrPathLike
 from .file_utils import (
     apted_available,
     aws_available,
@@ -92,7 +92,7 @@ __all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
 
-ENV_VARS_TRUE: Set[str] = {"1", "True", "TRUE", "true", "yes"}
+ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 def collect_torch_env() -> str:
@@ -233,7 +233,7 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     return data
 
 
-def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str]) -> str:
+def detect_compute_compatibility(cuda_home: Optional[StrOrPathLike], so_file: Optional[StrOrPathLike]) -> str:
     """
     Detect the compute compatibility of a CUDA library.
 

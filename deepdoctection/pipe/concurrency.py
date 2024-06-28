@@ -24,7 +24,7 @@ import itertools
 import queue
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
-from typing import Callable, List, Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Union
 
 import tqdm
 
@@ -123,7 +123,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
         self.timer_on = False
         super().__init__(f"multi_thread_{self.pipe_components[0].name}")
 
-    def put_task(self, df: Union[DataFlow, List[Image]]) -> None:
+    def put_task(self, df: Union[DataFlow, list[Image]]) -> None:
         """
         Put a dataflow or a list of datapoints to the queue. Note, that the process will not start before `start`
         is called. If you do not know how many datapoints will be cached, use max_datapoint to ensure no oom.
@@ -133,7 +133,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
 
         self._put_datapoints_to_queue(df)
 
-    def start(self) -> List[Image]:
+    def start(self) -> list[Image]:
         """
         Creates a worker for each component and starts processing the data points of the queue. A list of the results
         is returned once all points in the queue have been processed.
@@ -165,7 +165,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
         tqdm_bar: Optional[TqdmType] = None,
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
-    ) -> List[Image]:
+    ) -> list[Image]:
         outputs = []
 
         with ExitStack() as stack:
@@ -184,7 +184,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
                 tqdm_bar.update(1)
         return outputs
 
-    def _put_datapoints_to_queue(self, df: Union[DataFlow, List[Image]]) -> None:
+    def _put_datapoints_to_queue(self, df: Union[DataFlow, list[Image]]) -> None:
         if isinstance(df, DataFlow):
             df.reset_state()
         for idx, dp in enumerate(df):
@@ -193,7 +193,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
                     break
             self.input_queue.put(dp)
 
-    def pass_datapoints(self, dpts: List[Image]) -> List[Image]:
+    def pass_datapoints(self, dpts: list[Image]) -> list[Image]:
         """
         Putting the list of datapoints into a thread-save queue and start for each pipeline
         component a separate thread. It will return a list of datapoints where the order of appearance

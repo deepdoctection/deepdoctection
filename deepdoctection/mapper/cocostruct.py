@@ -20,7 +20,7 @@ Module for mapping annotations in coco style structure
 """
 
 import os
-from typing import Dict, List, Mapping, Optional, Tuple
+from typing import Mapping, Optional
 
 from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
@@ -34,7 +34,7 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 @curry
 def coco_to_image(
     dp: JsonDict,
-    categories: Dict[str, str],
+    categories: dict[str, str],
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,
@@ -109,7 +109,7 @@ def coco_to_image(
     return image
 
 
-def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
+def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
     """
     Converting an image back into the coco format. As images and anns are separated it will return a dict with the
     image information and one for its annotations.
@@ -122,7 +122,7 @@ def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
         raise TypeError(f"datapoints must be of type Image, is of type {type(dp)}")
 
     img: JsonDict = {}
-    anns: List[JsonDict] = []
+    anns: list[JsonDict] = []
 
     img["id"] = int("".join([s for s in dp.image_id if s.isdigit()]))
     img["width"] = dp.width
