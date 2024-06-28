@@ -19,8 +19,6 @@
 jdeskew estimator and rotator to deskew images: <https://github.com/phamquiluan/jdeskew>
 """
 
-from typing import List
-
 from lazy_imports import try_import
 
 from ..utils._types import PixelValues, Requirement
@@ -71,7 +69,7 @@ class Jdeskewer(ImageTransformer):
         return DetectionResult(angle=round(float(get_angle(np_img)), 4))
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         """
         Get a list of requirements for running the detector
         """

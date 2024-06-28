@@ -20,6 +20,8 @@ Module for transform style pipeline components. These pipeline components are us
 on images (e.g. deskew, de-noising or more general GAN like operations.
 """
 
+from __future__ import annotations
+
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
 from ..utils._types import JsonDict
@@ -67,7 +69,7 @@ class SimpleTransformService(ImageTransformPipelineComponent):
                 summary_score=detection_result.score,
             )
 
-    def clone(self) -> "SimpleTransformService":
+    def clone(self) -> SimpleTransformService:
         return self.__class__(self.transform_predictor)
 
     def get_meta_annotation(self) -> JsonDict:

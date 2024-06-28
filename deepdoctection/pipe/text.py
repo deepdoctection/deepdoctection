@@ -18,8 +18,11 @@
 """
 Module for text extraction pipeline component
 """
+
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Union
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
@@ -142,7 +145,7 @@ class TextExtractionService(PredictorPipelineComponent):
                             detect_result.score,
                         )
 
-    def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, List[ImageAnnotation]]]:
+    def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, list[ImageAnnotation]]]:
         """
         Return image rois based on selected categories. As this selection makes only sense for specific text extractors
         (e.g. those who do proper OCR and do not mine from text from native pdfs) it will do some sanity checks.
@@ -163,8 +166,8 @@ class TextExtractionService(PredictorPipelineComponent):
         return [dp]
 
     def get_predictor_input(
-        self, text_roi: Union[Image, ImageAnnotation, List[ImageAnnotation]]
-    ) -> Optional[Union[bytes, PixelValues, List[Tuple[str, PixelValues]], int]]:
+        self, text_roi: Union[Image, ImageAnnotation, list[ImageAnnotation]]
+    ) -> Optional[Union[bytes, PixelValues, list[tuple[str, PixelValues]], int]]:
         """
         Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
         predictor.
@@ -221,7 +224,7 @@ class TextExtractionService(PredictorPipelineComponent):
     def _get_name(text_detector_name: str) -> str:
         return f"text_extract_{text_detector_name}"
 
-    def clone(self) -> "PredictorPipelineComponent":
+    def clone(self) -> PredictorPipelineComponent:
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ImageError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")

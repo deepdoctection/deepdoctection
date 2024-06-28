@@ -19,10 +19,12 @@
 """
 Module for the base class for building pipelines
 """
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Callable, DefaultDict, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, Callable, DefaultDict, Mapping, Optional, Union
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
@@ -108,7 +110,7 @@ class PipelineComponent(ABC):
         return MapData(df, self.pass_datapoint)
 
     @abstractmethod
-    def clone(self) -> "PipelineComponent":
+    def clone(self) -> PipelineComponent:
         """
         Clone an instance
         """
@@ -163,7 +165,7 @@ class PredictorPipelineComponent(PipelineComponent, ABC):
         self.dp_manager = DatapointManager(self.service_id, self.predictor.model_id)
 
     @abstractmethod
-    def clone(self) -> "PredictorPipelineComponent":
+    def clone(self) -> PredictorPipelineComponent:
         raise NotImplementedError()
 
 
@@ -189,7 +191,7 @@ class LanguageModelPipelineComponent(PipelineComponent, ABC):
         self.mapping_to_lm_input_func = mapping_to_lm_input_func
 
     @abstractmethod
-    def clone(self) -> "LanguageModelPipelineComponent":
+    def clone(self) -> LanguageModelPipelineComponent:
         """
         Clone an instance
         """
@@ -212,7 +214,7 @@ class ImageTransformPipelineComponent(PipelineComponent, ABC):
         super().__init__(name)
 
     @abstractmethod
-    def clone(self) -> "ImageTransformPipelineComponent":
+    def clone(self) -> ImageTransformPipelineComponent:
         """
         Clone an instance
         """
@@ -262,7 +264,7 @@ class Pipeline(ABC):
            df = pipe.analyze(input = "path/to/dir") # session_id is generated automatically
     """
 
-    def __init__(self, pipeline_component_list: List[PipelineComponent]) -> None:
+    def __init__(self, pipeline_component_list: list[PipelineComponent]) -> None:
         """
         :param pipeline_component_list: A list of pipeline components.
         """
@@ -313,7 +315,7 @@ class Pipeline(ABC):
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        pipeline_populations: Dict[str, Union[List[str], DefaultDict[str, Set[str]]]] = {
+        pipeline_populations: dict[str, Union[list[str], DefaultDict[str, set[str]]]] = {
             "image_annotations": [],
             "sub_categories": defaultdict(set),
             "relationships": defaultdict(set),
@@ -332,7 +334,8 @@ class Pipeline(ABC):
         return pipeline_populations
 
     def get_pipeline_info(
-        self, service_id: Optional[str] = None, name: Optional[str] = None
+        self, service_id: Optional[str] = None,
+              name: Optional[str] = None
     ) -> Union[str, Mapping[str, str]]:
         """Get pipeline information: Returns a dictionary with a description of each pipeline component
         :param service_id: service_id of the pipeline component to search for

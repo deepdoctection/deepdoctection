@@ -19,12 +19,13 @@
 """
 Abstract classes for unifying external base- and Doctection predictors
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Mapping, Optional, Union
 
-from ..utils._types import JsonDict, PixelValues, Requirement
+from ..utils._types import JsonDict, PixelValues, Requirement, B64Str
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 
@@ -51,14 +52,14 @@ class PredictorBase(ABC):
 
     @classmethod
     @abstractmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         """
         Get a list of requirements for running the detector
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def clone(self) -> "PredictorBase":
+    def clone(self) -> PredictorBase:
         """
         Clone an instance
         """
@@ -101,17 +102,17 @@ class DetectionResult:
 
     """
 
-    box: Optional[List[float]] = None
+    box: Optional[list[float]] = None
     class_id: Optional[int] = None
     score: Optional[float] = None
-    mask: Optional[List[float]] = None
+    mask: Optional[list[float]] = None
     absolute_coords: bool = True
     class_name: ObjectTypes = DefaultType.default_type
     text: Optional[Union[str, ObjectTypes]] = None
     block: Optional[str] = None
     line: Optional[str] = None
     uuid: Optional[str] = None
-    relationships: Optional[Dict[str, Any]] = None
+    relationships: Optional[dict[str, Any]] = None
     angle: Optional[float] = None
 
 
@@ -140,7 +141,7 @@ class ObjectDetector(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Abstract method predict
         """
@@ -153,12 +154,18 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         """
         Abstract method possible_categories. Must implement a method that returns a list of possible detectable
         categories
         """
         return list(self.categories.values())
+
+    def clone(self) -> ObjectDetector:
+        """
+        Clone an instance
+        """
+        raise NotImplementedError()
 
 
 class PdfMiner(PredictorBase):
@@ -181,14 +188,14 @@ class PdfMiner(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, pdf_bytes: bytes) -> List[DetectionResult]:
+    def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
         """
         Abstract method predict
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def get_width_height(self, pdf_bytes: bytes) -> Tuple[float, float]:
+    def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Abstract method get_width_height
         """
@@ -204,7 +211,7 @@ class PdfMiner(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable categories
         """
@@ -219,7 +226,7 @@ class TextRecognizer(PredictorBase):
     """
 
     @abstractmethod
-    def predict(self, images: List[Tuple[str, PixelValues]]) -> List[DetectionResult]:
+    def predict(self, images: list[tuple[str, PixelValues]]) -> list[DetectionResult]:
         """
         Abstract method predict
         """
@@ -301,20 +308,20 @@ class LMTokenClassifier(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> List[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:  # type: ignore
         """
         Abstract method predict
         """
         raise NotImplementedError()
 
-    def possible_tokens(self) -> List[ObjectTypes]:
+    def possible_tokens(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable tokens
         """
         return list(self.categories.values())
 
     @abstractmethod
-    def clone(self) -> "LMTokenClassifier":
+    def clone(self) -> LMTokenClassifier:
         """
         Clone an instance
         """
@@ -348,20 +355,20 @@ class LMSequenceClassifier(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, **encodings: Union[List[List[str]], "torch.Tensor"]) -> SequenceClassResult:  # type: ignore
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:  # type: ignore
         """
         Abstract method predict
         """
         raise NotImplementedError()
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable categories for a sequence
         """
         return list(self.categories.values())
 
     @abstractmethod
-    def clone(self) -> "LMSequenceClassifier":
+    def clone(self) -> LMSequenceClassifier:
         """
         Clone an instance
         """
@@ -401,7 +408,7 @@ class LanguageDetector(PredictorBase):
         """
         raise NotImplementedError()
 
-    def possible_languages(self) -> List[ObjectTypes]:
+    def possible_languages(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable languages
         """

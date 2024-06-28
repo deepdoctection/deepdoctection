@@ -21,12 +21,14 @@ Compatibility classes and methods related to Tensorpack package
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, Mapping, Union
+from pathlib import Path
 
 from lazy_imports import try_import
 
 from ...utils.metacfg import AttrDict
 from ...utils.settings import ObjectTypes
+from ...utils._types import StrOrPathLike, PixelValues
 
 with try_import() as import_guard:
     from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
@@ -51,7 +53,7 @@ class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore
         super().__init__()
         self.cfg = config
 
-    def get_inference_tensor_names(self) -> Tuple[List[str], List[str]]:
+    def get_inference_tensor_names(self) -> tuple[list[str], list[str]]:
         """
         Returns lists of tensor names to be used to create an inference callable. "build_graph" must create tensors
         of these names when called under inference context.
@@ -77,7 +79,7 @@ class TensorpackPredictor(ABC):
           as there is an explicit class available for this.
     """
 
-    def __init__(self, model: ModelDescWithConfig, path_weights: str, ignore_mismatch: bool) -> None:
+    def __init__(self, model: ModelDescWithConfig, path_weights: StrOrPathLike, ignore_mismatch: bool) -> None:
         """
         :param model: Model, either as ModelDescWithConfig or derived from that class.
         :param path_weights: Model weights of the prediction config.
@@ -85,7 +87,7 @@ class TensorpackPredictor(ABC):
                                 if a pre-trained model is to be fine-tuned on a custom dataset.
         """
         self._model = model
-        self.path_weights = path_weights
+        self.path_weights = Path(path_weights)
         self.ignore_mismatch = ignore_mismatch
         self._number_gpus = get_num_gpu()
         self.predict_config = self._build_config()
@@ -100,7 +102,8 @@ class TensorpackPredictor(ABC):
     def _build_config(self) -> PredictConfig:
         predict_config = PredictConfig(
             model=self._model,
-            session_init=SmartInit(self.path_weights, ignore_mismatch=self.ignore_mismatch),
+            session_init=SmartInit(self.path_weights.as_posix(),
+                                   ignore_mismatch=self.ignore_mismatch),
             input_names=self._model.get_inference_tensor_names()[0],
             output_names=self._model.get_inference_tensor_names()[1],
         )
@@ -110,7 +113,9 @@ class TensorpackPredictor(ABC):
     @staticmethod
     @abstractmethod
     def get_wrapped_model(
-        path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
+        path_yaml: StrOrPathLike,
+        categories: Mapping[str, ObjectTypes],
+        config_overwrite: Union[list[str], None]
     ) -> ModelDescWithConfig:
         """
         Implement the config generation, its modification and instantiate a version of the model. See
@@ -119,7 +124,7 @@ class TensorpackPredictor(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def predict(self, np_img: Any) -> Any:
+    def predict(self, np_img: PixelValues) -> Any:
         """
         Implement, how `self.tp_predictor` is invoked and raw prediction results are generated. Do use only raw
         objects and nothing, which is related to the DD API.

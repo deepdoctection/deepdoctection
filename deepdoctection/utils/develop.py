@@ -26,12 +26,12 @@ import functools
 import inspect
 from collections import defaultdict
 from datetime import datetime
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 from ._types import T
 from .logger import LoggingRecord, logger
 
-__all__: List[str] = ["deprecated"]
+__all__: list[str] = ["deprecated"]
 
 # Copy and paste from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/develop.py
 

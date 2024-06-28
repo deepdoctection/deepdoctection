@@ -24,7 +24,7 @@ import functools
 import itertools
 import traceback
 from types import TracebackType
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from tabulate import tabulate
@@ -45,7 +45,7 @@ class MappingContextManager:
     """
 
     def __init__(
-        self, dp_name: Optional[str] = None, filter_level: str = "image", **kwargs: Dict[str, Optional[str]]
+        self, dp_name: Optional[str] = None, filter_level: str = "image", **kwargs: dict[str, Optional[str]]
     ) -> None:
         """
         :param dp_name: A name for the datapoint to be mapped
@@ -210,7 +210,7 @@ class LabelSummarizer:
         np_item = np.asarray(item, dtype="int8")
         self.summary += np.histogram(np_item, bins=self.hist_bins)[0]
 
-    def get_summary(self) -> Dict[str, np.int32]:
+    def get_summary(self) -> dict[str, np.int32]:
         """
         Get a dictionary with category ids and the number dumped
         """

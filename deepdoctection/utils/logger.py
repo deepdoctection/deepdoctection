@@ -36,15 +36,15 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Set, Union, no_type_check
+from typing import Any, Optional, Union, no_type_check
 
 from termcolor import colored
 
-from ._types import Pathlike
+from ._types import StrOrPathLike
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
-ENV_VARS_TRUE: Set[str] = {"1", "True", "TRUE", "true", "yes"}
+ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 @dataclass
@@ -52,7 +52,7 @@ class LoggingRecord:
     """LoggingRecord to pass to the logger in order to distinguish from third party libraries."""
 
     msg: str
-    log_dict: Optional[Dict[Union[int, str], Any]] = field(default=None)
+    log_dict: Optional[dict[Union[int, str], Any]] = field(default=None)
 
     def __post_init__(self) -> None:
         """log_dict will be added to the log record as a dict."""
@@ -133,7 +133,7 @@ class FileFormatter(logging.Formatter):
 
 
 _LOG_DIR = None
-_CONFIG_DICT: Dict[str, Any] = {
+_CONFIG_DICT: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {"customfilter": {"()": lambda: CustomFilter()}},  # pylint: disable=W0108
@@ -172,7 +172,7 @@ def _get_time_str() -> str:
     return datetime.now().strftime("%m%d-%H%M%S")
 
 
-def _set_file(path: Pathlike) -> None:
+def _set_file(path: StrOrPathLike) -> None:
     if isinstance(path, Path):
         path = path.as_posix()
     global _FILE_HANDLER  # pylint: disable=W0603
@@ -189,7 +189,7 @@ def _set_file(path: Pathlike) -> None:
     logger.info("Argv: %s ", sys.argv)
 
 
-def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
+def set_logger_dir(dir_name: StrOrPathLike, action: Optional[str] = None) -> None:
     """
     Set the directory for global logging.
 
@@ -214,7 +214,7 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
-    def dir_nonempty(directory: str) -> int:
+    def dir_nonempty(directory: StrOrPathLike) -> bool:
         return os.path.isdir(directory) and len([x for x in os.listdir(directory) if x[0] != "."])
 
     if dir_nonempty(dir_name):
@@ -268,7 +268,7 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
     set_logger_dir(auto_dir_name, action=action)
 
 
-def get_logger_dir() -> Optional[str]:
+def get_logger_dir() -> Optional[StrOrPathLike]:
     """
     The logger directory, or None if not set.
     The directory is used for general logging, tensorboard events, checkpoints, etc.

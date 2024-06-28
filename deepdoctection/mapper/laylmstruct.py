@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Literal, NewType, Optional, Sequence, Union
+from typing import Any, Callable, Literal, NewType, Optional, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -125,7 +125,7 @@ def image_to_raw_layoutlm_features(
     all_ann_ids = []
     all_words = []
     all_boxes = []
-    all_labels: List[int] = []
+    all_labels: list[int] = []
 
     anns = dp.get_annotation_iter(category_names=LayoutType.word)
 
@@ -234,7 +234,7 @@ def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatu
 
 
 def _tokenize_with_sliding_window(
-    raw_features: List[Union[RawLayoutLMFeatures, RawLMFeatures]],
+    raw_features: list[Union[RawLayoutLMFeatures, RawLMFeatures]],
     tokenizer: PreTrainedTokenizerFast,
     sliding_window_stride: int,
     max_batch_size: int,
@@ -385,7 +385,7 @@ def _tokenize_with_sliding_window(
                 )
             )
 
-    slided_tokenized_inputs: Dict[str, Union[List[Union[str, int]], torch.Tensor]] = {}
+    slided_tokenized_inputs: dict[str, Union[list[Union[str, int]], torch.Tensor]] = {}
     if return_tensors == "pt":
         slided_tokenized_inputs["overflow_to_sample_mapping"] = torch.tensor(overflow_to_sample_mapping)
         slided_tokenized_inputs["input_ids"] = torch.tensor(all_input_ids)
@@ -402,7 +402,7 @@ def _tokenize_with_sliding_window(
 
 
 def raw_features_to_layoutlm_features(
-    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, List[Union[RawLayoutLMFeatures, RawLMFeatures]]],
+    raw_features: Union[RawLayoutLMFeatures, RawLMFeatures, list[Union[RawLayoutLMFeatures, RawLMFeatures]]],
     tokenizer: PreTrainedTokenizerFast,
     padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
     truncation: bool = True,
@@ -620,7 +620,7 @@ class LayoutLMDataCollator:
         if self.return_overflowing_tokens:
             assert self.truncation, self.truncation
 
-    def __call__(self, raw_features: Union[RawLayoutLMFeatures, List[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
+    def __call__(self, raw_features: Union[RawLayoutLMFeatures, list[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
         """
         Calling the DataCollator to form model inputs for training and inference. Takes a single raw
         :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,

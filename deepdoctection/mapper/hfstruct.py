@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Sequence, Union
+from typing import Literal, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -32,7 +32,7 @@ from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..mapper.misc import get_load_image_func
 from ..utils._types import JsonDict
-from ..utils.settings import ObjectTypes
+from ..utils.settings import ObjectTypes, TypeOrStr
 from ..utils.transform import PadTransform
 
 with try_import() as tr_import_guard:
@@ -43,7 +43,7 @@ with try_import() as tr_import_guard:
 def image_to_hf_detr_training(
     dp: Image,
     add_mask: bool = False,
-    category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+    category_names: Optional[Union[TypeOrStr, Sequence[Union[TypeOrStr]]]] = None,
 ) -> Optional[JsonDict]:
     """
     Maps an image to a detr input datapoint dict, that, after collating can be used for training.
@@ -76,7 +76,7 @@ def image_to_hf_detr_training(
     for ann in anns:
         box = ann.get_bounding_box(dp.image_id)
 
-        mapped_ann: Dict[str, Union[str, int, float, List[float]]] = {
+        mapped_ann: dict[str, Union[str, int, float, list[float]]] = {
             "id": "".join([c for c in ann.annotation_id if c.isdigit()])[:8],
             "image_id": "".join([c for c in dp.image_id if c.isdigit()])[:8],
             "bbox": box.to_list(mode="xywh"),
@@ -108,7 +108,7 @@ class DetrDataCollator:
     padder: Optional[PadTransform] = None
     return_tensors: Optional[Literal["pt"]] = field(default="pt")
 
-    def __call__(self, raw_features: List[JsonDict]) -> BatchFeature:
+    def __call__(self, raw_features: list[JsonDict]) -> BatchFeature:
         """
         Creating BatchFeature from a list of dict of raw features.
 

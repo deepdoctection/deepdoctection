@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import catalogue  # type: ignore
 
@@ -337,7 +337,7 @@ def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes
 
 def token_class_with_tag_to_token_class_and_tag(
     token_class_with_tag: ObjectTypes,
-) -> Optional[Tuple[ObjectTypes, ObjectTypes]]:
+) -> Optional[tuple[ObjectTypes, ObjectTypes]]:
     """
     This is the reverse mapping from TokenClassWithTag members to TokenClasses and BioTag
 
@@ -361,7 +361,7 @@ def update_all_types_dict() -> None:
         _ALL_TYPES_DICT.update({e.value: e for e in obj})
 
 
-_OLD_TO_NEW_OBJ_TYPE: Dict[str, str] = {
+_OLD_TO_NEW_OBJ_TYPE: dict[str, str] = {
     "DOC_CLASS": "document_type",
     "CHARS": "characters",
     "BIO_TAG": "tag",
@@ -384,10 +384,10 @@ def _get_new_obj_type_str(obj_type: str) -> str:
     return _OLD_TO_NEW_OBJ_TYPE.get(obj_type, obj_type)
 
 
-_BLACK_LIST: List[str] = ["B", "I", "O", "E", "S"]
+_BLACK_LIST: list[str] = ["B", "I", "O", "E", "S"]
 
 
-def _get_black_list() -> List[str]:
+def _get_black_list() -> list[str]:
     return _BLACK_LIST
 
 

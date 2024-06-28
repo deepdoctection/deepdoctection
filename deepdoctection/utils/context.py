@@ -30,7 +30,7 @@ from typing import Any, Generator, Iterator, Optional, Union
 
 import numpy as np
 
-from ._types import PixelValues
+from ._types import PixelValues, B64Str, B64
 from .logger import LoggingRecord, logger
 from .viz import viz_handler
 
@@ -72,7 +72,7 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
 
 
 @contextmanager
-def save_tmp_file(image: Union[str, PixelValues, bytes], prefix: str) -> Iterator[tuple[str, str]]:
+def save_tmp_file(image: Union[B64Str, PixelValues, B64], prefix: str) -> Iterator[tuple[str, str]]:
     """
     Save image temporarily and handle the clean-up once not necessary anymore
 
@@ -114,7 +114,7 @@ def timed_operation(message: str, log_start: bool = False) -> Generator[Any, Non
     """
     Contextmanager with a timer.
 
-    .. code-block:: python
+    ... code-block:: python
 
         with timed_operation(message="Your stdout message", log_start=True):
 

@@ -29,14 +29,14 @@ import base64
 import os
 import sys
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Optional, Sequence, no_type_check
 
 import numpy as np
 import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from ._types import PixelValues
+from ._types import PixelValues, BGR, StrOrPathLike, B64Str
 from .env_info import ENV_VARS_TRUE, auto_select_viz_library
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
@@ -183,7 +183,7 @@ _COLORS = (
 )
 
 
-def random_color(rgb: bool = True, maximum: int = 255) -> Tuple[int, int, int]:
+def random_color(rgb: bool = True, maximum: int = 255) -> tuple[int, int, int]:
     """
     :param rgb: Whether to return RGB colors or BGR colors.
     :param maximum: either 255 or 1
@@ -200,8 +200,8 @@ def random_color(rgb: bool = True, maximum: int = 255) -> Tuple[int, int, int]:
 def draw_boxes(
     np_image: PixelValues,
     boxes: npt.NDArray[float32],
-    category_names_list: Optional[List[Optional[str]]] = None,
-    color: Optional[Tuple[int, int, int]] = None,
+    category_names_list: Optional[list[Optional[str]]] = None,
+    color: Optional[BGR] = None,
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
     box_color_by_category: bool = True,
@@ -328,7 +328,7 @@ class VizPackageHandler:
     def __init__(self) -> None:
         """Selecting the image processing library and fonts"""
         package = self._select_package()
-        self.pkg_func_dict: Dict[str, str] = {}
+        self.pkg_func_dict: dict[str, str] = {}
         self.font = None
         self._set_vars(package)
 
@@ -386,7 +386,7 @@ class VizPackageHandler:
         package = self._select_package()
         self._set_vars(package)
 
-    def read_image(self, path: str) -> PixelValues:
+    def read_image(self, path: StrOrPathLike) -> PixelValues:
         """Reading an image from file and returning a np.array
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -394,16 +394,16 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["read_image"])(path)
 
     @staticmethod
-    def _cv2_read_image(path: str) -> PixelValues:
+    def _cv2_read_image(path: StrOrPathLike) -> PixelValues:
         return cv2.imread(path, cv2.IMREAD_COLOR)
 
     @staticmethod
-    def _pillow_read_image(path: str) -> PixelValues:
+    def _pillow_read_image(path: StrOrPathLike) -> PixelValues:
         with Image.open(path).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
-    def write_image(self, path: str, image: PixelValues) -> None:
+    def write_image(self, path: StrOrPathLike, image: PixelValues) -> None:
         """Writing an image as np.array to a file.
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -412,11 +412,11 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["write_image"])(path, image)
 
     @staticmethod
-    def _cv2_write_image(path: str, image: PixelValues) -> None:
+    def _cv2_write_image(path: StrOrPathLike, image: PixelValues) -> None:
         cv2.imwrite(path, image)
 
     @staticmethod
-    def _pillow_write_image(path: str, image: PixelValues) -> None:
+    def _pillow_write_image(path: StrOrPathLike, image: PixelValues) -> None:
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
         pil_image.save(path)
 
@@ -459,7 +459,7 @@ class VizPackageHandler:
         pil_image.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-    def convert_b64_to_np(self, image: str) -> PixelValues:
+    def convert_b64_to_np(self, image: B64Str) -> PixelValues:
         """
         Converting an image as b64 encoded string into np.array
 
@@ -469,13 +469,13 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["convert_b64_to_np"])(image)
 
     @staticmethod
-    def _cv2_convert_b64_to_np(image: str) -> PixelValues:
+    def _cv2_convert_b64_to_np(image: B64Str) -> PixelValues:
         np_array = np.fromstring(base64.b64decode(image), np.uint8)  # type: ignore
         np_array = cv2.imdecode(np_array, cv2.IMREAD_COLOR).astype(np.float32)
         return np_array.astype(uint8)
 
     @staticmethod
-    def _pillow_convert_b64_to_np(image: str) -> PixelValues:
+    def _pillow_convert_b64_to_np(image: B64Str) -> PixelValues:
         array = base64.b64decode(image)
         im_file = BytesIO(array)
         pil_image = Image.open(im_file)
@@ -522,7 +522,7 @@ class VizPackageHandler:
         )
         return np.array(pil_image_resized)[:, :, ::-1]
 
-    def get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:
+    def get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:
         """
         Return the text size for a given font scale
         :param text: text as string
@@ -531,16 +531,16 @@ class VizPackageHandler:
         """
         return getattr(self, self.pkg_func_dict["get_text_size"])(text, font_scale)
 
-    def _cv2_get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:
+    def _cv2_get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:
         ((width, height), _) = cv2.getTextSize(text, self.font, font_scale, 1)  # type: ignore
         return width, height
 
-    def _pillow_get_text_size(self, text: str, font_scale: float) -> Tuple[int, int]:  # pylint: disable=W0613
+    def _pillow_get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:  # pylint: disable=W0613
         _, _, width, height = self.font.getbbox(text)  # type: ignore
         return width, height
 
     def draw_rectangle(
-        self, np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Tuple[int, int, int], thickness: int
+        self, np_image: PixelValues, box: tuple[Any, Any, Any, Any], color: tuple[int, int, int], thickness: int
     ) -> PixelValues:
         """
         Drawing a rectangle into an image with a given color (b,g,r) and given thickness.
@@ -555,14 +555,14 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_draw_rectangle(
-        np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+        np_image: PixelValues, box: tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
     ) -> PixelValues:
         cv2.rectangle(np_image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=thickness)
         return np_image
 
     @staticmethod
     def _pillow_draw_rectangle(
-        np_image: PixelValues, box: Tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
+        np_image: PixelValues, box: tuple[Any, Any, Any, Any], color: Sequence[int], thickness: int
     ) -> PixelValues:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         draw = ImageDraw.Draw(pil_image)
@@ -573,9 +573,9 @@ class VizPackageHandler:
     def draw_text(
         self,
         np_image: PixelValues,
-        pos: Tuple[Any, Any],
+        pos: tuple[Any, Any],
         text: str,
-        color: Tuple[int, int, int],
+        color: tuple[int, int, int],
         font_scale: float,
         rectangle_thickness: int = 1,
     ) -> PixelValues:
@@ -598,9 +598,9 @@ class VizPackageHandler:
     def _cv2_draw_text(
         self,
         np_image: PixelValues,
-        pos: Tuple[Any, Any],
+        pos: tuple[Any, Any],
         text: str,
-        color: Tuple[int, int, int],
+        color: tuple[int, int, int],
         font_scale: float,
         rectangle_thickness: int,
     ) -> PixelValues:
@@ -642,9 +642,9 @@ class VizPackageHandler:
     @staticmethod
     def _pillow_draw_text(
         np_image: PixelValues,
-        pos: Tuple[Any, Any],
+        pos: tuple[Any, Any],
         text: str,
-        color: Tuple[int, int, int],  # pylint: disable=W0613
+        color: tuple[int, int, int],  # pylint: disable=W0613
         font_scale: float,  # pylint: disable=W0613
         rectangle_thickness: int,  # pylint: disable=W0613
     ) -> PixelValues:
@@ -693,7 +693,7 @@ class VizPackageHandler:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image.show(name)
 
-    def rotate_image(self, np_image: PixelValues, angle: int) -> PixelValues:
+    def rotate_image(self, np_image: PixelValues, angle: float) -> PixelValues:
         """Rotating an image by some angle"""
         return getattr(self, self.pkg_func_dict["rotate_image"])(np_image, angle)
 
@@ -727,7 +727,7 @@ class VizPackageHandler:
         return np_image
 
     @staticmethod
-    def _pillow_rotate_image(np_image: PixelValues, angle: int) -> PixelValues:
+    def _pillow_rotate_image(np_image: PixelValues, angle: float) -> PixelValues:
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
         pil_image_rotated = pil_image.rotate(angle, expand=True)
         return np.array(pil_image_rotated)[:, :, ::-1]

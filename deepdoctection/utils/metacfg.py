@@ -20,11 +20,11 @@ Class AttrDict for maintaining configs and some functions for generating and sav
 """
 
 import pprint
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
-from ._types import Pathlike
+from ._types import StrOrPathLike
 
 
 # Copyright (c) Tensorpack Contributors
@@ -67,13 +67,13 @@ class AttrDict:
 
     __repr__ = __str__
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to a nested dict."""
         return {
             k: v.to_dict() if isinstance(v, AttrDict) else v for k, v in self.__dict__.items() if not k.startswith("_")
         }
 
-    def from_dict(self, d: Dict[str, Any]) -> None:  # pylint: disable=C0103
+    def from_dict(self, d: dict[str, Any]) -> None:  # pylint: disable=C0103
         """
         Generate an instance from a dict
         """
@@ -86,7 +86,7 @@ class AttrDict:
                 else:
                     setattr(self, k, v)
 
-    def update_args(self, args: List[str]) -> None:
+    def update_args(self, args: list[str]) -> None:
         """
         Update from command line args.
         """
@@ -122,7 +122,7 @@ class AttrDict:
         raise NotImplementedError()
 
 
-def set_config_by_yaml(path_yaml: Pathlike) -> AttrDict:
+def set_config_by_yaml(path_yaml: StrOrPathLike) -> AttrDict:
     """
     Use to initialize the config class for tensorpack faster rcnn
 
@@ -139,7 +139,7 @@ def set_config_by_yaml(path_yaml: Pathlike) -> AttrDict:
     return config
 
 
-def save_config_to_yaml(config: AttrDict, path_yaml: Pathlike) -> None:
+def save_config_to_yaml(config: AttrDict, path_yaml: StrOrPathLike) -> None:
     """
     :param config: The configuration instance as an AttrDict
     :param path_yaml: Save the config class for tensorpack faster rcnn

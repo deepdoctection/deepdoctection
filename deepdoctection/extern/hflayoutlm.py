@@ -20,16 +20,17 @@ HF Layoutlm model for diverse downstream tasks.
 """
 from __future__ import annotations
 
+import os
 from abc import ABC
 from collections import defaultdict
 from copy import copy
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils._types import JsonDict, Requirement
+from ..utils._types import JsonDict, Requirement, StrOrPathLike
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import (
     BioTag,
@@ -112,15 +113,15 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
 
 
 def predict_token_classes(
-    uuids: List[List[str]],
+    uuids: list[list[str]],
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
     token_type_ids: torch.Tensor,
     boxes: torch.Tensor,
-    tokens: List[List[str]],
+    tokens: list[list[str]],
     model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LayoutLMv3ForTokenClassification],
     images: Optional[torch.Tensor] = None,
-) -> List[TokenClassResult]:
+) -> list[TokenClassResult]:
     """
     :param uuids: A list of uuids that correspond to a word that induces the resulting token
     :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
@@ -222,12 +223,12 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
     """
 
-    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification]
+    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LiltForTokenClassification]
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -254,8 +255,8 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             if categories_bio is None:
                 raise ValueError("If categories is None then categories_bio cannot be None")
 
-        self.path_config = path_config_json
-        self.path_weights = path_weights
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
         self.categories_semantics = (
             [get_type(cat_sem) for cat_sem in categories_semantics] if categories_semantics is not None else []
         )
@@ -271,13 +272,13 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     @staticmethod
     def _categories_orig_to_categories(
-        categories_semantics: List[TokenClasses], categories_bio: List[BioTag]
-    ) -> Dict[str, ObjectTypes]:
+        categories_semantics: list[TokenClasses], categories_bio: list[BioTag]
+    ) -> dict[str, ObjectTypes]:
         categories_list = sorted(
             {
                 token_class_tag_to_token_class_with_tag(token, tag)
@@ -287,7 +288,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         )
         return {str(k): v for k, v in enumerate(categories_list, 1)}
 
-    def _map_category_names(self, token_results: List[TokenClassResult]) -> List[TokenClassResult]:
+    def _map_category_names(self, token_results: list[TokenClassResult]) -> list[TokenClassResult]:
         for result in token_results:
             result.class_name = self.categories[str(result.class_id + 1)]
             output = token_class_with_tag_to_token_class_and_tag(result.class_name)
@@ -302,7 +303,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
     def _validate_encodings(
         self, **encodings: Any
-    ) -> Tuple[List[List[str]], List[str], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, List[List[str]]]:
+    ) -> tuple[list[list[str]], list[str], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, list[list[str]]]:
         image_ids = encodings.get("image_ids", [])
         ann_ids = encodings.get("ann_ids")
         input_ids = encodings.get("input_ids")
@@ -346,7 +347,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         )
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
@@ -405,8 +406,8 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -433,7 +434,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -459,7 +460,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -467,8 +468,9 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
-        return LayoutLMForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
+        return LayoutLMForTokenClassification.from_pretrained(pretrained_model_name_or_path=os.fspath(path_weights),
+                                                              config=config)
 
 
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -509,8 +511,8 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -537,7 +539,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -576,7 +578,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         return {"image_width": 224, "image_height": 224}
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMv2ForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -584,9 +586,10 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv2ForTokenClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights),
+            config=config
         )
 
 
@@ -628,8 +631,8 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -656,7 +659,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -697,7 +700,8 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         }
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) \
+            -> LayoutLMv3ForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -705,9 +709,10 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv3ForTokenClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights),
+            config=config
         )
 
 
@@ -720,14 +725,14 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        self.path_config = path_config_json
-        self.path_weights = path_weights
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
         self.categories = copy(categories)  # type: ignore
 
         self.device = get_torch_device(device)
@@ -735,15 +740,15 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFLayoutLmSequenceClassifierBase:
         return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
 
     def _validate_encodings(
-        self, **encodings: Union[List[List[str]], torch.Tensor]
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        self, **encodings: Union[list[list[str]], torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -773,7 +778,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return input_ids, attention_mask, token_type_ids, boxes
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
@@ -829,8 +834,8 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -840,7 +845,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -856,7 +861,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -864,9 +869,10 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights),
+            config=config
         )
 
 
@@ -903,8 +909,8 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -914,7 +920,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("image")
         if isinstance(images, torch.Tensor):
@@ -937,7 +943,8 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return {"image_width": 224, "image_height": 224}
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) \
+            -> LayoutLMv2ForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -945,9 +952,10 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv2ForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights),
+            config=config
         )
 
 
@@ -984,8 +992,8 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -995,7 +1003,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("pixel_values")
         if isinstance(images, torch.Tensor):
@@ -1024,7 +1032,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         }
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMv3ForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -1032,9 +1040,10 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         :param path_weights: path to model artifact
         :return: 'nn.Module'
         """
-        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv3ForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights),
+            config=config
         )
 
 
@@ -1074,8 +1083,8 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -1100,7 +1109,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> List[TokenClassResult]:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
@@ -1126,7 +1135,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LiltForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -1172,8 +1181,8 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
+        path_config_json: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -1183,7 +1192,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -1199,7 +1208,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> Any:
         """
         Get the inner (wrapped) model.
 

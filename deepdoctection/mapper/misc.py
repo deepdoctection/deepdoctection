@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import ast
 import os
-from typing import List, Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
@@ -135,7 +135,7 @@ def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[s
     return dp
 
 
-def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_image: bool = True) -> Image:
+def image_ann_to_image(dp: Image, category_names: Union[str, list[str]], crop_image: bool = True) -> Image:
     """
     Adds `image` to annotations with given category names
 
@@ -154,7 +154,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, List[str]], crop_im
 
 @curry
 def maybe_ann_to_sub_image(
-    dp: Image, category_names_sub_image: Union[str, List[str]], category_names: Union[str, List[str]], add_summary: bool
+    dp: Image, category_names_sub_image: Union[str, list[str]], category_names: Union[str, list[str]], add_summary: bool
 ) -> Image:
     """
     Assigns to sub image with given category names all annotations with given category names whose bounding box lie

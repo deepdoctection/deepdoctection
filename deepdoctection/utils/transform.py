@@ -87,7 +87,8 @@ class ResizeTransform(BaseTransform):
         return ret
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates"""
+        """Transformation that should be applied to coordinates. Coords are supposed to to be passed as
+        np array of points"""
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords

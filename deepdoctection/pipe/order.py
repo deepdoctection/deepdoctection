@@ -25,7 +25,7 @@ from abc import ABC
 from copy import copy
 from itertools import chain
 from logging import DEBUG
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Union
 
 import numpy as np
 
@@ -70,7 +70,7 @@ class OrderGenerator:
     @staticmethod
     def group_words_into_lines(
         word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
-    ) -> List[Tuple[int, int, str]]:
+    ) -> list[tuple[int, int, str]]:
         """Arranging words into horizontal text lines and sorting text lines vertically in order to give
         an enumeration of words that is used for establishing the reading order. Using this reading order arragement
         makes only sense for words within a rectangle and needs to be revised in more complex appearances.
@@ -78,7 +78,7 @@ class OrderGenerator:
         id)`.
         """
         reading_lines = []
-        rows: List[Dict[str, float]] = []
+        rows: list[dict[str, float]] = []
         for word in word_anns:
             bounding_box = word.get_bounding_box(image_id)
             row_found = False
@@ -117,13 +117,13 @@ class OrderGenerator:
     @staticmethod
     def group_lines_into_lines(
         line_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
-    ) -> List[Tuple[int, int, str]]:
+    ) -> list[tuple[int, int, str]]:
         """
         Sorting reading lines. Returns for a list of `ImageAnnotation` an list of tuples (each tuple containing the
         reading order and the `annotation_id` for each list element.
         :param line_anns: text line `ImageAnnotation`
         :param image_id: image_id of underyling image (to find get the bounding boxes)
-        :return: `List[(reading_order, reading_order,annotation_id)]`
+        :return: `list[(reading_order, reading_order,annotation_id)]`
         """
         reading_lines = []
         for ann in line_anns:
@@ -134,9 +134,9 @@ class OrderGenerator:
         return [(idx + 1, idx + 1, line[1]) for idx, line in enumerate(reading_lines)]
 
     @staticmethod
-    def _connected_components(columns: List[BoundingBox]) -> List[Dict[str, Any]]:
+    def _connected_components(columns: list[BoundingBox]) -> list[dict[str, Any]]:
         # building connected components of columns
-        connected_components: List[Dict[str, Any]] = []
+        connected_components: list[dict[str, Any]] = []
         for idx, col in enumerate(columns):
             col_dict = {"id": idx, "box": col}
             component_found = False
@@ -171,8 +171,8 @@ class OrderGenerator:
         return connected_components
 
     def order_blocks(
-        self, anns: List[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
-    ) -> Sequence[Tuple[int, str]]:
+        self, anns: list[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
+    ) -> Sequence[tuple[int, str]]:
         """
         Determining a text ordering of text blocks. These text blocks should be larger sections than barely words.
         It will first try to detect columns, then try to consolidate columns and finally try to detecting connected
@@ -184,12 +184,12 @@ class OrderGenerator:
         :param image_width: image width (to re-calculate bounding boxes into relative coords)
         :param image_height: image height (to re-calculate bounding boxes into relative coords)
         :param image_id: image id
-        :return: List of tuples with reading order position and `annotation_id`
+        :return: list of tuples with reading order position and `annotation_id`
         """
         if not anns:
             return []
         reading_blocks = []
-        columns: List[BoundingBox] = []
+        columns: list[BoundingBox] = []
         anns.sort(
             key=lambda x: (
                 x.bounding_box.transform(image_width, image_height).cy,  # type: ignore
@@ -270,7 +270,7 @@ class OrderGenerator:
         blocks.sort(key=lambda x: x[0])  # type: ignore
         sorted_blocks = []
         max_block_number = max(list(columns_dict.values()))
-        filtered_blocks: Sequence[Tuple[int, str]]
+        filtered_blocks: Sequence[tuple[int, str]]
         for idx in range(max_block_number + 1):
             filtered_blocks = list(filter(lambda x: x[0] == idx, blocks))  # type: ignore # pylint: disable=W0640
             sorted_blocks.extend(self._sort_anns_grouped_by_blocks(filtered_blocks, anns, image_width, image_height))
@@ -289,7 +289,7 @@ class OrderGenerator:
             )
         return reading_blocks
 
-    def _consolidate_columns(self, columns: List[BoundingBox]) -> Dict[int, int]:
+    def _consolidate_columns(self, columns: list[BoundingBox]) -> dict[int, int]:
         if not columns:
             return {}
         np_boxes = np.array([col.to_list(mode="xyxy") for col in columns])
@@ -310,8 +310,8 @@ class OrderGenerator:
 
     @staticmethod
     def _sort_anns_grouped_by_blocks(
-        block: Sequence[Tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
-    ) -> List[Tuple[int, str]]:
+        block: Sequence[tuple[int, str]], anns: Sequence[ImageAnnotation], image_width: float, image_height: float
+    ) -> list[tuple[int, str]]:
         if not block:
             return []
         anns_and_blocks_numbers = list(zip(*block))
@@ -364,7 +364,7 @@ class TextLineGenerator:
         self.make_sub_lines = make_sub_lines
         self.paragraph_break = paragraph_break
 
-    def _make_detect_result(self, box: BoundingBox, relationships: Dict[str, List[str]]) -> DetectionResult:
+    def _make_detect_result(self, box: BoundingBox, relationships: dict[str, list[str]]) -> DetectionResult:
         return DetectionResult(
             box=box.to_list(mode="xyxy"),
             class_name=LayoutType.line,
@@ -716,7 +716,7 @@ class TextOrderService(TextLineServiceMixin):
                 Relationships.reading_order, word_order[0], Relationships.reading_order, word_order[2]
             )
 
-    def order_blocks(self, text_block_anns: List[ImageAnnotation]) -> None:
+    def order_blocks(self, text_block_anns: list[ImageAnnotation]) -> None:
         """
         Ordering of text blocks. Will use the internal order generator.
 

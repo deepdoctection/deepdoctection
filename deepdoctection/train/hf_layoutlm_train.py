@@ -23,8 +23,9 @@ from __future__ import annotations
 import copy
 import json
 import os
+from pathlib import Path
 import pprint
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
@@ -54,6 +55,7 @@ from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, WordType
 from ..utils.utils import string_to_dict
+from ..utils._types import StrOrPathLike
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -82,7 +84,7 @@ with try_import() as wb_import_guard:
     import wandb
 
 
-def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> Tuple[Any, Any, Any]:
+def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> tuple[Any, Any, Any]:
     """
     Get the model architecture, model wrapper and config class for a given model type and dataset type.
 
@@ -163,7 +165,7 @@ class LayoutLMTrainer(Trainer):
         train_dataset: Dataset[Any],
     ):
         self.evaluator: Optional[Evaluator] = None
-        self.build_eval_kwargs: Optional[Dict[str, Any]] = None
+        self.build_eval_kwargs: Optional[dict[str, Any]] = None
         super().__init__(model, args, data_collator, train_dataset)
 
     def setup_evaluator(
@@ -194,9 +196,9 @@ class LayoutLMTrainer(Trainer):
     def evaluate(
         self,
         eval_dataset: Optional[Dataset[Any]] = None,  # pylint: disable=W0613
-        ignore_keys: Optional[List[str]] = None,  # pylint: disable=W0613
+        ignore_keys: Optional[list[str]] = None,  # pylint: disable=W0613
         metric_key_prefix: str = "eval",  # pylint: disable=W0613
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
         """
@@ -220,8 +222,8 @@ class LayoutLMTrainer(Trainer):
 
 
 def _get_model_class_and_tokenizer(
-    path_config_json: str, dataset_type: DatasetType, use_xlm_tokenizer: bool
-) -> Tuple[Any, Any, Any, Any, Any]:
+    path_config_json: StrOrPathLike, dataset_type: DatasetType, use_xlm_tokenizer: bool
+) -> tuple[Any, Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
 
@@ -244,11 +246,11 @@ def get_image_to_raw_features_mapping(input_str: str) -> Any:
 
 
 def train_hf_layoutlm(
-    path_config_json: str,
+    path_config_json: StrOrPathLike,
     dataset_train: Union[str, DatasetBase],
-    path_weights: str,
-    config_overwrite: Optional[List[str]] = None,
-    log_dir: str = "train_log/layoutlm",
+    path_weights: StrOrPathLike,
+    config_overwrite: Optional[list[str]] = None,
+    log_dir: StrOrPathLike = "train_log/layoutlm",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -323,13 +325,13 @@ def train_hf_layoutlm(
                               appear as child, it will use the word bounding box.
     """
 
-    build_train_dict: Dict[str, str] = {}
+    build_train_dict: dict[str, str] = {}
     if build_train_config is not None:
         build_train_dict = string_to_dict(",".join(build_train_config))
     if "split" not in build_train_dict:
         build_train_dict["split"] = "train"
 
-    build_val_dict: Dict[str, str] = {}
+    build_val_dict: dict[str, str] = {}
     if build_val_config is not None:
         build_val_dict = string_to_dict(",".join(build_val_config))
     if "split" not in build_val_dict:
@@ -388,7 +390,7 @@ def train_hf_layoutlm(
     # Need to set remove_unused_columns to False, as the DataCollator for column removal will remove some raw features
     # that are necessary for the tokenizer.
     conf_dict = {
-        "output_dir": log_dir,
+        "output_dir": os.fspath(log_dir),
         "remove_unused_columns": False,
         "per_device_train_batch_size": 8,
         "max_steps": number_samples,

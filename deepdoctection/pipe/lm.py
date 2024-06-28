@@ -21,7 +21,7 @@ Module for token classification pipeline
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Callable, List, Literal, Optional, Sequence, Union
+from typing import Any, Callable, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
@@ -145,7 +145,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             and not token.token.startswith("##")
         ]
 
-        words_populated: List[str] = []
+        words_populated: list[str] = []
         for token in lm_output:
             if token.uuid not in words_populated:
                 if token.class_name == token.semantic_name:

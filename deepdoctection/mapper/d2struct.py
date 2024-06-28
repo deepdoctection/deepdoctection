@@ -22,7 +22,7 @@ visualising
 from __future__ import annotations
 
 import os.path
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
@@ -49,7 +49,7 @@ with try_import() as wb_import_guard:
 def image_to_d2_frcnn_training(
     dp: Image,
     add_mask: bool = False,
-    category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+    category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
 ) -> Optional[JsonDict]:
     """
     Maps an image to a standard dataset dict as described in
@@ -87,7 +87,7 @@ def image_to_d2_frcnn_training(
             box = box.transform(dp.width, dp.height, absolute_coords=True)
 
         # Detectron2 does not fully support BoxMode.XYXY_REL
-        mapped_ann: Dict[str, Union[str, int, List[float]]] = {
+        mapped_ann: dict[str, Union[str, int, list[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": box.to_list(mode="xyxy"),
             "category_id": int(ann.category_id) - 1,
@@ -149,7 +149,7 @@ def pt_nms_image_annotations(
 
 def _get_category_attributes(
     ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
-) -> Tuple[str, str, Optional[float]]:
+) -> tuple[str, str, Optional[float]]:
     if cat_to_sub_cat:
         sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
         if sub_cat_key in ann.sub_categories:
@@ -165,7 +165,7 @@ def to_wandb_image(
     categories: Mapping[str, TypeOrStr],
     sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
     cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
-) -> Tuple[str, Wbimage]:
+) -> tuple[str, Wbimage]:
     """
     Converting a deepdoctection image into a wandb image
 

@@ -22,7 +22,8 @@ Module for ModelCatalog and ModelDownloadManager
 import os
 from copy import copy
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
+from typing_extensions import TypeAlias
 
 import jsonlines
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
@@ -32,6 +33,7 @@ from termcolor import colored
 from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes, get_type
+from ..utils._types import StrOrPathLike
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 
@@ -42,18 +44,18 @@ class ModelProfile:
     Class for model profile. Add for each model one ModelProfile to the ModelCatalog
     """
 
-    name: str
+    name: ModelProfileName
     description: str
 
-    size: List[int]
+    size: list[int]
     tp_model: bool = field(default=False)
     config: Optional[str] = field(default=None)
     preprocessor_config: Optional[str] = field(default=None)
     hf_repo_id: Optional[str] = field(default=None)
     hf_model_name: Optional[str] = field(default=None)
-    hf_config_file: Optional[List[str]] = field(default=None)
-    urls: Optional[List[str]] = field(default=None)
-    categories: Optional[Dict[str, ObjectTypes]] = field(default=None)
+    hf_config_file: Optional[list[str]] = field(default=None)
+    urls: Optional[list[str]] = field(default=None)
+    categories: Optional[dict[str, ObjectTypes]] = field(default=None)
     dl_library: Optional[str] = field(default=None)
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
@@ -63,11 +65,14 @@ class ModelProfile:
         if self.categories:
             self.categories = {key: get_type(val) for key, val in self.categories.items()}
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """
         returns a dict of the dataclass
         """
         return asdict(self)
+
+
+ModelProfileName: TypeAlias = str
 
 
 class ModelCatalog:
@@ -94,7 +99,7 @@ class ModelCatalog:
         ModelCatalog.get_full_path_configs("my_new_model")
     """
 
-    CATALOG: Dict[str, ModelProfile] = {
+    CATALOG: dict[ModelProfileName, ModelProfile] = {
         "layout/model-800000_inf_only.data-00000-of-00001": ModelProfile(
             name="layout/model-800000_inf_only.data-00000-of-00001",
             description="Tensorpack layout model for inference purposes trained on Publaynet",
@@ -730,7 +735,7 @@ class ModelCatalog:
     }
 
     @staticmethod
-    def get_full_path_weights(name: str) -> str:
+    def get_full_path_weights(name: Union[ModelProfileName, str]) -> StrOrPathLike:
         """
         Returns the absolute path of weights.
 
@@ -761,7 +766,7 @@ class ModelCatalog:
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
-    def get_full_path_configs(name: str) -> str:
+    def get_full_path_configs(name: Union[ModelProfileName, str]) -> StrOrPathLike:
         """
         Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
         (without the base path to the cache config directory).
@@ -787,7 +792,7 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_full_path_preprocessor_configs(name: str) -> str:
+    def get_full_path_preprocessor_configs(name: Union[ModelProfileName,str]) -> StrOrPathLike:
         """
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
         by the transformer library.
@@ -811,21 +816,21 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_model_list() -> List[str]:
+    def get_model_list() -> list[StrOrPathLike]:
         """
         Returns a list of absolute paths of registered models.
         """
         return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
-    def get_profile_list() -> List[str]:
+    def get_profile_list() -> list[ModelProfileName]:
         """
         Returns a list profile keys.
         """
         return list(ModelCatalog.CATALOG.keys())
 
     @staticmethod
-    def is_registered(path_weights: str) -> bool:
+    def is_registered(path_weights: StrOrPathLike) -> bool:
         """
         Checks if some weights belong to a registered model
 
@@ -839,7 +844,7 @@ class ModelCatalog:
         return False
 
     @staticmethod
-    def get_profile(name: str) -> ModelProfile:
+    def get_profile(name: ModelProfileName) -> ModelProfile:
         """
         Returns the profile of given model name, i.e. the config file, size and urls.
 
@@ -853,7 +858,7 @@ class ModelCatalog:
         raise KeyError("Model Profile does not exist. Please make sure the model is registered")
 
     @staticmethod
-    def register(name: str, profile: ModelProfile) -> None:
+    def register(name: ModelProfileName, profile: ModelProfile) -> None:
         """
         Register a model with its profile
 
@@ -866,7 +871,7 @@ class ModelCatalog:
         ModelCatalog.CATALOG[name] = profile
 
     @staticmethod
-    def load_profiles_from_file(path: Optional[str] = None) -> None:
+    def load_profiles_from_file(path: Optional[StrOrPathLike] = None) -> None:
         """
         Load model profiles from a jsonl file and extend `CATALOG` with the new profiles.
 
@@ -880,7 +885,7 @@ class ModelCatalog:
                     ModelCatalog.register(obj["name"], ModelProfile(**obj))
 
     @staticmethod
-    def save_profiles_to_file(target_path: str) -> None:
+    def save_profiles_to_file(target_path: StrOrPathLike) -> None:
         """
         Save model profiles to a jsonl file.
 
@@ -896,7 +901,7 @@ class ModelCatalog:
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))
 
 
-def get_tp_weight_names(name: str) -> List[str]:
+def get_tp_weight_names(name: str) -> list[str]:
     """
     Given a path to some model weights it will return all file names according to TP naming convention
 
@@ -922,7 +927,7 @@ def print_model_infos(add_description: bool = True, add_config: bool = True, add
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        tbl_input: List[Union[Mapping[str, ObjectTypes], str]] = [profile.name]
+        tbl_input: list[Union[Mapping[str, ObjectTypes], str]] = [profile.name]
         if add_description:
             tbl_input.append(profile.description)
         if add_config:
@@ -957,7 +962,7 @@ class ModelDownloadManager:
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(name: str) -> str:
+    def maybe_download_weights_and_configs(name: ModelProfileName) -> str:
         """
         Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
@@ -967,7 +972,7 @@ class ModelDownloadManager:
         """
 
         absolute_path_weights = ModelCatalog.get_full_path_weights(name)
-        file_names: List[str] = []
+        file_names: list[str] = []
         if ModelCatalog.is_registered(name):
             profile = ModelCatalog.get_profile(name)
             # there is nothing to download if hf_repo_id or urls is not provided
@@ -1000,7 +1005,7 @@ class ModelDownloadManager:
         return absolute_path_weights
 
     @staticmethod
-    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: StrOrPathLike, file_names: list[str]) -> None:
         """
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
@@ -1026,7 +1031,7 @@ class ModelDownloadManager:
                 )
 
     @staticmethod
-    def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+    def _load_from_gd(profile: ModelProfile, absolute_path: StrOrPathLike, file_names: list[str]) -> None:
         if profile.urls is None:
             raise ValueError("urls cannot be None")
         for size, url, file_name in zip(profile.size, profile.urls, file_names):
@@ -1034,7 +1039,7 @@ class ModelDownloadManager:
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: str) -> None:
+    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: StrOrPathLike) -> None:
         """
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
@@ -1053,7 +1058,7 @@ class ModelDownloadManager:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
-    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str, force_download: bool = False) -> int:
+    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: StrOrPathLike, force_download: bool = False) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
         token = os.environ.get("HF_CREDENTIALS", None)
         f_path = cached_download(

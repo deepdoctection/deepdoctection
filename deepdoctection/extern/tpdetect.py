@@ -22,9 +22,9 @@ TP Faster RCNN model as predictor for deepdoctection pipeline
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union
 
-from ..utils._types import PixelValues, Requirement
+from ..utils._types import PixelValues, Requirement, StrOrPathLike
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
@@ -45,14 +45,14 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         self.filter_categories = filter_categories
         self._tp_categories = self._map_to_tp_categories(categories)
 
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+    def _map_category_names(self, detection_results: list[DetectionResult]) -> list[DetectionResult]:
         """
         Populating category names to detection results
 
         :param detection_results: list of detection results
         :return: List of detection results with attribute class_name populated
         """
-        filtered_detection_result: List[DetectionResult] = []
+        filtered_detection_result: list[DetectionResult] = []
         for result in detection_results:
             result.class_name = self._tp_categories[str(result.class_id)]
             if self.filter_categories:
@@ -63,13 +63,13 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         return filtered_detection_result
 
     @staticmethod
-    def _map_to_tp_categories(categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
+    def _map_to_tp_categories(categories: Mapping[str, TypeOrStr]) -> dict[str, ObjectTypes]:
         categories = {str(key): get_type(categories[val]) for key, val in enumerate(categories, 1)}
         categories["0"] = get_type("background")
         return categories  # type: ignore
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Tensorpack_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -97,10 +97,10 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
     def __init__(
         self,
-        path_yaml: str,
-        path_weights: str,
+        path_yaml: StrOrPathLike,
+        path_weights: StrOrPathLike,
         categories: Mapping[str, TypeOrStr],
-        config_overwrite: Optional[List[str]] = None,
+        config_overwrite: Optional[list[str]] = None,
         ignore_mismatch: bool = False,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
@@ -125,7 +125,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         :param filter_categories: The model might return objects that are not supposed to be predicted and that should
                                   be filtered. Pass a list of category names that must not be returned
         """
-        self.path_yaml = path_yaml
+        self.path_yaml = Path(path_yaml)
 
         self.categories = copy(categories)  # type: ignore
         self.config_overwrite = config_overwrite
@@ -141,7 +141,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: str, categories: Mapping[str, ObjectTypes], config_overwrite: Union[List[str], None]
+        path_yaml: StrOrPathLike, categories: Mapping[str, ObjectTypes], config_overwrite: Union[list[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel
@@ -163,7 +163,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         model_frcnn_config(config=hyper_param_config, categories=categories, print_summary=False)
         return ResNetFPNModel(config=hyper_param_config)
 
-    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Prediction per image.
 
@@ -180,7 +180,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         return self._map_category_names(detection_results)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_tensorflow_requirement(), get_tensorpack_requirement()]
 
     def clone(self) -> PredictorBase:

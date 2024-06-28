@@ -21,7 +21,6 @@ AWS Textract OCR engine for text extraction
 
 import sys
 import traceback
-from typing import List
 
 from lazy_imports import try_import
 
@@ -36,8 +35,8 @@ with try_import() as import_guard:
     import boto3  # type:ignore
 
 
-def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
-    all_results: List[DetectionResult] = []
+def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> list[DetectionResult]:
+    all_results: list[DetectionResult] = []
     blocks = response.get("Blocks")
 
     if blocks:
@@ -60,7 +59,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
     return all_results
 
 
-def predict_text(np_img: PixelValues, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
+def predict_text(np_img: PixelValues, client, text_lines: bool) -> list[DetectionResult]:  # type: ignore
     """
     Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
@@ -131,7 +130,7 @@ class TextractOcrDetector(ObjectDetector):
         else:
             self.categories = {"1": LayoutType.word}
 
-    def predict(self, np_img: PixelValues) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Transfer of a numpy array and call textract client. Return of the detection results.
 
@@ -142,13 +141,13 @@ class TextractOcrDetector(ObjectDetector):
         return predict_text(np_img, self.client, self.text_lines)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_boto3_requirement()]
 
     def clone(self) -> PredictorBase:
         return self.__class__()
 
-    def possible_categories(self) -> List[ObjectTypes]:
+    def possible_categories(self) -> list[ObjectTypes]:
         if self.text_lines:
             return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]

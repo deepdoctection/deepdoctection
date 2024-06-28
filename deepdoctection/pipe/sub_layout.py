@@ -20,7 +20,7 @@ Module for cell detection pipeline component
 """
 from collections import Counter
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
 
@@ -48,7 +48,7 @@ class DetectResultGenerator:
     def __init__(
         self,
         categories: Mapping[str, ObjectTypes],
-        group_categories: Optional[List[List[str]]] = None,
+        group_categories: Optional[list[list[str]]] = None,
         exclude_category_ids: Optional[Sequence[str]] = None,
         absolute_coords: bool = True,
     ) -> None:
@@ -71,7 +71,7 @@ class DetectResultGenerator:
         self.dummy_for_group_generated = [False for _ in self.group_categories]
         self.absolute_coords = absolute_coords
 
-    def create_detection_result(self, detect_result_list: List[DetectionResult]) -> List[DetectionResult]:
+    def create_detection_result(self, detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
         """
         Adds DetectResults for which no object was detected to the list.
 
@@ -100,7 +100,7 @@ class DetectResultGenerator:
         self.dummy_for_group_generated = self._initialize_dummy_for_group_generated()
         return detect_result_list
 
-    def _create_condition(self, detect_result_list: List[DetectionResult]) -> Dict[str, int]:
+    def _create_condition(self, detect_result_list: list[DetectionResult]) -> dict[str, int]:
         count = Counter([str(ann.class_id) for ann in detect_result_list])
         cat_to_group_sum = {}
         for group in self.group_categories:
@@ -119,7 +119,7 @@ class DetectResultGenerator:
                 return is_generated
         return False
 
-    def _initialize_dummy_for_group_generated(self) -> List[bool]:
+    def _initialize_dummy_for_group_generated(self) -> list[bool]:
         return [False for _ in self.group_categories]
 
 
@@ -144,8 +144,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
     def __init__(
         self,
         sub_image_detector: ObjectDetector,
-        sub_image_names: Union[str, List[str]],
-        category_id_mapping: Optional[Dict[int, int]] = None,
+        sub_image_names: Union[str, list[str]],
+        category_id_mapping: Optional[dict[int, int]] = None,
         detect_result_generator: Optional[DetectResultGenerator] = None,
         padder: Optional[PadTransform] = None,
     ):
@@ -219,7 +219,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
     def _get_name(predictor_name: str) -> str:
         return f"sub_image_{predictor_name}"
 
-    def clone(self) -> "PredictorPipelineComponent":
+    def clone(self) -> PredictorPipelineComponent:
         predictor = self.predictor.clone()
         padder_clone = None
         if self.padder:
