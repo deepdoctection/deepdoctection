@@ -33,7 +33,7 @@ Module for Fintabnet dataset. Place the dataset as follows
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Mapping, Sequence, Union
+from typing import Mapping, Sequence, Union
 
 from ...dataflow import DataFlow, MapData, MultiProcessMapData
 from ...dataflow.common import FlattenData
@@ -233,7 +233,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         if build_mode == "table":
 
             @curry
-            def _crop_and_add_image(dp: Image, category_names: List[str]) -> Image:
+            def _crop_and_add_image(dp: Image, category_names: list[str]) -> Image:
                 return image_ann_to_image(dp, category_names=category_names)
 
             df = MapData(

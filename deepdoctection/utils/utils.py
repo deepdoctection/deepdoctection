@@ -31,7 +31,7 @@ from ._types import StrOrPathLike
 
 
 def delete_keys_from_dict(
-    dictionary: Union[Dict[Any, Any], MutableMapping], keys: Union[str, list[str], set[str]]  # type: ignore
+    dictionary: Union[dict[Any, Any], MutableMapping], keys: Union[str, list[str], set[str]]  # type: ignore
 ) -> dict[Any, Any]:
     """
     Removing key/value pairs from dictionary. Works for nested dicts as well.

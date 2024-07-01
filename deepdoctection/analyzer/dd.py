@@ -26,7 +26,7 @@ Module for **deep**doctection analyzer.
 import os
 from os import environ
 from shutil import copyfile
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from lazy_imports import try_import
 
@@ -50,7 +50,7 @@ from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
-from ..utils._types import Pathlike
+from ..utils._types import StrOrPathLike
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
@@ -82,7 +82,7 @@ _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
 def maybe_copy_config_to_cache(
-    package_path: Pathlike, configs_dir_path: Pathlike, file_name: str, force_copy: bool = True
+    package_path: StrOrPathLike, configs_dir_path: StrOrPathLike, file_name: str, force_copy: bool = True
 ) -> str:
     """
     Initial copying of various files
@@ -261,7 +261,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     :param cfg: A configuration
     :return: Analyzer pipeline
     """
-    pipe_component_list: List[PipelineComponent] = []
+    pipe_component_list: list[PipelineComponent] = []
 
     if cfg.USE_LAYOUT:
         d_layout = build_detector(cfg, "LAYOUT")
@@ -404,8 +404,8 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
 def get_dd_analyzer(
     reset_config_file: bool = True,
-    config_overwrite: Optional[List[str]] = None,
-    path_config_file: Optional[Pathlike] = None,
+    config_overwrite: Optional[list[str]] = None,
+    path_config_file: Optional[StrOrPathLike] = None,
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.

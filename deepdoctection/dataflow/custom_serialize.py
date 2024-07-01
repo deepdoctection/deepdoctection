@@ -30,7 +30,7 @@ from jsonlines import Reader, Writer
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils._types import JsonDict, Pathlike
+from ..utils._types import JsonDict, StrOrPathLike
 from ..utils.context import timed_operation
 from ..utils.error import FileExtensionError
 from ..utils.identifier import get_uuid_from_str
@@ -66,7 +66,7 @@ class SerializerJsonlines:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
+    def load(path: StrOrPathLike, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
         """
         :param path: a path to a .jsonl file.
         :param max_datapoints: Will stop the iteration once max_datapoints have been streamed
@@ -78,7 +78,7 @@ class SerializerJsonlines:
         return CustomDataFromIterable(iterator, max_datapoints=max_datapoints)
 
     @staticmethod
-    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
+    def save(df: DataFlow, path: StrOrPathLike, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
         Writes a dataflow iteratively to a .jsonl file. Every datapoint must be a dict where all items are serializable.
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
@@ -120,7 +120,7 @@ class SerializerTabsepFiles:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoins: Optional[int] = None) -> CustomDataFromList:
+    def load(path: StrOrPathLike, max_datapoins: Optional[int] = None) -> CustomDataFromList:
         """
         :param path: a path to a .txt file.
         :param max_datapoins: Will stop the iteration once max_datapoints have been streamed
@@ -133,7 +133,7 @@ class SerializerTabsepFiles:
         return CustomDataFromList(file_list, max_datapoints=max_datapoins)
 
     @staticmethod
-    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
+    def save(df: DataFlow, path: StrOrPathLike, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
         Writes a dataflow iteratively to a .txt file. Every datapoint must be a string.
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
@@ -168,7 +168,7 @@ class SerializerFiles:
 
     @staticmethod
     def load(
-        path: Pathlike,
+        path: StrOrPathLike,
         file_type: Union[str, Sequence[str]],
         max_datapoints: Optional[int] = None,
         shuffle: Optional[bool] = False,
@@ -237,7 +237,7 @@ class CocoParser:
     :param annotation_file: location of annotation file
     """
 
-    def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
+    def __init__(self, annotation_file: Optional[StrOrPathLike] = None) -> None:
         self.dataset: JsonDict = {}
         self.anns: Dict[int, JsonDict] = {}
         self.cats: Dict[int, JsonDict] = {}
@@ -465,7 +465,7 @@ class SerializerCoco:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: StrOrPathLike, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads a .json file and generates a dataflow.
 
@@ -525,7 +525,7 @@ class SerializerPdfDoc:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: StrOrPathLike, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads the document page wise and returns a dataflow accordingly.
 
@@ -552,14 +552,16 @@ class SerializerPdfDoc:
         return df
 
     @staticmethod
-    def save(path: Pathlike) -> None:
+    def save(path: StrOrPathLike) -> None:
         """
         Not implemented
         """
         raise NotImplementedError()
 
     @staticmethod
-    def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:
+    def split(path: StrOrPathLike,
+              path_target: Optional[StrOrPathLike] = None,
+              max_datapoint: Optional[int] = None) -> None:
         """
         Split a document into single pages.
         """

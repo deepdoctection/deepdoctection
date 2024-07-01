@@ -18,7 +18,7 @@ Tree distance similarity metric taken from <https://github.com/ibm-aur-nlp/PubTa
 
 import statistics
 from collections import defaultdict, deque
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from lazy_imports import try_import
 
@@ -59,7 +59,7 @@ class TableTree(Tree):
         tag: str,
         colspan: Optional[int] = None,
         rowspan: Optional[int] = None,
-        content: Optional[List[str]] = None,
+        content: Optional[list[str]] = None,
     ) -> None:
         self.tag = tag
         self.colspan = colspan
@@ -107,7 +107,7 @@ class TEDS:
 
     def __init__(self, structure_only: bool = False):
         self.structure_only = structure_only
-        self.__tokens__: List[str] = []
+        self.__tokens__: list[str] = []
 
     def tokenize(self, node: TableTree) -> None:
         """Tokenizes table cells"""
@@ -149,7 +149,7 @@ class TEDS:
             return new_node
         return None
 
-    def evaluate(self, inputs: Tuple[str, str]) -> float:
+    def evaluate(self, inputs: tuple[str, str]) -> float:
         """Computes TEDS score between the prediction and the ground truth of a
         given sample
         """
@@ -188,7 +188,7 @@ class TEDS:
         return 0.0
 
 
-def teds_metric(gt_list: List[str], predict_list: List[str], structure_only: bool) -> Tuple[float, int]:
+def teds_metric(gt_list: list[str], predict_list: list[str], structure_only: bool) -> tuple[float, int]:
     """
     Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
     approach to measure similarity of tables by means of their html representation has been adovacated in
@@ -227,7 +227,7 @@ class TedsMetric(MetricBase):
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> Tuple[List[str], List[str]]:
+    ) -> tuple[list[str], list[str]]:
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
@@ -254,12 +254,12 @@ class TedsMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[JsonDict]:
         html_gt_list, html_pr_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only)  # type: ignore
         return [{"teds_score": score, "num_samples": num_samples}]
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_apted_requirement(), get_distance_requirement(), get_lxml_requirement()]

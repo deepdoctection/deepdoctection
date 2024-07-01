@@ -22,7 +22,7 @@ Module for storing dataset info (e.g. general meta data or categories)
 from copy import copy
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union, no_type_check, overload
+from typing import Any, Literal, Mapping, Optional, Sequence, Union, no_type_check, overload
 
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
@@ -31,25 +31,25 @@ __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> Dict[ObjectTypes, str]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> dict[ObjectTypes, str]:
     ...
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> Dict[str, ObjectTypes]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> dict[str, ObjectTypes]:
     ...
 
 
 @overload
 def _get_dict(
     l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = ...
-) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
+) -> Union[dict[ObjectTypes, str], dict[str, ObjectTypes]]:
     ...
 
 
 def _get_dict(
     l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = 1
-) -> Union[Dict[ObjectTypes, str], Dict[str, ObjectTypes]]:
+) -> Union[dict[ObjectTypes, str], dict[str, ObjectTypes]]:
     """
     Converts a list into a dict, where keys/values are the list indices.
 
@@ -229,7 +229,7 @@ class DatasetCategories:
         if sub_categories is None:
             sub_categories = {}
 
-        sub_cat: Dict[ObjectTypes, Union[ObjectTypes, List[ObjectTypes]]] = {}
+        sub_cat: dict[ObjectTypes, Union[ObjectTypes, list[ObjectTypes]]] = {}
         for cat in _categories:
             assert cat in self.get_categories(  # pylint: disable=E1135
                 as_dict=False, filtered=True
@@ -254,9 +254,9 @@ class DatasetCategories:
             for category, value in sub_cat.items():
                 if category not in sub_categories:
                     continue
-                sub_cat_tmp: Dict[str, Union[Dict[str, str], Sequence[str]]] = {}
+                sub_cat_tmp: dict[str, Union[dict[str, str], Sequence[str]]] = {}
                 sub_categories_list: Union[
-                    ObjectTypes, str, List[Sequence[Union[ObjectTypes, str]]], Sequence[Union[ObjectTypes, str]]
+                    ObjectTypes, str, list[Sequence[Union[ObjectTypes, str]]], Sequence[Union[ObjectTypes, str]]
                 ]
                 if isinstance(sub_categories[category], ObjectTypes):
                     sub_categories_list = [sub_categories[category]]
@@ -284,7 +284,7 @@ class DatasetCategories:
         return sub_cat
 
     @call_only_once
-    def set_cat_to_sub_cat(self, cat_to_sub_cat: Dict[TypeOrStr, TypeOrStr]) -> None:
+    def set_cat_to_sub_cat(self, cat_to_sub_cat: dict[TypeOrStr, TypeOrStr]) -> None:
         """
         Change category representation if sub-categories are available. Pass a dictionary of the main category
         and the requested sub-category. This will change the dictionary of categories and the category names
@@ -323,7 +323,7 @@ class DatasetCategories:
             self._categories_update = _categories_update_list
 
     @call_only_once
-    def filter_categories(self, categories: Union[TypeOrStr, List[TypeOrStr]]) -> None:
+    def filter_categories(self, categories: Union[TypeOrStr, list[TypeOrStr]]) -> None:
         """
         Filter categories of a dataset. This will keep all the categories chosen and remove all others.
         This method can only be called once per object.
@@ -415,7 +415,7 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
         # form a set of possible sub category values. To get a list of all values from all dataset, take the union
         intersect_init_sub_cat_values = {}
         for sub_cat_key in intersect_sub_cat_per_key:
-            val: Set[ObjectTypes] = set()
+            val: set[ObjectTypes] = set()
             for cat in categories:
                 val.update(cat.init_sub_categories[key][sub_cat_key])
             intersect_init_sub_cat_values[sub_cat_key] = list(val)
@@ -425,7 +425,7 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     # construction is not deterministic but guarantees for unique values in all sub categories. Now we build the
     # ensemble dict of sub categories where we guarantee unique values on one hand side and always maintain the
     # same arrangements for all category/ sub category lists
-    init_sub_cat: Dict[ObjectTypes, Any] = {}
+    init_sub_cat: dict[ObjectTypes, Any] = {}
     for category in categories:
         for cat in intersect_sub_cat_keys:
             for sub_cat_key in category.init_sub_categories[cat]:

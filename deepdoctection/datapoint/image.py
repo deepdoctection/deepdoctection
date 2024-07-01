@@ -24,12 +24,12 @@ import json
 from dataclasses import dataclass, field
 from os import environ
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Union, no_type_check
+from typing import Any, Iterable, Optional, Sequence, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
 
-from ..utils._types import JsonDict, Pathlike, PixelValues
+from ..utils._types import JsonDict, StrOrPathLike, PixelValues
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
@@ -88,9 +88,9 @@ class Image:
     _image_id: Optional[str] = field(default=None, init=False, repr=True)
     _image: Optional[PixelValues] = field(default=None, init=False, repr=False)
     _bbox: Optional[BoundingBox] = field(default=None, init=False, repr=False)
-    embeddings: Dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
-    annotations: List[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
-    _annotation_ids: List[str] = field(default_factory=list, init=False, repr=False)
+    embeddings: dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
+    annotations: list[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
+    _annotation_ids: list[str] = field(default_factory=list, init=False, repr=False)
     _summary: Optional[SummaryAnnotation] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -329,7 +329,7 @@ class Image:
         model_id: Optional[Union[str, Sequence[str]]] = None,
         session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
-    ) -> List[ImageAnnotation]:
+    ) -> list[ImageAnnotation]:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying
         the annotation_id or the category name. (Since only image annotations are currently allowed in the container,
@@ -414,7 +414,7 @@ class Image:
             )
         )
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """
         Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
         defined by `remove_keys`.
@@ -430,7 +430,7 @@ class Image:
         return img_dict
 
     @staticmethod
-    def remove_keys() -> List[str]:
+    def remove_keys() -> list[str]:
         """
         A list of attributes to suspend from as_dict creation.
         """
@@ -497,7 +497,7 @@ class Image:
 
         ann.image = new_image
 
-    def maybe_ann_to_sub_image(self, annotation_id: str, category_names: Union[str, List[str]]) -> None:
+    def maybe_ann_to_sub_image(self, annotation_id: str, category_names: Union[str, list[str]]) -> None:
         """
         Provides a supplement to `image_ann_to_image` and mainly operates on the `ImageAnnotation.image` of
         the image annotation. The aim is to assign image annotations from this image one hierarchy level lower to the
@@ -589,7 +589,7 @@ class Image:
         return image
 
     @staticmethod
-    def get_state_attributes() -> List[str]:
+    def get_state_attributes() -> list[str]:
         """
         Returns the list of attributes that define the `state_id` of an image.
 
@@ -636,7 +636,7 @@ class Image:
         self,
         image_to_json: bool = True,
         highest_hierarchy_only: bool = False,
-        path: Optional[Pathlike] = None,
+        path: Optional[StrOrPathLike] = None,
         dry: bool = False,
     ) -> Optional[JsonDict]:
         """
@@ -673,6 +673,6 @@ class Image:
             json.dump(export_dict, file, indent=2)
         return None
 
-    def get_categories_from_current_state(self) -> Set[str]:
+    def get_categories_from_current_state(self) -> set[str]:
         """Returns all active dumped categories"""
         return {ann.category_name for ann in self.get_annotation()}
