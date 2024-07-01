@@ -29,7 +29,7 @@ from ..extern.base import ObjectDetector, PdfMiner
 from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.transform import PadTransform
-from .base import PredictorPipelineComponent
+from .base import PredictorPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -96,7 +96,7 @@ class ImageLayoutService(PredictorPipelineComponent):
         for detect_result in detect_result_list:
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
         return dict(
             [

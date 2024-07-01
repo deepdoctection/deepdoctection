@@ -81,7 +81,7 @@ def _load_model(
     elif lib == "TF":
         # Unzip the archive
         params_path = Path(path_weights).parent
-        is_zip_path = path_weights.endswith(".zip")
+        is_zip_path = os.fspath(path_weights).endswith(".zip")
         if is_zip_path:
             with ZipFile(path_weights, "r") as file:
                 file.extractall(path=params_path)
@@ -112,7 +112,7 @@ def doctr_predict_text_lines(
     :return: A list of text line detection results (without text).
     """
     if lib == "TF":
-        with device:
+        with device:   # type: ignore
             raw_output = predictor([np_img])
     elif lib == "PT":
         raw_output = predictor([np_img])
@@ -147,7 +147,7 @@ def doctr_predict_text(
 
     uuids, images = list(zip(*inputs))
     if lib == "TF":
-        with device:
+        with device:  # type: ignore
             raw_output = predictor(list(images))
     elif lib == "PT":
         raw_output = predictor(list(images))
@@ -259,7 +259,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
     def get_requirements(cls) -> list[Requirement]:
         return _get_doctr_requirements()
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> DoctrTextlineDetector:
         return self.__class__(self.architecture, self.path_weights, self.categories, self.device, self.lib)
 
     @staticmethod
@@ -383,12 +383,12 @@ class DoctrTextRecognizer(TextRecognizer):
     def get_requirements(cls) -> list[Requirement]:
         return _get_doctr_requirements()
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> DoctrTextRecognizer:
         return self.__class__(self.architecture, self.path_weights, self.device, self.lib)
 
     @staticmethod
     def load_model(
-        path_weights: str,
+        path_weights: StrOrPathLike,
         doctr_predictor: RecognitionPredictor,
         device: Union[torch.device, tf.device],
         lib: Literal["PT", "TF"]

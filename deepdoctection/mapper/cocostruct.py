@@ -25,7 +25,7 @@ from typing import Mapping, Optional
 from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
-from ..utils._types import JsonDict
+from ..utils._types import JsonDict, CocoDatapointDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import ObjectTypes
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
@@ -33,7 +33,7 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 @curry
 def coco_to_image(
-    dp: JsonDict,
+    dp: CocoDatapointDict,
     categories: dict[str, str],
     load_image: bool,
     filter_empty_image: bool,

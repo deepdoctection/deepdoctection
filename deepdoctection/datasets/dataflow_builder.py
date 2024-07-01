@@ -100,7 +100,7 @@ class DataFlowBaseBuilder(ABC):
 
         :return: local workdir
         """
-        return get_dataset_dir_path() / self.location
+        return Path(get_dataset_dir_path()) / self.location
 
     @abstractmethod
     def build(self, **kwargs: Union[str, int]) -> DataFlow:

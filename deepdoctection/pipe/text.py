@@ -31,7 +31,7 @@ from ..extern.tessocr import TesseractOcrDetector
 from ..utils._types import JsonDict, PixelValues
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, WordType, get_type
-from .base import PredictorPipelineComponent
+from .base import PredictorPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 __all__ = ["TextExtractionService"]
@@ -194,7 +194,7 @@ class TextExtractionService(PredictorPipelineComponent):
             return text_roi.pdf_bytes
         return 1
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         if self.extract_from_category:
             sub_cat_dict = {category: {WordType.characters} for category in self.extract_from_category}
         else:

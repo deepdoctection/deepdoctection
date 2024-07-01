@@ -24,8 +24,7 @@ from __future__ import annotations
 
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
-from ..utils._types import JsonDict
-from .base import ImageTransformPipelineComponent
+from .base import ImageTransformPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -72,7 +71,7 @@ class SimpleTransformService(ImageTransformPipelineComponent):
     def clone(self) -> SimpleTransformService:
         return self.__class__(self.transform_predictor)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),

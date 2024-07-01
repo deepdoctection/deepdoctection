@@ -173,8 +173,7 @@ def _get_time_str() -> str:
 
 
 def _set_file(path: StrOrPathLike) -> None:
-    if isinstance(path, Path):
-        path = path.as_posix()
+    path = os.fspath(path)
     global _FILE_HANDLER  # pylint: disable=W0603
     if os.path.isfile(path):
         backup_name = path + "." + _get_time_str()
@@ -214,7 +213,7 @@ def set_logger_dir(dir_name: StrOrPathLike, action: Optional[str] = None) -> Non
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
-    def dir_nonempty(directory: StrOrPathLike) -> bool:
+    def dir_nonempty(directory: StrOrPathLike) -> int:
         return os.path.isdir(directory) and len([x for x in os.listdir(directory) if x[0] != "."])
 
     if dir_nonempty(dir_name):

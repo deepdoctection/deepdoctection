@@ -202,7 +202,7 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
         return InferenceResize(min_size_test, max_size_test)
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
         """Returns the name of the model"""
         return f"detectron2_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -276,7 +276,7 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
 
     @staticmethod
-    def _set_config(path_yaml: os.PathLike, d2_conf_list: list[str], device: torch.device) -> CfgNode:
+    def _set_config(path_yaml: StrOrPathLike, d2_conf_list: list[str], device: torch.device) -> CfgNode:
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1

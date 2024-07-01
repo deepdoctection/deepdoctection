@@ -18,6 +18,7 @@
 """
 TP Faster RCNN model as predictor for deepdoctection pipeline
 """
+from __future__ import annotations
 
 from abc import ABC
 from copy import copy
@@ -183,7 +184,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
     def get_requirements(cls) -> list[Requirement]:
         return [get_tensorflow_requirement(), get_tensorpack_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> TPFrcnnDetector:
         return self.__class__(
             self.path_yaml,
             self.path_weights,

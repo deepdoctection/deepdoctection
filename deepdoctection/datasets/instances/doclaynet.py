@@ -36,7 +36,7 @@ from ...datapoint.image import Image
 from ...mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_summary
 from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
-from ...utils._types import JsonDict
+from ...utils._types import CocoDatapointDict
 from ...utils.fs import load_image_from_file
 from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, TypeOrStr
 from ..base import DatasetBase
@@ -245,7 +245,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         df = MapDataComponent(df, lambda dp: self.get_workdir() / "PNG" / dp, "file_name")
 
         @curry
-        def _map_to_image(dp: JsonDict, load_img: bool) -> Image:
+        def _map_to_image(dp: CocoDatapointDict, load_img: bool) -> Image:
             image = Image(location=dp["file_name"], file_name=os.path.split(dp["file_name"])[1])
             image.image = load_image_from_file(image.location)
             summary = SummaryAnnotation()

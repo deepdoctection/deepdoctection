@@ -19,9 +19,8 @@
 Module for Accuracy metric
 """
 from collections import Counter
-from typing import Any
 from typing import Counter as TypeCounter
-from typing import Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union, Callable
 
 import numpy as np
 from numpy import float32, int32
@@ -32,7 +31,7 @@ from termcolor import colored
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
-from ..utils._types import JsonDict
+from ..utils._types import MetricResults, DP
 from ..utils.file_utils import Requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
@@ -217,7 +216,7 @@ class ClassificationMetric(MetricBase):
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> tuple[Any, Any]:
+    ) -> tuple[dict[str, list[int]], dict[str, list[int]]]:
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
@@ -253,7 +252,7 @@ class ClassificationMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -395,7 +394,7 @@ class ConfusionMetric(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -407,10 +406,10 @@ class ConfusionMetric(ClassificationMetric):
                     results.append(
                         {
                             "key": key.value if isinstance(key, ObjectTypes) else key,
-                            "category_id_gt": row_number,
+                            "category_id": row_number,
                             "category_id_pr": col_number,
                             "val": float(val),
-                            "num_samples_gt": number_labels[row_number],
+                            "num_samples": number_labels[row_number],
                         }
                     )
         cls._results = results
@@ -420,12 +419,13 @@ class ConfusionMetric(ClassificationMetric):
     def print_result(cls) -> None:
         data = {}
         for entry in cls._results:
-            if entry["category_id_gt"] not in data:
-                data[entry["category_id_gt"]] = [entry["category_id_gt"], entry["val"]]
+            if entry["category_id"] not in data:
+                data[entry["category_id"]] = [entry["category_id"], entry["val"]]
             else:
-                data[entry["category_id_gt"]].append(entry["val"])
+                data[entry["category_id"]].append(entry["val"])
 
-        header = ["predictions -> \n  ground truth |\n              v"] + list(data.keys())
+        header = ["predictions -> \n  ground truth |\n              v"] + list([str(element) for
+                                                                                element in data.keys()])
         table = tabulate([data[k] for k, _ in enumerate(data, 1)], headers=header, tablefmt="pipe")
         logger.info("Confusion matrix: \n %s", colored(table, "cyan"))
 
@@ -442,7 +442,7 @@ class PrecisionMetric(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -494,7 +494,7 @@ class PrecisionMetricMicro(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []

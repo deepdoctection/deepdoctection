@@ -179,7 +179,7 @@ def image_to_cat_id(
     sub_categories: Optional[Union[Mapping[TypeOrStr, TypeOrStr], Mapping[TypeOrStr, Sequence[TypeOrStr]]]] = None,
     summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     id_name_or_value: Literal["id", "name", "value"] = "id",
-) -> tuple[dict[TypeOrStr, Union[list[int], list[int]]], str]:
+) -> tuple[dict[TypeOrStr, list[int]], str]:
     """
     Extracts all category_ids, sub category information or summary sub category information with given names into a
     defaultdict. This mapping is useful when running evaluation with e.g. an accuracy metric.
@@ -199,7 +199,7 @@ def image_to_cat_id(
 
         will return
 
-            ({'foo':['1', '1'], 'bak':[ '2'], 'baz':['3']}, image_id)
+            ({'foo':[1,1], 'bak':[2], 'baz':[3]}, image_id)
 
 
     **Example 2:**
@@ -213,7 +213,7 @@ def image_to_cat_id(
 
         will return
 
-            ({'foo_sub_1':['5', '6']}, image_id)
+            ({'foo_sub_1':[5,6]}, image_id)
 
 
 

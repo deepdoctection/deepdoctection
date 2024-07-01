@@ -36,7 +36,7 @@ from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
-from ...utils._types import JsonDict
+from ...utils._types import JsonDict, PubtabnetDict
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset
@@ -170,7 +170,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         df = SerializerJsonlines.load(path, max_datapoints=max_datapoints)
 
         # Map
-        def replace_filename(dp: JsonDict) -> JsonDict:
+        def replace_filename(dp: PubtabnetDict) -> PubtabnetDict:
             dp["filename"] = self.get_workdir() / dp["split"] / dp["filename"]
             return dp
 
@@ -187,6 +187,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         )
 
         df = MapData(df, pub_mapper)
+
         if self.categories.is_cat_to_sub_cat():
             df = MapData(
                 df,

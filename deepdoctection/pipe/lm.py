@@ -28,7 +28,7 @@ from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmToke
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils._types import JsonDict
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
-from .base import LanguageModelPipelineComponent
+from .base import LanguageModelPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -195,7 +195,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             self.sliding_window_stride,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),
@@ -311,7 +311,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             self.return_overflowing_tokens,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),

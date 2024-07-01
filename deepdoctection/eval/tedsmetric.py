@@ -18,14 +18,15 @@ Tree distance similarity metric taken from <https://github.com/ibm-aur-nlp/PubTa
 
 import statistics
 from collections import defaultdict, deque
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
 from lazy_imports import try_import
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
 from ..datapoint.view import Page
+from ..datapoint.image import Image
 from ..datasets.base import DatasetCategories
-from ..utils._types import JsonDict
+from ..utils._types import MetricResults
 from ..utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType
@@ -221,7 +222,10 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric  # type: ignore
-    mapper = Page.from_image
+    mapper:  Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
+    text_container: LayoutType = LayoutType.word
+    floating_text_block_categories = [LayoutType.table]
+
     structure_only = False
 
     @classmethod
@@ -235,11 +239,11 @@ class TedsMetric(MetricBase):
         gt_dict = defaultdict(list)
         pred_dict = defaultdict(list)
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            page_gt = cls.mapper(dp_gt, LayoutType.word, [LayoutType.table])
+            page_gt = cls.mapper(dp_gt, cls.text_container, cls.floating_text_block_categories)
             for table in page_gt.tables:
                 gt_dict[page_gt.image_id].append(table.html)
 
-            page_pred = cls.mapper(dp_pred, LayoutType.word, [LayoutType.table])
+            page_pred = cls.mapper(dp_pred, cls.text_container, cls.floating_text_block_categories)
             for table in page_pred.tables:
                 pred_dict[page_pred.image_id].append(table.html)
 
@@ -254,7 +258,7 @@ class TedsMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         html_gt_list, html_pr_list = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         score, num_samples = cls.metric(html_gt_list, html_pr_list, cls.structure_only)  # type: ignore

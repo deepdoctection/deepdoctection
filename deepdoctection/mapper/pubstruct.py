@@ -28,7 +28,7 @@ from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Im
 from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils._types import JsonDict
+from ..utils._types import JsonDict, PubtabnetDict
 from ..utils.fs import load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
 from ..utils.utils import is_file_extension
@@ -329,7 +329,7 @@ def nth_index(iterable: Iterable[str], value: str, n: int) -> Optional[int]:
 
 
 def pub_to_image_uncur(  # pylint: disable=R0914
-    dp: JsonDict,
+    dp: PubtabnetDict,
     categories_name_as_key: dict[str, str],
     load_image: bool,
     fake_score: bool,
@@ -342,7 +342,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
     <https://github.com/ibm-aur-nlp/PubTabNet>
 
-    :param dp: A datapoint in serialized coco format.
+    :param dp: A datapoint in serialized Pubtabnet format.
     :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
     :param load_image: If `True` it will load image to `Image.image`
     :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)

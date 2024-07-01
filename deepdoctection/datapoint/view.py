@@ -22,11 +22,11 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
+from typing import Any, Mapping, Optional, Sequence, Type, Union, no_type_check
 
 import numpy as np
 
-from ..utils._types import JsonDict, StrOrPathLike, PixelValues
+from ..utils._types import  StrOrPathLike, PixelValues, AnnotationDict, Text_, HTML, csv, Chunks, ImageDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -149,7 +149,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         return attribute_names
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> ImageAnnotationBaseView:
+    def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotationBaseView:
         """
         Identical to its base class method for having correct return types. If the base class changes, please
         change this method as well.
@@ -206,10 +206,18 @@ class Layout(ImageAnnotationBaseView):
         return words_with_reading_order
 
     @property
-    def text_(self) -> JsonDict:
-        """Returns a dict `{"text": text string,
-        "text_list": list of single words,
-        "annotation_ids": word annotation ids`"""
+    def text_(self) -> Text_:
+        """Returns a dict
+
+            `{"text": text string,
+              "text_list": list of single words,
+              "ann_ids": word annotation ids`,
+              "token_classes": token classes,
+              "token_tags": token tags,
+              "token_class_ids": token class ids,
+              "token_tag_ids": token tag ids}`
+
+              """
         words = self.get_ordered_words()
         characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
             *[
@@ -301,7 +309,7 @@ class Table(Layout):
         return col_anns
 
     @property
-    def html(self) -> str:
+    def html(self) -> HTML:
         """
         The html representation of the table
         """
@@ -330,7 +338,7 @@ class Table(Layout):
         )
 
     @property
-    def csv(self) -> list[list[str]]:
+    def csv(self) -> csv:
         """Returns a csv-style representation of a table as list of lists of string. Cell content of cell with higher
         row or column spans will be shown at the upper left cell tile. All other tiles covered by the cell will be left
         as blank
@@ -355,7 +363,7 @@ class Table(Layout):
             return super().text
 
     @property
-    def text_(self) -> JsonDict:
+    def text_(self) -> Text_:
         cells = self.cells
         if not cells:
             return super().text_
@@ -682,7 +690,7 @@ class Page(Image):
         return self._make_text()
 
     @property
-    def text_(self) -> JsonDict:
+    def text_(self) -> Text_:
         """Returns a dict `{"text": text string,
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
@@ -735,7 +743,7 @@ class Page(Image):
         ]
 
     @property
-    def chunks(self) -> list[Tuple[str, str, int, str, str, str, str]]:
+    def chunks(self) -> Chunks:
         """
         :return: Returns a "chunk" of a layout element or a table as 6-tuple containing
 
@@ -951,7 +959,7 @@ class Page(Image):
         highest_hierarchy_only: bool = False,
         path: Optional[StrOrPathLike] = None,
         dry: bool = False,
-    ) -> Optional[JsonDict]:
+    ) -> Optional[ImageDict]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
         base64 encodings.
