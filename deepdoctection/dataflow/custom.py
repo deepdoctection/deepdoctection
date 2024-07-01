@@ -21,7 +21,7 @@ from
 
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
 """
-from typing import Any, Callable, Iterable, Iterator, List, Optional
+from typing import Any, Callable, Iterable, Iterator, Optional
 
 import numpy as np
 
@@ -54,7 +54,7 @@ class CacheData(ProxyDataFlow):
         :param shuffle: whether to shuffle the cache before yielding from it.
         """
         self.shuffle = shuffle
-        self.buffer: List[Any] = []
+        self.buffer: list[Any] = []
         self._guard: Optional[DataFlowReentrantGuard] = None
         self.rng = get_rng(self)
         super().__init__(df)
@@ -78,7 +78,7 @@ class CacheData(ProxyDataFlow):
                     yield dp
                     self.buffer.append(dp)
 
-    def get_cache(self) -> List[Any]:
+    def get_cache(self) -> list[Any]:
         """
         get the cache of the whole dataflow as a list
 
@@ -115,10 +115,10 @@ class CustomDataFromList(DataFromList):
 
     def __init__(
         self,
-        lst: List[Any],
+        lst: list[Any],
         shuffle: bool = False,
         max_datapoints: Optional[int] = None,
-        rebalance_func: Optional[Callable[[List[Any]], List[Any]]] = None,
+        rebalance_func: Optional[Callable[[list[Any]], list[Any]]] = None,
     ):
         """
         :param lst: the input list. Each element represents a datapoint.

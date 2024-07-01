@@ -26,14 +26,14 @@ from typing import Optional
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils._types import JsonDict, Pathlike
+from ..utils._types import JsonDict, StrOrPathLike
 from ..utils.fs import mkdir_p
 from ..utils.viz import viz_handler
 
 
 def dataflow_to_json(
     df: DataFlow,
-    path: Pathlike,
+    path: StrOrPathLike,
     single_files: bool = False,
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,
@@ -53,8 +53,7 @@ def dataflow_to_json(
     :param save_image_in_json: Will save the image to the JSON object
     :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
     """
-    if isinstance(path, str):
-        path = Path(path)
+    path = Path(path)
     if single_files:
         mkdir_p(path)
     if not save_image_in_json:

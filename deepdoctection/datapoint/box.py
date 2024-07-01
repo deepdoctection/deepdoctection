@@ -21,7 +21,7 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import List, Optional, Sequence, no_type_check
+from typing import Optional, Sequence, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -221,7 +221,7 @@ class BoundingBox:
         return self.uly + 0.5 * self.height
 
     @property
-    def center(self) -> List[float]:
+    def center(self) -> list[float]:
         """
         Bounding box center [x,y]
         """
@@ -264,7 +264,7 @@ class BoundingBox:
             * np_poly_scale
         )
 
-    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> List[float]:
+    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[float]:
         """
         Returns the coordinates as list
 
@@ -345,7 +345,7 @@ class BoundingBox:
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod
-    def remove_keys() -> List[str]:
+    def remove_keys() -> list[str]:
         """
         A list of attributes to suspend from as_dict creation.
         """

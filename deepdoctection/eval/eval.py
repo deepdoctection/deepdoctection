@@ -22,7 +22,7 @@ Module for `Evaluator`
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict, Generator, List, Literal, Mapping, Optional, Type, Union, overload
+from typing import Any, Generator, Literal, Mapping, Optional, Type, Union, overload
 
 import numpy as np
 from lazy_imports import try_import
@@ -115,7 +115,7 @@ class Evaluator:
                     f"Using {num_threads} threads"
                 )
             )
-            pipeline_components: List[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
+            pipeline_components: list[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
 
             for _ in range(num_threads - 1):
                 copy_pipe_component = component_or_pipeline.clone()
@@ -178,16 +178,16 @@ class Evaluator:
     @overload
     def run(
         self, output_as_dict: Literal[False] = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> List[Dict[str, float]]:
+    ) -> list[dict[str, float]]:
         ...
 
     @overload
-    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> Dict[str, float]:
+    def run(self, output_as_dict: Literal[True], **dataflow_build_kwargs: Union[str, int]) -> dict[str, float]:
         ...
 
     def run(
         self, output_as_dict: bool = False, **dataflow_build_kwargs: Union[str, int]
-    ) -> Union[List[Dict[str, float]], Dict[str, float]]:
+    ) -> Union[list[dict[str, float]], dict[str, float]]:
         """
         Start evaluation process and return the results.
 
@@ -385,8 +385,8 @@ class WandbTableAgent:
         self._counter = 0
 
         # Table logging utils
-        self._table_cols: List[str] = ["file_name", "image"]
-        self._table_rows: List[Any] = []
+        self._table_cols: list[str] = ["file_name", "image"]
+        self._table_rows: list[Any] = []
         self._table_ref = None
 
     def dump(self, dp: Image) -> Image:

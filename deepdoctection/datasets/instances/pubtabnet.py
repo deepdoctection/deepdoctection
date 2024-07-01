@@ -29,7 +29,7 @@ Module for Pubtabnet dataset. Place the dataset as follows
 """
 from __future__ import annotations
 
-from typing import Dict, List, Mapping, Union
+from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerJsonlines
@@ -75,7 +75,7 @@ _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
 _INIT_CATEGORIES = [LayoutType.cell, TableType.item, LayoutType.table, LayoutType.word]
-_SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
+_SUB_CATEGORIES: dict[ObjectTypes, dict[ObjectTypes, list[ObjectTypes]]]
 _SUB_CATEGORIES = {
     TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
     LayoutType.cell: {

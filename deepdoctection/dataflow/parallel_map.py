@@ -23,7 +23,7 @@ import uuid
 import weakref
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import Any, Callable, Iterator, List, no_type_check
+from typing import Any, Callable, Iterator, no_type_check
 
 import zmq
 
@@ -236,7 +236,7 @@ class MultiThreadMapData(_ParallelMapData):
         self._strict = strict
         self.num_thread = num_thread
         self.map_func = map_func
-        self._threads: List[Any] = []
+        self._threads: list[Any] = []
         self._evt = None
 
     def reset_state(self) -> None:
@@ -284,7 +284,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
         if os.name == "nt":
             raise EnvironmentError("ZMQ IPC doesn't support windows")
         self._reset_done = False
-        self._procs: List[Any] = []
+        self._procs: list[Any] = []
         self.context = None
         self.socket = None
 

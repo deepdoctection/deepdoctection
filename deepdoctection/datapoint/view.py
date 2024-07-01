@@ -22,11 +22,11 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Type, Union, no_type_check
+from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
 
 import numpy as np
 
-from ..utils._types import JsonDict, Pathlike, PixelValues
+from ..utils._types import JsonDict, StrOrPathLike, PixelValues
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -68,7 +68,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
     base_page: Page
 
     @property
-    def bbox(self) -> List[float]:
+    def bbox(self) -> list[float]:
         """
         Get the bounding box as list and in absolute coordinates of the base page.
         """
@@ -100,7 +100,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(self, item: str) -> Optional[Union[str, int, List[str]]]:
+    def __getattr__(self, item: str) -> Optional[Union[str, int, list[str]]]:
         """
         Get attributes defined by registered `self.get_attribute_names()` in a multi step process:
 
@@ -136,7 +136,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
                     return int(sub_cat.category_id)
         return None
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> set[str]:
         """
         :return: A set of registered attributes. When sub classing modify this method accordingly.
         """
@@ -165,7 +165,7 @@ class Word(ImageAnnotationBaseView):
     Word specific subclass of `ImageAnnotationBaseView` modelled by `WordType`.
     """
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> set[str]:
         return set(WordType).union(super().get_attribute_names()).union({Relationships.reading_order})
 
 
@@ -181,7 +181,7 @@ class Layout(ImageAnnotationBaseView):
     text_container: Optional[ObjectTypes] = None
 
     @property
-    def words(self) -> List[ImageAnnotationBaseView]:
+    def words(self) -> list[ImageAnnotationBaseView]:
         """
         Get a list of `ImageAnnotationBaseView` objects with `LayoutType` defined by `text_container`.
         It will only select those among all annotations that have an entry in `Relationships.child` .
@@ -199,7 +199,7 @@ class Layout(ImageAnnotationBaseView):
         words = self.get_ordered_words()
         return " ".join([word.characters for word in words])  # type: ignore
 
-    def get_ordered_words(self) -> List[ImageAnnotationBaseView]:
+    def get_ordered_words(self) -> list[ImageAnnotationBaseView]:
         """Returns a list of words order by reading order. Words with no reading order will not be returned"""
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
         words_with_reading_order.sort(key=lambda x: x.reading_order)  # type: ignore
@@ -240,7 +240,7 @@ class Layout(ImageAnnotationBaseView):
             "token_tag_ids": token_tag_ids,
         }
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> set[str]:
         return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.reading_order})
 
     def __len__(self) -> int:
@@ -253,7 +253,7 @@ class Cell(Layout):
     Cell specific subclass of `ImageAnnotationBaseView` modelled by `CellType`.
     """
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> set[str]:
         return set(CellType).union(super().get_attribute_names())
 
 
@@ -263,7 +263,7 @@ class Table(Layout):
     """
 
     @property
-    def cells(self) -> List[ImageAnnotationBaseView]:
+    def cells(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a table cells.
         """
@@ -283,7 +283,7 @@ class Table(Layout):
         return cell_anns
 
     @property
-    def rows(self) -> List[ImageAnnotationBaseView]:
+    def rows(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a table rows.
         """
@@ -292,7 +292,7 @@ class Table(Layout):
         return row_anns
 
     @property
-    def columns(self) -> List[ImageAnnotationBaseView]:
+    def columns(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a table columns.
         """
@@ -322,7 +322,7 @@ class Table(Layout):
 
         return "".join(html_list)
 
-    def get_attribute_names(self) -> Set[str]:
+    def get_attribute_names(self) -> set[str]:
         return (
             set(TableType)
             .union(super().get_attribute_names())
@@ -330,7 +330,7 @@ class Table(Layout):
         )
 
     @property
-    def csv(self) -> List[List[str]]:
+    def csv(self) -> list[list[str]]:
         """Returns a csv-style representation of a table as list of lists of string. Cell content of cell with higher
         row or column spans will be shown at the upper left cell tile. All other tiles covered by the cell will be left
         as blank
@@ -359,13 +359,13 @@ class Table(Layout):
         cells = self.cells
         if not cells:
             return super().text_
-        text: List[str] = []
-        words: List[str] = []
-        ann_ids: List[str] = []
-        token_classes: List[str] = []
-        token_tags: List[str] = []
-        token_class_ids: List[str] = []
-        token_tag_ids: List[str] = []
+        text: list[str] = []
+        words: list[str] = []
+        ann_ids: list[str] = []
+        token_classes: list[str] = []
+        token_tags: list[str] = []
+        token_class_ids: list[str] = []
+        token_tag_ids: list[str] = []
         for cell in cells:
             text.extend(cell.text_["text"])  # type: ignore
             words.extend(cell.text_["words"])  # type: ignore
@@ -385,12 +385,12 @@ class Table(Layout):
         }
 
     @property
-    def words(self) -> List[ImageAnnotationBaseView]:
+    def words(self) -> list[ImageAnnotationBaseView]:
         """
         Get a list of `ImageAnnotationBaseView` objects with `LayoutType` defined by `text_container`.
         It will only select those among all annotations that have an entry in `Relationships.child` .
         """
-        all_words: List[ImageAnnotationBaseView] = []
+        all_words: list[ImageAnnotationBaseView] = []
         cells = self.cells
         if not cells:
             return super().words
@@ -398,7 +398,7 @@ class Table(Layout):
             all_words.extend(cell.words)  # type: ignore
         return all_words
 
-    def get_ordered_words(self) -> List[ImageAnnotationBaseView]:
+    def get_ordered_words(self) -> list[ImageAnnotationBaseView]:
         """Returns a list of words order by reading order. Words with no reading order will not be returned"""
         try:
             cells = self.cells
@@ -411,7 +411,7 @@ class Table(Layout):
             return super().get_ordered_words()
 
 
-IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
+IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
     **{i: Layout for i in LayoutType if (i not in {LayoutType.table, LayoutType.word, LayoutType.cell})},
     LayoutType.table: Table,
     LayoutType.table_rotated: Table,
@@ -423,7 +423,7 @@ IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     CellType.column_header: Cell,
 }
 
-IMAGE_DEFAULTS: Dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
+IMAGE_DEFAULTS: dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
     "text_container": LayoutType.word,
     "floating_text_block_categories": [
         LayoutType.text,
@@ -477,9 +477,9 @@ class Page(Image):
     """
 
     text_container: ObjectTypes
-    floating_text_block_categories: List[ObjectTypes]
+    floating_text_block_categories: list[ObjectTypes]
     image_orig: Image
-    _attribute_names: Set[str] = {
+    _attribute_names: set[str] = {
         "text",
         "chunks",
         "tables",
@@ -500,7 +500,7 @@ class Page(Image):
         model_id: Optional[Union[str, Sequence[str]]] = None,
         session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
-    ) -> List[ImageAnnotationBaseView]:
+    ) -> list[ImageAnnotationBaseView]:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying
         the annotation_id or the category name. (Since only image annotations are currently allowed in the container,
@@ -568,21 +568,21 @@ class Page(Image):
         return None
 
     @property
-    def layouts(self) -> List[ImageAnnotationBaseView]:
+    def layouts(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a layouts. Layouts are all exactly all floating text block categories
         """
         return self.get_annotation(category_names=self.floating_text_block_categories)
 
     @property
-    def words(self) -> List[ImageAnnotationBaseView]:
+    def words(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a words. Word are all text containers
         """
         return self.get_annotation(category_names=self.text_container)
 
     @property
-    def tables(self) -> List[ImageAnnotationBaseView]:
+    def tables(self) -> list[ImageAnnotationBaseView]:
         """
         A list of a tables.
         """
@@ -661,7 +661,7 @@ class Page(Image):
         page.include_residual_text_container = include_residual_text_container
         return page
 
-    def _order(self, block: str) -> List[ImageAnnotationBaseView]:
+    def _order(self, block: str) -> list[ImageAnnotationBaseView]:
         blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
         blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
@@ -687,13 +687,13 @@ class Page(Image):
         "text_list": list of single words,
         "annotation_ids": word annotation ids`"""
         block_with_order = self._order("layouts")
-        text: List[str] = []
-        words: List[str] = []
-        ann_ids: List[str] = []
-        token_classes: List[str] = []
-        token_tags: List[str] = []
-        token_class_ids: List[str] = []
-        token_tag_ids: List[str] = []
+        text: list[str] = []
+        words: list[str] = []
+        ann_ids: list[str] = []
+        token_classes: list[str] = []
+        token_tags: list[str] = []
+        token_class_ids: list[str] = []
+        token_tag_ids: list[str] = []
         for block in block_with_order:
             text.append(block.text_["text"])  # type: ignore
             words.extend(block.text_["words"])  # type: ignore
@@ -712,7 +712,7 @@ class Page(Image):
             "token_tag_ids": token_tag_ids,
         }
 
-    def get_layout_context(self, annotation_id: str, context_size: int = 3) -> List[ImageAnnotationBaseView]:
+    def get_layout_context(self, annotation_id: str, context_size: int = 3) -> list[ImageAnnotationBaseView]:
         """For a given `annotation_id` get a list of `ImageAnnotation` that are nearby in terms of reading order.
         For a given context_size it will return all layouts with reading_order between
         reading_order(annoation_id)-context_size and  reading_order(annoation_id)-context_size.
@@ -735,7 +735,7 @@ class Page(Image):
         ]
 
     @property
-    def chunks(self) -> List[Tuple[str, str, int, str, str, str, str]]:
+    def chunks(self) -> list[Tuple[str, str, int, str, str, str, str]]:
         """
         :return: Returns a "chunk" of a layout element or a table as 6-tuple containing
 
@@ -817,7 +817,7 @@ class Page(Image):
         :return: If `interactive=False` will return a numpy array.
         """
 
-        category_names_list: List[Union[str, None]] = []
+        category_names_list: list[Union[str, None]] = []
         box_stack = []
         cells_found = False
 
@@ -919,7 +919,7 @@ class Page(Image):
         return None
 
     @classmethod
-    def get_attribute_names(cls) -> Set[str]:
+    def get_attribute_names(cls) -> set[str]:
         """
         :return: A set of registered attributes.
         """
@@ -949,7 +949,7 @@ class Page(Image):
         self,
         image_to_json: bool = True,
         highest_hierarchy_only: bool = False,
-        path: Optional[Pathlike] = None,
+        path: Optional[StrOrPathLike] = None,
         dry: bool = False,
     ) -> Optional[JsonDict]:
         """
@@ -971,7 +971,7 @@ class Page(Image):
         cls,
         file_path: str,
         text_container: Optional[ObjectTypes] = None,
-        floating_text_block_categories: Optional[List[ObjectTypes]] = None,
+        floating_text_block_categories: Optional[list[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
     ) -> Page:
         """Reading JSON file and building a `Page` object with given config.
@@ -985,7 +985,7 @@ class Page(Image):
         image = Image.from_file(file_path)
         return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)
 
-    def get_token(self) -> List[Mapping[str, str]]:
+    def get_token(self) -> list[Mapping[str, str]]:
         """Return a list of tuples with word and non default token tags"""
         block_with_order = self._order("layouts")
         all_words = []

@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
 from ..dataflow import DataFlow
-from ..utils._types import Pathlike
+from ..utils._types import StrOrPathLike
 from ..utils.fs import get_dataset_dir_path
 from .info import DatasetCategories
 
@@ -44,7 +44,7 @@ class DataFlowBaseBuilder(ABC):
 
     def __init__(
         self,
-        location: Pathlike,
+        location: StrOrPathLike,
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
     ):
         """

@@ -18,7 +18,7 @@
 """
 Dataflows for calculating statistical values of the underlying dataset
 """
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -45,7 +45,7 @@ class MeanFromDataFlow(ProxyDataFlow):
     def __init__(
         self,
         df: DataFlow,
-        axis: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int, int]]] = None,
+        axis: Optional[Union[int, tuple[int], tuple[int, int], tuple[int, int, int]]] = None,
         key: Optional[str] = None,
         max_datapoints: Optional[int] = None,
     ):
@@ -165,7 +165,7 @@ class StdFromDataFlow(ProxyDataFlow):
     def __init__(
         self,
         df: DataFlow,
-        axis: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int, int]]] = None,
+        axis: Optional[Union[int, tuple[int], tuple[int, int], tuple[int, int, int]]] = None,
         key: Optional[str] = None,
         max_datapoints: Optional[int] = None,
     ):

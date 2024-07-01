@@ -70,9 +70,8 @@ _ANNOTATION_FILES: Mapping[str, Union[str, Sequence[str]]] = {
     ],
     "val": ["de.val.json", "es.val.json", "fr.val.json", "it.val.json", "ja.val.json", "pt.val.json", "zh.val.json"],
 }
-_INIT_CATEGORIES = [LayoutType.word, LayoutType.text]
-_SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
-_SUB_CATEGORIES = {
+_INIT_CATEGORIES: Sequence[ObjectTypes] = [LayoutType.word, LayoutType.text]
+_SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
     LayoutType.word: {
         WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header],
         WordType.tag: [BioTag.inside, BioTag.outside, BioTag.begin],
