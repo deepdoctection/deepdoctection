@@ -25,7 +25,7 @@ import sys
 from errno import ENOENT
 from itertools import groupby
 from pathlib import Path
-from os import environ
+from os import environ, fspath
 from typing import Any, Mapping, Optional, Union
 
 from packaging.version import InvalidVersion, Version, parse
@@ -89,7 +89,7 @@ def _input_to_cli_str(lang: str,
     if not sys.platform.startswith("win32") and nice != 0:
         cmd_args += ("nice", "-n", str(nice))
 
-    cmd_args += (_TESS_PATH, input_file_name, output_file_name_base, "-l", lang)
+    cmd_args += (fspath(_TESS_PATH), input_file_name, output_file_name_base, "-l", lang)
 
     if config:
         cmd_args += shlex.split(config)
@@ -379,7 +379,7 @@ class TesseractOcrDetector(ObjectDetector):
     def get_requirements(cls) -> list[Requirement]:
         return [get_tesseract_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> ObjectDetector:
         return self.__class__(self.path_yaml, self.config_overwrite)
 
     def possible_categories(self) -> list[ObjectTypes]:
@@ -423,7 +423,7 @@ class TesseractRotationTransformer(ImageTransformer):
     """
 
     def __init__(self) -> None:
-        self.name = _TESS_PATH + "-rotation"
+        self.name = fspath(_TESS_PATH) + "-rotation"
 
     def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """

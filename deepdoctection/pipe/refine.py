@@ -35,7 +35,7 @@ from ..mapper.maputils import MappingContextManager
 from ..utils._types import JsonDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
-from .base import PipelineComponent
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
@@ -496,7 +496,7 @@ class TableSegmentationRefinementService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         return self.__class__(self.table_name, self.cell_names)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),

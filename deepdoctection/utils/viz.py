@@ -246,7 +246,7 @@ def draw_boxes(
     np_image = np_image.copy()
 
     if np_image.ndim == 2 or (np_image.ndim == 3 and np_image.shape[2] == 1):
-        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR)
+        np_image = cv2.cvtColor(np_image, cv2.COLOR_GRAY2BGR).astype(np.uint8)
     for i in sorted_inds:
         box = boxes[i, :]
         choose_color = category_to_color.get(category_names_list[i]) if category_to_color is not None else color
@@ -395,11 +395,11 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_read_image(path: StrOrPathLike) -> PixelValues:
-        return cv2.imread(path, cv2.IMREAD_COLOR)
+        return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8)
 
     @staticmethod
     def _pillow_read_image(path: StrOrPathLike) -> PixelValues:
-        with Image.open(path).convert("RGB") as image:
+        with Image.open(os.fspath(path)).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
@@ -413,12 +413,12 @@ class VizPackageHandler:
 
     @staticmethod
     def _cv2_write_image(path: StrOrPathLike, image: PixelValues) -> None:
-        cv2.imwrite(path, image)
+        cv2.imwrite(os.fspath(path), image)
 
     @staticmethod
     def _pillow_write_image(path: StrOrPathLike, image: PixelValues) -> None:
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
-        pil_image.save(path)
+        pil_image.save(os.fspath(path))
 
     def encode(self, np_image: PixelValues) -> bytes:
         """Converting an image as np.array into a b64 representation
@@ -505,7 +505,9 @@ class VizPackageHandler:
             "INTER_AREA": cv2.INTER_AREA,
             "VIZ": cv2.INTER_LINEAR,
         }
-        return cv2.resize(image, (width, height), interpolation=intpol_method_dict[interpolation])
+        return cv2.resize(image,
+                          dsize=(width, height),
+                          interpolation=intpol_method_dict[interpolation]).astype(np.uint8)
 
     @staticmethod
     def _pillow_resize(image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
@@ -681,10 +683,10 @@ class VizPackageHandler:
         elif key == "s":
             cv2.imwrite("out.png", np_image)
         elif key in ["+", "="]:
-            np_image = cv2.resize(np_image, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC)
+            np_image = cv2.resize(np_image, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_CUBIC).astype(np.uint8)
             self._cv2_interactive_imshow(np_image)
         elif key == "-":
-            np_image = cv2.resize(np_image, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_CUBIC)
+            np_image = cv2.resize(np_image, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_CUBIC).astype(np.uint8)
             self._cv2_interactive_imshow(np_image)
 
     @staticmethod
@@ -722,7 +724,7 @@ class VizPackageHandler:
             src=np_image,
             M=rotation_mat,
             dsize=(bound_w, bound_h),
-        )
+        ).astype(np.uint8)
 
         return np_image
 

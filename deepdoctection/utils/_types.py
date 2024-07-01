@@ -22,12 +22,12 @@ Typing sheet for the whole package
 import os
 import queue
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union, NewType, TypedDict
 
 import numpy.typing as npt
 import tqdm
 from numpy import uint8
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, NotRequired
 
 
 # Type for a general dataclass
@@ -62,8 +62,27 @@ else:
     QueueType = queue.Queue
     TqdmType = tqdm.tqdm
 
-# A dict converted from a generic JSON object
+
 JsonDict = dict[str, Any]
+
+
+
+# Some common deepdoctection dict-types
+AnnotationDict: TypeAlias = dict[str, Any]
+ImageDict: TypeAlias = dict[str, Any]
+
+# We use these types for output types of the Page object
+Text_: TypeAlias = dict[str, Any]
+HTML: TypeAlias = str
+csv: TypeAlias = list[list[str]]
+Chunks: TypeAlias = list[tuple[str, str, int, str, str, str, str]]
+
+# Some common dict-types used in common annotation schemes converted from a generic JSON object
+CocoDatapointDict: TypeAlias = dict[str, Any]
+PubtabnetDict: TypeAlias = dict[str, Any]
+FunsdDict: TypeAlias = dict[str, Any]
+Detectron2Dict: TypeAlias = dict[str, Any]
+
 
 # A path to a file, directory etc. can be given as a string or Path object
 StrOrPathLike: TypeAlias = Union[str, os.PathLike]
@@ -79,4 +98,13 @@ BGR: TypeAlias = tuple[int, int, int]
 
 # A type to collect key val pairs of environ information. Mainly used in env_info.py
 KeyValEnvInfos: TypeAlias = list[tuple[str, str]]
-#Pathlike = Union[str, Path]
+
+#mainly used in extern
+
+
+# mainly used in eval
+MetricResults: TypeAlias = dict[str, Union[int,float]]
+
+
+
+

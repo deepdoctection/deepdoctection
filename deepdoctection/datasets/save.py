@@ -20,13 +20,14 @@ Module for saving
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils._types import JsonDict, StrOrPathLike
+from ..utils._types import JsonDict, StrOrPathLike, ImageDict
 from ..utils.fs import mkdir_p
 from ..utils.viz import viz_handler
 
@@ -67,8 +68,8 @@ def dataflow_to_json(
         df = MapData(df, _remove_hh)
     df = MapData(df, lambda dp: dp.as_dict())
 
-    def _path_to_str(dp: JsonDict) -> JsonDict:
-        dp["location"] = str(dp["location"])
+    def _path_to_str(dp: ImageDict) -> ImageDict:
+        dp["location"] = os.fspath(dp["location"])
         return dp
 
     df = MapData(df, _path_to_str)

@@ -25,6 +25,8 @@ from deepdoctection.extern.model import ModelCatalog, ModelProfile
 from deepdoctection.utils.fs import get_configs_dir_path, get_weights_dir_path
 from deepdoctection.utils.settings import LayoutType
 
+from pathlib import Path
+
 
 class TestModelCatalog:
     """
@@ -91,7 +93,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_weights("test_model/test_model.pt")
-            == (get_weights_dir_path() / "test_model/test_model.pt").as_posix()
+            == (Path(get_weights_dir_path()) / "test_model/test_model.pt").as_posix()
         )
 
     @staticmethod
@@ -104,7 +106,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_weights("test_path/other_model.pt")
-            == (get_weights_dir_path() / "test_path/other_model.pt").as_posix()
+            == (Path(get_weights_dir_path()) / "test_path/other_model.pt").as_posix()
         )
 
     @staticmethod
@@ -117,7 +119,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_configs("test_model/test_model.pt")
-            == (get_configs_dir_path() / "test_path/dd/conf_frcnn_cell.yaml").as_posix()
+            == (Path(get_configs_dir_path()) / "test_path/dd/conf_frcnn_cell.yaml").as_posix()
         )
 
     @staticmethod
@@ -130,7 +132,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_configs("test_path/other_model.pt")
-            == (get_configs_dir_path() / "test_path/other_model.pt").as_posix()
+            == (Path(get_configs_dir_path()) / "test_path/other_model.pt").as_posix()
         )
 
     @staticmethod

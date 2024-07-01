@@ -18,6 +18,7 @@
 """
 Module for metrics that require the COCOeval class.
 """
+from __future__ import annotations
 
 from copy import copy
 from typing import Optional, Union
@@ -29,7 +30,7 @@ from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import re_assign_cat_ids
 from ..mapper.cocostruct import image_to_coco
-from ..utils._types import JsonDict
+from ..utils._types import MetricResults, JsonDict
 from ..utils.file_utils import Requirement, cocotools_available, get_cocotools_requirement
 from .base import MetricBase
 from .registry import metric_registry
@@ -120,7 +121,7 @@ class CocoMetric(MetricBase):
 
     name = "mAP and mAR"
     metric = COCOeval if cocotools_available() else None
-    mapper = image_to_coco  # type: ignore
+    mapper = image_to_coco
     _f1_score = None
     _f1_iou = None
     _params: dict[str, Union[list[int], list[list[int]]]] = {}
@@ -128,7 +129,7 @@ class CocoMetric(MetricBase):
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> tuple["COCO", "COCO"]:
+    ) -> tuple[COCO, COCO]:
         cats = [{"id": int(k), "name": v} for k, v in categories.get_categories(as_dict=True, filtered=True).items()]
         imgs_gt, imgs_pr = [], []
         anns_gt, anns_pr = [], []
@@ -137,11 +138,11 @@ class CocoMetric(MetricBase):
         dataflow_predictions.reset_state()
 
         for dp_gt, dp_pred in zip(dataflow_gt, dataflow_predictions):
-            img_gt, ann_gt = cls.mapper(dp_gt)  # type: ignore
+            img_gt, ann_gt = cls.mapper(dp_gt)
             dp_pred = re_assign_cat_ids(categories.get_categories(as_dict=True, filtered=True, name_as_key=True))(
                 dp_pred
             )
-            img_pr, ann_pr = cls.mapper(dp_pred)  # type: ignore
+            img_pr, ann_pr = cls.mapper(dp_pred)
             imgs_gt.append(img_gt)
             imgs_pr.append(img_pr)
             anns_gt.extend(ann_gt)
@@ -162,7 +163,7 @@ class CocoMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         coco_gt, coco_predictions = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         metric = cls.metric(coco_gt, coco_predictions, iouType="bbox")

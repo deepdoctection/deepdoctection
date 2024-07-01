@@ -34,7 +34,7 @@ from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
 from ..utils._types import JsonDict
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
-from .base import PipelineComponent
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 if os.environ.get("DD_USE_TORCH"):
@@ -68,7 +68,7 @@ class ImageCroppingService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         return self.__class__(self.category_names)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
 
 
@@ -156,7 +156,7 @@ class MatchingService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),
@@ -220,7 +220,7 @@ class PageParsingService:
         ), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
 
     @staticmethod
-    def get_meta_annotation() -> JsonDict:
+    def get_meta_annotation() -> MetaAnnotation:
         """
         meta annotation. We do not generate any new annotations here
         """
@@ -296,7 +296,7 @@ class AnnotationNmsService(PipelineComponent):
     def clone(self) -> PipelineComponent:
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
 
 
@@ -332,7 +332,7 @@ class ImageParsingService:
         return self.__class__(self.dpi)
 
     @staticmethod
-    def get_meta_annotation() -> JsonDict:
+    def get_meta_annotation() -> MetaAnnotation:
         """
         meta annotation. We do not generate any new annotations here
         """

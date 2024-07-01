@@ -29,7 +29,7 @@ from typing import Any, Iterable, Optional, Sequence, Union, no_type_check
 import numpy as np
 from numpy import uint8
 
-from ..utils._types import JsonDict, StrOrPathLike, PixelValues
+from ..utils._types import StrOrPathLike, PixelValues, ImageDict
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
@@ -638,7 +638,7 @@ class Image:
         highest_hierarchy_only: bool = False,
         path: Optional[StrOrPathLike] = None,
         dry: bool = False,
-    ) -> Optional[JsonDict]:
+    ) -> Optional[ImageDict]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
         base64 encodings.
@@ -650,10 +650,9 @@ class Image:
 
         :return: optional dict
         """
-        if isinstance(path, str):
-            path = Path(path)
-        elif path is None:
+        if path is None:
             path = Path(self.location)
+        path = Path(path)
         if path.is_dir():
             path = path / self.image_id
         suffix = path.suffix

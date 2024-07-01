@@ -24,16 +24,26 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Callable, DefaultDict, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union, TypedDict
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
-from ..utils._types import JsonDict
 from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
+from ..utils.settings import ObjectTypes
 from .anngen import DatapointManager
+
+
+class MetaAnnotation(TypedDict):
+    """
+    Type hint for meta annotations
+    """
+    image_annotations: list[ObjectTypes]
+    sub_categories: dict[ObjectTypes, set[ObjectTypes]]
+    relationships: dict[ObjectTypes, set[ObjectTypes]]
+    summaries: list[ObjectTypes]
 
 
 class PipelineComponent(ABC):
@@ -117,7 +127,7 @@ class PipelineComponent(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         Get a dict of list of annotation type. The dict must contain
 
@@ -307,7 +317,7 @@ class Pipeline(ABC):
         """
         raise NotImplementedError()
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         Collects meta annotations from all pipeline components and summarizes the returned results
 
@@ -315,7 +325,7 @@ class Pipeline(ABC):
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        pipeline_populations: dict[str, Union[list[str], DefaultDict[str, set[str]]]] = {
+        pipeline_populations: MetaAnnotation = {
             "image_annotations": [],
             "sub_categories": defaultdict(set),
             "relationships": defaultdict(set),
@@ -323,14 +333,14 @@ class Pipeline(ABC):
         }
         for component in self.pipe_component_list:
             meta_anns = deepcopy(component.get_meta_annotation())
-            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])  # type: ignore
+            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])
             for key, value in meta_anns["sub_categories"].items():
                 pipeline_populations["sub_categories"][key].update(value)
             for key, value in meta_anns["relationships"].items():
                 pipeline_populations["relationships"][key].update(value)
-            pipeline_populations["summaries"].extend(meta_anns["summaries"])  # type: ignore
-        pipeline_populations["sub_categories"] = dict(pipeline_populations["sub_categories"])  # type: ignore
-        pipeline_populations["relationships"] = dict(pipeline_populations["relationships"])  # type: ignore
+            pipeline_populations["summaries"].extend(meta_anns["summaries"])
+        pipeline_populations["sub_categories"] = dict(pipeline_populations["sub_categories"])
+        pipeline_populations["relationships"] = dict(pipeline_populations["relationships"])
         return pipeline_populations
 
     def get_pipeline_info(

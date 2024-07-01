@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union, no_type_check
 
-from ..utils._types import JsonDict
+from ..utils._types import JsonDict, AnnotationDict
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
@@ -34,7 +34,7 @@ from .convert import as_dict
 
 
 @no_type_check
-def ann_from_dict(cls, **kwargs):
+def ann_from_dict(cls, **kwargs: AnnotationDict):
     """
     A factory function to create subclasses of annotations from a given dict
     """
@@ -168,7 +168,7 @@ class Annotation(ABC):
         attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
         return get_uuid(*attributes_values, *container_id_context)  # type: ignore
 
-    def as_dict(self) -> dict[str, Any]:
+    def as_dict(self) -> AnnotationDict:
         """
         Returning the full dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes defined by
         `remove_keys`.
@@ -188,7 +188,7 @@ class Annotation(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, **kwargs: JsonDict) -> Annotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> Annotation:
         """
         Method to initialize a derived class from dict.
 
@@ -408,7 +408,7 @@ class CategoryAnnotation(Annotation):
         return []
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> CategoryAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> CategoryAnnotation:
         category_ann = ann_from_dict(cls, **kwargs)
         return category_ann
 
@@ -439,7 +439,7 @@ class ImageAnnotation(CategoryAnnotation):
         return ["category_name", "bounding_box"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> ImageAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotation:
         image_ann = ann_from_dict(cls, **kwargs)
         if box_kwargs := kwargs.get("bounding_box"):
             image_ann.bounding_box = BoundingBox.from_dict(**box_kwargs)
@@ -482,7 +482,7 @@ class SummaryAnnotation(CategoryAnnotation):
         super().__post_init__()
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> SummaryAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> SummaryAnnotation:
         summary_ann = ann_from_dict(cls, **kwargs)
         summary_ann.category_name = SummaryType.summary
         return summary_ann
@@ -503,7 +503,7 @@ class ContainerAnnotation(CategoryAnnotation):
         return ["category_name", "value"]
 
     @classmethod
-    def from_dict(cls, **kwargs: JsonDict) -> ContainerAnnotation:
+    def from_dict(cls, **kwargs: AnnotationDict) -> ContainerAnnotation:
         container_ann = ann_from_dict(cls, **kwargs)
         value = kwargs.get("value", "")
         container_ann.value = value if isinstance(value, str) else list(value)

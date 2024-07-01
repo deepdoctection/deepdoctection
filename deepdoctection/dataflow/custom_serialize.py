@@ -190,15 +190,14 @@ class SerializerFiles:
         df2: DataFlow
         df3: DataFlow
 
-        if isinstance(path, str):
-            path = Path(path)
+        path = Path(path)
         if not path.exists():
             raise NotADirectoryError(f"The path {path} to the directory or file does not exist")
 
         if shuffle:
             sort = False
-        it1 = os.walk(path, topdown=False)
-        it2 = os.walk(path, topdown=False)
+        it1 = os.walk(os.fspath(path), topdown=False)
+        it2 = os.walk(os.fspath(path), topdown=False)
         df1 = CustomDataFromIterable(it1)
         df2 = CustomDataFromIterable(it2)
         df1 = MapData(df1, lambda dp: None if len(dp[2]) == 0 else dp)
@@ -478,7 +477,7 @@ class SerializerCoco:
 
                 {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
 
-            for each single image id.
+            for each image id. We use the type hint CocoDatapointDict to describe this dictionary
 
         :param max_datapoints: Will stop the iteration once max_datapoints have been streamed.
         :param path: a path to a .json file.

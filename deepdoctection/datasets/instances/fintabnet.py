@@ -43,7 +43,7 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
-from ...utils._types import JsonDict
+from ...utils._types import PubtabnetDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType
@@ -201,18 +201,17 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         # Map
         @curry
-        def _map_filename(dp: JsonDict, workdir: Path) -> JsonDict:
+        def _map_filename(dp: PubtabnetDict, workdir: Path) -> PubtabnetDict:
             dp["filename"] = workdir / "pdf" / dp["filename"]
             return dp
 
-        map_filename = _map_filename(self.get_workdir())  # pylint: disable=E1120  # 259
-        df = MapData(df, map_filename)
+        df = MapData(df, _map_filename(self.get_workdir()))
 
         buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
 
         pub_mapper = pub_to_image(
-            self.categories.get_categories(name_as_key=True, init=True),
-            load_image,
+            categories_name_as_key= self.categories.get_categories(name_as_key=True, init=True),
+            loade_image=load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
             dd_pipe_like=False,

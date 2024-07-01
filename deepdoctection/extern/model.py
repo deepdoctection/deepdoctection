@@ -44,7 +44,7 @@ class ModelProfile:
     Class for model profile. Add for each model one ModelProfile to the ModelCatalog
     """
 
-    name: ModelProfileName
+    name: str
     description: str
 
     size: list[int]
@@ -71,10 +71,6 @@ class ModelProfile:
         """
         return asdict(self)
 
-
-ModelProfileName: TypeAlias = str
-
-
 class ModelCatalog:
     """
     Catalog of some pre-trained models. The associated config file is available as well.
@@ -99,7 +95,7 @@ class ModelCatalog:
         ModelCatalog.get_full_path_configs("my_new_model")
     """
 
-    CATALOG: dict[ModelProfileName, ModelProfile] = {
+    CATALOG: dict[str, ModelProfile] = {
         "layout/model-800000_inf_only.data-00000-of-00001": ModelProfile(
             name="layout/model-800000_inf_only.data-00000-of-00001",
             description="Tensorpack layout model for inference purposes trained on Publaynet",
@@ -735,7 +731,7 @@ class ModelCatalog:
     }
 
     @staticmethod
-    def get_full_path_weights(name: Union[ModelProfileName, str]) -> StrOrPathLike:
+    def get_full_path_weights(name: StrOrPathLike) -> StrOrPathLike:
         """
         Returns the absolute path of weights.
 
@@ -746,7 +742,7 @@ class ModelCatalog:
         :return: absolute weight path
         """
         try:
-            profile = ModelCatalog.get_profile(name)
+            profile = ModelCatalog.get_profile(os.fspath(name))
         except KeyError:
             logger.info(
                 LoggingRecord(
@@ -766,7 +762,7 @@ class ModelCatalog:
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
-    def get_full_path_configs(name: Union[ModelProfileName, str]) -> StrOrPathLike:
+    def get_full_path_configs(name: StrOrPathLike) -> StrOrPathLike:
         """
         Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
         (without the base path to the cache config directory).
@@ -778,7 +774,7 @@ class ModelCatalog:
         :return: absolute path to the config
         """
         try:
-            profile = ModelCatalog.get_profile(name)
+            profile = ModelCatalog.get_profile(os.fspath(name))
         except KeyError:
             logger.info(
                 LoggingRecord(
@@ -792,7 +788,7 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_full_path_preprocessor_configs(name: Union[ModelProfileName,str]) -> StrOrPathLike:
+    def get_full_path_preprocessor_configs(name: Union[str]) -> StrOrPathLike:
         """
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
         by the transformer library.
@@ -823,7 +819,7 @@ class ModelCatalog:
         return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
-    def get_profile_list() -> list[ModelProfileName]:
+    def get_profile_list() -> list[str]:
         """
         Returns a list profile keys.
         """
@@ -844,7 +840,7 @@ class ModelCatalog:
         return False
 
     @staticmethod
-    def get_profile(name: ModelProfileName) -> ModelProfile:
+    def get_profile(name: str) -> ModelProfile:
         """
         Returns the profile of given model name, i.e. the config file, size and urls.
 
@@ -858,7 +854,7 @@ class ModelCatalog:
         raise KeyError("Model Profile does not exist. Please make sure the model is registered")
 
     @staticmethod
-    def register(name: ModelProfileName, profile: ModelProfile) -> None:
+    def register(name: str, profile: ModelProfile) -> None:
         """
         Register a model with its profile
 
@@ -962,7 +958,7 @@ class ModelDownloadManager:
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(name: ModelProfileName) -> str:
+    def maybe_download_weights_and_configs(name: str) -> StrOrPathLike:
         """
         Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.

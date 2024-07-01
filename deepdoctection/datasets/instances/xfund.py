@@ -37,7 +37,7 @@ from ...dataflow import CustomDataFromList, DataFlow, MapData
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
-from ...utils._types import JsonDict
+from ...utils._types import JsonDict, FunsdDict
 from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -167,7 +167,7 @@ class XfundBuilder(DataFlowBaseBuilder):
         df = CustomDataFromList(datapoints, max_datapoints=max_datapoints)
 
         # Map
-        def replace_filename(dp: JsonDict) -> JsonDict:
+        def replace_filename(dp: FunsdDict) -> FunsdDict:
             folder = "_".join(dp["id"].split("_", 2)[:2])
             dp["img"]["fname"] = os.path.join(self.get_workdir(), folder, dp["img"]["fname"])
             return dp

@@ -27,7 +27,7 @@ from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
-from .base import PipelineComponent
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -101,13 +101,13 @@ class LanguageDetectionService(PipelineComponent):
         if not isinstance(predictor, LanguageDetector):
             raise TypeError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
         return self.__class__(
-            predictor,
-            self.text_container,
-            self.text_detector.clone(),
-            deepcopy(self.floating_text_block_categories),
+            language_detector= predictor,
+            text_container= self.text_container,
+            text_detector= self.text_detector.clone() if self.text_detector is not None else None,
+            floating_text_block_categories = deepcopy(self.floating_text_block_categories),
         )
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),

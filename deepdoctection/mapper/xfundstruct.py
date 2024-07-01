@@ -25,7 +25,7 @@ from itertools import chain
 from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
-from ..utils._types import JsonDict
+from ..utils._types import JsonDict, FunsdDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import (
     BioTag,
@@ -42,10 +42,10 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 @curry
 def xfund_to_image(
-    dp: JsonDict,
+    dp: FunsdDict,
     load_image: bool,
     fake_score: bool,
-    categories_dict_name_as_key: Mapping[str, str],
+    categories_dict_name_as_key: Mapping[ObjectTypes, str],
     token_class_names_mapping: Mapping[str, str],
     ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes, Mapping[ObjectTypes, str]]],
 ) -> Optional[Image]:

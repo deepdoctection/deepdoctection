@@ -20,6 +20,7 @@ Module for pipeline component of table segmentation. Uses row/column detector an
 ious/ioas of rows and columns.
 """
 
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Literal, Optional, Sequence, Union
@@ -32,10 +33,9 @@ from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
-from ..utils._types import JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType
-from .base import PipelineComponent
+from .base import PipelineComponent, MetaAnnotation
 from .refine import generate_html_string
 from .registry import pipeline_component_registry
 
@@ -798,7 +798,7 @@ class TableSegmentationService(PipelineComponent):
                     TableType.max_col_span, TableType.max_col_span, max_col_span, annotation_id=table.annotation_id
                 )
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TableSegmentationService:
         return self.__class__(
             self.segment_rule,
             self.threshold_rows,
@@ -813,7 +813,7 @@ class TableSegmentationService(PipelineComponent):
             self.stretch_rule,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),
@@ -1041,7 +1041,7 @@ class PubtablesSegmentationService(PipelineComponent):
             html = generate_html_string(table)
             self.dp_manager.set_container_annotation(TableType.html, -1, TableType.html, table.annotation_id, html)
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> PubtablesSegmentationService:
         return self.__class__(
             self.segment_rule,
             self.threshold_rows,
@@ -1060,7 +1060,7 @@ class PubtablesSegmentationService(PipelineComponent):
             self.stretch_rule,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return dict(
             [
                 ("image_annotations", []),

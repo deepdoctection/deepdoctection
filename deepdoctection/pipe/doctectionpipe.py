@@ -78,7 +78,7 @@ def _proto_process(
     else:
         file_name = dp["file_name"]
     if path is None:
-        path_tmp = doc_path
+        path_tmp = doc_path or ""
     else:
         path_tmp = path
     logger.info(LoggingRecord(f"Processing {file_name}",

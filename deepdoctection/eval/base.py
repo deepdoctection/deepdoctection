@@ -24,7 +24,7 @@ from typing import Any, Callable, Optional
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..utils._types import JsonDict
+from ..utils._types import MetricResults, DP
 from ..utils.error import DependencyError
 from ..utils.file_utils import Requirement
 
@@ -46,8 +46,7 @@ class MetricBase(ABC):
 
     name: str
     metric: Callable[[Any, Any], Optional[Any]]
-    mapper: Callable[[Any, Any], Optional[Any]]
-    _results: list[JsonDict]
+    _results: list[MetricResults]
 
     def __new__(cls, *args, **kwargs):  # type: ignore # pylint: disable=W0613
         requirements = cls.get_requirements()
@@ -73,7 +72,7 @@ class MetricBase(ABC):
     @abstractmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> list[JsonDict]:
+    ) -> list[MetricResults]:
         """
         Takes of the ground truth processing strand as well as the prediction strand and generates the metric results.
 
@@ -99,7 +98,7 @@ class MetricBase(ABC):
         raise NotImplementedError()
 
     @classmethod
-    def result_list_to_dict(cls, results: list[JsonDict]) -> JsonDict:
+    def result_list_to_dict(cls, results: list[MetricResults]) -> MetricResults:
         """
         Converts the result from `get_distance` to a dict. It concatenates all keys of the inner dict and uses
         the metric result 'val' as value.
@@ -107,7 +106,7 @@ class MetricBase(ABC):
         :param results: List of dict as input
         :return: Dict with metric results.
         """
-        output: JsonDict = {}
+        output: MetricResults = {}
         for res in results:
             new_key = ""
             new_val = 0.0
@@ -127,3 +126,4 @@ class MetricBase(ABC):
     @classmethod
     def print_result(cls) -> None:
         """Print metric result. Overwrite this method if you want a specific output"""
+        pass

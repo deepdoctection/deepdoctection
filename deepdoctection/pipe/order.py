@@ -35,7 +35,7 @@ from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..extern.base import DetectionResult
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
-from ..pipe.base import PipelineComponent
+from ..pipe.base import PipelineComponent, MetaAnnotation
 from ..pipe.registry import pipeline_component_registry
 from ..utils._types import JsonDict
 from ..utils.logger import LoggingRecord, logger
@@ -549,7 +549,7 @@ class TextLineService(TextLineServiceMixin):
         text_container_anns = dp.get_annotation(category_names=LayoutType.word)
         self._create_lines_for_words(text_container_anns)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         This method returns metadata about the annotations created by this pipeline component.
         """
@@ -742,7 +742,7 @@ class TextOrderService(TextLineServiceMixin):
             self.text_block_categories + add_category  # type: ignore
         ), "floating_text_block_categories must be a subset of text_block_categories"
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         add_category = [self.text_container]
         image_annotations = []
         if self.include_residual_text_container and self.text_container == LayoutType.word:

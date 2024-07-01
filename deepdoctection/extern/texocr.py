@@ -18,6 +18,7 @@
 """
 AWS Textract OCR engine for text extraction
 """
+from __future__ import annotations
 
 import sys
 import traceback
@@ -144,7 +145,7 @@ class TextractOcrDetector(ObjectDetector):
     def get_requirements(cls) -> list[Requirement]:
         return [get_boto3_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> TextractOcrDetector:
         return self.__class__()
 
     def possible_categories(self) -> list[ObjectTypes]:

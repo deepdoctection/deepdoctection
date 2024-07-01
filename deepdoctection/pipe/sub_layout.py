@@ -18,6 +18,8 @@
 """
 Module for cell detection pipeline component
 """
+from __future__ import annotations
+
 from collections import Counter
 from copy import deepcopy
 from typing import Mapping, Optional, Sequence, Union
@@ -31,7 +33,7 @@ from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils._types import JsonDict, PixelValues
 from ..utils.settings import ObjectTypes, Relationships
 from ..utils.transform import PadTransform
-from .base import PredictorPipelineComponent
+from .base import PredictorPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -203,7 +205,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
                         )
                 self.dp_manager.set_image_annotation(detect_result, sub_image_ann.annotation_id)
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
         return dict(
             [
@@ -219,7 +221,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
     def _get_name(predictor_name: str) -> str:
         return f"sub_image_{predictor_name}"
 
-    def clone(self) -> PredictorPipelineComponent:
+    def clone(self) -> SubImageLayoutService:
         predictor = self.predictor.clone()
         padder_clone = None
         if self.padder:

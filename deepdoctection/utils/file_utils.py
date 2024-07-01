@@ -250,7 +250,7 @@ def get_detectron2_requirement() -> Requirement:
 # Tesseract related dependencies
 _TESS_AVAILABLE = which("tesseract") is not None
 # Tesseract installation path
-_TESS_PATH = "tesseract"
+_TESS_PATH: StrOrPathLike = "tesseract"
 _TESS_ERR_MSG = (
     "Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
     "https://tesseract-ocr.github.io/tessdoc/Installation.html"
@@ -269,10 +269,7 @@ def set_tesseract_path(tesseract_path: StrOrPathLike) -> None:
 
     tesseract_flag = which(tesseract_path)
 
-    if tesseract_flag is None:
-        _TESS_AVAILABLE = False
-    else:
-        _TESS_AVAILABLE = True
+    _TESS_AVAILABLE = False if tesseract_flag is None  else True # pylint: disable=W0603
 
     _TESS_PATH = tesseract_path
 

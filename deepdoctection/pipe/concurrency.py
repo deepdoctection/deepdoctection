@@ -33,7 +33,7 @@ from ..datapoint.image import Image
 from ..utils._types import JsonDict, QueueType, TqdmType
 from ..utils.context import timed_operation
 from ..utils.tqdm import get_tqdm
-from .base import PipelineComponent
+from .base import PipelineComponent, MetaAnnotation
 from .common import ImageParsingService, PageParsingService
 from .registry import pipeline_component_registry
 
@@ -225,5 +225,5 @@ class MultiThreadPipelineComponent(PipelineComponent):
     def clone(self) -> MultiThreadPipelineComponent:
         raise NotImplementedError("MultiThreadPipelineComponent does not allow cloning")
 
-    def get_meta_annotation(self) -> JsonDict:
+    def get_meta_annotation(self) -> MetaAnnotation:
         return self.pipe_components[0].get_meta_annotation()

@@ -31,7 +31,7 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
-from ..utils._types import JsonDict
+from ..utils._types import Detectron2Dict
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
 
 with try_import() as pt_import_guard:
@@ -50,7 +50,7 @@ def image_to_d2_frcnn_training(
     dp: Image,
     add_mask: bool = False,
     category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-) -> Optional[JsonDict]:
+) -> Optional[Detectron2Dict]:
     """
     Maps an image to a standard dataset dict as described in
     <https://detectron2.readthedocs.io/en/latest/tutorials/datasets.html>. It further checks if the image is physically
@@ -66,7 +66,7 @@ def image_to_d2_frcnn_training(
     if not os.path.isfile(dp.location) and dp.image is None:
         return None
 
-    output: JsonDict = {"file_name": str(dp.location)}
+    output: Detectron2Dict = {"file_name": str(dp.location)}
 
     if dp.image is not None:
         output["image"] = dp.image.astype("float32")
