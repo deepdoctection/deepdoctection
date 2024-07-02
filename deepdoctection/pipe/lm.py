@@ -196,14 +196,11 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {LayoutType.word: {WordType.token_class, WordType.tag, WordType.token_tag}}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={LayoutType.word:
+                                                  {WordType.token_class, WordType.tag, WordType.token_tag}},
+                              relationships={},
+                              summaries=[])
 
     def _get_name(self) -> str:
         return f"lm_token_class_{self.language_model.name}"
@@ -312,14 +309,10 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", [PageType.document_type]),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[],
+                                sub_categories={},
+                                relationships={},
+                                summaries=[PageType.document_type])
 
     def _get_name(self) -> str:
         return f"lm_sequence_class_{self.language_model.name}"

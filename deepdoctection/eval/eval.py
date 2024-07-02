@@ -248,9 +248,9 @@ class Evaluator:
         # clean-up procedure depends on the dataset type
         if self.dataset.dataset_info.type == DatasetType.object_detection:
             # we keep all image annotations that will not be generated through processing
-            anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns["image_annotations"]}
-            sub_cats_to_remove = meta_anns["sub_categories"]
-            relationships_to_remove = meta_anns["relationships"]
+            anns_to_keep = {ann for ann in possible_cats_in_datapoint if ann not in meta_anns.image_annotations}
+            sub_cats_to_remove = meta_anns.sub_categories
+            relationships_to_remove = meta_anns.relationships
             # removing annotations takes place in three steps: First we remove all image annotations. Then, with all
             # remaining image annotations we check, if the image attribute (with Image instance !) is not empty and
             # remove it as well, if necessary. In the last step we remove all sub categories and relationships, if
@@ -263,11 +263,11 @@ class Evaluator:
             )
 
         elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
-            summary_sub_cats_to_remove = meta_anns["summaries"]
+            summary_sub_cats_to_remove = meta_anns.summaries
             df_pr = MapData(df_pr, remove_cats(summary_sub_categories=summary_sub_cats_to_remove))
 
         elif self.dataset.dataset_info.type == DatasetType.token_classification:
-            sub_cats_to_remove = meta_anns["sub_categories"]
+            sub_cats_to_remove = meta_anns.sub_categories
             df_pr = MapData(df_pr, remove_cats(sub_categories=sub_cats_to_remove))
         else:
             raise NotImplementedError()

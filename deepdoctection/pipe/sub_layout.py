@@ -31,7 +31,7 @@ from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils._types import JsonDict, PixelValues
-from ..utils.settings import ObjectTypes, Relationships
+from ..utils.settings import ObjectTypes, Relationships, get_type
 from ..utils.transform import PadTransform
 from .base import PredictorPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
@@ -206,16 +206,15 @@ class SubImageLayoutService(PredictorPipelineComponent):
                 self.dp_manager.set_image_annotation(detect_result, sub_image_ann.annotation_id)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
-        return dict(
-            [
-                ("image_annotations", self.predictor.possible_categories()),
-                ("sub_categories", {}),
-                # implicit setup of relations by using set_image_annotation with explicit annotation_id
-                ("relationships", {parent: {Relationships.child} for parent in self.sub_image_name}),
-                ("summaries", []),
-            ]
+        if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
+            raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(self.predictor)}")
+        return MetaAnnotation(
+            image_annotations=self.predictor.possible_categories(),
+            sub_categories={},
+            relationships={get_type(parent): {Relationships.child} for parent in self.sub_image_name},
+            summaries=[],
         )
+
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:

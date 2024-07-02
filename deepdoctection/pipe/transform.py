@@ -72,14 +72,10 @@ class SimpleTransformService(ImageTransformPipelineComponent):
         return self.__class__(self.transform_predictor)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", [self.transform_predictor.possible_category()]),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories= {},
+                              relationships= {},
+                              summaries= [self.transform_predictor.possible_category()])
 
     @staticmethod
     def _get_name(transform_name: str) -> str:

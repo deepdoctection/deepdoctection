@@ -21,6 +21,7 @@ Module for the base class for building pipelines
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
@@ -36,10 +37,10 @@ from ..utils.settings import ObjectTypes
 from .anngen import DatapointManager
 
 
-class MetaAnnotation(TypedDict):
-    """
-    Type hint for meta annotations
-    """
+@dataclass(frozen=True)
+class MetaAnnotation:
+    """A immutable dataclass that stores information about what `Image` are being
+    modified through a pipeline compoenent."""
     image_annotations: list[ObjectTypes]
     sub_categories: dict[ObjectTypes, set[ObjectTypes]]
     relationships: dict[ObjectTypes, set[ObjectTypes]]
@@ -73,7 +74,6 @@ class PipelineComponent(ABC):
         """
         self.name = name
         self.service_id = self.get_service_id()
-        self._meta_has_all_types()
         self.dp_manager = DatapointManager(self.service_id)
         self.timer_on = False
 
@@ -138,15 +138,6 @@ class PipelineComponent(ABC):
         :return: Dict with meta infos as just described
         """
         raise NotImplementedError()
-
-    def _meta_has_all_types(self) -> None:
-        if not {"image_annotations", "sub_categories", "relationships", "summaries"}.issubset(
-            set(self.get_meta_annotation().keys())
-        ):
-            raise TypeError(
-                f" 'get_meta_annotation' must return dict with all required keys. "
-                f"Got {self.get_meta_annotation().keys()}"
-            )
 
     def get_service_id(self) -> str:
         """
@@ -325,27 +316,27 @@ class Pipeline(ABC):
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        pipeline_populations: MetaAnnotation = {
-            "image_annotations": [],
-            "sub_categories": defaultdict(set),
-            "relationships": defaultdict(set),
-            "summaries": [],
-        }
+        image_annotations = []
+        sub_categories = defaultdict(set)
+        relationships = defaultdict(set)
+        summaries = []
         for component in self.pipe_component_list:
-            meta_anns = deepcopy(component.get_meta_annotation())
-            pipeline_populations["image_annotations"].extend(meta_anns["image_annotations"])
-            for key, value in meta_anns["sub_categories"].items():
-                pipeline_populations["sub_categories"][key].update(value)
-            for key, value in meta_anns["relationships"].items():
-                pipeline_populations["relationships"][key].update(value)
-            pipeline_populations["summaries"].extend(meta_anns["summaries"])
-        pipeline_populations["sub_categories"] = dict(pipeline_populations["sub_categories"])
-        pipeline_populations["relationships"] = dict(pipeline_populations["relationships"])
-        return pipeline_populations
+            meta_anns = component.get_meta_annotation()
+            image_annotations.extend(meta_anns.image_annotations)
+            for key, value in meta_anns.sub_categories.items():
+                sub_categories[key].update(value)
+            for key, value in meta_anns.relationships.items():
+                relationships[key].update(value)
+            summaries.extend(meta_anns.summaries)
+        return MetaAnnotation(image_annotations=image_annotations,
+                              sub_categories=dict(sub_categories),
+                              relationships=dict(relationships),
+                              summaries=summaries)
 
     def get_pipeline_info(
-        self, service_id: Optional[str] = None,
-              name: Optional[str] = None
+        self,
+        service_id: Optional[str] = None,
+        name: Optional[str] = None
     ) -> Union[str, Mapping[str, str]]:
         """Get pipeline information: Returns a dictionary with a description of each pipeline component
         :param service_id: service_id of the pipeline component to search for

@@ -97,21 +97,23 @@ class ImageLayoutService(PredictorPipelineComponent):
             self.dp_manager.set_image_annotation(detect_result, to_image=self.to_image, crop_image=self.crop_image)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        assert isinstance(self.predictor, (ObjectDetector, PdfMiner))
-        return dict(
-            [
-                ("image_annotations", self.predictor.possible_categories()),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+        if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
+            raise TypeError(
+                f"self.predictor must be of type ObjectDetector or PdfMiner but is of type "
+                f"{type(self.predictor)}"
+            )
+        return MetaAnnotation(
+            image_annotations=self.predictor.possible_categories(),
+            sub_categories={},
+            relationships={},
+            summaries=[]
         )
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"image_{predictor_name}"
 
-    def clone(self) -> PredictorPipelineComponent:
+    def clone(self) -> ImageLayoutService:
         predictor = self.predictor.clone()
         padder_clone = None
         if self.padder:

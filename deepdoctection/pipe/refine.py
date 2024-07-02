@@ -19,6 +19,8 @@
 Module for refining methods of table segmentation. The refining methods lead ultimately to a table structure which
 enables html table representations
 """
+from __future__ import annotations
+
 from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
@@ -493,16 +495,12 @@ class TableSegmentationRefinementService(PipelineComponent):
             html = generate_html_string(table)
             self.dp_manager.set_container_annotation(TableType.html, -1, TableType.html, table.annotation_id, html)
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TableSegmentationRefinementService:
         return self.__class__(self.table_name, self.cell_names)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                (
-                    "sub_categories",
-                    {
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={
                         LayoutType.cell: {
                             CellType.row_number,
                             CellType.column_number,
@@ -510,9 +508,6 @@ class TableSegmentationRefinementService(PipelineComponent):
                             CellType.column_span,
                         },
                         LayoutType.table: {TableType.html},
-                    },
-                ),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+                        },
+                              relationships={},
+                              summaries=[])
