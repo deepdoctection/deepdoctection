@@ -814,12 +814,8 @@ class TableSegmentationService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                (
-                    "sub_categories",
-                    {
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={
                         LayoutType.cell: {
                             CellType.row_number,
                             CellType.column_number,
@@ -829,11 +825,8 @@ class TableSegmentationService(PipelineComponent):
                         LayoutType.row: {CellType.row_number},
                         LayoutType.column: {CellType.column_number},
                     },
-                ),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+                              relationships={},
+                              summaries=[])
 
 
 class PubtablesSegmentationService(PipelineComponent):
@@ -1061,12 +1054,8 @@ class PubtablesSegmentationService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                (
-                    "sub_categories",
-                    {
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={
                         LayoutType.cell: {
                             CellType.row_number,
                             CellType.column_number,
@@ -1100,8 +1089,5 @@ class PubtablesSegmentationService(PipelineComponent):
                         LayoutType.row: {CellType.row_number},
                         LayoutType.column: {CellType.column_number},
                     },
-                ),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+                              relationships={},
+                              summaries=[])

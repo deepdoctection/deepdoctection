@@ -65,11 +65,14 @@ class ImageCroppingService(PipelineComponent):
         for ann in dp.get_annotation(category_names=self.category_names):
             dp.image_ann_to_image(ann.annotation_id, crop_image=True)
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> ImageCroppingService:
         return self.__class__(self.category_names)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={},
+                              summaries=[])
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -157,14 +160,10 @@ class MatchingService(PipelineComponent):
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {parent: {Relationships.child} for parent in self.parent_categories}),
-                ("summaries", []),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={parent: {Relationships.child} for parent in self.parent_categories},
+                              summaries=[])
 
 
 @pipeline_component_registry.register("PageParsingService")
@@ -224,7 +223,10 @@ class PageParsingService:
         """
         meta annotation. We do not generate any new annotations here
         """
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={},
+                              summaries=[])
 
     def clone(self) -> PageParsingService:
         """clone"""
@@ -297,7 +299,10 @@ class AnnotationNmsService(PipelineComponent):
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={},
+                              summaries=[])
 
 
 @pipeline_component_registry.register("ImageParsingService")
@@ -336,4 +341,7 @@ class ImageParsingService:
         """
         meta annotation. We do not generate any new annotations here
         """
-        return dict([("image_annotations", []), ("sub_categories", {}), ("relationships", {}), ("summaries", [])])
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={},
+                              summaries=[])

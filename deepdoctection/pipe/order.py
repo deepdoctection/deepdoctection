@@ -539,7 +539,7 @@ class TextLineService(TextLineServiceMixin):
             paragraph_break=paragraph_break,
         )
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TextLineService:
         """
         This method returns a new instance of the class with the same configuration.
         """
@@ -553,14 +553,10 @@ class TextLineService(TextLineServiceMixin):
         """
         This method returns metadata about the annotations created by this pipeline component.
         """
-        return dict(
-            [
-                ("image_annotations", [LayoutType.line]),
-                ("sub_categories", {LayoutType.line: {Relationships.child}}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[LayoutType.line],
+                              sub_categories={LayoutType.line: {Relationships.child}},
+                              relationships={},
+                              summaries=[])
 
 
 @pipeline_component_registry.register("TextOrderService")
@@ -744,21 +740,18 @@ class TextOrderService(TextLineServiceMixin):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         add_category = [self.text_container]
-        image_annotations = []
+        image_annotations: list[ObjectTypes] = []
         if self.include_residual_text_container and self.text_container == LayoutType.word:
             add_category.append(LayoutType.line)
             image_annotations.append(LayoutType.line)
         anns_with_reading_order = list(copy(self.floating_text_block_categories)) + add_category
-        return dict(
-            [
-                ("image_annotations", image_annotations),
-                ("sub_categories", {category: {Relationships.reading_order} for category in anns_with_reading_order}),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+        return MetaAnnotation(image_annotations=image_annotations,
+                              sub_categories={category: {Relationships.reading_order} for
+                                              category in anns_with_reading_order},
+                              relationships={},
+                              summaries=[])
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TextOrderService:
         return self.__class__(
             copy(self.text_container),
             copy(self.text_block_categories),

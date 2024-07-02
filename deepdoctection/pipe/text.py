@@ -30,7 +30,7 @@ from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils._types import JsonDict, PixelValues
 from ..utils.error import ImageError
-from ..utils.settings import PageType, TypeOrStr, WordType, get_type
+from ..utils.settings import PageType, TypeOrStr, WordType, get_type, ObjectTypes
 from .base import PredictorPipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
@@ -195,6 +195,7 @@ class TextExtractionService(PredictorPipelineComponent):
         return 1
 
     def get_meta_annotation(self) -> MetaAnnotation:
+        sub_cat_dict: dict[ObjectTypes, set[ObjectTypes]]
         if self.extract_from_category:
             sub_cat_dict = {category: {WordType.characters} for category in self.extract_from_category}
         else:
@@ -204,27 +205,18 @@ class TextExtractionService(PredictorPipelineComponent):
                     f"{type(self.predictor)}"
                 )
             sub_cat_dict = {category: {WordType.characters} for category in self.predictor.possible_categories()}
-        return dict(
-            [
-                (
-                    "image_annotations",
-                    (
-                        self.predictor.possible_categories()
+        return MetaAnnotation(image_annotations=self.predictor.possible_categories()
                         if isinstance(self.predictor, (ObjectDetector, PdfMiner))
-                        else []
-                    ),
-                ),
-                ("sub_categories", sub_cat_dict),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
-        )
+                        else [],
+                        sub_categories=sub_cat_dict,
+                        relationships={},
+                        summaries=[])
 
     @staticmethod
     def _get_name(text_detector_name: str) -> str:
         return f"text_extract_{text_detector_name}"
 
-    def clone(self) -> PredictorPipelineComponent:
+    def clone(self) -> TextExtractionService:
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ImageError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")

@@ -108,14 +108,10 @@ class LanguageDetectionService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", [PageType.language]),
-            ]
-        )
+        return MetaAnnotation(image_annotations=[],
+                              sub_categories={},
+                              relationships={},
+                              summaries=[PageType.language])
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:
