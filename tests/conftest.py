@@ -35,7 +35,7 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils._types import JsonDict, PixelValues, StrOrPathLike
+from deepdoctection.utils.types import JsonDict, PixelValues, PathLikeOrStr
 from deepdoctection.utils.fs import get_package_path
 from deepdoctection.utils.settings import (
     CellType,
@@ -77,7 +77,7 @@ def fixture_image_results() -> DatapointImage:
 
 
 @fixture(name="path_to_tp_frcnn_yaml")
-def fixture_path_to_tp_frcnn_yaml() -> StrOrPathLike:
+def fixture_path_to_tp_frcnn_yaml() -> PathLikeOrStr:
     """
     path to tp frcnn yaml file
     """
@@ -85,7 +85,7 @@ def fixture_path_to_tp_frcnn_yaml() -> StrOrPathLike:
 
 
 @fixture(name="path_to_d2_frcnn_yaml")
-def fixture_path_to_d2_frcnn_yaml() -> StrOrPathLike:
+def fixture_path_to_d2_frcnn_yaml() -> PathLikeOrStr:
     """
     path to d2 frcnn yaml file
     """
@@ -134,7 +134,7 @@ def fixture_np_image() -> PixelValues:
 
 
 @fixture(name="path_to_tesseract_yaml")
-def fixture_path_to_tesseract_yaml() -> StrOrPathLike:
+def fixture_path_to_tesseract_yaml() -> PathLikeOrStr:
     """
     path to tesseract yaml file
     """

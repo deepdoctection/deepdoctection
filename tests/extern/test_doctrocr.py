@@ -28,7 +28,7 @@ from pytest import mark
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.doctrocr import DocTrRotationTransformer, DoctrTextlineDetector, DoctrTextRecognizer
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
-from deepdoctection.utils._types import PixelValues
+from deepdoctection.utils.types import PixelValues
 from tests.data import Annotations
 
 

@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
     merge_boxes,
     rescale_coords,
 )
-from deepdoctection.utils._types import PixelValues
+from deepdoctection.utils.types import PixelValues
 
 from .conftest import Box
 

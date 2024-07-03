@@ -27,7 +27,7 @@ from pytest import mark
 from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.mapper import pub_to_image
-from deepdoctection.utils._types import JsonDict
+from deepdoctection.utils.types import JsonDict
 
 # from deepdoctection.utils.settings import names
 from deepdoctection.utils.settings import CellType, LayoutType, TableType

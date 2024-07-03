@@ -21,7 +21,7 @@ from typing import Any, Union, no_type_check
 import importlib_metadata
 from packaging import version
 
-from ._types import Requirement, StrOrPathLike
+from .types import Requirement, PathLikeOrStr
 from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
@@ -250,14 +250,14 @@ def get_detectron2_requirement() -> Requirement:
 # Tesseract related dependencies
 _TESS_AVAILABLE = which("tesseract") is not None
 # Tesseract installation path
-_TESS_PATH: StrOrPathLike = "tesseract"
+_TESS_PATH: PathLikeOrStr = "tesseract"
 _TESS_ERR_MSG = (
     "Tesseract >=4.0 must be installed. Please follow the official installation instructions. "
     "https://tesseract-ocr.github.io/tessdoc/Installation.html"
 )
 
 
-def set_tesseract_path(tesseract_path: StrOrPathLike) -> None:
+def set_tesseract_path(tesseract_path: PathLikeOrStr) -> None:
     """Set the Tesseract path. If you have tesseract installed in Anaconda,
        you can use this function to set tesseract path.
 

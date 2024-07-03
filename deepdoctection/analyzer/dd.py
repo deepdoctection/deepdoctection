@@ -23,6 +23,8 @@ Module for **deep**doctection analyzer.
 -user factory with a reduced config setting
 """
 
+from __future__ import annotations
+
 import os
 from os import environ
 from shutil import copyfile
@@ -50,7 +52,7 @@ from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
@@ -82,7 +84,7 @@ _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
 def maybe_copy_config_to_cache(
-    package_path: StrOrPathLike, configs_dir_path: StrOrPathLike, file_name: str, force_copy: bool = True
+    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
 ) -> str:
     """
     Initial copying of various files
@@ -116,7 +118,7 @@ def config_sanity_checks(cfg: AttrDict) -> None:
 
 def build_detector(
     cfg: AttrDict, mode: str
-) -> Union["D2FrcnnDetector", "TPFrcnnDetector", "HFDetrDerivedDetector", "D2FrcnnTracingDetector"]:
+) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
     """Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
     the config
 
@@ -405,7 +407,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 def get_dd_analyzer(
     reset_config_file: bool = True,
     config_overwrite: Optional[list[str]] = None,
-    path_config_file: Optional[StrOrPathLike] = None,
+    path_config_file: Optional[PathLikeOrStr] = None,
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.

@@ -36,7 +36,7 @@ from ...dataflow.custom_serialize import SerializerJsonlines
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.pubstruct import pub_to_image
-from ...utils._types import JsonDict, PubtabnetDict
+from ...utils.types import JsonDict, PubtabnetDict
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType, WordType
 from ..base import _BuiltInDataset

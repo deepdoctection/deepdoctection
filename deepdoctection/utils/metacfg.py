@@ -24,7 +24,7 @@ from typing import Any
 
 import yaml
 
-from ._types import StrOrPathLike
+from .types import PathLikeOrStr
 
 
 # Copyright (c) Tensorpack Contributors
@@ -122,7 +122,7 @@ class AttrDict:
         raise NotImplementedError()
 
 
-def set_config_by_yaml(path_yaml: StrOrPathLike) -> AttrDict:
+def set_config_by_yaml(path_yaml: PathLikeOrStr) -> AttrDict:
     """
     Use to initialize the config class for tensorpack faster rcnn
 
@@ -139,7 +139,7 @@ def set_config_by_yaml(path_yaml: StrOrPathLike) -> AttrDict:
     return config
 
 
-def save_config_to_yaml(config: AttrDict, path_yaml: StrOrPathLike) -> None:
+def save_config_to_yaml(config: AttrDict, path_yaml: PathLikeOrStr) -> None:
     """
     :param config: The configuration instance as an AttrDict
     :param path_yaml: Save the config class for tensorpack faster rcnn

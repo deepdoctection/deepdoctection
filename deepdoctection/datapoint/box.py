@@ -28,7 +28,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
 
-from ..utils._types import PixelValues
+from ..utils.types import PixelValues
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger

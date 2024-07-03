@@ -24,7 +24,7 @@ from typing import Any, Callable, Optional
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..utils._types import MetricResults, DP
+from ..utils.types import MetricResults, DP
 from ..utils.error import DependencyError
 from ..utils.file_utils import Requirement
 

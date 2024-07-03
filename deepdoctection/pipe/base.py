@@ -24,8 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from copy import deepcopy
-from typing import Any, Callable, Mapping, Optional, Union, TypedDict
+from typing import Any, Callable, Mapping, Optional, Union
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
@@ -67,14 +66,14 @@ class PipelineComponent(ABC):
                  planned.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, model_id: Optional[str] = None) -> None:
         """
         :param name: The name of the pipeline component. The name will be used to identify a pipeline component in a
                      pipeline. Use something that describe the task of the pipeline.
         """
         self.name = name
         self.service_id = self.get_service_id()
-        self.dp_manager = DatapointManager(self.service_id)
+        self.dp_manager = DatapointManager(self.service_id, model_id)
         self.timer_on = False
 
     @abstractmethod
@@ -145,81 +144,22 @@ class PipelineComponent(ABC):
         """
         return get_uuid_from_str(self.name)[:8]
 
-
-class PredictorPipelineComponent(PipelineComponent, ABC):
-    """
-    Lightweight abstract pipeline component class with `predictor`. Object detectors that only read in images as
-    numpy array and return `DetectResult`s are currently permitted.
-    """
-
-    def __init__(
-        self,
-        name: str,
-        predictor: Union[ObjectDetector, PdfMiner, TextRecognizer],
-    ) -> None:
+    def clear_predictor(self) -> None:
         """
-        :param name: Will be passed to base class
-        :param predictor: An Object detector for predicting
+        Clear the predictor of the pipeline component if it has one. Needed for model updates during training.
         """
-        self.predictor = predictor
-        super().__init__(name)
-        self.dp_manager = DatapointManager(self.service_id, self.predictor.model_id)
+        raise NotImplementedError("Maybe you forgot to implement this method in your pipeline component. This might "
+                                  "be the case when you run evaluation during training and need to update the "
+                                  "trained model in your pipeline component.")
 
-    @abstractmethod
-    def clone(self) -> PredictorPipelineComponent:
-        raise NotImplementedError()
-
-
-class LanguageModelPipelineComponent(PipelineComponent, ABC):
-    """
-    Abstract pipeline component class with two attributes `tokenizer` and `language_model` .
-    """
-
-    def __init__(
-        self,
-        name: str,
-        tokenizer: Any,
-        mapping_to_lm_input_func: Callable[..., Callable[[Image], Optional[Any]]],
-    ):
+    def has_predictor(self) -> bool:
         """
-        :param name: Will be passed to base class
-        :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
-        :param mapping_to_lm_input_func: Function mapping image to layout language model features
+        Check if the pipeline component has a predictor
         """
-
-        self.tokenizer = tokenizer
-        super().__init__(name)
-        self.mapping_to_lm_input_func = mapping_to_lm_input_func
-
-    @abstractmethod
-    def clone(self) -> LanguageModelPipelineComponent:
-        """
-        Clone an instance
-        """
-        raise NotImplementedError()
-
-
-class ImageTransformPipelineComponent(PipelineComponent, ABC):
-    """
-    Abstract pipeline component class with one model to transform images. This component is meant to be used at the
-    beginning of a pipeline
-    """
-
-    def __init__(self, name: str, transform_predictor: ImageTransformer):
-        """
-        :param name: Will be passed to base class
-        :param transform_predictor: An `ImageTransformer` for image transformation
-        """
-
-        self.transform_predictor = transform_predictor
-        super().__init__(name)
-
-    @abstractmethod
-    def clone(self) -> ImageTransformPipelineComponent:
-        """
-        Clone an instance
-        """
-        raise NotImplementedError()
+        if hasattr(self, "predictor"):
+            if self.predictor is not None:
+                return True
+        return False
 
 
 class Pipeline(ABC):

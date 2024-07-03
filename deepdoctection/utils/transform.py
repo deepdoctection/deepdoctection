@@ -30,7 +30,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from ._types import PixelValues
+from .types import PixelValues
 from .viz import viz_handler
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]

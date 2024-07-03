@@ -40,16 +40,16 @@ from ..extern.tp.tpfrcnn.preproc import anchors_and_labels, augment
 from ..extern.tpdetect import TPFrcnnDetector
 from ..mapper.maputils import LabelSummarizer
 from ..mapper.tpstruct import image_to_tp_frcnn_training
-from ..pipe.base import PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils._types import JsonDict
+from ..utils.types import JsonDict
 from ..utils.file_utils import set_mp_spawn
 from ..utils.fs import get_load_image_func
 from ..utils.logger import log_once
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.tqdm import get_tqdm
 from ..utils.utils import string_to_dict
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 
 with try_import() as tp_import_guard:
     # todo: check how dataflow import is directly possible without having an AssertionError
@@ -186,11 +186,11 @@ def get_train_dataflow(
 
 
 def train_faster_rcnn(
-    path_config_yaml: StrOrPathLike,
+    path_config_yaml: PathLikeOrStr,
     dataset_train: DatasetBase,
-    path_weights: StrOrPathLike,
+    path_weights: PathLikeOrStr,
     config_overwrite: Optional[list[str]] = None,
-    log_dir: StrOrPathLike = "train_log/frcnn",
+    log_dir: PathLikeOrStr = "train_log/frcnn",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -300,7 +300,6 @@ def train_faster_rcnn(
         )  # only a wrapper for the predictor itself. Will be replaced in Callback
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
-        assert isinstance(pipeline_component, PredictorPipelineComponent)
         category_names = list(categories.values())
         callbacks.extend(
             [
@@ -311,6 +310,7 @@ def train_faster_rcnn(
                     metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
+                    cfg = detector.model.cfg,
                     **build_val_dict
                 )
             ]

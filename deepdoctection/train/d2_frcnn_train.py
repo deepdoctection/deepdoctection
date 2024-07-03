@@ -36,12 +36,12 @@ from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.d2detect import D2FrcnnDetector
 from ..mapper.d2struct import image_to_d2_frcnn_training
-from ..pipe.base import PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.error import DependencyError
 from ..utils.file_utils import get_wandb_requirement, wandb_available
 from ..utils.logger import LoggingRecord, logger
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 from ..utils.utils import string_to_dict
 
 with try_import() as d2_import_guard:
@@ -62,7 +62,7 @@ with try_import() as wb_import_guard:
 
 
 def _set_config(
-    path_config_yaml: StrOrPathLike,
+    path_config_yaml: PathLikeOrStr,
     conf_list: list[str],
     dataset_train: DatasetBase,
     dataset_val: Optional[DatasetBase],
@@ -247,7 +247,7 @@ class D2Trainer(DefaultTrainer):
     def setup_evaluator(
         self,
         dataset_val: DatasetBase,
-        pipeline_component: PredictorPipelineComponent,
+        pipeline_component: PipelineComponent,
         metric: Union[Type[MetricBase], MetricBase],
         build_val_dict: Optional[Mapping[str, str]] = None,
     ) -> None:
@@ -275,9 +275,7 @@ class D2Trainer(DefaultTrainer):
             self.build_val_dict = build_val_dict
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
-            assert isinstance(comp, PredictorPipelineComponent)
-            assert isinstance(comp.predictor, D2FrcnnDetector)
-            comp.predictor.d2_predictor = None
+            comp.clear_predictor()
 
     @classmethod
     def build_evaluator(cls, cfg, dataset_name):  # type: ignore
@@ -285,11 +283,11 @@ class D2Trainer(DefaultTrainer):
 
 
 def train_d2_faster_rcnn(
-    path_config_yaml: StrOrPathLike,
+    path_config_yaml: PathLikeOrStr,
     dataset_train: Union[str, DatasetBase],
-    path_weights: StrOrPathLike,
+    path_weights: PathLikeOrStr,
     config_overwrite: Optional[List[str]] = None,
-    log_dir: StrOrPathLike = "train_log/frcnn",
+    log_dir: PathLikeOrStr = "train_log/frcnn",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -395,7 +393,6 @@ def train_d2_faster_rcnn(
         detector = D2FrcnnDetector(path_config_yaml, path_weights, categories, config_overwrite, cfg.MODEL.DEVICE)
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
-        assert isinstance(pipeline_component, PredictorPipelineComponent)
 
         if metric_name is not None:
             metric = metric_registry.get(metric_name)

@@ -33,12 +33,12 @@ from termcolor import colored
 from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes, get_type
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelProfile:
     """
     Class for model profile. Add for each model one ModelProfile to the ModelCatalog
@@ -60,16 +60,12 @@ class ModelProfile:
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
 
-    def __post_init__(self) -> None:
-        """updating categories to ObjectTypes. This might be necessary if we load a catalog from a file"""
-        if self.categories:
-            self.categories = {key: get_type(val) for key, val in self.categories.items()}
-
     def as_dict(self) -> dict[str, Any]:
         """
         returns a dict of the dataclass
         """
         return asdict(self)
+
 
 class ModelCatalog:
     """
@@ -731,7 +727,7 @@ class ModelCatalog:
     }
 
     @staticmethod
-    def get_full_path_weights(name: StrOrPathLike) -> StrOrPathLike:
+    def get_full_path_weights(name: PathLikeOrStr) -> PathLikeOrStr:
         """
         Returns the absolute path of weights.
 
@@ -762,7 +758,7 @@ class ModelCatalog:
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
-    def get_full_path_configs(name: StrOrPathLike) -> StrOrPathLike:
+    def get_full_path_configs(name: PathLikeOrStr) -> PathLikeOrStr:
         """
         Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
         (without the base path to the cache config directory).
@@ -788,7 +784,7 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_full_path_preprocessor_configs(name: Union[str]) -> StrOrPathLike:
+    def get_full_path_preprocessor_configs(name: Union[str]) -> PathLikeOrStr:
         """
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
         by the transformer library.
@@ -812,7 +808,7 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_model_list() -> list[StrOrPathLike]:
+    def get_model_list() -> list[PathLikeOrStr]:
         """
         Returns a list of absolute paths of registered models.
         """
@@ -826,7 +822,7 @@ class ModelCatalog:
         return list(ModelCatalog.CATALOG.keys())
 
     @staticmethod
-    def is_registered(path_weights: StrOrPathLike) -> bool:
+    def is_registered(path_weights: PathLikeOrStr) -> bool:
         """
         Checks if some weights belong to a registered model
 
@@ -867,7 +863,7 @@ class ModelCatalog:
         ModelCatalog.CATALOG[name] = profile
 
     @staticmethod
-    def load_profiles_from_file(path: Optional[StrOrPathLike] = None) -> None:
+    def load_profiles_from_file(path: Optional[PathLikeOrStr] = None) -> None:
         """
         Load model profiles from a jsonl file and extend `CATALOG` with the new profiles.
 
@@ -878,10 +874,11 @@ class ModelCatalog:
         with jsonlines.open(path) as reader:
             for obj in reader:
                 if not obj["name"] in ModelCatalog.CATALOG:
+                    obj["categories"] = {key: get_type(val) for key, val in obj["categories"].items()}
                     ModelCatalog.register(obj["name"], ModelProfile(**obj))
 
     @staticmethod
-    def save_profiles_to_file(target_path: StrOrPathLike) -> None:
+    def save_profiles_to_file(target_path: PathLikeOrStr) -> None:
         """
         Save model profiles to a jsonl file.
 
@@ -958,7 +955,7 @@ class ModelDownloadManager:
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(name: str) -> StrOrPathLike:
+    def maybe_download_weights_and_configs(name: str) -> PathLikeOrStr:
         """
         Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
@@ -1001,7 +998,7 @@ class ModelDownloadManager:
         return absolute_path_weights
 
     @staticmethod
-    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: StrOrPathLike, file_names: list[str]) -> None:
+    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: PathLikeOrStr, file_names: list[str]) -> None:
         """
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
@@ -1027,7 +1024,7 @@ class ModelDownloadManager:
                 )
 
     @staticmethod
-    def _load_from_gd(profile: ModelProfile, absolute_path: StrOrPathLike, file_names: list[str]) -> None:
+    def _load_from_gd(profile: ModelProfile, absolute_path: PathLikeOrStr, file_names: list[str]) -> None:
         if profile.urls is None:
             raise ValueError("urls cannot be None")
         for size, url, file_name in zip(profile.size, profile.urls, file_names):
@@ -1035,7 +1032,7 @@ class ModelDownloadManager:
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: StrOrPathLike) -> None:
+    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: PathLikeOrStr) -> None:
         """
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
@@ -1054,7 +1051,7 @@ class ModelDownloadManager:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
-    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: StrOrPathLike, force_download: bool = False) -> int:
+    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
         token = os.environ.get("HF_CREDENTIALS", None)
         f_path = cached_download(

@@ -36,7 +36,7 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.utils._types import JsonDict, PixelValues
+from deepdoctection.utils.types import JsonDict, PixelValues
 from deepdoctection.utils.settings import (
     BioTag,
     CellType,

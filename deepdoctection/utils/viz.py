@@ -36,7 +36,7 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from ._types import PixelValues, BGR, StrOrPathLike, B64Str
+from .types import PixelValues, BGR, PathLikeOrStr, B64Str
 from .env_info import ENV_VARS_TRUE, auto_select_viz_library
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
@@ -386,7 +386,7 @@ class VizPackageHandler:
         package = self._select_package()
         self._set_vars(package)
 
-    def read_image(self, path: StrOrPathLike) -> PixelValues:
+    def read_image(self, path: PathLikeOrStr) -> PixelValues:
         """Reading an image from file and returning a np.array
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -394,16 +394,16 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["read_image"])(path)
 
     @staticmethod
-    def _cv2_read_image(path: StrOrPathLike) -> PixelValues:
+    def _cv2_read_image(path: PathLikeOrStr) -> PixelValues:
         return cv2.imread(os.fspath(path), cv2.IMREAD_COLOR).astype(np.uint8)
 
     @staticmethod
-    def _pillow_read_image(path: StrOrPathLike) -> PixelValues:
+    def _pillow_read_image(path: PathLikeOrStr) -> PixelValues:
         with Image.open(os.fspath(path)).convert("RGB") as image:
             np_image = np.array(image)[:, :, ::-1]
         return np_image
 
-    def write_image(self, path: StrOrPathLike, image: PixelValues) -> None:
+    def write_image(self, path: PathLikeOrStr, image: PixelValues) -> None:
         """Writing an image as np.array to a file.
 
         :param path: Use /path/to/dir/file_name.[suffix]
@@ -412,11 +412,11 @@ class VizPackageHandler:
         return getattr(self, self.pkg_func_dict["write_image"])(path, image)
 
     @staticmethod
-    def _cv2_write_image(path: StrOrPathLike, image: PixelValues) -> None:
+    def _cv2_write_image(path: PathLikeOrStr, image: PixelValues) -> None:
         cv2.imwrite(os.fspath(path), image)
 
     @staticmethod
-    def _pillow_write_image(path: StrOrPathLike, image: PixelValues) -> None:
+    def _pillow_write_image(path: PathLikeOrStr, image: PixelValues) -> None:
         pil_image = Image.fromarray(np.uint8(image[:, :, ::-1]))
         pil_image.save(os.fspath(path))
 

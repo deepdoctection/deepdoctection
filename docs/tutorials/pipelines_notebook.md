@@ -152,9 +152,8 @@ image_layout_service.predictor
 
 You can get a list of all categories that a model is able to detect. Moreover, you will find a unique description of each model in your pipeline.
 
-
 ```python
-image_layout_service.predictor.possible_categories()
+image_layout_service.predictor.get_category_names()
 ```
 
 
@@ -185,9 +184,8 @@ image_layout_service.predictor.name
 cell_service = analyzer.pipe_component_list[1]
 ```
 
-
 ```python
-cell_service.predictor.possible_categories()
+cell_service.predictor.get_category_names()
 ```
 
 

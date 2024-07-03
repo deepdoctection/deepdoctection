@@ -24,12 +24,12 @@ from __future__ import annotations
 
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
-from .base import ImageTransformPipelineComponent, MetaAnnotation
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
 @pipeline_component_registry.register("SimpleTransformService")
-class SimpleTransformService(ImageTransformPipelineComponent):
+class SimpleTransformService(PipelineComponent):
     """
     Pipeline component for transforming an image. The service is designed for applying transform predictors that
     take an image as numpy array as input and return the same. The service itself will change the underlying metadata
@@ -45,7 +45,8 @@ class SimpleTransformService(ImageTransformPipelineComponent):
 
         :param transform_predictor: image transformer
         """
-        super().__init__(self._get_name(transform_predictor.name), transform_predictor)
+        self.transform_predictor = transform_predictor
+        super().__init__(self._get_name(transform_predictor.name), self.transform_predictor.model_id)
 
     def serve(self, dp: Image) -> None:
         if dp.annotations:
@@ -61,10 +62,10 @@ class SimpleTransformService(ImageTransformPipelineComponent):
             self.dp_manager.datapoint.clear_image(True)
             self.dp_manager.datapoint.image = transformed_image
             self.dp_manager.set_summary_annotation(
-                summary_key=self.transform_predictor.possible_category(),
-                summary_name=self.transform_predictor.possible_category(),
+                summary_key=self.transform_predictor.get_category_name(),
+                summary_name=self.transform_predictor.get_category_name(),
                 summary_number=None,
-                summary_value=getattr(detection_result, self.transform_predictor.possible_category().value, None),
+                summary_value=getattr(detection_result, self.transform_predictor.get_category_name().value, None),
                 summary_score=detection_result.score,
             )
 
@@ -75,7 +76,7 @@ class SimpleTransformService(ImageTransformPipelineComponent):
         return MetaAnnotation(image_annotations=[],
                               sub_categories= {},
                               relationships= {},
-                              summaries= [self.transform_predictor.possible_category()])
+                              summaries= [self.transform_predictor.get_category_name()])
 
     @staticmethod
     def _get_name(transform_name: str) -> str:

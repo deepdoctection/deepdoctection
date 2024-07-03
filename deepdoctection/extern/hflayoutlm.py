@@ -30,7 +30,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils._types import JsonDict, Requirement, StrOrPathLike
+from ..utils.types import JsonDict, Requirement, PathLikeOrStr
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import (
     BioTag,
@@ -223,17 +223,14 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
     """
 
-    model: Union[LayoutLMForTokenClassification, LayoutLMv2ForTokenClassification, LiltForTokenClassification]
-
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -268,8 +265,6 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
                 self.categories_semantics, self.categories_bio  # type: ignore
             )
         self.device = get_torch_device(device)
-        self.model.to(self.device)
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -347,16 +342,18 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         )
 
     @staticmethod
-    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
-    def get_tokenizer_class_name(self, use_xlm_tokenizer: bool) -> str:
+    @staticmethod
+    def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
         """A refinement for adding the tokenizer class name to the model configs.
 
+        :param model_class_name: The model name, e.g. model.__class__.__name__
         :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
         """
-        tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
+        tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
 
     @staticmethod
@@ -406,8 +403,8 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -430,9 +427,11 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
         super().__init__(
-            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
-        )
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -460,7 +459,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMForTokenClassification:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> LayoutLMForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -511,8 +510,8 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -535,9 +534,11 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
         super().__init__(
-            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
-        )
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -570,7 +571,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
@@ -578,7 +579,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         return {"image_width": 224, "image_height": 224}
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMv2ForTokenClassification:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> LayoutLMv2ForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -631,8 +632,8 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -655,9 +656,11 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
         super().__init__(
-            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
-        )
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -686,7 +689,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
@@ -700,7 +703,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         }
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) \
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) \
             -> LayoutLMv3ForTokenClassification:
         """
         Get the inner (wrapped) model.
@@ -721,23 +724,19 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     Abstract base class for wrapping LayoutLM models  for sequence classification into the deepdoctection framework.
     """
 
-    model: Union[LayoutLMForSequenceClassification, LayoutLMv2ForSequenceClassification]
-
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
     ):
         self.path_config = Path(path_config_json)
         self.path_weights = Path(path_weights)
         self.categories = copy(categories)  # type: ignore
 
         self.device = get_torch_device(device)
-        self.model.to(self.device)
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
+
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -778,16 +777,18 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return input_ids, attention_mask, token_type_ids, boxes
 
     @staticmethod
-    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
-    def get_tokenizer_class_name(self, use_xlm_tokenizer: bool) -> str:
+    @staticmethod
+    def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
         """A refinement for adding the tokenizer class name to the model configs.
 
+        :param model_class_name: The model name, e.g. model.__class__.__name__
         :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
         """
-        tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
+        tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
 
     @staticmethod
@@ -834,8 +835,8 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -843,7 +844,10 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
+        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -861,7 +865,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMForSequenceClassification:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> LayoutLMForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -909,8 +913,8 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -918,7 +922,10 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
+        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -935,7 +942,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
@@ -943,7 +950,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return {"image_width": 224, "image_height": 224}
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) \
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) \
             -> LayoutLMv2ForSequenceClassification:
         """
         Get the inner (wrapped) model.
@@ -992,8 +999,8 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -1001,7 +1008,10 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
+        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -1018,7 +1028,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
@@ -1032,7 +1042,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         }
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LayoutLMv3ForSequenceClassification:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> LayoutLMv3ForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -1083,8 +1093,8 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[str, TypeOrStr]] = None,
@@ -1105,6 +1115,9 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         self.name = self.get_name(path_weights, "LiLT")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
         super().__init__(
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
         )
@@ -1135,7 +1148,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> LiltForTokenClassification:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> LiltForTokenClassification:
         """
         Get the inner (wrapped) model.
 
@@ -1181,8 +1194,8 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
@@ -1190,7 +1203,10 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self.name = self.get_name(path_weights, "LiLT")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
+                                                                          use_xlm_tokenizer)
+        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
@@ -1208,7 +1224,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: StrOrPathLike, path_weights: StrOrPathLike) -> Any:
+    def get_wrapped_model(path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr) -> Any:
         """
         Get the inner (wrapped) model.
 

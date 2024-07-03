@@ -30,7 +30,7 @@ from numpy import uint8
 from numpy.typing import NDArray
 from pypdf import PdfReader
 
-from ..utils._types import PixelValues
+from ..utils.types import PixelValues
 from ..utils.develop import deprecated
 from ..utils.error import DependencyError
 from ..utils.pdf_utils import pdf_to_np_array

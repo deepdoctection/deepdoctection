@@ -23,7 +23,7 @@ import os
 from typing import Mapping, Optional, Sequence
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
-from ..utils._types import JsonDict, StrOrPathLike
+from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.settings import ObjectTypes
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
@@ -36,7 +36,7 @@ def prodigy_to_image(
     categories_name_as_key: Mapping[str, str],
     load_image: bool,
     fake_score: bool,
-    path_reference_ds: Optional[StrOrPathLike] = None,
+    path_reference_ds: Optional[PathLikeOrStr] = None,
     accept_only_answer: bool = False,
     category_name_mapping: Optional[Mapping[str, str]] = None,
 ) -> Optional[Image]:

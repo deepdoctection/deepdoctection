@@ -28,7 +28,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Callable, Optional
 
-from ._types import T
+from .types import T
 from .logger import LoggingRecord, logger
 
 __all__: list[str] = ["deprecated"]

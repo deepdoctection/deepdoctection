@@ -33,11 +33,11 @@ from ..datasets.base import DatasetBase
 from ..mapper.cats import filter_cat, remove_cats
 from ..mapper.d2struct import to_wandb_image
 from ..mapper.misc import maybe_load_image, maybe_remove_image, maybe_remove_image_from_category
-from ..pipe.base import LanguageModelPipelineComponent, PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils._types import PixelValues
+from ..utils.types import PixelValues
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
 from ..utils.viz import interactive_imshow
@@ -90,7 +90,7 @@ class Evaluator:
     def __init__(
         self,
         dataset: DatasetBase,
-        component_or_pipeline: Union[PredictorPipelineComponent, LanguageModelPipelineComponent, DoctectionPipe],
+        component_or_pipeline: Union[PipelineComponent, DoctectionPipe],
         metric: Union[Type[MetricBase], MetricBase],
         num_threads: int = 2,
         run: Optional[wandb.sdk.wandb_run.Run] = None,
@@ -108,14 +108,14 @@ class Evaluator:
         self.pipe: Optional[DoctectionPipe] = None
 
         # when passing a component, we will process prediction on num_threads
-        if isinstance(component_or_pipeline, (PredictorPipelineComponent, LanguageModelPipelineComponent)):
+        if isinstance(component_or_pipeline, PipelineComponent):
             logger.info(
                 LoggingRecord(
                     f"Building multi threading pipeline component to increase prediction throughput. "
                     f"Using {num_threads} threads"
                 )
             )
-            pipeline_components: list[Union[PredictorPipelineComponent, LanguageModelPipelineComponent]] = []
+            pipeline_components: list[PipelineComponent] = []
 
             for _ in range(num_threads - 1):
                 copy_pipe_component = component_or_pipeline.clone()

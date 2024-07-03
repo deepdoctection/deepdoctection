@@ -31,7 +31,7 @@ from lazy_imports import try_import
 from ..datapoint.image import Image
 from ..mapper.maputils import curry
 from ..mapper.misc import get_load_image_func
-from ..utils._types import JsonDict
+from ..utils.types import JsonDict
 from ..utils.settings import ObjectTypes, TypeOrStr
 from ..utils.transform import PadTransform
 

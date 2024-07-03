@@ -23,7 +23,7 @@ from typing import List
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils._types import JsonDict
+from deepdoctection.utils.types import JsonDict
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund

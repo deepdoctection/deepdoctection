@@ -28,7 +28,7 @@ from lazy_imports import try_import
 
 from ...utils.metacfg import AttrDict
 from ...utils.settings import ObjectTypes
-from ...utils._types import StrOrPathLike, PixelValues
+from ...utils.types import PathLikeOrStr, PixelValues
 
 with try_import() as import_guard:
     from tensorpack.predict import OfflinePredictor, PredictConfig  # pylint: disable=E0401
@@ -79,7 +79,7 @@ class TensorpackPredictor(ABC):
           as there is an explicit class available for this.
     """
 
-    def __init__(self, model: ModelDescWithConfig, path_weights: StrOrPathLike, ignore_mismatch: bool) -> None:
+    def __init__(self, model: ModelDescWithConfig, path_weights: PathLikeOrStr, ignore_mismatch: bool) -> None:
         """
         :param model: Model, either as ModelDescWithConfig or derived from that class.
         :param path_weights: Model weights of the prediction config.
@@ -113,7 +113,7 @@ class TensorpackPredictor(ABC):
     @staticmethod
     @abstractmethod
     def get_wrapped_model(
-        path_yaml: StrOrPathLike,
+        path_yaml: PathLikeOrStr,
         categories: Mapping[str, ObjectTypes],
         config_overwrite: Union[list[str], None]
     ) -> ModelDescWithConfig:
