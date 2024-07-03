@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union, no_type_check
 
-from ..utils._types import JsonDict, AnnotationDict
+from ..utils.types import JsonDict, AnnotationDict
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger

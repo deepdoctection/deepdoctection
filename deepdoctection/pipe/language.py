@@ -24,7 +24,7 @@ from typing import Optional, Sequence
 from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
-from ..utils._types import JsonDict
+from ..utils.types import JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
 from .base import PipelineComponent, MetaAnnotation

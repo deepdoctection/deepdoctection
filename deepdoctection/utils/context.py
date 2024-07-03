@@ -30,7 +30,7 @@ from typing import Any, Generator, Iterator, Optional, Union
 
 import numpy as np
 
-from ._types import PixelValues, B64Str, B64
+from .types import PixelValues, B64Str, B64
 from .logger import LoggingRecord, logger
 from .viz import viz_handler
 

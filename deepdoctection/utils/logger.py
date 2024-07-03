@@ -40,7 +40,7 @@ from typing import Any, Optional, Union, no_type_check
 
 from termcolor import colored
 
-from ._types import StrOrPathLike
+from .types import PathLikeOrStr
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
 
@@ -172,7 +172,7 @@ def _get_time_str() -> str:
     return datetime.now().strftime("%m%d-%H%M%S")
 
 
-def _set_file(path: StrOrPathLike) -> None:
+def _set_file(path: PathLikeOrStr) -> None:
     path = os.fspath(path)
     global _FILE_HANDLER  # pylint: disable=W0603
     if os.path.isfile(path):
@@ -188,7 +188,7 @@ def _set_file(path: StrOrPathLike) -> None:
     logger.info("Argv: %s ", sys.argv)
 
 
-def set_logger_dir(dir_name: StrOrPathLike, action: Optional[str] = None) -> None:
+def set_logger_dir(dir_name: PathLikeOrStr, action: Optional[str] = None) -> None:
     """
     Set the directory for global logging.
 
@@ -213,7 +213,7 @@ def set_logger_dir(dir_name: StrOrPathLike, action: Optional[str] = None) -> Non
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
-    def dir_nonempty(directory: StrOrPathLike) -> int:
+    def dir_nonempty(directory: PathLikeOrStr) -> int:
         return os.path.isdir(directory) and len([x for x in os.listdir(directory) if x[0] != "."])
 
     if dir_nonempty(dir_name):
@@ -267,7 +267,7 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
     set_logger_dir(auto_dir_name, action=action)
 
 
-def get_logger_dir() -> Optional[StrOrPathLike]:
+def get_logger_dir() -> Optional[PathLikeOrStr]:
     """
     The logger directory, or None if not set.
     The directory is used for general logging, tensorboard events, checkpoints, etc.

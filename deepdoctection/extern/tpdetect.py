@@ -25,7 +25,7 @@ from copy import copy
 from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
-from ..utils._types import PixelValues, Requirement, StrOrPathLike
+from ..utils.types import PixelValues, Requirement, PathLikeOrStr
 from ..utils.file_utils import get_tensorflow_requirement, get_tensorpack_requirement
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
@@ -70,7 +70,7 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         return categories  # type: ignore
 
     @staticmethod
-    def get_name(path_weights: StrOrPathLike, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Tensorpack_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -98,8 +98,8 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
     def __init__(
         self,
-        path_yaml: StrOrPathLike,
-        path_weights: StrOrPathLike,
+        path_yaml: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         config_overwrite: Optional[list[str]] = None,
         ignore_mismatch: bool = False,
@@ -142,7 +142,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: StrOrPathLike, categories: Mapping[str, ObjectTypes], config_overwrite: Union[list[str], None]
+        path_yaml: PathLikeOrStr, categories: Mapping[str, ObjectTypes], config_overwrite: Union[list[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel

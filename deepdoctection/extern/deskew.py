@@ -21,7 +21,7 @@ jdeskew estimator and rotator to deskew images: <https://github.com/phamquiluan/
 
 from lazy_imports import try_import
 
-from ..utils._types import PixelValues, Requirement
+from ..utils.types import PixelValues, Requirement
 from ..utils.file_utils import get_jdeskew_requirement
 from ..utils.settings import PageType
 from ..utils.viz import viz_handler
@@ -76,5 +76,5 @@ class Jdeskewer(ImageTransformer):
         return [get_jdeskew_requirement()]
 
     @staticmethod
-    def possible_category() -> PageType:
+    def get_category_name() -> PageType:
         return PageType.angle

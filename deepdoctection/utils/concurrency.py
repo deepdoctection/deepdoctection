@@ -28,7 +28,7 @@ import threading
 from contextlib import contextmanager
 from typing import Any, Generator, Optional, no_type_check
 
-from ._types import QueueType
+from .types import QueueType
 from .logger import log_once
 
 

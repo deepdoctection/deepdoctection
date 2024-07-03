@@ -26,14 +26,13 @@ from typing import Any, Callable, Literal, Optional, Sequence, Union
 from ..datapoint.image import Image
 from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
-from ..utils._types import JsonDict
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
-from .base import LanguageModelPipelineComponent, MetaAnnotation
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
-class LMTokenClassifierService(LanguageModelPipelineComponent):
+class LMTokenClassifierService(PipelineComponent):
     """
     Pipeline component for token classification
 
@@ -116,8 +115,9 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             else:
                 self.default_key = TokenClasses.other
             self.other_name_as_key = {self.default_key: categories_name_as_key[self.default_key]}
-        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
-        super().__init__(self._get_name(), tokenizer, image_to_features_func)
+        self.tokenizer = tokenizer
+        self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), self.language_model.model_id)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -127,7 +127,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
             "segment_positions": self.segment_positions,
             "sliding_window_stride": self.sliding_window_stride,
         }
-        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        self.required_kwargs.update(self.language_model.default_kwargs_for_image_to_features_mapping())
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:
@@ -222,7 +222,7 @@ class LMTokenClassifierService(LanguageModelPipelineComponent):
 
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
-class LMSequenceClassifierService(LanguageModelPipelineComponent):
+class LMSequenceClassifierService(PipelineComponent):
     """
     Pipeline component for sequence classification
 
@@ -278,8 +278,9 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
         self.padding = padding
         self.truncation = truncation
         self.return_overflowing_tokens = return_overflowing_tokens
-        image_to_features_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
-        super().__init__(self._get_name(), tokenizer, image_to_features_func)
+        self.tokenizer = tokenizer
+        self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
+        super().__init__(self._get_name(), self.language_model.model_id)
         self.required_kwargs = {
             "tokenizer": self.tokenizer,
             "padding": self.padding,
@@ -287,7 +288,7 @@ class LMSequenceClassifierService(LanguageModelPipelineComponent):
             "return_overflowing_tokens": self.return_overflowing_tokens,
             "return_tensors": "pt",
         }
-        self.required_kwargs.update(self.language_model.default_kwargs_for_input_mapping())
+        self.required_kwargs.update(self.language_model.default_kwargs_for_image_to_features_mapping())
         self._init_sanity_checks()
 
     def serve(self, dp: Image) -> None:

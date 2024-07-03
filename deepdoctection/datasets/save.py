@@ -27,14 +27,14 @@ from typing import Optional
 from ..dataflow import DataFlow, MapData, SerializerJsonlines
 from ..datapoint.convert import convert_b64_to_np_array
 from ..datapoint.image import Image
-from ..utils._types import JsonDict, StrOrPathLike, ImageDict
+from ..utils.types import JsonDict, PathLikeOrStr, ImageDict
 from ..utils.fs import mkdir_p
 from ..utils.viz import viz_handler
 
 
 def dataflow_to_json(
     df: DataFlow,
-    path: StrOrPathLike,
+    path: PathLikeOrStr,
     single_files: bool = False,
     file_name: Optional[str] = None,
     max_datapoints: Optional[int] = None,

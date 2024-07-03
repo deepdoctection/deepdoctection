@@ -30,7 +30,7 @@ from typing import Any, Mapping, Optional, Union
 
 from packaging.version import InvalidVersion, Version, parse
 
-from ..utils._types import PixelValues, Requirement, StrOrPathLike
+from ..utils.types import PixelValues, Requirement, PathLikeOrStr
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
@@ -331,7 +331,7 @@ class TesseractOcrDetector(ObjectDetector):
 
     def __init__(
         self,
-        path_yaml: StrOrPathLike,
+        path_yaml: PathLikeOrStr,
         config_overwrite: Optional[list[str]] = None,
     ):
         """
@@ -382,7 +382,7 @@ class TesseractOcrDetector(ObjectDetector):
     def clone(self) -> ObjectDetector:
         return self.__class__(self.path_yaml, self.config_overwrite)
 
-    def possible_categories(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         if self.config.LINES:
             return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]
@@ -457,5 +457,5 @@ class TesseractRotationTransformer(ImageTransformer):
         return self.__class__()
 
     @staticmethod
-    def possible_category() -> PageType:
+    def get_category_name() -> PageType:
         return PageType.angle

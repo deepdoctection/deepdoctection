@@ -29,7 +29,7 @@ from deepdoctection.extern.tessocr import (
     TesseractRotationTransformer,
     tesseract_line_to_detectresult,
 )
-from deepdoctection.utils._types import PixelValues
+from deepdoctection.utils.types import PixelValues
 from deepdoctection.utils.error import DependencyError
 from tests.data import Annotations
 

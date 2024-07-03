@@ -30,7 +30,7 @@ from typing import Generator, Optional
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
-from ._types import StrOrPathLike, PixelValues
+from .types import PathLikeOrStr, PixelValues
 from .context import save_tmp_file, timeout_manager
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
@@ -41,7 +41,7 @@ from .viz import viz_handler
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
 
-def decrypt_pdf_document(path: StrOrPathLike) -> bool:
+def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
     """
     Decrypting a pdf. As copying a pdf document removes the password that protects pdf, this method
     generates a copy and decrypts the copy using qpdf. The result is saved as the original
@@ -73,7 +73,7 @@ def decrypt_pdf_document(path: StrOrPathLike) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: StrOrPathLike) -> PdfReader:
+def get_pdf_file_reader(path: PathLikeOrStr) -> PdfReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
@@ -133,7 +133,7 @@ class PDFStreamer:
 
     """
 
-    def __init__(self, path: StrOrPathLike) -> None:
+    def __init__(self, path: PathLikeOrStr) -> None:
         """
         :param path: to a pdf.
         """
@@ -157,7 +157,7 @@ class PDFStreamer:
 
 
 def _input_to_cli_str(
-    input_file_name: StrOrPathLike, output_file_name: StrOrPathLike, dpi: int, size: Optional[tuple[int, int]] = None
+    input_file_name: PathLikeOrStr, output_file_name: PathLikeOrStr, dpi: int, size: Optional[tuple[int, int]] = None
 ) -> list[str]:
     cmd_args: list[str] = []
 

@@ -27,7 +27,7 @@ from typing import Any, Callable, Sequence, Union
 
 import numpy as np
 
-from ._types import StrOrPathLike
+from .types import PathLikeOrStr
 
 
 def delete_keys_from_dict(
@@ -144,7 +144,7 @@ def get_rng(obj: Any = None) -> np.random.RandomState:
     return np.random.RandomState(seed)
 
 
-def is_file_extension(file_name: StrOrPathLike, extension: Union[str, Sequence[str]]) -> bool:
+def is_file_extension(file_name: PathLikeOrStr, extension: Union[str, Sequence[str]]) -> bool:
     """
     Check if a given file name has a given extension
 

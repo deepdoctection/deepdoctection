@@ -29,7 +29,7 @@ from typing import Any, Iterable, Optional, Sequence, Union, no_type_check
 import numpy as np
 from numpy import uint8
 
-from ..utils._types import StrOrPathLike, PixelValues, ImageDict
+from ..utils.types import PathLikeOrStr, PixelValues, ImageDict
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
@@ -636,7 +636,7 @@ class Image:
         self,
         image_to_json: bool = True,
         highest_hierarchy_only: bool = False,
-        path: Optional[StrOrPathLike] = None,
+        path: Optional[PathLikeOrStr] = None,
         dry: bool = False,
     ) -> Optional[ImageDict]:
         """

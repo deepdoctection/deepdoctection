@@ -30,10 +30,10 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from ..utils._types import JsonDict, PixelValues
+from ..utils.types import JsonDict, PixelValues
 from ..utils.settings import ObjectTypes, Relationships, get_type
 from ..utils.transform import PadTransform
-from .base import PredictorPipelineComponent, MetaAnnotation
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
@@ -126,7 +126,7 @@ class DetectResultGenerator:
 
 
 @pipeline_component_registry.register("SubImageLayoutService")
-class SubImageLayoutService(PredictorPipelineComponent):
+class SubImageLayoutService(PipelineComponent):
     """
     Component in which the selected ImageAnnotation can be selected with cropped images and presented to a detector.
 
@@ -172,7 +172,8 @@ class SubImageLayoutService(PredictorPipelineComponent):
         self.category_id_mapping = category_id_mapping
         self.detect_result_generator = detect_result_generator
         self.padder = padder
-        super().__init__(self._get_name(sub_image_detector.name), sub_image_detector)
+        self.predictor = sub_image_detector
+        super().__init__(self._get_name(sub_image_detector.name), self.predictor.model_id)
         if self.detect_result_generator is not None:
             assert self.detect_result_generator.categories == self.predictor.categories  # type: ignore
 
@@ -209,7 +210,7 @@ class SubImageLayoutService(PredictorPipelineComponent):
         if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
             raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(self.predictor)}")
         return MetaAnnotation(
-            image_annotations=self.predictor.possible_categories(),
+            image_annotations=self.predictor.get_category_names(),
             sub_categories={},
             relationships={get_type(parent): {Relationships.child} for parent in self.sub_image_name},
             summaries=[],

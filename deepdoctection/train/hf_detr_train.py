@@ -35,11 +35,11 @@ from ..eval.eval import Evaluator
 from ..eval.registry import metric_registry
 from ..extern.hfdetr import HFDetrDerivedDetector
 from ..mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
-from ..pipe.base import PredictorPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
 from ..utils.utils import string_to_dict
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -82,7 +82,7 @@ class DetrDerivedTrainer(Trainer):
     def setup_evaluator(
         self,
         dataset_val: DatasetBase,
-        pipeline_component: PredictorPipelineComponent,
+        pipeline_component: PipelineComponent,
         metric: Union[Type[MetricBase], MetricBase],
         **build_eval_kwargs: Union[str, int],
     ) -> None:
@@ -99,9 +99,7 @@ class DetrDerivedTrainer(Trainer):
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
-            assert isinstance(comp, PredictorPipelineComponent)
-            assert isinstance(comp.predictor, HFDetrDerivedDetector)
-            comp.predictor.hf_detr_predictor = None
+            comp.clear_predictor()
         self.build_eval_kwargs = build_eval_kwargs
 
     def evaluate(
@@ -131,12 +129,12 @@ class DetrDerivedTrainer(Trainer):
 
 
 def train_hf_detr(
-    path_config_json: StrOrPathLike,
+    path_config_json: PathLikeOrStr,
     dataset_train: Union[str, DatasetBase],
-    path_weights: StrOrPathLike,
+    path_weights: PathLikeOrStr,
     path_feature_extractor_config_json: str,
     config_overwrite: Optional[list[str]] = None,
-    log_dir: StrOrPathLike = "train_log/detr",
+    log_dir: PathLikeOrStr = "train_log/detr",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,

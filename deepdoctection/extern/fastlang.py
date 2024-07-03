@@ -27,7 +27,7 @@ from lazy_imports import try_import
 
 from ..utils.file_utils import Requirement, get_fasttext_requirement
 from ..utils.settings import TypeOrStr, get_type
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 from .base import DetectionResult, LanguageDetector, PredictorBase
 
 with try_import() as import_guard:
@@ -54,7 +54,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         return DetectionResult(text=self.categories[output[0][0]], score=output[1][0])
 
     @staticmethod
-    def get_name(path_weights: StrOrPathLike) -> str:
+    def get_name(path_weights: PathLikeOrStr) -> str:
         """Returns the name of the model"""
         return "fasttext_" + "_".join(Path(path_weights).parts[-2:])
 
@@ -81,7 +81,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
 
     """
 
-    def __init__(self, path_weights: StrOrPathLike, categories: Mapping[str, TypeOrStr]):
+    def __init__(self, path_weights: PathLikeOrStr, categories: Mapping[str, TypeOrStr]):
         """
         :param path_weights: path to model weights
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
@@ -108,7 +108,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
         return self.__class__(self.path_weights, self.categories)
 
     @staticmethod
-    def get_wrapped_model(path_weights: StrOrPathLike) -> Any:
+    def get_wrapped_model(path_weights: PathLikeOrStr) -> Any:
         """
         Get the wrapped model
         :param path_weights: path to model weights

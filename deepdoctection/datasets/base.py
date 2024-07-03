@@ -33,7 +33,7 @@ import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from .dataflow_builder import DataFlowBaseBuilder
@@ -389,7 +389,7 @@ class CustomDataset(DatasetBase):
         self,
         name: str,
         dataset_type: TypeOrStr,
-        location: StrOrPathLike,
+        location: PathLikeOrStr,
         init_categories: Sequence[ObjectTypes],
         dataflow_builder: Type[DataFlowBaseBuilder],
         init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,

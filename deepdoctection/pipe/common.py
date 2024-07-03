@@ -32,7 +32,7 @@ from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
-from ..utils._types import JsonDict
+from ..utils.types import JsonDict
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
@@ -167,7 +167,7 @@ class MatchingService(PipelineComponent):
 
 
 @pipeline_component_registry.register("PageParsingService")
-class PageParsingService:
+class PageParsingService(PipelineComponent):
     """
     A "pseudo" pipeline component that can be added to a pipeline to convert `Image`s into `Page` formats. It allows a
     custom parsing depending on customizing options of other pipeline components.
@@ -194,6 +194,10 @@ class PageParsingService:
         self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
+        super().__init__(self.name)
+
+    def serve(self, dp: Image) -> None:
+        raise NotImplementedError("PageParsingService is not meant to be used in serve method")
 
     def pass_datapoint(self, dp: Image) -> Page:
         """
@@ -203,23 +207,13 @@ class PageParsingService:
         """
         return Page.from_image(dp, self.text_container, self.floating_text_block_categories)
 
-    def predict_dataflow(self, df: DataFlow) -> DataFlow:
-        """
-        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
-
-        :param df: An input dataflow
-        :return: A output dataflow
-        """
-        return MapData(df, self.pass_datapoint)
-
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
             LayoutType.word,
             LayoutType.line,
         ), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
 
-    @staticmethod
-    def get_meta_annotation() -> MetaAnnotation:
+    def get_meta_annotation(self) -> MetaAnnotation:
         """
         meta annotation. We do not generate any new annotations here
         """

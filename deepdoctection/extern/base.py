@@ -23,11 +23,16 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union, TYPE_CHECKING
+from lazy_imports import try_import
 
-from ..utils._types import JsonDict, PixelValues, Requirement, B64Str
+from ..utils.types import JsonDict, PixelValues, Requirement
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+
+if TYPE_CHECKING:
+    with try_import() as import_guard:
+        import torch
 
 
 class PredictorBase(ABC):
@@ -119,7 +124,7 @@ class DetectionResult:
 class ObjectDetector(PredictorBase):
     """
     Abstract base class for object detection. This can be anything ranging from layout detection to OCR.
-    Use this to connect external detectors with Deep-Doctection predictors on images.
+    Use this to connect external detectors with deepdoctection predictors on images.
 
     **Example:**
 
@@ -154,18 +159,11 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         """
-        Abstract method possible_categories. Must implement a method that returns a list of possible detectable
-        categories
+        Returns a list with the full range of detectable categories
         """
         return list(self.categories.values())
-
-    def clone(self) -> ObjectDetector:
-        """
-        Clone an instance
-        """
-        raise NotImplementedError()
 
 
 class PdfMiner(PredictorBase):
@@ -176,7 +174,6 @@ class PdfMiner(PredictorBase):
 
     _categories: Mapping[str, ObjectTypes]
     _pdf_bytes: Optional[bytes] = None
-    _page: Any = None
 
     @property
     def categories(self) -> Mapping[str, ObjectTypes]:
@@ -211,7 +208,7 @@ class PdfMiner(PredictorBase):
         """
         return False
 
-    def possible_categories(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable categories
         """
@@ -308,32 +305,63 @@ class LMTokenClassifier(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:  # type: ignore
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Abstract method predict
         """
         raise NotImplementedError()
 
-    def possible_tokens(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable tokens
         """
         return list(self.categories.values())
 
-    @abstractmethod
-    def clone(self) -> LMTokenClassifier:
-        """
-        Clone an instance
-        """
-        raise NotImplementedError()
-
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
-        Add some default arguments that might be necessary when preparing a sample. Overwrite this method
-        for some custom setting. `default_arguments_for_input_mapping` in `LMTokenClassifierService`.
+        Some models require that their inputs must be pre-processed in a specific way. Responsible for converting
+        an `Image` datapoint into the input format in inference mode is a mapper function which is called
+        in a pipeline component. The mapper function's name, which has to be used must be specified in the returned
+        value of `image_to_features_mapping`.
+        This mapper function is often implemented for various models and can therefore have various parameters.
+        Some parameters can be inferred from the config file of the model parametrization. Some other might not be
+        in the parametrization and therefore have to be specified here.
+
+        This method therefore returns a dictionary that contains as keys some arguments of the function
+        `image_to_features_mapping` and as values the values necessary for providing the model with the required input.
         """
         return {}
+
+    @staticmethod
+    def image_to_raw_features_mapping() -> str:
+        """Converting image into model features must often be divided into several steps. This is because the process
+        method during training and serving might differ: For training there might be additional augmentation steps
+        required or one might add some data batching. For this reason we have added two methods
+        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
+        training or inference purposes:
+
+        `image_to_raw_features_mapping` is used for training and transforms an image into raw features that can be
+        further processed through augmentation or batching. It should not be used when running inference, i.e. when
+        running the model in a pipeline component.
+        """
+        return ""
+
+    @staticmethod
+    def image_to_features_mapping() -> str:
+        """Converting image into model features must often be divided into several steps. This is because the process
+        method during training and serving might differ: For training there might be additional augmentation steps
+        required or one might add some data batching. For this reason we have added two methods
+        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
+        training or inference purposes:
+
+        `image_to_features_mapping` is a mapping function that converts a single image into ready features that can
+        be directly fed into the model. We use this function to determine the input format of the model in a pipeline
+        component. Note that this function will also require specific parameters, which can be specified in
+        `default_kwargs_for_image_to_features_mapping`.
+
+        """
+        return ""
 
 
 class LMSequenceClassifier(PredictorBase):
@@ -355,32 +383,63 @@ class LMSequenceClassifier(PredictorBase):
         self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
-    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:  # type: ignore
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         """
         Abstract method predict
         """
         raise NotImplementedError()
 
-    def possible_categories(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable categories for a sequence
         """
         return list(self.categories.values())
 
-    @abstractmethod
-    def clone(self) -> LMSequenceClassifier:
-        """
-        Clone an instance
-        """
-        raise NotImplementedError()
-
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
-        Add some default arguments that might be necessary when preparing a sample. Overwrite this method
-        for some custom setting. `default_arguments_for_input_mapping` in `LMTokenClassifierService`.
+        Some models require that their inputs must be pre-processed in a specific way. Responsible for converting
+        an `Image` datapoint into the input format in inference mode is a mapper function which is called
+        in a pipeline component. The mapper function's name, which has to be used must be specified in the returned
+        value of `image_to_features_mapping`.
+        This mapper function is often implemented for various models and can therefore have various parameters.
+        Some parameters can be inferred from the config file of the model parametrization. Some other might not be
+        in the parametrization and therefore have to be specified here.
+
+        This method therefore returns a dictionary that contains as keys some arguments of the function
+        `image_to_features_mapping` and as values the values necessary for providing the model with the required input.
         """
         return {}
+
+    @staticmethod
+    def image_to_raw_features_mapping() -> str:
+        """Converting image into model features must often be divided into several steps. This is because the process
+        method during training and serving might differ: For training there might be additional augmentation steps
+        required or one might add some data batching. For this reason we have added two methods
+        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
+        training or inference purposes:
+
+        `image_to_raw_features_mapping` is used for training and transforms an image into raw features that can be
+        further processed through augmentation or batching. It should not be used when running inference, i.e. when
+        running the model in a pipeline component.
+        """
+        return ""
+
+    @staticmethod
+    def image_to_features_mapping() -> str:
+        """Converting image into model features must often be divided into several steps. This is because the process
+        method during training and serving might differ: For training there might be additional augmentation steps
+        required or one might add some data batching. For this reason we have added two methods
+        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
+        training or inference purposes:
+
+        `image_to_features_mapping` is a mapping function that converts a single image into ready features that can
+        be directly fed into the model. We use this function to determine the input format of the model in a pipeline
+        component. Note that this function will also require specific parameters, which can be specified in
+        `default_kwargs_for_image_to_features_mapping`.
+
+        """
+        return ""
 
 
 class LanguageDetector(PredictorBase):
@@ -408,7 +467,7 @@ class LanguageDetector(PredictorBase):
         """
         raise NotImplementedError()
 
-    def possible_languages(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         """
         Returns a list of possible detectable languages
         """
@@ -439,7 +498,7 @@ class ImageTransformer(PredictorBase):
 
     @staticmethod
     @abstractmethod
-    def possible_category() -> ObjectTypes:
+    def get_category_name() -> ObjectTypes:
         """
         Returns a (single) category the `ImageTransformer` can predict
         """

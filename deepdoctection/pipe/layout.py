@@ -26,15 +26,15 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
-from ..utils._types import JsonDict
+from ..utils.types import JsonDict
 from ..utils.error import ImageError
 from ..utils.transform import PadTransform
-from .base import PredictorPipelineComponent, MetaAnnotation
+from .base import PipelineComponent, MetaAnnotation
 from .registry import pipeline_component_registry
 
 
 @pipeline_component_registry.register("ImageLayoutService")
-class ImageLayoutService(PredictorPipelineComponent):
+class ImageLayoutService(PipelineComponent):
     """
     Pipeline component for determining the layout. Which layout blocks are determined depends on the Detector and thus
     usually on the data set on which the Detector was pre-trained. If the Detector has been trained on Publaynet, these
@@ -73,11 +73,12 @@ class ImageLayoutService(PredictorPipelineComponent):
         self.crop_image = crop_image
         self.padder = padder
         self.skip_if_layout_extracted = skip_if_layout_extracted
-        super().__init__(self._get_name(layout_detector.name), layout_detector)
+        self.predictor = layout_detector
+        super().__init__(self._get_name(layout_detector.name),  self.predictor.model_id)
 
     def serve(self, dp: Image) -> None:
         if self.skip_if_layout_extracted:
-            categories = self.predictor.possible_categories()  # type: ignore
+            categories = self.predictor.get_category_names()  # type: ignore
             anns = dp.get_annotation(category_names=categories)
             if anns:
                 return
@@ -103,7 +104,7 @@ class ImageLayoutService(PredictorPipelineComponent):
                 f"{type(self.predictor)}"
             )
         return MetaAnnotation(
-            image_annotations=self.predictor.possible_categories(),
+            image_annotations=self.predictor.get_category_names(),
             sub_categories={},
             relationships={},
             summaries=[]

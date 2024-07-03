@@ -48,14 +48,14 @@ from ..extern.hflayoutlm import (
 from ..extern.hflm import HFLmSequenceClassifier
 from ..extern.pt.ptutils import get_torch_device
 from ..mapper.laylmstruct import LayoutLMDataCollator, image_to_raw_layoutlm_features, image_to_raw_lm_features
-from ..pipe.base import LanguageModelPipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, WordType
 from ..utils.utils import string_to_dict
-from ..utils._types import StrOrPathLike
+from ..utils.types import PathLikeOrStr
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -171,7 +171,7 @@ class LayoutLMTrainer(Trainer):
     def setup_evaluator(
         self,
         dataset_val: DatasetBase,
-        pipeline_component: LanguageModelPipelineComponent,
+        pipeline_component: PipelineComponent,
         metric: Union[Type[ClassificationMetric], ClassificationMetric],
         run: Optional[wandb.sdk.wandb_run.Run] = None,
         **build_eval_kwargs: Union[str, int],
@@ -190,7 +190,7 @@ class LayoutLMTrainer(Trainer):
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
-            comp.language_model.model = None  # type: ignore
+            comp.clear_predictor()
         self.build_eval_kwargs = build_eval_kwargs
 
     def evaluate(
@@ -222,7 +222,7 @@ class LayoutLMTrainer(Trainer):
 
 
 def _get_model_class_and_tokenizer(
-    path_config_json: StrOrPathLike, dataset_type: DatasetType, use_xlm_tokenizer: bool
+    path_config_json: PathLikeOrStr, dataset_type: DatasetType, use_xlm_tokenizer: bool
 ) -> tuple[Any, Any, Any, Any, Any]:
     with open(path_config_json, "r", encoding="UTF-8") as file:
         config_json = json.load(file)
@@ -246,11 +246,11 @@ def get_image_to_raw_features_mapping(input_str: str) -> Any:
 
 
 def train_hf_layoutlm(
-    path_config_json: StrOrPathLike,
+    path_config_json: PathLikeOrStr,
     dataset_train: Union[str, DatasetBase],
-    path_weights: StrOrPathLike,
+    path_weights: PathLikeOrStr,
     config_overwrite: Optional[list[str]] = None,
-    log_dir: StrOrPathLike = "train_log/layoutlm",
+    log_dir: PathLikeOrStr = "train_log/layoutlm",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,
     build_val_config: Optional[Sequence[str]] = None,
@@ -374,7 +374,7 @@ def train_hf_layoutlm(
     image_to_raw_features_kwargs = {"dataset_type": dataset_type, "use_token_tag": use_token_tag}
     if segment_positions:
         image_to_raw_features_kwargs["segment_positions"] = segment_positions  # type: ignore
-    image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_input_mapping())
+    image_to_raw_features_kwargs.update(model_wrapper_cls.default_kwargs_for_image_to_features_mapping())
 
     dataset = DatasetAdapter(
         dataset_train,

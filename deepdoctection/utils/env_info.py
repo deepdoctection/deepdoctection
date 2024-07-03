@@ -58,7 +58,7 @@ import numpy as np
 from packaging import version
 from tabulate import tabulate
 
-from ._types import KeyValEnvInfos, StrOrPathLike
+from .types import KeyValEnvInfos, PathLikeOrStr
 from .file_utils import (
     apted_available,
     aws_available,
@@ -233,7 +233,7 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     return data
 
 
-def detect_compute_compatibility(cuda_home: Optional[StrOrPathLike], so_file: Optional[StrOrPathLike]) -> str:
+def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Optional[PathLikeOrStr]) -> str:
     """
     Detect the compute compatibility of a CUDA library.
 

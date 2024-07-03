@@ -26,7 +26,7 @@ import traceback
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_np_array_to_b64_b
-from ..utils._types import JsonDict, PixelValues, Requirement
+from ..utils.types import JsonDict, PixelValues, Requirement
 from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
@@ -148,7 +148,7 @@ class TextractOcrDetector(ObjectDetector):
     def clone(self) -> TextractOcrDetector:
         return self.__class__()
 
-    def possible_categories(self) -> list[ObjectTypes]:
+    def get_category_names(self) -> list[ObjectTypes]:
         if self.text_lines:
             return [LayoutType.word, LayoutType.line]
         return [LayoutType.word]

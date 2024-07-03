@@ -26,7 +26,7 @@ from typing import Any, Mapping, Optional, Sequence, Type, Union, no_type_check
 
 import numpy as np
 
-from ..utils._types import  StrOrPathLike, PixelValues, AnnotationDict, Text_, HTML, csv, Chunks, ImageDict
+from ..utils.types import  PathLikeOrStr, PixelValues, AnnotationDict, Text_, HTML, csv, Chunks, ImageDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -957,7 +957,7 @@ class Page(Image):
         self,
         image_to_json: bool = True,
         highest_hierarchy_only: bool = False,
-        path: Optional[StrOrPathLike] = None,
+        path: Optional[PathLikeOrStr] = None,
         dry: bool = False,
     ) -> Optional[ImageDict]:
         """
