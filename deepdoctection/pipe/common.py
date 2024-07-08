@@ -21,7 +21,7 @@ Module for common pipeline components
 from __future__ import annotations
 
 import os
-from copy import copy, deepcopy
+from copy import deepcopy
 from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
@@ -32,9 +32,8 @@ from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..mapper.misc import to_image
-from ..utils.types import JsonDict
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 if os.environ.get("DD_USE_TORCH"):
@@ -56,9 +55,11 @@ class ImageCroppingService(PipelineComponent):
         :param category_names: A single name or a list of category names to crop
         """
 
-        if isinstance(category_names, str):
-            category_names = [category_names]
-        self.category_names = [get_type(category_name) for category_name in category_names]
+        self.category_names = (
+            (category_names,)
+            if isinstance(category_names, str)
+            else tuple(get_type(category_name) for category_name in category_names)
+        )
         super().__init__("image_crop")
 
     def serve(self, dp: Image) -> None:
@@ -69,10 +70,7 @@ class ImageCroppingService(PipelineComponent):
         return self.__class__(self.category_names)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -117,16 +115,18 @@ class MatchingService(PipelineComponent):
         :param max_parent_only: Will assign to each child at most one parent with maximum ioa
         """
         self.parent_categories = (
-            [get_type(parent_categories)]  # type: ignore
-            if not isinstance(parent_categories, (list, set))
-            else [get_type(parent_category) for parent_category in parent_categories]
+            (get_type(parent_categories),)
+            if isinstance(parent_categories, str)
+            else tuple(get_type(category_name) for category_name in parent_categories)
         )
         self.child_categories = (
-            [get_type(child_categories)]  # type: ignore
-            if not isinstance(child_categories, (list, set))
-            else [get_type(child_category) for child_category in child_categories]
+            (get_type(child_categories),)
+            if isinstance(child_categories, str)
+            else (tuple(get_type(category_name) for category_name in child_categories))
         )
-        assert matching_rule in ["iou", "ioa"], "segment rule must be either iou or ioa"
+        if matching_rule not in ("iou", "ioa"):
+            raise ValueError("segment rule must be either iou or ioa")
+
         self.matching_rule = matching_rule
         self.threshold = threshold
         self.use_weighted_intersections = use_weighted_intersections
@@ -160,10 +160,12 @@ class MatchingService(PipelineComponent):
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={},
-                              relationships={parent: {Relationships.child} for parent in self.parent_categories},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={},
+            relationships={parent: {Relationships.child} for parent in self.parent_categories},
+            summaries=(),
+        )
 
 
 @pipeline_component_registry.register("PageParsingService")
@@ -186,12 +188,14 @@ class PageParsingService(PipelineComponent):
         """
         self.name = "page_parser"
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
-            floating_text_block_categories = [floating_text_block_categories]
+            floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
-            floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])
+            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
 
         self.text_container = get_type(text_container)
-        self.floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
+        self.floating_text_block_categories = tuple(
+            (get_type(text_block) for text_block in floating_text_block_categories)
+        )
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
         super().__init__(self.name)
@@ -217,10 +221,7 @@ class PageParsingService(PipelineComponent):
         """
         meta annotation. We do not generate any new annotations here
         """
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
     def clone(self) -> PageParsingService:
         """clone"""
@@ -293,10 +294,7 @@ class AnnotationNmsService(PipelineComponent):
         return self.__class__(deepcopy(self.nms_pairs), self.threshold)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
 
 @pipeline_component_registry.register("ImageParsingService")
@@ -335,7 +333,7 @@ class ImageParsingService:
         """
         meta annotation. We do not generate any new annotations here
         """
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
+
+    def clear_predictor(self) -> None:
+        """clear predictor. Will do nothing"""

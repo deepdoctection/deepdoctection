@@ -28,7 +28,6 @@ from zipfile import ZipFile
 
 from lazy_imports import try_import
 
-from ..utils.types import PixelValues, Requirement, PathLikeOrStr
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import (
@@ -39,8 +38,9 @@ from ..utils.file_utils import (
 )
 from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler
-from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
+from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector, TextRecognizer
 from .pt.ptutils import get_torch_device
 from .tp.tfutils import get_tf_device
 
@@ -69,9 +69,9 @@ def _get_doctr_requirements() -> list[Requirement]:
 
 def _load_model(
     path_weights: PathLikeOrStr,
-        doctr_predictor: Union[DetectionPredictor, RecognitionPredictor],
-        device: Union[torch.device, tf.device],
-        lib: Literal["PT", "TF"]
+    doctr_predictor: Union[DetectionPredictor, RecognitionPredictor],
+    device: Union[torch.device, tf.device],
+    lib: Literal["PT", "TF"],
 ) -> None:
     """Loading a model either in TF or PT. We only shift the model to the device when using PyTorch. The shift of
     the model to the device in Tensorflow is done in the predict function."""
@@ -115,7 +115,7 @@ def doctr_predict_text_lines(
     :return: A list of text line detection results (without text).
     """
     if lib == "TF":
-        with device:   # type: ignore
+        with device:  # type: ignore
             raw_output = predictor([np_img])
     elif lib == "PT":
         raw_output = predictor([np_img])
@@ -166,11 +166,11 @@ class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
     """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
 
     def __init__(self, categories: Mapping[str, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
-        self.categories = categories  # type: ignore
+        self.categories = ModelCategories(init_categories=categories)
         self.lib = lib if lib is not None else self.auto_select_lib()
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
@@ -263,14 +263,16 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         return _get_doctr_requirements()
 
     def clone(self) -> DoctrTextlineDetector:
-        return self.__class__(self.architecture, self.path_weights, self.categories, self.device, self.lib)
+        return self.__class__(
+            self.architecture, self.path_weights, self.categories.get_categories(), self.device, self.lib
+        )
 
     @staticmethod
     def load_model(
         path_weights: PathLikeOrStr,
         doctr_predictor: DetectionPredictor,
         device: Union[torch.device, tf.device],
-        lib: Literal["PT", "TF"]
+        lib: Literal["PT", "TF"],
     ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
@@ -397,7 +399,7 @@ class DoctrTextRecognizer(TextRecognizer):
         path_weights: PathLikeOrStr,
         doctr_predictor: RecognitionPredictor,
         device: Union[torch.device, tf.device],
-        lib: Literal["PT", "TF"]
+        lib: Literal["PT", "TF"],
     ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
@@ -528,9 +530,8 @@ class DocTrRotationTransformer(ImageTransformer):
     def get_requirements(cls) -> list[Requirement]:
         return [get_doctr_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> DocTrRotationTransformer:
         return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
 
-    @staticmethod
-    def get_category_name() -> PageType:
-        return PageType.angle
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return (PageType.angle,)

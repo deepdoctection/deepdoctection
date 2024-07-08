@@ -52,7 +52,6 @@ from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
-from ..utils.types import PathLikeOrStr
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
@@ -61,6 +60,7 @@ from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import CellType, LayoutType
 from ..utils.transform import PadTransform
+from ..utils.types import PathLikeOrStr
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
@@ -136,8 +136,8 @@ def build_detector(
     config_path = ModelCatalog.get_full_path_configs(weights)
     weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
     profile = ModelCatalog.get_profile(weights)
-    categories = profile.categories
-    assert categories is not None
+    categories = profile.categories if profile.categories is not None else {}
+
     if profile.model_wrapper in ("TPFrcnnDetector",):
         return TPFrcnnDetector(config_path, weights_path, categories, filter_categories=filter_categories)
     if profile.model_wrapper in ("D2FrcnnDetector",):
@@ -207,7 +207,9 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
         if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
             exclude_category_ids.extend(["1", "3", "4", "5", "6"])
             padder = build_padder(cfg, mode)
-    detect_result_generator = DetectResultGenerator(detector.categories, exclude_category_ids=exclude_category_ids)
+    detect_result_generator = DetectResultGenerator(
+        categories=detector.categories.categories, exclude_category_ids=exclude_category_ids
+    )
     return SubImageLayoutService(
         detector, [LayoutType.table, LayoutType.table_rotated], None, detect_result_generator, padder
     )

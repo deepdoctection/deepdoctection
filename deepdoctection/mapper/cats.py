@@ -21,7 +21,7 @@ builder method of a dataset.
 """
 
 from collections import defaultdict
-from typing import Any,Literal, Mapping, Optional, Sequence, Union
+from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
 from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
 from ..datapoint.image import Image

@@ -25,8 +25,8 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.mapper.xfundstruct import xfund_to_image
-from deepdoctection.utils.types import JsonDict
 from deepdoctection.utils.settings import CellType, LayoutType, ObjectTypes, TokenClasses, WordType
+from deepdoctection.utils.types import JsonDict
 
 from .conftest import get_always_pubtabnet_white_image
 

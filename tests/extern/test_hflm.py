@@ -25,9 +25,9 @@ from pytest import mark
 
 from deepdoctection.extern.base import SequenceClassResult
 from deepdoctection.extern.hflm import HFLmSequenceClassifier
-from deepdoctection.utils.types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund
 from ..test_utils import get_mock_patch

@@ -26,12 +26,12 @@ from typing import List, Mapping, Optional, Sequence, Tuple, Union
 from ..dataflow import DataFlow, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
+from ..datapoint.view import IMAGE_DEFAULTS
 from ..mapper.maputils import curry
 from ..mapper.misc import to_image
-from ..utils.types import PathLikeOrStr
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import LayoutType
+from ..utils.types import PathLikeOrStr
 from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 
@@ -81,8 +81,11 @@ def _proto_process(
         path_tmp = doc_path or ""
     else:
         path_tmp = path
-    logger.info(LoggingRecord(f"Processing {file_name}",
-                              {"path": os.fspath(path_tmp), "df": os.fspath(path_tmp), "file_name": file_name}))
+    logger.info(
+        LoggingRecord(
+            f"Processing {file_name}", {"path": os.fspath(path_tmp), "df": os.fspath(path_tmp), "file_name": file_name}
+        )
+    )
     return dp
 
 
@@ -131,13 +134,12 @@ class DoctectionPipe(Pipeline):
         pipeline_component_list: List[PipelineComponent],
         page_parsing_service: Optional[PageParsingService] = None,
     ):
-        if page_parsing_service is None:
-            self.page_parser = PageParsingService(text_container=LayoutType.word)
-        else:
-            self.page_parser = page_parsing_service
-        assert all(
-            isinstance(element, PipelineComponent) for element in pipeline_component_list
+        self.page_parser = (
+            PageParsingService(text_container=IMAGE_DEFAULTS["text_container"])
+            if page_parsing_service is None
+            else page_parsing_service
         )
+
         super().__init__(pipeline_component_list)
 
     def _entry(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
@@ -148,7 +150,7 @@ class DoctectionPipe(Pipeline):
         if isinstance(path, (str, Path)):
             if not isinstance(file_type, (str, list)):
                 raise TypeError(f"file_type must be of type string or list, but is of type {type(file_type)}")
-            df = DoctectionPipe.path_to_dataflow(path, file_type, shuffle=shuffle)
+            df = DoctectionPipe.path_to_dataflow(path=path, file_type=file_type, shuffle=shuffle)
         elif isinstance(doc_path, (str, Path)):
             df = DoctectionPipe.doc_to_dataflow(
                 path=doc_path, max_datapoints=int(max_datapoints) if max_datapoints is not None else None

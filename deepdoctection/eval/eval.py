@@ -37,9 +37,9 @@ from ..pipe.base import PipelineComponent
 from ..pipe.common import PageParsingService
 from ..pipe.concurrency import MultiThreadPipelineComponent
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..utils.types import PixelValues
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, TypeOrStr, get_type
+from ..utils.types import PixelValues
 from ..utils.viz import interactive_imshow
 from .base import MetricBase
 

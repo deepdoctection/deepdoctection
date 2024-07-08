@@ -30,11 +30,11 @@ from typing import Generator, Optional
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
-from .types import PathLikeOrStr, PixelValues
 from .context import save_tmp_file, timeout_manager
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
+from .types import PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
 

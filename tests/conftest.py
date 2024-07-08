@@ -35,7 +35,6 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils.types import JsonDict, PixelValues, PathLikeOrStr
 from deepdoctection.utils.fs import get_package_path
 from deepdoctection.utils.settings import (
     CellType,
@@ -47,6 +46,7 @@ from deepdoctection.utils.settings import (
     update_all_types_dict,
     update_black_list,
 )
+from deepdoctection.utils.types import JsonDict, PathLikeOrStr, PixelValues
 from deepdoctection.utils.viz import viz_handler
 
 from .data import (

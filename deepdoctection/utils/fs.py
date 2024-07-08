@@ -28,12 +28,12 @@ from pathlib import Path
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
-from .types import JsonDict, PathLikeOrStr, PixelValues, B64Str, B64
 from .develop import deprecated
 from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
 from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
+from .types import B64, B64Str, JsonDict, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
 
@@ -84,9 +84,9 @@ def mkdir_p(dir_name: PathLikeOrStr) -> None:
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
-def download(url: str, directory: PathLikeOrStr,
-             file_name: Optional[str] = None,
-             expect_size: Optional[int] = None) -> str:
+def download(
+    url: str, directory: PathLikeOrStr, file_name: Optional[str] = None, expect_size: Optional[int] = None
+) -> str:
     """
     Download URL to a directory. Will figure out the filename automatically from URL, if not given.
     """
@@ -144,8 +144,9 @@ def load_image_from_file(path: PathLikeOrStr, type_id: Literal["b64"]) -> Option
     ...
 
 
-def load_image_from_file(path: PathLikeOrStr,
-                         type_id: Literal["np", "b64"] = "np") -> Optional[Union[B64Str, PixelValues]]:
+def load_image_from_file(
+    path: PathLikeOrStr, type_id: Literal["np", "b64"] = "np"
+) -> Optional[Union[B64Str, PixelValues]]:
     """
     Loads an image from path and passes back an encoded base64 string, a numpy array or None if file is not found
     or a conversion error occurs.

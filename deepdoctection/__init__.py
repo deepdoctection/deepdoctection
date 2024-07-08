@@ -160,6 +160,8 @@ _IMPORT_STRUCTURE = {
         "EvalCallback",
     ],
     "extern": [
+        "ModelCategories",
+        "NerModelCategories",
         "PredictorBase",
         "DetectionResult",
         "ObjectDetector",

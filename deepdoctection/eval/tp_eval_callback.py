@@ -22,12 +22,11 @@ Module for EvalCallback in Tensorpack
 from __future__ import annotations
 
 from itertools import count
-from typing import Mapping, Optional, Sequence, Type, Union, Any
+from typing import Mapping, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
 from ..datasets import DatasetBase
-from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict
@@ -101,7 +100,9 @@ class EvalCallback(Callback):  # pylint: disable=R0903
             if self.evaluator.pipe_component is None:
                 raise TypeError("self.evaluator.pipe_component cannot be None")
             for idx, comp in enumerate(self.evaluator.pipe_component.pipe_components):
-                comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
+                if hasattr(comp, "predictor"):
+                    if hasattr(comp.predictor, "tp_predictor"):
+                        comp.predictor.tp_predictor = self._build_predictor(idx % self.num_gpu)
 
     def _build_predictor(self, idx: int) -> OnlinePredictor:
         return self.trainer.get_predictor(self.in_names, self.out_names, device=idx)

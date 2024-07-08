@@ -38,8 +38,8 @@ from ..mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
-from ..utils.utils import string_to_dict
 from ..utils.types import PathLikeOrStr
+from ..utils.utils import string_to_dict
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -256,7 +256,6 @@ def train_hf_detr(
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         pipeline_component = pipeline_component_cls(detector)
-        assert isinstance(pipeline_component, PredictorPipelineComponent)
 
         if metric_name is not None:
             metric = metric_registry.get(metric_name)

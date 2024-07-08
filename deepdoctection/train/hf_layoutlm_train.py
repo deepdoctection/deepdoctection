@@ -23,7 +23,6 @@ from __future__ import annotations
 import copy
 import json
 import os
-from pathlib import Path
 import pprint
 from typing import Any, Optional, Sequence, Type, Union
 
@@ -54,8 +53,8 @@ from ..utils.error import DependencyError
 from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, LayoutType, WordType
-from ..utils.utils import string_to_dict
 from ..utils.types import PathLikeOrStr
+from ..utils.utils import string_to_dict
 
 with try_import() as pt_import_guard:
     from torch import nn
@@ -506,7 +505,6 @@ def train_hf_layoutlm(
                 use_other_as_default_category=True,
                 sliding_window_stride=sliding_window_stride,
             )
-        assert isinstance(pipeline_component, LanguageModelPipelineComponent)
 
         trainer.setup_evaluator(dataset_val, pipeline_component, metric, run, **build_val_dict)  # type: ignore
 

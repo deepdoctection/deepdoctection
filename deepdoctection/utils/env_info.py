@@ -58,7 +58,6 @@ import numpy as np
 from packaging import version
 from tabulate import tabulate
 
-from .types import KeyValEnvInfos, PathLikeOrStr
 from .file_utils import (
     apted_available,
     aws_available,
@@ -87,6 +86,7 @@ from .file_utils import (
     wandb_available,
 )
 from .logger import LoggingRecord, logger
+from .types import KeyValEnvInfos, PathLikeOrStr
 
 __all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
 
@@ -274,12 +274,12 @@ def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
         if version.parse(get_tf_version()) > version.parse("2.4.1"):
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         try:
-            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402
+            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402,E0611
 
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703
             try:
-                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401
+                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401,E0611
 
                 deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
             except Exception:  # pylint: disable=W0703
@@ -288,7 +288,7 @@ def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
         data.append(("Tensorflow", "None"))
         return data
 
-    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401
+    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401,E0611
 
     try:
         for key, value in list(build_info.build_info.items()):

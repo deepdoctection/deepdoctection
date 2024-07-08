@@ -24,9 +24,9 @@ from typing import Any, Callable, Optional
 
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
-from ..utils.types import MetricResults, DP
 from ..utils.error import DependencyError
 from ..utils.file_utils import Requirement
+from ..utils.types import MetricResults
 
 
 class MetricBase(ABC):
@@ -126,4 +126,3 @@ class MetricBase(ABC):
     @classmethod
     def print_result(cls) -> None:
         """Print metric result. Overwrite this method if you want a specific output"""
-        pass

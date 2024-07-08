@@ -16,9 +16,9 @@ import numpy as np
 from lazy_imports import try_import
 
 from ....datapoint.convert import box_to_point4, point4_to_box
-from ....utils.types import JsonDict, PixelValues
 from ....utils.error import MalformedData
 from ....utils.logger import log_once
+from ....utils.types import JsonDict, PixelValues
 from .common import filter_boxes_inside_shape, np_iou
 from .modeling.model_fpn import get_all_anchors_fpn
 from .utils.np_box_ops import area as np_area

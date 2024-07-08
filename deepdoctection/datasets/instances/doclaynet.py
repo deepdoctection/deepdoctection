@@ -36,9 +36,9 @@ from ...datapoint.image import Image
 from ...mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_summary
 from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
-from ...utils.types import CocoDatapointDict
 from ...utils.fs import load_image_from_file
 from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, TypeOrStr
+from ...utils.types import CocoDatapointDict
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo

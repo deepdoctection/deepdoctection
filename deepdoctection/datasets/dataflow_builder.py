@@ -24,8 +24,8 @@ from pathlib import Path
 from typing import Mapping, Optional, Sequence, Union
 
 from ..dataflow import DataFlow
-from ..utils.types import PathLikeOrStr
 from ..utils.fs import get_dataset_dir_path
+from ..utils.types import PathLikeOrStr
 from .info import DatasetCategories
 
 

@@ -22,13 +22,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Optional, Union, no_type_check
+from typing import Optional, Union, no_type_check
 
-from ..utils.types import JsonDict, AnnotationDict
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
+from ..utils.types import AnnotationDict
 from .box import BoundingBox
 from .convert import as_dict
 

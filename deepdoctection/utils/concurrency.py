@@ -28,8 +28,8 @@ import threading
 from contextlib import contextmanager
 from typing import Any, Generator, Optional, no_type_check
 
-from .types import QueueType
 from .logger import log_once
+from .types import QueueType
 
 
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py

@@ -30,8 +30,8 @@ from typing import Any, Generator, Iterator, Optional, Union
 
 import numpy as np
 
-from .types import PixelValues, B64Str, B64
 from .logger import LoggingRecord, logger
+from .types import B64, B64Str, PixelValues
 from .viz import viz_handler
 
 __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]

@@ -35,7 +35,7 @@ from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .refine import generate_html_string
 from .registry import pipeline_component_registry
 
@@ -694,8 +694,10 @@ class TableSegmentationService(PipelineComponent):
         :param sub_item_names: cell types of sub items (e.g. row number and column number)
         :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
         """
-        assert segment_rule in ("iou", "ioa"), "segment_rule must be either iou or ioa"
-        assert stretch_rule in ("left", "equal"), "stretch rule must be either 'left' or 'equal'"
+        if segment_rule not in ("iou", "ioa"):
+            raise ValueError("segment_rule must be either iou or ioa")
+        if stretch_rule not in ("left", "equal"):
+            raise ValueError("stretch rule must be either 'left' or 'equal'")
 
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows
@@ -814,19 +816,21 @@ class TableSegmentationService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={
-                        LayoutType.cell: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        LayoutType.row: {CellType.row_number},
-                        LayoutType.column: {CellType.column_number},
-                    },
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={
+                LayoutType.cell: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                LayoutType.row: {CellType.row_number},
+                LayoutType.column: {CellType.column_number},
+            },
+            relationships={},
+            summaries=(),
+        )
 
 
 class PubtablesSegmentationService(PipelineComponent):
@@ -1054,40 +1058,42 @@ class PubtablesSegmentationService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={
-                        LayoutType.cell: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        CellType.spanning: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        CellType.row_header: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        CellType.column_header: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        CellType.projected_row_header: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        LayoutType.row: {CellType.row_number},
-                        LayoutType.column: {CellType.column_number},
-                    },
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={
+                LayoutType.cell: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                CellType.spanning: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                CellType.row_header: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                CellType.column_header: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                CellType.projected_row_header: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                LayoutType.row: {CellType.row_number},
+                LayoutType.column: {CellType.column_number},
+            },
+            relationships={},
+            summaries=(),
+        )

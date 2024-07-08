@@ -26,8 +26,7 @@ from pytest import mark
 
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
-from deepdoctection.extern.base import DetectionResult
-from deepdoctection.pipe.base import ObjectDetector
+from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import LayoutType
 

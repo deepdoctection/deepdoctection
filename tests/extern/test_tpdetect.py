@@ -25,9 +25,9 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.types import PixelValues
 from deepdoctection.utils.file_utils import tensorpack_available, tf_available
 from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.types import PixelValues
 
 if tf_available() and tensorpack_available():
     from deepdoctection.extern.tp.tpfrcnn.modeling.generalized_rcnn import ResNetFPNModel

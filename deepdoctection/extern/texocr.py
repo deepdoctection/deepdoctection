@@ -26,11 +26,11 @@ import traceback
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_np_array_to_b64_b
-from ..utils.types import JsonDict, PixelValues, Requirement
 from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
-from .base import DetectionResult, ObjectDetector, PredictorBase
+from ..utils.types import JsonDict, PixelValues, Requirement
+from .base import DetectionResult, ModelCategories, ObjectDetector
 
 with try_import() as import_guard:
     import boto3  # type:ignore
@@ -127,9 +127,9 @@ class TextractOcrDetector(ObjectDetector):
         self.text_lines = text_lines
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
-            self.categories = {"1": LayoutType.word, "2": LayoutType.line}
+            self.categories = ModelCategories(init_categories={"1": LayoutType.word, "2": LayoutType.line})
         else:
-            self.categories = {"1": LayoutType.word}
+            self.categories = ModelCategories(init_categories={"1": LayoutType.word})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -148,7 +148,5 @@ class TextractOcrDetector(ObjectDetector):
     def clone(self) -> TextractOcrDetector:
         return self.__class__()
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        if self.text_lines:
-            return [LayoutType.word, LayoutType.line]
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)

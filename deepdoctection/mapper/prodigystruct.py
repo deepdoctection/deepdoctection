@@ -23,8 +23,8 @@ import os
 from typing import Mapping, Optional, Sequence
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
-from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.settings import ObjectTypes
+from ..utils.types import JsonDict, PathLikeOrStr
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"

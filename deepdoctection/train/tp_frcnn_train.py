@@ -40,16 +40,14 @@ from ..extern.tp.tpfrcnn.preproc import anchors_and_labels, augment
 from ..extern.tpdetect import TPFrcnnDetector
 from ..mapper.maputils import LabelSummarizer
 from ..mapper.tpstruct import image_to_tp_frcnn_training
-from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.types import JsonDict
 from ..utils.file_utils import set_mp_spawn
 from ..utils.fs import get_load_image_func
 from ..utils.logger import log_once
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.tqdm import get_tqdm
+from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.utils import string_to_dict
-from ..utils.types import PathLikeOrStr
 
 with try_import() as tp_import_guard:
     # todo: check how dataflow import is directly possible without having an AssertionError
@@ -310,7 +308,7 @@ def train_faster_rcnn(
                     metric,  # type: ignore
                     pipeline_component,
                     *model.get_inference_tensor_names(),  # type: ignore
-                    cfg = detector.model.cfg,
+                    cfg=detector.model.cfg,
                     **build_val_dict
                 )
             ]

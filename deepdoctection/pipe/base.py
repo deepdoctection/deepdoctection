@@ -21,15 +21,14 @@ Module for the base class for building pipelines
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Mapping, Optional, Union
+from dataclasses import dataclass, field
+from typing import Any, Mapping, Optional, Union
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..extern.base import ImageTransformer, ObjectDetector, PdfMiner, TextRecognizer
 from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import ObjectTypes
@@ -40,10 +39,11 @@ from .anngen import DatapointManager
 class MetaAnnotation:
     """A immutable dataclass that stores information about what `Image` are being
     modified through a pipeline compoenent."""
-    image_annotations: list[ObjectTypes]
-    sub_categories: dict[ObjectTypes, set[ObjectTypes]]
-    relationships: dict[ObjectTypes, set[ObjectTypes]]
-    summaries: list[ObjectTypes]
+
+    image_annotations: tuple[ObjectTypes, ...] = field(default=())
+    sub_categories: dict[ObjectTypes, set[ObjectTypes]] = field(default_factory=dict)
+    relationships: dict[ObjectTypes, set[ObjectTypes]] = field(default_factory=dict)
+    summaries: tuple[ObjectTypes, ...] = field(default=())
 
 
 class PipelineComponent(ABC):
@@ -148,9 +148,11 @@ class PipelineComponent(ABC):
         """
         Clear the predictor of the pipeline component if it has one. Needed for model updates during training.
         """
-        raise NotImplementedError("Maybe you forgot to implement this method in your pipeline component. This might "
-                                  "be the case when you run evaluation during training and need to update the "
-                                  "trained model in your pipeline component.")
+        raise NotImplementedError(
+            "Maybe you forgot to implement this method in your pipeline component. This might "
+            "be the case when you run evaluation during training and need to update the "
+            "trained model in your pipeline component."
+        )
 
     def has_predictor(self) -> bool:
         """
@@ -256,10 +258,10 @@ class Pipeline(ABC):
                  names and generated sub categories), relationships (dict with category names and generated
                  relationships) as well as summaries (list with sub categories)
         """
-        image_annotations = []
+        image_annotations: list[ObjectTypes] = []
         sub_categories = defaultdict(set)
         relationships = defaultdict(set)
-        summaries = []
+        summaries: list[ObjectTypes] = []
         for component in self.pipe_component_list:
             meta_anns = component.get_meta_annotation()
             image_annotations.extend(meta_anns.image_annotations)
@@ -268,15 +270,15 @@ class Pipeline(ABC):
             for key, value in meta_anns.relationships.items():
                 relationships[key].update(value)
             summaries.extend(meta_anns.summaries)
-        return MetaAnnotation(image_annotations=image_annotations,
-                              sub_categories=dict(sub_categories),
-                              relationships=dict(relationships),
-                              summaries=summaries)
+        return MetaAnnotation(
+            image_annotations=tuple(image_annotations),
+            sub_categories=dict(sub_categories),
+            relationships=dict(relationships),
+            summaries=tuple(summaries),
+        )
 
     def get_pipeline_info(
-        self,
-        service_id: Optional[str] = None,
-        name: Optional[str] = None
+        self, service_id: Optional[str] = None, name: Optional[str] = None
     ) -> Union[str, Mapping[str, str]]:
         """Get pipeline information: Returns a dictionary with a description of each pipeline component
         :param service_id: service_id of the pipeline component to search for

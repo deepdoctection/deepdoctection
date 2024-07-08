@@ -20,7 +20,7 @@ Module for Accuracy metric
 """
 from collections import Counter
 from typing import Counter as TypeCounter
-from typing import Mapping, Optional, Sequence, Union, Callable
+from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
 from numpy import float32, int32
@@ -31,10 +31,10 @@ from termcolor import colored
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
-from ..utils.types import MetricResults, DP
 from ..utils.file_utils import Requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -424,8 +424,9 @@ class ConfusionMetric(ClassificationMetric):
             else:
                 data[entry["category_id"]].append(entry["val"])
 
-        header = ["predictions -> \n  ground truth |\n              v"] + list([str(element) for
-                                                                                element in data.keys()])
+        header = ["predictions -> \n  ground truth |\n              v"] + list(
+            list(str(element) for element in data)
+        )
         table = tabulate([data[k] for k, _ in enumerate(data, 1)], headers=header, tablefmt="pipe")
         logger.info("Confusion matrix: \n %s", colored(table, "cyan"))
 

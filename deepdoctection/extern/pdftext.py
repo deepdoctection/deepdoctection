@@ -23,11 +23,11 @@ from typing import Optional
 
 from lazy_imports import try_import
 
-from ..utils.types import Requirement
 from ..utils.context import save_tmp_file
 from ..utils.file_utils import get_pdfplumber_requirement
 from ..utils.settings import LayoutType, ObjectTypes
-from .base import DetectionResult, PdfMiner
+from ..utils.types import Requirement
+from .base import DetectionResult, ModelCategories, PdfMiner
 
 with try_import() as import_guard:
     from pdfplumber.pdf import PDF, Page
@@ -69,7 +69,7 @@ class PdfPlumberTextDetector(PdfMiner):
     def __init__(self, x_tolerance: int = 3, y_tolerance: int = 3) -> None:
         self.name = "Pdfplumber"
         self.model_id = self.get_model_id()
-        self.categories = {"1": LayoutType.word}
+        self.categories = ModelCategories(init_categories={"1": LayoutType.word})
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
         self._page: Optional[Page] = None
@@ -111,5 +111,5 @@ class PdfPlumberTextDetector(PdfMiner):
                 self._pdf_bytes = pdf_bytes
         return self._page.bbox[2], self._page.bbox[3]
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)

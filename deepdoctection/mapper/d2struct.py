@@ -31,8 +31,8 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
-from ..utils.types import Detectron2Dict
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.types import Detectron2Dict
 
 with try_import() as pt_import_guard:
     import torch

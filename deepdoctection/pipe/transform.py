@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from ..datapoint.image import Image
 from ..extern.base import ImageTransformer
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -62,10 +62,10 @@ class SimpleTransformService(PipelineComponent):
             self.dp_manager.datapoint.clear_image(True)
             self.dp_manager.datapoint.image = transformed_image
             self.dp_manager.set_summary_annotation(
-                summary_key=self.transform_predictor.get_category_name(),
-                summary_name=self.transform_predictor.get_category_name(),
+                summary_key=self.transform_predictor.get_category_names()[0],
+                summary_name=self.transform_predictor.get_category_names()[0],
                 summary_number=None,
-                summary_value=getattr(detection_result, self.transform_predictor.get_category_name().value, None),
+                summary_value=getattr(detection_result, self.transform_predictor.get_category_names()[0].value, None),
                 summary_score=detection_result.score,
             )
 
@@ -73,10 +73,12 @@ class SimpleTransformService(PipelineComponent):
         return self.__class__(self.transform_predictor)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories= {},
-                              relationships= {},
-                              summaries= [self.transform_predictor.get_category_name()])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={},
+            relationships={},
+            summaries=self.transform_predictor.get_category_names(),
+        )
 
     @staticmethod
     def _get_name(transform_name: str) -> str:

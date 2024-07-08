@@ -43,10 +43,10 @@ from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import image_ann_to_image, maybe_ann_to_sub_image
 from ...mapper.pubstruct import pub_to_image
-from ...utils.types import PubtabnetDict
 from ...utils.file_utils import set_mp_spawn
 from ...utils.logger import LoggingRecord, logger
 from ...utils.settings import CellType, DatasetType, LayoutType, ObjectTypes, TableType
+from ...utils.types import PubtabnetDict
 from ...utils.utils import to_bool
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -210,7 +210,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
         buffer_size = 200 if max_datapoints is None else min(max_datapoints, 200) - 1
 
         pub_mapper = pub_to_image(
-            categories_name_as_key= self.categories.get_categories(name_as_key=True, init=True),
+            categories_name_as_key=self.categories.get_categories(name_as_key=True, init=True),
             loade_image=load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,

@@ -20,11 +20,10 @@ Module for training Detectron2 `GeneralizedRCNN`
 """
 from __future__ import annotations
 
-import os
 import copy
+import os
 from pathlib import Path
-
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Type, Union
+from typing import Any, Mapping, Optional, Sequence, Type, Union
 
 from lazy_imports import try_import
 
@@ -286,7 +285,7 @@ def train_d2_faster_rcnn(
     path_config_yaml: PathLikeOrStr,
     dataset_train: Union[str, DatasetBase],
     path_weights: PathLikeOrStr,
-    config_overwrite: Optional[List[str]] = None,
+    config_overwrite: Optional[list[str]] = None,
     log_dir: PathLikeOrStr = "train_log/frcnn",
     build_train_config: Optional[Sequence[str]] = None,
     dataset_val: Optional[DatasetBase] = None,

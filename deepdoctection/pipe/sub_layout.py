@@ -21,7 +21,7 @@ Module for cell detection pipeline component
 from __future__ import annotations
 
 from collections import Counter
-from copy import deepcopy
+from types import MappingProxyType
 from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
@@ -30,10 +30,10 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import crop_box_from_image
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
-from ..utils.types import JsonDict, PixelValues
-from ..utils.settings import ObjectTypes, Relationships, get_type
+from ..utils.settings import ObjectTypes, Relationships, TypeOrStr, get_type
 from ..utils.transform import PadTransform
-from .base import PipelineComponent, MetaAnnotation
+from ..utils.types import PixelValues
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -61,7 +61,7 @@ class DetectResultGenerator:
                                  grouping category ids.
         :param absolute_coords: 'absolute_coords' value to be set in 'DetectionResult'
         """
-        self.categories = categories
+        self.categories = MappingProxyType(dict(categories.items()))
         self.width: Optional[int] = None
         self.height: Optional[int] = None
         if group_categories is None:
@@ -146,7 +146,7 @@ class SubImageLayoutService(PipelineComponent):
     def __init__(
         self,
         sub_image_detector: ObjectDetector,
-        sub_image_names: Union[str, list[str]],
+        sub_image_names: Union[str, Sequence[TypeOrStr]],
         category_id_mapping: Optional[dict[int, int]] = None,
         detect_result_generator: Optional[DetectResultGenerator] = None,
         padder: Optional[PadTransform] = None,
@@ -165,17 +165,22 @@ class SubImageLayoutService(PipelineComponent):
                         inverse coordinate transformation.
         """
 
-        if isinstance(sub_image_names, str):
-            sub_image_names = [sub_image_names]
-
-        self.sub_image_name = sub_image_names
+        self.sub_image_name = (
+            (get_type(sub_image_names),)
+            if isinstance(sub_image_names, str)
+            else (tuple((get_type(cat) for cat in sub_image_names)))
+        )
         self.category_id_mapping = category_id_mapping
         self.detect_result_generator = detect_result_generator
         self.padder = padder
         self.predictor = sub_image_detector
         super().__init__(self._get_name(sub_image_detector.name), self.predictor.model_id)
         if self.detect_result_generator is not None:
-            assert self.detect_result_generator.categories == self.predictor.categories  # type: ignore
+            if self.detect_result_generator.categories != self.predictor.categories.get_categories():
+                raise ValueError(
+                    f"The categories of the 'detect_result_generator' must be the same as the categories of the "
+                    f"'sub_image_detector'. Got {self.detect_result_generator.categories} #"
+                    f"and {self.predictor.categories.get_categories()}.")
 
     def serve(self, dp: Image) -> None:
         """
@@ -187,7 +192,7 @@ class SubImageLayoutService(PipelineComponent):
         sub_image_anns = dp.get_annotation_iter(category_names=self.sub_image_name)
         for sub_image_ann in sub_image_anns:
             np_image = self.prepare_np_image(sub_image_ann)
-            detect_result_list = self.predictor.predict(np_image)  # type: ignore
+            detect_result_list = self.predictor.predict(np_image)
             if self.padder and detect_result_list:
                 boxes = np.array([detect_result.box for detect_result in detect_result_list])
                 boxes_orig = self.padder.inverse_apply_coords(boxes)
@@ -213,9 +218,8 @@ class SubImageLayoutService(PipelineComponent):
             image_annotations=self.predictor.get_category_names(),
             sub_categories={},
             relationships={get_type(parent): {Relationships.child} for parent in self.sub_image_name},
-            summaries=[],
+            summaries=(),
         )
-
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:
@@ -230,9 +234,9 @@ class SubImageLayoutService(PipelineComponent):
             raise ValueError(f"predictor must be of type ObjectDetector but is of type {type(predictor)}")
         return self.__class__(
             predictor,
-            deepcopy(self.sub_image_name),
-            deepcopy(self.category_id_mapping),
-            deepcopy(self.detect_result_generator),
+            self.sub_image_name,
+            self.category_id_mapping,
+            self.detect_result_generator,
             padder_clone,
         )
 

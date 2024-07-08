@@ -29,10 +29,10 @@ from typing import Any, Iterable, Optional, Sequence, Union, no_type_check
 import numpy as np
 from numpy import uint8
 
-from ..utils.types import PathLikeOrStr, PixelValues, ImageDict
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, get_type
+from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2

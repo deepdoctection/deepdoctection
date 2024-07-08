@@ -50,10 +50,10 @@ from ...mapper.cats import filter_cat
 from ...mapper.maputils import curry
 from ...mapper.misc import xml_to_dict
 from ...mapper.pascalstruct import pascal_voc_dict_to_image
-from ...utils.types import JsonDict
 from ...utils.file_utils import lxml_available
 from ...utils.fs import get_package_path
 from ...utils.settings import CellType, DatasetType, LayoutType
+from ...utils.types import JsonDict
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
