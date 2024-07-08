@@ -25,10 +25,10 @@ import pytest
 
 from deepdoctection.datapoint import CategoryAnnotation, Image, SummaryAnnotation
 from deepdoctection.mapper import cat_to_sub_cat, filter_cat, filter_summary, image_to_cat_id, pub_to_image, remove_cats
-from deepdoctection.utils.types import JsonDict
 
 # from deepdoctection.utils.settings import names
 from deepdoctection.utils.settings import CellType, LayoutType, TableType, get_type
+from deepdoctection.utils.types import JsonDict
 
 from .conftest import get_pubtabnet_white_image
 from .data import DatapointPubtabnet

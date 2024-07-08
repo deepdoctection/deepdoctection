@@ -25,7 +25,6 @@ from itertools import chain
 from typing import Mapping, Optional
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Image, ImageAnnotation
-from ..utils.types import JsonDict, FunsdDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import (
     BioTag,
@@ -37,6 +36,7 @@ from ..utils.settings import (
     get_type,
     token_class_tag_to_token_class_with_tag,
 )
+from ..utils.types import FunsdDict
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 

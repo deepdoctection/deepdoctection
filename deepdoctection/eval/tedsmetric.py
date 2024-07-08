@@ -18,18 +18,18 @@ Tree distance similarity metric taken from <https://github.com/ibm-aur-nlp/PubTa
 
 import statistics
 from collections import defaultdict, deque
-from typing import Any, Optional, Callable
+from typing import Any, Callable, Optional
 
 from lazy_imports import try_import
 
 from ..dataflow import DataFlow, DataFromList, MapData, MultiThreadMapData
-from ..datapoint.view import Page
 from ..datapoint.image import Image
+from ..datapoint.view import Page
 from ..datasets.base import DatasetCategories
-from ..utils.types import MetricResults
 from ..utils.file_utils import Requirement, get_apted_requirement, get_distance_requirement, get_lxml_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType
+from ..utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -222,7 +222,7 @@ class TedsMetric(MetricBase):
     """
 
     metric = teds_metric  # type: ignore
-    mapper:  Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
+    mapper: Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
     text_container: LayoutType = LayoutType.word
     floating_text_block_categories = [LayoutType.table]
 

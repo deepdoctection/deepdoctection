@@ -28,10 +28,10 @@ from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
-from ..utils.types import JsonDict, PixelValues
 from ..utils.error import ImageError
-from ..utils.settings import PageType, TypeOrStr, WordType, get_type, ObjectTypes
-from .base import PipelineComponent, MetaAnnotation
+from ..utils.settings import ObjectTypes, PageType, TypeOrStr, WordType, get_type
+from ..utils.types import PixelValues
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 __all__ = ["TextExtractionService"]
@@ -86,10 +86,11 @@ class TextExtractionService(PipelineComponent):
         if extract_from_roi is None:
             extract_from_roi = []
         self.extract_from_category = (
-            [get_type(extract_from_roi)]
+            (get_type(extract_from_roi),)
             if isinstance(extract_from_roi, str)
-            else [get_type(roi_category) for roi_category in extract_from_roi]
+            else tuple((get_type(roi_category) for roi_category in extract_from_roi))
         )
+
         self.predictor = text_extract_detector
         super().__init__(self._get_name(text_extract_detector.name), self.predictor.model_id)
         if self.extract_from_category:
@@ -99,9 +100,8 @@ class TextExtractionService(PipelineComponent):
                     f"TextRecognizer. Got {type(self.predictor)}"
                 )
         if run_time_ocr_language_selection:
-            assert isinstance(
-                self.predictor, TesseractOcrDetector
-            ), "Only TesseractOcrDetector supports multiple languages"
+            if isinstance(self.predictor, TesseractOcrDetector):
+                raise TypeError("Only TesseractOcrDetector supports multiple languages")
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
         self.skip_if_text_extracted = skip_if_text_extracted
@@ -155,7 +155,7 @@ class TextExtractionService(PipelineComponent):
         :return: list of ImageAnnotation or Image
         """
         if self.skip_if_text_extracted:
-            text_categories = self.predictor.get_category_names()  # type: ignore
+            text_categories = self.predictor.get_category_names()
             text_anns = dp.get_annotation(category_names=text_categories)
             if text_anns:
                 return []
@@ -206,12 +206,14 @@ class TextExtractionService(PipelineComponent):
                     f"{type(self.predictor)}"
                 )
             sub_cat_dict = {category: {WordType.characters} for category in self.predictor.get_category_names()}
-        return MetaAnnotation(image_annotations=self.predictor.get_category_names()
-                        if isinstance(self.predictor, (ObjectDetector, PdfMiner))
-                        else [],
-                        sub_categories=sub_cat_dict,
-                        relationships={},
-                        summaries=[])
+        return MetaAnnotation(
+            image_annotations=self.predictor.get_category_names()
+            if isinstance(self.predictor, (ObjectDetector, PdfMiner))
+            else (),
+            sub_categories=sub_cat_dict,
+            relationships={},
+            summaries=(),
+        )
 
     @staticmethod
     def _get_name(text_detector_name: str) -> str:

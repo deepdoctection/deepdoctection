@@ -19,13 +19,13 @@
 Testing module extern.model
 """
 
+from pathlib import Path
+
 from pytest import mark, raises
 
 from deepdoctection.extern.model import ModelCatalog, ModelProfile
 from deepdoctection.utils.fs import get_configs_dir_path, get_weights_dir_path
 from deepdoctection.utils.settings import LayoutType
-
-from pathlib import Path
 
 
 class TestModelCatalog:

@@ -18,17 +18,18 @@
 """
 Deepdoctection wrappers for fasttext language detection models
 """
+from __future__ import annotations
+
 from abc import ABC
-from copy import copy
 from pathlib import Path
 from typing import Any, Mapping, Union
 
 from lazy_imports import try_import
 
+from .base import DetectionResult, LanguageDetector, ModelCategories
 from ..utils.file_utils import Requirement, get_fasttext_requirement
-from ..utils.settings import TypeOrStr, get_type
+from ..utils.settings import TypeOrStr
 from ..utils.types import PathLikeOrStr
-from .base import DetectionResult, LanguageDetector, PredictorBase
 
 with try_import() as import_guard:
     from fasttext import load_model  # type: ignore
@@ -43,7 +44,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         """
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
         """
-        self.categories = copy({idx: get_type(cat) for idx, cat in categories.items()})
+        self.categories = ModelCategories(init_categories=categories)
 
     def output_to_detection_result(self, output: Union[tuple[Any, Any]]) -> DetectionResult:
         """
@@ -51,7 +52,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         :param output: FastText model output
         :return: `DetectionResult` filled with `text` and `score`
         """
-        return DetectionResult(text=self.categories[output[0][0]], score=output[1][0])
+        return DetectionResult(text=self.categories.get_categories()[output[0][0]], score=output[1][0])
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr) -> str:
@@ -104,8 +105,8 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
     def get_requirements(cls) -> list[Requirement]:
         return [get_fasttext_requirement()]
 
-    def clone(self) -> PredictorBase:
-        return self.__class__(self.path_weights, self.categories)
+    def clone(self) -> FasttextLangDetector:
+        return self.__class__(self.path_weights, self.categories.get_categories())
 
     @staticmethod
     def get_wrapped_model(path_weights: PathLikeOrStr) -> Any:

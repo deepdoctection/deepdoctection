@@ -34,9 +34,9 @@ from ..datapoint.annotation import ContainerAnnotation
 from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..datapoint.view import Page
-from ..utils.types import JsonDict
 from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
 from ..utils.transform import ResizeTransform, normalize_image
+from ..utils.types import JsonDict
 from .maputils import curry
 
 with try_import() as import_guard:
@@ -69,7 +69,7 @@ A DataCollator is a function that takes a list of samples from a Dataset and col
 of PyTorch/TensorFlow tensors or NumPy arrays.
 """
 
-DataCollator = NewType("DataCollator", Callable[[List[InputDataClass]], Dict[str, Any]])  # type: ignore
+DataCollator = NewType("DataCollator", Callable[[list[InputDataClass]], dict[str, Any]])  # type: ignore
 
 _CLS_BOX = [0.0, 0.0, 1000.0, 1000.0]
 _SEP_BOX = [1000.0, 1000.0, 1000.0, 1000.0]

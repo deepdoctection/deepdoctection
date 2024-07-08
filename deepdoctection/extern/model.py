@@ -23,7 +23,6 @@ import os
 from copy import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Optional, Union
-from typing_extensions import TypeAlias
 
 import jsonlines
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
@@ -55,7 +54,7 @@ class ModelProfile:
     hf_model_name: Optional[str] = field(default=None)
     hf_config_file: Optional[list[str]] = field(default=None)
     urls: Optional[list[str]] = field(default=None)
-    categories: Optional[dict[str, ObjectTypes]] = field(default=None)
+    categories: Optional[Mapping[str, ObjectTypes]] = field(default=None)
     dl_library: Optional[str] = field(default=None)
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
@@ -1051,7 +1050,9 @@ class ModelDownloadManager:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
-    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False) -> int:
+    def _load_from_hf_hub(
+        repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False
+    ) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
         token = os.environ.get("HF_CREDENTIALS", None)
         f_path = cached_download(

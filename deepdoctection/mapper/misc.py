@@ -29,8 +29,8 @@ from lazy_imports import try_import
 
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils.types import JsonDict
 from ..utils.fs import get_load_image_func, load_image_from_file
+from ..utils.types import JsonDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry
 

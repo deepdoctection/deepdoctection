@@ -22,17 +22,205 @@ Abstract classes for unifying external base- and Doctection predictors
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Mapping, Optional, Union, TYPE_CHECKING
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union, overload
+
 from lazy_imports import try_import
 
-from ..utils.types import JsonDict, PixelValues, Requirement
 from ..utils.identifier import get_uuid_from_str
-from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.logger import logger
+from ..utils.settings import (
+    DefaultType,
+    ObjectTypes,
+    TypeOrStr,
+    get_type,
+    token_class_tag_to_token_class_with_tag,
+    token_class_with_tag_to_token_class_and_tag,
+)
+from ..utils.types import JsonDict, PixelValues, Requirement
 
 if TYPE_CHECKING:
     with try_import() as import_guard:
         import torch
+
+
+@dataclass
+class ModelCategories:
+    """
+    Categories for models (except models for NER tasks) are managed in this class. Different to DatasetCategories,
+    these members are immutable.
+
+    **Example**:
+
+        categories = ModelCategories(init_categories={"1": "text", "2": "title"})
+        cats = categories.get_categories(as_dict=True)  # {"1": LayoutType.text, "2": LayoutType.title}
+        categories.filter_categories = [LayoutType.text]  # filter out text
+        cats = categories.get_categories(as_dict=True)  # {"2": LayoutType.title}
+    """
+    init_categories: Optional[Mapping[str, TypeOrStr]] = field(repr=False)
+    _init_categories: MappingProxyType[str, ObjectTypes] = field(init=False, repr=False)
+    _filter_categories: Sequence[ObjectTypes] = field(init=False, repr=False, default_factory=tuple)
+    categories: MappingProxyType[str, ObjectTypes] = field(init=False)
+
+    def __post_init__(self) -> None:
+        """post init method"""
+        if self.init_categories:
+            self._init_categories = MappingProxyType({key: get_type(val) for key, val in self.init_categories.items()})
+        else:
+            self._init_categories = MappingProxyType({})
+        self.categories = self._init_categories
+
+    @overload
+    def get_categories(self, as_dict: Literal[False]) -> tuple[ObjectTypes, ...]:
+        ...
+
+    @overload
+    def get_categories(
+        self, as_dict: Literal[True] = ..., name_as_key: Literal[False] = False
+    ) -> MappingProxyType[str, ObjectTypes]:
+        ...
+
+    @overload
+    def get_categories(self, as_dict: Literal[True], name_as_key: Literal[True]) -> MappingProxyType[ObjectTypes, str]:
+        ...
+
+    def get_categories(
+        self, as_dict: bool = True, name_as_key: bool = False
+    ) -> Union[MappingProxyType[str, ObjectTypes], MappingProxyType[ObjectTypes, str], tuple[ObjectTypes, ...]]:
+        """
+        Get the categories
+
+        :param as_dict: return as dict
+        :param name_as_key: if as_dict=`True` and name_as_key=`True` will swap key and value
+        :return: categories dict
+        """
+        if as_dict:
+            if name_as_key:
+                return MappingProxyType(
+                    {value: key for key, value in self._init_categories.items() if value not in self.filter_categories}
+                )
+            return MappingProxyType(
+                {key: value for key, value in self._init_categories.items() if value not in self.filter_categories}
+            )
+        return tuple(val for val in self._init_categories.values() if val not in self.filter_categories)
+
+    @property
+    def filter_categories(self) -> Sequence[ObjectTypes]:
+        """filter_categories"""
+        return self._filter_categories
+
+    @filter_categories.setter
+    def filter_categories(self, categories: Sequence[ObjectTypes]) -> None:
+        """categories setter"""
+        self._filter_categories = categories
+        self.categories = self.get_categories()
+
+    def shift_category_ids(self, shift_by: int) -> None:
+        """
+        Shift category ids
+
+         **Example**:
+
+            categories = ModelCategories(init_categories={"1": "text", "2": "title"})
+            categories.shift_category_ids(1)
+            cats = categories.get_categories(as_dict=True)  # {"2": LayoutType.text, "3": LayoutType.title}
+
+        :param shift_by: The value to shift the category id to the left or to the right
+        :return: shifted categories
+        """
+        self.categories = MappingProxyType({str(int(k) + shift_by): v for k, v in self.get_categories().items()})
+
+
+@dataclass
+class NerModelCategories(ModelCategories):
+    """
+    Categories for models for NER tasks. It can handle the merging of token classes and bio tags to build a new set
+    of categories.
+
+    **Example**:
+
+        categories = NerModelCategories(categories_semantics=["question", "answer"], categories_bio=["B", "I"])
+        cats = categories.get_categories(as_dict=True)  # {"1": TokenClassWithTag.b_question,
+                                                           "2": TokenClassWithTag.i_question,
+                                                           "3": TokenClassWithTag.b_answer,
+                                                           "4": TokenClassWithTag.i_answer}
+
+    You can also leave the categories unchanged:
+
+    **Example**:
+
+        categories = NerModelCategories(init_categories={"1": "question", "2": "answer"})
+        cats = categories.get_categories(as_dict=True)  # {"1": TokenClasses.question,
+                                                           "2": TokenClasses.answer}
+    """
+    categories_semantics: Optional[Sequence[TypeOrStr]] = field(default=None)
+    categories_bio: Optional[Sequence[TypeOrStr]] = field(default=None)
+    _categories_semantics: tuple[ObjectTypes, ...] = field(init=False, repr=False)
+    _categories_bio: tuple[ObjectTypes, ...] = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if not self.init_categories:
+            if not self.categories_semantics:
+                raise ValueError("If categories is None then categories_semantics cannot be None")
+            if not self.categories_bio:
+                raise ValueError("If categories is None then categories_bio cannot be None")
+        else:
+            self._init_categories = MappingProxyType({key: get_type(val) for key, val in self.init_categories.items()})
+
+        if self.categories_bio:
+            self._categories_bio = tuple((get_type(cat) for cat in self.categories_bio))
+        if self.categories_semantics:
+            self._categories_semantics = tuple((get_type(cat) for cat in self.categories_semantics))
+        if self.categories_bio and self.categories_semantics and self.init_categories:
+            logger.info("Will disregard categories_bio and categories_semantics")
+
+        if self.categories_bio and self.categories_semantics:
+            self._init_categories = self.merge_bio_semantics_categories(
+                self._categories_semantics, self._categories_bio
+            )
+
+    @staticmethod
+    def merge_bio_semantics_categories(
+        categories_semantics: tuple[ObjectTypes, ...], categories_bio: tuple[ObjectTypes, ...]
+    ) -> MappingProxyType[str, ObjectTypes]:
+        """
+        Merge bio and semantics categories
+
+        **Example**:
+
+            categories = NerModelCategories(categories_semantics=["question", "answer"], categories_bio=["B", "I"])
+            cats = categories.get_categories(as_dict=True)  # {"1": TokenClassWithTag.b_question,
+                                                               "2": TokenClassWithTag.i_question,
+                                                               "3": TokenClassWithTag.b_answer,
+                                                               "4": TokenClassWithTag.i_answer}
+        :param categories_semantics: semantic categories (without tags)
+        :param categories_bio: bio tags
+        :return: A mapping of categories with tags
+        """
+        categories_list = sorted(
+            {
+                token_class_tag_to_token_class_with_tag(token, tag)
+                for token in categories_semantics
+                for tag in categories_bio
+            }
+        )
+        return MappingProxyType({str(k): v for k, v in enumerate(categories_list, 1)})
+
+    @staticmethod
+    def disentangle_token_class_and_tag(category_name: ObjectTypes) -> Optional[tuple[ObjectTypes, ObjectTypes]]:
+        """
+        Disentangle token class and tag. It will return separate ObjectTypes for token class and tag.
+
+        **Example**:
+
+             NerModelCategories.disentangle_token_class_and_tag(TokenClassWithTag.b_question)
+             # (TokenClasses.question, TokenTags.begin)
+
+        :param category_name: A category name with token class and tag
+        :return: Tuple of disentangled token class and tag
+        """
+        return token_class_with_tag_to_token_class_and_tag(category_name)
 
 
 class PredictorBase(ABC):
@@ -121,7 +309,7 @@ class DetectionResult:
     angle: Optional[float] = None
 
 
-class ObjectDetector(PredictorBase):
+class ObjectDetector(PredictorBase, ABC):
     """
     Abstract base class for object detection. This can be anything ranging from layout detection to OCR.
     Use this to connect external detectors with deepdoctection predictors on images.
@@ -133,17 +321,7 @@ class ObjectDetector(PredictorBase):
     and implement the `predict`.
     """
 
-    _categories: Mapping[str, ObjectTypes]
-
-    @property
-    def categories(self) -> Mapping[str, ObjectTypes]:
-        """categories"""
-        return self._categories
-
-    @categories.setter
-    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
-        """categories setter"""
-        self._categories = {key: get_type(value) for key, value in categories.items()}
+    categories: ModelCategories
 
     @abstractmethod
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
@@ -159,30 +337,29 @@ class ObjectDetector(PredictorBase):
         """
         return False
 
-    def get_category_names(self) -> list[ObjectTypes]:
+    @abstractmethod
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """
-        Returns a list with the full range of detectable categories
+        Abstract method get_category_names
         """
-        return list(self.categories.values())
+        raise NotImplementedError()
+
+    @abstractmethod
+    def clone(self) -> ObjectDetector:
+        """
+        Clone an instance
+        """
+        raise NotImplementedError()
 
 
-class PdfMiner(PredictorBase):
+class PdfMiner(PredictorBase, ABC):
     """
     Abstract base class for mining information from PDF documents. Reads in a bytes stream from a PDF document page.
     Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
     """
 
-    _categories: Mapping[str, ObjectTypes]
+    categories: ModelCategories
     _pdf_bytes: Optional[bytes] = None
-
-    @property
-    def categories(self) -> Mapping[str, ObjectTypes]:
-        """categories"""
-        return self._categories
-
-    @categories.setter
-    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
-        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
@@ -198,7 +375,7 @@ class PdfMiner(PredictorBase):
         """
         raise NotImplementedError()
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> PdfMiner:
         return self.__class__()
 
     @property
@@ -208,14 +385,15 @@ class PdfMiner(PredictorBase):
         """
         return False
 
-    def get_category_names(self) -> list[ObjectTypes]:
+    @abstractmethod
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """
-        Returns a list of possible detectable categories
+        Abstract method get_category_names
         """
-        return list(self.categories.values())
+        raise NotImplementedError()
 
 
-class TextRecognizer(PredictorBase):
+class TextRecognizer(PredictorBase, ABC):
     """
     Abstract base class for text recognition. In contrast to ObjectDetector one assumes that `predict` accepts
     batches of numpy arrays. More precisely, when using `predict` pass a list of tuples with uuids (e.g. image_id,
@@ -235,6 +413,11 @@ class TextRecognizer(PredictorBase):
         whether to accept batches in `predict`
         """
         return True
+
+    @staticmethod
+    def get_category_names() -> tuple[ObjectTypes, ...]:
+        """return category names"""
+        return ()
 
 
 @dataclass
@@ -286,23 +469,11 @@ class SequenceClassResult:
     class_name_orig: Optional[str] = None
 
 
-class LMTokenClassifier(PredictorBase):
+class LMTokenClassifier(PredictorBase, ABC):
     """
     Abstract base class for token classifiers. If you want to connect external token classifiers with Deepdoctection
     predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
     """
-
-    _categories: Mapping[str, ObjectTypes]
-
-    @property
-    def categories(self) -> Mapping[str, ObjectTypes]:
-        """categories"""
-        return self._categories
-
-    @categories.setter
-    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
-        """categories setter"""
-        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
@@ -311,12 +482,6 @@ class LMTokenClassifier(PredictorBase):
         """
         raise NotImplementedError()
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        """
-        Returns a list of possible detectable tokens
-        """
-        return list(self.categories.values())
-
     @staticmethod
     def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
@@ -364,23 +529,11 @@ class LMTokenClassifier(PredictorBase):
         return ""
 
 
-class LMSequenceClassifier(PredictorBase):
+class LMSequenceClassifier(PredictorBase, ABC):
     """
     Abstract base class for sequence classification. If you want to connect external sequence classifiers with
     deepdoctection predictors, wrap them into a class derived from this class.
     """
-
-    _categories: Mapping[str, ObjectTypes]
-
-    @property
-    def categories(self) -> Mapping[str, ObjectTypes]:
-        """categories"""
-        return self._categories
-
-    @categories.setter
-    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
-        """categories setter"""
-        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
@@ -389,12 +542,6 @@ class LMSequenceClassifier(PredictorBase):
         """
         raise NotImplementedError()
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        """
-        Returns a list of possible detectable categories for a sequence
-        """
-        return list(self.categories.values())
-
     @staticmethod
     def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
@@ -442,23 +589,11 @@ class LMSequenceClassifier(PredictorBase):
         return ""
 
 
-class LanguageDetector(PredictorBase):
+class LanguageDetector(PredictorBase, ABC):
     """
     Abstract base class for language detectors. The `predict` accepts a string of arbitrary length and returns an
     ISO-639 code for the detected language.
     """
-
-    _categories: Mapping[str, ObjectTypes]
-
-    @property
-    def categories(self) -> Mapping[str, ObjectTypes]:
-        """categories"""
-        return self._categories
-
-    @categories.setter
-    def categories(self, categories: Mapping[str, TypeOrStr]) -> None:
-        """categories setter"""
-        self._categories = {key: get_type(value) for key, value in categories.items()}
 
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:
@@ -467,14 +602,8 @@ class LanguageDetector(PredictorBase):
         """
         raise NotImplementedError()
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        """
-        Returns a list of possible detectable languages
-        """
-        return list(self.categories.values())
 
-
-class ImageTransformer(PredictorBase):
+class ImageTransformer(PredictorBase, ABC):
     """
     Abstract base class for transforming an image. The `transform` accepts and returns a numpy array
     """
@@ -493,13 +622,10 @@ class ImageTransformer(PredictorBase):
         """
         raise NotImplementedError()
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> ImageTransformer:
         return self.__class__()
 
-    @staticmethod
     @abstractmethod
-    def get_category_name() -> ObjectTypes:
-        """
-        Returns a (single) category the `ImageTransformer` can predict
-        """
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """returns category names"""
         raise NotImplementedError()

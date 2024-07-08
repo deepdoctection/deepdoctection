@@ -35,9 +35,8 @@ from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..extern.base import DetectionResult
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
-from ..pipe.base import PipelineComponent, MetaAnnotation
+from ..pipe.base import MetaAnnotation, PipelineComponent
 from ..pipe.registry import pipeline_component_registry
-from ..utils.types import JsonDict
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 
@@ -553,10 +552,12 @@ class TextLineService(TextLineServiceMixin):
         """
         This method returns metadata about the annotations created by this pipeline component.
         """
-        return MetaAnnotation(image_annotations=[LayoutType.line],
-                              sub_categories={LayoutType.line: {Relationships.child}},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(LayoutType.line,),
+            sub_categories={LayoutType.line: {Relationships.child}},
+            relationships={},
+            summaries=(),
+        )
 
 
 @pipeline_component_registry.register("TextOrderService")
@@ -633,17 +634,17 @@ class TextOrderService(TextLineServiceMixin):
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
-            text_block_categories = [text_block_categories]
+            text_block_categories = (get_type(text_block_categories),)
         if text_block_categories is None:
             text_block_categories = IMAGE_DEFAULTS["text_block_categories"]
-        self.text_block_categories = [get_type(category) for category in text_block_categories]
+        self.text_block_categories = tuple((get_type(category) for category in text_block_categories))
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
-            floating_text_block_categories = [floating_text_block_categories]
+            floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
             floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
-        self.floating_text_block_categories = [get_type(category) for category in floating_text_block_categories]
+        self.floating_text_block_categories = tuple((get_type(category) for category in floating_text_block_categories))
         if include_residual_text_container:
-            self.floating_text_block_categories.append(LayoutType.line)
+            self.floating_text_block_categories = self.floating_text_block_categories + (LayoutType.line,)
         self.include_residual_text_container = include_residual_text_container
         self.order_generator = OrderGenerator(starting_point_tolerance, broken_line_tolerance, height_tolerance)
         self.text_line_generator = TextLineGenerator(
@@ -745,17 +746,18 @@ class TextOrderService(TextLineServiceMixin):
             add_category.append(LayoutType.line)
             image_annotations.append(LayoutType.line)
         anns_with_reading_order = list(copy(self.floating_text_block_categories)) + add_category
-        return MetaAnnotation(image_annotations=image_annotations,
-                              sub_categories={category: {Relationships.reading_order} for
-                                              category in anns_with_reading_order},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=tuple(image_annotations),
+            sub_categories={category: {Relationships.reading_order} for category in anns_with_reading_order},
+            relationships={},
+            summaries=(),
+        )
 
     def clone(self) -> TextOrderService:
         return self.__class__(
-            copy(self.text_container),
-            copy(self.text_block_categories),
-            copy(self.floating_text_block_categories),
+            self.text_container,
+            self.text_block_categories,
+            self.floating_text_block_categories,
             self.include_residual_text_container,
             self.order_generator.starting_point_tolerance,
             self.order_generator.broken_line_tolerance,

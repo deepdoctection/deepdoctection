@@ -34,10 +34,9 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.types import JsonDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
@@ -499,15 +498,17 @@ class TableSegmentationRefinementService(PipelineComponent):
         return self.__class__(self.table_name, self.cell_names)
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={
-                        LayoutType.cell: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        LayoutType.table: {TableType.html},
-                        },
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={
+                LayoutType.cell: {
+                    CellType.row_number,
+                    CellType.column_number,
+                    CellType.row_span,
+                    CellType.column_span,
+                },
+                LayoutType.table: {TableType.html},
+            },
+            relationships={},
+            summaries=(),
+        )

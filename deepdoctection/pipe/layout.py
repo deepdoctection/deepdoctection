@@ -26,10 +26,9 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
-from ..utils.types import JsonDict
 from ..utils.error import ImageError
 from ..utils.transform import PadTransform
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -65,6 +64,7 @@ class ImageLayoutService(PipelineComponent):
         :param crop_image: Do not only populate `ImageAnnotation.image` but also crop the detected block according
                            to its bounding box and populate the resulting sub image to
                            `ImageAnnotation.image.image`.
+        :param padder: If not `None`, will apply the padder to the image before prediction and inverse apply the padder
         :param skip_if_layout_extracted: When `True` will check, if there are already `ImageAnnotation` of a category
                                          available that will be predicted by the `layout_detector`. If yes, will skip
                                          the prediction process.
@@ -74,11 +74,11 @@ class ImageLayoutService(PipelineComponent):
         self.padder = padder
         self.skip_if_layout_extracted = skip_if_layout_extracted
         self.predictor = layout_detector
-        super().__init__(self._get_name(layout_detector.name),  self.predictor.model_id)
+        super().__init__(self._get_name(layout_detector.name), self.predictor.model_id)
 
     def serve(self, dp: Image) -> None:
         if self.skip_if_layout_extracted:
-            categories = self.predictor.get_category_names()  # type: ignore
+            categories = self.predictor.get_category_names()
             anns = dp.get_annotation(category_names=categories)
             if anns:
                 return
@@ -87,7 +87,7 @@ class ImageLayoutService(PipelineComponent):
         np_image = dp.image
         if self.padder:
             np_image = self.padder.apply_image(np_image)
-        detect_result_list = self.predictor.predict(np_image)  # type: ignore
+        detect_result_list = self.predictor.predict(np_image)
         if self.padder and detect_result_list:
             boxes = np.array([detect_result.box for detect_result in detect_result_list])
             boxes_orig = self.padder.inverse_apply_coords(boxes)
@@ -100,14 +100,10 @@ class ImageLayoutService(PipelineComponent):
     def get_meta_annotation(self) -> MetaAnnotation:
         if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
             raise TypeError(
-                f"self.predictor must be of type ObjectDetector or PdfMiner but is of type "
-                f"{type(self.predictor)}"
+                f"self.predictor must be of type ObjectDetector or PdfMiner but is of type " f"{type(self.predictor)}"
             )
         return MetaAnnotation(
-            image_annotations=self.predictor.get_category_names(),
-            sub_categories={},
-            relationships={},
-            summaries=[]
+            image_annotations=self.predictor.get_category_names(), sub_categories={}, relationships={}, summaries=()
         )
 
     @staticmethod

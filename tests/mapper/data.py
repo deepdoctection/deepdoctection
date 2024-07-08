@@ -36,7 +36,6 @@ from deepdoctection.datapoint import (
 )
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.utils.types import JsonDict, PixelValues
 from deepdoctection.utils.settings import (
     BioTag,
     CellType,
@@ -49,6 +48,7 @@ from deepdoctection.utils.settings import (
     WordType,
     get_type,
 )
+from deepdoctection.utils.types import JsonDict, PixelValues
 from tests.data import TestType
 
 _SAMPLE_COCO = {

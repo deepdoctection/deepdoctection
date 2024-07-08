@@ -36,10 +36,10 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32, uint8
 
-from .types import PixelValues, BGR, PathLikeOrStr, B64Str
 from .env_info import ENV_VARS_TRUE, auto_select_viz_library
 from .error import DependencyError
 from .file_utils import get_opencv_requirement, get_pillow_requirement
+from .types import BGR, B64Str, PathLikeOrStr, PixelValues
 
 with try_import() as cv2_import_guard:
     import cv2
@@ -505,9 +505,9 @@ class VizPackageHandler:
             "INTER_AREA": cv2.INTER_AREA,
             "VIZ": cv2.INTER_LINEAR,
         }
-        return cv2.resize(image,
-                          dsize=(width, height),
-                          interpolation=intpol_method_dict[interpolation]).astype(np.uint8)
+        return cv2.resize(image, dsize=(width, height), interpolation=intpol_method_dict[interpolation]).astype(
+            np.uint8
+        )
 
     @staticmethod
     def _pillow_resize(image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:

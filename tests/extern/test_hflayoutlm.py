@@ -33,9 +33,9 @@ from deepdoctection.extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltTokenClassifier,
 )
-from deepdoctection.utils.types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
+from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund
 from ..test_utils import get_mock_patch
@@ -120,7 +120,7 @@ class TestHFLayoutLmTokenClassifier:
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
 
         # Arrange
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
@@ -210,7 +210,7 @@ class TestHFLayoutLmv2TokenClassifier:
         model = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
 
         # Arrange
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
@@ -301,7 +301,7 @@ class TestHFLayoutLmv3TokenClassifier:
         model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
 
         # Arrange
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
@@ -526,7 +526,7 @@ class TestHFLiltTokenClassifier:
         model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories_semantics, categories_bio)
 
         # Assert
-        assert set(model.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
+        assert set(model.categories.categories.values()) == {BioTag.outside, get_type("B-header"), get_type("I-header")}
 
         # Arrange
         categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}

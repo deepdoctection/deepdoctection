@@ -21,16 +21,15 @@ Wrapper for the Hugging Face Language Model for sequence and token  classificati
 from __future__ import annotations
 
 from abc import ABC
-from copy import copy
 from pathlib import Path
 from typing import Literal, Mapping, Optional, Union
 
 from lazy_imports import try_import
 
-from ..utils.types import JsonDict, Requirement, PathLikeOrStr
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
-from .base import LMSequenceClassifier, SequenceClassResult
+from ..utils.types import JsonDict, PathLikeOrStr, Requirement
+from .base import LMSequenceClassifier, ModelCategories, SequenceClassResult
 from .hflayoutlm import get_tokenizer_from_model_class
 from .pt.ptutils import get_torch_device
 
@@ -75,11 +74,10 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         path_weights: PathLikeOrStr,
         categories: Mapping[str, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
     ):
         self.path_config = Path(path_config_json)
         self.path_weights = Path(path_weights)
-        self.categories = copy(categories)  # type: ignore
+        self.categories = ModelCategories(init_categories=categories)
 
         self.device = get_torch_device(device)
 
@@ -88,7 +86,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFLmSequenceClassifierBase:
-        return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
+        return self.__class__(self.path_config, self.path_weights, self.categories.get_categories(), self.device)
 
     def _validate_encodings(
         self, **encodings: Union[list[list[str]], torch.Tensor]
@@ -185,9 +183,11 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(self.model.__class__.__name__,
-                                                                          use_xlm_tokenizer)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(
+            self.model.__class__.__name__, use_xlm_tokenizer
+        )
+
+        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
@@ -200,12 +200,13 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         )
 
         result.class_id += 1
-        result.class_name = self.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[str(result.class_id)]
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: PathLikeOrStr,
-                          path_weights: PathLikeOrStr) -> XLMRobertaForSequenceClassification:
+    def get_wrapped_model(
+        path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr
+    ) -> XLMRobertaForSequenceClassification:
         """
         Get the inner (wrapped) model.
 

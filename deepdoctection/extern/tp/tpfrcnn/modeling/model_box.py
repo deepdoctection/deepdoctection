@@ -66,7 +66,7 @@ def decode_bbox_target(box_predictions, anchors, preproc_max_size):
     xbyb = box_pred_txty * waha + xaya
     x1y1 = xbyb - wbhb * 0.5
     x2y2 = xbyb + wbhb * 0.5  # (...)x1x2
-    out = tf.concat([x1y1, x2y2], axis=-2)
+    out = tf.concat([x1y1, x2y2], axis=-2)  # pylint: disable=E1123
     return tf.reshape(out, orig_shape)
 
 
@@ -93,7 +93,7 @@ def encode_bbox_target(boxes, anchors):
     # Note that here not all boxes are valid. Some may be zero
     txty = (xbyb - xaya) / waha
     twth = tf.math.log(wbhb / waha)  # may contain -inf for invalid boxes
-    encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)
+    encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)  # pylint: disable=E1123
     return tf.reshape(encoded, tf.shape(boxes))
 
 
@@ -153,7 +153,7 @@ def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):
         n_w = spacing_w * tf.cast(crop_shape[1] - 1, tf.float32) / imshape[1]
         n_h = spacing_h * tf.cast(crop_shape[0] - 1, tf.float32) / imshape[0]
 
-        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)
+        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)   # pylint: disable=E1123
 
     image_shape = tf.shape(image)[2:]
 
@@ -213,8 +213,8 @@ class RPNAnchors(namedtuple("_RPNAnchors", ["boxes", "gt_labels", "gt_boxes"])):
         Slice anchors to the spatial size of this feature map.
         """
         shape2d = tf.shape(featuremap)[2:]  # h,w
-        slice3d = tf.concat([shape2d, [-1]], axis=0)
-        slice4d = tf.concat([shape2d, [-1, -1]], axis=0)
+        slice3d = tf.concat([shape2d, [-1]], axis=0)  # pylint: disable=E1123
+        slice4d = tf.concat([shape2d, [-1, -1]], axis=0)  # pylint: disable=E1123
         boxes = tf.slice(self.boxes, [0, 0, 0, 0], slice4d)
         gt_labels = tf.slice(self.gt_labels, [0, 0, 0], slice3d)
         gt_boxes = tf.slice(self.gt_boxes, [0, 0, 0, 0], slice4d)

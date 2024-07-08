@@ -24,10 +24,10 @@ from copy import copy
 from typing import Any, Callable, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
-from ..extern.hflayoutlm import HFLayoutLmSequenceClassifierBase, HFLayoutLmTokenClassifierBase
+from ..extern.hflayoutlm import HfLayoutSequenceModels, HfLayoutTokenModels
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
-from .base import PipelineComponent, MetaAnnotation
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -64,7 +64,7 @@ class LMTokenClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HFLayoutLmTokenClassifierBase,
+        language_model: HfLayoutTokenModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -108,7 +108,7 @@ class LMTokenClassifierService(PipelineComponent):
         self.segment_positions = segment_positions
         self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
-            categories_name_as_key = {val: key for key, val in self.language_model.categories.items()}
+            categories_name_as_key = {val: key for key, val in self.language_model.categories.categories}
             self.default_key: ObjectTypes
             if BioTag.outside in categories_name_as_key:
                 self.default_key = BioTag.outside
@@ -196,11 +196,12 @@ class LMTokenClassifierService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                              sub_categories={LayoutType.word:
-                                                  {WordType.token_class, WordType.tag, WordType.token_tag}},
-                              relationships={},
-                              summaries=[])
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={LayoutType.word: {WordType.token_class, WordType.tag, WordType.token_tag}},
+            relationships={},
+            summaries=(),
+        )
 
     def _get_name(self) -> str:
         return f"lm_token_class_{self.language_model.name}"
@@ -254,7 +255,7 @@ class LMSequenceClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HFLayoutLmSequenceClassifierBase,
+        language_model: HfLayoutSequenceModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -310,10 +311,9 @@ class LMSequenceClassifierService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=[],
-                                sub_categories={},
-                                relationships={},
-                                summaries=[PageType.document_type])
+        return MetaAnnotation(
+            image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.document_type,)
+        )
 
     def _get_name(self) -> str:
         return f"lm_sequence_class_{self.language_model.name}"

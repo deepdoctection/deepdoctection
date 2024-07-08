@@ -22,11 +22,10 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Mapping, Optional, Sequence, Type, Union, no_type_check
+from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check
 
 import numpy as np
 
-from ..utils.types import  PathLikeOrStr, PixelValues, AnnotationDict, Text_, HTML, csv, Chunks, ImageDict
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import (
@@ -40,6 +39,7 @@ from ..utils.settings import (
     WordType,
     get_type,
 )
+from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, Text_, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
@@ -209,15 +209,15 @@ class Layout(ImageAnnotationBaseView):
     def text_(self) -> Text_:
         """Returns a dict
 
-            `{"text": text string,
-              "text_list": list of single words,
-              "ann_ids": word annotation ids`,
-              "token_classes": token classes,
-              "token_tags": token tags,
-              "token_class_ids": token class ids,
-              "token_tag_ids": token tag ids}`
+        `{"text": text string,
+          "text_list": list of single words,
+          "ann_ids": word annotation ids`,
+          "token_classes": token classes,
+          "token_tags": token tags,
+          "token_class_ids": token class ids,
+          "token_tag_ids": token tag ids}`
 
-              """
+        """
         words = self.get_ordered_words()
         characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
             *[
@@ -431,7 +431,15 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     CellType.column_header: Cell,
 }
 
-IMAGE_DEFAULTS: dict[str, Union[LayoutType, Sequence[ObjectTypes]]] = {
+
+class ImageDefaults(TypedDict):
+    """ImageDefaults"""
+    text_container: LayoutType
+    floating_text_block_categories: Sequence[LayoutType]
+    text_block_categories: Sequence[LayoutType]
+
+
+IMAGE_DEFAULTS: ImageDefaults = {
     "text_container": LayoutType.word,
     "floating_text_block_categories": [
         LayoutType.text,
@@ -620,13 +628,13 @@ class Page(Image):
         """
 
         if text_container is None:
-            text_container = IMAGE_DEFAULTS["text_container"]  # type: ignore
+            text_container = IMAGE_DEFAULTS["text_container"]
 
         if not floating_text_block_categories:
-            floating_text_block_categories = copy(IMAGE_DEFAULTS["floating_text_block_categories"])  # type: ignore
+            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
 
-        if include_residual_text_container and LayoutType.line not in floating_text_block_categories:  # type: ignore
-            floating_text_block_categories.append(LayoutType.line)  # type: ignore
+        if include_residual_text_container and LayoutType.line not in floating_text_block_categories:
+            floating_text_block_categories = floating_text_block_categories + (LayoutType.line,)  # type: ignore
 
         img_kwargs = image_orig.as_dict()
         page = cls(
@@ -665,7 +673,7 @@ class Page(Image):
         if summary_dict := img_kwargs.get("_summary"):
             page.summary = SummaryAnnotation.from_dict(**summary_dict)
         page.floating_text_block_categories = floating_text_block_categories  # type: ignore
-        page.text_container = text_container  # type: ignore
+        page.text_container = text_container
         page.include_residual_text_container = include_residual_text_container
         return page
 

@@ -30,10 +30,10 @@ import tqdm
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
-from ..utils.types import JsonDict, QueueType, TqdmType
 from ..utils.context import timed_operation
 from ..utils.tqdm import get_tqdm
-from .base import PipelineComponent, MetaAnnotation
+from ..utils.types import QueueType, TqdmType
+from .base import MetaAnnotation, PipelineComponent
 from .common import ImageParsingService, PageParsingService
 from .registry import pipeline_component_registry
 
@@ -100,7 +100,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
 
     def __init__(
         self,
-        pipeline_components: Sequence[Union[PipelineComponent, PageParsingService, ImageParsingService]],
+        pipeline_components: Sequence[Union[PipelineComponent, ImageParsingService]],
         pre_proc_func: Optional[Callable[[Image], Image]] = None,
         post_proc_func: Optional[Callable[[Image], Image]] = None,
         max_datapoints: Optional[int] = None,

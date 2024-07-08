@@ -28,10 +28,10 @@ import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
 
-from ..utils.types import PixelValues
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger
+from ..utils.types import PixelValues
 
 with try_import() as import_guard:
     import pycocotools.mask as coco_mask

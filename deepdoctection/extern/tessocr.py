@@ -18,26 +18,28 @@
 """
 Tesseract OCR engine for text extraction
 """
+from __future__ import annotations
+
 import shlex
 import string
 import subprocess
 import sys
 from errno import ENOENT
 from itertools import groupby
-from pathlib import Path
 from os import environ, fspath
+from pathlib import Path
 from typing import Any, Mapping, Optional, Union
 
 from packaging.version import InvalidVersion, Version, parse
 
-from ..utils.types import PixelValues, Requirement, PathLikeOrStr
 from ..utils.context import save_tmp_file, timeout_manager
 from ..utils.error import DependencyError, TesseractError
 from ..utils.file_utils import _TESS_PATH, get_tesseract_requirement
 from ..utils.metacfg import config_to_cli_str, set_config_by_yaml
 from ..utils.settings import LayoutType, ObjectTypes, PageType
+from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler
-from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase
+from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector
 
 # copy and paste with some light modifications from https://github.com/madmaze/pytesseract/tree/master/pytesseract
 
@@ -76,11 +78,7 @@ def _subprocess_args() -> dict[str, Any]:
     return kwargs
 
 
-def _input_to_cli_str(lang: str,
-                      config: str,
-                      nice: int,
-                      input_file_name: str,
-                      output_file_name_base: str) -> list[str]:
+def _input_to_cli_str(lang: str, config: str, nice: int, input_file_name: str, output_file_name_base: str) -> list[str]:
     """
     Generates a tesseract cmd as list of string with given inputs
     """
@@ -356,9 +354,9 @@ class TesseractOcrDetector(ObjectDetector):
         self.config = hyper_param_config
 
         if self.config.LINES:
-            self.categories = {"1": LayoutType.word, "2": LayoutType.line}
+            self.categories = ModelCategories(init_categories={"1": LayoutType.word, "2": LayoutType.line})
         else:
-            self.categories = {"1": LayoutType.word}
+            self.categories = ModelCategories(init_categories={"1": LayoutType.word})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -379,13 +377,11 @@ class TesseractOcrDetector(ObjectDetector):
     def get_requirements(cls) -> list[Requirement]:
         return [get_tesseract_requirement()]
 
-    def clone(self) -> ObjectDetector:
+    def clone(self) -> TesseractOcrDetector:
         return self.__class__(self.path_yaml, self.config_overwrite)
 
-    def get_category_names(self) -> list[ObjectTypes]:
-        if self.config.LINES:
-            return [LayoutType.word, LayoutType.line]
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
     def set_language(self, language: ObjectTypes) -> None:
         """
@@ -424,6 +420,7 @@ class TesseractRotationTransformer(ImageTransformer):
 
     def __init__(self) -> None:
         self.name = fspath(_TESS_PATH) + "-rotation"
+        self.categories = ModelCategories(init_categories={"1": PageType.angle})
 
     def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
@@ -453,9 +450,8 @@ class TesseractRotationTransformer(ImageTransformer):
     def get_requirements(cls) -> list[Requirement]:
         return [get_tesseract_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> TesseractRotationTransformer:
         return self.__class__()
 
-    @staticmethod
-    def get_category_name() -> PageType:
-        return PageType.angle
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)

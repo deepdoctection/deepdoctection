@@ -30,12 +30,12 @@ from jsonlines import Reader, Writer
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.context import timed_operation
 from ..utils.error import FileExtensionError
 from ..utils.identifier import get_uuid_from_str
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
+from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.utils import is_file_extension
 from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
@@ -558,9 +558,9 @@ class SerializerPdfDoc:
         raise NotImplementedError()
 
     @staticmethod
-    def split(path: PathLikeOrStr,
-              path_target: Optional[PathLikeOrStr] = None,
-              max_datapoint: Optional[int] = None) -> None:
+    def split(
+        path: PathLikeOrStr, path_target: Optional[PathLikeOrStr] = None, max_datapoint: Optional[int] = None
+    ) -> None:
         """
         Split a document into single pages.
         """

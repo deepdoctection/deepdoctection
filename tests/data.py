@@ -25,7 +25,6 @@ import numpy as np
 
 from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, SequenceClassResult, TokenClassResult
-from deepdoctection.utils.types import JsonDict
 from deepdoctection.utils.settings import (
     BioTag,
     CellType,
@@ -37,6 +36,7 @@ from deepdoctection.utils.settings import (
     WordType,
     get_type,
 )
+from deepdoctection.utils.types import JsonDict
 
 
 @dataclass

@@ -24,8 +24,8 @@ from typing import Any, Dict, Mapping, Optional, Union
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
-from deepdoctection.utils.types import JsonDict, PixelValues
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
+from deepdoctection.utils.types import JsonDict, PixelValues
 
 from .data import (
     DatapointCoco,

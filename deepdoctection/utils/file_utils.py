@@ -21,10 +21,10 @@ from typing import Any, Union, no_type_check
 import importlib_metadata
 from packaging import version
 
-from .types import Requirement, PathLikeOrStr
 from .error import DependencyError
 from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
+from .types import PathLikeOrStr, Requirement
 
 _GENERIC_ERR_MSG = "Please check the required version either in the docs or in the setup file"
 
@@ -269,7 +269,7 @@ def set_tesseract_path(tesseract_path: PathLikeOrStr) -> None:
 
     tesseract_flag = which(tesseract_path)
 
-    _TESS_AVAILABLE = False if tesseract_flag is None  else True # pylint: disable=W0603
+    _TESS_AVAILABLE = False if tesseract_flag is not None else True  # pylint: disable=W0603,R1719
 
     _TESS_PATH = tesseract_path
 

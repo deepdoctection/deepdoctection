@@ -28,9 +28,9 @@ from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, Im
 from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
-from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.fs import load_bytes_from_pdf_file, load_image_from_file
 from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
+from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 

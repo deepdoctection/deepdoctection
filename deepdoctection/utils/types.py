@@ -21,13 +21,12 @@ Typing sheet for the whole package
 
 import os
 import queue
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union, NewType, TypedDict
+from typing import TYPE_CHECKING, Any, Protocol, Type, TypeVar, Union
 
 import numpy.typing as npt
 import tqdm
 from numpy import uint8
-from typing_extensions import TypeAlias, NotRequired
+from typing_extensions import TypeAlias
 
 
 # Type for a general dataclass
@@ -66,7 +65,6 @@ else:
 JsonDict = dict[str, Any]
 
 
-
 # Some common deepdoctection dict-types
 AnnotationDict: TypeAlias = dict[str, Any]
 ImageDict: TypeAlias = dict[str, Any]
@@ -99,12 +97,8 @@ BGR: TypeAlias = tuple[int, int, int]
 # A type to collect key val pairs of environ information. Mainly used in env_info.py
 KeyValEnvInfos: TypeAlias = list[tuple[str, str]]
 
-#mainly used in extern
+# mainly used in extern
 
 
 # mainly used in eval
-MetricResults: TypeAlias = dict[str, Union[int,float]]
-
-
-
-
+MetricResults: TypeAlias = dict[str, Union[int, float]]
