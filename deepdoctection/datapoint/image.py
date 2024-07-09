@@ -348,10 +348,8 @@ class Image:
         """
 
         if category_names is not None:
-            category_names = (
-                [get_type(cat_name) for cat_name in category_names]
-                if isinstance(category_names, (list, set))
-                else [get_type(category_names)]  # type:ignore
+            category_names = ((get_type(category_names), ) if isinstance(category_names, str) else
+                            tuple(get_type(cat_name) for cat_name in category_names)
             )
 
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
@@ -360,24 +358,24 @@ class Image:
         session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
         if ignore_inactive:
-            anns = filter(lambda x: x.active, self.annotations)
+            anns: Union[list[ImageAnnotation],filter[ImageAnnotation]] = filter(lambda x: x.active, self.annotations)
         else:
-            anns = self.annotations  # type:ignore
+            anns = self.annotations
 
         if category_names is not None:
-            anns = filter(lambda x: x.category_name in category_names, anns)  # type:ignore
+            anns = filter(lambda x: x.category_name in category_names, anns)
 
         if ann_ids is not None:
-            anns = filter(lambda x: x.annotation_id in ann_ids, anns)  # type:ignore
+            anns = filter(lambda x: x.annotation_id in ann_ids, anns)
 
         if service_id is not None:
-            anns = filter(lambda x: x.service_id in service_id, anns)  # type:ignore
+            anns = filter(lambda x: x.service_id in service_id, anns)
 
         if model_id is not None:
-            anns = filter(lambda x: x.model_id in model_id, anns)  # type:ignore
+            anns = filter(lambda x: x.model_id in model_id, anns)
 
         if session_id is not None:
-            anns = filter(lambda x: x.session_id in session_id, anns)  # type:ignore
+            anns = filter(lambda x: x.session_id in session_id, anns)
 
         return list(anns)
 

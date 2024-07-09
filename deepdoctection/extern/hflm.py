@@ -179,6 +179,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = True,
     ):
+        super().__init__(path_config_json, path_weights, categories, device)
         self.name = self.get_name(path_weights, "bert-like")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
@@ -186,8 +187,6 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
             self.model.__class__.__name__, use_xlm_tokenizer
         )
-
-        super().__init__(path_config_json, path_weights, categories, device)
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)

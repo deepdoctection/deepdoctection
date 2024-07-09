@@ -68,7 +68,8 @@ class ModelCategories:
         if self.init_categories:
             self._init_categories = MappingProxyType({key: get_type(val) for key, val in self.init_categories.items()})
         else:
-            self._init_categories = MappingProxyType({})
+            if self._init_categories is None:
+                self._init_categories = MappingProxyType({})
         self.categories = self._init_categories
 
     @overload
@@ -116,20 +117,19 @@ class ModelCategories:
         self._filter_categories = categories
         self.categories = self.get_categories()
 
-    def shift_category_ids(self, shift_by: int) -> None:
+    def shift_category_ids(self, shift_by: int) -> MappingProxyType[str, ObjectTypes]:
         """
         Shift category ids
 
          **Example**:
 
             categories = ModelCategories(init_categories={"1": "text", "2": "title"})
-            categories.shift_category_ids(1)
-            cats = categories.get_categories(as_dict=True)  # {"2": LayoutType.text, "3": LayoutType.title}
+            cats = categories.shift_category_ids(1) # {"2": LayoutType.text, "3": LayoutType.title}
 
         :param shift_by: The value to shift the category id to the left or to the right
         :return: shifted categories
         """
-        self.categories = MappingProxyType({str(int(k) + shift_by): v for k, v in self.get_categories().items()})
+        return MappingProxyType({str(int(k) + shift_by): v for k, v in self.get_categories().items()})
 
 
 @dataclass
@@ -179,6 +179,7 @@ class NerModelCategories(ModelCategories):
             self._init_categories = self.merge_bio_semantics_categories(
                 self._categories_semantics, self._categories_bio
             )
+        super().__post_init__()
 
     @staticmethod
     def merge_bio_semantics_categories(
