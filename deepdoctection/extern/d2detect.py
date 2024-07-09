@@ -172,11 +172,11 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
         :return: List of detection results with attribute class_name populated
         """
         filtered_detection_result: list[DetectionResult] = []
-        self.categories.shift_category_ids(shift_by=-1)
+        shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = self.categories.categories.get(str(result.class_id), DefaultType.default_type)
+            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.default_type)
             if result.class_name != DefaultType.default_type:
-                if result.class_id:
+                if result.class_id is not None:
                     result.class_id += 1
                     filtered_detection_result.append(result)
         return filtered_detection_result

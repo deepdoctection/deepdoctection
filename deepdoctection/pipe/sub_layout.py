@@ -168,7 +168,7 @@ class SubImageLayoutService(PipelineComponent):
         self.sub_image_name = (
             (get_type(sub_image_names),)
             if isinstance(sub_image_names, str)
-            else (tuple((get_type(cat) for cat in sub_image_names)))
+            else tuple((get_type(cat) for cat in sub_image_names))
         )
         self.category_id_mapping = category_id_mapping
         self.detect_result_generator = detect_result_generator

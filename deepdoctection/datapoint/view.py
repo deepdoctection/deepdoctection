@@ -435,19 +435,19 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
 class ImageDefaults(TypedDict):
     """ImageDefaults"""
     text_container: LayoutType
-    floating_text_block_categories: Sequence[LayoutType]
-    text_block_categories: Sequence[LayoutType]
+    floating_text_block_categories: tuple[LayoutType,...]
+    text_block_categories: tuple[LayoutType,...]
 
 
 IMAGE_DEFAULTS: ImageDefaults = {
     "text_container": LayoutType.word,
-    "floating_text_block_categories": [
+    "floating_text_block_categories": (
         LayoutType.text,
         LayoutType.title,
         LayoutType.figure,
         LayoutType.list,
-    ],
-    "text_block_categories": [LayoutType.text, LayoutType.title, LayoutType.figure, LayoutType.list, LayoutType.cell],
+    ),
+    "text_block_categories": (LayoutType.text, LayoutType.title, LayoutType.figure, LayoutType.list, LayoutType.cell,),
 }
 
 
@@ -538,10 +538,8 @@ class Page(Image):
         """
 
         if category_names is not None:
-            category_names = (
-                [get_type(cat_name) for cat_name in category_names]
-                if isinstance(category_names, list)
-                else [get_type(category_names)]  # type:ignore
+            category_names = ((get_type(category_names), ) if isinstance(category_names, str) else
+                            tuple(get_type(cat_name) for cat_name in category_names)
             )
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         service_id = [service_id] if isinstance(service_id, str) else service_id
@@ -549,26 +547,26 @@ class Page(Image):
         session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
         if ignore_inactive:
-            anns = filter(lambda x: x.active, self.annotations)
+            anns: Union[list[ImageAnnotation], filter[ImageAnnotation]] = filter(lambda x: x.active, self.annotations)
         else:
-            anns = self.annotations  # type:ignore
+            anns = self.annotations
 
         if category_names is not None:
-            anns = filter(lambda x: x.category_name in category_names, anns)  # type:ignore
+            anns = filter(lambda x: x.category_name in category_names, anns)
 
         if ann_ids is not None:
-            anns = filter(lambda x: x.annotation_id in ann_ids, anns)  # type:ignore
+            anns = filter(lambda x: x.annotation_id in ann_ids, anns)
 
         if service_id is not None:
-            anns = filter(lambda x: x.generating_service in service_id, anns)  # type:ignore
+            anns = filter(lambda x: x.generating_service in service_id, anns)
 
         if model_id is not None:
-            anns = filter(lambda x: x.generating_model in model_id, anns)  # type:ignore
+            anns = filter(lambda x: x.generating_model in model_id, anns)
 
         if session_id is not None:
-            anns = filter(lambda x: x.session_id in session_id, anns)  # type:ignore
+            anns = filter(lambda x: x.session_id in session_id, anns)
 
-        return list(anns)  # type:ignore
+        return list(anns) # type: ignore
 
     def __getattr__(self, item: str) -> Any:
         if item not in self.get_attribute_names():
@@ -634,7 +632,7 @@ class Page(Image):
             floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
 
         if include_residual_text_container and LayoutType.line not in floating_text_block_categories:
-            floating_text_block_categories = floating_text_block_categories + (LayoutType.line,)  # type: ignore
+            floating_text_block_categories = tuple(floating_text_block_categories) + (LayoutType.line,)  # type: ignore
 
         img_kwargs = image_orig.as_dict()
         page = cls(

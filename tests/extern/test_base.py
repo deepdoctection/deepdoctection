@@ -37,7 +37,7 @@ class TestModelCategories:
         setup necessary components
         """
 
-        self.init_categories = {"1": "word", "2": "line", "3": "table", "4": "figure", "5": "header", "6": "footer"}
+        self.init_categories = {"1": "word", "2": "line", "3": "table", "4": "figure", "5": "header", "6": "footnote"}
         self.categories = ModelCategories(init_categories=self.init_categories)
 
     @mark.basic
@@ -57,7 +57,7 @@ class TestModelCategories:
                 "3": get_type("table"),
                 "4": get_type("figure"),
                 "5": get_type("header"),
-                "6": get_type("footer"),
+                "6": get_type("footnote"),
             }
         )
         assert categories == expected_categories
@@ -79,7 +79,7 @@ class TestModelCategories:
                 "3": get_type("table"),
                 "4": get_type("figure"),
                 "5": get_type("header"),
-                "6": get_type("footer"),
+                "6": get_type("footnote"),
             }
         )
         assert categories == expected_categories
@@ -100,7 +100,7 @@ class TestModelCategories:
             get_type("table"),
             get_type("figure"),
             get_type("header"),
-            get_type("footer"),
+            get_type("footnote"),
         )
         assert categories == expected_categories
 
@@ -119,7 +119,7 @@ class TestModelCategories:
 
         # Assert
         expected_categories = MappingProxyType(
-            {"2": get_type("line"), "3": get_type("table"), "4": get_type("figure"), "6": get_type("footer")}
+            {"2": get_type("line"), "3": get_type("table"), "4": get_type("figure"), "6": get_type("footnote")}
         )
         assert categories == expected_categories
 
@@ -130,8 +130,7 @@ class TestModelCategories:
         """
 
         # Act
-        self.categories.shift_category_ids(-1)
-        categories = self.categories.get_categories()
+        categories = self.categories.shift_category_ids(-1)
 
         # Assert
         expected_categories = MappingProxyType(
@@ -141,7 +140,7 @@ class TestModelCategories:
                 "2": get_type("table"),
                 "3": get_type("figure"),
                 "4": get_type("header"),
-                "5": get_type("footer"),
+                "5": get_type("footnote"),
             }
         )
         assert categories == expected_categories

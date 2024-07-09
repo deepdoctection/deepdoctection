@@ -736,7 +736,7 @@ class TextOrderService(TextLineServiceMixin):
             add_category.append(LayoutType.line)
 
         assert set(self.floating_text_block_categories) <= set(
-            self.text_block_categories + add_category  # type: ignore
+            self.text_block_categories + tuple(add_category)
         ), "floating_text_block_categories must be a subset of text_block_categories"
 
     def get_meta_annotation(self) -> MetaAnnotation:

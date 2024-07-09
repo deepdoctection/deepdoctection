@@ -178,7 +178,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         df = MapData(df, lambda dp: dp if dp["split"] == split else None)
         pub_mapper = pub_to_image(
             self.categories.get_categories(name_as_key=True, init=True),
-            load_image,
+            load_image=load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
             dd_pipe_like=dd_pipe_like,

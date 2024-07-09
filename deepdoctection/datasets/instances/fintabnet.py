@@ -211,7 +211,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
         pub_mapper = pub_to_image(
             categories_name_as_key=self.categories.get_categories(name_as_key=True, init=True),
-            loade_image=load_image,
+            load_image=load_image,
             fake_score=fake_score,
             rows_and_cols=rows_and_cols,
             dd_pipe_like=False,

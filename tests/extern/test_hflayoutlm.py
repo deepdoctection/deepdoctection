@@ -129,7 +129,7 @@ class TestHFLayoutLmTokenClassifier:
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -219,7 +219,7 @@ class TestHFLayoutLmv2TokenClassifier:
         model = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -310,7 +310,7 @@ class TestHFLayoutLmv3TokenClassifier:
         model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps
@@ -535,7 +535,7 @@ class TestHFLiltTokenClassifier:
         model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
 
         # Assert
-        assert model.categories == categories_explicit
+        assert model.categories.categories == categories_explicit
 
     @staticmethod
     @mark.pt_deps

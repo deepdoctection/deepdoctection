@@ -81,6 +81,7 @@ class MappingContextManager:
                 AssertionError,
                 TypeError,
                 FileNotFoundError,
+                AttributeError,
                 BoundingBoxError,
                 AnnotationError,
                 ImageError,
