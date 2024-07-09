@@ -269,8 +269,8 @@ class CategoryAnnotation(Annotation):
     `dump_relationship` instead.
     """
 
-    category_name: TypeOrStr = field(default=DefaultType.default_type)
-    _category_name: ObjectTypes = field(default=DefaultType.default_type, init=False)
+    category_name: TypeOrStr = field(default=DefaultType.DEFAULT_TYPE)
+    _category_name: ObjectTypes = field(default=DefaultType.DEFAULT_TYPE, init=False)
     category_id: str = field(default="")
     score: Optional[float] = field(default=None)
     sub_categories: dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)

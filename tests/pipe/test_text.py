@@ -58,7 +58,7 @@ class TestTextExtractionService:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_fully_segmented_fully_tiled)
-        anns = dp.get_annotation(category_names=LayoutType.word)
+        anns = dp.get_annotation(category_names=LayoutType.WORD)
 
         # Assert
         first_text_ann = anns[0]
@@ -97,7 +97,7 @@ class TestTextExtractionServiceWithPdfPlumberDetector:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_fully_segmented_fully_tiled)
-        anns = dp.get_annotation(category_names=LayoutType.word)
+        anns = dp.get_annotation(category_names=LayoutType.WORD)
 
         # Assert
         first_text_ann = anns[0]
@@ -119,7 +119,7 @@ def test_text_extraction_service_raises_error_with_inconsistent_attributes() -> 
 
     # Act and Assert
     with raises(TypeError):
-        TextExtractionService(text_extract_detector, extract_from_roi=LayoutType.table)
+        TextExtractionService(text_extract_detector, extract_from_roi=LayoutType.TABLE)
 
 
 class TestTextExtractionServiceWithSubImage:
@@ -137,7 +137,7 @@ class TestTextExtractionServiceWithSubImage:
         self._text_extract_detector.name = "mock_text_extractor"
         self._text_extract_detector.model_id = "test_model"
         self.text_extraction_service = TextExtractionService(
-            self._text_extract_detector, extract_from_roi=LayoutType.table
+            self._text_extract_detector, extract_from_roi=LayoutType.TABLE
         )
 
     @mark.basic
@@ -156,8 +156,8 @@ class TestTextExtractionServiceWithSubImage:
 
         # Act
         dp = self.text_extraction_service.pass_datapoint(dp_image_with_layout_anns)
-        word_anns = dp.get_annotation(category_names=LayoutType.word)
-        table_anns = dp.get_annotation(category_names=LayoutType.table)
+        word_anns = dp.get_annotation(category_names=LayoutType.WORD)
+        table_anns = dp.get_annotation(category_names=LayoutType.TABLE)
 
         assert len(word_anns) == 4
         assert len(table_anns) == 2

@@ -93,9 +93,9 @@ are needed), a generic attribute `sub_categories` is provided.
 
 ```python
 
-    cell = ImageAnnotation(bounding_box,category_name = "cell", category_id="2")
-    row_num = CategoryAnnotation(category_name=CellType.row_number,category_id="6)
-    cell.dump_sub_category(CellType.row_number,row_num)
+cell = ImageAnnotation(bounding_box, category_name="cell", category_id="2")
+row_num = CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="6)
+cell.dump_sub_category(CellType.ROW_NUMBER, row_num)
 ``` 
 &nbsp;
 
@@ -117,10 +117,10 @@ A generic `relationships` allows to save object specific attributes that relate 
 
 ```python
 
-    cell = ImageAnnotation(bounding_box,category_name = "cell", category_id="2")
+cell = ImageAnnotation(bounding_box, category_name="cell", category_id="2")
 
-    for word in word_in_cell:
-        cell.dump_relationship(Relationships.child,word.annotation_id)
+for word in word_in_cell:
+    cell.dump_relationship(Relationships.CHILD, word.annotation_id)
 ```
 
 ## Datasets

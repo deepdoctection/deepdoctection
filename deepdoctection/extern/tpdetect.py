@@ -54,8 +54,8 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         """
         filtered_detection_result: list[DetectionResult] = []
         for result in detection_results:
-            result.class_name = self.categories.categories.get(str(result.class_id), DefaultType.default_type)
-            if result.class_name != DefaultType.default_type:
+            result.class_name = self.categories.categories.get(str(result.class_id), DefaultType.DEFAULT_TYPE)
+            if result.class_name != DefaultType.DEFAULT_TYPE:
                 filtered_detection_result.append(result)
         return filtered_detection_result
 

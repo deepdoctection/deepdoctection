@@ -270,11 +270,9 @@ table.get_attribute_names()
      'text',
      'words'}
 
-
-
-
 ```python
-print(f" number of rows: {table.number_of_rows} \n number of columns: {table.number_of_columns} \n reading order: {table.reading_order}")
+print(
+    f" number of rows: {table.NUMBER_OF_ROWS} \n number of columns: {table.NUMBER_OF_COLUMNS} \n reading order: {table.READING_ORDER}")
 ```
 
      number of rows: 8 
@@ -286,9 +284,8 @@ There is no reading order. The reason is that we have excluded tables from havin
 
 You can get an html, csv or text version of your table. Use `table.csv` to load the table into a Pandas Dataframe.
 
-
 ```python
-HTML(table.html)
+HTML(table.HTML)
 ```
 
 
@@ -355,11 +352,9 @@ cell.get_attribute_names()
      'text',
      'words'}
 
-
-
-
 ```python
-print(f"column number: {cell.column_number} \n row_number: {cell.row_number} \n text: {cell.text} \n annotation_id: {cell.annotation_id}")
+print(
+    f"column number: {cell.COLUMNS_NUMBER} \n row_number: {cell.ROW_NUMBER} \n text: {cell.text} \n annotation_id: {cell.annotation_id}")
 ```
 
     column number: 1 
@@ -396,9 +391,8 @@ When inferring the reading order of a page we therefore have to distinguish betw
 
 Let's look at some more attributes.
 
-
 ```python
-print(f" characters: {word.characters} \n reading order: {word.reading_order} \n token class: {word.token_class}")
+print(f" characters: {word.CHARACTERS} \n reading order: {word.READING_ORDER} \n token class: {word.TOKEN_CLASS}")
 ```
 
      characters: Gesamtvergütung 
@@ -424,9 +418,8 @@ page = dd.Page.from_file(file_path="/path/to/dir/test.json")
 
 The `Page` object is read-only and even though you can change the value it will not be persisted.
 
-
 ```python
-word.token_class = "ORG"
+word.TOKEN_CLASS = "ORG"
 ```
 
 

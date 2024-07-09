@@ -98,11 +98,11 @@ def fixture_categories() -> Dict[str, str]:
     Categories as Dict
     """
     return {
-        "1": LayoutType.text,
-        "2": LayoutType.title,
-        "3": LayoutType.table,
-        "4": LayoutType.figure,
-        "5": LayoutType.list,
+        "1": LayoutType.TEXT,
+        "2": LayoutType.TITLE,
+        "3": LayoutType.TABLE,
+        "4": LayoutType.FIGURE,
+        "5": LayoutType.LIST,
     }
 
 
@@ -111,15 +111,15 @@ def fixture_dataset_categories() -> DatasetCategories:
     """
     fixture categories
     """
-    _categories = [LayoutType.table, LayoutType.cell, LayoutType.row, LayoutType.column]
+    _categories = [LayoutType.TABLE, LayoutType.CELL, LayoutType.ROW, LayoutType.COLUMN]
     _sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
-        LayoutType.row: {CellType.row_number: []},
-        LayoutType.column: {CellType.column_number: []},
-        LayoutType.cell: {
-            CellType.row_number: [],
-            CellType.column_number: [],
-            CellType.row_span: [],
-            CellType.column_span: [],
+        LayoutType.ROW: {CellType.ROW_NUMBER: []},
+        LayoutType.COLUMN: {CellType.COLUMNS_NUMBER: []},
+        LayoutType.CELL: {
+            CellType.ROW_NUMBER: [],
+            CellType.COLUMNS_NUMBER: [],
+            CellType.ROW_SPAN: [],
+            CellType.COLUMN_SPAN: [],
         },
     }
     return DatasetCategories(_categories, _sub_categories)
@@ -200,9 +200,9 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
     anns = Annotations().get_layout_annotation(segmentation=True)
     for ann in anns:
         dp_image.dump(ann)
-    table = dp_image.get_annotation(category_names=LayoutType.table)[0]
+    table = dp_image.get_annotation(category_names=LayoutType.TABLE)[0]
     dp_image.image_ann_to_image(table.annotation_id, True)
-    table_anns = dp_image.get_annotation_iter(category_names=[LayoutType.cell, LayoutType.row, LayoutType.column])
+    table_anns = dp_image.get_annotation_iter(category_names=[LayoutType.CELL, LayoutType.ROW, LayoutType.COLUMN])
     for ann in table_anns:
         assert isinstance(table.image, Image)
         table.image.dump(ann)
@@ -213,7 +213,7 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
         assert isinstance(ann.image, Image)
         ann.image.set_embedding(table.annotation_id, ann.bounding_box)  # type: ignore
         ann.image.set_embedding(dp_image.image_id, ann_global_box)
-        table.dump_relationship(Relationships.child, ann.annotation_id)
+        table.dump_relationship(Relationships.CHILD, ann.annotation_id)
     return deepcopy(dp_image)
 
 
@@ -221,10 +221,10 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
 def fixture_dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     """fixture dp_image_tab_cell_item"""
     dp = dp_image_tab_cell_item
-    table = dp.get_annotation(category_names=LayoutType.table)[0]
+    table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
     assert isinstance(table, ImageAnnotation)
-    rows = dp.get_annotation_iter(category_names=LayoutType.row)
-    cols = dp.get_annotation_iter(category_names=LayoutType.column)
+    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
+    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
     table_embedding_box = table.get_bounding_box(dp.image_id)
     for row in rows:
         assert isinstance(row, ImageAnnotation)
@@ -280,9 +280,9 @@ def fixture_words_annotations_with_sub_cats(
 ) -> List[ImageAnnotation]:
     """fixture words_annotations_with_sub_cats"""
     for ann, sub_cat_list in zip(word_layout_annotations_for_ordering, word_sub_cats_for_ordering):
-        ann.dump_sub_category(WordType.characters, sub_cat_list[0])
-        ann.dump_sub_category(WordType.block, sub_cat_list[1])
-        ann.dump_sub_category(LayoutType.line, sub_cat_list[2])
+        ann.dump_sub_category(WordType.CHARACTERS, sub_cat_list[0])
+        ann.dump_sub_category(WordType.BLOCK, sub_cat_list[1])
+        ann.dump_sub_category(LayoutType.LINE, sub_cat_list[2])
     return word_layout_annotations_for_ordering
 
 
@@ -300,14 +300,14 @@ def fixture_dp_image_with_layout_and_word_annotations(
     dp_image.dump(layout_anns[0])
     dp_image.dump(layout_anns[1])
     dp_image.dump(word_anns[0])
-    layout_anns[0].dump_relationship(Relationships.child, word_anns[0].annotation_id)
+    layout_anns[0].dump_relationship(Relationships.CHILD, word_anns[0].annotation_id)
     dp_image.dump(word_anns[1])
-    layout_anns[0].dump_relationship(Relationships.child, word_anns[1].annotation_id)
+    layout_anns[0].dump_relationship(Relationships.CHILD, word_anns[1].annotation_id)
 
     dp_image.dump(word_anns[2])
-    layout_anns[1].dump_relationship(Relationships.child, word_anns[2].annotation_id)
+    layout_anns[1].dump_relationship(Relationships.CHILD, word_anns[2].annotation_id)
     dp_image.dump(word_anns[3])
-    layout_anns[1].dump_relationship(Relationships.child, word_anns[3].annotation_id)
+    layout_anns[1].dump_relationship(Relationships.CHILD, word_anns[3].annotation_id)
     return dp_image
 
 
@@ -321,19 +321,19 @@ def fixture_dp_image_fully_segmented(
     """fixture dp_image_fully_segmented"""
 
     dp = dp_image_item_stretched
-    rows = dp.get_annotation_iter(category_names=LayoutType.row)
-    cols = dp.get_annotation_iter(category_names=LayoutType.column)
+    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
+    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
-        row.dump_sub_category(CellType.row_number, row_sub_cat)
-        col.dump_sub_category(CellType.column_number, col_sub_cat)
+        row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
+        col.dump_sub_category(CellType.COLUMNS_NUMBER, col_sub_cat)
 
-    cells = dp.get_annotation_iter(category_names=[LayoutType.cell, CellType.header, CellType.body])
+    cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
-        cell.dump_sub_category(CellType.row_number, sub_cats[0])
-        cell.dump_sub_category(CellType.column_number, sub_cats[1])
-        cell.dump_sub_category(CellType.row_span, sub_cats[2])
-        cell.dump_sub_category(CellType.column_span, sub_cats[3])
+        cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
+        cell.dump_sub_category(CellType.COLUMNS_NUMBER, sub_cats[1])
+        cell.dump_sub_category(CellType.ROW_SPAN, sub_cats[2])
+        cell.dump_sub_category(CellType.COLUMN_SPAN, sub_cats[3])
 
     return deepcopy(dp)
 
@@ -374,20 +374,20 @@ def fixture_dp_image_fully_segmented_fully_tiled(
     """
 
     dp = dp_image_item_stretched
-    rows = dp.get_annotation_iter(category_names=LayoutType.row)
-    cols = dp.get_annotation_iter(category_names=LayoutType.column)
+    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
+    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
-        row.dump_sub_category(CellType.row_number, row_sub_cat)
-        col.dump_sub_category(CellType.column_number, col_sub_cat)
+        row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
+        col.dump_sub_category(CellType.COLUMNS_NUMBER, col_sub_cat)
 
     cell_sub_cats = cell_sub_cats_when_table_fully_tiled
-    cells = dp.get_annotation_iter(category_names=[LayoutType.cell, CellType.header, CellType.body])
+    cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
-        cell.dump_sub_category(CellType.row_number, sub_cats[0])
-        cell.dump_sub_category(CellType.column_number, sub_cats[1])
-        cell.dump_sub_category(CellType.row_span, sub_cats[2])
-        cell.dump_sub_category(CellType.column_span, sub_cats[3])
+        cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
+        cell.dump_sub_category(CellType.COLUMNS_NUMBER, sub_cats[1])
+        cell.dump_sub_category(CellType.ROW_SPAN, sub_cats[2])
+        cell.dump_sub_category(CellType.COLUMN_SPAN, sub_cats[3])
 
     return deepcopy(dp)
 

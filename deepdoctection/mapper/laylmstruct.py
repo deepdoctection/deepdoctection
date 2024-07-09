@@ -127,7 +127,7 @@ def image_to_raw_layoutlm_features(
     all_boxes = []
     all_labels: list[int] = []
 
-    anns = dp.get_annotation_iter(category_names=LayoutType.word)
+    anns = dp.get_annotation_iter(category_names=LayoutType.WORD)
 
     word_id_to_segment_box = {}
     if segment_positions:
@@ -139,12 +139,12 @@ def image_to_raw_layoutlm_features(
             if not bounding_box.absolute_coords:
                 bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)
             word_id_to_segment_box.update(
-                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.child)}
+                {word_ann: bounding_box for word_ann in segm_ann.get_relationship(Relationships.CHILD)}
             )
 
     for ann in anns:
         all_ann_ids.append(ann.annotation_id)
-        char_cat = ann.get_sub_category(WordType.characters)
+        char_cat = ann.get_sub_category(WordType.CHARACTERS)
         if not isinstance(char_cat, ContainerAnnotation):
             raise TypeError(f"char_cat must be of type ContainerAnnotation but is of type {type(char_cat)}")
         word = char_cat.value
@@ -158,15 +158,15 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
-            WordType.token_tag in ann.sub_categories or WordType.token_class in ann.sub_categories
-        ) and dataset_type == DatasetType.token_classification:
+                WordType.TOKEN_TAG in ann.sub_categories or WordType.TOKEN_CLASS in ann.sub_categories
+        ) and dataset_type == DatasetType.TOKEN_CLASSIFICATION:
             if use_token_tag:
-                all_labels.append(int(ann.get_sub_category(WordType.token_tag).category_id) - 1)
+                all_labels.append(int(ann.get_sub_category(WordType.TOKEN_TAG).category_id) - 1)
             else:
-                all_labels.append(int(ann.get_sub_category(WordType.token_class).category_id) - 1)
+                all_labels.append(int(ann.get_sub_category(WordType.TOKEN_CLASS).category_id) - 1)
 
-    if dp.summary is not None and dataset_type == DatasetType.sequence_classification:
-        all_labels.append(int(dp.summary.get_sub_category(PageType.document_type).category_id) - 1)
+    if dp.summary is not None and dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+        all_labels.append(int(dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -447,11 +447,11 @@ def raw_features_to_layoutlm_features(
         raw_features = [raw_features]
 
     _has_token_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.token_classification
+        raw_features[0]["dataset_type"] == DatasetType.TOKEN_CLASSIFICATION
         and raw_features[0].get("labels") is not None
     )
     _has_sequence_labels = (
-        raw_features[0]["dataset_type"] == DatasetType.sequence_classification
+        raw_features[0]["dataset_type"] == DatasetType.SEQUENCE_CLASSIFICATION
         and raw_features[0].get("labels") is not None
     )
     _has_labels = bool(_has_token_labels or _has_sequence_labels)
@@ -741,7 +741,7 @@ def image_to_raw_lm_features(
     dp: Image,
     dataset_type: Optional[Literal["sequence_classification", "token_classification"]] = None,
     use_token_tag: bool = True,
-    text_container: Optional[LayoutType] = LayoutType.word,
+    text_container: Optional[LayoutType] = LayoutType.WORD,
     floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
     include_residual_text_container: bool = False,
 ) -> Optional[RawLMFeatures]:
@@ -788,7 +788,7 @@ def image_to_raw_lm_features(
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
         document_type_id = (
-            int(page.image_orig.summary.get_sub_category(PageType.document_type).category_id) - 1  # type: ignore
+            int(page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1  # type: ignore
         )
         raw_features["labels"] = [document_type_id]
 
@@ -806,7 +806,7 @@ def image_to_lm_features(
     return_overflowing_tokens: bool = False,
     return_tensors: Optional[Literal["pt"]] = "pt",
     sliding_window_stride: int = 0,
-    text_container: Optional[LayoutType] = LayoutType.word,
+    text_container: Optional[LayoutType] = LayoutType.WORD,
     floating_text_block_categories: Optional[Sequence[LayoutType]] = None,
     include_residual_text_container: bool = False,
 ) -> Optional[LayoutLMFeatures]:

@@ -69,20 +69,20 @@ class TestLMTokenClassifierService:
 
         # Assert
         words = dp.get_annotation(annotation_ids="7e79459d-0cf9-3954-802c-6d8c4d017792")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
+        assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
+        assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.BEGIN
 
         words = dp.get_annotation(annotation_ids="08e645c4-f28d-30e6-befe-ab22dc53da92")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.begin
+        assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
+        assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.BEGIN
 
         words = dp.get_annotation(annotation_ids="224d479a-77e1-3c7a-9cd1-08430c61f020")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
+        assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
+        assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.INSIDE
 
         words = dp.get_annotation(annotation_ids="841c74d7-45b2-3e0d-a8d5-7be3391685d6")
-        assert words[0].get_sub_category(WordType.token_class).category_name == TokenClasses.header
-        assert words[0].get_sub_category(WordType.tag).category_name == BioTag.inside
+        assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
+        assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.INSIDE
 
 
 class TestLMSequenceClassifierService:
@@ -118,4 +118,4 @@ class TestLMSequenceClassifierService:
         assert dp.summary is not None
 
         # Assert
-        assert dp.summary.get_sub_category(PageType.document_type).category_name == "FOO"
+        assert dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_name == "FOO"

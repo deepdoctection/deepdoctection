@@ -301,7 +301,7 @@ class DetectionResult:
     score: Optional[float] = None
     mask: Optional[list[float]] = None
     absolute_coords: bool = True
-    class_name: ObjectTypes = DefaultType.default_type
+    class_name: ObjectTypes = DefaultType.DEFAULT_TYPE
     text: Optional[Union[str, ObjectTypes]] = None
     block: Optional[str] = None
     line: Optional[str] = None
@@ -446,9 +446,9 @@ class TokenClassResult:
     uuid: str
     token: str
     class_id: int
-    class_name: ObjectTypes = DefaultType.default_type
-    semantic_name: ObjectTypes = DefaultType.default_type
-    bio_tag: ObjectTypes = DefaultType.default_type
+    class_name: ObjectTypes = DefaultType.DEFAULT_TYPE
+    semantic_name: ObjectTypes = DefaultType.DEFAULT_TYPE
+    bio_tag: ObjectTypes = DefaultType.DEFAULT_TYPE
     score: Optional[float] = None
     token_id: Optional[int] = None
 
@@ -465,7 +465,7 @@ class SequenceClassResult:
     """
 
     class_id: int
-    class_name: ObjectTypes = DefaultType.default_type
+    class_name: ObjectTypes = DefaultType.DEFAULT_TYPE
     score: Optional[float] = None
     class_name_orig: Optional[str] = None
 

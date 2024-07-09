@@ -57,16 +57,16 @@ object_types_registry = catalogue.create("deepdoctection", "settings", entry_poi
 class DefaultType(ObjectTypes):
     """Type for default member"""
 
-    default_type = "default_type"
+    DEFAULT_TYPE = "default_type"
 
 
 @object_types_registry.register("PageType")
 class PageType(ObjectTypes):
     """Type for document page properties"""
 
-    document_type = "document_type"
-    language = "language"
-    angle = "angle"
+    DOCUMENT_TYPE = "document_type"
+    LANGUAGE = "language"
+    ANGLE = "angle"
 
 
 @object_types_registry.register("SummaryType")
@@ -80,242 +80,242 @@ class SummaryType(ObjectTypes):
 class DocumentType(ObjectTypes):
     """Document types"""
 
-    letter = "letter"
-    form = "form"
-    email = "email"
-    handwritten = "handwritten"
-    advertisement = "advertisement"
-    scientific_report = "scientific_report"
-    scientific_publication = "scientific_publication"
-    specification = "specification"
-    file_folder = "file_folder"
-    news_article = "news_article"
-    budget = "budget"
-    invoice = "invoice"
-    presentation = "presentation"
-    questionnaire = "questionnaire"
-    resume = "resume"
-    memo = "memo"
-    financial_report = "financial_report"
-    laws_and_regulations = "laws_and_regulations"
-    government_tenders = "government_tenders"
-    manuals = "manuals"
-    patents = "patents"
+    LETTER = "letter"
+    FORM = "form"
+    EMAIL = "email"
+    HANDWRITTEN = "handwritten"
+    ADVERTISEMENT = "advertisement"
+    SCIENTIFIC_REPORT = "scientific_report"
+    SCIENTIFIC_PUBLICATION = "scientific_publication"
+    SPECIFICATION = "specification"
+    FILE_FOLDER = "file_folder"
+    NEWS_ARTICLE = "news_article"
+    BUDGET = "budget"
+    INVOICE = "invoice"
+    PRESENTATION = "presentation"
+    QUESTIONNAIRE = "questionnaire"
+    RESUME = "resume"
+    MEMO = "memo"
+    FINANCIAL_REPORT = "financial_report"
+    LAWS_AND_REGULATIONS = "laws_and_regulations"
+    GOVERNMENT_TENDERS = "government_tenders"
+    MANUALS = "manuals"
+    PATENTS = "patents"
 
 
 @object_types_registry.register("LayoutType")
 class LayoutType(ObjectTypes):
     """Layout types"""
 
-    table = "table"
-    table_rotated = "table_rotated"
-    figure = "figure"
-    list = "list"
-    text = "text"
-    title = "title"  # type: ignore
-    logo = "logo"
-    signature = "signature"
-    caption = "caption"
-    footnote = "footnote"
-    formula = "formula"
-    page_footer = "page_footer"
-    page_header = "page_header"
-    section_header = "section_header"
-    page = "page"
-    cell = "cell"
-    row = "row"
-    column = "column"
-    word = "word"
-    line = "line"
-    background = "background"
-    page_number = "page_number"
-    key_value_area = "key_value_area"
+    TABLE = "table"
+    TABLE_ROTATED = "table_rotated"
+    FIGURE = "figure"
+    LIST = "list"
+    TEXT = "text"
+    TITLE = "title"
+    LOGO = "logo"
+    SIGNATURE = "signature"
+    CAPTION = "caption"
+    FOOTNOTE = "footnote"
+    FORMULA = "formula"
+    PAGE_FOOTER = "page_footer"
+    PAGE_HEADER = "page_header"
+    SECTION_HEADER = "section_header"
+    PAGE = "page"
+    CELL = "cell"
+    ROW = "row"
+    COLUMN = "column"
+    WORD = "word"
+    LINE = "line"
+    BACKGROUND = "background"
+    PAGE_NUMBER = "page_number"
+    KEY_VALUE_AREA = "key_value_area"
 
 
 @object_types_registry.register("TableType")
 class TableType(ObjectTypes):
     """Types for table properties"""
 
-    item = "item"
-    number_of_rows = "number_of_rows"
-    number_of_columns = "number_of_columns"
-    max_row_span = "max_row_span"
-    max_col_span = "max_col_span"
-    html = "html"
+    ITEM = "item"
+    NUMBER_OF_ROWS = "number_of_rows"
+    NUMBER_OF_COLUMNS = "number_of_columns"
+    MAX_ROW_SPAN = "max_row_span"
+    MAX_COL_SPAN = "max_col_span"
+    HTML = "html"
 
 
 @object_types_registry.register("CellType")
 class CellType(ObjectTypes):
     """Types for cell properties"""
 
-    header = "header"
-    body = "body"
-    row_number = "row_number"
-    row_span = "row_span"
-    row_header = "row_header"
-    projected_row_header = "projected_row_header"
-    column_number = "column_number"
-    column_span = "column_span"
-    column_header = "column_header"
-    spanning = "spanning"
+    HEADER = "header"
+    BODY = "body"
+    ROW_NUMBER = "row_number"
+    ROW_SPAN = "row_span"
+    ROW_HEADER = "row_header"
+    PROJECTED_ROW_HEADER = "projected_row_header"
+    COLUMNS_NUMBER = "column_number"
+    COLUMN_SPAN = "column_span"
+    COLUMN_HEADER = "column_header"
+    SPANNING = "spanning"
 
 
 @object_types_registry.register("WordType")
 class WordType(ObjectTypes):
     """Types for word properties"""
 
-    characters = "characters"
-    block = "block"
-    token_class = "token_class"
-    tag = "tag"
-    token_tag = "token_tag"
-    text_line = "text_line"
-    character_type = "character_type"
-    printed = "printed"
-    handwritten = "handwritten"
+    CHARACTERS = "characters"
+    BLOCK = "block"
+    TOKEN_CLASS = "token_class"
+    TAG = "tag"
+    TOKEN_TAG = "token_tag"
+    TEXT_LINE = "text_line"
+    CHARACTER_TYPE = "character_type"
+    PRINTED = "printed"
+    HANDWRITTEN = "handwritten"
 
 
 @object_types_registry.register("TokenClasses")
 class TokenClasses(ObjectTypes):
     """Types for token classes"""
 
-    header = "header"
-    question = "question"
-    answer = "answer"
-    other = "other"
+    HEADER = "header"
+    QUESTION = "question"
+    ANSWER = "answer"
+    OTHER = "other"
 
 
 @object_types_registry.register("BioTag")
 class BioTag(ObjectTypes):
     """Types for tags"""
 
-    begin = "B"
-    inside = "I"
-    outside = "O"
-    single = "S"
-    end = "E"
+    BEGIN = "B"
+    INSIDE = "I"
+    OUTSIDE = "O"
+    SINGLE = "S"
+    END = "E"
 
 
 @object_types_registry.register("TokenClassWithTag")
 class TokenClassWithTag(ObjectTypes):
     """Types for token classes with tags, e.g. B-answer"""
 
-    b_answer = "B-answer"
-    b_header = "B-header"
-    b_question = "B-question"
-    e_answer = "E-answer"
-    e_header = "E-header"
-    e_question = "E-question"
-    i_answer = "I-answer"
-    i_header = "I-header"
-    i_question = "I-question"
-    s_answer = "S-answer"
-    s_header = "S-header"
-    s_question = "S-question"
+    B_ANSWER = "B-answer"
+    B_HEADER = "B-header"
+    B_QUESTION = "B-question"
+    E_ANSWER = "E-answer"
+    E_HEADER = "E-header"
+    E_QUESTION = "E-question"
+    I_ANSWER = "I-answer"
+    I_HEADER = "I-header"
+    I_QUESTION = "I-question"
+    S_ANSWER = "S-answer"
+    S_HEADER = "S-header"
+    S_QUESTION = "S-question"
 
 
 @object_types_registry.register("Relationships")
 class Relationships(ObjectTypes):
     """Types for describing relationships between types"""
 
-    child = "child"
-    reading_order = "reading_order"
-    semantic_entity_link = "semantic_entity_link"
+    CHILD = "child"
+    READING_ORDER = "reading_order"
+    SEMANTIC_ENTITY_LINK = "semantic_entity_link"
 
 
 @object_types_registry.register("Languages")
 class Languages(ObjectTypes):
     """Language types"""
 
-    english = "eng"
-    russian = "rus"
-    german = "deu"
-    french = "fre"
-    italian = "ita"
-    japanese = "jpn"
-    spanish = "spa"
-    cebuano = "ceb"
-    turkish = "tur"
-    portuguese = "por"
-    ukrainian = "ukr"
-    esperanto = "epo"
-    polish = "pol"
-    swedish = "swe"
-    dutch = "dut"
-    hebrew = "heb"
-    chinese = "chi"
-    hungarian = "hun"
-    arabic = "ara"
-    catalan = "cat"
-    finnish = "fin"
-    czech = "cze"
-    persian = "per"
-    serbian = "srp"
-    greek = "gre"
-    vietnamese = "vie"
-    bulgarian = "bul"
-    korean = "kor"
-    norwegian = "nor"
-    macedonian = "mac"
-    romanian = "rum"
-    indonesian = "ind"
-    thai = "tha"
-    armenian = "arm"
-    danish = "dan"
-    tamil = "tam"
-    hindi = "hin"
-    croatian = "hrv"
-    belarusian = "bel"
-    georgian = "geo"
-    telugu = "tel"
-    kazakh = "kaz"
-    waray = "war"
-    lithuanian = "lit"
-    scottish = "glg"
-    slovak = "slo"
-    benin = "ben"
-    basque = "baq"
-    slovenian = "slv"
-    malayalam = "mal"
-    marathi = "mar"
-    estonian = "est"
-    azerbaijani = "aze"
-    albanian = "alb"
-    latin = "lat"
-    bosnian = "bos"
-    norwegian_nynorsk = "nno"
-    urdu = "urd"
-    not_defined = "nn"
+    ENGLISH = "eng"
+    RUSSIAN = "rus"
+    GERMAN = "deu"
+    FRENCH = "fre"
+    ITALIAN = "ita"
+    JAPANESE = "jpn"
+    SPANISH = "spa"
+    CEBUANO = "ceb"
+    TURKISH = "tur"
+    PORTUGUESE = "por"
+    UKRAINIAN = "ukr"
+    ESPERANTO = "epo"
+    POLISH = "pol"
+    SWEDISH = "swe"
+    DUTCH = "dut"
+    HEBREW = "heb"
+    CHINESE = "chi"
+    HUNGARIAN = "hun"
+    ARABIC = "ara"
+    CATALAN = "cat"
+    FINNISH = "fin"
+    CZECH = "cze"
+    PERSIAN = "per"
+    SERBIAN = "srp"
+    GREEK = "gre"
+    VIETNAMESE = "vie"
+    BULGARIAN = "bul"
+    KOREAN = "kor"
+    NORWEGIAN = "nor"
+    MACEDONIAN = "mac"
+    ROMANIAN = "rum"
+    INDONESIAN = "ind"
+    THAI = "tha"
+    ARMENIAN = "arm"
+    DANISH = "dan"
+    TAMIL = "tam"
+    HINDI = "hin"
+    CROATIAN = "hrv"
+    BELARUSIAN = "bel"
+    GEORGIAN = "geo"
+    TELUGU = "tel"
+    KAZAKH = "kaz"
+    WARAY = "war"
+    LITHUANIAN = "lit"
+    SCOTTISH = "glg"
+    SLOVAK = "slo"
+    BENIN = "ben"
+    BASQUE = "baq"
+    SLOVENIAN = "slv"
+    MALAYALAM = "mal"
+    MARATHI = "mar"
+    ESTONIAN = "est"
+    AZERBAIJANI = "aze"
+    ALBANIAN = "alb"
+    LATIN = "lat"
+    BOSNIAN = "bos"
+    NORWEGIAN_NOVOSIBIRSK = "nno"
+    URDU = "urd"
+    NOT_DEFINED = "nn"
 
 
 @object_types_registry.register("DatasetType")
 class DatasetType(ObjectTypes):
     """Dataset types"""
 
-    object_detection = "object_detection"
-    sequence_classification = "sequence_classification"
-    token_classification = "token_classification"
-    publaynet = "publaynet"
-    default = "default"
+    OBJECT_DETECTION = "object_detection"
+    SEQUENCE_CLASSIFICATION = "sequence_classification"
+    TOKEN_CLASSIFICATION = "token_classification"
+    PUBLAYNET = "publaynet"
+    DEFAULT = "default"
 
 
 _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
-    (TokenClasses.header, BioTag.begin): TokenClassWithTag.b_header,
-    (TokenClasses.header, BioTag.inside): TokenClassWithTag.i_header,
-    (TokenClasses.header, BioTag.end): TokenClassWithTag.e_header,
-    (TokenClasses.header, BioTag.single): TokenClassWithTag.s_header,
-    (TokenClasses.answer, BioTag.begin): TokenClassWithTag.b_answer,
-    (TokenClasses.answer, BioTag.inside): TokenClassWithTag.i_answer,
-    (TokenClasses.answer, BioTag.end): TokenClassWithTag.e_answer,
-    (TokenClasses.answer, BioTag.single): TokenClassWithTag.s_answer,
-    (TokenClasses.question, BioTag.begin): TokenClassWithTag.b_question,
-    (TokenClasses.question, BioTag.inside): TokenClassWithTag.i_question,
-    (TokenClasses.question, BioTag.end): TokenClassWithTag.e_question,
-    (TokenClasses.question, BioTag.single): TokenClassWithTag.s_question,
-    (TokenClasses.other, BioTag.outside): BioTag.outside,
-    (TokenClasses.header, BioTag.outside): BioTag.outside,
-    (TokenClasses.answer, BioTag.outside): BioTag.outside,
-    (TokenClasses.question, BioTag.outside): BioTag.outside,
+    (TokenClasses.HEADER, BioTag.BEGIN): TokenClassWithTag.B_HEADER,
+    (TokenClasses.HEADER, BioTag.INSIDE): TokenClassWithTag.I_HEADER,
+    (TokenClasses.HEADER, BioTag.END): TokenClassWithTag.E_HEADER,
+    (TokenClasses.HEADER, BioTag.SINGLE): TokenClassWithTag.S_HEADER,
+    (TokenClasses.ANSWER, BioTag.BEGIN): TokenClassWithTag.B_ANSWER,
+    (TokenClasses.ANSWER, BioTag.INSIDE): TokenClassWithTag.I_ANSWER,
+    (TokenClasses.ANSWER, BioTag.END): TokenClassWithTag.E_ANSWER,
+    (TokenClasses.ANSWER, BioTag.SINGLE): TokenClassWithTag.S_ANSWER,
+    (TokenClasses.QUESTION, BioTag.BEGIN): TokenClassWithTag.B_QUESTION,
+    (TokenClasses.QUESTION, BioTag.INSIDE): TokenClassWithTag.I_QUESTION,
+    (TokenClasses.QUESTION, BioTag.END): TokenClassWithTag.E_QUESTION,
+    (TokenClasses.QUESTION, BioTag.SINGLE): TokenClassWithTag.S_QUESTION,
+    (TokenClasses.OTHER, BioTag.OUTSIDE): BioTag.OUTSIDE,
+    (TokenClasses.HEADER, BioTag.OUTSIDE): BioTag.OUTSIDE,
+    (TokenClasses.ANSWER, BioTag.OUTSIDE): BioTag.OUTSIDE,
+    (TokenClasses.QUESTION, BioTag.OUTSIDE): BioTag.OUTSIDE,
 }
 
 

@@ -35,7 +35,7 @@ from deepdoctection.utils.settings import LayoutType
 
 _NAME = "test_set"
 _LOCATION = "/path/to/dir"
-_INIT_CATEGORIES = [LayoutType.table, LayoutType.text]
+_INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.TEXT]
 _DESCRIPTION = "test description"
 _URL = "test url"
 _LICENSE = "test license"

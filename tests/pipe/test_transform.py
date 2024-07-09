@@ -43,7 +43,7 @@ class TestSimpleTransformService:
         """
 
         self._transform_predictor = MagicMock(spec=ImageTransformer)
-        self._transform_predictor.get_category_names = MagicMock(return_value=(PageType.angle,))
+        self._transform_predictor.get_category_names = MagicMock(return_value=(PageType.ANGLE,))
         self._transform_predictor.name = "mock_transform"
         self._transform_predictor.model_id = get_uuid_from_str(self._transform_predictor.name)[:8]
         self.simple_transform = SimpleTransformService(self._transform_predictor)

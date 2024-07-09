@@ -56,7 +56,7 @@ def test_image_to_raw_layoutlm_features_for_token_data(
     )
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(image)
+    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(image)
 
     # Assert
     assert raw_features is not None
@@ -92,12 +92,12 @@ def test_image_to_raw_layoutlm_features_for_inference(
     assert image is not None
 
     for ann in image.get_annotation():
-        ann.remove_sub_category(WordType.token_class)
-        ann.remove_sub_category(WordType.tag)
-        ann.remove_sub_category(WordType.token_tag)
+        ann.remove_sub_category(WordType.TOKEN_CLASS)
+        ann.remove_sub_category(WordType.TAG)
+        ann.remove_sub_category(WordType.TOKEN_TAG)
 
     # Act
-    raw_features = image_to_raw_layoutlm_features(DatasetType.token_classification)(image)
+    raw_features = image_to_raw_layoutlm_features(DatasetType.TOKEN_CLASSIFICATION)(image)
 
     # Assert
     assert raw_features is not None

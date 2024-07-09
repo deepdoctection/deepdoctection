@@ -13,25 +13,26 @@ from transformers import LayoutLMTokenizerFast, XLMRobertaTokenizerFast
 
 ## Defining `ObjectTypes`, Dataset and Dataflow
 
-
 ```python
 @dd.object_types_registry.register("ner_first_page")
 class FundsFirstPage(dd.ObjectTypes):
-
     report_date = "report_date"
     umbrella = "umbrella"
     report_type = "report_type"
     fund_name = "fund_name"
 
+
 dd.update_all_types_dict()
+
 
 @dd.curry
 def overwrite_location_and_load(dp, image_dir, load_image):
-    image_file = image_dir / dp.file_name.replace("pdf","png")
+    image_file = image_dir / dp.file_name.replace("pdf", "png")
     dp.location = image_file.as_posix()
     if load_image:
         dp.image = dd.load_image_from_file(image_file)
     return dp
+
 
 class NerBuilder(dd.DataFlowBaseBuilder):
 
@@ -42,8 +43,8 @@ class NerBuilder(dd.DataFlowBaseBuilder):
         ann_files_dir = self.get_workdir()
         image_dir = self.get_workdir() / "image"
 
-        df = dd.SerializerFiles.load(ann_files_dir,".json")   # get a stream of .json files
-        df = dd.MapData(df, dd.Image.from_file)   # load .json file
+        df = dd.SerializerFiles.load(ann_files_dir, ".json")  # get a stream of .json files
+        df = dd.MapData(df, dd.Image.from_file)  # load .json file
 
         df = dd.MapData(df, overwrite_location_and_load(image_dir, load_image))
 
@@ -55,33 +56,35 @@ class NerBuilder(dd.DataFlowBaseBuilder):
                     self.categories.get_categories(as_dict=False, filtered=False),
                 ),
             )
-        df = dd.MapData(df,dd.re_assign_cat_ids(cat_to_sub_cat_mapping=self.categories.get_sub_categories(
-                                                 categories=dd.LayoutType.word,
-                                                 sub_categories={dd.LayoutType.word: dd.WordType.token_class},
-                                                 keys = False,
-                                                 values_as_dict=True,
-                                                 name_as_key=True)))
-        
+        df = dd.MapData(df, dd.re_assign_cat_ids(cat_to_sub_cat_mapping=self.categories.get_sub_categories(
+            categories=dd.LayoutType.WORD,
+            sub_categories={dd.LayoutType.WORD: dd.WordType.TOKEN_CLASS},
+            keys=False,
+            values_as_dict=True,
+            name_as_key=True)))
+
         if filter_languages:
             df = dd.MapData(df, dd.filter_summary({"language": [dd.get_type(lang) for lang in filter_languages]},
-                                                 mode="value"))
+                                                  mode="value"))
 
         return df
-    
-ner = dd.CustomDataset(name = "FRFPE",
-                 dataset_type=dd.DatasetType.token_classification,
-                 location="FRFPE",
-                 init_categories=[dd.LayoutType.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
-                                  dd.LayoutType.figure, dd.LayoutType.line, dd.LayoutType.word],
-                 init_sub_categories={dd.LayoutType.word: {dd.WordType.token_class: [FundsFirstPage.report_date,
-                                                                                     FundsFirstPage.report_type,
-                                                                                     FundsFirstPage.umbrella,
-                                                                                     FundsFirstPage.fund_name,
-                                                                                     dd.TokenClasses.other],
-                                                           dd.WordType.tag: []}},
-                 dataflow_builder=NerBuilder)
 
-ner.dataflow.categories.filter_categories(categories=dd.LayoutType.word)
+
+ner = dd.CustomDataset(name="FRFPE",
+                       dataset_type=dd.DatasetType.TOKEN_CLASSIFICATION,
+                       location="FRFPE",
+                       init_categories=[dd.LayoutType.text, dd.LayoutType.title, dd.LayoutType.list,
+                                        dd.LayoutType.table,
+                                        dd.LayoutType.figure, dd.LayoutType.LINE, dd.LayoutType.WORD],
+                       init_sub_categories={dd.LayoutType.WORD: {dd.WordType.TOKEN_CLASS: [FundsFirstPage.report_date,
+                                                                                           FundsFirstPage.report_type,
+                                                                                           FundsFirstPage.umbrella,
+                                                                                           FundsFirstPage.fund_name,
+                                                                                           dd.TokenClasses.OTHER],
+                                                                 dd.WordType.TAG: []}},
+                       dataflow_builder=NerBuilder)
+
+ner.dataflow.categories.filter_categories(categories=dd.LayoutType.WORD)
 df = ner.dataflow.build(load_image=True)
 
 merge = dd.MergeDataset(ner)
@@ -124,9 +127,8 @@ wandb.finish()
 
 ## Exporing the language distribustion across the split
 
-
 ```python
-categories={"1": dd.Languages.english, "2": dd.Languages.german, "3": dd.Languages.french}
+categories = {"1": dd.Languages.ENGLISH, "2": dd.Languages.GERMAN, "3": dd.Languages.FRENCH}
 categories_name_as_key = {val: key for key, val in categories.items()}
 
 # train
@@ -135,7 +137,7 @@ langs_train = []
 for dp in merge._dataflow_builder.split_cache["train"]:
     langs_train.append(categories_name_as_key[dp.summary.get_sub_category("language").value])
 summarizer_train.dump(langs_train)
-   
+
 # val
 summarizer_val = dd.LabelSummarizer(categories)
 langs_val = []
@@ -150,9 +152,9 @@ for dp in merge._dataflow_builder.split_cache["test"]:
     langs_test.append(categories_name_as_key[dp.summary.get_sub_category("language").value])
 summarizer_test.dump(langs_test)
 
-train_summary = {categories[key]:val for key, val in summarizer_train.get_summary().items()}
-val_summary= {categories[key]:val for key, val in summarizer_val.get_summary().items()}
-test_summary = {categories[key]:val for key, val in summarizer_test.get_summary().items()}
+train_summary = {categories[key]: val for key, val in summarizer_train.get_summary().items()}
+val_summary = {categories[key]: val for key, val in summarizer_val.get_summary().items()}
+test_summary = {categories[key]: val for key, val in summarizer_test.get_summary().items()}
 
 print(f"train split: {train_summary}")
 print(f"val split: {val_summary}")

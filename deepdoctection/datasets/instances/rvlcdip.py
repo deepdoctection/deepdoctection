@@ -64,27 +64,27 @@ _LICENSE = (
 _URL = "https://www.cs.cmu.edu/~aharley/rvl-cdip/"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.sequence_classification
+_TYPE = DatasetType.SEQUENCE_CLASSIFICATION
 _LOCATION = "rvl-cdip"
 
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "labels/train.txt", "val": "labels/val.txt", "test": "labels/test.txt"}
 _INIT_CATEGORIES = [
-    DocumentType.letter,
-    DocumentType.form,
-    DocumentType.email,
-    DocumentType.handwritten,
-    DocumentType.advertisement,
-    DocumentType.scientific_report,
-    DocumentType.scientific_publication,
-    DocumentType.specification,
-    DocumentType.file_folder,
-    DocumentType.news_article,
-    DocumentType.budget,
-    DocumentType.invoice,
-    DocumentType.presentation,
-    DocumentType.questionnaire,
-    DocumentType.resume,
-    DocumentType.memo,
+    DocumentType.LETTER,
+    DocumentType.FORM,
+    DocumentType.EMAIL,
+    DocumentType.HANDWRITTEN,
+    DocumentType.ADVERTISEMENT,
+    DocumentType.SCIENTIFIC_REPORT,
+    DocumentType.SCIENTIFIC_PUBLICATION,
+    DocumentType.SPECIFICATION,
+    DocumentType.FILE_FOLDER,
+    DocumentType.NEWS_ARTICLE,
+    DocumentType.BUDGET,
+    DocumentType.INVOICE,
+    DocumentType.PRESENTATION,
+    DocumentType.QUESTIONNAIRE,
+    DocumentType.RESUME,
+    DocumentType.MEMO,
 ]
 
 
@@ -147,7 +147,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             summary = SummaryAnnotation()
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                PageType.document_type, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
+                PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
             )
             image.summary = summary
             if not load_img:
@@ -159,14 +159,14 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         if self.categories.is_filtered():
             df = MapData(
                 df,
-                filter_summary({PageType.document_type: self.categories.get_categories(as_dict=False, filtered=True)}),
+                filter_summary({PageType.DOCUMENT_TYPE: self.categories.get_categories(as_dict=False, filtered=True)}),
             )
 
             @curry
             def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
                 if dp.summary:
-                    if PageType.document_type in dp.summary.sub_categories:
-                        summary_cat = dp.summary.get_sub_category(PageType.document_type)
+                    if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
+                        summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
                         summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]
                 return dp
 

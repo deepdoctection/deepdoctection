@@ -211,7 +211,7 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
         categories=detector.categories.categories, exclude_category_ids=exclude_category_ids
     )
     return SubImageLayoutService(
-        detector, [LayoutType.table, LayoutType.table_rotated], None, detect_result_generator, padder
+        detector, [LayoutType.TABLE, LayoutType.TABLE_ROTATED], None, detect_result_generator, padder
     )
 
 
@@ -305,22 +305,22 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
                 cfg.SEGMENTATION.CELL_CATEGORY_ID,
-                LayoutType.table,
+                LayoutType.TABLE,
                 [
-                    CellType.spanning,
-                    CellType.row_header,
-                    CellType.column_header,
-                    CellType.projected_row_header,
-                    LayoutType.cell,
+                    CellType.SPANNING,
+                    CellType.ROW_HEADER,
+                    CellType.COLUMN_HEADER,
+                    CellType.PROJECTED_ROW_HEADER,
+                    LayoutType.CELL,
                 ],
                 [
-                    CellType.spanning,
-                    CellType.row_header,
-                    CellType.column_header,
-                    CellType.projected_row_header,
+                    CellType.SPANNING,
+                    CellType.ROW_HEADER,
+                    CellType.COLUMN_HEADER,
+                    CellType.PROJECTED_ROW_HEADER,
                 ],
-                [LayoutType.row, LayoutType.column],
-                [CellType.row_number, CellType.column_number],
+                [LayoutType.ROW, LayoutType.COLUMN],
+                [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER],
                 stretch_rule=cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(pubtables)
@@ -332,23 +332,23 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 cfg.SEGMENTATION.FULL_TABLE_TILING,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-                LayoutType.table,
-                [CellType.header, CellType.body, LayoutType.cell],
-                [LayoutType.row, LayoutType.column],
-                [CellType.row_number, CellType.column_number],
+                LayoutType.TABLE,
+                [CellType.HEADER, CellType.BODY, LayoutType.CELL],
+                [LayoutType.ROW, LayoutType.COLUMN],
+                [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER],
                 cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(table_segmentation)
 
             if cfg.USE_TABLE_REFINEMENT:
                 table_segmentation_refinement = TableSegmentationRefinementService(
-                    [LayoutType.table, LayoutType.table_rotated],
+                    [LayoutType.TABLE, LayoutType.TABLE_ROTATED],
                     [
-                        LayoutType.cell,
-                        CellType.column_header,
-                        CellType.projected_row_header,
-                        CellType.spanning,
-                        CellType.row_header,
+                        LayoutType.CELL,
+                        CellType.COLUMN_HEADER,
+                        CellType.PROJECTED_ROW_HEADER,
+                        CellType.SPANNING,
+                        CellType.ROW_HEADER,
                     ],
                 )
                 pipe_component_list.append(table_segmentation_refinement)
@@ -368,7 +368,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
 
         ocr = build_ocr(cfg)
         skip_if_text_extracted = cfg.USE_PDF_MINER
-        extract_from_roi = LayoutType.word if cfg.OCR.USE_DOCTR else None
+        extract_from_roi = LayoutType.WORD if cfg.OCR.USE_DOCTR else None
         text = TextExtractionService(
             ocr, skip_if_text_extracted=skip_if_text_extracted, extract_from_roi=extract_from_roi
         )
@@ -377,7 +377,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
     if cfg.USE_PDF_MINER or cfg.USE_OCR:
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=LayoutType.word,
+            child_categories=LayoutType.WORD,
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.THRESHOLD,
             max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
@@ -385,7 +385,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(match)
 
         order = TextOrderService(
-            text_container=LayoutType.word,
+            text_container=LayoutType.WORD,
             text_block_categories=cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES,
             floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
             include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
@@ -397,7 +397,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(order)
 
     page_parsing_service = PageParsingService(
-        text_container=LayoutType.word,
+        text_container=LayoutType.WORD,
         floating_text_block_categories=cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
         include_residual_text_container=cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
     )

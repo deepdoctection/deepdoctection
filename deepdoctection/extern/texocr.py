@@ -53,7 +53,7 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     score=block["Confidence"] / 100,
                     text=block["Text"],
                     class_id=1 if block["BlockType"] == "WORD" else 2,
-                    class_name=LayoutType.word if block["BlockType"] == "WORD" else LayoutType.line,
+                    class_name=LayoutType.WORD if block["BlockType"] == "WORD" else LayoutType.LINE,
                 )
                 all_results.append(word)
 
@@ -127,9 +127,9 @@ class TextractOcrDetector(ObjectDetector):
         self.text_lines = text_lines
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.word, "2": LayoutType.line})
+            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD, "2": LayoutType.LINE})
         else:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.word})
+            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """

@@ -124,7 +124,7 @@ class TextExtractionService(PipelineComponent):
             else:
                 width, height = None, None
                 if self.run_time_ocr_language_selection:
-                    self.predictor.set_language(dp.summary.get_sub_category(PageType.language).value)  # type: ignore
+                    self.predictor.set_language(dp.summary.get_sub_category(PageType.LANGUAGE).value)  # type: ignore
                 detect_result_list = self.predictor.predict(predictor_input)  # type: ignore
                 if isinstance(self.predictor, PdfMiner):
                     width, height = self.predictor.get_width_height(predictor_input)  # type: ignore
@@ -138,9 +138,9 @@ class TextExtractionService(PipelineComponent):
                         )
                     if detect_ann_id is not None:
                         self.dp_manager.set_container_annotation(
-                            WordType.characters,
+                            WordType.CHARACTERS,
                             None,
-                            WordType.characters,
+                            WordType.CHARACTERS,
                             detect_ann_id,
                             detect_result.text if detect_result.text is not None else "",
                             detect_result.score,
@@ -198,14 +198,14 @@ class TextExtractionService(PipelineComponent):
     def get_meta_annotation(self) -> MetaAnnotation:
         sub_cat_dict: dict[ObjectTypes, set[ObjectTypes]]
         if self.extract_from_category:
-            sub_cat_dict = {category: {WordType.characters} for category in self.extract_from_category}
+            sub_cat_dict = {category: {WordType.CHARACTERS} for category in self.extract_from_category}
         else:
             if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
                 raise TypeError(
                     f"self.predictor must be of type ObjectDetector or PdfMiner but is of type "
                     f"{type(self.predictor)}"
                 )
-            sub_cat_dict = {category: {WordType.characters} for category in self.predictor.get_category_names()}
+            sub_cat_dict = {category: {WordType.CHARACTERS} for category in self.predictor.get_category_names()}
         return MetaAnnotation(
             image_annotations=self.predictor.get_category_names()
             if isinstance(self.predictor, (ObjectDetector, PdfMiner))

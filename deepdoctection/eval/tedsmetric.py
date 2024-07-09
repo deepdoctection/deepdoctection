@@ -95,9 +95,9 @@ class CustomConfig(Config):
 
     def rename(self, node1: Any, node2: Any) -> float:
         """Compares attributes of trees"""
-        if (node1.tag != node2.tag) or (node1.colspan != node2.colspan) or (node1.rowspan != node2.rowspan):
+        if (node1.TAG != node2.TAG) or (node1.colspan != node2.colspan) or (node1.rowspan != node2.rowspan):
             return 1.0
-        if node1.tag == "td":
+        if node1.TAG == "td":
             if node1.content or node2.content:
                 return self.normalized_distance(node1.content, node2.content)
         return 0.0
@@ -223,8 +223,8 @@ class TedsMetric(MetricBase):
 
     metric = teds_metric  # type: ignore
     mapper: Callable[[Image, LayoutType, list[LayoutType]], Page] = Page.from_image
-    text_container: LayoutType = LayoutType.word
-    floating_text_block_categories = [LayoutType.table]
+    text_container: LayoutType = LayoutType.WORD
+    floating_text_block_categories = [LayoutType.TABLE]
 
     structure_only = False
 

@@ -179,10 +179,9 @@ dp.text
 
 This is something unexpected. Why don't we generate any text? We can clearly see that the `TextExtractionService` did its job.
 
-
 ```python
 word_sample = dp.words[0]
-len(dp.words), word_sample.characters, word_sample.bbox, word_sample.reading_order 
+len(dp.words), word_sample.CHARACTERS, word_sample.bbox, word_sample.READING_ORDER 
 ```
 
 
@@ -194,9 +193,8 @@ len(dp.words), word_sample.characters, word_sample.bbox, word_sample.reading_ord
 
 The reason is, that we do not have inferred a reading order. If there is no reading order, there is no contiguous text. We treat text extraction as a character recognition problem only. If we want a reading order of predicted words, we need to do it ourself. So let's add the `TextOrderService`.
 
-
 ```python
-order_comp = dd.TextOrderService(text_container=dd.LayoutType.word)
+order_comp = dd.TextOrderService(text_container=dd.LayoutType.WORD)
 pipe_comp_list.append(order_comp)
 ```
 
@@ -265,14 +263,13 @@ dp.text, dp.layouts[0].text
 
 Now this looks weird again, doesn't it? However the reason is still quite simple. We now get an empty text string because once we have a non-empty `dp.layouts` the routine responsible for creating `dp.text` will try to get the text from the `Layout`'s. But we haven't run any method that maps a `word` to some `Layout` object. We need to specify this by applying a `MatchingService`. We will also have to slightly change the configuration of the  `TextOrderService`.
 
-
 ```python
-map_comp = dd.MatchingService(parent_categories=["text","title","list","table","figure"], child_categories=["word"],
-                             matching_rule = 'ioa', threshold=0.6) # same setting as for the deepdoctection analyzer
+map_comp = dd.MatchingService(parent_categories=["text", "title", "list", "table", "figure"], child_categories=["word"],
+                              matching_rule='ioa', threshold=0.6)  # same setting as for the deepdoctection analyzer
 
-order_comp = dd.TextOrderService(text_container=dd.LayoutType.word,
-                                 floating_text_block_categories=["text","title","list", "figure"],
-                                 text_block_categories=["text","title","list","table","figure"])
+order_comp = dd.TextOrderService(text_container=dd.LayoutType.WORD,
+                                 floating_text_block_categories=["text", "title", "list", "figure"],
+                                 text_block_categories=["text", "title", "list", "table", "figure"])
 
 pipe_comp_list = [layout_comp, lang_detect_comp, text_comp, map_comp, order_comp]
 pipe = dd.DoctectionPipe(pipeline_component_list=pipe_comp_list)

@@ -69,7 +69,7 @@ class TestSubImageLayoutService:
         self._cell_detector.model_id = "test_model"
         self._cell_detector.name = "mock_cell_detector"
 
-        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.table)
+        self.sub_image_layout_service = SubImageLayoutService(self._cell_detector, LayoutType.TABLE)
 
     @mark.basic
     def test_pass_datapoint(
@@ -87,7 +87,7 @@ class TestSubImageLayoutService:
 
         # Act
         dp = self.sub_image_layout_service.pass_datapoint(dp_image_with_layout_anns)
-        anns = dp.get_annotation(category_names=LayoutType.table)
+        anns = dp.get_annotation(category_names=LayoutType.TABLE)
 
         # Assert
         assert len(anns) == 2

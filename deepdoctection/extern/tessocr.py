@@ -234,7 +234,7 @@ def tesseract_line_to_detectresult(detect_result_list: list[DetectionResult]) ->
                 DetectionResult(
                     box=[ulx, uly, lrx, lry],
                     class_id=2,
-                    class_name=LayoutType.line,
+                    class_name=LayoutType.LINE,
                     text=" ".join(
                         [detect_result.text for detect_result in block_group if isinstance(detect_result.text, str)]
                     ),
@@ -278,7 +278,7 @@ def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool
                 score=score / 100,
                 text=caption[5],
                 class_id=1,
-                class_name=LayoutType.word,
+                class_name=LayoutType.WORD,
             )
             all_results.append(word)
     if text_lines:
@@ -354,9 +354,9 @@ class TesseractOcrDetector(ObjectDetector):
         self.config = hyper_param_config
 
         if self.config.LINES:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.word, "2": LayoutType.line})
+            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD, "2": LayoutType.LINE})
         else:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.word})
+            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -420,7 +420,7 @@ class TesseractRotationTransformer(ImageTransformer):
 
     def __init__(self) -> None:
         self.name = fspath(_TESS_PATH) + "-rotation"
-        self.categories = ModelCategories(init_categories={"1": PageType.angle})
+        self.categories = ModelCategories(init_categories={"1": PageType.ANGLE})
 
     def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """

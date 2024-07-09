@@ -92,47 +92,47 @@ def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetTy
     :return: Tuple of model architecture, model wrapper and config class
     """
     return {
-        ("layoutlm", DatasetType.sequence_classification): (
+        ("layoutlm", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMForSequenceClassification,
             HFLayoutLmSequenceClassifier,
             PretrainedConfig,
         ),
-        ("layoutlm", DatasetType.token_classification): (
+        ("layoutlm", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMForTokenClassification,
             HFLayoutLmTokenClassifier,
             PretrainedConfig,
         ),
-        ("layoutlmv2", DatasetType.sequence_classification): (
+        ("layoutlmv2", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMv2ForSequenceClassification,
             HFLayoutLmv2SequenceClassifier,
             LayoutLMv2Config,
         ),
-        ("layoutlmv2", DatasetType.token_classification): (
+        ("layoutlmv2", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMv2ForTokenClassification,
             HFLayoutLmv2TokenClassifier,
             LayoutLMv2Config,
         ),
-        ("layoutlmv3", DatasetType.sequence_classification): (
+        ("layoutlmv3", DatasetType.SEQUENCE_CLASSIFICATION): (
             LayoutLMv3ForSequenceClassification,
             HFLayoutLmv3SequenceClassifier,
             LayoutLMv3Config,
         ),
-        ("layoutlmv3", DatasetType.token_classification): (
+        ("layoutlmv3", DatasetType.TOKEN_CLASSIFICATION): (
             LayoutLMv3ForTokenClassification,
             HFLayoutLmv3TokenClassifier,
             LayoutLMv3Config,
         ),
-        ("lilt", DatasetType.token_classification): (
+        ("lilt", DatasetType.TOKEN_CLASSIFICATION): (
             LiltForTokenClassification,
             HFLiltTokenClassifier,
             PretrainedConfig,
         ),
-        ("lilt", DatasetType.sequence_classification): (
+        ("lilt", DatasetType.SEQUENCE_CLASSIFICATION): (
             LiltForSequenceClassification,
             HFLiltSequenceClassifier,
             PretrainedConfig,
         ),
-        ("xlm-roberta", DatasetType.sequence_classification): (
+        ("xlm-roberta", DatasetType.SEQUENCE_CLASSIFICATION): (
             XLMRobertaForSequenceClassification,
             HFLmSequenceClassifier,
             PretrainedConfig,
@@ -344,25 +344,25 @@ def train_hf_layoutlm(
 
     # We wrap our dataset into a torch dataset
     dataset_type = dataset_train.dataset_info.type
-    if dataset_type == DatasetType.sequence_classification:
+    if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
         categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(as_dict=True, name_as_key=True)
-    elif dataset_type == DatasetType.token_classification:
+    elif dataset_type == DatasetType.TOKEN_CLASSIFICATION:
         if use_token_tag:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.word,
-                sub_categories={LayoutType.word: [WordType.token_tag]},
+                categories=LayoutType.WORD,
+                sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.word][WordType.token_tag]
+            )[LayoutType.WORD][WordType.TOKEN_TAG]
         else:
             categories_dict_name_as_key = dataset_train.dataflow.categories.get_sub_categories(
-                categories=LayoutType.word,
-                sub_categories={LayoutType.word: [WordType.token_class]},
+                categories=LayoutType.WORD,
+                sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]},
                 keys=False,
                 values_as_dict=True,
                 name_as_key=True,
-            )[LayoutType.word][WordType.token_class]
+            )[LayoutType.WORD][WordType.TOKEN_CLASS]
     else:
         raise UserWarning("Dataset type not supported for training")
 
@@ -475,19 +475,19 @@ def train_hf_layoutlm(
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         assert metric is not None  # silence mypy
-        if dataset_type == DatasetType.sequence_classification:
+        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         else:
             if use_token_tag:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_tag]}, keys=False
-                )[LayoutType.word][WordType.token_tag]
-                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_tag"]})
+                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]}, keys=False
+                )[LayoutType.WORD][WordType.TOKEN_TAG]
+                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_tag"]})
             else:
                 categories = dataset_val.dataflow.categories.get_sub_categories(  # type: ignore
-                    categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
-                )[LayoutType.word][WordType.token_class]
-                metric.set_categories(category_names=LayoutType.word, sub_category_names={"word": ["token_class"]})
+                    categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]}, keys=False
+                )[LayoutType.WORD][WordType.TOKEN_CLASS]
+                metric.set_categories(category_names=LayoutType.WORD, sub_category_names={"word": ["token_class"]})
         dd_model = model_wrapper_cls(
             path_config_json=path_config_json,
             path_weights=path_weights,
@@ -496,7 +496,7 @@ def train_hf_layoutlm(
             use_xlm_tokenizer=use_xlm_tokenizer,
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
-        if dataset_type == DatasetType.sequence_classification:
+        if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
             pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model)
         else:
             pipeline_component = pipeline_component_cls(

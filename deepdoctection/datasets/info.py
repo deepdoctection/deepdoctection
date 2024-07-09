@@ -89,7 +89,7 @@ class DatasetInfo:
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")
     splits: Mapping[str, str] = field(default_factory=dict)
-    type: DatasetType = field(default=DatasetType.default)
+    type: DatasetType = field(default=DatasetType.DEFAULT)
 
     def get_split(self, key: str) -> str:
         """

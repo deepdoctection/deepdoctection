@@ -76,7 +76,7 @@ _LICENSE = "NN"
 _URL = "http://cvit.iiit.ac.in/usodi/iiitar13k.php"
 
 _SPLITS: Mapping[str, str] = {"train": "training_images", "val": "validation_images", "test": "test_images"}
-_TYPE = DatasetType.object_detection
+_TYPE = DatasetType.OBJECT_DETECTION
 _LOCATION = "iiitar13k"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "training_xml",
@@ -84,7 +84,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "test": "test_xml",
 }
 
-_INIT_CATEGORIES = [LayoutType.table, LayoutType.logo, LayoutType.figure, LayoutType.signature]
+_INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.LOGO, LayoutType.FIGURE, LayoutType.SIGNATURE]
 
 
 @dataset_registry.register("iiitar13k")
@@ -176,11 +176,11 @@ class IIITar13KBuilder(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 category_name_mapping={
-                    "natural_image": LayoutType.figure,
-                    "figure": LayoutType.figure,
-                    "logo": LayoutType.logo,
-                    "signature": LayoutType.signature,
-                    "table": LayoutType.table,
+                    "natural_image": LayoutType.FIGURE,
+                    "figure": LayoutType.FIGURE,
+                    "logo": LayoutType.LOGO,
+                    "signature": LayoutType.SIGNATURE,
+                    "table": LayoutType.FIGURE,
                 },
             ),
         )
