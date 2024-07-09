@@ -90,7 +90,7 @@ def detr_predict_image(
     keep_scores = results["scores"][keep]
     keep_labels = results["labels"][keep]
     return [
-        DetectionResult(box=box.tolist(), score=score.item(), class_id=class_id.item())
+        DetectionResult(box=box.tolist(), score=score.ITEM(), class_id=class_id.ITEM())
         for box, score, class_id in zip(keep_boxes, keep_scores, keep_labels)
     ]
 
@@ -119,8 +119,8 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
         filtered_detection_result: list[DetectionResult] = []
         shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.default_type)
-            if result.class_name != DefaultType.default_type:
+            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.DEFAULT_TYPE)
+            if result.class_name != DefaultType.DEFAULT_TYPE:
                 if result.class_id is not None:
                     result.class_id += 1
                     filtered_detection_result.append(result)

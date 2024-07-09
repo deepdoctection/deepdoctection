@@ -138,7 +138,7 @@ def d2_jit_predict_image(
             np_boxes = np.expand_dims(np_boxes, axis=0)
     detect_result_list = []
     for box, label, score in zip(np_boxes, classes, scores):
-        detect_result_list.append(DetectionResult(box=box.tolist(), class_id=label.item(), score=score.item()))
+        detect_result_list.append(DetectionResult(box=box.tolist(), class_id=label.ITEM(), score=score.ITEM()))
     return detect_result_list
 
 
@@ -174,8 +174,8 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
         filtered_detection_result: list[DetectionResult] = []
         shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.default_type)
-            if result.class_name != DefaultType.default_type:
+            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.DEFAULT_TYPE)
+            if result.class_name != DefaultType.DEFAULT_TYPE:
                 if result.class_id is not None:
                     result.class_id += 1
                     filtered_detection_result.append(result)

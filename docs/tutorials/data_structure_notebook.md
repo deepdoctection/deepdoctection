@@ -296,11 +296,10 @@ print(f"image_id: {image.image_id} state_id: {image.state_id}") # state_id has c
 
 ## Adding a `ContainerAnnotation` to an `ImageAnnotation`
 
-
 ```python
-container_ann = dd.ContainerAnnotation(category_name=dd.WordType.characters, value='Gesamtvergütung')
-new_ann.dump_sub_category(dd.WordType.characters, container_ann)
-new_ann # ContainerAnnotation is registered and added to ImageAnnotation
+container_ann = dd.ContainerAnnotation(category_name=dd.WordType.CHARACTERS, value='Gesamtvergütung')
+new_ann.dump_sub_category(dd.WordType.CHARACTERS, container_ann)
+new_ann  # ContainerAnnotation is registered and added to ImageAnnotation
 ```
 
 

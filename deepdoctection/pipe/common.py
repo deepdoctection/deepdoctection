@@ -154,7 +154,7 @@ class MatchingService(PipelineComponent):
             matched_child_anns = np.take(child_anns, child_index)  # type: ignore
             matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
             for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(Relationships.child, matched_child_anns[idx].annotation_id)
+                parent.dump_relationship(Relationships.CHILD, matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
@@ -163,7 +163,7 @@ class MatchingService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={},
-            relationships={parent: {Relationships.child} for parent in self.parent_categories},
+            relationships={parent: {Relationships.CHILD} for parent in self.parent_categories},
             summaries=(),
         )
 
@@ -213,9 +213,9 @@ class PageParsingService(PipelineComponent):
 
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
-            LayoutType.word,
-            LayoutType.line,
-        ), f"text_container must be either {LayoutType.word} or {LayoutType.line}"
+            LayoutType.WORD,
+            LayoutType.LINE,
+        ), f"text_container must be either {LayoutType.WORD} or {LayoutType.LINE}"
 
     def get_meta_annotation(self) -> MetaAnnotation:
         """

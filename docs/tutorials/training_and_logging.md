@@ -73,50 +73,49 @@ how the annotation style in Publaynet: Doclaynet labels each list item separatel
     
 After buffering annotations (no images (!)) we shuffle all datapoints and build `train`, `val` and `test` split.
 
-
 ```python
 doclaynet = dd.get_dataset("doclaynet")
 
 doclaynet.dataflow.categories.set_cat_to_sub_cat({
-dd.LayoutType.caption: dd.DatasetType.publaynet,
-dd.LayoutType.footnote: dd.DatasetType.publaynet,
-dd.LayoutType.formula: dd.DatasetType.publaynet,
-dd.LayoutType.list: dd.DatasetType.publaynet,
-dd.LayoutType.page_footer: dd.DatasetType.publaynet,
-dd.LayoutType.page_header: dd.DatasetType.publaynet,
-dd.LayoutType.figure: dd.DatasetType.publaynet,
-dd.LayoutType.section_header: dd.DatasetType.publaynet,
-dd.LayoutType.table: dd.DatasetType.publaynet,
-dd.LayoutType.text: dd.DatasetType.publaynet,
-dd.LayoutType.title: dd.DatasetType.publaynet})
+    dd.LayoutType.CAPTION: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.FOOTNOTE: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.FORMULA: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.list: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.PAGE_FOOTER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.PAGE_HEADER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.figure: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.SECTION_HEADER: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.table: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.text: dd.DatasetType.PUBLAYNET,
+    dd.LayoutType.title: dd.DatasetType.PUBLAYNET})
 
 doclaynet.dataflow.categories._categories_update = [dd.LayoutType.text,
-                                                        dd.LayoutType.title,
-                                                        dd.LayoutType.list,
-                                                        dd.LayoutType.table,
-                                                        dd.LayoutType.figure]
+                                                    dd.LayoutType.title,
+                                                    dd.LayoutType.list,
+                                                    dd.LayoutType.table,
+                                                    dd.LayoutType.figure]
 
-df_doc = doclaynet.dataflow.build(split="train",resized=True)   # requires to create resized images
-df_doc_val = doclaynet.dataflow.build(split="val",resized=True)  # requires to create resized images
-df_doc_test = doclaynet.dataflow.build(split="test",resized=True)  # requires to create resized images
+df_doc = doclaynet.dataflow.build(split="train", resized=True)  # requires to create resized images
+df_doc_val = doclaynet.dataflow.build(split="val", resized=True)  # requires to create resized images
+df_doc_test = doclaynet.dataflow.build(split="test", resized=True)  # requires to create resized images
 
 scaler = ScaleTransform(h=1025,
-                            w=1025,
-                            new_h=2339,
-                            new_w=1654,
-                            interp="bilinear")
+                        w=1025,
+                        new_h=2339,
+                        new_w=1654,
+                        interp="bilinear")
 
-df_doc = dd.MapData(df_doc,filter_list_images)
+df_doc = dd.MapData(df_doc, filter_list_images)
 df_doc = dd.MapData(df_doc, scale_transform(scaler))
 
-df_doc_val = dd.MapData(df_doc_val,filter_list_images)
+df_doc_val = dd.MapData(df_doc_val, filter_list_images)
 df_doc_val = dd.MapData(df_doc_val, scale_transform(scaler))
 
-df_doc_test = dd.MapData(df_doc_test,filter_list_images)
+df_doc_test = dd.MapData(df_doc_test, filter_list_images)
 df_doc_test = dd.MapData(df_doc_test, scale_transform(scaler))
 
 publaynet = dd.get_dataset("publaynet")
-df_pub = publaynet.dataflow.build(split="train",max_datapoints=25000)
+df_pub = publaynet.dataflow.build(split="train", max_datapoints=25000)
 
 merge = dd.MergeDataset(publaynet)
 merge.explicit_dataflows(df_doc, df_doc_val, df_doc_test, df_pub)

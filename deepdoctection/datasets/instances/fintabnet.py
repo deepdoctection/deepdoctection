@@ -83,38 +83,38 @@ _URL = (
     "fintabnet.tar.gz?_ga=2.17492593.994196051.1634564576-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.object_detection
+_TYPE = DatasetType.OBJECT_DETECTION
 _LOCATION = "fintabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "FinTabNet_1.0.0_table_train.jsonl",
     "test": "FinTabNet_1.0.0_table_test.jsonl",
     "val": "FinTabNet_1.0.0_table_val.jsonl",
 }
-_INIT_CATEGORIES = [LayoutType.table, LayoutType.cell, TableType.item]
+_INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.CELL, TableType.ITEM]
 _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    LayoutType.cell: {
-        CellType.header: [CellType.header, CellType.body],
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning, LayoutType.cell],
+    LayoutType.CELL: {
+        CellType.HEADER: [CellType.HEADER, CellType.BODY],
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
     },
-    TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
-    CellType.header: {
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning, LayoutType.cell],
+    TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
+    CellType.HEADER: {
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
     },
-    CellType.body: {
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning, LayoutType.cell],
+    CellType.BODY: {
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
     },
 }
 
@@ -239,32 +239,32 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                 df,
                 _crop_and_add_image(  # pylint: disable=E1120
                     category_names=[
-                        LayoutType.table,
-                        LayoutType.cell,
-                        CellType.header,
-                        CellType.body,
-                        TableType.item,
-                        LayoutType.row,
-                        LayoutType.column,
+                        LayoutType.TABLE,
+                        LayoutType.CELL,
+                        CellType.HEADER,
+                        CellType.BODY,
+                        TableType.ITEM,
+                        LayoutType.ROW,
+                        LayoutType.COLUMN,
                     ]
                 ),
             )
             df = MapData(
                 df,
                 maybe_ann_to_sub_image(  # pylint: disable=E1120  # 259
-                    category_names_sub_image=LayoutType.table,
+                    category_names_sub_image=LayoutType.TABLE,
                     category_names=[
-                        LayoutType.cell,
-                        CellType.header,
-                        CellType.body,
-                        TableType.item,
-                        LayoutType.row,
-                        LayoutType.column,
+                        LayoutType.CELL,
+                        CellType.HEADER,
+                        CellType.BODY,
+                        TableType.ITEM,
+                        LayoutType.ROW,
+                        LayoutType.COLUMN,
                     ],
                     add_summary=True,
                 ),
             )
-            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=LayoutType.table)])
+            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=LayoutType.TABLE)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 

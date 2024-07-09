@@ -80,20 +80,20 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             logger.info(LoggingRecord("Yielding dataflow into memory and create torch dataset"))
             categories: Mapping[str, ObjectTypes] = {}
             _data_statistics = True
-            if self.dataset.dataset_info.type in (DatasetType.object_detection, DatasetType.sequence_classification):
+            if self.dataset.dataset_info.type in (DatasetType.OBJECT_DETECTION, DatasetType.SEQUENCE_CLASSIFICATION):
                 categories = self.dataset.dataflow.categories.get_categories(filtered=True)
-            elif self.dataset.dataset_info.type in (DatasetType.token_classification,):
+            elif self.dataset.dataset_info.type in (DatasetType.TOKEN_CLASSIFICATION,):
                 if use_token_tag:
                     categories = self.dataset.dataflow.categories.get_sub_categories(
-                        categories=LayoutType.word,
-                        sub_categories={LayoutType.word: [WordType.token_tag]},
+                        categories=LayoutType.WORD,
+                        sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG]},
                         keys=False,
                         values_as_dict=True,
-                    )[LayoutType.word][WordType.token_tag]
+                    )[LayoutType.WORD][WordType.TOKEN_TAG]
                 else:
                     categories = self.dataset.dataflow.categories.get_sub_categories(
-                        categories=LayoutType.word, sub_categories={LayoutType.word: [WordType.token_class]}, keys=False
-                    )[LayoutType.word][WordType.token_class]
+                        categories=LayoutType.WORD, sub_categories={LayoutType.WORD: [WordType.TOKEN_CLASS]}, keys=False
+                    )[LayoutType.WORD][WordType.TOKEN_CLASS]
             else:
                 logger.info(
                     LoggingRecord(f"dataset is of type {self.dataset.dataset_info.type}. Cannot generate statistics.")
@@ -121,19 +121,19 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                             "images when needed and reduce memory costs!!!",
                             "warn",
                         )
-                    if self.dataset.dataset_info.type == DatasetType.object_detection:
+                    if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
                         anns = dp.get_annotation()
                         cat_ids = [int(ann.category_id) for ann in anns]
 
-                    elif self.dataset.dataset_info.type == DatasetType.sequence_classification:
-                        cat_ids = dp.summary.get_sub_category(PageType.document_type).category_id
+                    elif self.dataset.dataset_info.type == DatasetType.SEQUENCE_CLASSIFICATION:
+                        cat_ids = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id
 
-                    elif self.dataset.dataset_info.type == DatasetType.token_classification:
-                        anns = dp.get_annotation(category_names=LayoutType.word)
+                    elif self.dataset.dataset_info.type == DatasetType.TOKEN_CLASSIFICATION:
+                        anns = dp.get_annotation(category_names=LayoutType.WORD)
                         if use_token_tag:
-                            cat_ids = [ann.get_sub_category(WordType.token_tag).category_id for ann in anns]
+                            cat_ids = [ann.get_sub_category(WordType.TOKEN_TAG).category_id for ann in anns]
                         else:
-                            cat_ids = [ann.get_sub_category(WordType.token_class).category_id for ann in anns]
+                            cat_ids = [ann.get_sub_category(WordType.TOKEN_CLASS).category_id for ann in anns]
 
                     if _data_statistics:
                         summarizer.dump(cat_ids)

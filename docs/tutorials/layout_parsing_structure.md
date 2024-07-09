@@ -67,20 +67,20 @@ on parent categories (layout blocks), child categories (words) and a matching ru
 a parental/child relationship will be established provided once a given threshold has been exceeded.
 
 Note, that we haven't added `dd.LayoutType.figure` to the `parent_categories`. This will ignore all figure-type
-layout section and keep all words within as orphan. 
+layout section and keep all words within as orphan.
 
 ```python3
-    
-    match = dd.MatchingService(
-            parent_categories=[dd.LayoutType.text,
-                               dd.LayoutType.title,
-                               dd.LayoutType.list,
-                               dd.LayoutType.table],
-            child_categories=dd.LayoutType.word,
-            matching_rule="ioa",
-            threshold=0.9
-            )
-    pipe_comp.append(match)
+
+match = dd.MatchingService(
+    parent_categories=[dd.LayoutType.text,
+                       dd.LayoutType.title,
+                       dd.LayoutType.list,
+                       dd.LayoutType.table],
+    child_categories=dd.LayoutType.WORD,
+    matching_rule="ioa",
+    threshold=0.9
+)
+pipe_comp.append(match)
 ``` 
 
 ## Text order service

@@ -70,38 +70,38 @@ _URL = (
     "pubtabnet.tar.gz?_ga=2.267291150.146828643.1629125962-1173244232.1625045842"
 )
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.object_detection
+_TYPE = DatasetType.OBJECT_DETECTION
 _LOCATION = "pubtabnet"
 _ANNOTATION_FILES: Mapping[str, str] = {"all": "PubTabNet_2.0.0.jsonl"}
 
-_INIT_CATEGORIES = [LayoutType.cell, TableType.item, LayoutType.table, LayoutType.word]
+_INIT_CATEGORIES = [LayoutType.CELL, TableType.ITEM, LayoutType.TABLE, LayoutType.WORD]
 _SUB_CATEGORIES: dict[ObjectTypes, dict[ObjectTypes, list[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    TableType.item: {TableType.item: [LayoutType.row, LayoutType.column]},
-    LayoutType.cell: {
-        CellType.header: [CellType.header, CellType.body],
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning],
+    TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
+    LayoutType.CELL: {
+        CellType.HEADER: [CellType.HEADER, CellType.BODY],
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING],
     },
-    CellType.header: {
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning],
+    CellType.HEADER: {
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING],
     },
-    CellType.body: {
-        CellType.row_number: [],
-        CellType.column_number: [],
-        CellType.row_span: [],
-        CellType.column_span: [],
-        CellType.spanning: [CellType.spanning],
+    CellType.BODY: {
+        CellType.ROW_NUMBER: [],
+        CellType.COLUMNS_NUMBER: [],
+        CellType.ROW_SPAN: [],
+        CellType.COLUMN_SPAN: [],
+        CellType.SPANNING: [CellType.SPANNING],
     },
-    LayoutType.table: {TableType.html: [TableType.html]},
-    LayoutType.word: {WordType.characters: [WordType.characters]},
+    LayoutType.TABLE: {TableType.HTML: [TableType.HTML]},
+    LayoutType.WORD: {WordType.CHARACTERS: [WordType.CHARACTERS]},
 }
 
 

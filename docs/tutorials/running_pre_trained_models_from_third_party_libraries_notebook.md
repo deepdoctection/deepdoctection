@@ -164,18 +164,20 @@ dd.ModelCatalog.register("layoutparser/newspaper/model_final.pth",dd.ModelProfil
         ))
 ```
 
-
 ```python
 path_weights = dd.ModelCatalog.get_full_path_weights("layoutparser/newspaper/model_final.pth")
 path_config = dd.ModelCatalog.get_full_path_configs("layoutparser/newspaper/model_final.pth")
 categories = dd.ModelCatalog.get_profile("layoutparser/newspaper/model_final.pth").categories
 
-d2_detector = dd.D2FrcnnDetector(path_config,path_weights,categories,config_overwrite=["NMS_THRESH_CLASS_AGNOSTIC=0.8","MODEL.ROI_HEADS.SCORE_THRESH_TEST=0.1"])
+d2_detector = dd.D2FrcnnDetector(path_config, path_weights, categories,
+                                 config_overwrite=["NMS_THRESH_CLASS_AGNOSTIC=0.8",
+                                                   "MODEL.ROI_HEADS.SCORE_THRESH_TEST=0.1"])
 image_layout = dd.ImageLayoutService(d2_detector)
 
-page_parser = dd.PageParsingService(text_container = dd.LayoutType.word, # this argument is required but will not have any effect
+page_parser = dd.PageParsingService(text_container=dd.LayoutType.WORD,
+                                    # this argument is required but will not have any effect
                                     floating_text_block_categories=[layout_item for layout_item in NewspaperExtension])
-pipe = dd.DoctectionPipe([image_layout],page_parsing_service = page_parser)
+pipe = dd.DoctectionPipe([image_layout], page_parsing_service=page_parser)
 ```
 
     [32m[0622 10:11.41 @detection_checkpoint.py:38][0m  [32mINF[0m  [97m[DetectionCheckpointer] Loading from /home/janis/.cache/deepdoctection/weights/layoutparser/newspaper/model_final.pth ...[0m

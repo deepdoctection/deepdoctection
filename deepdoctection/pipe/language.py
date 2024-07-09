@@ -92,7 +92,7 @@ class LanguageDetectionService(PipelineComponent):
             text = " ".join((result.text for result in detect_result_list if result.text is not None))
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(
-            PageType.language, PageType.language, 1, predict_result.text, predict_result.score
+            PageType.LANGUAGE, PageType.LANGUAGE, 1, predict_result.text, predict_result.score
         )
 
     def clone(self) -> PipelineComponent:
@@ -107,7 +107,7 @@ class LanguageDetectionService(PipelineComponent):
         )
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.language,))
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.LANGUAGE,))
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:

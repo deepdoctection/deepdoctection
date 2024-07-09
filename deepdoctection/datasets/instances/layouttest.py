@@ -52,7 +52,7 @@ _LICENSE = (
 )
 
 _SPLITS: Mapping[str, str] = {"test": "test", "predict": "predict"}
-_TYPE = DatasetType.object_detection
+_TYPE = DatasetType.OBJECT_DETECTION
 _LOCATION = "testlayout"
 
 _ANNOTATION_FILES: Mapping[str, str] = {
@@ -60,7 +60,7 @@ _ANNOTATION_FILES: Mapping[str, str] = {
     "predict": "xrf_layout_test_predict.jsonl",
 }
 
-_INIT_CATEGORIES = [LayoutType.text, LayoutType.title, LayoutType.list, LayoutType.table, LayoutType.figure]
+_INIT_CATEGORIES = [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST, LayoutType.TABLE, LayoutType.FIGURE]
 
 
 @dataset_registry.register("testlayout")

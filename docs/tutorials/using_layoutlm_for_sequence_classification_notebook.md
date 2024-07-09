@@ -123,7 +123,6 @@ Having generated a dataset with features and labels at `/path/to/rvlcdip` we now
 folder into the **deep**doctection cache and define a custom data set for sequence 
 classification.
 
-
 ```python
 class RvlBuilder(dd.DataFlowBaseBuilder):
 
@@ -133,33 +132,37 @@ class RvlBuilder(dd.DataFlowBaseBuilder):
         ann_files_dir = self.get_workdir()
         image_dir = self.get_workdir() / "image"
 
-        df = dd.SerializerFiles.load(ann_files_dir,".json")   # get a stream of .json files
-        df = dd.MapData(df, dd.load_json)   # load .json file
+        df = dd.SerializerFiles.load(ann_files_dir, ".json")  # get a stream of .json files
+        df = dd.MapData(df, dd.load_json)  # load .json file
         categories = self.categories.get_categories(name_as_key=True)
 
         @dd.curry
         def map_to_img(dp, cats):
-            dp = dd.Image.from_dict(**dp) # no heavy conversion necessary.
-            dp.file_name= dp.file_name.replace(".tif",".png")
+            dp = dd.Image.from_dict(**dp)  # no heavy conversion necessary.
+            dp.file_name = dp.file_name.replace(".tif", ".png")
             dp.location = image_dir / dp.file_name
-            if not os.path.isfile(dp.location): # when creating the dataset some image could not be generated and we have to skip these
+            if not os.path.isfile(
+                    dp.location):  # when creating the dataset some image could not be generated and we have to skip these
                 return None
-            if not len(dp.annotations): # Some samples were rotated where OCR was not able to recognize text. No text -> no features
+            if not len(
+                    dp.annotations):  # Some samples were rotated where OCR was not able to recognize text. No text -> no features
                 return None
             sub_cat = dp.summary.get_sub_category(dd.PageType.document_type)
             sub_cat.category_id = cats[sub_cat.category_name]
             if load_image:
                 dp.image = dd.load_image_from_file(dp.location)
             return dp
+
         df = dd.MapData(df, map_to_img(categories))
 
         return df
-    
-rvlcdip = dd.CustomDataset(name = "rvl",
-                 dataset_type=dd.DatasetType.sequence_classification,
-                 location="rvl",
-                 init_categories=[dd.DocumentType.form, dd.DocumentType.invoice,dd.DocumentType.budget],
-                 dataflow_builder=RvlBuilder)
+
+
+rvlcdip = dd.CustomDataset(name="rvl",
+                           dataset_type=dd.DatasetType.SEQUENCE_CLASSIFICATION,
+                           location="rvl",
+                           init_categories=[dd.DocumentType.form, dd.DocumentType.invoice, dd.DocumentType.budget],
+                           dataflow_builder=RvlBuilder)
 ```
 
 ## Downloading the LayoutLM base model

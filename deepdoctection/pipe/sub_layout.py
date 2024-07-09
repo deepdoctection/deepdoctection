@@ -217,7 +217,7 @@ class SubImageLayoutService(PipelineComponent):
         return MetaAnnotation(
             image_annotations=self.predictor.get_category_names(),
             sub_categories={},
-            relationships={get_type(parent): {Relationships.child} for parent in self.sub_image_name},
+            relationships={get_type(parent): {Relationships.CHILD} for parent in self.sub_image_name},
             summaries=(),
         )
 

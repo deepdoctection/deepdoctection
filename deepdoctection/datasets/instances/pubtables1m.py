@@ -80,14 +80,14 @@ _LICENSE = "Community Data License Agreement – Permissive, Version 1.0"
 _URL = "https://msropendata.com/datasets/505fcbe3-1383-42b1-913a-f651b8b712d3"
 
 _SPLITS: Mapping[str, str] = {"train": "train", "val": "val", "test": "test"}
-_TYPE = DatasetType.object_detection
+_TYPE = DatasetType.OBJECT_DETECTION
 _LOCATION = "PubTables1M"
 _ANNOTATION_FILES: Mapping[str, str] = {
     "train": "PubTables1M-Detection-PASCAL-VOC/train",
     "val": "PubTables1M-Detection-PASCAL-VOC/val",
     "test": "PubTables1M-Detection-PASCAL-VOC/test",
 }
-_INIT_CATEGORIES_DET = [LayoutType.table, LayoutType.table_rotated]
+_INIT_CATEGORIES_DET = [LayoutType.TABLE, LayoutType.TABLE_ROTATED]
 
 
 @dataset_registry.register("pubtables1m_det")
@@ -180,7 +180,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
                 load_image,
                 filter_empty_image=True,
                 fake_score=fake_score,
-                category_name_mapping={"table": LayoutType.table, "table rotated": LayoutType.table_rotated},
+                category_name_mapping={"table": LayoutType.TABLE, "table rotated": LayoutType.TABLE_ROTATED},
             ),
         )
 
@@ -195,13 +195,13 @@ _ANNOTATION_FILES_STRUCT: Mapping[str, str] = {
 }
 
 _INIT_CATEGORIES_STRUCT = [
-    LayoutType.table,
-    LayoutType.row,
-    LayoutType.column,
-    CellType.spanning,
-    CellType.row_header,
-    CellType.column_header,
-    CellType.projected_row_header,
+    LayoutType.TABLE,
+    LayoutType.ROW,
+    LayoutType.COLUMN,
+    CellType.SPANNING,
+    CellType.ROW_HEADER,
+    CellType.COLUMN_HEADER,
+    CellType.PROJECTED_ROW_HEADER,
 ]
 
 _IMAGES: Mapping[str, str] = {
@@ -302,13 +302,13 @@ class Pubtables1MBuilderStruct(DataFlowBaseBuilder):
                 filter_empty_image=True,
                 fake_score=fake_score,
                 category_name_mapping={
-                    "table": LayoutType.table,
-                    "table spanning cell": CellType.spanning,
-                    "table row": LayoutType.row,
-                    "table row header": CellType.row_header,
-                    "table projected row header": CellType.projected_row_header,
-                    "table column": LayoutType.column,
-                    "table column header": CellType.column_header,
+                    "table": LayoutType.TABLE,
+                    "table spanning cell": CellType.SPANNING,
+                    "table row": LayoutType.ROW,
+                    "table row header": CellType.ROW_HEADER,
+                    "table projected row header": CellType.PROJECTED_ROW_HEADER,
+                    "table column": LayoutType.COLUMN,
+                    "table column header": CellType.COLUMN_HEADER,
                 },
             ),
         )

@@ -671,11 +671,11 @@ class DatapointCoco:
     white_image = np.ones((794, 596, 3), dtype=np.uint8) * 255
     white_image_string = convert_np_array_to_b64(white_image)  # type: ignore
     categories = {
-        "1": LayoutType.text,
-        "2": LayoutType.title,
-        "3": LayoutType.table,
-        "4": LayoutType.figure,
-        "5": LayoutType.list,
+        "1": LayoutType.TEXT,
+        "2": LayoutType.TITLE,
+        "3": LayoutType.TABLE,
+        "4": LayoutType.FIGURE,
+        "5": LayoutType.LIST,
     }
     first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
 
@@ -734,7 +734,7 @@ class DatapointPubtabnet:
     """
 
     dp = _SAMPLE_PUBTABNET
-    categories = {"1": LayoutType.cell, "2": TableType.item, "3": LayoutType.table, "4": LayoutType.word}
+    categories = {"1": LayoutType.CELL, "2": TableType.ITEM, "3": LayoutType.TABLE, "4": LayoutType.WORD}
     categories_as_names = {v: k for k, v in categories.items()}
     first_ann_box = Box(475, 162, 10, 9)
     white_image = np.ones((1334, 996, 3), dtype=np.uint8) * 255
@@ -787,7 +787,7 @@ class DatapointPubtabnet:
         """
         category_name of sub category
         """
-        return CellType.body
+        return CellType.BODY
 
     def get_last_ann_category_name(self) -> str:
         """
@@ -800,7 +800,7 @@ class DatapointPubtabnet:
         """
         category_name of sub category
         """
-        return CellType.header
+        return CellType.HEADER
 
     @staticmethod
     def get_last_ann_sub_category_row_number_id() -> str:
@@ -915,11 +915,11 @@ class DatapointProdigy:
 
     dp = _SAMPLE_PRODIGY
     categories = {
-        LayoutType.text: "1",
-        LayoutType.title: "2",
-        LayoutType.table: "3",
-        LayoutType.figure: "4",
-        LayoutType.list: "5",
+        LayoutType.TEXT: "1",
+        LayoutType.TITLE: "2",
+        LayoutType.TABLE: "3",
+        LayoutType.FIGURE: "4",
+        LayoutType.LIST: "5",
     }
     first_ann_box = Box(1, 2.7, 14, 26.3)
 
@@ -956,8 +956,8 @@ class DatapointProdigy:
         category_name or category_id
         """
         if as_index:
-            return self.categories[LayoutType.table]
-        return LayoutType.table
+            return self.categories[LayoutType.TABLE]
+        return LayoutType.TABLE
 
 
 class DatapointImage:
@@ -1832,12 +1832,12 @@ class DatapointXfund:
     """
 
     dp = _SAMPLE_XFUND["documents"][0]
-    categories_dict = {LayoutType.word: "1", LayoutType.text: "2"}
+    categories_dict = {LayoutType.WORD: "1", LayoutType.TEXT: "2"}
     category_names_mapping = {
-        "other": TokenClasses.other,
-        "question": TokenClasses.question,
-        "answer": TokenClasses.answer,
-        "header": TokenClasses.header,
+        "other": TokenClasses.OTHER,
+        "question": TokenClasses.QUESTION,
+        "answer": TokenClasses.ANSWER,
+        "header": TokenClasses.HEADER,
     }
     categories_dict_name_as_key = {
         get_type("B-answer"): "1",
@@ -1855,30 +1855,30 @@ class DatapointXfund:
         get_type("S-question"): "13",
     }
     ner_token_to_id_mapping = {
-        LayoutType.word: {
-            WordType.token_class: {
-                TokenClasses.other: "1",
-                TokenClasses.question: "2",
-                TokenClasses.answer: "3",
-                TokenClasses.header: "4",
+        LayoutType.WORD: {
+            WordType.TOKEN_CLASS: {
+                TokenClasses.OTHER: "1",
+                TokenClasses.QUESTION: "2",
+                TokenClasses.ANSWER: "3",
+                TokenClasses.HEADER: "4",
             },
-            WordType.tag: {BioTag.inside: "1", BioTag.outside: "2", BioTag.begin: "3"},
-            WordType.token_tag: {
-                TokenClassWithTag.b_answer: "1",
-                TokenClassWithTag.b_header: "2",
-                TokenClassWithTag.b_question: "3",
-                TokenClassWithTag.i_answer: "4",
-                TokenClassWithTag.i_header: "5",
-                TokenClassWithTag.i_question: "6",
-                BioTag.outside: "7",
+            WordType.TAG: {BioTag.INSIDE: "1", BioTag.OUTSIDE: "2", BioTag.BEGIN: "3"},
+            WordType.TOKEN_TAG: {
+                TokenClassWithTag.B_ANSWER: "1",
+                TokenClassWithTag.B_HEADER: "2",
+                TokenClassWithTag.B_QUESTION: "3",
+                TokenClassWithTag.I_ANSWER: "4",
+                TokenClassWithTag.I_HEADER: "5",
+                TokenClassWithTag.I_QUESTION: "6",
+                BioTag.OUTSIDE: "7",
             },
         },
-        LayoutType.text: {
-            WordType.token_class: {
-                TokenClasses.other: "1",
-                TokenClasses.question: "2",
-                TokenClasses.answer: "3",
-                TokenClasses.header: "4",
+        LayoutType.TEXT: {
+            WordType.TOKEN_CLASS: {
+                TokenClasses.OTHER: "1",
+                TokenClasses.QUESTION: "2",
+                TokenClasses.ANSWER: "3",
+                TokenClasses.HEADER: "4",
             }
         },
     }
@@ -1988,7 +1988,7 @@ class DatapointXfund:
         ],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],
-        "dataset_type": DatasetType.token_classification,
+        "dataset_type": DatasetType.TOKEN_CLASSIFICATION,
         "labels": [6, 6, 1],
     }
 
@@ -2056,7 +2056,7 @@ class DatapointXfund:
         """
         categories bio
         """
-        return [BioTag.begin, BioTag.inside, BioTag.outside]
+        return [BioTag.BEGIN, BioTag.INSIDE, BioTag.OUTSIDE]
 
     @staticmethod
     def get_token_class_names() -> List[str]:
@@ -2064,24 +2064,24 @@ class DatapointXfund:
         token class names
         """
         return [
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.i_header,
-            BioTag.outside,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.i_header,
-            BioTag.outside,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.i_header,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.I_HEADER,
+            BioTag.OUTSIDE,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.I_HEADER,
+            BioTag.OUTSIDE,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.I_HEADER,
         ]
 
     def get_categories_dict_names_as_key(self) -> Dict[ObjectTypes, str]:
@@ -2123,17 +2123,17 @@ class IIITar13KJson:
     }
 
     categories_name_as_keys = {
-        LayoutType.table: "1",
-        LayoutType.logo: "2",
-        LayoutType.figure: "3",
-        LayoutType.signature: "4",
+        LayoutType.TABLE: "1",
+        LayoutType.LOGO: "2",
+        LayoutType.FIGURE: "3",
+        LayoutType.SIGNATURE: "4",
     }
     category_names_mapping = {
-        "natural_image": LayoutType.figure,
-        "figure": LayoutType.figure,
-        "logo": LayoutType.logo,
-        "signature": LayoutType.signature,
-        "table": LayoutType.table,
+        "natural_image": LayoutType.FIGURE,
+        "figure": LayoutType.FIGURE,
+        "logo": LayoutType.LOGO,
+        "signature": LayoutType.SIGNATURE,
+        "table": LayoutType.TABLE,
     }
 
     first_ann_box = Box(ulx=127, uly=202, w=1006 - 127, h=580 - 202)
@@ -2173,7 +2173,7 @@ class IIITar13KJson:
         """
         first annotation category name
         """
-        return LayoutType.table
+        return LayoutType.TABLE
 
     def get_categories_name_as_keys(self) -> Mapping[ObjectTypes, str]:
         """

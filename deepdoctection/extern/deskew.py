@@ -80,4 +80,4 @@ class Jdeskewer(ImageTransformer):
         return self.__class__(self.min_angle_rotation)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
-        return (PageType.angle,)
+        return (PageType.ANGLE,)

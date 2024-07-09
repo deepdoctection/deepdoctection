@@ -264,13 +264,13 @@ class TestTableSegmentationRefinementService:
         """
 
         self.table_segmentation_refinement_service = TableSegmentationRefinementService(
-            [LayoutType.table, LayoutType.table_rotated],
+            [LayoutType.TABLE, LayoutType.TABLE_ROTATED],
             [
-                LayoutType.cell,
-                CellType.column_header,
-                CellType.projected_row_header,
-                CellType.spanning,
-                CellType.row_header,
+                LayoutType.CELL,
+                CellType.COLUMN_HEADER,
+                CellType.PROJECTED_ROW_HEADER,
+                CellType.SPANNING,
+                CellType.ROW_HEADER,
             ],
         )
 
@@ -287,23 +287,23 @@ class TestTableSegmentationRefinementService:
         dp = self.table_segmentation_refinement_service.pass_datapoint(dp)
 
         # Assert
-        table = dp.get_annotation(category_names=LayoutType.table)[0]
+        table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
         assert table.image is not None
         summary = table.image.summary
         summaries_table = [
-            summary.get_sub_category(TableType.number_of_rows).category_id,
-            summary.get_sub_category(TableType.number_of_columns).category_id,
-            summary.get_sub_category(TableType.max_row_span).category_id,
-            summary.get_sub_category(TableType.max_col_span).category_id,
+            summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id,
+            summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id,
+            summary.get_sub_category(TableType.MAX_ROW_SPAN).category_id,
+            summary.get_sub_category(TableType.MAX_COL_SPAN).category_id,
         ]
-        summary_html = table.get_sub_category(TableType.html)
+        summary_html = table.get_sub_category(TableType.HTML)
         cells = dp.get_annotation(
             category_names=self.table_segmentation_refinement_service.cell_names  # pylint: disable=W0212
         )
-        row_numbers = {cell.get_sub_category(CellType.row_number).category_id for cell in cells}
-        col_numbers = {cell.get_sub_category(CellType.column_number).category_id for cell in cells}
-        row_spans = {cell.get_sub_category(CellType.row_span).category_id for cell in cells}
-        col_spans = {cell.get_sub_category(CellType.column_span).category_id for cell in cells}
+        row_numbers = {cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells}
+        col_numbers = {cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id for cell in cells}
+        row_spans = {cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells}
+        col_spans = {cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells}
 
         assert len(cells) == 4
         assert row_numbers == {"1", "2"}

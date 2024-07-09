@@ -123,7 +123,7 @@ def doctr_predict_text_lines(
         raise DependencyError("Tensorflow or PyTorch must be installed.")
     detection_results = [
         DetectionResult(
-            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word
+            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.WORD
         )
         for box in raw_output[0]["words"]
     ]
@@ -534,4 +534,4 @@ class DocTrRotationTransformer(ImageTransformer):
         return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
-        return (PageType.angle,)
+        return (PageType.ANGLE,)

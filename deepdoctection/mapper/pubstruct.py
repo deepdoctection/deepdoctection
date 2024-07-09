@@ -55,7 +55,7 @@ def _convert_boxes(dp: JsonDict, height: int) -> JsonDict:
 def _get_table_annotation(dp: JsonDict, category_id: str) -> ImageAnnotation:
     ulx, uly, lrx, lry = list(map(float, dp["bbox"]))
     bbox = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
-    annotation = ImageAnnotation(category_name=LayoutType.table, bounding_box=bbox, category_id=category_id)
+    annotation = ImageAnnotation(category_name=LayoutType.TABLE, bounding_box=bbox, category_id=category_id)
     return annotation
 
 
@@ -154,10 +154,10 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
 
 
 def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, str], pubtables_like: bool) -> Image:
-    item_number = CellType.row_number if item_type == LayoutType.row else CellType.column_number
-    item_span = CellType.row_span if item_type == LayoutType.row else CellType.column_span
+    item_number = CellType.ROW_NUMBER if item_type == LayoutType.ROW else CellType.COLUMNS_NUMBER
+    item_span = CellType.ROW_SPAN if item_type == LayoutType.ROW else CellType.COLUMN_SPAN
 
-    summary_key = TableType.number_of_rows if item_type == LayoutType.row else TableType.number_of_columns
+    summary_key = TableType.NUMBER_OF_ROWS if item_type == LayoutType.ROW else TableType.NUMBER_OF_COLUMNS
 
     number_of_items = 0
 
@@ -165,7 +165,7 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, s
         category_item = image.summary.get_sub_category(summary_key)
         number_of_items = int(category_item.category_id)
 
-    cells = image.get_annotation(category_names=LayoutType.cell)
+    cells = image.get_annotation(category_names=LayoutType.CELL)
     table: ImageAnnotation
 
     for item_num in range(1, number_of_items + 1):
@@ -185,12 +185,12 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, s
             lry = max(cell.bounding_box.lry for cell in cell_item if isinstance(cell.bounding_box, BoundingBox))
 
             if pubtables_like:
-                tables = image.get_annotation(category_names=LayoutType.table)
+                tables = image.get_annotation(category_names=LayoutType.TABLE)
                 if not tables:
                     raise ValueError("pubtables_like = True requires table")
                 table = tables[0]
 
-                if item_type == LayoutType.row:
+                if item_type == LayoutType.ROW:
                     if table.bounding_box:
                         ulx = table.bounding_box.ulx + 1.0
                         lrx = table.bounding_box.lrx - 1.0
@@ -200,22 +200,22 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, s
                         lry = table.bounding_box.lry - 1.0
 
             item_ann = ImageAnnotation(
-                category_id=categories_name_as_key[TableType.item],
-                category_name=TableType.item,
+                category_id=categories_name_as_key[TableType.ITEM],
+                category_name=TableType.ITEM,
                 bounding_box=BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry),
             )
             item_sub_ann = CategoryAnnotation(category_name=item_type)
-            item_ann.dump_sub_category(TableType.item, item_sub_ann, image.image_id)
+            item_ann.dump_sub_category(TableType.ITEM, item_sub_ann, image.image_id)
             image.dump(item_ann)
 
     if pubtables_like:  # pubtables_like:
-        items = image.get_annotation(category_names=TableType.item)
-        item_type_anns = [ann for ann in items if ann.get_sub_category(TableType.item).category_name == item_type]
+        items = image.get_annotation(category_names=TableType.ITEM)
+        item_type_anns = [ann for ann in items if ann.get_sub_category(TableType.ITEM).category_name == item_type]
         item_type_anns.sort(
-            key=lambda x: (x.bounding_box.cx if item_type == LayoutType.column else x.bounding_box.cy)  # type: ignore
+            key=lambda x: (x.bounding_box.cx if item_type == LayoutType.COLUMN else x.bounding_box.cy)  # type: ignore
         )
         if table.bounding_box:
-            tmp_item_xy = table.bounding_box.uly + 1.0 if item_type == LayoutType.row else table.bounding_box.ulx + 1.0
+            tmp_item_xy = table.bounding_box.uly + 1.0 if item_type == LayoutType.ROW else table.bounding_box.ulx + 1.0
         for idx, item in enumerate(item_type_anns):
             with MappingContextManager(
                 dp_name=image.file_name,
@@ -230,22 +230,22 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, s
                         if next_box:
                             tmp_next_item_xy = (
                                 (box.lry + next_box.uly) / 2
-                                if item_type == LayoutType.row
+                                if item_type == LayoutType.ROW
                                 else (box.lrx + next_box.ulx) / 2
                             )
                     else:
                         if table.bounding_box:
                             tmp_next_item_xy = (
                                 table.bounding_box.lry - 1.0
-                                if item_type == LayoutType.row
+                                if item_type == LayoutType.ROW
                                 else table.bounding_box.lrx - 1.0
                             )
 
                     new_embedding_box = BoundingBox(
-                        ulx=box.ulx if item_type == LayoutType.row else tmp_item_xy,
-                        uly=tmp_item_xy if item_type == LayoutType.row else box.uly,
-                        lrx=box.lrx if item_type == LayoutType.row else tmp_next_item_xy,
-                        lry=tmp_next_item_xy if item_type == LayoutType.row else box.lry,
+                        ulx=box.ulx if item_type == LayoutType.ROW else tmp_item_xy,
+                        uly=tmp_item_xy if item_type == LayoutType.ROW else box.uly,
+                        lrx=box.lrx if item_type == LayoutType.ROW else tmp_next_item_xy,
+                        lry=tmp_next_item_xy if item_type == LayoutType.ROW else box.lry,
                         absolute_coords=True,
                     )
                     item.bounding_box = new_embedding_box
@@ -286,8 +286,8 @@ def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[
     image.image = dp.image
     image.set_width_height(dp.width, dp.height)
     table_ann = ImageAnnotation(
-        category_name=LayoutType.table,
-        category_id=categories_name_as_key[LayoutType.table],
+        category_name=LayoutType.TABLE,
+        category_id=categories_name_as_key[LayoutType.TABLE],
         bounding_box=BoundingBox(absolute_coords=True, ulx=0.0, uly=0.0, lrx=dp.width, lry=dp.height),
     )
     image.dump(table_ann)
@@ -297,20 +297,20 @@ def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[
     # node.
     html.insert(0, "<table>")
     html.append("</table>")
-    if CellType.header not in categories_name_as_key:
+    if CellType.HEADER not in categories_name_as_key:
         html.remove("<thead>")
         html.remove("</thead>")
         if "<tbody>" in html and "</tbody>" in html:
             html.remove("<tbody>")
             html.remove("</tbody>")
 
-    html_ann = ContainerAnnotation(category_name=TableType.html, value=html)
-    table_ann.dump_sub_category(TableType.html, html_ann)
+    html_ann = ContainerAnnotation(category_name=TableType.HTML, value=html)
+    table_ann.dump_sub_category(TableType.HTML, html_ann)
     for ann in dp.get_annotation():
         image.dump(ann)
         assert table_ann.image
         table_ann.image.dump(ann)
-        table_ann.dump_relationship(Relationships.child, ann.annotation_id)
+        table_ann.dump_relationship(Relationships.CHILD, ann.annotation_id)
 
     return image
 
@@ -407,7 +407,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
         table_ann: Optional[ImageAnnotation] = None
         if is_fintabnet:  # cannot use for synthetic table ann creation
-            table_ann = _get_table_annotation(dp, categories_name_as_key[LayoutType.table])
+            table_ann = _get_table_annotation(dp, categories_name_as_key[LayoutType.TABLE])
             image.dump(table_ann)
 
         for idx, value in enumerate(
@@ -423,44 +423,44 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 ulx, uly, lrx, lry = list(map(float, cell["bbox"]))
                 cell_bounding_box = BoundingBox(absolute_coords=True, ulx=ulx, uly=uly, lrx=lrx, lry=lry)
                 cell_ann = ImageAnnotation(
-                    category_name=LayoutType.cell,
+                    category_name=LayoutType.CELL,
                     bounding_box=cell_bounding_box,
-                    category_id=categories_name_as_key[LayoutType.cell],
+                    category_id=categories_name_as_key[LayoutType.CELL],
                     score=maybe_get_fake_score(fake_score),
                 )
                 cell_ann.dump_sub_category(
-                    CellType.row_number,
-                    CategoryAnnotation(category_name=CellType.row_number, category_id=str(row_number)),
+                    CellType.ROW_NUMBER,
+                    CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id=str(row_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
-                    CellType.column_number,
-                    CategoryAnnotation(category_name=CellType.column_number, category_id=str(col_number)),
+                    CellType.COLUMNS_NUMBER,
+                    CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id=str(col_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
-                    CellType.row_span,
-                    CategoryAnnotation(category_name=CellType.row_span, category_id=str(row_span)),
+                    CellType.ROW_SPAN,
+                    CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id=str(row_span)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
-                    CellType.column_span,
-                    CategoryAnnotation(category_name=CellType.column_span, category_id=str(col_span)),
+                    CellType.COLUMN_SPAN,
+                    CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id=str(col_span)),
                     image.image_id,
                 )
                 if (
-                    int(cell_ann.get_sub_category(CellType.row_span).category_id) > 1
-                    or int(cell_ann.get_sub_category(CellType.column_span).category_id) > 1
+                    int(cell_ann.get_sub_category(CellType.ROW_SPAN).category_id) > 1
+                    or int(cell_ann.get_sub_category(CellType.COLUMN_SPAN).category_id) > 1
                 ):
                     cell_ann.dump_sub_category(
-                        CellType.spanning,
-                        CategoryAnnotation(category_name=CellType.spanning),
+                        CellType.SPANNING,
+                        CategoryAnnotation(category_name=CellType.SPANNING),
                         image.image_id,
                     )
                 else:
                     cell_ann.dump_sub_category(
-                        CellType.spanning,
-                        CategoryAnnotation(category_name=LayoutType.cell),
+                        CellType.SPANNING,
+                        CategoryAnnotation(category_name=LayoutType.CELL),
                         image.image_id,
                     )
 
@@ -468,13 +468,13 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                 max_cs = max(max_cs, col_span)  # type: ignore
 
                 if _has_header:
-                    category_name = CellType.header if cell_id <= end_of_header else CellType.body
+                    category_name = CellType.HEADER if cell_id <= end_of_header else CellType.BODY
                     cell_ann.dump_sub_category(
-                        CellType.header, CategoryAnnotation(category_name=category_name), image.image_id
+                        CellType.HEADER, CategoryAnnotation(category_name=category_name), image.image_id
                     )
                 image.dump(cell_ann)
                 if table_ann is not None:
-                    table_ann.dump_relationship(Relationships.child, cell_ann.annotation_id)
+                    table_ann.dump_relationship(Relationships.CHILD, cell_ann.annotation_id)
 
                 if dd_pipe_like:
                     tokens = cell["tokens"]
@@ -484,16 +484,16 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                     text = "".join(tokens)
                     # we are not separating each word but view the full table content as one word
                     word = ImageAnnotation(
-                        category_name=LayoutType.word,
-                        category_id=categories_name_as_key[LayoutType.word],
+                        category_name=LayoutType.WORD,
+                        category_id=categories_name_as_key[LayoutType.WORD],
                         bounding_box=cell_bounding_box,
                     )
-                    text_container = ContainerAnnotation(category_name=WordType.characters, value=text)
-                    word.dump_sub_category(WordType.characters, text_container)
-                    reading_order = CategoryAnnotation(category_name=Relationships.reading_order, category_id="1")
-                    word.dump_sub_category(Relationships.reading_order, reading_order)
+                    text_container = ContainerAnnotation(category_name=WordType.CHARACTERS, value=text)
+                    word.dump_sub_category(WordType.CHARACTERS, text_container)
+                    reading_order = CategoryAnnotation(category_name=Relationships.READING_ORDER, category_id="1")
+                    word.dump_sub_category(Relationships.READING_ORDER, reading_order)
                     image.dump(word)
-                    cell_ann.dump_relationship(Relationships.child, word.annotation_id)
+                    cell_ann.dump_relationship(Relationships.CHILD, word.annotation_id)
 
                     index = nth_index(html, "<td>", number_of_cells - idx)
                     if index:
@@ -501,30 +501,30 @@ def pub_to_image_uncur(  # pylint: disable=R0914
 
         summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
         summary_ann.dump_sub_category(
-            TableType.number_of_rows,
-            CategoryAnnotation(category_name=TableType.number_of_rows, category_id=str(number_of_rows)),
+            TableType.NUMBER_OF_ROWS,
+            CategoryAnnotation(category_name=TableType.NUMBER_OF_ROWS, category_id=str(number_of_rows)),
             image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.number_of_columns,
-            CategoryAnnotation(category_name=TableType.number_of_columns, category_id=str(number_of_cols)),
+            TableType.NUMBER_OF_COLUMNS,
+            CategoryAnnotation(category_name=TableType.NUMBER_OF_COLUMNS, category_id=str(number_of_cols)),
             image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.max_row_span,
-            CategoryAnnotation(category_name=TableType.max_row_span, category_id=str(max_rs)),
+            TableType.MAX_ROW_SPAN,
+            CategoryAnnotation(category_name=TableType.MAX_ROW_SPAN, category_id=str(max_rs)),
             image.image_id,
         )
         summary_ann.dump_sub_category(
-            TableType.max_col_span,
-            CategoryAnnotation(category_name=TableType.max_col_span, category_id=str(max_cs)),
+            TableType.MAX_COL_SPAN,
+            CategoryAnnotation(category_name=TableType.MAX_COL_SPAN, category_id=str(max_cs)),
             image.image_id,
         )
         image.summary = summary_ann
 
         if rows_and_cols or dd_pipe_like:
-            image = _add_items(image, LayoutType.row, categories_name_as_key, pubtables_like)
-            image = _add_items(image, LayoutType.column, categories_name_as_key, pubtables_like)
+            image = _add_items(image, LayoutType.ROW, categories_name_as_key, pubtables_like)
+            image = _add_items(image, LayoutType.COLUMN, categories_name_as_key, pubtables_like)
 
         if dd_pipe_like:
             image = embedding_in_image(image, html, categories_name_as_key)

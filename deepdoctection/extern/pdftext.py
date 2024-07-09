@@ -38,7 +38,7 @@ def _to_detect_result(word: dict[str, str]) -> DetectionResult:
         box=[float(word["x0"]), float(word["top"]), float(word["x1"]), float(word["bottom"])],
         class_id=1,
         text=word["text"],
-        class_name=LayoutType.word,
+        class_name=LayoutType.WORD,
     )
 
 
@@ -69,7 +69,7 @@ class PdfPlumberTextDetector(PdfMiner):
     def __init__(self, x_tolerance: int = 3, y_tolerance: int = 3) -> None:
         self.name = "Pdfplumber"
         self.model_id = self.get_model_id()
-        self.categories = ModelCategories(init_categories={"1": LayoutType.word})
+        self.categories = ModelCategories(init_categories={"1": LayoutType.WORD})
         self.x_tolerance = x_tolerance
         self.y_tolerance = y_tolerance
         self._page: Optional[Page] = None

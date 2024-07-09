@@ -86,7 +86,7 @@ class TestAccuracyMetric:
         dataflow_gt = DataFromList(dp_list)
         dataflow_pr = DataFromList(dp_list)
         accuracy_metric = AccuracyMetric()
-        accuracy_metric.set_categories(sub_category_names={"cell": [CellType.row_number, CellType.column_span]})
+        accuracy_metric.set_categories(sub_category_names={"cell": [CellType.ROW_NUMBER, CellType.COLUMN_SPAN]})
 
         # Arrange
         output = accuracy_metric.get_distance(dataflow_gt, dataflow_pr, dataset_categories)
