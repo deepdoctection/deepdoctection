@@ -29,6 +29,7 @@ from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
+from ..utils.develop import deprecated
 from .box import BoundingBox
 from .convert import as_dict
 
