@@ -115,7 +115,6 @@ class TestLMSequenceClassifierService:
 
         # Act
         dp = lm_service.pass_datapoint(dp)
-        assert dp.summary is not None
 
         # Assert
         assert dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_name == "FOO"

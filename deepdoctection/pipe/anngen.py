@@ -28,7 +28,7 @@ from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import ObjectTypes, Relationships, SummaryType
+from ..utils.settings import ObjectTypes, Relationships
 
 
 class DatapointManager:
@@ -299,8 +299,6 @@ class DatapointManager:
         else:
             image = self.datapoint
         assert image is not None, image
-        if image.summary is None:
-            image.summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         with MappingContextManager(

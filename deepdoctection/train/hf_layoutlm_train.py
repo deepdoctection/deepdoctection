@@ -430,16 +430,16 @@ def train_hf_layoutlm(
         )
 
     use_wandb = conf_dict.pop("use_wandb")
-    wandb_project = conf_dict.pop("wandb_project")
-    wandb_repo = conf_dict.pop("wandb_repo")
+    wandb_project = str(conf_dict.pop("wandb_project"))
+    wandb_repo = str(conf_dict.pop("wandb_repo"))
 
     # Initialize Wandb, if necessary
     run = None
     if use_wandb:
         if not wandb_available():
             raise DependencyError("WandB must be installed separately")
-        run = wandb.init(project=wandb_project, config=conf_dict)  # type: ignore
-        run._label(repo=wandb_repo)  # type: ignore # pylint: disable=W0212
+        run = wandb.init(project=wandb_project, config=conf_dict)
+        run._label(repo=wandb_repo)  # pylint: disable=W0212
     else:
         os.environ["WANDB_DISABLED"] = "True"
 

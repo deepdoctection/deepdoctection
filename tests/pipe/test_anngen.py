@@ -164,11 +164,12 @@ class TestDatapointManager:
 
         # Act
         summ_id_1 = dp_manager.set_summary_annotation(get_type("foo"), get_type("foo"), 1)
-        summ_id_2 = dp_manager.set_summary_annotation(get_type("bak"), get_type("bak"), 2, annotation_id=ann_id)
+        summ_id_2 = dp_manager.set_summary_annotation(get_type("bak"), get_type("bak"), 2,
+                                                      annotation_id=ann_id)
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
 
         # Assert
-        cat_1 = dp_manager.datapoint.summary.get_sub_category(get_type("foo"))  # type: ignore
+        cat_1 = dp_manager.datapoint.summary.get_sub_category(get_type("foo"))
         assert cat_1.annotation_id == summ_id_1
         assert cat_1.category_name == "foo"
         assert cat_1.category_id == "1"

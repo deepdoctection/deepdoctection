@@ -160,13 +160,13 @@ def filter_summary(
     :return: Image or None
     """
     for key, values in sub_cat_to_sub_cat_names_or_ids.items():
-        if mode == "name" and dp.summary:
+        if mode == "name":
             if dp.summary.get_sub_category(get_type(key)).category_name in values:
                 return dp
-        elif mode == "value" and dp.summary:
+        elif mode == "value":
             if dp.summary.get_sub_category(get_type(key)).value in values:  # type: ignore
                 return dp
-        elif dp.summary:
+        else:
             if dp.summary.get_sub_category(get_type(key)).category_id in values:
                 return dp
     return None
@@ -269,7 +269,7 @@ def image_to_cat_id(
                                 )
                             cat_container[sub_cat_name].append(sub_cat.value)  # type: ignore
 
-    if dp.summary is not None and summary_sub_category_names:
+    if summary_sub_category_names:
         for sub_cat_name in summary_sub_category_names:
             sub_cat = dp.summary.get_sub_category(get_type(sub_cat_name))
             if id_name_or_value == "id":
@@ -344,9 +344,8 @@ def remove_cats(
         dp.remove(ann)
 
     if summary_sub_categories is not None:
-        if dp.summary is not None:
-            for sub_cat in summary_sub_categories:
-                dp.summary.remove_sub_category(get_type(sub_cat))
+        for sub_cat in summary_sub_categories:
+            dp.summary.remove_sub_category(get_type(sub_cat))
 
     return dp
 

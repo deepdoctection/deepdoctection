@@ -297,7 +297,6 @@ def test_remove_cats_3(dp_image_fully_segmented: Image) -> None:
     # Act
     remove_cats_mapper = remove_cats(summary_sub_categories="TEST_SUMMARY")  # pylint: disable=E1120  # 259
     dp = remove_cats_mapper(dp_image_fully_segmented)
-    assert dp.summary is not None
 
     # Assert
     with pytest.raises(Exception):

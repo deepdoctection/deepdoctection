@@ -69,7 +69,6 @@ class TestLanguageDetectionService:
         dp = self.language_detection_service.pass_datapoint(dp_with_text_ordered)
 
         # Assert
-        assert dp.summary is not None
         assert dp.summary.get_sub_category(PageType.LANGUAGE).category_name == "language"
         container_ann = dp.summary.get_sub_category(PageType.LANGUAGE)
         assert isinstance(container_ann, ContainerAnnotation)
