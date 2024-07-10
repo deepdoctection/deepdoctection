@@ -148,6 +148,7 @@ class TestModelCategories:
 
 class TestNerModelCategories:
     """TestNerModelCategories"""
+
     def setup_method(self) -> None:
         """
         setup necessary components

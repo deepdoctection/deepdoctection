@@ -424,9 +424,7 @@ class ConfusionMetric(ClassificationMetric):
             else:
                 data[entry["category_id"]].append(entry["val"])
 
-        header = ["predictions -> \n  ground truth |\n              v"] + list(
-            list(str(element) for element in data)
-        )
+        header = ["predictions -> \n  ground truth |\n              v"] + list(list(str(element) for element in data))
         table = tabulate([data[k] for k, _ in enumerate(data, 1)], headers=header, tablefmt="pipe")
         logger.info("Confusion matrix: \n %s", colored(table, "cyan"))
 

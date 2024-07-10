@@ -73,18 +73,18 @@ def test_pub_to_image(
     assert isclose(first_ann.bounding_box.width, datapoint.get_first_ann_box().w, rel_tol=1e-15)
     assert isclose(first_ann.bounding_box.height, datapoint.get_first_ann_box().h, rel_tol=1e-15)
     assert (
-            first_ann.get_sub_category(CellType.HEADER).category_name == datapoint.get_first_ann_sub_category_header_name()
+        first_ann.get_sub_category(CellType.HEADER).category_name == datapoint.get_first_ann_sub_category_header_name()
     )
     assert (
         first_ann.get_sub_category(CellType.ROW_NUMBER).category_id
         == datapoint.get_first_ann_sub_category_row_number_id()
     )
     assert (
-        first_ann.get_sub_category(CellType.COLUMNS_NUMBER).category_id
+        first_ann.get_sub_category(CellType.COLUMN_NUMBER).category_id
         == datapoint.get_first_ann_sub_category_col_number_id()
     )
     assert (
-            first_ann.get_sub_category(CellType.ROW_SPAN).category_id == datapoint.get_first_ann_sub_category_row_span_id()
+        first_ann.get_sub_category(CellType.ROW_SPAN).category_id == datapoint.get_first_ann_sub_category_row_span_id()
     )
     assert (
         first_ann.get_sub_category(CellType.COLUMN_SPAN).category_id
@@ -98,12 +98,12 @@ def test_pub_to_image(
         == datapoint.get_last_ann_sub_category_row_number_id()
     )
     assert (
-        last_ann.get_sub_category(CellType.COLUMNS_NUMBER).category_id
+        last_ann.get_sub_category(CellType.COLUMN_NUMBER).category_id
         == datapoint.get_last_ann_sub_category_col_number_id()
     )
     assert last_ann.get_sub_category(CellType.ROW_SPAN).category_id == datapoint.get_last_ann_sub_category_row_span_id()
     assert (
-            last_ann.get_sub_category(CellType.COLUMN_SPAN).category_id == datapoint.get_last_ann_sub_category_col_span_id()
+        last_ann.get_sub_category(CellType.COLUMN_SPAN).category_id == datapoint.get_last_ann_sub_category_col_span_id()
     )
 
     summary_ann = dp.summary

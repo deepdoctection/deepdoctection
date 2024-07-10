@@ -199,12 +199,12 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
 
     # Arrange
     sub_category_names = {
-        LayoutType.CELL: [CellType.ROW_NUMBER, CellType.ROW_SPAN, CellType.COLUMNS_NUMBER, CellType.COLUMN_SPAN]
+        LayoutType.CELL: [CellType.ROW_NUMBER, CellType.ROW_SPAN, CellType.COLUMN_NUMBER, CellType.COLUMN_SPAN]
     }
     expected_output = {
         CellType.ROW_NUMBER: [1, 2, 1, 2, 0],
         CellType.ROW_SPAN: [1, 1, 1, 1, 0],
-        CellType.COLUMNS_NUMBER: [1, 1, 2, 2, 0],
+        CellType.COLUMN_NUMBER: [1, 1, 2, 2, 0],
         CellType.COLUMN_SPAN: [1, 1, 1, 1, 0],
     }
 
@@ -214,7 +214,7 @@ def test_image_to_cat_id_4(dp_image_fully_segmented: Image) -> None:
     # Assert
     assert output[CellType.ROW_NUMBER] == expected_output[CellType.ROW_NUMBER]
     assert output[CellType.ROW_SPAN] == expected_output[CellType.ROW_SPAN]
-    assert output[CellType.COLUMNS_NUMBER] == expected_output[CellType.COLUMNS_NUMBER]
+    assert output[CellType.COLUMN_NUMBER] == expected_output[CellType.COLUMN_NUMBER]
     assert output[CellType.COLUMN_SPAN] == expected_output[CellType.COLUMN_SPAN]
 
 
@@ -270,7 +270,7 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     with pytest.raises(Exception):
         first_ann_cell.get_sub_category(CellType.ROW_SPAN)
 
-    assert isinstance(first_ann_cell.get_sub_category(CellType.COLUMNS_NUMBER), CategoryAnnotation)
+    assert isinstance(first_ann_cell.get_sub_category(CellType.COLUMN_NUMBER), CategoryAnnotation)
     assert isinstance(first_ann_cell.get_sub_category(CellType.COLUMN_SPAN), CategoryAnnotation)
 
     with pytest.raises(Exception):
@@ -279,7 +279,7 @@ def test_remove_cats_2(dp_image_fully_segmented: Image) -> None:
     with pytest.raises(Exception):
         scd_ann_cell.get_sub_category(CellType.ROW_SPAN)
 
-    assert isinstance(scd_ann_cell.get_sub_category(CellType.COLUMNS_NUMBER), CategoryAnnotation)
+    assert isinstance(scd_ann_cell.get_sub_category(CellType.COLUMN_NUMBER), CategoryAnnotation)
     assert isinstance(scd_ann_cell.get_sub_category(CellType.COLUMN_SPAN), CategoryAnnotation)
 
 

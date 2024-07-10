@@ -348,8 +348,10 @@ class Image:
         """
 
         if category_names is not None:
-            category_names = ((get_type(category_names), ) if isinstance(category_names, str) else
-                            tuple(get_type(cat_name) for cat_name in category_names)
+            category_names = (
+                (get_type(category_names),)
+                if isinstance(category_names, str)
+                else tuple(get_type(cat_name) for cat_name in category_names)
             )
 
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
@@ -358,7 +360,7 @@ class Image:
         session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
         if ignore_inactive:
-            anns: Union[list[ImageAnnotation],filter[ImageAnnotation]] = filter(lambda x: x.active, self.annotations)
+            anns: Union[list[ImageAnnotation], filter[ImageAnnotation]] = filter(lambda x: x.active, self.annotations)
         else:
             anns = self.annotations
 

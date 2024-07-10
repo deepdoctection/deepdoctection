@@ -58,6 +58,7 @@ class ModelCategories:
         categories.filter_categories = [LayoutType.text]  # filter out text
         cats = categories.get_categories(as_dict=True)  # {"2": LayoutType.title}
     """
+
     init_categories: Optional[Mapping[str, TypeOrStr]] = field(repr=False)
     _init_categories: MappingProxyType[str, ObjectTypes] = field(init=False, repr=False)
     _filter_categories: Sequence[ObjectTypes] = field(init=False, repr=False, default_factory=tuple)
@@ -154,6 +155,7 @@ class NerModelCategories(ModelCategories):
         cats = categories.get_categories(as_dict=True)  # {"1": TokenClasses.question,
                                                            "2": TokenClasses.answer}
     """
+
     categories_semantics: Optional[Sequence[TypeOrStr]] = field(default=None)
     categories_bio: Optional[Sequence[TypeOrStr]] = field(default=None)
     _categories_semantics: tuple[ObjectTypes, ...] = field(init=False, repr=False)

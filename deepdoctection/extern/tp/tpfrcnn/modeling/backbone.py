@@ -71,7 +71,7 @@ def freeze_affine_getter(getter, *args, **kwargs):
     if name.endswith("/gamma") or name.endswith("/beta"):
         kwargs["trainable"] = False
         ret = getter(*args, **kwargs)
-        tf.add_to_collection(tf.GraphKeys.MODEL_VARIABLES, ret)   # pylint: disable=E1101
+        tf.add_to_collection(tf.GraphKeys.MODEL_VARIABLES, ret)  # pylint: disable=E1101
     else:
         ret = getter(*args, **kwargs)
     return ret

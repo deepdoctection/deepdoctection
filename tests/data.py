@@ -262,38 +262,38 @@ class Annotations:
     ]
 
     col_sub_cats = [
-        CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="1", service_id="dbf4f87c"),
-        CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="1", service_id="dbf4f87c"),
+        CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
     ]
 
     cell_sub_cats = [
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="1", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="2", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="1", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="2", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="0", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="0", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="0", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="0", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="0", service_id="dbf4f87c"),
         ),
@@ -302,31 +302,31 @@ class Annotations:
     cell_sub_cats_when_table_fully_tiled = [
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="1", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="2", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="1", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="1", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="2", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
         (
             CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id="2", service_id="dbf4f87c"),
-            CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id="2", service_id="dbf4f87c"),
+            CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id="2", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.ROW_SPAN, category_id="1", service_id="dbf4f87c"),
             CategoryAnnotation(category_name=CellType.COLUMN_SPAN, category_id="1", service_id="dbf4f87c"),
         ),
@@ -465,10 +465,10 @@ class Annotations:
     ]  # global coordinates calculated depending on table annotation from fixture image_annotations
 
     def __post_init__(self) -> None:
-        self.layout_anns[0]._annotation_id = "38c755da-ace2-3712-98ac-b2c800e0725e"  # pylint: disable=W0212
-        self.layout_anns[1]._annotation_id = "0c53dc7c-b0ed-3082-9bf0-7522739fb42c"  # pylint: disable=W0212
-        self.layout_anns[2]._annotation_id = "e2341ea6-d7e5-3d69-96a5-d6ee1d0e3a39"  # pylint: disable=W0212
-        self.layout_anns[3]._annotation_id = "5a576938-6452-33db-aa28-8d4728e7b337"  # pylint: disable=W0212
+        self.layout_anns[0]._annotation_id = "ae3f2073-0780-3bff-ad43-99cd461917da"  # pylint: disable=W0212
+        self.layout_anns[1]._annotation_id = "2c3d5826-849b-3447-aef8-4d1906a1ef9b"  # pylint: disable=W0212
+        self.layout_anns[2]._annotation_id = "2f7732d4-9ff5-3518-94df-8f6a643d2e87"  # pylint: disable=W0212
+        self.layout_anns[3]._annotation_id = "c24a176c-58c6-3bc4-bd95-a5a07f2943f0"  # pylint: disable=W0212
 
     def get_layout_detect_results(self) -> List[DetectionResult]:
         """
@@ -1475,10 +1475,10 @@ _LAYOUT_INPUT = {
     "image": np.ones((1000, 1000, 3)),
     "ids": [
         "CLS",
-        "7e79459d-0cf9-3954-802c-6d8c4d017792",
-        "08e645c4-f28d-30e6-befe-ab22dc53da92",
-        "224d479a-77e1-3c7a-9cd1-08430c61f020",
-        "841c74d7-45b2-3e0d-a8d5-7be3391685d6",
+        "c603f62d-211b-335d-9401-350b17842562",
+        "19c89b7e-c502-3e74-8828-622d13f4ca88",
+        "19aeb582-ca6f-3706-9cdf-aaad6ec3d64d",
+        "65782fe2-71ff-36b8-ab72-7b48928b2098",
         "SEP",
     ],
     "boxes": [
@@ -1502,10 +1502,10 @@ _LAYOUT_FEATURES = {
     "ann_ids": [
         [
             "[CLS]",
-            "7e79459d-0cf9-3954-802c-6d8c4d017792",
-            "08e645c4-f28d-30e6-befe-ab22dc53da92",
-            "224d479a-77e1-3c7a-9cd1-08430c61f020",
-            "841c74d7-45b2-3e0d-a8d5-7be3391685d6",
+            "c603f62d-211b-335d-9401-350b17842562",
+            "19c89b7e-c502-3e74-8828-622d13f4ca88",
+            "19aeb582-ca6f-3706-9cdf-aaad6ec3d64d",
+            "65782fe2-71ff-36b8-ab72-7b48928b2098",
             "[SEP]",
         ]
     ],

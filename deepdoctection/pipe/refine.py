@@ -62,7 +62,7 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, i
 
     for cell in cells:
         row_number = int(cell.get_sub_category(CellType.ROW_NUMBER).category_id)
-        col_number = int(cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id)
+        col_number = int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id)
         rs = int(cell.get_sub_category(CellType.ROW_SPAN).category_id)
         cs = int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id)
         for k in range(rs):
@@ -329,13 +329,13 @@ def generate_html_string(table: ImageAnnotation) -> list[str]:
                     == str(row_number),  # pylint: disable=W0640
                     cells,
                 ),
-                key=lambda cell: cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id,
+                key=lambda cell: cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
             )
         )
         row_list = [
             (
                 int(cell.get_sub_category(CellType.ROW_NUMBER).category_id),
-                int(cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id),
+                int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id),
                 int(cell.get_sub_category(CellType.ROW_SPAN).category_id),
                 int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id),
             )
@@ -432,7 +432,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                             CellType.ROW_NUMBER, row_number, CellType.ROW_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.COLUMNS_NUMBER, col_number, CellType.COLUMNS_NUMBER, new_cell_ann_id
+                            CellType.COLUMN_NUMBER, col_number, CellType.COLUMN_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
                             CellType.ROW_SPAN, row_span, CellType.ROW_SPAN, new_cell_ann_id
@@ -455,7 +455,7 @@ class TableSegmentationRefinementService(PipelineComponent):
 
             cells = table.image.get_annotation(category_names=self.cell_names)
             number_of_rows = max(int(cell.get_sub_category(CellType.ROW_NUMBER).category_id) for cell in cells)
-            number_of_cols = max(int(cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for cell in cells)
+            number_of_cols = max(int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id) for cell in cells)
             max_row_span = max(int(cell.get_sub_category(CellType.ROW_SPAN).category_id) for cell in cells)
             max_col_span = max(int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id) for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
@@ -503,7 +503,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             sub_categories={
                 LayoutType.CELL: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },

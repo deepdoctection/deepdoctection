@@ -354,7 +354,7 @@ cell.get_attribute_names()
 
 ```python
 print(
-    f"column number: {cell.COLUMNS_NUMBER} \n row_number: {cell.ROW_NUMBER} \n text: {cell.text} \n annotation_id: {cell.annotation_id}")
+    f"column number: {cell.COLUMN_NUMBER} \n row_number: {cell.ROW_NUMBER} \n text: {cell.text} \n annotation_id: {cell.annotation_id}")
 ```
 
     column number: 1 

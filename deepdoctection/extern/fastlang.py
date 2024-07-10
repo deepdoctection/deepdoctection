@@ -26,10 +26,10 @@ from typing import Any, Mapping, Union
 
 from lazy_imports import try_import
 
-from .base import DetectionResult, LanguageDetector, ModelCategories
 from ..utils.file_utils import Requirement, get_fasttext_requirement
 from ..utils.settings import TypeOrStr
 from ..utils.types import PathLikeOrStr
+from .base import DetectionResult, LanguageDetector, ModelCategories
 
 with try_import() as import_guard:
     from fasttext import load_model  # type: ignore

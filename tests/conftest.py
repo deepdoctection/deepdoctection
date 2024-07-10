@@ -114,10 +114,10 @@ def fixture_dataset_categories() -> DatasetCategories:
     _categories = [LayoutType.TABLE, LayoutType.CELL, LayoutType.ROW, LayoutType.COLUMN]
     _sub_categories: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]] = {
         LayoutType.ROW: {CellType.ROW_NUMBER: []},
-        LayoutType.COLUMN: {CellType.COLUMNS_NUMBER: []},
+        LayoutType.COLUMN: {CellType.COLUMN_NUMBER: []},
         LayoutType.CELL: {
             CellType.ROW_NUMBER: [],
-            CellType.COLUMNS_NUMBER: [],
+            CellType.COLUMN_NUMBER: [],
             CellType.ROW_SPAN: [],
             CellType.COLUMN_SPAN: [],
         },
@@ -325,13 +325,13 @@ def fixture_dp_image_fully_segmented(
     cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
-        col.dump_sub_category(CellType.COLUMNS_NUMBER, col_sub_cat)
+        col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
     cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
-        cell.dump_sub_category(CellType.COLUMNS_NUMBER, sub_cats[1])
+        cell.dump_sub_category(CellType.COLUMN_NUMBER, sub_cats[1])
         cell.dump_sub_category(CellType.ROW_SPAN, sub_cats[2])
         cell.dump_sub_category(CellType.COLUMN_SPAN, sub_cats[3])
 
@@ -378,14 +378,14 @@ def fixture_dp_image_fully_segmented_fully_tiled(
     cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
-        col.dump_sub_category(CellType.COLUMNS_NUMBER, col_sub_cat)
+        col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
     cell_sub_cats = cell_sub_cats_when_table_fully_tiled
     cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
-        cell.dump_sub_category(CellType.COLUMNS_NUMBER, sub_cats[1])
+        cell.dump_sub_category(CellType.COLUMN_NUMBER, sub_cats[1])
         cell.dump_sub_category(CellType.ROW_SPAN, sub_cats[2])
         cell.dump_sub_category(CellType.COLUMN_SPAN, sub_cats[3])
 

@@ -28,8 +28,8 @@ from pytest import mark
 from deepdoctection.datapoint.image import Image
 from deepdoctection.extern.base import ImageTransformer
 from deepdoctection.pipe.transform import SimpleTransformService
-from deepdoctection.utils.settings import PageType
 from deepdoctection.utils.identifier import get_uuid_from_str
+from deepdoctection.utils.settings import PageType
 
 
 class TestSimpleTransformService:
