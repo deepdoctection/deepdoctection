@@ -141,7 +141,6 @@ def test_pub_to_image_when_items_are_added(
 
     test_anns = dp.get_annotation(category_names=TableType.ITEM)
     summary_ann = dp.summary
-    assert isinstance(test_anns, list)
 
     assert len(test_anns) == int(summary_ann.get_sub_category(TableType.NUMBER_OF_ROWS).category_id) + int(
         summary_ann.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id

@@ -160,9 +160,8 @@ def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, s
 
     number_of_items = 0
 
-    if image.summary is not None:
-        category_item = image.summary.get_sub_category(summary_key)
-        number_of_items = int(category_item.category_id)
+    category_item = image.summary.get_sub_category(summary_key)
+    number_of_items = int(category_item.category_id)
 
     cells = image.get_annotation(category_names=LayoutType.CELL)
     table: ImageAnnotation

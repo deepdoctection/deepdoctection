@@ -91,7 +91,7 @@ class Image:
     embeddings: dict[str, BoundingBox] = field(default_factory=dict, init=False, repr=True)
     annotations: list[ImageAnnotation] = field(default_factory=list, init=False, repr=True)
     _annotation_ids: list[str] = field(default_factory=list, init=False, repr=False)
-    _summary: Optional[SummaryAnnotation] = field(default=None, init=False, repr=False)
+    _summary: Optional[CategoryAnnotation] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.external_id is not None:
@@ -162,13 +162,19 @@ class Image:
             self._self_embedding()
 
     @property
-    def summary(self) -> Optional[CategoryAnnotation]:
+    def summary(self) -> CategoryAnnotation:
         """summary"""
+        if self._summary is None:
+            self._summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
+            if self._summary._annotation_id is None:  # pylint: disable=W0212
+                self._summary.annotation_id = self.define_annotation_id(self._summary)
         return self._summary
 
     @summary.setter
     def summary(self, summary_annotation: CategoryAnnotation) -> None:
         """summary setter"""
+        if self._summary is not None:
+            raise ImageError("Image.summary already defined and cannot be reset")
         if summary_annotation._annotation_id is None:  # pylint: disable=W0212
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
         self._summary = summary_annotation

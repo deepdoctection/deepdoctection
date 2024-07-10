@@ -127,14 +127,13 @@ class ImageAnnotationBaseView(ImageAnnotation):
                 return sub_cat.value
             return int(sub_cat.category_id)
         if self.image is not None:
-            if self.image.summary is not None:
-                if item in self.image.summary.sub_categories:
-                    sub_cat = self.get_summary(get_type(item))
-                    if item != sub_cat.category_name:
-                        return sub_cat.category_name
-                    if isinstance(sub_cat, ContainerAnnotation):
-                        return sub_cat.value
-                    return int(sub_cat.category_id)
+            if item in self.image.summary.sub_categories:
+                sub_cat = self.get_summary(get_type(item))
+                if item != sub_cat.category_name:
+                    return sub_cat.category_name
+                if isinstance(sub_cat, ContainerAnnotation):
+                    return sub_cat.value
+                return int(sub_cat.category_id)
         return None
 
     def get_attribute_names(self) -> set[str]:
@@ -145,8 +144,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         # sub categories and summary sub categories are valid attribute names
         attribute_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
         if self.image:
-            if self.image.summary:
-                attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
+            attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
         return attribute_names
 
     @classmethod
@@ -581,14 +579,13 @@ class Page(Image):
     def __getattr__(self, item: str) -> Any:
         if item not in self.get_attribute_names():
             raise ImageError(f"Attribute {item} is not supported for {type(self)}")
-        if self.summary is not None:
-            if item in self.summary.sub_categories:
-                sub_cat = self.summary.get_sub_category(get_type(item))
-                if item != sub_cat.category_name:
-                    return sub_cat.category_name
-                if isinstance(sub_cat, ContainerAnnotation):
-                    return sub_cat.value
-                return int(sub_cat.category_id)
+        if item in self.summary.sub_categories:
+            sub_cat = self.summary.get_sub_category(get_type(item))
+            if item != sub_cat.category_name:
+                return sub_cat.category_name
+            if isinstance(sub_cat, ContainerAnnotation):
+                return sub_cat.value
+            return int(sub_cat.category_id)
         return None
 
     @property

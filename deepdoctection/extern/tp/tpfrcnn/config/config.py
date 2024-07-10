@@ -194,7 +194,7 @@ import numpy as np
 from lazy_imports import try_import
 
 from .....utils.metacfg import AttrDict
-from .....utils.settings import ObjectTypes, get_type
+from .....utils.settings import get_type, TypeOrStr
 
 with try_import() as import_guard:
     from tensorpack.tfutils import collect_env_info  # pylint: disable=E0401
@@ -209,7 +209,7 @@ with try_import() as import_guard:
 __all__ = ["train_frcnn_config", "model_frcnn_config"]
 
 
-def model_frcnn_config(config: AttrDict, categories: Mapping[str, ObjectTypes], print_summary: bool = True) -> None:
+def model_frcnn_config(config: AttrDict, categories: Mapping[str, TypeOrStr], print_summary: bool = True) -> None:
     """
     Sanity checks for Tensorpack Faster-RCNN config settings, where the focus lies on the model for predicting.
     It will update the config instance.

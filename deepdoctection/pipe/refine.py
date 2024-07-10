@@ -34,7 +34,7 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.error import AnnotationError, ImageError
+from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
 from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
@@ -459,22 +459,16 @@ class TableSegmentationRefinementService(PipelineComponent):
             max_row_span = max(int(cell.get_sub_category(CellType.ROW_SPAN).category_id) for cell in cells)
             max_col_span = max(int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id) for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
-            if table.image.summary is not None:
-                if (
-                    TableType.NUMBER_OF_ROWS in table.image.summary.sub_categories
-                    and TableType.NUMBER_OF_COLUMNS in table.image.summary.sub_categories
-                    and TableType.MAX_ROW_SPAN in table.image.summary.sub_categories
-                    and TableType.MAX_COL_SPAN in table.image.summary.sub_categories
-                ):
-                    table.image.summary.remove_sub_category(TableType.NUMBER_OF_ROWS)
-                    table.image.summary.remove_sub_category(TableType.NUMBER_OF_COLUMNS)
-                    table.image.summary.remove_sub_category(TableType.MAX_ROW_SPAN)
-                    table.image.summary.remove_sub_category(TableType.MAX_COL_SPAN)
-                else:
-                    raise AnnotationError(
-                        "Table summary does not contain sub categories TableType.number_of_rows, "
-                        "TableType.number_of_columns, TableType.max_row_span, TableType.max_col_span"
-                    )
+            if (
+                TableType.NUMBER_OF_ROWS in table.image.summary.sub_categories
+                and TableType.NUMBER_OF_COLUMNS in table.image.summary.sub_categories
+                and TableType.MAX_ROW_SPAN in table.image.summary.sub_categories
+                and TableType.MAX_COL_SPAN in table.image.summary.sub_categories
+            ):
+                table.image.summary.remove_sub_category(TableType.NUMBER_OF_ROWS)
+                table.image.summary.remove_sub_category(TableType.NUMBER_OF_COLUMNS)
+                table.image.summary.remove_sub_category(TableType.MAX_ROW_SPAN)
+                table.image.summary.remove_sub_category(TableType.MAX_COL_SPAN)
 
             self.dp_manager.set_summary_annotation(
                 TableType.NUMBER_OF_ROWS, TableType.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id

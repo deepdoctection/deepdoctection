@@ -27,7 +27,7 @@ from typing import Optional, Union, no_type_check
 from ..utils.error import AnnotationError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
-from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
 from .box import BoundingBox
 from .convert import as_dict
@@ -463,8 +463,7 @@ class ImageAnnotation(CategoryAnnotation):
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
         """Get summary sub categories from `image`. Raises `ValueError` if `key` is not available"""
         if self.image:
-            if self.image.summary:
-                return self.image.summary.get_sub_category(key)
+            return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
 
 

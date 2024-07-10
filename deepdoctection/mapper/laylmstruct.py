@@ -165,7 +165,7 @@ def image_to_raw_layoutlm_features(
             else:
                 all_labels.append(int(ann.get_sub_category(WordType.TOKEN_CLASS).category_id) - 1)
 
-    if dp.summary is not None and dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
+    if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
         all_labels.append(int(dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
@@ -788,7 +788,7 @@ def image_to_raw_lm_features(
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
         document_type_id = (
-            int(page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1  # type: ignore
+            int(page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1
         )
         raw_features["labels"] = [document_type_id]
 

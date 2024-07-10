@@ -439,4 +439,4 @@ class WandbTableAgent:
         eval_art.add(self._build_table(), self.dataset_name)
         self._run.use_artifact(eval_art)
         eval_art.wait()
-        self._table_ref = eval_art.get(self.dataset_name).data  # type:ignore
+        self._table_ref = eval_art.get(self.dataset_name).data  # type: ignore
