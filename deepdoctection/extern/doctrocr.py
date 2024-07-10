@@ -115,7 +115,7 @@ def doctr_predict_text_lines(
     :return: A list of text line detection results (without text).
     """
     if lib == "TF":
-        with device:  # type: ignore
+        with device:
             raw_output = predictor([np_img])
     elif lib == "PT":
         raw_output = predictor([np_img])
@@ -150,7 +150,7 @@ def doctr_predict_text(
 
     uuids, images = list(zip(*inputs))
     if lib == "TF":
-        with device:  # type: ignore
+        with device:
             raw_output = predictor(list(images))
     elif lib == "PT":
         raw_output = predictor(list(images))

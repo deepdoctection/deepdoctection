@@ -21,14 +21,17 @@ Module for token classification pipeline
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Callable, Literal, Optional, Sequence, Union
+from typing import Any, Callable, Literal, Optional, Sequence, Union, TYPE_CHECKING
 
 from ..datapoint.image import Image
-from ..extern.hflayoutlm import HfLayoutSequenceModels, HfLayoutTokenModels
+
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
 from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
+
+if TYPE_CHECKING:
+    from ..extern.hflayoutlm import HfLayoutSequenceModels, HfLayoutTokenModels
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
