@@ -435,7 +435,6 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
             self.model.__class__.__name__, use_xlm_tokenizer
         )
 
-
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
@@ -545,7 +544,6 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
             self.model.__class__.__name__, use_xlm_tokenizer
         )
-
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -669,7 +667,6 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
             self.model.__class__.__name__, use_xlm_tokenizer
         )
-
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
@@ -1025,7 +1022,6 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
             self.model.__class__.__name__, use_xlm_tokenizer
         )
 
-
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("pixel_values")
@@ -1135,7 +1131,6 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
             self.model.__class__.__name__, use_xlm_tokenizer
         )
-
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """

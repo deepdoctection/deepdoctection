@@ -202,7 +202,7 @@ class Layout(ImageAnnotationBaseView):
     def get_ordered_words(self) -> list[ImageAnnotationBaseView]:
         """Returns a list of words order by reading order. Words with no reading order will not be returned"""
         words_with_reading_order = [word for word in self.words if word.reading_order is not None]
-        words_with_reading_order.sort(key=lambda x: x.READING_ORDER)  # type: ignore
+        words_with_reading_order.sort(key=lambda x: x.reading_order)  # type: ignore
         return words_with_reading_order
 
     @property
@@ -411,7 +411,7 @@ class Table(Layout):
         try:
             cells = self.cells
             all_words = []
-            cells.sort(key=lambda x: (x.ROW_NUMBER, x.COLUMNS_NUMBER))
+            cells.sort(key=lambda x: (x.ROW_NUMBER, x.COLUMN_NUMBER))
             for cell in cells:
                 all_words.extend(cell.get_ordered_words())  # type: ignore
             return all_words
@@ -434,9 +434,10 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
 
 class ImageDefaults(TypedDict):
     """ImageDefaults"""
+
     text_container: LayoutType
-    floating_text_block_categories: tuple[LayoutType,...]
-    text_block_categories: tuple[LayoutType,...]
+    floating_text_block_categories: tuple[LayoutType, ...]
+    text_block_categories: tuple[LayoutType, ...]
 
 
 IMAGE_DEFAULTS: ImageDefaults = {
@@ -447,7 +448,13 @@ IMAGE_DEFAULTS: ImageDefaults = {
         LayoutType.FIGURE,
         LayoutType.LIST,
     ),
-    "text_block_categories": (LayoutType.TEXT, LayoutType.TITLE, LayoutType.FIGURE, LayoutType.LIST, LayoutType.CELL,),
+    "text_block_categories": (
+        LayoutType.TEXT,
+        LayoutType.TITLE,
+        LayoutType.FIGURE,
+        LayoutType.LIST,
+        LayoutType.CELL,
+    ),
 }
 
 
@@ -538,8 +545,10 @@ class Page(Image):
         """
 
         if category_names is not None:
-            category_names = ((get_type(category_names), ) if isinstance(category_names, str) else
-                            tuple(get_type(cat_name) for cat_name in category_names)
+            category_names = (
+                (get_type(category_names),)
+                if isinstance(category_names, str)
+                else tuple(get_type(cat_name) for cat_name in category_names)
             )
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
         service_id = [service_id] if isinstance(service_id, str) else service_id
@@ -566,7 +575,7 @@ class Page(Image):
         if session_id is not None:
             anns = filter(lambda x: x.session_id in session_id, anns)
 
-        return list(anns) # type: ignore
+        return list(anns)  # type: ignore
 
     def __getattr__(self, item: str) -> Any:
         if item not in self.get_attribute_names():
@@ -676,8 +685,8 @@ class Page(Image):
         return page
 
     def _order(self, block: str) -> list[ImageAnnotationBaseView]:
-        blocks_with_order = [layout for layout in getattr(self, block) if layout.READING_ORDER is not None]
-        blocks_with_order.sort(key=lambda x: x.READING_ORDER)
+        blocks_with_order = [layout for layout in getattr(self, block) if layout.reading_order is not None]
+        blocks_with_order.sort(key=lambda x: x.reading_order)
         return blocks_with_order
 
     def _make_text(self, line_break: bool = True) -> str:
@@ -854,15 +863,15 @@ class Page(Image):
         if show_tables and not debug_kwargs:
             for table in self.tables:
                 box_stack.append(table.bbox)
-                category_names_list.append(LayoutType.table.value)
+                category_names_list.append(LayoutType.TABLE.value)
                 if show_cells:
                     for cell in table.cells:
                         if cell.category_name in {
                             LayoutType.CELL,
-                            CellType.projected_row_header,
+                            CellType.PROJECTED_ROW_HEADER,
                             CellType.SPANNING,
-                            CellType.row_header,
-                            CellType.column_header,
+                            CellType.ROW_HEADER,
+                            CellType.COLUMN_HEADER,
                         }:
                             cells_found = True
                             box_stack.append(cell.bbox)

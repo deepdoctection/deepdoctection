@@ -96,7 +96,7 @@ _SUB_CATEGORIES = {
     LayoutType.CELL: {
         CellType.HEADER: [CellType.HEADER, CellType.BODY],
         CellType.ROW_NUMBER: [],
-        CellType.COLUMNS_NUMBER: [],
+        CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
         CellType.COLUMN_SPAN: [],
         CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
@@ -104,14 +104,14 @@ _SUB_CATEGORIES = {
     TableType.ITEM: {TableType.ITEM: [LayoutType.ROW, LayoutType.COLUMN]},
     CellType.HEADER: {
         CellType.ROW_NUMBER: [],
-        CellType.COLUMNS_NUMBER: [],
+        CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
         CellType.COLUMN_SPAN: [],
         CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],
     },
     CellType.BODY: {
         CellType.ROW_NUMBER: [],
-        CellType.COLUMNS_NUMBER: [],
+        CellType.COLUMN_NUMBER: [],
         CellType.ROW_SPAN: [],
         CellType.COLUMN_SPAN: [],
         CellType.SPANNING: [CellType.SPANNING, LayoutType.CELL],

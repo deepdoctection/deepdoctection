@@ -154,7 +154,7 @@ def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[
 
 
 def _add_items(image: Image, item_type: str, categories_name_as_key: dict[str, str], pubtables_like: bool) -> Image:
-    item_number = CellType.ROW_NUMBER if item_type == LayoutType.ROW else CellType.COLUMNS_NUMBER
+    item_number = CellType.ROW_NUMBER if item_type == LayoutType.ROW else CellType.COLUMN_NUMBER
     item_span = CellType.ROW_SPAN if item_type == LayoutType.ROW else CellType.COLUMN_SPAN
 
     summary_key = TableType.NUMBER_OF_ROWS if item_type == LayoutType.ROW else TableType.NUMBER_OF_COLUMNS
@@ -434,8 +434,8 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(
-                    CellType.COLUMNS_NUMBER,
-                    CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id=str(col_number)),
+                    CellType.COLUMN_NUMBER,
+                    CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id=str(col_number)),
                     image.image_id,
                 )
                 cell_ann.dump_sub_category(

@@ -90,7 +90,7 @@ class TestTableSegmentationService:
         self.table_name = LayoutType.TABLE
         self.cell_names = [CellType.HEADER, CellType.BODY, LayoutType.CELL]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
-        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER]
+        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
 
         self.table_segmentation_service = TableSegmentationService(
             self._segment_rule,  # type: ignore
@@ -144,8 +144,8 @@ class TestTableSegmentationService:
             assert row_sub_cat.category_name == row_sub_cat_expected.category_name
             assert row_sub_cat.category_id == row_sub_cat_expected.category_id
 
-            col_sub_cat = cell.get_sub_category(CellType.COLUMNS_NUMBER)
-            col_sub_cat_expected = cell_expected.get_sub_category(CellType.COLUMNS_NUMBER)
+            col_sub_cat = cell.get_sub_category(CellType.COLUMN_NUMBER)
+            col_sub_cat_expected = cell_expected.get_sub_category(CellType.COLUMN_NUMBER)
             assert col_sub_cat.category_name == col_sub_cat_expected.category_name
             assert col_sub_cat.category_id == col_sub_cat_expected.category_id
 
@@ -177,7 +177,7 @@ def test_tile_tables_with_items_per_table(
 
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
-        col.dump_sub_category(CellType.COLUMNS_NUMBER, col_sub_cat)
+        col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
     table = dp.get_annotation(category_names=LayoutType.TABLE)
     item_names = [LayoutType.ROW, LayoutType.COLUMN]  # row names must be before column name
@@ -224,7 +224,7 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
         self.table_name = LayoutType.TABLE
         self.cell_names = [CellType.HEADER, CellType.BODY, LayoutType.CELL]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
-        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER]
+        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
 
         self.tp_table_segmentation_service = TableSegmentationService(
             self._segment_rule,  # type: ignore
@@ -265,8 +265,8 @@ class TestTableSegmentationServiceWhenTableFullyTiled:
 
         for cell, cell_expected in zip(cells, cells_expected):
             assert cell.get_sub_category(CellType.ROW_NUMBER) == cell_expected.get_sub_category(CellType.ROW_NUMBER)
-            assert cell.get_sub_category(CellType.COLUMNS_NUMBER) == cell_expected.get_sub_category(
-                CellType.COLUMNS_NUMBER
+            assert cell.get_sub_category(CellType.COLUMN_NUMBER) == cell_expected.get_sub_category(
+                CellType.COLUMN_NUMBER
             )
             assert cell.get_sub_category(CellType.ROW_SPAN) == cell_expected.get_sub_category(CellType.ROW_SPAN)
             assert cell.get_sub_category(CellType.COLUMN_SPAN) == cell_expected.get_sub_category(CellType.COLUMN_SPAN)
@@ -288,13 +288,13 @@ def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
             CellType.ROW_NUMBER, CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id=str(idx + 1))
         )
         items[1].dump_sub_category(
-            CellType.COLUMNS_NUMBER, CategoryAnnotation(category_name=CellType.COLUMNS_NUMBER, category_id=str(idx + 1))
+            CellType.COLUMN_NUMBER, CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id=str(idx + 1))
         )
 
     table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
     table_ann_id = table.annotation_id
     detect_result_cells, segment_result_cells = create_intersection_cells(
-        rows, cols, table_ann_id, 5, [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER]
+        rows, cols, table_ann_id, 5, [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
     )
     expected_detect_result = [
         DetectionResult(box=[15.0, 100.0, 20.0, 150.0], class_id=5, class_name=LayoutType.CELL),
@@ -346,7 +346,7 @@ class TestPubtablesSegmentationService:
             CellType.PROJECTED_ROW_HEADER,
         ]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
-        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER]
+        self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
 
         self.table_segmentation_service = PubtablesSegmentationService(
             "ioa",

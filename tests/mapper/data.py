@@ -1982,9 +1982,9 @@ class DatapointXfund:
         "width": 1000,
         "height": 1000,
         "ann_ids": [
-            "440c677a-05ca-33a5-8e61-dd2a9724367d",
-            "75d7e019-4951-342b-b073-27aba447e7e8",
-            "0b07ba23-6f2c-3c73-ab62-cb1bd891ae7f",
+            "8175204f-0569-3b77-a9b4-2e8086821762",
+            "be2e5172-21c8-3533-bab2-3c3c0d422611",
+            "a21cc101-9371-306e-b41b-4647c0d90fd0",
         ],
         "words": ["Akademisches", "Auslandsamt", "Bewerbungsformular"],
         "bbox": [[325.0, 184.0, 578.0, 230.0], [586.0, 186.0, 834.0, 232.0], [1058.0, 413.0, 1701.0, 482.0]],

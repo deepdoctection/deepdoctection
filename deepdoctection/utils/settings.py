@@ -154,7 +154,7 @@ class CellType(ObjectTypes):
     ROW_SPAN = "row_span"
     ROW_HEADER = "row_header"
     PROJECTED_ROW_HEADER = "projected_row_header"
-    COLUMNS_NUMBER = "column_number"
+    COLUMN_NUMBER = "column_number"
     COLUMN_SPAN = "column_span"
     COLUMN_HEADER = "column_header"
     SPANNING = "spanning"

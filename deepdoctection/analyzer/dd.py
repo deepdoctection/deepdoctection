@@ -320,7 +320,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                     CellType.PROJECTED_ROW_HEADER,
                 ],
                 [LayoutType.ROW, LayoutType.COLUMN],
-                [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER],
+                [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER],
                 stretch_rule=cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(pubtables)
@@ -335,7 +335,7 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
                 LayoutType.TABLE,
                 [CellType.HEADER, CellType.BODY, LayoutType.CELL],
                 [LayoutType.ROW, LayoutType.COLUMN],
-                [CellType.ROW_NUMBER, CellType.COLUMNS_NUMBER],
+                [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER],
                 cfg.SEGMENTATION.STRETCH_RULE,
             )
             pipe_component_list.append(table_segmentation)

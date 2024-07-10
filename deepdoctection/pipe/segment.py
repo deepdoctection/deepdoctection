@@ -467,7 +467,7 @@ def segment_table(
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = np.count_nonzero(cell_index_cols == idx)
             if len(cols_of_cell):
-                col_number = min(int(col.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for col in cols_of_cell)
+                col_number = min(int(col.get_sub_category(CellType.COLUMN_NUMBER).category_id) for col in cols_of_cell)
             else:
                 col_number = 0
 
@@ -613,13 +613,13 @@ def segment_pubtables(
             cell_positions_cols = cell_index_cols == idx
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
             cs = (
-                max(int(col.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for col in cols_of_cell)
-                - min(int(col.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for col in cols_of_cell)
+                max(int(col.get_sub_category(CellType.COLUMN_NUMBER).category_id) for col in cols_of_cell)
+                - min(int(col.get_sub_category(CellType.COLUMN_NUMBER).category_id) for col in cols_of_cell)
                 + 1
             )
 
             if len(cols_of_cell):
-                col_number = min(int(col.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for col in cols_of_cell)
+                col_number = min(int(col.get_sub_category(CellType.COLUMN_NUMBER).category_id) for col in cols_of_cell)
             else:
                 col_number = 0
 
@@ -765,7 +765,7 @@ class TableSegmentationService(PipelineComponent):
                     CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMNS_NUMBER, segment_result.col_num, CellType.COLUMNS_NUMBER, segment_result.annotation_id
+                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
                     CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
@@ -777,7 +777,7 @@ class TableSegmentationService(PipelineComponent):
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
                 number_of_rows = max(int(cell.get_sub_category(CellType.ROW_NUMBER).category_id) for cell in cells)
-                number_of_cols = max(int(cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for cell in cells)
+                number_of_cols = max(int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id) for cell in cells)
                 max_row_span = max(int(cell.get_sub_category(CellType.ROW_SPAN).category_id) for cell in cells)
                 max_col_span = max(int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id) for cell in cells)
                 # TODO: the summaries should be sub categories of the underlying ann
@@ -821,12 +821,12 @@ class TableSegmentationService(PipelineComponent):
             sub_categories={
                 LayoutType.CELL: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 LayoutType.ROW: {CellType.ROW_NUMBER},
-                LayoutType.COLUMN: {CellType.COLUMNS_NUMBER},
+                LayoutType.COLUMN: {CellType.COLUMN_NUMBER},
             },
             relationships={},
             summaries=(),
@@ -967,7 +967,7 @@ class PubtablesSegmentationService(PipelineComponent):
                     CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMNS_NUMBER, segment_result.col_num, CellType.COLUMNS_NUMBER, segment_result.annotation_id
+                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
                     CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
@@ -990,7 +990,7 @@ class PubtablesSegmentationService(PipelineComponent):
                     CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMNS_NUMBER, segment_result.col_num, CellType.COLUMNS_NUMBER, segment_result.annotation_id
+                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
                     CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
@@ -1011,7 +1011,7 @@ class PubtablesSegmentationService(PipelineComponent):
                 cells = table.image.get_annotation(category_names=self.cell_names)
             if cells:
                 number_of_rows = max(int(cell.get_sub_category(CellType.ROW_NUMBER).category_id) for cell in cells)
-                number_of_cols = max(int(cell.get_sub_category(CellType.COLUMNS_NUMBER).category_id) for cell in cells)
+                number_of_cols = max(int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id) for cell in cells)
                 max_row_span = max(int(cell.get_sub_category(CellType.ROW_SPAN).category_id) for cell in cells)
                 max_col_span = max(int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id) for cell in cells)
             else:
@@ -1063,36 +1063,36 @@ class PubtablesSegmentationService(PipelineComponent):
             sub_categories={
                 LayoutType.CELL: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 CellType.SPANNING: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 CellType.ROW_HEADER: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 CellType.COLUMN_HEADER: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 CellType.PROJECTED_ROW_HEADER: {
                     CellType.ROW_NUMBER,
-                    CellType.COLUMNS_NUMBER,
+                    CellType.COLUMN_NUMBER,
                     CellType.ROW_SPAN,
                     CellType.COLUMN_SPAN,
                 },
                 LayoutType.ROW: {CellType.ROW_NUMBER},
-                LayoutType.COLUMN: {CellType.COLUMNS_NUMBER},
+                LayoutType.COLUMN: {CellType.COLUMN_NUMBER},
             },
             relationships={},
             summaries=(),

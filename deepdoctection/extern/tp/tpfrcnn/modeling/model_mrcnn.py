@@ -83,7 +83,7 @@ def maskrcnn_upXconv_head(feature, num_category, num_convs, norm=None, **kwargs)
     with argscope(
         [Conv2D, Conv2DTranspose],
         data_format="channels_first",
-        kernel_initializer=tf.variance_scaling_initializer(   # pylint: disable=E1101
+        kernel_initializer=tf.variance_scaling_initializer(  # pylint: disable=E1101
             scale=2.0,
             mode="fan_out",
             distribution="untruncated_normal" if get_tf_version_tuple() >= (1, 12) else "normal",
@@ -127,6 +127,7 @@ def unpackbits_masks(masks):
     assert masks.dtype == tf.uint8, masks
     bits = tf.constant((128, 64, 32, 16, 8, 4, 2, 1), dtype=tf.uint8)
     unpacked = tf.bitwise.bitwise_and(tf.expand_dims(masks, -1), bits) > 0
-    unpacked = tf.reshape(unpacked, tf.concat([tf.shape(masks)[:-1],  # pylint: disable=E1123
-                                               [8 * tf.shape(masks)[-1]]], axis=0))  # pylint: disable=E1123
+    unpacked = tf.reshape(
+        unpacked, tf.concat([tf.shape(masks)[:-1], [8 * tf.shape(masks)[-1]]], axis=0)  # pylint: disable=E1123
+    )  # pylint: disable=E1123
     return unpacked

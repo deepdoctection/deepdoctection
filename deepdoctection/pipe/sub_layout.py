@@ -180,7 +180,8 @@ class SubImageLayoutService(PipelineComponent):
                 raise ValueError(
                     f"The categories of the 'detect_result_generator' must be the same as the categories of the "
                     f"'sub_image_detector'. Got {self.detect_result_generator.categories} #"
-                    f"and {self.predictor.categories.get_categories()}.")
+                    f"and {self.predictor.categories.get_categories()}."
+                )
 
     def serve(self, dp: Image) -> None:
         """

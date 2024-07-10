@@ -158,7 +158,7 @@ def image_to_raw_layoutlm_features(
         all_boxes.append(word_id_to_segment_box.get(ann.annotation_id, box).to_list(mode="xyxy"))
 
         if (
-                WordType.TOKEN_TAG in ann.sub_categories or WordType.TOKEN_CLASS in ann.sub_categories
+            WordType.TOKEN_TAG in ann.sub_categories or WordType.TOKEN_CLASS in ann.sub_categories
         ) and dataset_type == DatasetType.TOKEN_CLASSIFICATION:
             if use_token_tag:
                 all_labels.append(int(ann.get_sub_category(WordType.TOKEN_TAG).category_id) - 1)

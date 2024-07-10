@@ -90,7 +90,7 @@ def detr_predict_image(
     keep_scores = results["scores"][keep]
     keep_labels = results["labels"][keep]
     return [
-        DetectionResult(box=box.tolist(), score=score.ITEM(), class_id=class_id.ITEM())
+        DetectionResult(box=box.tolist(), score=score.item(), class_id=class_id.item())
         for box, score, class_id in zip(keep_boxes, keep_scores, keep_labels)
     ]
 

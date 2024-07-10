@@ -153,7 +153,7 @@ def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):
         n_w = spacing_w * tf.cast(crop_shape[1] - 1, tf.float32) / imshape[1]
         n_h = spacing_h * tf.cast(crop_shape[0] - 1, tf.float32) / imshape[0]
 
-        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)   # pylint: disable=E1123
+        return tf.concat([ny0, nx0, ny0 + n_h, nx0 + n_w], axis=1)  # pylint: disable=E1123
 
     image_shape = tf.shape(image)[2:]
 
