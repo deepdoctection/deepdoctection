@@ -24,7 +24,7 @@ import os
 from abc import ABC
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Literal, Mapping, Optional, Sequence, Union
+from typing import Any, Literal, Mapping, Optional, Sequence, Union, TYPE_CHECKING
 
 import numpy as np
 from lazy_imports import try_import
@@ -66,33 +66,34 @@ with try_import() as tr_import_guard:
         XLMRobertaTokenizerFast,
     )
 
-LayoutTokenModels: TypeAlias = Union[
-    LayoutLMForTokenClassification,
-    LayoutLMv2ForTokenClassification,
-    LayoutLMv3ForTokenClassification,
-    LiltForTokenClassification,
-]
+if TYPE_CHECKING:
+    LayoutTokenModels: TypeAlias = Union[
+        LayoutLMForTokenClassification,
+        LayoutLMv2ForTokenClassification,
+        LayoutLMv3ForTokenClassification,
+        LiltForTokenClassification,
+    ]
 
-LayoutSequenceModels: TypeAlias = Union[
-    LayoutLMForSequenceClassification,
-    LayoutLMv2ForSequenceClassification,
-    LayoutLMv3ForSequenceClassification,
-    LiltForSequenceClassification,
-]
+    LayoutSequenceModels: TypeAlias = Union[
+        LayoutLMForSequenceClassification,
+        LayoutLMv2ForSequenceClassification,
+        LayoutLMv3ForSequenceClassification,
+        LiltForSequenceClassification,
+    ]
 
-HfLayoutTokenModels: TypeAlias = Union[
-    LayoutLMForTokenClassification,
-    LayoutLMv2ForTokenClassification,
-    LayoutLMv3ForTokenClassification,
-    LiltForTokenClassification,
-]
+    HfLayoutTokenModels: TypeAlias = Union[
+        LayoutLMForTokenClassification,
+        LayoutLMv2ForTokenClassification,
+        LayoutLMv3ForTokenClassification,
+        LiltForTokenClassification,
+    ]
 
-HfLayoutSequenceModels: TypeAlias = Union[
-    LayoutLMForSequenceClassification,
-    LayoutLMv2ForSequenceClassification,
-    LayoutLMv3ForSequenceClassification,
-    LiltForSequenceClassification,
-]
+    HfLayoutSequenceModels: TypeAlias = Union[
+        LayoutLMForSequenceClassification,
+        LayoutLMv2ForSequenceClassification,
+        LayoutLMv3ForSequenceClassification,
+        LiltForSequenceClassification,
+    ]
 
 
 def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) -> Any:
