@@ -23,12 +23,12 @@ from typing import Mapping, Optional, Union
 
 import numpy as np
 
-from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.settings import ObjectTypes, Relationships
+from ..utils.settings import ObjectTypes, Relationships, SummaryType
 
 
 class DatapointManager:
@@ -300,7 +300,7 @@ class DatapointManager:
             image = self.datapoint
         assert image is not None, image
         if image.summary is None:
-            image.summary = SummaryAnnotation()
+            image.summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
 
         ann: Union[CategoryAnnotation, ContainerAnnotation]
         with MappingContextManager(

@@ -31,7 +31,6 @@ from deepdoctection.datapoint import (
     CategoryAnnotation,
     Image,
     ImageAnnotation,
-    SummaryAnnotation,
     convert_np_array_to_b64,
 )
 from deepdoctection.datasets.info import DatasetCategories
@@ -47,6 +46,7 @@ from deepdoctection.utils.settings import (
     TokenClassWithTag,
     WordType,
     get_type,
+    SummaryType
 )
 from deepdoctection.utils.types import JsonDict, PixelValues
 from tests.data import TestType
@@ -1118,7 +1118,7 @@ class DatapointImage:
         """
         Image with summary "BAK" and CategoryAnnotation "FOO"
         """
-        self.image.summary = SummaryAnnotation()
+        self.image.summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
         self.image.summary.dump_sub_category(get_type("BAK"), CategoryAnnotation(category_name="FOO", category_id="1"))
         return self.image
 

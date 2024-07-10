@@ -31,13 +31,13 @@ import os
 from typing import Mapping, Sequence, Union
 
 from ...dataflow import DataFlow, MapData, MapDataComponent, SerializerCoco
-from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
+from ...datapoint.annotation import CategoryAnnotation
 from ...datapoint.image import Image
 from ...mapper.cats import add_summary, cat_to_sub_cat, filter_cat, filter_summary
 from ...mapper.cocostruct import coco_to_image
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, TypeOrStr
+from ...utils.settings import DatasetType, DocumentType, LayoutType, ObjectTypes, PageType, TypeOrStr, SummaryType
 from ...utils.types import CocoDatapointDict
 from ..base import DatasetBase
 from ..dataflow_builder import DataFlowBaseBuilder
@@ -248,7 +248,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         def _map_to_image(dp: CocoDatapointDict, load_img: bool) -> Image:
             image = Image(location=dp["file_name"], file_name=os.path.split(dp["file_name"])[1])
             image.image = load_image_from_file(image.location)
-            summary = SummaryAnnotation()
+            summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
             label_to_category_name = {
                 "financial_reports": DocumentType.FINANCIAL_REPORT,
                 "scientific_articles": DocumentType.SCIENTIFIC_PUBLICATION,
