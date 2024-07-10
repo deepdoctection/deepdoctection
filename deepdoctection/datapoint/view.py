@@ -38,10 +38,11 @@ from ..utils.settings import (
     TokenClasses,
     WordType,
     get_type,
+    SummaryType
 )
 from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, Text_, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
-from .annotation import ContainerAnnotation, ImageAnnotation, SummaryAnnotation, ann_from_dict
+from .annotation import ContainerAnnotation, ImageAnnotation, CategoryAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
 from .image import Image
 
@@ -678,7 +679,8 @@ class Page(Image):
             layout_ann.base_page = base_page if base_page is not None else page
             page.dump(layout_ann)
         if summary_dict := img_kwargs.get("_summary"):
-            page.summary = SummaryAnnotation.from_dict(**summary_dict)
+            page.summary = CategoryAnnotation.from_dict(**summary_dict)
+            page.summary.category_name = SummaryType.SUMMARY
         page.floating_text_block_categories = floating_text_block_categories  # type: ignore
         page.text_container = text_container
         page.include_residual_text_container = include_residual_text_container

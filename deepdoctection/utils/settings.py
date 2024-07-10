@@ -73,7 +73,7 @@ class PageType(ObjectTypes):
 class SummaryType(ObjectTypes):
     """Summary type member"""
 
-    summary = "summary"
+    SUMMARY = "summary"
 
 
 @object_types_registry.register("DocumentType")

@@ -31,9 +31,9 @@ from numpy import uint8
 
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
-from ..utils.settings import ObjectTypes, get_type
+from ..utils.settings import ObjectTypes, get_type, SummaryType
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
-from .annotation import Annotation, BoundingBox, ImageAnnotation, SummaryAnnotation
+from .annotation import Annotation, BoundingBox, ImageAnnotation, CategoryAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
@@ -162,12 +162,12 @@ class Image:
             self._self_embedding()
 
     @property
-    def summary(self) -> Optional[SummaryAnnotation]:
+    def summary(self) -> Optional[CategoryAnnotation]:
         """summary"""
         return self._summary
 
     @summary.setter
-    def summary(self, summary_annotation: SummaryAnnotation) -> None:
+    def summary(self, summary_annotation: CategoryAnnotation) -> None:
         """summary setter"""
         if summary_annotation._annotation_id is None:  # pylint: disable=W0212
             summary_annotation.annotation_id = self.define_annotation_id(summary_annotation)
@@ -572,7 +572,8 @@ class Image:
                     image_ann.image = cls.from_dict(**image_dict)
             image.dump(image_ann)
         if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
-            image.summary = SummaryAnnotation.from_dict(**summary_dict)
+            image.summary = CategoryAnnotation.from_dict(**summary_dict)
+            image.summary.category_name = SummaryType.SUMMARY
         return image
 
     @classmethod

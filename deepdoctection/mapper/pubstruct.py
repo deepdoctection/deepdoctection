@@ -25,11 +25,10 @@ from typing import Iterable, Optional, Sequence
 import numpy as np
 
 from ..datapoint import BoundingBox, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
-from ..datapoint.annotation import SummaryAnnotation
 from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
 from ..datapoint.image import Image
 from ..utils.fs import load_bytes_from_pdf_file, load_image_from_file
-from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType
+from ..utils.settings import CellType, LayoutType, Relationships, TableType, WordType, SummaryType
 from ..utils.types import JsonDict, PubtabnetDict
 from ..utils.utils import is_file_extension
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
@@ -499,7 +498,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
                     if index:
                         html.insert(index + 1, cell_ann.annotation_id)
 
-        summary_ann = SummaryAnnotation(external_id=image.image_id + "SUMMARY")
+        summary_ann = CategoryAnnotation(category_name=SummaryType.SUMMARY)
         summary_ann.dump_sub_category(
             TableType.NUMBER_OF_ROWS,
             CategoryAnnotation(category_name=TableType.NUMBER_OF_ROWS, category_id=str(number_of_rows)),

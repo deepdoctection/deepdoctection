@@ -29,7 +29,6 @@ from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DefaultType, ObjectTypes, SummaryType, TypeOrStr, get_type
 from ..utils.types import AnnotationDict
-from ..utils.develop import deprecated
 from .box import BoundingBox
 from .convert import as_dict
 
@@ -467,26 +466,6 @@ class ImageAnnotation(CategoryAnnotation):
             if self.image.summary:
                 return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
-
-
-@dataclass
-class SummaryAnnotation(CategoryAnnotation):
-    """
-    A dataclass for adding summaries. The various summaries can be stored as sub categories.
-
-    Summary annotations should be stored in the attribute provided: `image.Image.summary`  and should not be
-    dumped as a category.
-    """
-
-    def __post_init__(self) -> None:
-        self._category_name = SummaryType.summary
-        super().__post_init__()
-
-    @classmethod
-    def from_dict(cls, **kwargs: AnnotationDict) -> SummaryAnnotation:
-        summary_ann = ann_from_dict(cls, **kwargs)
-        summary_ann.category_name = SummaryType.summary
-        return summary_ann
 
 
 @dataclass

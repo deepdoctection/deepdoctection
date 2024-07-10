@@ -23,9 +23,9 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
-from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, SummaryAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
 from ..datapoint.image import Image
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type, SummaryType
 from .maputils import LabelSummarizer, curry
 
 
@@ -366,7 +366,7 @@ def add_summary(dp: Image, categories: Mapping[str, ObjectTypes]) -> Image:
     for ann in anns:
         summarizer.dump(ann.category_id)
     summary_dict = summarizer.get_summary()
-    summary = SummaryAnnotation()
+    summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
     for cat_id, val in summary_dict.items():
         summary.dump_sub_category(
             categories[cat_id], CategoryAnnotation(category_name=categories[cat_id], category_id=str(val))

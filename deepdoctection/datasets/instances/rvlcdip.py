@@ -36,12 +36,12 @@ from typing import Mapping, Union
 
 from ...dataflow import DataFlow, MapData
 from ...dataflow.custom_serialize import SerializerTabsepFiles
-from ...datapoint.annotation import CategoryAnnotation, SummaryAnnotation
+from ...datapoint.annotation import CategoryAnnotation
 from ...datapoint.image import Image
 from ...mapper.cats import filter_summary
 from ...mapper.maputils import curry
 from ...utils.fs import load_image_from_file
-from ...utils.settings import DatasetType, DocumentType, PageType, TypeOrStr
+from ...utils.settings import DatasetType, DocumentType, PageType, TypeOrStr, SummaryType
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories, DatasetInfo
@@ -144,7 +144,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             file_name = os.path.split(location)[1]
             image = Image(location=(self.get_workdir() / "images" / location).as_posix(), file_name=file_name)
             image.image = load_image_from_file(image.location)
-            summary = SummaryAnnotation()
+            summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
                 PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))

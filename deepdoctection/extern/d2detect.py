@@ -138,7 +138,7 @@ def d2_jit_predict_image(
             np_boxes = np.expand_dims(np_boxes, axis=0)
     detect_result_list = []
     for box, label, score in zip(np_boxes, classes, scores):
-        detect_result_list.append(DetectionResult(box=box.tolist(), class_id=label.ITEM(), score=score.ITEM()))
+        detect_result_list.append(DetectionResult(box=box.tolist(), class_id=label.item(), score=score.item()))
     return detect_result_list
 
 

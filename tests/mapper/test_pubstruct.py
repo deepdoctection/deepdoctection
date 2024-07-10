@@ -24,7 +24,6 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from deepdoctection.datapoint.annotation import SummaryAnnotation
 from deepdoctection.datapoint.box import BoundingBox
 from deepdoctection.mapper import pub_to_image
 
@@ -107,7 +106,6 @@ def test_pub_to_image(
     )
 
     summary_ann = dp.summary
-    assert isinstance(summary_ann, SummaryAnnotation)
     assert (
         summary_ann.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
         == datapoint.get_summary_ann_sub_category_rows_id()
@@ -143,7 +141,6 @@ def test_pub_to_image_when_items_are_added(
 
     test_anns = dp.get_annotation(category_names=TableType.ITEM)
     summary_ann = dp.summary
-    assert isinstance(summary_ann, SummaryAnnotation)
     assert isinstance(test_anns, list)
 
     assert len(test_anns) == int(summary_ann.get_sub_category(TableType.NUMBER_OF_ROWS).category_id) + int(
