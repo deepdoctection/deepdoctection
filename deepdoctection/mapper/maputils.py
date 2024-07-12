@@ -193,7 +193,7 @@ class LabelSummarizer:
 
     """
 
-    def __init__(self, categories: Mapping[str, ObjectTypes]) -> None:
+    def __init__(self, categories: Mapping[int, ObjectTypes]) -> None:
         """
         :param categories: A dict of categories as given as in categories.get_categories().
         """
@@ -211,11 +211,11 @@ class LabelSummarizer:
         np_item = np.asarray(item, dtype="int8")
         self.summary += np.histogram(np_item, bins=self.hist_bins)[0]
 
-    def get_summary(self) -> dict[str, np.int32]:
+    def get_summary(self) -> dict[int, int]:
         """
         Get a dictionary with category ids and the number dumped
         """
-        return dict(list(zip(self.categories.keys(), self.summary.astype(np.int32))))
+        return dict(list(zip(self.categories.keys(), self.summary.tolist())))
 
     def print_summary_histogram(self, dd_logic: bool = True) -> None:
         """
@@ -224,10 +224,10 @@ class LabelSummarizer:
         :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
         if dd_logic:
-            data = list(itertools.chain(*[[self.categories[str(i)].value, v] for i, v in enumerate(self.summary, 1)]))
+            data = list(itertools.chain(*[[self.categories[i].value, v] for i, v in enumerate(self.summary, 1)]))
         else:
             data = list(
-                itertools.chain(*[[self.categories[str(i + 1)].value, v] for i, v in enumerate(self.summary[:-1])])
+                itertools.chain(*[[self.categories[i + 1].value, v] for i, v in enumerate(self.summary[:-1])])
             )
         num_columns = min(6, len(data))
         total_img_anns = sum(data[1::2])

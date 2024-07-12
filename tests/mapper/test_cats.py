@@ -40,7 +40,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
     test func: cat_to_sub_cat replaces categories with sub categories correctly
     """
     # Arrange
-    categories_name_as_key_init = {LayoutType.CELL: "1", TableType.ITEM: "2"}
+    categories_name_as_key_init = {LayoutType.CELL: 1, TableType.ITEM: 2}
     pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
 
@@ -50,7 +50,7 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         TableType.ITEM: TableType.ITEM,
     }
     categories.get_categories = Mock(
-        return_value={CellType.HEADER: "1", CellType.BODY: "2", LayoutType.ROW: "3", LayoutType.COLUMN: "4"}
+        return_value={CellType.HEADER: 1, CellType.BODY: 2, LayoutType.ROW: 3, LayoutType.COLUMN: 4}
     )
 
     datapoint = pubtabnet_results
@@ -71,8 +71,8 @@ def test_cat_to_sub_cat(datapoint_pubtabnet: JsonDict, pubtabnet_results: Datapo
         # Assert
         assert len(heads) == datapoint.get_number_of_heads()
         assert len(bodies) == datapoint.get_number_of_bodies()
-        assert str(len(rows)) == datapoint.get_summary_ann_sub_category_rows_id()
-        assert str(len(cols)) == datapoint.get_summary_ann_sub_category_col_id()
+        assert len(rows) == datapoint.get_summary_ann_sub_category_rows_id()
+        assert len(cols) == datapoint.get_summary_ann_sub_category_col_id()
 
 
 @pytest.mark.basic
@@ -83,7 +83,7 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     """
 
     # Arrange
-    categories_name_as_key_init = {LayoutType.CELL: "1", TableType.ITEM: "2"}
+    categories_name_as_key_init = {LayoutType.CELL: 1, TableType.ITEM: 2}
     pub_to_image_mapper = pub_to_image(categories_name_as_key_init, False, False, True, False, False, False)
     dp = pub_to_image_mapper(datapoint_pubtabnet)
     assert dp is not None
@@ -104,10 +104,9 @@ def test_filter_categories(datapoint_pubtabnet: JsonDict, pubtabnet_results: Dat
     cells = dp.get_annotation(category_names=LayoutType.CELL)
 
     # Assert
-    assert len(items) == int(datapoint.get_summary_ann_sub_category_rows_id()) + int(
-        datapoint.get_summary_ann_sub_category_col_id()
-    )
-    assert items[0].category_id == "1"
+    assert (len(items) == datapoint.get_summary_ann_sub_category_rows_id() +
+            datapoint.get_summary_ann_sub_category_col_id())
+    assert items[0].category_id == 1
     assert len(cells) == 0
 
 

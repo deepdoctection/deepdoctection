@@ -125,7 +125,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
                 return sub_cat.category_name
             if isinstance(sub_cat, ContainerAnnotation):
                 return sub_cat.value
-            return int(sub_cat.category_id)
+            return sub_cat.category_id
         if self.image is not None:
             if item in self.image.summary.sub_categories:
                 sub_cat = self.get_summary(get_type(item))
@@ -133,7 +133,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
                     return sub_cat.category_name
                 if isinstance(sub_cat, ContainerAnnotation):
                     return sub_cat.value
-                return int(sub_cat.category_id)
+                return sub_cat.category_id
         return None
 
     def get_attribute_names(self) -> set[str]:
@@ -225,12 +225,10 @@ class Layout(ImageAnnotationBaseView):
                     word.annotation_id,
                     word.token_class,
                     word.token_tag,
-                    (
-                        word.get_sub_category(WordType.TOKEN_CLASS).category_id
-                        if WordType.TOKEN_CLASS in word.sub_categories
-                        else None
-                    ),
-                    (word.get_sub_category(WordType.TOKEN_TAG).category_id)
+                    word.get_sub_category(WordType.TOKEN_CLASS).category_id
+                    if WordType.TOKEN_CLASS in word.sub_categories
+                    else None,
+                    word.get_sub_category(WordType.TOKEN_TAG).category_id
                     if WordType.TOKEN_TAG in word.sub_categories
                     else None,
                 )
@@ -585,7 +583,7 @@ class Page(Image):
                 return sub_cat.category_name
             if isinstance(sub_cat, ContainerAnnotation):
                 return sub_cat.value
-            return int(sub_cat.category_id)
+            return sub_cat.category_id
         return None
 
     @property

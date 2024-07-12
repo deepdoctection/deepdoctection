@@ -38,9 +38,9 @@ from .tp.tpfrcnn.predict import tp_predict_image
 class TPFrcnnDetectorMixin(ObjectDetector, ABC):
     """Base class for TP FRCNN detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
+    def __init__(self, categories: Mapping[int, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
         categories = {k: get_type(v) for k, v in categories.items()}
-        categories.update({"0": get_type("background")})
+        categories.update({0: get_type("background")})
         self.categories = ModelCategories(categories)
         if filter_categories:
             self.categories.filter_categories = tuple(get_type(cat) for cat in filter_categories)
@@ -54,7 +54,8 @@ class TPFrcnnDetectorMixin(ObjectDetector, ABC):
         """
         filtered_detection_result: list[DetectionResult] = []
         for result in detection_results:
-            result.class_name = self.categories.categories.get(str(result.class_id), DefaultType.DEFAULT_TYPE)
+            result.class_name = self.categories.categories.get(result.class_id if result.class_id else -1,
+                                                               DefaultType.DEFAULT_TYPE)
             if result.class_name != DefaultType.DEFAULT_TYPE:
                 filtered_detection_result.append(result)
         return filtered_detection_result
@@ -93,7 +94,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
         self,
         path_yaml: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         config_overwrite: Optional[list[str]] = None,
         ignore_mismatch: bool = False,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
@@ -131,7 +132,7 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: PathLikeOrStr, categories: Mapping[str, TypeOrStr], config_overwrite: Union[list[str], None]
+        path_yaml: PathLikeOrStr, categories: Mapping[int, TypeOrStr], config_overwrite: Union[list[str], None]
     ) -> ResNetFPNModel:
         """
         Calls all necessary methods to build TP ResNetFPNModel

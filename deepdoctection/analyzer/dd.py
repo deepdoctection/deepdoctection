@@ -205,7 +205,7 @@ def build_sub_image_service(detector: ObjectDetector, cfg: AttrDict, mode: str) 
     padder = None
     if mode == "ITEM":
         if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
-            exclude_category_ids.extend(["1", "3", "4", "5", "6"])
+            exclude_category_ids.extend([1, 3, 4, 5, 6])
             padder = build_padder(cfg, mode)
     detect_result_generator = DetectResultGenerator(
         categories=detector.categories.categories, exclude_category_ids=exclude_category_ids

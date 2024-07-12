@@ -45,9 +45,9 @@ def xfund_to_image(
     dp: FunsdDict,
     load_image: bool,
     fake_score: bool,
-    categories_dict_name_as_key: Mapping[ObjectTypes, str],
+    categories_dict_name_as_key: Mapping[ObjectTypes, int],
     token_class_names_mapping: Mapping[str, str],
-    ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes, Mapping[ObjectTypes, str]]],
+    ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes, Mapping[ObjectTypes, int]]],
 ) -> Optional[Image]:
     """
     Map a datapoint of annotation structure as given as from xfund or funsd dataset in to an Image structure

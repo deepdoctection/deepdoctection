@@ -252,7 +252,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
-        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ):
         """
@@ -288,7 +288,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
     def _map_category_names(self, token_results: list[TokenClassResult]) -> list[TokenClassResult]:
         for result in token_results:
-            result.class_name = self.categories.categories[str(result.class_id + 1)]
+            result.class_name = self.categories.categories[result.class_id + 1]
             output = self.categories.disentangle_token_class_and_tag(result.class_name)
             if output is not None:
                 token_class, tag = output
@@ -410,7 +410,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
-        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -520,7 +520,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
-        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -643,7 +643,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
-        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -735,7 +735,7 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ):
         self.path_config = Path(path_config_json)
@@ -843,7 +843,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -868,7 +868,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         )
 
         result.class_id += 1
-        result.class_name = self.categories.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod
@@ -923,7 +923,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -947,7 +947,7 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         result = predict_sequence_classes(input_ids, attention_mask, token_type_ids, boxes, self.model, images)
 
         result.class_id += 1
-        result.class_name = self.categories.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod
@@ -1010,7 +1010,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -1034,7 +1034,7 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         result = predict_sequence_classes(input_ids, attention_mask, token_type_ids, boxes, self.model, images)
 
         result.class_id += 1
-        result.class_name = self.categories.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod
@@ -1108,7 +1108,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         path_weights: PathLikeOrStr,
         categories_semantics: Optional[Sequence[TypeOrStr]] = None,
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
-        categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -1207,7 +1207,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
@@ -1232,7 +1232,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         )
 
         result.class_id += 1
-        result.class_name = self.categories.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod

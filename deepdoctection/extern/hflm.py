@@ -72,7 +72,7 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ):
         self.path_config = Path(path_config_json)
@@ -175,7 +175,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         self,
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = True,
     ):
@@ -199,7 +199,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         )
 
         result.class_id += 1
-        result.class_name = self.categories.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod

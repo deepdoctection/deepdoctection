@@ -165,7 +165,7 @@ def doctr_predict_text(
 class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
     """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
+    def __init__(self, categories: Mapping[int, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
         self.categories = ModelCategories(init_categories=categories)
         self.lib = lib if lib is not None else self.auto_select_lib()
 
@@ -222,7 +222,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         self,
         architecture: str,
         path_weights: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device, tf.device]] = None,
         lib: Optional[Literal["PT", "TF"]] = None,
     ) -> None:

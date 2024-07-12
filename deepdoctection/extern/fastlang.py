@@ -23,11 +23,12 @@ from __future__ import annotations
 from abc import ABC
 from pathlib import Path
 from typing import Any, Mapping, Union
+from types import MappingProxyType
 
 from lazy_imports import try_import
 
 from ..utils.file_utils import Requirement, get_fasttext_requirement
-from ..utils.settings import TypeOrStr
+from ..utils.settings import TypeOrStr, get_type
 from ..utils.types import PathLikeOrStr
 from .base import DetectionResult, LanguageDetector, ModelCategories
 
@@ -40,11 +41,12 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
     Base class for Fasttext language detection implementation. This class only implements the basic wrapper functions.
     """
 
-    def __init__(self, categories: Mapping[str, TypeOrStr]) -> None:
+    def __init__(self, categories: Mapping[int, TypeOrStr], categories_orig: Mapping[str, TypeOrStr]) -> None:
         """
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
         """
         self.categories = ModelCategories(init_categories=categories)
+        self.categories_orig = MappingProxyType({cat_orig: get_type(cat) for cat_orig, cat in categories_orig.items()})
 
     def output_to_detection_result(self, output: Union[tuple[Any, Any]]) -> DetectionResult:
         """
@@ -52,7 +54,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         :param output: FastText model output
         :return: `DetectionResult` filled with `text` and `score`
         """
-        return DetectionResult(text=self.categories.get_categories()[output[0][0]], score=output[1][0])
+        return DetectionResult(text=self.categories_orig[output[0][0]], score=output[1][0])
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr) -> str:
@@ -82,13 +84,14 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
 
     """
 
-    def __init__(self, path_weights: PathLikeOrStr, categories: Mapping[str, TypeOrStr]):
+    def __init__(self, path_weights: PathLikeOrStr, categories: Mapping[int, TypeOrStr],
+                 categories_orig: Mapping[str, TypeOrStr]):
         """
         :param path_weights: path to model weights
         :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
                            code.
         """
-        super().__init__(categories)
+        super().__init__(categories, categories_orig)
 
         self.path_weights = Path(path_weights)
 
@@ -106,7 +109,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
         return [get_fasttext_requirement()]
 
     def clone(self) -> FasttextLangDetector:
-        return self.__class__(self.path_weights, self.categories.get_categories())
+        return self.__class__(self.path_weights, self.categories.get_categories(), self.categories_orig)
 
     @staticmethod
     def get_wrapped_model(path_weights: PathLikeOrStr) -> Any:

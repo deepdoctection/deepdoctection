@@ -37,7 +37,7 @@ class TestModelCategories:
         setup necessary components
         """
 
-        self.init_categories = {"1": "word", "2": "line", "3": "table", "4": "figure", "5": "header", "6": "footnote"}
+        self.init_categories = {1: "word", 2: "line", 3: "table", 4: "figure", 5: "header", 6: "footnote"}
         self.categories = ModelCategories(init_categories=self.init_categories)
 
     @mark.basic
@@ -52,12 +52,12 @@ class TestModelCategories:
         # Assert
         expected_categories = MappingProxyType(
             {
-                "1": get_type("word"),
-                "2": get_type("line"),
-                "3": get_type("table"),
-                "4": get_type("figure"),
-                "5": get_type("header"),
-                "6": get_type("footnote"),
+                1: get_type("word"),
+                2: get_type("line"),
+                3: get_type("table"),
+                4: get_type("figure"),
+                5: get_type("header"),
+                6: get_type("footnote"),
             }
         )
         assert categories == expected_categories
@@ -74,12 +74,12 @@ class TestModelCategories:
         # Assert
         expected_categories = MappingProxyType(
             {
-                "1": get_type("word"),
-                "2": get_type("line"),
-                "3": get_type("table"),
-                "4": get_type("figure"),
-                "5": get_type("header"),
-                "6": get_type("footnote"),
+                1: get_type("word"),
+                2: get_type("line"),
+                3: get_type("table"),
+                4: get_type("figure"),
+                5: get_type("header"),
+                6: get_type("footnote"),
             }
         )
         assert categories == expected_categories
@@ -119,7 +119,7 @@ class TestModelCategories:
 
         # Assert
         expected_categories = MappingProxyType(
-            {"2": get_type("line"), "3": get_type("table"), "4": get_type("figure"), "6": get_type("footnote")}
+            {2: get_type("line"), 3: get_type("table"), 4: get_type("figure"), 6: get_type("footnote")}
         )
         assert categories == expected_categories
 
@@ -135,12 +135,12 @@ class TestModelCategories:
         # Assert
         expected_categories = MappingProxyType(
             {
-                "0": get_type("word"),
-                "1": get_type("line"),
-                "2": get_type("table"),
-                "3": get_type("figure"),
-                "4": get_type("header"),
-                "5": get_type("footnote"),
+                0: get_type("word"),
+                1: get_type("line"),
+                2: get_type("table"),
+                3: get_type("figure"),
+                4: get_type("header"),
+                5: get_type("footnote"),
             }
         )
         assert categories == expected_categories
@@ -178,10 +178,10 @@ class TestNerModelCategories:
         # Assert
         expected_categories = MappingProxyType(
             {
-                "1": get_type("B-answer"),
-                "2": get_type("B-question"),
-                "3": get_type("I-answer"),
-                "4": get_type("I-question"),
+                1: get_type("B-answer"),
+                2: get_type("B-question"),
+                3: get_type("I-answer"),
+                4: get_type("I-question"),
             }
         )
         assert categories == expected_categories
@@ -192,7 +192,7 @@ class TestNerModelCategories:
         """
         # Arrange
         self.categories = NerModelCategories(
-            init_categories={"1": get_type("B-answer"), "2": get_type("B-question")},
+            init_categories={1: get_type("B-answer"), 2: get_type("B-question")},
             categories_semantics=self.categories_semantics,
             categories_bio=self.categories_bio,
         )
@@ -201,5 +201,5 @@ class TestNerModelCategories:
         categories = self.categories.get_categories()
 
         # Assert
-        expected_categories = MappingProxyType({"1": get_type("B-answer"), "2": get_type("B-question")})
+        expected_categories = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question")})
         assert categories == expected_categories

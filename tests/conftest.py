@@ -93,16 +93,16 @@ def fixture_path_to_d2_frcnn_yaml() -> PathLikeOrStr:
 
 
 @fixture(name="categories")
-def fixture_categories() -> Dict[str, str]:
+def fixture_categories() -> Dict[int, LayoutType]:
     """
     Categories as Dict
     """
     return {
-        "1": LayoutType.TEXT,
-        "2": LayoutType.TITLE,
-        "3": LayoutType.TABLE,
-        "4": LayoutType.FIGURE,
-        "5": LayoutType.LIST,
+        1: LayoutType.TEXT,
+        2: LayoutType.TITLE,
+        3: LayoutType.TABLE,
+        4: LayoutType.FIGURE,
+        5: LayoutType.LIST,
     }
 
 

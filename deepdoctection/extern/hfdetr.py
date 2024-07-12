@@ -98,7 +98,7 @@ def detr_predict_image(
 class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
     """Base class for Detr object detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
+    def __init__(self, categories: Mapping[int, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
         """
 
         :param categories: A dict with key (indices) and values (category names).
@@ -119,7 +119,8 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
         filtered_detection_result: list[DetectionResult] = []
         shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = shifted_categories.get(str(result.class_id), DefaultType.DEFAULT_TYPE)
+            result.class_name = shifted_categories.get(result.class_id if result.class_id is not None else -1,
+                                                       DefaultType.DEFAULT_TYPE)
             if result.class_name != DefaultType.DEFAULT_TYPE:
                 if result.class_id is not None:
                     result.class_id += 1
@@ -166,7 +167,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         path_config_json: PathLikeOrStr,
         path_weights: PathLikeOrStr,
         path_feature_extractor_config_json: PathLikeOrStr,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):

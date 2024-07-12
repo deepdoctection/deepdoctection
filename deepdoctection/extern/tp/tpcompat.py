@@ -20,6 +20,8 @@ Compatibility classes and methods related to Tensorpack package
 """
 from __future__ import annotations
 
+import os
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Mapping, Union
@@ -102,7 +104,7 @@ class TensorpackPredictor(ABC):
     def _build_config(self) -> PredictConfig:
         predict_config = PredictConfig(
             model=self._model,
-            session_init=SmartInit(self.path_weights.as_posix(), ignore_mismatch=self.ignore_mismatch),
+            session_init=SmartInit(os.fspath(self.path_weights), ignore_mismatch=self.ignore_mismatch),
             input_names=self._model.get_inference_tensor_names()[0],
             output_names=self._model.get_inference_tensor_names()[1],
         )
@@ -112,7 +114,7 @@ class TensorpackPredictor(ABC):
     @staticmethod
     @abstractmethod
     def get_wrapped_model(
-        path_yaml: PathLikeOrStr, categories: Mapping[str, ObjectTypes], config_overwrite: Union[list[str], None]
+        path_yaml: PathLikeOrStr, categories: Mapping[int, ObjectTypes], config_overwrite: Union[list[str], None]
     ) -> ModelDescWithConfig:
         """
         Implement the config generation, its modification and instantiate a version of the model. See

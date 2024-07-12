@@ -49,9 +49,9 @@ class DetectResultGenerator:
 
     def __init__(
         self,
-        categories: Mapping[str, ObjectTypes],
-        group_categories: Optional[list[list[str]]] = None,
-        exclude_category_ids: Optional[Sequence[str]] = None,
+        categories: Mapping[int, ObjectTypes],
+        group_categories: Optional[list[list[int]]] = None,
+        exclude_category_ids: Optional[Sequence[int]] = None,
         absolute_coords: bool = True,
     ) -> None:
         """
@@ -102,8 +102,8 @@ class DetectResultGenerator:
         self.dummy_for_group_generated = self._initialize_dummy_for_group_generated()
         return detect_result_list
 
-    def _create_condition(self, detect_result_list: list[DetectionResult]) -> dict[str, int]:
-        count = Counter([str(ann.class_id) for ann in detect_result_list])
+    def _create_condition(self, detect_result_list: list[DetectionResult]) -> dict[int, int]:
+        count = Counter([ann.class_id for ann in detect_result_list])
         cat_to_group_sum = {}
         for group in self.group_categories:
             group_sum = 0
@@ -113,7 +113,7 @@ class DetectResultGenerator:
                 cat_to_group_sum[el] = group_sum
         return cat_to_group_sum
 
-    def _dummy_for_group_generated(self, category_id: str) -> bool:
+    def _dummy_for_group_generated(self, category_id: int) -> bool:
         for idx, group in enumerate(self.group_categories):
             if category_id in group:
                 is_generated = self.dummy_for_group_generated[idx]

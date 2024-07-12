@@ -61,13 +61,13 @@ class TestLabelSummarizer:
     @pytest.mark.parametrize(
         "categories, cat_ids, summary",
         [
-            ({"1": "FOO", "2": "BAK", "3": "BAZ"}, ["1", "3", "2", "2", "3"], {"1": 1, "2": 2, "3": 2}),
-            ({"1": "FOO", "2": "BAK"}, ["1", "2", ["1", "1", "2"], "1", "2", ["1", "1"]], {"1": 6, "2": 3}),
-            ({"1": "FOO", "2": "BAK", "3": "BAZ"}, [1, 3, 2, 2, "3", 1, 1, 1, 1, "1"], {"1": 6, "2": 2, "3": 2}),
+            ({1: "FOO", 2: "BAK", 3: "BAZ"}, [1, 3, 2, 2, 3], {1: 1, 2: 2, 3: 2}),
+            ({1: "FOO", 2: "BAK"}, [1, 2, [1, 1, 2], 1, 2, [1, 1]], {1: 6, 2: 3}),
+            ({1: "FOO", 2: "BAK", 3: "BAZ"}, [1, 3, 2, 2, 3, 1, 1, 1, 1, 1], {1: 6, 2: 2, 3: 2}),
         ],
     )
     def test_categories_are_correctly_summarized(
-        categories: Dict[str, ObjectTypes], cat_ids: List[Union[List[Union[str, int]], str]], summary: Dict[str, int]
+        categories: Dict[int, ObjectTypes], cat_ids: List[Union[List[int], int]], summary: Dict[int, int]
     ) -> None:
         """
         Testing Summarizer input with various dumped category id representations.

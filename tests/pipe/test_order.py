@@ -62,18 +62,18 @@ class TestTextOrderService:
         # and numbers are correctly assigned
 
         sub_cat = layout_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = layout_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
 
         sub_cat = word_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
         sub_cat = word_anns[2].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[3].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
 
     @staticmethod
     @mark.basic
@@ -103,7 +103,7 @@ class TestTextOrderService:
             bounding_box=BoundingBox(ulx=350.0, uly=390.0, lrx=355.0, lry=395.0, absolute_coords=True),
             score=0.6,
             category_name=LayoutType.WORD,
-            category_id="8",
+            category_id=8,
         )
         dp_image.dump(residual_word_ann)
         dp_image.image_ann_to_image(residual_word_ann.annotation_id)
@@ -119,18 +119,18 @@ class TestTextOrderService:
         word_anns = dp_image.get_annotation(category_names=LayoutType.WORD)
 
         sub_cat = layout_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = layout_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
 
         sub_cat = word_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
         sub_cat = word_anns[2].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[3].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
 
         assert Relationships.READING_ORDER not in word_anns[4].sub_categories
 
@@ -161,7 +161,7 @@ class TestTextOrderService:
             bounding_box=BoundingBox(ulx=350.0, uly=390.0, lrx=355.0, lry=395.0, absolute_coords=True),
             score=0.6,
             category_name=LayoutType.WORD,
-            category_id="8",
+            category_id=8,
         )
         dp_image.dump(residual_word_ann)
         dp_image.image_ann_to_image(residual_word_ann.annotation_id)
@@ -177,21 +177,21 @@ class TestTextOrderService:
         word_anns = dp_image.get_annotation(category_names=LayoutType.WORD)
 
         sub_cat = layout_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = layout_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
         sub_cat = layout_anns[2].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "3"
+        assert sub_cat.category_id == 3
         relation = layout_anns[2].get_relationship(Relationships.CHILD)
         assert residual_word_ann.annotation_id in relation
 
         sub_cat = word_anns[0].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[1].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
         sub_cat = word_anns[2].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1
         sub_cat = word_anns[3].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "2"
+        assert sub_cat.category_id == 2
         sub_cat = word_anns[4].get_sub_category(Relationships.READING_ORDER)
-        assert sub_cat.category_id == "1"
+        assert sub_cat.category_id == 1

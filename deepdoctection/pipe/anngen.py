@@ -23,7 +23,7 @@ from typing import Mapping, Optional, Union
 
 import numpy as np
 
-from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from ..datapoint.annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, DEFAULT_CATEGORY_ID
 from ..datapoint.box import BoundingBox, local_to_global_coords, rescale_coords
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
@@ -155,7 +155,7 @@ class DatapointManager:
             ann = ImageAnnotation(
                 category_name=detect_result.class_name,
                 bounding_box=box,
-                category_id=str(detect_result.class_id),
+                category_id=detect_result.class_id,
                 score=detect_result.score,
                 service_id=self.service_id,
                 model_id=self.model_id,
@@ -189,7 +189,7 @@ class DatapointManager:
     def set_category_annotation(
         self,
         category_name: ObjectTypes,
-        category_id: Optional[Union[str, int]],
+        category_id: Optional[int],
         sub_cat_key: ObjectTypes,
         annotation_id: str,
         score: Optional[float] = None,
@@ -216,7 +216,7 @@ class DatapointManager:
         ) as annotation_context:
             cat_ann = CategoryAnnotation(
                 category_name=category_name,
-                category_id=str(category_id),
+                category_id=category_id if category_id is not None else DEFAULT_CATEGORY_ID,
                 score=score,
                 service_id=self.service_id,
                 model_id=self.model_id,
@@ -230,7 +230,7 @@ class DatapointManager:
     def set_container_annotation(
         self,
         category_name: ObjectTypes,
-        category_id: Optional[Union[str, int]],
+        category_id: Optional[int],
         sub_cat_key: ObjectTypes,
         annotation_id: str,
         value: Union[str, list[str]],
@@ -260,7 +260,7 @@ class DatapointManager:
         ) as annotation_context:
             cont_ann = ContainerAnnotation(
                 category_name=category_name,
-                category_id=str(category_id),
+                category_id=category_id if category_id is not None else DEFAULT_CATEGORY_ID,
                 value=value,
                 score=score,
                 service_id=self.service_id,
@@ -314,7 +314,7 @@ class DatapointManager:
             if summary_value is not None:
                 ann = ContainerAnnotation(
                     category_name=summary_name,
-                    category_id=str(summary_number) if summary_number is not None else "",
+                    category_id=summary_number if summary_number else DEFAULT_CATEGORY_ID,
                     value=summary_value,
                     score=summary_score,
                     service_id=self.service_id,
@@ -324,7 +324,7 @@ class DatapointManager:
             else:
                 ann = CategoryAnnotation(
                     category_name=summary_name,
-                    category_id=str(summary_number) if summary_number is not None else "",
+                    category_id=summary_number if summary_number is not None else DEFAULT_CATEGORY_ID,
                     score=summary_score,
                     service_id=self.service_id,
                     model_id=self.model_id,

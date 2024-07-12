@@ -47,7 +47,7 @@ class TestModelCatalog:
             hf_repo_id="",
             hf_model_name="",
             hf_config_file=["conf_config.yaml"],
-            categories={"1": LayoutType.CELL},
+            categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         )

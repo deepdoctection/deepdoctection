@@ -278,7 +278,7 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
             )
 
             @curry
-            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
+            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
                 if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
                     summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]

@@ -24,7 +24,7 @@ from typing import Any, Callable, Iterator, Mapping, Optional, Union
 
 from lazy_imports import try_import
 
-from ..dataflow import CacheData, CustomDataFromList, MapData, RepeatedData
+from ..dataflow import CustomDataFromList, MapData, RepeatedData
 from ..datapoint.image import Image
 from ..datasets.base import DatasetBase
 from ..mapper.maputils import LabelSummarizer
@@ -57,6 +57,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         cache_dataset: bool,
         image_to_framework_func: Optional[Callable[[DP], Optional[JsonDict]]] = None,
         use_token_tag: bool = True,
+        number_repetitions: int = -1,
         **build_kwargs: str,
     ) -> None:
         """
@@ -69,6 +70,10 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                               `WordType.token_class`.
         :param build_kwargs: optional parameters for defining the dataflow.
         """
+        if number_repetitions==-1 and not cache_dataset:
+            raise ValueError("Number of repetitions cannot be infinite when not caching the dataset. Instead try to"
+                             " set a high number of repetitions")
+
         if isinstance(name_or_dataset, str):
             self.dataset = get_dataset(name_or_dataset)
         else:
@@ -78,7 +83,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
 
         if cache_dataset:
             logger.info(LoggingRecord("Yielding dataflow into memory and create torch dataset"))
-            categories: Mapping[str, ObjectTypes] = {}
+            categories: Mapping[int, ObjectTypes] = {}
             _data_statistics = True
             if self.dataset.dataset_info.type in (DatasetType.OBJECT_DETECTION, DatasetType.SEQUENCE_CLASSIFICATION):
                 categories = self.dataset.dataflow.categories.get_categories(filtered=True)
@@ -123,7 +128,7 @@ class DatasetAdapter(IterableDataset):  # type: ignore
                         )
                     if self.dataset.dataset_info.type == DatasetType.OBJECT_DETECTION:
                         anns = dp.get_annotation()
-                        cat_ids = [int(ann.category_id) for ann in anns]
+                        cat_ids = [ann.category_id for ann in anns]
 
                     elif self.dataset.dataset_info.type == DatasetType.SEQUENCE_CLASSIFICATION:
                         cat_ids = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id
@@ -144,14 +149,13 @@ class DatasetAdapter(IterableDataset):  # type: ignore
             if _data_statistics:
                 summarizer.print_summary_histogram()
             self.number_datapoints = len(datapoints)
+            if not self.number_datapoints:
+                raise ValueError("DatasetAdapter receives no datapoints. Please check your dataflow build config.")
 
             df = CustomDataFromList(datapoints, shuffle=True)
-            if not image_to_framework_func:
-                df = RepeatedData(df, -1)
-            else:
-                df_list = CacheData(df).get_cache()
-                df = CustomDataFromList(df_list, shuffle=True)
-                df = RepeatedData(df, -1)
+            df = RepeatedData(df, number_repetitions)
+        else:
+            df = RepeatedData(df, number_repetitions)
 
         if image_to_framework_func:
             df = MapData(df, image_to_framework_func)

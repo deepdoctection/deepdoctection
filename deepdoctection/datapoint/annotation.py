@@ -41,12 +41,14 @@ def ann_from_dict(cls, **kwargs: AnnotationDict):
     _init_kwargs = {
         "external_id": kwargs.get("external_id"),
         "category_name": kwargs.get("category_name"),
-        "category_id": kwargs.get("category_id"),
+        "category_id": kwargs.get("category_id", DEFAULT_CATEGORY_ID),
         "score": kwargs.get("score"),
         "service_id": kwargs.get("service_id"),
         "model_id": kwargs.get("model_id"),
         "session_id": kwargs.get("session_id"),
     }
+    _init_kwargs["category_id"] = int(_init_kwargs["category_id"]) if (
+        _init_kwargs)["category_id"] not in ("None", "") else DEFAULT_CATEGORY_ID
     ann = cls(**_init_kwargs)
     ann.active = kwargs.get("active")
     ann._annotation_id = kwargs.get("_annotation_id")  # pylint: disable=W0212
@@ -243,6 +245,9 @@ class Annotation(ABC):
         return get_uuid(self.annotation_id, *container_ids)
 
 
+DEFAULT_CATEGORY_ID = -1
+
+
 @dataclass
 class CategoryAnnotation(Annotation):
     """
@@ -271,7 +276,7 @@ class CategoryAnnotation(Annotation):
 
     category_name: TypeOrStr = field(default=DefaultType.DEFAULT_TYPE)
     _category_name: ObjectTypes = field(default=DefaultType.DEFAULT_TYPE, init=False)
-    category_id: str = field(default="")
+    category_id: int = field(default=DEFAULT_CATEGORY_ID)
     score: Optional[float] = field(default=None)
     sub_categories: dict[ObjectTypes, CategoryAnnotation] = field(default_factory=dict, init=False, repr=True)
     relationships: dict[ObjectTypes, list[str]] = field(default_factory=dict, init=False, repr=True)
@@ -288,8 +293,6 @@ class CategoryAnnotation(Annotation):
             self._category_name = get_type(category_name)
 
     def __post_init__(self) -> None:
-        self.category_id = str(self.category_id)
-        assert self.category_name
         self._assert_attributes_have_str(state_id=True)
         super().__post_init__()
 

@@ -357,8 +357,8 @@ class WandbTableAgent:
         wandb_run: wandb.sdk.wandb_run.Run,
         dataset_name: str,
         num_samples: int,
-        categories: Mapping[str, TypeOrStr],
-        sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
+        categories: Mapping[int, TypeOrStr],
+        sub_categories: Optional[Mapping[int, TypeOrStr]] = None,
         cat_to_sub_cat: Optional[Mapping[TypeOrStr, TypeOrStr]] = None,
     ):
         """

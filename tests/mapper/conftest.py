@@ -48,7 +48,7 @@ def fixture_datapoint_coco() -> Dict[str, Any]:
 
 
 @fixture(name="categories_coco")
-def fixture_categories_coco() -> Mapping[str, ObjectTypes]:
+def fixture_categories_coco() -> Mapping[int, ObjectTypes]:
     """
     Categories as Dict
     """
@@ -83,7 +83,7 @@ def fixture_datapoint_pubtabnet() -> Dict[str, Any]:
 
 
 @fixture(name="categories_name_as_key_pubtabnet")
-def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, str]:
+def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, int]:
     """
     Categories as Dict
     """
@@ -247,7 +247,7 @@ def fixture_raw_layoutlm_featurest() -> JsonDict:
 
 
 @fixture(name="xfund_categories_dict_name_as_key")
-def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, str]:
+def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, int]:
     """
     categories_dict_name_as_key
     """
@@ -272,7 +272,7 @@ def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
 
 
 @fixture(name="iiitar13k_categories_name_as_keys")
-def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, str]:
+def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, int]:
     """
     iiitar13k category names dict
     """
