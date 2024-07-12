@@ -263,3 +263,6 @@ class SubImageLayoutService(PipelineComponent):
         if self.padder:
             np_image = self.padder.apply_image(np_image)
         return np_image
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()

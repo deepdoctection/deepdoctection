@@ -20,6 +20,8 @@ Deepdoctection wrappers for fasttext language detection models
 """
 from __future__ import annotations
 
+import os
+
 from abc import ABC
 from pathlib import Path
 from typing import Any, Mapping, Union
@@ -117,4 +119,4 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
         Get the wrapped model
         :param path_weights: path to model weights
         """
-        return load_model(path_weights)
+        return load_model(os.fspath(path_weights))

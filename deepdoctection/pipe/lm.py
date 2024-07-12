@@ -111,7 +111,7 @@ class LMTokenClassifierService(PipelineComponent):
         self.segment_positions = segment_positions
         self.sliding_window_stride = sliding_window_stride
         if self.use_other_as_default_category:
-            categories_name_as_key = {val: key for key, val in self.language_model.categories.categories}
+            categories_name_as_key = {val: key for key, val in self.language_model.categories.categories.items()}
             self.default_key: ObjectTypes
             if BioTag.OUTSIDE in categories_name_as_key:
                 self.default_key = BioTag.OUTSIDE
@@ -224,6 +224,9 @@ class LMTokenClassifierService(PipelineComponent):
             mapping_str
         ]
 
+    def clear_predictor(self) -> None:
+        self.language_model.clear_model()
+
 
 @pipeline_component_registry.register("LMSequenceClassifierService")
 class LMSequenceClassifierService(PipelineComponent):
@@ -335,3 +338,6 @@ class LMSequenceClassifierService(PipelineComponent):
         return {"image_to_layoutlm_features": image_to_layoutlm_features, "image_to_lm_features": image_to_lm_features}[
             mapping_str
         ]
+
+    def clear_predictor(self) -> None:
+        self.language_model.clear_model()

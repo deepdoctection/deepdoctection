@@ -506,3 +506,6 @@ class TableSegmentationRefinementService(PipelineComponent):
             relationships={},
             summaries=(),
         )
+
+    def clear_predictor(self) -> None:
+        pass

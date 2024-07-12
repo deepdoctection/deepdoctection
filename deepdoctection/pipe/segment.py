@@ -832,6 +832,10 @@ class TableSegmentationService(PipelineComponent):
             summaries=(),
         )
 
+    def clear_predictor(self) -> None:
+        """clear predictor. Will do nothing"""
+        pass
+
 
 class PubtablesSegmentationService(PipelineComponent):
     """

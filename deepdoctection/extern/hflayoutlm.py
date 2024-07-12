@@ -477,6 +477,9 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
+    def clear_model(self) -> None:
+        self.model = None
+
 
 class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
     """
@@ -599,6 +602,9 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         return LayoutLMv2ForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
+
+    def clear_model(self) -> None:
+        self.model = None
 
 
 class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -724,6 +730,9 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         return LayoutLMv3ForTokenClassification.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
+
+    def clear_model(self) -> None:
+        self.model = None
 
 
 class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
@@ -887,6 +896,9 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
+    def clear_model(self) -> None:
+        self.model = None
+
 
 class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
@@ -973,6 +985,9 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return LayoutLMv2ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
+
+    def clear_model(self) -> None:
+        self.model = None
 
 
 class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
@@ -1066,6 +1081,9 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         return LayoutLMv3ForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
+
+    def clear_model(self) -> None:
+        self.model = None
 
 
 class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
@@ -1170,6 +1188,9 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return LiltForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
 
+    def clear_model(self) -> None:
+        self.model = None
+
 
 class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     """
@@ -1246,3 +1267,6 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return LiltForSequenceClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
+
+    def clear_model(self) -> None:
+        self.model = None

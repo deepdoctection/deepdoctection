@@ -118,3 +118,6 @@ class ImageLayoutService(PipelineComponent):
         if not isinstance(predictor, ObjectDetector):
             raise TypeError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
         return self.__class__(predictor, self.to_image, self.crop_image, padder_clone, self.skip_if_layout_extracted)
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()

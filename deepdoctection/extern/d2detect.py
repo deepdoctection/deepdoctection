@@ -368,6 +368,9 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
             d2_conf_list.extend([key, val])
         return d2_conf_list
 
+    def clear_model(self) -> None:
+        self.d2_predictor = None
+
 
 class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
     """
@@ -483,3 +486,6 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
             buffer = io.BytesIO(file.read())
         # Load all tensors to the original device
         return torch.jit.load(buffer)
+
+    def clear_model(self) -> None:
+        self.d2_predictor = None

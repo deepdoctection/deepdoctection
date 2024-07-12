@@ -300,6 +300,9 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device, lib)
         return doctr_predictor
 
+    def clear_model(self) -> None:
+        self.doctr_predictor = None
+
 
 class DoctrTextRecognizer(TextRecognizer):
     """
@@ -475,6 +478,9 @@ class DoctrTextRecognizer(TextRecognizer):
     def auto_select_lib() -> Literal["PT", "TF"]:
         """Auto select the DL library from the installed and from environment variables"""
         return auto_select_lib_for_doctr()
+
+    def clear_model(self) -> None:
+        self.doctr_predictor = None
 
 
 class DocTrRotationTransformer(ImageTransformer):

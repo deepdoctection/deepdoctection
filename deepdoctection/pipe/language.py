@@ -112,3 +112,6 @@ class LanguageDetectionService(PipelineComponent):
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"language_detection_{predictor_name}"
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()

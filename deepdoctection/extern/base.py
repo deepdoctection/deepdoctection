@@ -269,6 +269,16 @@ class PredictorBase(ABC):
             return get_uuid_from_str(self.name)[:8]
         raise ValueError("name must be set before calling get_model_id")
 
+    def clear_model(self) -> None:
+        """
+        Clear the inner model of the model wrapper if it has one. Needed for model updates during training.
+        """
+        raise NotImplementedError(
+            "Maybe you forgot to implement this method in your pipeline component. This might "
+            "be the case when you run evaluation during training and need to update the "
+            "trained model in your pipeline component."
+        )
+
 
 @dataclass
 class DetectionResult:
