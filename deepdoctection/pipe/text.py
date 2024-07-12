@@ -100,7 +100,7 @@ class TextExtractionService(PipelineComponent):
                     f"TextRecognizer. Got {type(self.predictor)}"
                 )
         if run_time_ocr_language_selection:
-            if isinstance(self.predictor, TesseractOcrDetector):
+            if not isinstance(self.predictor, TesseractOcrDetector):
                 raise TypeError("Only TesseractOcrDetector supports multiple languages")
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
@@ -224,3 +224,6 @@ class TextExtractionService(PipelineComponent):
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ImageError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
         return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()

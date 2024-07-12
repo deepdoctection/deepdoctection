@@ -183,3 +183,6 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
             ignore_mismatch=self.ignore_mismatch,
             filter_categories=self.categories.filter_categories,
         )
+
+    def clear_model(self) -> None:
+        self.tp_predictor = None

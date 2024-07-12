@@ -227,3 +227,7 @@ class MultiThreadPipelineComponent(PipelineComponent):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return self.pipe_components[0].get_meta_annotation()
+
+    def clear_predictor(self) -> None:
+        for pipe in self.pipe_components:
+            pipe.clear_predictor()

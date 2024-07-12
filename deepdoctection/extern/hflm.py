@@ -225,3 +225,6 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         for some custom setting.
         """
         return {}
+
+    def clear_model(self) -> None:
+        self.model = None

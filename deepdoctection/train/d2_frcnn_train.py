@@ -386,7 +386,7 @@ def train_d2_faster_rcnn(
     augment_list = [ResizeShortestEdge(cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN), RandomFlip()]
     mapper = DatasetMapper(is_train=True, augmentations=augment_list, image_format="BGR")
 
-    logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))
+    logger.info(LoggingRecord(f"Config: \n {str(cfg)}", dict(cfg)))
 
     trainer = D2Trainer(cfg, dataset, mapper)
     trainer.resume_or_load()

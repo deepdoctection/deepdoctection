@@ -268,12 +268,12 @@ class DatasetCategories:
                     if values_as_dict:
                         if not name_as_key:
                             sub_cat_tmp[sub_cat_key] = {
-                                str(k): v
+                                k: v
                                 for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                         else:
                             sub_cat_tmp[sub_cat_key] = {
-                                v: str(k)
+                                v: k
                                 for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
                             }
                     else:

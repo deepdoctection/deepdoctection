@@ -72,6 +72,9 @@ class ImageCroppingService(PipelineComponent):
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
+    def clear_predictor(self) -> None:
+        pass
+
 
 @pipeline_component_registry.register("MatchingService")
 class MatchingService(PipelineComponent):
@@ -167,6 +170,9 @@ class MatchingService(PipelineComponent):
             summaries=(),
         )
 
+    def clear_predictor(self) -> None:
+        pass
+
 
 @pipeline_component_registry.register("PageParsingService")
 class PageParsingService(PipelineComponent):
@@ -230,6 +236,9 @@ class PageParsingService(PipelineComponent):
             deepcopy(self.floating_text_block_categories),
             self.include_residual_text_container,
         )
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("AnnotationNmsService")
@@ -295,6 +304,9 @@ class AnnotationNmsService(PipelineComponent):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
+
+    def clear_predictor(self) -> None:
+        pass
 
 
 @pipeline_component_registry.register("ImageParsingService")

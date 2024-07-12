@@ -279,3 +279,6 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         hf_detr_predictor = HFDetrDerivedDetector.get_model(path_weights, config)
         device = get_torch_device(device)
         return hf_detr_predictor.to(device)
+
+    def clear_model(self) -> None:
+        self.hf_detr_predictor = None

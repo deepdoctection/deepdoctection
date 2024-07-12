@@ -765,3 +765,6 @@ class TextOrderService(TextLineServiceMixin):
             self.text_line_generator.paragraph_break,
             self.text_line_generator.line_category_id,
         )
+
+    def clear_predictor(self) -> None:
+        pass

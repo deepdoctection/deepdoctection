@@ -83,3 +83,6 @@ class SimpleTransformService(PipelineComponent):
     @staticmethod
     def _get_name(transform_name: str) -> str:
         return f"simple_transform_{transform_name}"
+
+    def clear_predictor(self) -> None:
+        pass
