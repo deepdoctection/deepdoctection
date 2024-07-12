@@ -161,12 +161,12 @@ def image_to_raw_layoutlm_features(
             WordType.TOKEN_TAG in ann.sub_categories or WordType.TOKEN_CLASS in ann.sub_categories
         ) and dataset_type == DatasetType.TOKEN_CLASSIFICATION:
             if use_token_tag:
-                all_labels.append(int(ann.get_sub_category(WordType.TOKEN_TAG).category_id) - 1)
+                all_labels.append(ann.get_sub_category(WordType.TOKEN_TAG).category_id - 1)
             else:
-                all_labels.append(int(ann.get_sub_category(WordType.TOKEN_CLASS).category_id) - 1)
+                all_labels.append(ann.get_sub_category(WordType.TOKEN_CLASS).category_id - 1)
 
     if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
-        all_labels.append(int(dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1)
+        all_labels.append(dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id - 1)
 
     boxes = np.asarray(all_boxes, dtype="float32")
     if boxes.ndim == 1:
@@ -787,9 +787,7 @@ def image_to_raw_lm_features(
     elif text_["token_classes"]:
         raw_features["labels"] = text_["token_classes"]
     elif page.document_type is not None:
-        document_type_id = (
-            int(page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id) - 1
-        )
+        document_type_id = page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id - 1
         raw_features["labels"] = [document_type_id]
 
     raw_features["dataset_type"] = dataset_type

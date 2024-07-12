@@ -285,10 +285,10 @@ def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
     cols = dp.get_annotation(category_names=LayoutType.COLUMN)
     for idx, items in enumerate(zip(rows, cols)):
         items[0].dump_sub_category(
-            CellType.ROW_NUMBER, CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id=str(idx + 1))
+            CellType.ROW_NUMBER, CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id=idx + 1)
         )
         items[1].dump_sub_category(
-            CellType.COLUMN_NUMBER, CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id=str(idx + 1))
+            CellType.COLUMN_NUMBER, CategoryAnnotation(category_name=CellType.COLUMN_NUMBER, category_id=idx + 1)
         )
 
     table = dp.get_annotation(category_names=LayoutType.TABLE)[0]

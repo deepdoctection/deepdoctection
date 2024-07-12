@@ -27,11 +27,11 @@ from typing import Mapping, Optional, Sequence, Union
 import numpy as np
 from lazy_imports import try_import
 
-from ..datapoint.annotation import ImageAnnotation
+from ..datapoint.annotation import ImageAnnotation, DEFAULT_CATEGORY_ID
 from ..datapoint.image import Image
 from ..extern.pt.nms import batched_nms
 from ..mapper.maputils import curry
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.settings import ObjectTypes, TypeOrStr, get_type, DefaultType
 from ..utils.types import Detectron2Dict
 
 with try_import() as pt_import_guard:
@@ -90,7 +90,7 @@ def image_to_d2_frcnn_training(
         mapped_ann: dict[str, Union[str, int, list[float]]] = {
             "bbox_mode": BoxMode.XYXY_ABS,
             "bbox": box.to_list(mode="xyxy"),
-            "category_id": int(ann.category_id) - 1,
+            "category_id": ann.category_id - 1,
         }
         annotations.append(mapped_ann)
 
@@ -149,21 +149,21 @@ def pt_nms_image_annotations(
 
 def _get_category_attributes(
     ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
-) -> tuple[str, str, Optional[float]]:
+) -> tuple[ObjectTypes, int, Optional[float]]:
     if cat_to_sub_cat:
         sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
         if sub_cat_key in ann.sub_categories:
             sub_cat = ann.get_sub_category(sub_cat_key)
-            return sub_cat.category_name, sub_cat.category_id, sub_cat.score
-        return "", "", 0.0
-    return ann.category_name, ann.category_id, ann.score
+            return get_type(sub_cat.category_name), sub_cat.category_id, sub_cat.score
+        return DefaultType.DEFAULT_TYPE, DEFAULT_CATEGORY_ID, 0.0
+    return get_type(ann.category_name), ann.category_id, ann.score
 
 
 @curry
 def to_wandb_image(
     dp: Image,
-    categories: Mapping[str, TypeOrStr],
-    sub_categories: Optional[Mapping[str, TypeOrStr]] = None,
+    categories: Mapping[int, TypeOrStr],
+    sub_categories: Optional[Mapping[int, TypeOrStr]] = None,
     cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
 ) -> tuple[str, Wbimage]:
     """
@@ -184,12 +184,11 @@ def to_wandb_image(
     boxes = []
     anns = dp.get_annotation(category_names=list(categories.values()))
 
+    class_labels = dict(sub_categories.items())
     if sub_categories:
-        class_labels = {int(key): val for key, val in sub_categories.items()}
-        class_set = Classes([{"name": val, "id": int(key)} for key, val in sub_categories.items()])
+        class_set = Classes([{"name": val, "id": key} for key, val in sub_categories.items()])
     else:
-        class_labels = {int(key): val for key, val in categories.items()}
-        class_set = Classes([{"name": val, "id": int(key)} for key, val in categories.items()])
+        class_set = Classes([{"name": val, "id": key} for key, val in categories.items()])
 
     for ann in anns:
         bounding_box = ann.get_bounding_box(dp.image_id)
@@ -200,7 +199,7 @@ def to_wandb_image(
             box = {
                 "position": {"middle": bounding_box.center, "width": bounding_box.width, "height": bounding_box.height},
                 "domain": "pixel",
-                "class_id": int(category_id),
+                "class_id": category_id,
                 "box_caption": category_name,
             }
             if score:

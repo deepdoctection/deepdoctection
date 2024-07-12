@@ -188,7 +188,7 @@ class CatAnn:
     """
 
     category_name = "FOO"
-    category_id = "1"
+    category_id = 1
     external_id = "567"
     uuid = "00000000-0000-0000-0000-000000000000"
 

@@ -380,6 +380,7 @@ def train_hf_layoutlm(
         True,
         image_to_raw_features_func(**image_to_raw_features_kwargs),
         use_token_tag,
+        number_repetitions=-1,
         **build_train_dict,
     )
 

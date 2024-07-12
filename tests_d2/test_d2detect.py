@@ -64,7 +64,7 @@ class TestD2FrcnnDetector:
     @mark.pt_deps
     @patch("deepdoctection.utils.file_utils.detectron2_available",MagicMock(return_value=False))
     def test_d2_does_not_build_when_d2_not_available(path_to_d2_frcnn_yaml: str,
-                                                     categories: Dict[str,ObjectTypes]) -> None:
+                                                     categories: Dict[int,ObjectTypes]) -> None:
         """
         D2 FRCNN does only build when detectron2 is properly installed
         """
@@ -77,7 +77,7 @@ class TestD2FrcnnDetector:
     @mark.pt_deps
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._set_model", MagicMock(return_value=MagicMock))
     @patch("deepdoctection.extern.d2detect.D2FrcnnDetector._instantiate_d2_predictor", MagicMock())
-    def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[str,ObjectTypes],
+    def test_d2_frcnn_predicts_image(path_to_d2_frcnn_yaml: str, categories: Dict[int,ObjectTypes],
                                      np_image: PixelValues)-> None:
         """
         D2 FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names

@@ -209,7 +209,7 @@ with try_import() as import_guard:
 __all__ = ["train_frcnn_config", "model_frcnn_config"]
 
 
-def model_frcnn_config(config: AttrDict, categories: Mapping[str, TypeOrStr], print_summary: bool = True) -> None:
+def model_frcnn_config(config: AttrDict, categories: Mapping[int, TypeOrStr], print_summary: bool = True) -> None:
     """
     Sanity checks for Tensorpack Faster-RCNN config settings, where the focus lies on the model for predicting.
     It will update the config instance.
@@ -221,8 +221,8 @@ def model_frcnn_config(config: AttrDict, categories: Mapping[str, TypeOrStr], pr
 
     config.freeze(False)
 
-    categories = {str(key): get_type(categories[val]) for key, val in enumerate(categories, 1)}
-    categories["0"] = get_type("background")
+    categories = {key: get_type(categories[val]) for key, val in enumerate(categories, 1)}
+    categories[0] = get_type("background")
     config.DATA.CLASS_NAMES = list(categories.values())
     config.DATA.CLASS_DICT = categories
     config.DATA.NUM_CATEGORY = len(config.DATA.CLASS_NAMES) - 1

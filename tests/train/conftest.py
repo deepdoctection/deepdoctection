@@ -53,12 +53,12 @@ class Datapoint:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=100.0, lrx=200.0, lry=400.0, absolute_coords=True),
             category_name="table",
-            category_id="1",
+            category_id=1,
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=50.0, uly=70.0, lrx=70.0, lry=90.0, absolute_coords=True),
             category_name="text",
-            category_id="2",
+            category_id=2,
         ),
     ]
 

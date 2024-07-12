@@ -34,7 +34,7 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 @curry
 def coco_to_image(
     dp: CocoDatapointDict,
-    categories: dict[str, str],
+    categories: dict[int, ObjectTypes],
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,
@@ -88,7 +88,7 @@ def coco_to_image(
             bbox = BoundingBox(absolute_coords=True, ulx=x_1, uly=y_1, height=h, width=w)
 
             annotation = ImageAnnotation(
-                category_name=categories[str(ann["category_id"])],
+                category_name=categories[ann["category_id"]],
                 bounding_box=bbox,
                 category_id=ann["category_id"],
                 score=maybe_get_fake_score(fake_score),
@@ -98,8 +98,8 @@ def coco_to_image(
 
             if coarse_sub_cat_name and coarse_mapping:
                 sub_cat = CategoryAnnotation(
-                    category_name=categories[str(coarse_mapping[ann["category_id"]])],
-                    category_id=str(coarse_mapping[ann["category_id"]]),
+                    category_name=categories[coarse_mapping[ann["category_id"]]],
+                    category_id=coarse_mapping[ann["category_id"]],
                 )
                 annotation.dump_sub_category(coarse_sub_cat_name, sub_cat)
 
@@ -133,7 +133,7 @@ def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
         ann: JsonDict = {
             "id": int("".join([s for s in img_ann.annotation_id if s.isdigit()])),
             "image_id": img["id"],
-            "category_id": int(img_ann.category_id),
+            "category_id": img_ann.category_id,
         }
         if img_ann.score:
             ann["score"] = img_ann.score

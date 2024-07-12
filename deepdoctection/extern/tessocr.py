@@ -354,9 +354,9 @@ class TesseractOcrDetector(ObjectDetector):
         self.config = hyper_param_config
 
         if self.config.LINES:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD, "2": LayoutType.LINE})
+            self.categories = ModelCategories(init_categories={1: LayoutType.WORD, 2: LayoutType.LINE})
         else:
-            self.categories = ModelCategories(init_categories={"1": LayoutType.WORD})
+            self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -420,7 +420,7 @@ class TesseractRotationTransformer(ImageTransformer):
 
     def __init__(self) -> None:
         self.name = fspath(_TESS_PATH) + "-rotation"
-        self.categories = ModelCategories(init_categories={"1": PageType.ANGLE})
+        self.categories = ModelCategories(init_categories={1: PageType.ANGLE})
 
     def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """

@@ -18,9 +18,12 @@
 """
 Some data samples in a separate module
 """
+
+from typing import Mapping
+
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.settings import CellType, LayoutType
-from deepdoctection.utils.types import JsonDict
+from deepdoctection.utils.settings import CellType, LayoutType, ObjectTypes
+
 
 PDF_BYTES = (
     b"%PDF-1.3\n1 0 obj\n<<\n/Type /Pages\n/Count 1\n/Kids [ 3 0 R ]\n>>\nendobj\n2 0 obj\n<<\n/Producer "
@@ -90,13 +93,13 @@ WORD_RESULTS = [
 ANGLE_RESULT = DetectionResult(angle=90.0, score=8.73)
 
 
-def get_detr_categories() -> JsonDict:
+def get_detr_categories() -> Mapping[int, ObjectTypes]:
     """detr_categories"""
     return {
-        "1": LayoutType.TABLE,
-        "2": LayoutType.COLUMN,
-        "3": LayoutType.ROW,
-        "4": CellType.COLUMN_HEADER,
-        "5": CellType.PROJECTED_ROW_HEADER,
-        "6": CellType.SPANNING,
+        1: LayoutType.TABLE,
+        2: LayoutType.COLUMN,
+        3: LayoutType.ROW,
+        4: CellType.COLUMN_HEADER,
+        5: CellType.PROJECTED_ROW_HEADER,
+        6: CellType.SPANNING,
     }

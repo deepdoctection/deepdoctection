@@ -53,16 +53,16 @@ class ModelCategories:
 
     **Example**:
 
-        categories = ModelCategories(init_categories={"1": "text", "2": "title"})
-        cats = categories.get_categories(as_dict=True)  # {"1": LayoutType.text, "2": LayoutType.title}
+        categories = ModelCategories(init_categories={1: "text", 2: "title"})
+        cats = categories.get_categories(as_dict=True)  # {1: LayoutType.text, 2: LayoutType.title}
         categories.filter_categories = [LayoutType.text]  # filter out text
-        cats = categories.get_categories(as_dict=True)  # {"2": LayoutType.title}
+        cats = categories.get_categories(as_dict=True)  # {2: LayoutType.title}
     """
 
-    init_categories: Optional[Mapping[str, TypeOrStr]] = field(repr=False)
-    _init_categories: MappingProxyType[str, ObjectTypes] = field(init=False, repr=False)
+    init_categories: Optional[Mapping[int, TypeOrStr]] = field(repr=False)
+    _init_categories: MappingProxyType[int, ObjectTypes] = field(init=False, repr=False)
     _filter_categories: Sequence[ObjectTypes] = field(init=False, repr=False, default_factory=tuple)
-    categories: MappingProxyType[str, ObjectTypes] = field(init=False)
+    categories: MappingProxyType[int, ObjectTypes] = field(init=False)
 
     def __post_init__(self) -> None:
         """post init method"""
@@ -80,16 +80,16 @@ class ModelCategories:
     @overload
     def get_categories(
         self, as_dict: Literal[True] = ..., name_as_key: Literal[False] = False
-    ) -> MappingProxyType[str, ObjectTypes]:
+    ) -> MappingProxyType[int, ObjectTypes]:
         ...
 
     @overload
-    def get_categories(self, as_dict: Literal[True], name_as_key: Literal[True]) -> MappingProxyType[ObjectTypes, str]:
+    def get_categories(self, as_dict: Literal[True], name_as_key: Literal[True]) -> MappingProxyType[ObjectTypes, int]:
         ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False
-    ) -> Union[MappingProxyType[str, ObjectTypes], MappingProxyType[ObjectTypes, str], tuple[ObjectTypes, ...]]:
+    ) -> Union[MappingProxyType[int, ObjectTypes], MappingProxyType[ObjectTypes, int], tuple[ObjectTypes, ...]]:
         """
         Get the categories
 
@@ -118,7 +118,7 @@ class ModelCategories:
         self._filter_categories = categories
         self.categories = self.get_categories()
 
-    def shift_category_ids(self, shift_by: int) -> MappingProxyType[str, ObjectTypes]:
+    def shift_category_ids(self, shift_by: int) -> MappingProxyType[int, ObjectTypes]:
         """
         Shift category ids
 
@@ -130,7 +130,7 @@ class ModelCategories:
         :param shift_by: The value to shift the category id to the left or to the right
         :return: shifted categories
         """
-        return MappingProxyType({str(int(k) + shift_by): v for k, v in self.get_categories().items()})
+        return MappingProxyType({k + shift_by: v for k, v in self.get_categories().items()})
 
 
 @dataclass
@@ -186,7 +186,7 @@ class NerModelCategories(ModelCategories):
     @staticmethod
     def merge_bio_semantics_categories(
         categories_semantics: tuple[ObjectTypes, ...], categories_bio: tuple[ObjectTypes, ...]
-    ) -> MappingProxyType[str, ObjectTypes]:
+    ) -> MappingProxyType[int, ObjectTypes]:
         """
         Merge bio and semantics categories
 
@@ -208,7 +208,7 @@ class NerModelCategories(ModelCategories):
                 for tag in categories_bio
             }
         )
-        return MappingProxyType({str(k): v for k, v in enumerate(categories_list, 1)})
+        return MappingProxyType(dict(enumerate(categories_list, 1)))
 
     @staticmethod
     def disentangle_token_class_and_tag(category_name: ObjectTypes) -> Optional[tuple[ObjectTypes, ObjectTypes]]:

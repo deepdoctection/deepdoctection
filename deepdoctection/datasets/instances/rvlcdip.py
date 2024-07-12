@@ -139,15 +139,15 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
 
         @curry
         def _map_str_to_image(dp: str, load_img: bool) -> Image:
-            location, label = dp.split()[0], dp.split()[1]
-            label = str(int(label) + 1)
+            location, label_str = dp.split()[0], dp.split()[1]
+            label = int(label_str) + 1
             file_name = os.path.split(location)[1]
             image = Image(location=(self.get_workdir() / "images" / location).as_posix(), file_name=file_name)
             image.image = load_image_from_file(image.location)
             summary = CategoryAnnotation(category_name=SummaryType.SUMMARY)
             categories_dict = self.categories.get_categories(init=True)
             summary.dump_sub_category(
-                PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=str(label))
+                PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=categories_dict[label], category_id=label)
             )
             image.summary = summary
             if not load_img:
@@ -163,7 +163,7 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
             )
 
             @curry
-            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, str]) -> Image:
+            def _re_map_cat_ids(dp: Image, filtered_categories_name_as_key: Mapping[TypeOrStr, int]) -> Image:
                 if PageType.DOCUMENT_TYPE in dp.summary.sub_categories:
                     summary_cat = dp.summary.get_sub_category(PageType.DOCUMENT_TYPE)
                     summary_cat.category_id = filtered_categories_name_as_key[summary_cat.category_name]

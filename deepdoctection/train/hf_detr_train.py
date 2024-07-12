@@ -191,7 +191,12 @@ def train_hf_detr(
     categories_dict_name_as_key = dataset_train.dataflow.categories.get_categories(name_as_key=True, filtered=True)
 
     dataset = DatasetAdapter(
-        dataset_train, True, image_to_hf_detr_training(category_names=categories), True, **build_train_dict
+        dataset_train,
+        True,
+        image_to_hf_detr_training(category_names=categories),
+        True,
+        number_repetitions=-1,
+        **build_train_dict
     )
 
     number_samples = len(dataset)

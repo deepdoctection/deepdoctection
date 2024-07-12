@@ -123,7 +123,7 @@ class TestHFLayoutLmTokenClassifier:
         assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
@@ -213,7 +213,7 @@ class TestHFLayoutLmv2TokenClassifier:
         assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmv2TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
@@ -304,7 +304,7 @@ class TestHFLayoutLmv3TokenClassifier:
         assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLayoutLmv3TokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)
@@ -375,7 +375,7 @@ class TestHFLayoutLmSequenceClassifier:
         HFLayoutLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm = HFLayoutLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 
@@ -419,7 +419,7 @@ class TestHFLayoutLmv2SequenceClassifier:
         HFLayoutLmv2SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv2ForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm_v2 = HFLayoutLmv2SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v2.model.device = "cpu"
 
@@ -464,7 +464,7 @@ class TestHFLayoutLmv3SequenceClassifier:
         HFLayoutLmv3SequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("LayoutLMv3ForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm_v3 = HFLayoutLmv3SequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm_v3.model.device = "cpu"
 
@@ -529,7 +529,7 @@ class TestHFLiltTokenClassifier:
         assert set(model.categories.categories.values()) == {BioTag.OUTSIDE, get_type("B-header"), get_type("I-header")}
 
         # Arrange
-        categories_explicit = {"1": get_type("B-header"), "2": get_type("I-header"), "3": get_type("O")}
+        categories_explicit = {1: get_type("B-header"), 2: get_type("I-header"), 3: get_type("O")}
 
         # Act
         model = HFLiltTokenClassifier("path/to/json", "path/to/model", categories=categories_explicit)

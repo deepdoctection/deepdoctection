@@ -19,12 +19,14 @@
 Methods that convert incoming data to dataflows.
 """
 
+from __future__ import annotations
+
 import itertools
 import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Optional, Sequence, Union
+from typing import DefaultDict, Dict, List, Optional, Sequence, Union, TextIO, Iterator, Any
 
 from jsonlines import Reader, Writer
 from tabulate import tabulate
@@ -53,6 +55,58 @@ def _reset_df_and_get_length(df: DataFlow) -> int:
     return length
 
 
+class FileClosingIterator:
+    """
+    A custom iterator that closes the file object once the iteration is complete.
+
+    This iterator is used to ensure that the file object is properly closed after
+    reading the data from it. It is used in the context of reading data from a file
+    in a streaming manner, where the data is not loaded into memory all at once.
+
+    **Example:**
+
+        file = open(path, "r")
+        iterator = Reader(file)
+        closing_iterator = FileClosingIterator(file, iter(iterator))
+
+        df = CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints) # set up a dataflow
+
+    """
+    def __init__(self, file_obj: TextIO, iterator: Iterator[Any]):
+        """
+        Initializes the FileClosingIterator with a file object and its iterator.
+
+        :param file_obj (TextIO): The file object to read data from.
+        :param     iterator (Iterator): The actual iterator of the file object.
+        """
+        self.file_obj = file_obj
+        self.iterator = iterator
+
+    def __iter__(self) -> FileClosingIterator:
+        """
+        Returns the iterator object itself.
+
+        :return:  FileClosingIterator: The instance of the class itself.
+        """
+        return self
+
+    def __next__(self) -> Any:
+        """
+        Returns the next item from the file object's iterator.
+        Closes the file object if the iteration is finished.
+
+        :return: The next item from the file object's iterator.
+
+        Raises:
+            StopIteration: If there are no more items to return.
+        """
+        try:
+            return next(self.iterator)
+        except StopIteration as exc:
+            self.file_obj.close()
+            raise StopIteration from exc
+
+
 class SerializerJsonlines:
     """
     Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of JSON objects to a .jsonl file.
@@ -73,9 +127,10 @@ class SerializerJsonlines:
 
         :return: dataflow to iterate from
         """
-        file = open(path, "r")  # pylint: disable=W1514,R1732
+        file = open(path, "r") # pylint: disable=W1514,R1732
         iterator = Reader(file)
-        return CustomDataFromIterable(iterator, max_datapoints=max_datapoints)
+        closing_iterator = FileClosingIterator(file, iter(iterator))
+        return CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints)
 
     @staticmethod
     def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:

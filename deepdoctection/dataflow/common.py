@@ -164,6 +164,10 @@ class RepeatedData(ProxyDataFlow):
                 Set to -1 to repeat ``ds`` infinite times.
         """
         self.num = num
+        if self.num!=-1:
+            self.dfs = itertools.tee(df, self.num)
+        else:
+            self.dfs = ()
         super().__init__(df)
 
     def __len__(self) -> int:
@@ -180,8 +184,8 @@ class RepeatedData(ProxyDataFlow):
             while True:
                 yield from self.df
         else:
-            for _ in range(self.num):
-                yield from self.df
+            for df in self.dfs:
+                yield from df
 
 
 class ConcatData(DataFlow):

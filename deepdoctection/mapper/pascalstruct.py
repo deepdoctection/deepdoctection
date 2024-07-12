@@ -34,7 +34,7 @@ from .maputils import MappingContextManager, curry, maybe_get_fake_score
 @curry
 def pascal_voc_dict_to_image(
     dp: JsonDict,
-    categories_name_as_key: dict[str, str],
+    categories_name_as_key: dict[str, int],
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,

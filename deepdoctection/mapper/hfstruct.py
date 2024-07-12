@@ -80,7 +80,7 @@ def image_to_hf_detr_training(
             "id": "".join([c for c in ann.annotation_id if c.isdigit()])[:8],
             "image_id": "".join([c for c in dp.image_id if c.isdigit()])[:8],
             "bbox": box.to_list(mode="xywh"),
-            "category_id": int(ann.category_id) - 1,
+            "category_id": ann.category_id - 1,
             "area": box.area,
         }
         annotations.append(mapped_ann)

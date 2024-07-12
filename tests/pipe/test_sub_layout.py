@@ -41,7 +41,7 @@ def test_detect_result_generator(
 
     # Arrange
     categories = dataset_categories.get_categories()
-    detect_result_generator = DetectResultGenerator(categories, [["1"], ["2"], ["3"], ["4"], ["5"]])
+    detect_result_generator = DetectResultGenerator(categories, [[1], [2], [3], [4], [5]])
 
     # Act
     detect_result_generator.width = 600

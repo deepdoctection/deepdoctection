@@ -118,7 +118,7 @@ class TestDatapointManager:
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
         cat_ann = ann[0].get_sub_category(get_type("FOO"))
 
-        assert cat_ann.category_id == "5"
+        assert cat_ann.category_id == 5
         assert cat_ann.score == 0.8
         assert cat_ann.category_name == "foo"
 
@@ -144,7 +144,7 @@ class TestDatapointManager:
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
         cont_ann = ann[0].get_sub_category(get_type("FOO"))
 
-        assert cont_ann.category_id == "5"
+        assert cont_ann.category_id == 5
         assert cont_ann.score == 0.8
         assert cont_ann.category_name == "foo"
         assert cont_ann.value == "hello world"  # type: ignore
@@ -172,9 +172,9 @@ class TestDatapointManager:
         cat_1 = dp_manager.datapoint.summary.get_sub_category(get_type("foo"))
         assert cat_1.annotation_id == summ_id_1
         assert cat_1.category_name == "foo"
-        assert cat_1.category_id == "1"
+        assert cat_1.category_id == 1
 
         cat_2 = ann[0].get_summary(get_type("bak"))
         assert cat_2.annotation_id == summ_id_2
         assert cat_2.category_name == "bak"
-        assert cat_2.category_id == "2"
+        assert cat_2.category_id == 2

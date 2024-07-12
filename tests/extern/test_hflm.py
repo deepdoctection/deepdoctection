@@ -64,7 +64,7 @@ class TestHFLmSequenceClassifier:
         HFLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("XLMRobertaForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm = HFLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 

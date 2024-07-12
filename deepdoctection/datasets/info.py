@@ -31,25 +31,25 @@ __all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> dict[ObjectTypes, str]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[True], starts_with: int = ...) -> dict[ObjectTypes, int]:
     ...
 
 
 @overload
-def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> dict[str, ObjectTypes]:
+def _get_dict(l: Sequence[ObjectTypes], name_as_key: Literal[False], starts_with: int = ...) -> dict[int, ObjectTypes]:
     ...
 
 
 @overload
 def _get_dict(
     l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = ...
-) -> Union[dict[ObjectTypes, str], dict[str, ObjectTypes]]:
+) -> Union[dict[ObjectTypes, int], dict[int, ObjectTypes]]:
     ...
 
 
 def _get_dict(
     l: Sequence[ObjectTypes], name_as_key: bool, starts_with: int = 1
-) -> Union[dict[ObjectTypes, str], dict[str, ObjectTypes]]:
+) -> Union[dict[ObjectTypes, int], dict[int, ObjectTypes]]:
     """
     Converts a list into a dict, where keys/values are the list indices.
 
@@ -59,8 +59,8 @@ def _get_dict(
     :return: A dictionary of list indices/list elements.
     """
     if name_as_key:
-        return {v: str(k) for k, v in enumerate(l, starts_with)}
-    return {str(k): v for k, v in enumerate(l, starts_with)}
+        return {v: k for k, v in enumerate(l, starts_with)}
+    return dict(enumerate(l, starts_with))
 
 
 @dataclass
@@ -143,13 +143,13 @@ class DatasetCategories:
     @overload
     def get_categories(
         self, *, name_as_key: Literal[True], init: bool = ..., filtered: bool = ...
-    ) -> Mapping[ObjectTypes, str]:
+    ) -> Mapping[ObjectTypes, int]:
         ...
 
     @overload
     def get_categories(
         self, *, name_as_key: Literal[False] = ..., init: bool = ..., filtered: bool = ...
-    ) -> Mapping[str, ObjectTypes]:
+    ) -> Mapping[int, ObjectTypes]:
         ...
 
     @overload
@@ -161,12 +161,12 @@ class DatasetCategories:
     @overload
     def get_categories(
         self, as_dict: Literal[True] = ..., name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
+    ) -> Union[Mapping[ObjectTypes, int], Mapping[int, ObjectTypes]]:
         ...
 
     def get_categories(
         self, as_dict: bool = True, name_as_key: bool = False, init: bool = False, filtered: bool = False
-    ) -> Union[Sequence[ObjectTypes], Mapping[ObjectTypes, str], Mapping[str, ObjectTypes]]:
+    ) -> Union[Sequence[ObjectTypes], Mapping[ObjectTypes, int], Mapping[int, ObjectTypes]]:
         """
         Get categories of a dataset. The returned value also respects modifications of the inventory like filtered
         categories of replaced categories with sub categories. However, you must correctly pass arguments to return the

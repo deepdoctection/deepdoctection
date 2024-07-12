@@ -73,7 +73,7 @@ class TestTPFrcnnDetector:
     @staticmethod
     @mark.tf_deps
     @patch("deepdoctection.extern.tp.tpcompat.get_num_gpu", MagicMock(side_effect=set_num_gpu_to_one))
-    def test_tp_frcnn_returns_fpn_model(path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes]) -> None:
+    def test_tp_frcnn_returns_fpn_model(path_to_tp_frcnn_yaml: str, categories: Dict[int, ObjectTypes]) -> None:
         """
         TP FRCNN builds RestNetFPN model is construction is successful.
         """
@@ -90,7 +90,7 @@ class TestTPFrcnnDetector:
     @patch("deepdoctection.extern.tp.tpcompat.TensorpackPredictor.get_predictor", MagicMock())
     @patch("deepdoctection.extern.tpdetect.tp_predict_image", MagicMock(side_effect=get_mock_detection_results))
     def test_tp_frcnn_predicts_image(
-        path_to_tp_frcnn_yaml: str, categories: Dict[str, ObjectTypes], np_image: PixelValues
+        path_to_tp_frcnn_yaml: str, categories: Dict[int, ObjectTypes], np_image: PixelValues
     ) -> None:
         """
         TP FRCNN calls predict_image and post processes DetectionResult correctly, e.g. adding class names
@@ -106,5 +106,5 @@ class TestTPFrcnnDetector:
         assert len(results) == 2
         first_detect_result = results[0]
         second_detect_result = results[1]
-        assert first_detect_result.class_name == categories["2"]
-        assert second_detect_result.class_name == categories["4"]
+        assert first_detect_result.class_name == categories[2]
+        assert second_detect_result.class_name == categories[4]

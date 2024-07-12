@@ -61,10 +61,10 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, i
     tile_to_cells = []
 
     for cell in cells:
-        row_number = int(cell.get_sub_category(CellType.ROW_NUMBER).category_id)
-        col_number = int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id)
-        rs = int(cell.get_sub_category(CellType.ROW_SPAN).category_id)
-        cs = int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id)
+        row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
+        col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+        rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
+        cs = cell.get_sub_category(CellType.COLUMN_SPAN).category_id
         for k in range(rs):
             for l in range(cs):
                 assert cell.annotation_id is not None, cell.annotation_id
@@ -317,8 +317,8 @@ def generate_html_string(table: ImageAnnotation) -> list[str]:
             CellType.PROJECTED_ROW_HEADER,
         ]
     )
-    number_of_rows = int(table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id)
-    number_of_cols = int(table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id)
+    number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
+    number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
     table_list = []
     cells_ann_list = []
     for row_number in range(1, number_of_rows + 1):
@@ -326,7 +326,7 @@ def generate_html_string(table: ImageAnnotation) -> list[str]:
             sorted(
                 filter(
                     lambda cell: cell.get_sub_category(CellType.ROW_NUMBER).category_id
-                    == str(row_number),  # pylint: disable=W0640
+                    == row_number,  # pylint: disable=W0640
                     cells,
                 ),
                 key=lambda cell: cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
@@ -334,10 +334,10 @@ def generate_html_string(table: ImageAnnotation) -> list[str]:
         )
         row_list = [
             (
-                int(cell.get_sub_category(CellType.ROW_NUMBER).category_id),
-                int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id),
-                int(cell.get_sub_category(CellType.ROW_SPAN).category_id),
-                int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id),
+                cell.get_sub_category(CellType.ROW_NUMBER).category_id,
+                cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
+                cell.get_sub_category(CellType.ROW_SPAN).category_id,
+                cell.get_sub_category(CellType.COLUMN_SPAN).category_id,
             )
             for cell in cells_of_row
         ]
@@ -422,7 +422,7 @@ class TableSegmentationRefinementService(PipelineComponent):
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
                         score=-1.0,
-                        class_id=int(cells[0].category_id),
+                        class_id=cells[0].category_id,
                         class_name=get_type(cells[0].category_name),
                     )
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
@@ -454,10 +454,10 @@ class TableSegmentationRefinementService(PipelineComponent):
                             cell.deactivate()
 
             cells = table.image.get_annotation(category_names=self.cell_names)
-            number_of_rows = max(int(cell.get_sub_category(CellType.ROW_NUMBER).category_id) for cell in cells)
-            number_of_cols = max(int(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id) for cell in cells)
-            max_row_span = max(int(cell.get_sub_category(CellType.ROW_SPAN).category_id) for cell in cells)
-            max_col_span = max(int(cell.get_sub_category(CellType.COLUMN_SPAN).category_id) for cell in cells)
+            number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells)
+            number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells)
+            max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells)
+            max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
             if (
                 TableType.NUMBER_OF_ROWS in table.image.summary.sub_categories

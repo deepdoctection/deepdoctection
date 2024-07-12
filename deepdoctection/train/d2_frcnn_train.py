@@ -377,7 +377,12 @@ def train_d2_faster_rcnn(
     if metric_name is not None:
         metric = metric_registry.get(metric_name)
 
-    dataset = DatasetAdapter(dataset_train, True, image_to_d2_frcnn_training(False), True, **build_train_dict)
+    dataset = DatasetAdapter(dataset_train,
+                             True,
+                             image_to_d2_frcnn_training(False),
+                             True,
+                             number_repetitions=-1,
+                             **build_train_dict)
     augment_list = [ResizeShortestEdge(cfg.INPUT.MIN_SIZE_TRAIN, cfg.INPUT.MAX_SIZE_TRAIN), RandomFlip()]
     mapper = DatasetMapper(is_train=True, augmentations=augment_list, image_format="BGR")
 

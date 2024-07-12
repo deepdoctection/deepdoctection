@@ -306,11 +306,11 @@ class TestTableSegmentationRefinementService:
         col_spans = {cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells}
 
         assert len(cells) == 4
-        assert row_numbers == {"1", "2"}
-        assert col_numbers == {"1", "2"}
-        assert row_spans == {"1"}
-        assert col_spans == {"1"}
-        assert summaries_table == ["2", "2", "1", "1"]
+        assert row_numbers == {1, 2}
+        assert col_numbers == {1, 2}
+        assert row_spans == {1}
+        assert col_spans == {1}
+        assert summaries_table == [2, 2, 1, 1]
         assert isinstance(summary_html, ContainerAnnotation)
         assert summary_html.value == [
             "<table>",

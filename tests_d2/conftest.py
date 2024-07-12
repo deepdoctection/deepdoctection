@@ -40,12 +40,12 @@ def fixture_path_to_d2_frcnn_yaml() -> Path:
 
 
 @fixture(name="categories")
-def fixture_categories() -> Dict[str, ObjectTypes]:
+def fixture_categories() -> Dict[int, ObjectTypes]:
     """
     Categories as Dict
     """
-    return {"1": LayoutType.TEXT, "2": LayoutType.TITLE, "3": LayoutType.TABLE,
-            "4": LayoutType.FIGURE, "5": LayoutType.LIST}
+    return {1: LayoutType.TEXT, 2: LayoutType.TITLE, 3: LayoutType.TABLE,
+            4: LayoutType.FIGURE, 5: LayoutType.LIST}
 
 
 @fixture(name="np_image")
