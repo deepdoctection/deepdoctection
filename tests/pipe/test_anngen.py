@@ -164,8 +164,7 @@ class TestDatapointManager:
 
         # Act
         summ_id_1 = dp_manager.set_summary_annotation(get_type("foo"), get_type("foo"), 1)
-        summ_id_2 = dp_manager.set_summary_annotation(get_type("bak"), get_type("bak"), 2,
-                                                      annotation_id=ann_id)
+        summ_id_2 = dp_manager.set_summary_annotation(get_type("bak"), get_type("bak"), 2, annotation_id=ann_id)
         ann = dp_manager.datapoint.get_annotation(annotation_ids=ann_id)
 
         # Assert

@@ -101,9 +101,10 @@ class TensorpackPredictor(ABC):
         return OfflinePredictor(self.predict_config)
 
     def _build_config(self) -> PredictConfig:
+        path_weights = os.fspath(self.path_weights) if os.fspath(self.path_weights) != "." else ""
         predict_config = PredictConfig(
             model=self._model,
-            session_init=SmartInit(os.fspath(self.path_weights), ignore_mismatch=self.ignore_mismatch),
+            session_init=SmartInit(path_weights, ignore_mismatch=self.ignore_mismatch),
             input_names=self._model.get_inference_tensor_names()[0],
             output_names=self._model.get_inference_tensor_names()[1],
         )
