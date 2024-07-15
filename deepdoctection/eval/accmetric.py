@@ -19,9 +19,8 @@
 Module for Accuracy metric
 """
 from collections import Counter
-from typing import Any
 from typing import Counter as TypeCounter
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Mapping, Optional, Sequence, Union
 
 import numpy as np
 from numpy import float32, int32
@@ -32,10 +31,10 @@ from termcolor import colored
 from ..dataflow import DataFlow
 from ..datasets.info import DatasetCategories
 from ..mapper.cats import image_to_cat_id
-from ..utils.detection_types import JsonDict
 from ..utils.file_utils import Requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.types import MetricResults
 from .base import MetricBase
 from .registry import metric_registry
 
@@ -54,7 +53,7 @@ __all__ = [
 
 def _mask_some_gt_and_pr_labels(
     np_label_gt: NDArray[int32], np_label_pr: NDArray[int32], masks: Sequence[int]
-) -> Tuple[NDArray[int32], NDArray[int32]]:
+) -> tuple[NDArray[int32], NDArray[int32]]:
     if len(np_label_gt) != len(masks):
         raise ValueError(f"length of label_gt ({len(np_label_gt)}) and masks ({len(masks)}) must be equal")
     np_masks = np.asarray(masks)
@@ -77,8 +76,8 @@ def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: O
     Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
     `sklearn.metrics.accuracy_score`
 
-    :param label_gt: List of ground truth labels
-    :param label_predictions: List of predictions. Must have the same length as label_gt
+    :param label_gt: list of ground truth labels
+    :param label_predictions: list of predictions. Must have the same length as label_gt
     :param masks: An optional list with masks to ignore some samples.
 
     :return: Accuracy score with only unmasked values to be considered
@@ -102,9 +101,9 @@ def confusion(
     """
     Calculates the accuracy matrix given the predictions and labels. Ignores masked indices.
 
-    :param label_gt: List of ground truth labels
-    :param label_predictions: List of predictions. Must have the same length as label_gt
-    :param masks: List with masks of same length as label_gt.
+    :param label_gt: list of ground truth labels
+    :param label_predictions: list of predictions. Must have the same length as label_gt
+    :param masks: list with masks of same length as label_gt.
 
     :return: numpy array
     """
@@ -127,9 +126,9 @@ def precision(
     Calculates the precision for a multi classification problem using a confusion matrix. The output will
     be the precision by category.
 
-    :param label_gt: List of ground truth labels
-    :param label_predictions: List of predictions. Must have the same length as label_gt
-    :param masks: List with masks of same length as label_gt.
+    :param label_gt: list of ground truth labels
+    :param label_predictions: list of predictions. Must have the same length as label_gt
+    :param masks: list with masks of same length as label_gt.
     :param micro: If True, it will calculate the micro average precision
     :return:  numpy array
     """
@@ -157,9 +156,9 @@ def recall(
     Calculates the recall for a multi classification problem using a confusion matrix. The output will
     be the recall by category.
 
-    :param label_gt: List of ground truth labels
-    :param label_predictions: List of predictions. Must have the same length as label_gt
-    :param masks: List with masks of same length as label_gt.
+    :param label_gt: list of ground truth labels
+    :param label_predictions: list of predictions. Must have the same length as label_gt
+    :param masks: list with masks of same length as label_gt.
     :param micro: If True, it will calculate the micro average recall
     :return:  numpy array
     """
@@ -188,9 +187,9 @@ def f1_score(
     Calculates the recall for a multi classification problem using a confusion matrix. The output will
     be the recall by category.
 
-    :param label_gt: List of ground truth labels
-    :param label_predictions: List of predictions. Must have the same length as label_gt
-    :param masks: List with masks of same length as label_gt.
+    :param label_gt: list of ground truth labels
+    :param label_predictions: list of predictions. Must have the same length as label_gt
+    :param masks: list with masks of same length as label_gt.
     :param micro: If True, it will calculate the micro average f1 score
     :param per_label: If True, it will return the f1 score per label, otherwise will return the mean of all f1's
     :return:  numpy array
@@ -217,7 +216,7 @@ class ClassificationMetric(MetricBase):
     @classmethod
     def dump(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> Tuple[Any, Any]:
+    ) -> tuple[dict[str, list[int]], dict[str, list[int]]]:
         dataflow_gt.reset_state()
         dataflow_predictions.reset_state()
 
@@ -225,8 +224,8 @@ class ClassificationMetric(MetricBase):
         if cls._cats is None and cls._sub_cats is None:
             cls._cats = categories.get_categories(as_dict=False, filtered=True)
         mapper_with_setting = cls.mapper(cls._cats, cls._sub_cats, cls._summary_sub_cats)
-        labels_gt: Dict[str, List[int]] = {}
-        labels_predictions: Dict[str, List[int]] = {}
+        labels_gt: dict[str, list[int]] = {}
+        labels_predictions: dict[str, list[int]] = {}
 
         # returned images of gt and predictions are likely not in the same order. We therefore first stream all data
         # into a dict and generate our result vectors thereafter.
@@ -253,7 +252,7 @@ class ClassificationMetric(MetricBase):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -290,7 +289,7 @@ class ClassificationMetric(MetricBase):
                  sub_category_names = {cat1: [sub_cat1, sub_cat2], cat2: sub_cat3}
 
 
-        :param category_names: List of category names
+        :param category_names: list of category names
         :param sub_category_names: Dict of categories and their sub categories that are supposed to be evaluated,
                                    e.g. {"FOO": ["bak","baz"]} will evaluate "bak" and "baz"
         :param summary_sub_category_names: string or list of summary sub categories
@@ -346,7 +345,7 @@ class ClassificationMetric(MetricBase):
             )
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return []
 
     @property
@@ -395,7 +394,7 @@ class ConfusionMetric(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -407,10 +406,10 @@ class ConfusionMetric(ClassificationMetric):
                     results.append(
                         {
                             "key": key.value if isinstance(key, ObjectTypes) else key,
-                            "category_id_gt": row_number,
+                            "category_id": row_number,
                             "category_id_pr": col_number,
                             "val": float(val),
-                            "num_samples_gt": number_labels[row_number],
+                            "num_samples": number_labels[row_number],
                         }
                     )
         cls._results = results
@@ -420,12 +419,12 @@ class ConfusionMetric(ClassificationMetric):
     def print_result(cls) -> None:
         data = {}
         for entry in cls._results:
-            if entry["category_id_gt"] not in data:
-                data[entry["category_id_gt"]] = [entry["category_id_gt"], entry["val"]]
+            if entry["category_id"] not in data:
+                data[entry["category_id"]] = [entry["category_id"], entry["val"]]
             else:
-                data[entry["category_id_gt"]].append(entry["val"])
+                data[entry["category_id"]].append(entry["val"])
 
-        header = ["predictions -> \n  ground truth |\n              v"] + list(data.keys())
+        header = ["predictions -> \n  ground truth |\n              v"] + list(list(str(element) for element in data))
         table = tabulate([data[k] for k, _ in enumerate(data, 1)], headers=header, tablefmt="pipe")
         logger.info("Confusion matrix: \n %s", colored(table, "cyan"))
 
@@ -442,7 +441,7 @@ class PrecisionMetric(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []
@@ -494,7 +493,7 @@ class PrecisionMetricMicro(ClassificationMetric):
     @classmethod
     def get_distance(
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
-    ) -> List[JsonDict]:
+    ) -> list[MetricResults]:
         labels_gt, labels_pr = cls.dump(dataflow_gt, dataflow_predictions, categories)
 
         results = []

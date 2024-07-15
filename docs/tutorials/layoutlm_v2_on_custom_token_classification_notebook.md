@@ -6,10 +6,13 @@ We use the same split that we used for training LayoutLMv1 and load the artifact
 
 Needless to say, that we need to define dataset and `ObjectType`s again.
 
+
+```python
 import deepdoctection as dd
 from collections import defaultdict
 import wandb
 from transformers import LayoutLMTokenizerFast, XLMRobertaTokenizerFast
+```
 
 ## Defining `ObjectTypes`, Dataset and Dataflow
 
@@ -18,10 +21,10 @@ from transformers import LayoutLMTokenizerFast, XLMRobertaTokenizerFast
 @dd.object_types_registry.register("ner_first_page")
 class FundsFirstPage(dd.ObjectTypes):
 
-    report_date = "report_date"
-    umbrella = "umbrella"
-    report_type = "report_type"
-    fund_name = "fund_name"
+    REPORT_DATE = "report_date"
+    UMBRELLA = "umbrella"
+    REPORT_TYPE = "report_type"
+    FUND_NAME = "fund_name"
 
 dd.update_all_types_dict()
 
@@ -56,8 +59,8 @@ class NerBuilder(dd.DataFlowBaseBuilder):
                 ),
             )
         df = dd.MapData(df,dd.re_assign_cat_ids(cat_to_sub_cat_mapping=self.categories.get_sub_categories(
-                                                 categories=dd.LayoutType.word,
-                                                 sub_categories={dd.LayoutType.word: dd.WordType.token_class},
+                                                 categories=dd.LayoutType.WORD,
+                                                 sub_categories={dd.LayoutType.WORD: dd.WordType.TOKEN_CLASS},
                                                  keys = False,
                                                  values_as_dict=True,
                                                  name_as_key=True)))
@@ -69,16 +72,16 @@ class NerBuilder(dd.DataFlowBaseBuilder):
         return df
     
 ner = dd.CustomDataset(name = "FRFPE",
-                 dataset_type=dd.DatasetType.token_classification,
+                 dataset_type=dd.DatasetType.TOKEN_CLASSIFICATION,
                  location="FRFPE",
-                 init_categories=[dd.LayoutType.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
-                                  dd.LayoutType.figure, dd.LayoutType.line, dd.LayoutType.word],
-                 init_sub_categories={dd.LayoutType.word: {dd.WordType.token_class: [FundsFirstPage.report_date,
-                                                                                     FundsFirstPage.report_type,
-                                                                                     FundsFirstPage.umbrella,
-                                                                                     FundsFirstPage.fund_name,
-                                                                                     dd.TokenClasses.other],
-                                                           dd.WordType.tag: []}},
+                 init_categories=[dd.LayoutType.TEXT, dd.LayoutType.TITLE, dd.LayoutType.LIST, dd.LayoutType.TABLE,
+                                  dd.LayoutType.FIGURE, dd.LayoutType.LINE, dd.LayoutType.WORD],
+                 init_sub_categories={dd.LayoutType.WORD: {dd.WordType.TOKEN_CLASS: [FundsFirstPage.REPORT_DATE,
+                                                                                     FundsFirstPage.REPORT_TYPE,
+                                                                                     FundsFirstPage.UMBRELLA,
+                                                                                     FundsFirstPage.FUND_NAME,
+                                                                                     dd.TokenClasses.OTHER],
+                                                           dd.WordType.TAG: []}},
                  dataflow_builder=NerBuilder)
 
 ner.dataflow.categories.filter_categories(categories=dd.LayoutType.word)
@@ -88,12 +91,6 @@ merge = dd.MergeDataset(ner)
 merge.explicit_dataflows(df)
 merge.buffer_datasets()
 ```
-
-    [32m[0608 14:45.35 @file_utils.py:33][0m  [32mINF[0m  [97mPyTorch version 1.9.0+cu111 available.[0m
-    |                                                                                                                                                                                              |357/?[00:00<00:00,75697.21it/s]
-    [32m[0608 14:45.37 @base.py:250][0m  [32mINF[0m  [97mWill used dataflow from previously explicitly passed configuration[0m
-    |                                                                                                                                                                                                 |357/?[00:29<00:00,12.14it/s]
-
 
 ## Loading W&B artifact and building dataset split
 
@@ -126,7 +123,7 @@ wandb.finish()
 
 
 ```python
-categories={"1": dd.Languages.english, "2": dd.Languages.german, "3": dd.Languages.french}
+categories={1: dd.Languages.english, 2: dd.Languages.german, 3: dd.Languages.french}
 categories_name_as_key = {val: key for key, val in categories.items()}
 
 # train
@@ -197,46 +194,17 @@ dd.train_hf_layoutlm(path_config_json,
                                        "save_steps=400",
                                        "use_wandb=True",
                                        "wandb_project=FRFPE_layoutlmv2"],
-                     log_dir="/home/janis/Experiments/FRFPE/layoutlmv2",
+                     log_dir="/path/to/dir/Experiments/FRFPE/layoutlmv2",
                      dataset_val=merge,
                      metric=metric,
                      use_token_tag=False,
                      pipeline_component_name="LMTokenClassifierService")
 ```
-                                                                                                                                                                                       |305/?[00:00<00:00,6328.66it/s]
-    [32m[0608 14:48.41 @maputils.py:222][0m  [32mINF[0m  [97mGround-Truth category distribution:
-     [36m|  category   | #box   |  category   | #box   |  category  | #box   |
-    |:-----------:|:-------|:-----------:|:-------|:----------:|:-------|
-    | report_date | 1017   | report_type | 682    |  umbrella  | 843    |
-    |  fund_name  | 1721   |    other    | 10692  |            |        |
-    |    total    | 14955  |             |        |            |        |[0m[0m
-    |                                                                                                                                                                                            |305/?[00:00<00:00,1052025.26it/s]
-
-
-
-     {0: <FundsFirstPage.report_date>,
-     1: <FundsFirstPage.report_type>,
-     2: <FundsFirstPage.umbrella>,
-     3: <FundsFirstPage.fund_name>,
-     4: <TokenClasses.other>}
-
-  
-    [32m[0608 15:09.00 @accmetric.py:373][0m  [32mINF[0m  [97mF1 results:
-     [36m|     key     | category_id   | val      | num_samples   |
-    |:-----------:|:--------------|:---------|:--------------|
-    |    word     | 1             | 1        | 2538          |
-    | token_class | 1             | 0.939597 | 79            |
-    | token_class | 2             | 0.666667 | 48            |
-    | token_class | 3             | 0.80303  | 71            |
-    | token_class | 4             | 0.865169 | 95            |
-    | token_class | 5             | 0.985909 | 2245          |[0m[0m
-
 
 
 ```python
 wandb.finish()
 ```
-
 
 ## Evaluation
 
@@ -248,8 +216,8 @@ categories = ner.dataflow.categories.get_sub_categories(categories="word",
                                                         sub_categories={"word": ["token_class"]},
                                                         keys=False)["word"]["token_class"]
 
-path_config_json = "/home/janis/Experiments/FRFPE/layoutlmv2/checkpoint-400/config.json"
-path_weights = "/home/janis//Experiments/FRFPE/layoutlmv2/checkpoint-400/pytorch_model.bin"
+path_config_json = "/path/to/dir/Experiments/FRFPE/layoutlmv2/checkpoint-400/config.json"
+path_weights = "/path/to/dir/Experiments/FRFPE/layoutlmv2/checkpoint-400/model.safetensors"
 
 layoutlm_classifier = dd.HFLayoutLmv2TokenClassifier(path_config_json,
                                                    path_weights,
@@ -264,7 +232,9 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="test")
 ```
 
-    
+    [32m[0608 15:54.11 @eval.py:113][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0608 15:54.14 @eval.py:225][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 26/26 [00:01<00:00, 17.09it/s]
     [32m[0608 15:54.15 @eval.py:207][0m  [32mINF[0m  [97mStarting evaluation...[0m
     [32m[0608 15:54.15 @accmetric.py:373][0m  [32mINF[0m  [97mF1 results:
      [36m|     key     | category_id   | val      | num_samples   |
@@ -288,6 +258,9 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="test")
 ```
 
+    [32m[0608 16:09.51 @eval.py:113][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0608 16:09.54 @eval.py:225][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 26/26 [00:01<00:00, 17.40it/s]
     [32m[0608 16:09.55 @eval.py:207][0m  [32mINF[0m  [97mStarting evaluation...[0m
     [32m[0608 16:09.55 @accmetric.py:431][0m  [32mINF[0m  [97mConfusion matrix: 
      [36m|    predictions ->  |   1 |   2 |   3 |   4 |   5 |
@@ -322,41 +295,13 @@ dd.train_hf_layoutlm(path_config_json,
                                        "save_steps=400",
                                        "use_wandb=True",
                                        "wandb_project=FRFPE_layoutxlm"],
-                         log_dir="/home/janis/Experiments/FRFPE/layoutxlm",
+                         log_dir="/path/to/dir/Experiments/FRFPE/layoutxlm",
                          dataset_val=merge,
                          metric=metric,
                          use_xlm_tokenizer=True, # layoutv2 are layoutlm are from layer perspective identical. However, they do not share the same tokenizer. We therefore need to provide the information to the training script.
                          use_token_tag=False,
                          pipeline_component_name="LMTokenClassifierService")
 ```
-
-
-    [32m[0608 16:25.36 @maputils.py:222][0m  [32mINF[0m  [97mGround-Truth category distribution:
-     [36m|  category   | #box   |  category   | #box   |  category  | #box   |
-    |:-----------:|:-------|:-----------:|:-------|:----------:|:-------|
-    | report_date | 1017   | report_type | 682    |  umbrella  | 843    |
-    |  fund_name  | 1721   |    other    | 10692  |            |        |
-    |    total    | 14955  |             |        |            |        |
-
-
-
-     {0: <FundsFirstPage.report_date>,
-     1: <FundsFirstPage.report_type>,
-     2: <FundsFirstPage.umbrella>,
-     3: <FundsFirstPage.fund_name>,
-     4: <TokenClasses.other>}[0m
-
-
-    [32m[0608 16:45.01 @accmetric.py:373][0m  [32mINF[0m  [97mF1 results:
-     [36m|     key     | category_id   | val      | num_samples   |
-    |:-----------:|:--------------|:---------|:--------------|
-    |    word     | 1             | 1        | 2538          |
-    | token_class | 1             | 0.980645 | 79            |
-    | token_class | 2             | 0.927835 | 48            |
-    | token_class | 3             | 0.895105 | 71            |
-    | token_class | 4             | 0.938144 | 95            |
-    | token_class | 5             | 0.996657 | 2245          |[0m[0m
-
 
 Evalutation result look a lot more promising. We get an F1-score close to 0.9 along all labels.  
 
@@ -368,12 +313,13 @@ categories = ner.dataflow.categories.get_sub_categories(categories="word",
                                                         sub_categories={"word": ["token_class"]},
                                                         keys=False)["word"]["token_class"]
 
-path_config_json = "/home/janis/Experiments/FRFPE/layoutxlm/checkpoint-1600/config.json"
-path_weights = "/home/janis/Experiments/FRFPE/layoutxlm/checkpoint-1600/pytorch_model.bin"
+path_config_json = "/path/to/dir/Experiments/FRFPE/layoutxlm/checkpoint-1600/config.json"
+path_weights = "/path/to/dir/Experiments/FRFPE/layoutxlm/checkpoint-1600/model.safetensors"
 
 layoutlm_classifier = dd.HFLayoutLmv2TokenClassifier(path_config_json,
                                                      path_weights,
-                                                     categories=categories)
+                                                     categories=categories,
+                                                     use_xlm_tokenizer=True)
 
 tokenizer_fast = XLMRobertaTokenizerFast.from_pretrained("microsoft/layoutxlm-base")
 tokenizer_fast.model_max_length=512 # Instantiating the tokenizer the way we do above seems to be problematic as 
@@ -388,6 +334,13 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="test")
 ```
 
+    The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+    The tokenizer class you load from this checkpoint is 'LayoutXLMTokenizer'. 
+    The class this function is called from is 'XLMRobertaTokenizerFast'.
+    [32m[0608 16:58.17 @eval.py:113][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0608 16:58.20 @eval.py:225][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 26/26 [00:01<00:00, 18.60it/s]
+    [32m[0608 16:58.22 @eval.py:207][0m  [32mINF[0m  [97mStarting evaluation...[0m
     [32m[0608 16:58.22 @accmetric.py:373][0m  [32mINF[0m  [97mF1 results:
      [36m|     key     | category_id   | val      | num_samples   |
     |:-----------:|:--------------|:---------|:--------------|
@@ -411,8 +364,7 @@ evaluator.compare(interactive=True, split="test", show_words=True)
 
 ## Training XLM models on separate languages
 
-Of course, there are various experimentation options here as well. For example, one could investigate whether one gets better results when training XLM models for each language separately. 
-In our case, one could train one each on English and German data (there are too few data points for a French model). 
+Of course, there are various experimentation options here as well. For example, one could investigate whether one gets better results when training XLM models for each language separately. In our case, one could train one each on English and German data (there are too few data points for a French model). 
 
 For this, one would have to filter the data set once for English and German data points. E.g. training a german model would look like this:
 

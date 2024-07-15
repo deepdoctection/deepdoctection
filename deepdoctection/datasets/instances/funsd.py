@@ -41,16 +41,16 @@ from ...dataflow import DataFlow, MapData, SerializerFiles
 from ...datasets.info import DatasetInfo
 from ...mapper.cats import cat_to_sub_cat, filter_cat
 from ...mapper.xfundstruct import xfund_to_image
-from ...utils.detection_types import JsonDict, Pathlike
 from ...utils.fs import load_json
 from ...utils.settings import BioTag, DatasetType, LayoutType, ObjectTypes, TokenClasses, TokenClassWithTag, WordType
+from ...utils.types import FunsdDict, PathLikeOrStr
 from ..base import _BuiltInDataset
 from ..dataflow_builder import DataFlowBaseBuilder
 from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 
-def load_file(path_ann: Pathlike) -> JsonDict:
+def load_file(path_ann: PathLikeOrStr) -> FunsdDict:
     """
     Loading json file
 
@@ -80,28 +80,28 @@ _LICENSE = (
 
 _URL = "https://guillaumejaume.github.io/FUNSD/download/"
 _SPLITS: Mapping[str, str] = {"train": "training_data", "test": "testing_data"}
-_TYPE = DatasetType.token_classification
+_TYPE = DatasetType.TOKEN_CLASSIFICATION
 _LOCATION = "funsd"
 _ANNOTATION_FILES: Mapping[str, str] = {"train": "annotations", "test": "annotations"}
 
-_INIT_CATEGORIES = [LayoutType.word, LayoutType.text]
+_INIT_CATEGORIES = [LayoutType.WORD, LayoutType.TEXT]
 _SUB_CATEGORIES: Dict[ObjectTypes, Dict[ObjectTypes, List[ObjectTypes]]]
 _SUB_CATEGORIES = {
-    LayoutType.word: {
-        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header],
-        WordType.tag: [BioTag.inside, BioTag.outside, BioTag.begin],
-        WordType.token_tag: [
-            TokenClassWithTag.b_answer,
-            TokenClassWithTag.b_header,
-            TokenClassWithTag.b_question,
-            TokenClassWithTag.i_answer,
-            TokenClassWithTag.i_header,
-            TokenClassWithTag.i_question,
-            BioTag.outside,
+    LayoutType.WORD: {
+        WordType.TOKEN_CLASS: [TokenClasses.OTHER, TokenClasses.QUESTION, TokenClasses.ANSWER, TokenClasses.HEADER],
+        WordType.TAG: [BioTag.INSIDE, BioTag.OUTSIDE, BioTag.BEGIN],
+        WordType.TOKEN_TAG: [
+            TokenClassWithTag.B_ANSWER,
+            TokenClassWithTag.B_HEADER,
+            TokenClassWithTag.B_QUESTION,
+            TokenClassWithTag.I_ANSWER,
+            TokenClassWithTag.I_HEADER,
+            TokenClassWithTag.I_QUESTION,
+            BioTag.OUTSIDE,
         ],
     },
-    LayoutType.text: {
-        WordType.token_class: [TokenClasses.other, TokenClasses.question, TokenClasses.answer, TokenClasses.header]
+    LayoutType.TEXT: {
+        WordType.TOKEN_CLASS: [TokenClasses.OTHER, TokenClasses.QUESTION, TokenClasses.ANSWER, TokenClasses.HEADER]
     },
 }
 
@@ -159,14 +159,14 @@ class FunsdBuilder(DataFlowBaseBuilder):
         # Map
         categories_name_as_key = self.categories.get_categories(init=True, name_as_key=True)
         category_names_mapping = {
-            "other": TokenClasses.other,
-            "question": TokenClasses.question,
-            "answer": TokenClasses.answer,
-            "header": TokenClasses.header,
+            "other": TokenClasses.OTHER,
+            "question": TokenClasses.QUESTION,
+            "answer": TokenClasses.ANSWER,
+            "header": TokenClasses.HEADER,
         }
         ner_token_to_id_mapping = self.categories.get_sub_categories(
-            categories=LayoutType.word,
-            sub_categories={LayoutType.word: [WordType.token_tag, WordType.tag, WordType.token_class]},
+            categories=LayoutType.WORD,
+            sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG, WordType.TAG, WordType.TOKEN_CLASS]},
             keys=False,
             values_as_dict=True,
             name_as_key=True,

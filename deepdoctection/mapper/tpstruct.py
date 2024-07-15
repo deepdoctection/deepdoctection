@@ -26,8 +26,8 @@ from lazy_imports import try_import
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.image import Image
-from ..utils.detection_types import JsonDict
-from ..utils.settings import ObjectTypes
+from ..utils.settings import TypeOrStr
+from ..utils.types import JsonDict
 from .maputils import curry
 
 with try_import() as import_guard:
@@ -39,7 +39,7 @@ with try_import() as import_guard:
 def image_to_tp_frcnn_training(
     dp: Image,
     add_mask: bool = False,
-    category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
+    category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
 ) -> Optional[JsonDict]:
     """
     Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned

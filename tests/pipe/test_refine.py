@@ -264,13 +264,13 @@ class TestTableSegmentationRefinementService:
         """
 
         self.table_segmentation_refinement_service = TableSegmentationRefinementService(
-            [LayoutType.table, LayoutType.table_rotated],
+            [LayoutType.TABLE, LayoutType.TABLE_ROTATED],
             [
-                LayoutType.cell,
-                CellType.column_header,
-                CellType.projected_row_header,
-                CellType.spanning,
-                CellType.row_header,
+                LayoutType.CELL,
+                CellType.COLUMN_HEADER,
+                CellType.PROJECTED_ROW_HEADER,
+                CellType.SPANNING,
+                CellType.ROW_HEADER,
             ],
         )
 
@@ -287,47 +287,47 @@ class TestTableSegmentationRefinementService:
         dp = self.table_segmentation_refinement_service.pass_datapoint(dp)
 
         # Assert
-        table = dp.get_annotation(category_names=LayoutType.table)[0]
+        table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
         assert table.image is not None
         summary = table.image.summary
         summaries_table = [
-            summary.get_sub_category(TableType.number_of_rows).category_id,
-            summary.get_sub_category(TableType.number_of_columns).category_id,
-            summary.get_sub_category(TableType.max_row_span).category_id,
-            summary.get_sub_category(TableType.max_col_span).category_id,
+            summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id,
+            summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id,
+            summary.get_sub_category(TableType.MAX_ROW_SPAN).category_id,
+            summary.get_sub_category(TableType.MAX_COL_SPAN).category_id,
         ]
-        summary_html = table.get_sub_category(TableType.html)
+        summary_html = table.get_sub_category(TableType.HTML)
         cells = dp.get_annotation(
             category_names=self.table_segmentation_refinement_service.cell_names  # pylint: disable=W0212
         )
-        row_numbers = {cell.get_sub_category(CellType.row_number).category_id for cell in cells}
-        col_numbers = {cell.get_sub_category(CellType.column_number).category_id for cell in cells}
-        row_spans = {cell.get_sub_category(CellType.row_span).category_id for cell in cells}
-        col_spans = {cell.get_sub_category(CellType.column_span).category_id for cell in cells}
+        row_numbers = {cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells}
+        col_numbers = {cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells}
+        row_spans = {cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells}
+        col_spans = {cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells}
 
         assert len(cells) == 4
-        assert row_numbers == {"1", "2"}
-        assert col_numbers == {"1", "2"}
-        assert row_spans == {"1"}
-        assert col_spans == {"1"}
-        assert summaries_table == ["2", "2", "1", "1"]
+        assert row_numbers == {1, 2}
+        assert col_numbers == {1, 2}
+        assert row_spans == {1}
+        assert col_spans == {1}
+        assert summaries_table == [2, 2, 1, 1]
         assert isinstance(summary_html, ContainerAnnotation)
         assert summary_html.value == [
             "<table>",
             "<tr>",
             "<td>",
-            "2c1458bf-6b21-327a-9632-21373da468bb",
+            "34a0d486-748c-3def-b3f6-8a90dfaa4be2",
             "</td>",
             "<td>",
-            "609243a2-0bd8-3002-939a-c8bcf7b2e3c8",
+            "01b3054d-b04b-37bd-b29b-91aaf9c2d0a3",
             "</td>",
             "</tr>",
             "<tr>",
             "<td>",
-            "9b2b0bd1-3885-3aa6-8d45-ebebdd1abddd",
+            "742ad1e7-438c-38f0-bf46-a0c788898b1b",
             "</td>",
             "<td>",
-            "6e70cf3d-e260-3f73-81bf-77616b6d54b2",
+            "6571cea7-789f-378a-902f-4ab83f133caf",
             "</td>",
             "</tr>",
             "</table>",

@@ -19,23 +19,25 @@
 Methods that convert incoming data to dataflows.
 """
 
+from __future__ import annotations
+
 import itertools
 import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Optional, Sequence, Union
+from typing import Any, DefaultDict, Dict, Iterator, List, Optional, Sequence, TextIO, Union
 
 from jsonlines import Reader, Writer
 from tabulate import tabulate
 from termcolor import colored
 
 from ..utils.context import timed_operation
-from ..utils.detection_types import JsonDict, Pathlike
 from ..utils.error import FileExtensionError
 from ..utils.identifier import get_uuid_from_str
 from ..utils.pdf_utils import PDFStreamer
 from ..utils.tqdm import get_tqdm
+from ..utils.types import JsonDict, PathLikeOrStr
 from ..utils.utils import is_file_extension
 from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
@@ -53,6 +55,59 @@ def _reset_df_and_get_length(df: DataFlow) -> int:
     return length
 
 
+class FileClosingIterator:
+    """
+    A custom iterator that closes the file object once the iteration is complete.
+
+    This iterator is used to ensure that the file object is properly closed after
+    reading the data from it. It is used in the context of reading data from a file
+    in a streaming manner, where the data is not loaded into memory all at once.
+
+    **Example:**
+
+        file = open(path, "r")
+        iterator = Reader(file)
+        closing_iterator = FileClosingIterator(file, iter(iterator))
+
+        df = CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints) # set up a dataflow
+
+    """
+
+    def __init__(self, file_obj: TextIO, iterator: Iterator[Any]):
+        """
+        Initializes the FileClosingIterator with a file object and its iterator.
+
+        :param file_obj (TextIO): The file object to read data from.
+        :param     iterator (Iterator): The actual iterator of the file object.
+        """
+        self.file_obj = file_obj
+        self.iterator = iterator
+
+    def __iter__(self) -> FileClosingIterator:
+        """
+        Returns the iterator object itself.
+
+        :return:  FileClosingIterator: The instance of the class itself.
+        """
+        return self
+
+    def __next__(self) -> Any:
+        """
+        Returns the next item from the file object's iterator.
+        Closes the file object if the iteration is finished.
+
+        :return: The next item from the file object's iterator.
+
+        Raises:
+            StopIteration: If there are no more items to return.
+        """
+        try:
+            return next(self.iterator)
+        except StopIteration as exc:
+            self.file_obj.close()
+            raise StopIteration from exc
+
+
 class SerializerJsonlines:
     """
     Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of JSON objects to a .jsonl file.
@@ -66,7 +121,7 @@ class SerializerJsonlines:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
         """
         :param path: a path to a .jsonl file.
         :param max_datapoints: Will stop the iteration once max_datapoints have been streamed
@@ -75,10 +130,11 @@ class SerializerJsonlines:
         """
         file = open(path, "r")  # pylint: disable=W1514,R1732
         iterator = Reader(file)
-        return CustomDataFromIterable(iterator, max_datapoints=max_datapoints)
+        closing_iterator = FileClosingIterator(file, iter(iterator))
+        return CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints)
 
     @staticmethod
-    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
+    def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
         Writes a dataflow iteratively to a .jsonl file. Every datapoint must be a dict where all items are serializable.
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
@@ -120,7 +176,7 @@ class SerializerTabsepFiles:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoins: Optional[int] = None) -> CustomDataFromList:
+    def load(path: PathLikeOrStr, max_datapoins: Optional[int] = None) -> CustomDataFromList:
         """
         :param path: a path to a .txt file.
         :param max_datapoins: Will stop the iteration once max_datapoints have been streamed
@@ -133,7 +189,7 @@ class SerializerTabsepFiles:
         return CustomDataFromList(file_list, max_datapoints=max_datapoins)
 
     @staticmethod
-    def save(df: DataFlow, path: Pathlike, file_name: str, max_datapoints: Optional[int] = None) -> None:
+    def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
         Writes a dataflow iteratively to a .txt file. Every datapoint must be a string.
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
@@ -168,7 +224,7 @@ class SerializerFiles:
 
     @staticmethod
     def load(
-        path: Pathlike,
+        path: PathLikeOrStr,
         file_type: Union[str, Sequence[str]],
         max_datapoints: Optional[int] = None,
         shuffle: Optional[bool] = False,
@@ -190,15 +246,14 @@ class SerializerFiles:
         df2: DataFlow
         df3: DataFlow
 
-        if isinstance(path, str):
-            path = Path(path)
+        path = Path(path)
         if not path.exists():
             raise NotADirectoryError(f"The path {path} to the directory or file does not exist")
 
         if shuffle:
             sort = False
-        it1 = os.walk(path, topdown=False)
-        it2 = os.walk(path, topdown=False)
+        it1 = os.walk(os.fspath(path), topdown=False)
+        it2 = os.walk(os.fspath(path), topdown=False)
         df1 = CustomDataFromIterable(it1)
         df2 = CustomDataFromIterable(it2)
         df1 = MapData(df1, lambda dp: None if len(dp[2]) == 0 else dp)
@@ -237,7 +292,7 @@ class CocoParser:
     :param annotation_file: location of annotation file
     """
 
-    def __init__(self, annotation_file: Optional[Pathlike] = None) -> None:
+    def __init__(self, annotation_file: Optional[PathLikeOrStr] = None) -> None:
         self.dataset: JsonDict = {}
         self.anns: Dict[int, JsonDict] = {}
         self.cats: Dict[int, JsonDict] = {}
@@ -465,7 +520,7 @@ class SerializerCoco:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads a .json file and generates a dataflow.
 
@@ -478,7 +533,7 @@ class SerializerCoco:
 
                 {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
 
-            for each single image id.
+            for each image id. We use the type hint CocoDatapointDict to describe this dictionary
 
         :param max_datapoints: Will stop the iteration once max_datapoints have been streamed.
         :param path: a path to a .json file.
@@ -525,7 +580,7 @@ class SerializerPdfDoc:
     """
 
     @staticmethod
-    def load(path: Pathlike, max_datapoints: Optional[int] = None) -> DataFlow:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
         """
         Loads the document page wise and returns a dataflow accordingly.
 
@@ -552,14 +607,16 @@ class SerializerPdfDoc:
         return df
 
     @staticmethod
-    def save(path: Pathlike) -> None:
+    def save(path: PathLikeOrStr) -> None:
         """
         Not implemented
         """
         raise NotImplementedError()
 
     @staticmethod
-    def split(path: Pathlike, path_target: Optional[Pathlike] = None, max_datapoint: Optional[int] = None) -> None:
+    def split(
+        path: PathLikeOrStr, path_target: Optional[PathLikeOrStr] = None, max_datapoint: Optional[int] = None
+    ) -> None:
         """
         Split a document into single pages.
         """

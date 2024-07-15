@@ -18,12 +18,13 @@
 """
 Fixtures for extern package testing
 """
-from typing import List
+from typing import Mapping, Sequence
 
 from pytest import fixture
 
 from deepdoctection.extern.base import DetectionResult
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.settings import ObjectTypes
+from deepdoctection.utils.types import JsonDict
 
 from ..data import get_textract_response
 from ..mapper.data import DatapointXfund
@@ -47,7 +48,7 @@ def fixture_layoutlm_input() -> JsonDict:
 
 
 @fixture(name="categories_semantics")
-def fixture_categories_semantics() -> List[str]:
+def fixture_categories_semantics() -> Sequence[str]:
     """
     Categories semantics
     """
@@ -55,7 +56,7 @@ def fixture_categories_semantics() -> List[str]:
 
 
 @fixture(name="categories_bio")
-def fixture_categories_bio() -> List[str]:
+def fixture_categories_bio() -> Sequence[str]:
     """
     Categories semantics
     """
@@ -63,7 +64,7 @@ def fixture_categories_bio() -> List[str]:
 
 
 @fixture(name="token_class_names")
-def fixture_token_class_names() -> List[str]:
+def fixture_token_class_names() -> Sequence[str]:
     """
     Categories semantics
     """
@@ -101,7 +102,7 @@ def fixture_angle_detection_result() -> DetectionResult:
 
 
 @fixture(name="detr_categories")
-def fixture_detr_categories() -> JsonDict:
+def fixture_detr_categories() -> Mapping[int, ObjectTypes]:
     """
     fixture object types
     """

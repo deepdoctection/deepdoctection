@@ -16,6 +16,12 @@ import wandb
 from transformers import LayoutLMTokenizerFast
 ```
 
+    /home/janis/Documents/Repos/deepdoctection_pt/.venv/lib/python3.9/site-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+      from .autonotebook import tqdm as notebook_tqdm
+    [32m[0712 18:07.41 @file_utils.py:36][0m  [32mINF[0m  [97mPyTorch version 2.1.2+cu121 available.[0m
+    [32m[0712 18:07.41 @file_utils.py:74][0m  [32mINF[0m  [97mDisabling Tensorflow because USE_TORCH is set[0m
+
+
 ## Defining object types
 
 **FRFPE** contains categories that have not been defined in **deep**doctection. These must first be made known to the framework. `TokenClasses.other` has already been defined.
@@ -25,10 +31,10 @@ from transformers import LayoutLMTokenizerFast
 @dd.object_types_registry.register("ner_first_page")
 class FundsFirstPage(dd.ObjectTypes):
 
-    report_date = "report_date"
-    umbrella = "umbrella"
-    report_type = "report_type"
-    fund_name = "fund_name"
+    REPORT_DATE = "report_date"
+    UMBRELLA = "umbrella"
+    REPORT_TYPE = "report_type"
+    FUND_NAME = "fund_name"
 
 dd.update_all_types_dict()
 ```
@@ -40,6 +46,13 @@ Download the dataset and save it to
 dd.get_dataset_dir_path() / "FRFPE"
 ```
 
+
+
+
+    PosixPath('/media/janis/Elements/.cache/deepdoctection/datasets/FRFPE')
+
+
+
 ## Visualization and display of ground truth
 
 
@@ -48,7 +61,7 @@ path = dd.get_dataset_dir_path() / "FRFPE" / "40952248ba13ae8bfdd39f56af22f7d9_0
 
 page = dd.Page.from_file(path)
 page.image =  dd.load_image_from_file(path.parents[0]  / "image" / page.file_name.replace("pdf","png"))
-page.viz(interactive=True,show_words=True)  # close interactive window with q
+#page.viz(interactive=True,show_words=True)  # close interactive window with q
 ```
 
 
@@ -123,8 +136,8 @@ class NerBuilder(dd.DataFlowBaseBuilder):
                 ),
             )
         df = dd.MapData(df,dd.re_assign_cat_ids(cat_to_sub_cat_mapping=self.categories.get_sub_categories(
-                                                 categories=dd.LayoutType.word,
-                                                 sub_categories={dd.LayoutType.word: dd.WordType.token_class},
+                                                 categories=dd.LayoutType.WORD,
+                                                 sub_categories={dd.LayoutType.WORD: dd.WordType.TOKEN_CLASS},
                                                  keys = False,
                                                  values_as_dict=True,
                                                  name_as_key=True)))
@@ -132,22 +145,19 @@ class NerBuilder(dd.DataFlowBaseBuilder):
         return df
 ```
 
-    [32m[0608 11:38.49 @file_utils.py:33][0m  [32mINF[0m  [97mPyTorch version 1.9.0+cu111 available.[0m
-
-
 
 ```python
 ner = dd.CustomDataset(name = "FRFPE",
-                 dataset_type=dd.DatasetType.token_classification,
+                 dataset_type=dd.DatasetType.TOKEN_CLASSIFICATION,
                  location="FRFPE",
-                 init_categories=[dd.Layout.text, dd.LayoutType.title, dd.LayoutType.list, dd.LayoutType.table,
-                                  dd.LayoutType.figure, dd.LayoutType.line, dd.LayoutType.word],
-                 init_sub_categories={dd.LayoutType.word: {dd.WordType.token_class: [FundsFirstPage.report_date,
-                                                                                     FundsFirstPage.report_type,
-                                                                                     FundsFirstPage.umbrella,
-                                                                                     FundsFirstPage.fund_name,
-                                                                                     dd.TokenClasses.other],
-                                                           dd.WordType.tag: []}},
+                 init_categories=[dd.LayoutType.TEXT, dd.LayoutType.TITLE, dd.LayoutType.LIST, dd.LayoutType.TABLE,
+                                  dd.LayoutType.FIGURE, dd.LayoutType.LINE, dd.LayoutType.WORD],
+                 init_sub_categories={dd.LayoutType.WORD: {dd.WordType.TOKEN_CLASS: [FundsFirstPage.REPORT_DATE,
+                                                                                     FundsFirstPage.REPORT_TYPE,
+                                                                                     FundsFirstPage.UMBRELLA,
+                                                                                     FundsFirstPage.FUND_NAME,
+                                                                                     dd.TokenClasses.OTHER],
+                                                           dd.WordType.TAG: []}},
                  dataflow_builder=NerBuilder)
 ```
 
@@ -161,15 +171,18 @@ To reproduce the split later we save the split as a W&B artifact.
 
 
 ```python
-ner.dataflow.categories.filter_categories(categories=dd.LayoutType.word)
+ner.dataflow.categories.filter_categories(categories=dd.LayoutType.WORD)
 
 merge = dd.MergeDataset(ner)
 merge.buffer_datasets()
 merge.split_datasets(ratio=0.1)
 ```
 
-    [32m[0608 11:39.02 @base.py:308][0m  [32mINF[0m  [97m___________________ Number of datapoints per split ___________________[0m
-    [32m[0608 11:39.02 @base.py:309][0m  [32mINF[0m  [97m{'test': 26, 'train': 305, 'val': 26}[0m
+    [32m[0712 18:08.06 @base.py:259][0m  [32mINF[0m  [97mWill use the same build setting for all dataflows[0m
+    |                                                                                                                                                                                                                                                                                                   |357/?[00:00<00:00,26702.93it/s]
+    |                                                                                                                                                                                                                                                                                                      |357/?[00:05<00:00,70.27it/s]
+    [32m[0712 18:08.12 @base.py:314][0m  [32mINF[0m  [97m___________________ Number of datapoints per split ___________________[0m
+    [32m[0712 18:08.12 @base.py:315][0m  [32mINF[0m  [97m{'test': 15, 'train': 327, 'val': 15}[0m
 
 
 
@@ -191,8 +204,10 @@ wandb.log_artifact(artifact)
 wandb.finish()
 ```
 
-    [32m[0608 11:39.10 @jupyter.py:224][0m  [4m[5m[31mERR[0m  [97mFailed to detect the name of this notebook, you can set it manually with the WANDB_NOTEBOOK_NAME environment variable to enable code saving.[0m
-    [34m[1mwandb[0m: Currently logged in as: [33mjm76[0m. Use [1m`wandb login --relogin`[0m to force relogin
+
+
+
+    ArtifactManifestEntry(path='split.table.json', digest='Y4OPSqZ/Z3PlQYSWBBDbxw==', size=18543, local_path='/home/janis/.local/share/wandb/artifacts/staging/tmpkptwl7lb', skip_cache=False)
 
 
 
@@ -214,11 +229,14 @@ metric.set_categories(sub_category_names={"word": ["token_class"]})
 
 Remember id to label mapping:
 
-0: <FundsFirstPage.report_date>,
-1: <FundsFirstPage.report_type>,
-2: <FundsFirstPage.umbrella>,
-3: <FundsFirstPage.fund_name>,
-4: <TokenClasses.other>
+``` 
+0: <FundsFirstPage.REPORT_DATE>,
+1: <FundsFirstPage.REPORT_TYPE>,
+2: <FundsFirstPage.UMBRELLA>,
+3: <FundsFirstPage.FUND_NAME>,
+4: <TokenClasses.OTHER>
+```
+
 
 
 ```python
@@ -230,47 +248,20 @@ dd.train_hf_layoutlm(path_config_json,
                                        "eval_steps=100",
                                        "save_steps=400",
                                        "use_wandb=True",
-                                       "wandb_project=FRFPE_layoutlmv1"],
-                     log_dir="/home/janis/Experiments/FRFPE/layoutlmv1",
+                                       "wandb_project=FRFPE_layoutlmv1",
+                                      ],
+                     log_dir="/path/to/dir/Experiments/FRFPE/layoutlmv1",
                      dataset_val=merge,
                      metric=metric,
                      use_token_tag=False,
                      pipeline_component_name="LMTokenClassifierService")
 ```
 
-    [32m[0608 11:39.36 @maputils.py:222][0m  [32mINF[0m  [97mGround-Truth category distribution:
-     [36m|  category   | #box   |  category   | #box   |  category  | #box   |
-    |:-----------:|:-------|:-----------:|:-------|:----------:|:-------|
-    | report_date | 1017   | report_type | 682    |  umbrella  | 843    |
-    |  fund_name  | 1721   |    other    | 10692  |            |        |
-    |    total    | 14955  |             |        |            |        |[0m[0m
-    |                                                                                                                                                                                             |305/?[00:00<00:00,358537.76it/s]
-
-
-
-    [32m[0608 11:39.37 @hf_layoutlm_train.py:425][0m  [5m[35mWRN[0m  [97mAfter 305 dataloader will log warning at every iteration about unexpected samples[0m
-    [32m[0608 11:39.37 @hf_layoutlm_train.py:430][0m  [32mINF[0m  [97mConfig: 
-     {'output_dir': '/path/to/dir/Experiments/FRFPE/layoutlmv1', 'overwrite_output_dir': False, 'do_train': False, 'do_eval': True, 'do_predict': False, 'evaluation_strategy': 'steps', 'prediction_loss_only': False, 'per_device_train_batch_size': 8, 'per_device_eval_batch_size': 8, 'per_gpu_train_batch_size': None, 'per_gpu_eval_batch_size': None, 'gradient_accumulation_steps': 1, 'eval_accumulation_steps': None, 'eval_delay': 0, 'learning_rate': 5e-05, 'weight_decay': 0.0, 'adam_beta1': 0.9, 'adam_beta2': 0.999, 'adam_epsilon': 1e-08, 'max_grad_norm': 1.0, 'num_train_epochs': 3.0, 'max_steps': 2000, 'lr_scheduler_type': 'linear', 'warmup_ratio': 0.0, 'warmup_steps': 0, 'log_level': 'passive', 'log_level_replica': 'warning', 'log_on_each_node': True, 'logging_dir': '/home/janis/Experiments/FRFPE/layoutlmv1/runs/Jun08_11-39-37_janis-x299-ud4-pro-local', 'logging_strategy': 'steps', 'logging_first_step': False, 'logging_steps': 500, 'logging_nan_inf_filter': True, 'save_strategy': 'steps', 'save_steps': 400, 'save_total_limit': None, 'save_safetensors': False, 'save_on_each_node': False, 'no_cuda': False, 'use_mps_device': False, 'seed': 42, 'data_seed': None, 'jit_mode_eval': False, 'use_ipex': False, 'bf16': False, 'fp16': False, 'fp16_opt_level': 'O1', 'half_precision_backend': 'auto', 'bf16_full_eval': False, 'fp16_full_eval': False, 'tf32': None, 'local_rank': -1, 'xpu_backend': None, 'tpu_num_cores': None, 'tpu_metrics_debug': False, 'debug': [], 'dataloader_drop_last': False, 'eval_steps': 100, 'dataloader_num_workers': 0, 'past_index': -1, 'run_name': '/home/janis/Experiments/FRFPE/layoutlmv1', 'disable_tqdm': False, 'remove_unused_columns': False, 'label_names': None, 'load_best_model_at_end': False, 'metric_for_best_model': None, 'greater_is_better': None, 'ignore_data_skip': False, 'sharded_ddp': [], 'fsdp': [], 'fsdp_min_num_params': 0, 'fsdp_config': {'fsdp_min_num_params': 0, 'xla': False, 'xla_fsdp_grad_ckpt': False}, 'fsdp_transformer_layer_cls_to_wrap': None, 'deepspeed': None, 'label_smoothing_factor': 0.0, 'optim': 'adamw_hf', 'optim_args': None, 'adafactor': False, 'group_by_length': False, 'length_column_name': 'length', 'report_to': ['tensorboard', 'wandb'], 'ddp_find_unused_parameters': None, 'ddp_bucket_cap_mb': None, 'dataloader_pin_memory': True, 'skip_memory_metrics': True, 'use_legacy_prediction_loop': False, 'push_to_hub': False, 'resume_from_checkpoint': None, 'hub_model_id': None, 'hub_strategy': 'every_save', 'hub_token': '<HUB_TOKEN>', 'hub_private_repo': False, 'gradient_checkpointing': False, 'include_inputs_for_metrics': False, 'fp16_backend': 'auto', 'push_to_hub_model_id': None, 'push_to_hub_organization': None, 'push_to_hub_token': '<PUSH_TO_HUB_TOKEN>', 'mp_parameters': '', 'auto_find_batch_size': False, 'full_determinism': False, 'torchdynamo': None, 'ray_scope': 'last', 'ddp_timeout': 1800, 'torch_compile': False, 'torch_compile_backend': None, 'torch_compile_mode': None}[0m
-    [32m[0608 11:39.37 @hf_layoutlm_train.py:434][0m  [32mINF[0m  [97mWill setup a head with the following classes
-     {0: <FundsFirstPage.report_date>,
-     1: <FundsFirstPage.report_type>,
-     2: <FundsFirstPage.umbrella>,
-     3: <FundsFirstPage.fund_name>,
-     4: <TokenClasses.other>}
-    
-     [36m|     key     | category_id   | val      | num_samples   |
-    |:-----------:|:--------------|:---------|:--------------|
-    |    word     | 1             | 1        | 2538          |
-    | token_class | 1             | 0.96732  | 79            |
-    | token_class | 2             | 0.710526 | 48            |
-    | token_class | 3             | 0.880597 | 71            |
-    | token_class | 4             | 0.882682 | 95            |
-    | token_class | 5             | 0.987208 | 2245          |
-
-
 ## Further exploration of evaluation
 
 ### Evaluation with confusion matrix
+
+
 
 ```python
 categories = ner.dataflow.categories.get_sub_categories(categories="word",
@@ -278,7 +269,7 @@ categories = ner.dataflow.categories.get_sub_categories(categories="word",
                                                         keys=False)["word"]["token_class"]
 
 path_config_json = "/path/to/dir/Experiments/FRFPE/layoutlmv1/checkpoint-1600/config.json"
-path_weights = "/path/to/dir/Experiments/FRFPE/layoutlmv1/checkpoint-1600/pytorch_model.bin"
+path_weights = "/path/to/dir/Experiments/FRFPE/layoutlmv1/checkpoint-1600/model.safetensors"
 
 layoutlm_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
                                                    path_weights,
@@ -294,23 +285,29 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="val")
 ```
 
-    [32m[0608 12:48.27 @accmetric.py:431][0m  [32mINF[0m  [97mConfusion matrix: 
-     [36m|    predictions ->  |   1 |   2 |   3 |   4 |    5 |
-    |     ground truth | |     |     |     |     |      |
-    |                  v |     |     |     |     |      |
-    |-------------------:|----:|----:|----:|----:|-----:|
-    |                  1 |  73 |   0 |   0 |   0 |    6 |
-    |                  2 |   0 |  28 |   0 |   0 |   20 |
-    |                  3 |   0 |   0 |  59 |   3 |    9 |
-    |                  4 |   0 |   0 |   1 |  80 |   14 |
-    |                  5 |   0 |   1 |   5 |   1 | 2238 |[0m[0m
+    [32m[0712 18:20.04 @eval.py:112][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0712 18:20.12 @eval.py:226][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [00:05<00:00,  2.95it/s]
+    [32m[0712 18:20.17 @eval.py:208][0m  [32mINF[0m  [97mStarting evaluation...[0m
+    [32m[0712 18:20.17 @accmetric.py:429][0m  [32mINF[0m  [97mConfusion matrix: 
+     [36m|    predictions ->  |   1 |   2 |   3 |   4 |   5 |
+    |     ground truth | |     |     |     |     |     |
+    |                  v |     |     |     |     |     |
+    |-------------------:|----:|----:|----:|----:|----:|
+    |                  1 |  41 |   0 |   0 |   0 |   4 |
+    |                  2 |   0 |  19 |   0 |   0 |   8 |
+    |                  3 |   0 |   0 |  20 |   4 |  14 |
+    |                  4 |   0 |   0 |   0 |  25 |   5 |
+    |                  5 |   0 |   0 |   1 |   1 | 657 |[0m[0m
 
 
 ###  Visualizing predictions and ground truth
 
 
 ```python
-evaluator.compare(interactive=True, split="val", show_words=True)
+result = evaluator.compare(interactive=True, split="val", show_words=True)
+sample = next(iter(result))
+sample.viz()
 ```
 
 ## Evaluation on test set
@@ -323,8 +320,8 @@ categories = ner.dataflow.categories.get_sub_categories(categories="word",
                                                         sub_categories={"word": ["token_class"]},
                                                         keys=False)["word"]["token_class"]
 
-path_config_json = "/path/to/dir/Experiments/FRFPE/layoutlmv1/checkpoint-1600/config.json"
-path_weights = "/path/to/dir/Experiments/FRFPE/layoutlmv1/checkpoint-1600/pytorch_model.bin"
+path_config_json = "/path/to/dir/FRFPE/layoutlmv1/checkpoint-1600/config.json"
+path_weights = "/path/to/dir/FRFPE/layoutlmv1/checkpoint-1600/model.safetensors"
 
 layoutlm_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
                                                    path_weights,
@@ -340,16 +337,20 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="test")
 ```
 
-    [32m[0608 12:15.45 @accmetric.py:373][0m  [32mINF[0m  [97mF1 results:
-     [36m|     key     | category_id   | val      | num_samples   |
-    |:-----------:|:--------------|:---------|:--------------|
-    |    word     | 1             | 1        | 1505          |
-    | token_class | 1             | 0.95082  | 89            |
-    | token_class | 2             | 0.809524 | 69            |
-    | token_class | 3             | 0.666667 | 86            |
-    | token_class | 4             | 0.857464 | 490           |
-    | token_class | 5             | 0.900782 | 771           |[0m[0m
-    [34m[1mwandb[0m: [33mWARNING[0m `log` ignored (called from pid=35652, `init` called from pid=None). See: http://wandb.me/init-multiprocess
+    [32m[0712 18:24.09 @eval.py:112][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0712 18:24.17 @eval.py:226][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [00:05<00:00,  2.92it/s]
+    [32m[0712 18:24.22 @eval.py:208][0m  [32mINF[0m  [97mStarting evaluation...[0m
+    [32m[0712 18:24.22 @accmetric.py:429][0m  [32mINF[0m  [97mConfusion matrix: 
+     [36m|    predictions ->  |   1 |   2 |   3 |   4 |   5 |
+    |     ground truth | |     |     |     |     |     |
+    |                  v |     |     |     |     |     |
+    |-------------------:|----:|----:|----:|----:|----:|
+    |                  1 |  53 |   0 |   0 |   0 |   2 |
+    |                  2 |   0 |  20 |   0 |   0 |  12 |
+    |                  3 |   0 |   0 |  25 |   6 |  10 |
+    |                  4 |   0 |   0 |   4 | 292 |  33 |
+    |                  5 |   0 |   0 |   4 |   8 | 482 |[0m[0m
 
 
 
@@ -361,21 +362,27 @@ evaluator = dd.Evaluator(merge, pipe_component, metric)
 _ = evaluator.run(split="test")
 ```
 
-    [32m[0608 12:17.46 @accmetric.py:431][0m  [32mINF[0m  [97mConfusion matrix: 
+    [32m[0712 18:24.26 @eval.py:112][0m  [32mINF[0m  [97mBuilding multi threading pipeline component to increase prediction throughput. Using 2 threads[0m
+    [32m[0712 18:24.34 @eval.py:226][0m  [32mINF[0m  [97mPredicting objects...[0m
+    100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15/15 [00:05<00:00,  2.91it/s]
+    [32m[0712 18:24.39 @eval.py:208][0m  [32mINF[0m  [97mStarting evaluation...[0m
+    [32m[0712 18:24.39 @accmetric.py:429][0m  [32mINF[0m  [97mConfusion matrix: 
      [36m|    predictions ->  |   1 |   2 |   3 |   4 |   5 |
     |     ground truth | |     |     |     |     |     |
     |                  v |     |     |     |     |     |
     |-------------------:|----:|----:|----:|----:|----:|
-    |                  1 |  87 |   0 |   0 |   0 |   2 |
-    |                  2 |   0 |  51 |   0 |   0 |  18 |
-    |                  3 |   0 |   0 |  49 |  13 |  24 |
-    |                  4 |   0 |   0 |   9 | 382 |  99 |
-    |                  5 |   7 |   6 |   3 |   6 | 749 |[0m[0m
+    |                  1 |  53 |   0 |   0 |   0 |   2 |
+    |                  2 |   0 |  20 |   0 |   0 |  12 |
+    |                  3 |   0 |   0 |  25 |   6 |  10 |
+    |                  4 |   0 |   0 |   4 | 292 |  33 |
+    |                  5 |   0 |   0 |   4 |   8 | 482 |[0m[0m
 
 
 
 ```python
-evaluator.compare(interactive=True, split="test", show_words=True)
+result = evaluator.compare(interactive=True, split="test", show_words=True)
+sample = next(iter(result))
+sample.viz()
 ```
 
 
@@ -416,7 +423,7 @@ dd.train_hf_layoutlm(path_config_json,
                                        "max_batch_size=8",
                                        "use_wandb=True",
                                        "wandb_project=funds_layoutlmv1"],
-                         log_dir="/home/janis/Experiments/ner_first_page_v1_2",
+                         log_dir="/path/to/dir/Experiments/ner_first_page_v1_2",
                          dataset_val=merge,
                          metric=metric,
                          use_token_tag=False,

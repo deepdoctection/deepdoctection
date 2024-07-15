@@ -35,7 +35,7 @@ from deepdoctection.utils.settings import LayoutType
 
 _NAME = "test_set"
 _LOCATION = "/path/to/dir"
-_INIT_CATEGORIES = [LayoutType.table, LayoutType.text]
+_INIT_CATEGORIES = [LayoutType.TABLE, LayoutType.TEXT]
 _DESCRIPTION = "test description"
 _URL = "test url"
 _LICENSE = "test license"
@@ -53,12 +53,12 @@ class Datapoint:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=100.0, lrx=200.0, lry=400.0, absolute_coords=True),
             category_name="table",
-            category_id="1",
+            category_id=1,
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=50.0, uly=70.0, lrx=70.0, lry=90.0, absolute_coords=True),
             category_name="text",
-            category_id="2",
+            category_id=2,
         ),
     ]
 

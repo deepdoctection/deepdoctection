@@ -16,9 +16,9 @@ import numpy as np
 from lazy_imports import try_import
 
 from ....datapoint.convert import box_to_point4, point4_to_box
-from ....utils.detection_types import ImageType, JsonDict
 from ....utils.error import MalformedData
 from ....utils.logger import log_once
+from ....utils.types import JsonDict, PixelValues
 from .common import filter_boxes_inside_shape, np_iou
 from .modeling.model_fpn import get_all_anchors_fpn
 from .utils.np_box_ops import area as np_area
@@ -214,15 +214,15 @@ def get_multilevel_rpn_anchor_input(
 
 
 def get_anchor_labels(
-    anchors: ImageType,
-    gt_boxes: ImageType,
-    crowd_boxes: ImageType,
+    anchors: PixelValues,
+    gt_boxes: PixelValues,
+    crowd_boxes: PixelValues,
     batch_per_image: int,
     front_ground_ratio: float,
     positive_anchor_threshold: float,
     negative_anchor_threshold: float,
     crowd_overlap_threshold: float,
-) -> (ImageType, ImageType):
+) -> (PixelValues, PixelValues):
     """
     Label each anchor as fg/bg/ignore.
 

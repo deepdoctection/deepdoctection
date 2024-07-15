@@ -160,6 +160,8 @@ _IMPORT_STRUCTURE = {
         "EvalCallback",
     ],
     "extern": [
+        "ModelCategories",
+        "NerModelCategories",
         "PredictorBase",
         "DetectionResult",
         "ObjectDetector",
@@ -422,8 +424,6 @@ _IMPORT_STRUCTURE = {
 # Setting some environment variables so that standard functions can be invoked with available hardware
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
-
-
 
 
 # Direct imports for type-checking

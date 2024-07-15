@@ -21,20 +21,21 @@ D2 GeneralizedRCNN model as predictor for deepdoctection pipeline
 from __future__ import annotations
 
 import io
+import os
 from abc import ABC
 from copy import copy
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Union
+from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_detectron2_requirement, get_pytorch_requirement
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import ObjectTypes, TypeOrStr, get_type
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
 from ..utils.transform import InferenceResize, ResizeTransform
-from .base import DetectionResult, ObjectDetector, PredictorBase
+from ..utils.types import PathLikeOrStr, PixelValues, Requirement
+from .base import DetectionResult, ModelCategories, ObjectDetector
 from .pt.nms import batched_nms
 from .pt.ptutils import get_torch_device
 
@@ -50,7 +51,7 @@ with try_import() as d2_import_guard:
     from detectron2.structures import Instances  # pylint: disable=W0611
 
 
-def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agnostic: float) -> Dict[str, Instances]:
+def _d2_post_processing(predictions: dict[str, Instances], nms_thresh_class_agnostic: float) -> dict[str, Instances]:
     """
     D2 postprocessing steps, so that detection outputs are aligned with outputs of other packages (e.g. Tensorpack).
     Apply a class agnostic NMS.
@@ -67,11 +68,11 @@ def _d2_post_processing(predictions: Dict[str, Instances], nms_thresh_class_agno
 
 
 def d2_predict_image(
-    np_img: ImageType,
+    np_img: PixelValues,
     predictor: nn.Module,
     resizer: InferenceResize,
     nms_thresh_class_agnostic: float,
-) -> List[DetectionResult]:
+) -> list[DetectionResult]:
     """
     Run detection on one image, using the D2 model callable. It will also handle the preprocessing internally which
     is using a custom resizing within some bounds.
@@ -103,8 +104,8 @@ def d2_predict_image(
 
 
 def d2_jit_predict_image(
-    np_img: ImageType, d2_predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
-) -> List[DetectionResult]:
+    np_img: PixelValues, d2_predictor: nn.Module, resizer: InferenceResize, nms_thresh_class_agnostic: float
+) -> list[DetectionResult]:
     """
     Run detection on an image using torchscript. It will also handle the preprocessing internally which
     is using a custom resizing within some bounds. Moreover, and different from the setting where Detectron2 is used
@@ -148,7 +149,7 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
 
     def __init__(
         self,
-        categories: Mapping[str, TypeOrStr],
+        categories: Mapping[int, TypeOrStr],
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
@@ -159,37 +160,31 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
                                   be filtered. Pass a list of category names that must not be returned
         """
 
+        self.categories = ModelCategories(init_categories=categories)
         if filter_categories:
-            filter_categories = [get_type(cat) for cat in filter_categories]
-        self.filter_categories = filter_categories
-        self._categories_d2 = self._map_to_d2_categories(copy(categories))
-        self.categories = {idx: get_type(cat) for idx, cat in categories.items()}
+            self.categories.filter_categories = tuple(get_type(cat) for cat in filter_categories)
 
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+    def _map_category_names(self, detection_results: list[DetectionResult]) -> list[DetectionResult]:
         """
         Populating category names to detection results
 
         :param detection_results: list of detection results. Will also filter categories
         :return: List of detection results with attribute class_name populated
         """
-        filtered_detection_result: List[DetectionResult] = []
+        filtered_detection_result: list[DetectionResult] = []
+        shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = self._categories_d2[str(result.class_id)]
-            if isinstance(result.class_id, int):
-                result.class_id += 1
-            if self.filter_categories:
-                if result.class_name not in self.filter_categories:
+            result.class_name = shifted_categories.get(
+                result.class_id if result.class_id is not None else -1, DefaultType.DEFAULT_TYPE
+            )
+            if result.class_name != DefaultType.DEFAULT_TYPE:
+                if result.class_id is not None:
+                    result.class_id += 1
                     filtered_detection_result.append(result)
-            else:
-                filtered_detection_result.append(result)
         return filtered_detection_result
 
-    @classmethod
-    def _map_to_d2_categories(cls, categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
-        return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
-
-    def possible_categories(self) -> List[ObjectTypes]:
-        return list(self.categories.values())
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
     @staticmethod
     def get_inference_resizer(min_size_test: int, max_size_test: int) -> InferenceResize:
@@ -201,7 +196,7 @@ class D2FrcnnDetectorMixin(ObjectDetector, ABC):
         return InferenceResize(min_size_test, max_size_test)
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"detectron2_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -230,10 +225,10 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
 
     def __init__(
         self,
-        path_yaml: str,
-        path_weights: str,
-        categories: Mapping[str, TypeOrStr],
-        config_overwrite: Optional[List[str]] = None,
+        path_yaml: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
+        config_overwrite: Optional[list[str]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
@@ -257,8 +252,8 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         """
         super().__init__(categories, filter_categories)
 
-        self.path_weights = path_weights
-        self.path_yaml = path_yaml
+        self.path_weights = Path(path_weights)
+        self.path_yaml = Path(path_yaml)
 
         config_overwrite = config_overwrite if config_overwrite else []
         self.config_overwrite = config_overwrite
@@ -275,11 +270,11 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         self.resizer = self.get_inference_resizer(self.cfg.INPUT.MIN_SIZE_TEST, self.cfg.INPUT.MAX_SIZE_TEST)
 
     @staticmethod
-    def _set_config(path_yaml: str, d2_conf_list: List[str], device: torch.device) -> CfgNode:
+    def _set_config(path_yaml: PathLikeOrStr, d2_conf_list: list[str], device: torch.device) -> CfgNode:
         cfg = get_cfg()
         # additional attribute with default value, so that the true value can be loaded from the configs
         cfg.NMS_THRESH_CLASS_AGNOSTIC = 0.1
-        cfg.merge_from_file(path_yaml)
+        cfg.merge_from_file(os.fspath(path_yaml))
         cfg.merge_from_list(d2_conf_list)
         cfg.MODEL.DEVICE = str(device)
         cfg.freeze()
@@ -296,11 +291,11 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         return build_model(config.clone()).eval()
 
     @staticmethod
-    def _instantiate_d2_predictor(wrapped_model: GeneralizedRCNN, path_weights: str) -> None:
+    def _instantiate_d2_predictor(wrapped_model: GeneralizedRCNN, path_weights: PathLikeOrStr) -> None:
         checkpointer = DetectionCheckpointer(wrapped_model)
-        checkpointer.load(path_weights)
+        checkpointer.load(os.fspath(path_weights))
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Prediction per image.
 
@@ -316,24 +311,24 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         return self._map_category_names(detection_results)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_detectron2_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> D2FrcnnDetector:
         return self.__class__(
             self.path_yaml,
             self.path_weights,
-            self.categories,
+            self.categories.get_categories(),
             self.config_overwrite,
             self.device,
-            self.filter_categories,
+            self.categories.filter_categories,
         )
 
     @staticmethod
     def get_wrapped_model(
-        path_yaml: str,
-        path_weights: str,
-        config_overwrite: List[str],
+        path_yaml: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        config_overwrite: list[str],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ) -> GeneralizedRCNN:
         """
@@ -366,13 +361,16 @@ class D2FrcnnDetector(D2FrcnnDetectorMixin):
         return model
 
     @staticmethod
-    def _get_d2_config_list(path_weights: str, config_overwrite: List[str]) -> List[str]:
-        d2_conf_list = ["MODEL.WEIGHTS", path_weights]
+    def _get_d2_config_list(path_weights: PathLikeOrStr, config_overwrite: list[str]) -> list[str]:
+        d2_conf_list = ["MODEL.WEIGHTS", os.fspath(path_weights)]
         config_overwrite = config_overwrite if config_overwrite else []
         for conf in config_overwrite:
             key, val = conf.split("=", maxsplit=1)
             d2_conf_list.extend([key, val])
         return d2_conf_list
+
+    def clear_model(self) -> None:
+        self.d2_predictor = None
 
 
 class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
@@ -401,10 +399,10 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
 
     def __init__(
         self,
-        path_yaml: str,
-        path_weights: str,
-        categories: Mapping[str, TypeOrStr],
-        config_overwrite: Optional[List[str]] = None,
+        path_yaml: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
+        config_overwrite: Optional[list[str]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
@@ -424,8 +422,8 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
 
         super().__init__(categories, filter_categories)
 
-        self.path_weights = path_weights
-        self.path_yaml = path_yaml
+        self.path_weights = Path(path_weights)
+        self.path_yaml = Path(path_yaml)
 
         self.config_overwrite = copy(config_overwrite)
         self.cfg = self._set_config(self.path_yaml, self.path_weights, self.config_overwrite)
@@ -437,14 +435,16 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         self.d2_predictor = self.get_wrapped_model(self.path_weights)
 
     @staticmethod
-    def _set_config(path_yaml: str, path_weights: str, config_overwrite: Optional[List[str]]) -> AttrDict:
+    def _set_config(
+        path_yaml: PathLikeOrStr, path_weights: PathLikeOrStr, config_overwrite: Optional[list[str]]
+    ) -> AttrDict:
         cfg = set_config_by_yaml(path_yaml)
         config_overwrite = config_overwrite if config_overwrite else []
-        config_overwrite.extend([f"MODEL.WEIGHTS={path_weights}"])
+        config_overwrite.extend([f"MODEL.WEIGHTS={os.fspath(path_weights)}"])
         cfg.update_args(config_overwrite)
         return cfg
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Prediction per image.
 
@@ -460,46 +460,23 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         return self._map_category_names(detection_results)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement()]
 
-    @classmethod
-    def _map_to_d2_categories(cls, categories: Mapping[str, TypeOrStr]) -> Dict[str, ObjectTypes]:
-        return {str(int(k) - 1): get_type(v) for k, v in categories.items()}
-
-    def clone(self) -> PredictorBase:
+    def clone(self) -> D2FrcnnTracingDetector:
         return self.__class__(
             self.path_yaml,
             self.path_weights,
-            self.categories,
+            self.categories.get_categories(),
             self.config_overwrite,
-            self.filter_categories,
+            self.categories.filter_categories,
         )
 
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
-        """
-        Populating category names to detection results
-
-        :param detection_results: list of detection results. Will also filter categories
-        :return: List of detection results with attribute class_name populated
-        """
-        filtered_detection_result: List[DetectionResult] = []
-        for result in detection_results:
-            result.class_name = self._categories_d2[str(result.class_id)]
-            if isinstance(result.class_id, int):
-                result.class_id += 1
-            if self.filter_categories:
-                if result.class_name not in self.filter_categories:
-                    filtered_detection_result.append(result)
-            else:
-                filtered_detection_result.append(result)
-        return filtered_detection_result
-
-    def possible_categories(self) -> List[ObjectTypes]:
-        return list(self.categories.values())
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
     @staticmethod
-    def get_wrapped_model(path_weights: str) -> Any:
+    def get_wrapped_model(path_weights: PathLikeOrStr) -> torch.jit.ScriptModule:
         """
         Get the wrapped model. Useful if one do not want to build the wrapper but only needs the instantiated model.
 
@@ -510,3 +487,6 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
             buffer = io.BytesIO(file.read())
         # Load all tensors to the original device
         return torch.jit.load(buffer)
+
+    def clear_model(self) -> None:
+        self.d2_predictor = None  # type: ignore

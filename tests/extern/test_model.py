@@ -19,6 +19,8 @@
 Testing module extern.model
 """
 
+from pathlib import Path
+
 from pytest import mark, raises
 
 from deepdoctection.extern.model import ModelCatalog, ModelProfile
@@ -45,7 +47,7 @@ class TestModelCatalog:
             hf_repo_id="",
             hf_model_name="",
             hf_config_file=["conf_config.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         )
@@ -91,7 +93,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_weights("test_model/test_model.pt")
-            == (get_weights_dir_path() / "test_model/test_model.pt").as_posix()
+            == (Path(get_weights_dir_path()) / "test_model/test_model.pt").as_posix()
         )
 
     @staticmethod
@@ -104,7 +106,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_weights("test_path/other_model.pt")
-            == (get_weights_dir_path() / "test_path/other_model.pt").as_posix()
+            == (Path(get_weights_dir_path()) / "test_path/other_model.pt").as_posix()
         )
 
     @staticmethod
@@ -117,7 +119,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_configs("test_model/test_model.pt")
-            == (get_configs_dir_path() / "test_path/dd/conf_frcnn_cell.yaml").as_posix()
+            == (Path(get_configs_dir_path()) / "test_path/dd/conf_frcnn_cell.yaml").as_posix()
         )
 
     @staticmethod
@@ -130,7 +132,7 @@ class TestModelCatalogNoSetupRequired:
         # Assert
         assert (
             ModelCatalog.get_full_path_configs("test_path/other_model.pt")
-            == (get_configs_dir_path() / "test_path/other_model.pt").as_posix()
+            == (Path(get_configs_dir_path()) / "test_path/other_model.pt").as_posix()
         )
 
     @staticmethod

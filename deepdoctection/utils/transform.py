@@ -21,6 +21,8 @@ of coordinates. Most have the ideas have been taken from
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/imgaug/transform.py> .
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Literal, Optional, Union
 
@@ -28,7 +30,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float32
 
-from .detection_types import ImageType
+from .types import PixelValues
 from .viz import viz_handler
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]
@@ -45,7 +47,7 @@ class BaseTransform(ABC):
     """
 
     @abstractmethod
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         """The transformation that should be applied to the image"""
         raise NotImplementedError()
 
@@ -77,7 +79,7 @@ class ResizeTransform(BaseTransform):
         self.new_w = int(new_w)
         self.interp = interp
 
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         assert img.shape[:2] == (self.h, self.w)
         ret = viz_handler.resize(img, self.new_w, self.new_h, self.interp)
         if img.ndim == 3 and ret.ndim == 2:
@@ -85,7 +87,8 @@ class ResizeTransform(BaseTransform):
         return ret
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates"""
+        """Transformation that should be applied to coordinates. Coords are supposed to to be passed as
+        np array of points"""
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords
@@ -106,7 +109,7 @@ class InferenceResize:
         self.max_size = max_size
         self.interp = interp
 
-    def get_transform(self, img: ImageType) -> ResizeTransform:
+    def get_transform(self, img: PixelValues) -> ResizeTransform:
         """
         get transform
         """
@@ -129,7 +132,9 @@ class InferenceResize:
         return ResizeTransform(h, w, new_h, new_w, self.interp)
 
 
-def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_std: npt.NDArray[float32]) -> ImageType:
+def normalize_image(
+    image: PixelValues, pixel_mean: npt.NDArray[float32], pixel_std: npt.NDArray[float32]
+) -> PixelValues:
     """
     Preprocess pixel values of an image by rescaling.
 
@@ -140,7 +145,7 @@ def normalize_image(image: ImageType, pixel_mean: npt.NDArray[float32], pixel_st
     return (image - pixel_mean) * (1.0 / pixel_std)
 
 
-def pad_image(image: ImageType, top: int, right: int, bottom: int, left: int) -> ImageType:
+def pad_image(image: PixelValues, top: int, right: int, bottom: int, left: int) -> PixelValues:
     """Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
     currently supported
 
@@ -181,7 +186,7 @@ class PadTransform(BaseTransform):
         self.image_height: Optional[int] = None
         self.mode = mode
 
-    def apply_image(self, img: ImageType) -> ImageType:
+    def apply_image(self, img: PixelValues) -> PixelValues:
         """Apply padding to image"""
         self.image_width = img.shape[1]
         self.image_height = img.shape[0]
@@ -214,6 +219,6 @@ class PadTransform(BaseTransform):
             coords[:, 1] = np.maximum(coords[:, 1] - self.top, np.zeros(coords[:, 1].shape))
         return coords
 
-    def clone(self) -> "PadTransform":
+    def clone(self) -> PadTransform:
         """clone"""
         return self.__class__(self.top, self.right, self.bottom, self.left, self.mode)

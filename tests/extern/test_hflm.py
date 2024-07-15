@@ -25,9 +25,9 @@ from pytest import mark
 
 from deepdoctection.extern.base import SequenceClassResult
 from deepdoctection.extern.hflm import HFLmSequenceClassifier
-from deepdoctection.utils.detection_types import JsonDict
 from deepdoctection.utils.file_utils import pytorch_available
 from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund
 from ..test_utils import get_mock_patch
@@ -64,7 +64,7 @@ class TestHFLmSequenceClassifier:
         HFLmSequenceClassifier.get_wrapped_model = MagicMock(  # type: ignore
             return_value=get_mock_patch("XLMRobertaForSequenceClassification")
         )
-        categories = {"1": get_type("FOO"), "2": get_type("BAK")}
+        categories = {1: get_type("FOO"), 2: get_type("BAK")}
         layoutlm = HFLmSequenceClassifier("path/to/json", "path/to/model", categories)
         layoutlm.model.device = "cpu"
 

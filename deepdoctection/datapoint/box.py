@@ -21,17 +21,17 @@ Implementation of BoundingBox class and related methods
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import List, Optional, Sequence, no_type_check
+from typing import Optional, Sequence, no_type_check
 
 import numpy as np
 import numpy.typing as npt
 from lazy_imports import try_import
 from numpy import float32
 
-from ..utils.detection_types import ImageType
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger
+from ..utils.types import PixelValues
 
 with try_import() as import_guard:
     import pycocotools.mask as coco_mask
@@ -221,7 +221,7 @@ class BoundingBox:
         return self.uly + 0.5 * self.height
 
     @property
-    def center(self) -> List[float]:
+    def center(self) -> list[float]:
         """
         Bounding box center [x,y]
         """
@@ -264,7 +264,7 @@ class BoundingBox:
             * np_poly_scale
         )
 
-    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> List[float]:
+    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[float]:
         """
         Returns the coordinates as list
 
@@ -345,7 +345,7 @@ class BoundingBox:
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod
-    def remove_keys() -> List[str]:
+    def remove_keys() -> list[str]:
         """
         A list of attributes to suspend from as_dict creation.
         """
@@ -398,8 +398,8 @@ def intersection_box(
 
 
 def crop_box_from_image(
-    np_image: ImageType, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
-) -> ImageType:
+    np_image: PixelValues, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
+) -> PixelValues:
     """
     Crop a box (the crop_box) from a np_image. Will floor the left  and ceil the right coordinate point.
 

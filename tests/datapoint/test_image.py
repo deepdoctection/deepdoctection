@@ -167,10 +167,10 @@ class TestImage:
         test_image = Image(location=image.loc, file_name=image.file_name)
         cat = ImageAnnotation(
             category_name="FOO",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
         )
-        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id="2")
+        sub_cat_1 = CategoryAnnotation(category_name="BAK", category_id=2)
 
         # Act
         cat.dump_sub_category(get_type("BAK"), sub_cat_1, test_image.image_id)
@@ -194,7 +194,7 @@ class TestImage:
         test_image = Image(location=image.loc, file_name=image.file_name)
         cat = ImageAnnotation(
             category_name="FOO",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
         )
 
@@ -215,28 +215,28 @@ class TestImage:
         test_image = Image(location=image.loc, file_name=image.file_name)
         cat_1 = ImageAnnotation(
             category_name="FOO",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
         )
         cat_2 = ImageAnnotation(
             category_name="BAK",
-            category_id="2",
+            category_id=2,
             bounding_box=BoundingBox(ulx=2.0, uly=2.0, width=2.0, height=2.0, absolute_coords=True),
         )
         cat_3 = ImageAnnotation(
             category_name="BAK",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
         )
         cat_4 = ImageAnnotation(
             category_name="BLI",
-            category_id="3",
+            category_id=3,
             bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
             service_id="test_service",
         )
         cat_5 = ImageAnnotation(
             category_name="BLU",
-            category_id="5",
+            category_id=5,
             bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
             model_id="test_model",
         )
@@ -362,17 +362,17 @@ class TestImage:
         test_image = Image(location=image.loc, file_name=image.file_name)
         cat_1 = ImageAnnotation(
             category_name="FOO",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.0, uly=1.0, width=1.0, height=2.0, absolute_coords=True),
         )
         cat_2 = ImageAnnotation(
             category_name="BAK",
-            category_id="2",
+            category_id=2,
             bounding_box=BoundingBox(ulx=2.0, uly=2.0, width=2.0, height=2.0, absolute_coords=True),
         )
         cat_3 = ImageAnnotation(
             category_name="BAK",
-            category_id="1",
+            category_id=1,
             bounding_box=BoundingBox(ulx=1.5, uly=2.4, width=3.0, height=9.0, absolute_coords=True),
         )
 

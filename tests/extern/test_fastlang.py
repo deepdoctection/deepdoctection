@@ -53,7 +53,8 @@ class TestFasttextLangDetector:
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
 
         assert profile.categories
-        fasttest_predictor = FasttextLangDetector(path_weights, profile.categories)
+        assert profile.categories_orig
+        fasttest_predictor = FasttextLangDetector(path_weights, profile.categories, profile.categories_orig)
         fasttest_predictor.model.predict = MagicMock(side_effect=get_mock_lang_detect_result)
 
         # Act

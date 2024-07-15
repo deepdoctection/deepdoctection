@@ -18,14 +18,16 @@ cover some basic facts.
 You can load `.jsonlines`, `.json` or file paths with serializers.
 
 ```python
-    df = SerializerJsonlines.load("path/to/dir",max_datapoints=100)
+    import deepdoctection as dd 
+
+    df = dd.SerializerJsonlines.load("path/to/dir",max_datapoints=100)
     df.reset_state()
     for dp in df:
         # dp is dict
 ``` 
 
 ```python 
-    df = SerializerCoco("path/to/dir")
+    df = dd.SerializerCoco("path/to/dir")
     df.reset_state()
     for dp in df:
         # dp is a dict with {'image':{'id',...},
@@ -37,14 +39,14 @@ You can load `.jsonlines`, `.json` or file paths with serializers.
 You can load a pdf and convert the `SerializerPdfDoc` into the internal data structure.
 
 ```python
-    df = SerializerPdfDoc("path/to/dir")
+    df = dd.SerializerPdfDoc("path/to/dir")
 
-    def _to_image(dp: str) -> Optional[Image]:
+    def _to_image(dp: str) -> Optional[dd.Image]:
         _, file_name = os.path.split(dp)
         dp_dict = {"file_name": file_name, "location": dp}
         return dp_dict
 
-    df = MapData(df, _to_image)
+    df = dd.MapData(df, _to_image)
     df.reset_state()
     for dp in df:
        # is now an Image
@@ -67,7 +69,7 @@ page. The highest level object is provided by the [`Image`][deepdoctection.datap
 
 ```python
 
-    image = Image(file_name="image_1.png", location = "path/to/dir")
+    image = dd.Image(file_name="image_1.png", location = "path/to/dir")
 ``` 
 
 The image carries all data retrieved from ground truth annotations in data sets or from models in pipelines.
@@ -78,10 +80,10 @@ They have, among other things, an attribute `category_name`to define the object 
 
 ```python
 
-    bounding_box = BoundingBox(absolute_coords=True,ulx=100.,uly=120.,lrx=200.,lry=250.)
-    table = ImageAnnotation(bounding_box = bounding_box,
-                            category_name = LayoutType.table,
-                            category_id="1")     # always use a string. ids will be used for model training
+    bounding_box = dd.BoundingBox(absolute_coords=True,ulx=100.,uly=120.,lrx=200.,lry=250.)
+    table = dd.ImageAnnotation(bounding_box = bounding_box,
+                            category_name = LayoutType.TABLE,
+                            category_id=1)  # ids will be used for model training
     image.dump(table)    # this adds the table annotation to the image. It generates a md5 hash that you can get
                          # with table.annotation_id
 ``` 
@@ -93,9 +95,9 @@ are needed), a generic attribute `sub_categories` is provided.
 
 ```python
 
-    cell = ImageAnnotation(bounding_box,category_name = "cell", category_id="2")
-    row_num = CategoryAnnotation(category_name=CellType.row_number,category_id="6)
-    cell.dump_sub_category(CellType.row_number,row_num)
+cell = dd.ImageAnnotation(bounding_box, category_name="cell", category_id=2)
+row_num = dd.CategoryAnnotation(category_name=CellType.ROW_NUMBER, category_id=6)
+cell.dump_sub_category(CellType.ROW_NUMBER, row_num)
 ``` 
 &nbsp;
 
@@ -104,10 +106,10 @@ ObjectTypes are enums whose members define all categories. All ObjectTypes are r
 and add the members you want. Do not forget to register your `ObjectTypes`.
 
 ```python
-    @object_types_registry.register("custom_labels")
+    @dd.object_types_registry.register("custom_labels")
     class CustomLabel(ObjectTypes):
-          train_ticket = "train_ticket"
-          bus_ticket = "bus_ticket"
+          TRAIN_TICKET = "train_ticket"
+          BUS_TICKET = "bus_ticket"
 ```
 
 &nbsp;
@@ -117,10 +119,10 @@ A generic `relationships` allows to save object specific attributes that relate 
 
 ```python
 
-    cell = ImageAnnotation(bounding_box,category_name = "cell", category_id="2")
+cell = dd.ImageAnnotation(bounding_box, category_name="cell", category_id=2)
 
-    for word in word_in_cell:
-        cell.dump_relationship(Relationships.child,word.annotation_id)
+for word in word_in_cell:
+    cell.dump_relationship(Relationships.CHILD, word.annotation_id)
 ```
 
 ## Datasets
@@ -140,17 +142,10 @@ and a Mapping of category_ids to category names.
 
 ```python
 
-    path_weights = ModelCatalog.get_full_path_weights(model_name)
-    path_yaml = ModelCatalog.get_full_path_configs(model_name)
-    categories = ModelCatalog.get_profile(model_name).categories
-    tp_detector = TPFrcnnDetector(path_yaml,path_weights,categories)
-```
-
-However, a few do not require any argument:
-
-
-```python
-     doct_detector = DoctrTextlineDetector()
+    path_weights = dd.ModelCatalog.get_full_path_weights(model_name)
+    path_yaml = dd.ModelCatalog.get_full_path_configs(model_name)
+    categories = dd.ModelCatalog.get_profile(model_name).categories
+    tp_detector = dd.TPFrcnnDetector(path_yaml,path_weights,categories)
 ```
 
 To get an overview of all models use `print_model_infos`. For more specific information
@@ -158,8 +153,8 @@ consult the [`ModelCatalog`][deepdoctection.extern.model.ModelCatalog].
 
 ```python
 
-    print_model_infos()
-    profile = ModelCatalog.get_profile(model_name)
+    dd.print_model_infos()
+    profile = dd.ModelCatalog.get_profile(model_name)
 
     profile.model_wrapper  # the deepdoctection wrapper, where you can plug in the model
     profile.categories     # dict of category ids and their category names.
@@ -171,7 +166,7 @@ Download a model with [`ModelDownloadManager`][deepdoctection.extern.model.Model
 
 ```python
 
-    ModelDownloadManager.maybe_download_weights_and_configs(model_name)
+    dd.ModelDownloadManager.maybe_download_weights_and_configs(model_name)
 ```
 
 
@@ -183,17 +178,17 @@ Mappers are functions (not generators!) for transforming data structures. They a
 
 ```python
 
-    def my_func(dp: Image) -> Image:
+    def my_func(dp: dd.Image) -> dd.Image:
         # do something
         return dp
 
-    df = Dataflow(df)
-    df = MapData(df, my_func)
+    df = dd.Dataflow(df)
+    df = dd.MapData(df, my_func)
 
     # or if my_func does some heavy transformation and turns out to be the bottleneck
 
-    df = Dataflow(df)
-    df = MultiProcessMapData(df, my_func)
+    df = dd.Dataflow(df)
+    df = dd.MultiProcessMapData(df, my_func)
 ```
 
 &nbsp;
@@ -208,8 +203,8 @@ To resolve the problem, a function must be callable twice, i.e.
 
     # you can also run my_func in a Dataflow with some pre-defined setting cfg_param_1, cfg_param_2
 
-    df = Dataflow(df)
-    df = MapData(df, my_func(cfg_param_1, cfg_param_2))
+    df = dd.Dataflow(df)
+    df = dd.MapData(df, my_func(cfg_param_1, cfg_param_2))
     ...
 
 ```
@@ -221,7 +216,7 @@ remaining ones.
 
    # this makes my_mapper callable twice
    @curry
-   def  my_mapper(dp: Image, config_1: ... , config_2: ...) -> Image:
+   def  my_mapper(dp: Image, config_1: ... , config_2: ...) -> dd.Image:
        # map Image to Image
 ```
 
@@ -245,24 +240,33 @@ with a word detector (generating bounding boxes around words) and a text recogni
 bounding box defines by the word detector).
 
 ```python
+    path_weights = dd.ModelCatalog.get_full_path_weights("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+    architecture = dd.ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").architecture
+    categories = dd.ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
 
-    text_line_predictor = DoctrTextlineDetector()
-    layout = ImageLayoutService(text_line_predictor,
-                                to_image=True)     # ImageAnnotation created from this service will get a nested image
+    text_line_predictor = dd.DoctrTextlineDetector(architecture=architecture, 
+                                                weights="path/to/weights", 
+                                                categories=categories,
+                                                device = "cpu")
+    layout = dd.ImageLayoutService(text_line_predictor,
+                                   to_image=True)     # ImageAnnotation created from this service will get a nested image
                                                    # defined by the bounding boxes of its annotation. This is helpful
                                                    # if you want to call a service only on the region of the
                                                    # ImageAnnotation
+                                                   
+    path_weights = dd.ModelCatalog.get_full_path_weights("doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+    architecture = dd.ModelCatalog.get_profile("doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt").architecture
 
-    text_recognizer = DoctrTextRecognizer()
-    text = TextExtractionService(text_recognizer, extract_from_roi="word") # text recognition on the region of word
+    text_recognizer = dd.DoctrTextRecognizer(architecture=architecture, path_weights=path_weights)
+    text = dd.TextExtractionService(text_recognizer, extract_from_roi="word") # text recognition on the region of word
                                                                            # ImageAnnotation
-    analyzer = DoctectionPipe(pipeline_component_list=[layout, text])      # defining the pipeline
+    analyzer = dd.DoctectionPipe(pipeline_component_list=[layout, text])      # defining the pipeline
 
 
     path_to_pdf = "path/to/doc.pdf"
 
     df = analyzer.analyze(path=path_to_pdf)
-    SerializerJsonlines.save(df, path= "path/to",
+    dd.SerializerJsonlines.save(df, path= "path/to",
                                  file_name="doc.jsonl",
                                  max_datapoints=20)
 ```

@@ -23,8 +23,8 @@ import os
 from typing import Mapping, Optional, Sequence
 
 from ..datapoint import BoundingBox, Image, ImageAnnotation
-from ..utils.detection_types import JsonDict, Pathlike
-from ..utils.settings import ObjectTypes
+from ..utils.settings import ObjectTypes, get_type
+from ..utils.types import JsonDict, PathLikeOrStr
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
@@ -33,10 +33,10 @@ _PRODIGY_IMAGE_PREFIX = "data:image/png;base64,"
 @curry
 def prodigy_to_image(
     dp: JsonDict,
-    categories_name_as_key: Mapping[str, str],
+    categories_name_as_key: Mapping[ObjectTypes, int],
     load_image: bool,
     fake_score: bool,
-    path_reference_ds: Optional[Pathlike] = None,
+    path_reference_ds: Optional[PathLikeOrStr] = None,
     accept_only_answer: bool = False,
     category_name_mapping: Optional[Mapping[str, str]] = None,
 ) -> Optional[Image]:
@@ -133,7 +133,7 @@ def prodigy_to_image(
             annotation = ImageAnnotation(
                 category_name=label,
                 bounding_box=bbox,
-                category_id=categories_name_as_key[label],
+                category_id=categories_name_as_key[get_type(label)],
                 score=score,
                 external_id=external_id,
             )

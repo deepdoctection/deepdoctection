@@ -20,16 +20,17 @@ HF Detr model for object detection.
 """
 from __future__ import annotations
 
+import os
 from abc import ABC
 from pathlib import Path
-from typing import List, Literal, Mapping, Optional, Sequence, Union
+from typing import Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
-from ..utils.settings import TypeOrStr, get_type
-from .base import DetectionResult, ObjectDetector
+from ..utils.settings import DefaultType, ObjectTypes, TypeOrStr, get_type
+from ..utils.types import PathLikeOrStr, PixelValues, Requirement
+from .base import DetectionResult, ModelCategories, ObjectDetector
 from .pt.ptutils import get_torch_device
 
 with try_import() as pt_import_guard:
@@ -52,13 +53,13 @@ def _detr_post_processing(
 
 
 def detr_predict_image(
-    np_img: ImageType,
+    np_img: PixelValues,
     predictor: TableTransformerForObjectDetection,
     feature_extractor: DetrFeatureExtractor,
     device: torch.device,
     threshold: float,
     nms_threshold: float,
-) -> List[DetectionResult]:
+) -> list[DetectionResult]:
     """
     Calling predictor. Before doing that, tensors must be transferred to the device where the model is loaded. After
     running prediction it will present prediction in DetectionResult format-
@@ -97,42 +98,44 @@ def detr_predict_image(
 class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
     """Base class for Detr object detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
+    def __init__(self, categories: Mapping[int, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
         """
 
         :param categories: A dict with key (indices) and values (category names).
         :param filter_categories: The model might return objects that are not supposed to be predicted and that should
                                   be filtered. Pass a list of category names that must not be returned
         """
-        self.categories = {idx: get_type(cat) for idx, cat in categories.items()}
+        self.categories = ModelCategories(init_categories=categories)
         if filter_categories:
-            filter_categories = [get_type(cat) for cat in filter_categories]
-        self.filter_categories = filter_categories
+            self.categories.filter_categories = tuple(get_type(cat) for cat in filter_categories)
 
-    def _map_category_names(self, detection_results: List[DetectionResult]) -> List[DetectionResult]:
+    def _map_category_names(self, detection_results: list[DetectionResult]) -> list[DetectionResult]:
         """
         Populating category names to detection results. Will also filter categories
 
         :param detection_results: list of detection results
         :return: List of detection results with attribute class_name populated
         """
-        filtered_detection_result: List[DetectionResult] = []
+        filtered_detection_result: list[DetectionResult] = []
+        shifted_categories = self.categories.shift_category_ids(shift_by=-1)
         for result in detection_results:
-            result.class_name = self.categories[str(result.class_id + 1)]  # type: ignore
-            if isinstance(result.class_id, int):
-                result.class_id += 1
-            if self.filter_categories:
-                if result.class_name not in self.filter_categories:
+            result.class_name = shifted_categories.get(
+                result.class_id if result.class_id is not None else -1, DefaultType.DEFAULT_TYPE
+            )
+            if result.class_name != DefaultType.DEFAULT_TYPE:
+                if result.class_id is not None:
+                    result.class_id += 1
                     filtered_detection_result.append(result)
-            else:
-                filtered_detection_result.append(result)
 
         return filtered_detection_result
 
     @staticmethod
-    def get_name(path_weights: str) -> str:
+    def get_name(path_weights: PathLikeOrStr) -> str:
         """Returns the name of the model"""
         return "Transformers_Tatr_" + "_".join(Path(path_weights).parts[-2:])
+
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
 
 class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
@@ -162,10 +165,10 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
-        path_feature_extractor_config_json: str,
-        categories: Mapping[str, TypeOrStr],
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        path_feature_extractor_config_json: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         filter_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
@@ -181,9 +184,9 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         """
         super().__init__(categories, filter_categories)
 
-        self.path_config = path_config_json
-        self.path_weights = path_weights
-        self.path_feature_extractor_config = path_feature_extractor_config_json
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
+        self.path_feature_extractor_config = Path(path_feature_extractor_config_json)
 
         self.name = self.get_name(self.path_weights)
         self.model_id = self.get_model_id()
@@ -196,7 +199,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         self.device = get_torch_device(device)
         self.hf_detr_predictor.to(self.device)
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         results = detr_predict_image(
             np_img,
             self.hf_detr_predictor,
@@ -208,7 +211,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_model(path_weights: str, config: PretrainedConfig) -> TableTransformerForObjectDetection:
+    def get_model(path_weights: PathLikeOrStr, config: PretrainedConfig) -> TableTransformerForObjectDetection:
         """
         Builds the Detr model
 
@@ -217,44 +220,53 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         :return: TableTransformerForObjectDetection instance
         """
         return TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config
+            pretrained_model_name_or_path=os.fspath(path_weights), config=config
         )
 
     @staticmethod
-    def get_pre_processor(path_feature_extractor_config: str) -> DetrFeatureExtractor:
+    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr) -> DetrFeatureExtractor:
         """
         Builds the feature extractor
 
         :return: DetrFeatureExtractor
         """
-        return AutoFeatureExtractor.from_pretrained(pretrained_model_name_or_path=path_feature_extractor_config)
+        return AutoFeatureExtractor.from_pretrained(
+            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config)
+        )
 
     @staticmethod
-    def get_config(path_config: str) -> PretrainedConfig:
+    def get_config(path_config: PathLikeOrStr) -> PretrainedConfig:
         """
         Builds the config
 
         :param path_config: The path to the json config.
         :return: PretrainedConfig instance
         """
-        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config)
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config))
         config.use_timm_backbone = True
         config.threshold = 0.1
         config.nms_threshold = 0.05
         return config
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFDetrDerivedDetector:
         return self.__class__(
-            self.path_config, self.path_weights, self.path_feature_extractor_config, self.categories, self.device
+            self.path_config,
+            self.path_weights,
+            self.path_feature_extractor_config,
+            self.categories.get_categories(),
+            self.device,
+            self.categories.filter_categories,
         )
 
     @staticmethod
     def get_wrapped_model(
-        path_config_json: str, path_weights: str, device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ) -> TableTransformerForObjectDetection:
         """
         Get the wrapped model
@@ -266,5 +278,8 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         """
         config = HFDetrDerivedDetector.get_config(path_config_json)
         hf_detr_predictor = HFDetrDerivedDetector.get_model(path_weights, config)
-        device = get_torch_device()
+        device = get_torch_device(device)
         return hf_detr_predictor.to(device)
+
+    def clear_model(self) -> None:
+        self.hf_detr_predictor = None

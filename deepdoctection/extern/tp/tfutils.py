@@ -22,9 +22,11 @@ Tensorflow related utils.
 from __future__ import annotations
 
 import os
-from typing import Optional, Union, ContextManager
+from typing import ContextManager, Optional, Union
 
 from lazy_imports import try_import
+
+from ...utils.env_info import ENV_VARS_TRUE
 
 with try_import() as import_guard:
     from tensorpack.models import disable_layer_logging  # pylint: disable=E0401
@@ -84,16 +86,20 @@ def get_tf_device(device: Optional[Union[str, tf.device]] = None) -> tf.device:
                 return tf.device(device_names[0].name)
             # The input must be something sensible
             return tf.device(device)
-    if os.environ.get("USE_CUDA"):
+    if os.environ.get("USE_CUDA", "False") in ENV_VARS_TRUE:
         device_names = [device.name for device in tf.config.list_logical_devices(device_type="GPU")]
         if not device_names:
-            raise EnvironmentError("USE_CUDA is set but tf.config.list_logical_devices cannot find anyx device. "
-                                   "It looks like there is an issue with your Tensorlfow installation. "
-                                   "You can LOG_LEVEL='DEBUG' to get more information about installation.")
+            raise EnvironmentError(
+                "USE_CUDA is set but tf.config.list_logical_devices cannot find anyx device. "
+                "It looks like there is an issue with your Tensorlfow installation. "
+                "You can LOG_LEVEL='DEBUG' to get more information about installation."
+            )
         return tf.device(device_names[0])
     device_names = [device.name for device in tf.config.list_logical_devices(device_type="CPU")]
     if not device_names:
-        raise EnvironmentError("Cannot find any CPU device. It looks like there is an issue with your "
-                               "Tensorflow installation. You can LOG_LEVEL='DEBUG' to get more information about "
-                               "installation.")
+        raise EnvironmentError(
+            "Cannot find any CPU device. It looks like there is an issue with your "
+            "Tensorflow installation. You can LOG_LEVEL='DEBUG' to get more information about "
+            "installation."
+        )
     return tf.device(device_names[0])
