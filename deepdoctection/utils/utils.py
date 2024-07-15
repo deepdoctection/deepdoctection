@@ -23,16 +23,16 @@ import inspect
 import os
 from collections.abc import MutableMapping
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Sequence, Set, Union
+from typing import Any, Callable, Sequence, Union
 
 import numpy as np
 
-from .detection_types import Pathlike
+from .types import PathLikeOrStr
 
 
 def delete_keys_from_dict(
-    dictionary: Union[Dict[Any, Any], MutableMapping], keys: Union[str, List[str], Set[str]]  # type: ignore
-) -> Dict[Any, Any]:
+    dictionary: Union[dict[Any, Any], MutableMapping], keys: Union[str, list[str], set[str]]  # type: ignore
+) -> dict[Any, Any]:
     """
     Removing key/value pairs from dictionary. Works for nested dicts as well.
 
@@ -62,7 +62,7 @@ def delete_keys_from_dict(
     return modified_dict
 
 
-def split_string(input_string: str) -> List[str]:
+def split_string(input_string: str) -> list[str]:
     """
     Takes a string, splits between commas and returns a list with split components as list elements
 
@@ -71,7 +71,7 @@ def split_string(input_string: str) -> List[str]:
     return input_string.split(",")
 
 
-def string_to_dict(input_string: str) -> Dict[str, str]:
+def string_to_dict(input_string: str) -> dict[str, str]:
     """
     Takes a string of a form `key1=val1,key2=val2` and returns the corresponding dict
     """
@@ -144,7 +144,7 @@ def get_rng(obj: Any = None) -> np.random.RandomState:
     return np.random.RandomState(seed)
 
 
-def is_file_extension(file_name: Pathlike, extension: Union[str, Sequence[str]]) -> bool:
+def is_file_extension(file_name: PathLikeOrStr, extension: Union[str, Sequence[str]]) -> bool:
     """
     Check if a given file name has a given extension
 

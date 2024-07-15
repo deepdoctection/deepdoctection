@@ -18,16 +18,14 @@
 """
 Module for language detection pipeline component
 """
-from copy import copy, deepcopy
 from typing import Optional, Sequence
 
 from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..extern.base import LanguageDetector, ObjectDetector
-from ..utils.detection_types import JsonDict
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
-from .base import PipelineComponent
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -74,26 +72,27 @@ class LanguageDetectionService(PipelineComponent):
         self.predictor = language_detector
         self.text_detector = text_detector
         self.text_container = get_type(text_container) if text_container is not None else text_container
-        if floating_text_block_categories:
-            floating_text_block_categories = [get_type(text_block) for text_block in floating_text_block_categories]
-        self.floating_text_block_categories = floating_text_block_categories if floating_text_block_categories else []
-        super().__init__(
-            self._get_name(self.predictor.name)
-        )  # cannot use PredictorPipelineComponent class because of return type of predict meth
+        self.floating_text_block_categories = (
+            tuple(get_type(text_block) for text_block in floating_text_block_categories)
+            if (floating_text_block_categories is not None)
+            else ()
+        )
+
+        super().__init__(self._get_name(self.predictor.name))
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)  # type: ignore
+            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)
             text = page.text_no_line_break
         else:
             if dp.image is None:
                 raise ImageError("image cannot be None")
             detect_result_list = self.text_detector.predict(dp.image)
             # this is a concatenation of all detection result. No reading order
-            text = " ".join([result.text for result in detect_result_list if result.text is not None])
+            text = " ".join((result.text for result in detect_result_list if result.text is not None))
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(
-            PageType.language, PageType.language, 1, predict_result.text, predict_result.score
+            PageType.LANGUAGE, PageType.LANGUAGE, 1, predict_result.text, predict_result.score
         )
 
     def clone(self) -> PipelineComponent:
@@ -101,22 +100,18 @@ class LanguageDetectionService(PipelineComponent):
         if not isinstance(predictor, LanguageDetector):
             raise TypeError(f"Predictor must be of type LanguageDetector, but is of type {type(predictor)}")
         return self.__class__(
-            predictor,
-            copy(self.text_container),
-            deepcopy(self.text_detector),
-            deepcopy(self.floating_text_block_categories),
+            language_detector=predictor,
+            text_container=self.text_container,
+            text_detector=self.text_detector.clone() if self.text_detector is not None else None,
+            floating_text_block_categories=self.floating_text_block_categories,
         )
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict(
-            [
-                ("image_annotations", []),
-                ("sub_categories", {}),
-                ("relationships", {}),
-                ("summaries", [PageType.language]),
-            ]
-        )
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=(PageType.LANGUAGE,))
 
     @staticmethod
     def _get_name(predictor_name: str) -> str:
         return f"language_detection_{predictor_name}"
+
+    def clear_predictor(self) -> None:
+        self.predictor.clear_model()

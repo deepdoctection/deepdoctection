@@ -20,9 +20,8 @@ Module for ModelCatalog and ModelDownloadManager
 """
 
 import os
-from copy import copy
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 import jsonlines
 from huggingface_hub import cached_download, hf_hub_url  # type: ignore
@@ -32,11 +31,12 @@ from termcolor import colored
 from ..utils.fs import download, get_configs_dir_path, get_weights_dir_path
 from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes, get_type
+from ..utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelProfile:
     """
     Class for model profile. Add for each model one ModelProfile to the ModelCatalog
@@ -45,25 +45,21 @@ class ModelProfile:
     name: str
     description: str
 
-    size: List[int]
+    size: list[int]
     tp_model: bool = field(default=False)
     config: Optional[str] = field(default=None)
     preprocessor_config: Optional[str] = field(default=None)
     hf_repo_id: Optional[str] = field(default=None)
     hf_model_name: Optional[str] = field(default=None)
-    hf_config_file: Optional[List[str]] = field(default=None)
-    urls: Optional[List[str]] = field(default=None)
-    categories: Optional[Dict[str, ObjectTypes]] = field(default=None)
+    hf_config_file: Optional[list[str]] = field(default=None)
+    urls: Optional[list[str]] = field(default=None)
+    categories: Optional[Mapping[int, ObjectTypes]] = field(default=None)
+    categories_orig: Optional[Mapping[str, ObjectTypes]] = field(default=None)
     dl_library: Optional[str] = field(default=None)
     model_wrapper: Optional[str] = field(default=None)
     architecture: Optional[str] = field(default=None)
 
-    def __post_init__(self) -> None:
-        """updating categories to ObjectTypes. This might be necessary if we load a catalog from a file"""
-        if self.categories:
-            self.categories = {key: get_type(val) for key, val in self.categories.items()}
-
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """
         returns a dict of the dataclass
         """
@@ -94,7 +90,7 @@ class ModelCatalog:
         ModelCatalog.get_full_path_configs("my_new_model")
     """
 
-    CATALOG: Dict[str, ModelProfile] = {
+    CATALOG: dict[str, ModelProfile] = {
         "layout/model-800000_inf_only.data-00000-of-00001": ModelProfile(
             name="layout/model-800000_inf_only.data-00000-of-00001",
             description="Tensorpack layout model for inference purposes trained on Publaynet",
@@ -105,11 +101,11 @@ class ModelCatalog:
             hf_model_name="model-800000_inf_only",
             hf_config_file=["conf_frcnn_layout.yaml"],
             categories={
-                "1": LayoutType.text,
-                "2": LayoutType.title,
-                "3": LayoutType.list,
-                "4": LayoutType.table,
-                "5": LayoutType.figure,
+                1: LayoutType.TEXT,
+                2: LayoutType.TITLE,
+                3: LayoutType.LIST,
+                4: LayoutType.TABLE,
+                5: LayoutType.FIGURE,
             },
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
@@ -123,7 +119,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             hf_model_name="model-1800000_inf_only",
             hf_config_file=["conf_frcnn_cell.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
@@ -136,7 +132,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             hf_model_name="model-1620000_inf_only",
             hf_config_file=["conf_frcnn_rows.yaml"],
-            categories={"1": LayoutType.row, "2": LayoutType.column},
+            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
@@ -149,7 +145,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
             hf_model_name="model-1620000",
             hf_config_file=["conf_frcnn_rows.yaml"],
-            categories={"1": LayoutType.row, "2": LayoutType.column},
+            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
@@ -164,11 +160,11 @@ class ModelCatalog:
             hf_config_file=["conf_frcnn_layout.yaml"],
             dl_library="TF",
             categories={
-                "1": LayoutType.text,
-                "2": LayoutType.title,
-                "3": LayoutType.list,
-                "4": LayoutType.table,
-                "5": LayoutType.figure,
+                1: LayoutType.TEXT,
+                2: LayoutType.TITLE,
+                3: LayoutType.LIST,
+                4: LayoutType.TABLE,
+                5: LayoutType.FIGURE,
             },
             model_wrapper="TPFrcnnDetector",
         ),
@@ -181,7 +177,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
             hf_model_name="model-1800000",
             hf_config_file=["conf_frcnn_cell.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
@@ -195,11 +191,11 @@ class ModelCatalog:
             hf_model_name="d2_model_0829999_layout_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={
-                "1": LayoutType.text,
-                "2": LayoutType.title,
-                "3": LayoutType.list,
-                "4": LayoutType.table,
-                "5": LayoutType.figure,
+                1: LayoutType.TEXT,
+                2: LayoutType.TITLE,
+                3: LayoutType.LIST,
+                4: LayoutType.TABLE,
+                5: LayoutType.FIGURE,
             },
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
@@ -214,11 +210,11 @@ class ModelCatalog:
             hf_model_name="d2_model_0829999_layout.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={
-                "1": LayoutType.text,
-                "2": LayoutType.title,
-                "3": LayoutType.list,
-                "4": LayoutType.table,
-                "5": LayoutType.figure,
+                1: LayoutType.TEXT,
+                2: LayoutType.TITLE,
+                3: LayoutType.LIST,
+                4: LayoutType.TABLE,
+                5: LayoutType.FIGURE,
             },
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
@@ -233,11 +229,11 @@ class ModelCatalog:
             hf_model_name="d2_model_0829999_layout_inf_only.ts",
             hf_config_file=["CASCADE_RCNN_R_50_FPN_GN_TS.yaml"],
             categories={
-                "1": LayoutType.text,
-                "2": LayoutType.title,
-                "3": LayoutType.list,
-                "4": LayoutType.table,
-                "5": LayoutType.figure,
+                1: LayoutType.TEXT,
+                2: LayoutType.TITLE,
+                3: LayoutType.LIST,
+                4: LayoutType.TABLE,
+                5: LayoutType.FIGURE,
             },
             dl_library="PT",
             model_wrapper="D2FrcnnTracingDetector",
@@ -251,7 +247,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             hf_model_name="d2_model_1849999_cell_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
@@ -264,7 +260,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             hf_model_name="d2_model_1849999_cell_inf_only.ts",
             hf_config_file=["CASCADE_RCNN_R_50_FPN_GN_TS.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnTracingDetector",
         ),
@@ -277,7 +273,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
             hf_model_name="cell/d2_model_1849999_cell.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.cell},
+            categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
@@ -290,7 +286,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             hf_model_name="d2_model_1639999_item.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.row, "2": LayoutType.column},
+            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
@@ -303,7 +299,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             hf_model_name="d2_model_1639999_item_inf_only.pt",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={"1": LayoutType.row, "2": LayoutType.column},
+            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
             dl_library="PT",
             model_wrapper="D2FrcnnDetector",
         ),
@@ -316,7 +312,7 @@ class ModelCatalog:
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
             hf_model_name="d2_model_1639999_item_inf_only.ts",
             hf_config_file=["CASCADE_RCNN_R_50_FPN_GN_TS.yaml"],
-            categories={"1": LayoutType.row, "2": LayoutType.column},
+            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
             dl_library="PT",
             model_wrapper="D2FrcnnTracingDetector",
         ),
@@ -453,7 +449,7 @@ class ModelCatalog:
             hf_repo_id="microsoft/table-transformer-detection",
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json", "preprocessor_config.json"],
-            categories={"1": LayoutType.table, "2": LayoutType.table_rotated},
+            categories={1: LayoutType.TABLE, 2: LayoutType.TABLE_ROTATED},
             dl_library="PT",
             model_wrapper="HFDetrDerivedDetector",
         ),
@@ -471,12 +467,12 @@ class ModelCatalog:
             hf_model_name="pytorch_model.bin",
             hf_config_file=["config.json", "preprocessor_config.json"],
             categories={
-                "1": LayoutType.table,
-                "2": LayoutType.column,
-                "3": LayoutType.row,
-                "4": CellType.column_header,
-                "5": CellType.projected_row_header,
-                "6": CellType.spanning,
+                1: LayoutType.TABLE,
+                2: LayoutType.COLUMN,
+                3: LayoutType.ROW,
+                4: CellType.COLUMN_HEADER,
+                5: CellType.PROJECTED_ROW_HEADER,
+                6: CellType.SPANNING,
             },
             dl_library="PT",
             model_wrapper="HFDetrDerivedDetector",
@@ -488,7 +484,7 @@ class ModelCatalog:
             "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Pytorch artefact.",
             size=[101971449],
             urls=["https://doctr-static.mindee.com/models?id=v0.3.1/db_resnet50-ac60cadc.pt&src=0"],
-            categories={"1": LayoutType.word},
+            categories={1: LayoutType.WORD},
             dl_library="PT",
             model_wrapper="DoctrTextlineDetector",
             architecture="db_resnet50",
@@ -500,7 +496,7 @@ class ModelCatalog:
             "https://mindee.github.io/doctr/using_doctr/using_models.html#. This is the Tensorflow artefact.",
             size=[94178964],
             urls=["https://doctr-static.mindee.com/models?id=v0.2.0/db_resnet50-adcafc63.zip&src=0"],
-            categories={"1": LayoutType.word},
+            categories={1: LayoutType.WORD},
             dl_library="TF",
             model_wrapper="DoctrTextlineDetector",
             architecture="db_resnet50",
@@ -548,189 +544,367 @@ class ModelCatalog:
             size=[131266198],
             urls=["https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"],
             categories={
-                "__label__en": Languages.english,
-                "__label__ru": Languages.russian,
-                "__label__de": Languages.german,
-                "__label__fr": Languages.french,
-                "__label__it": Languages.italian,
-                "__label__ja": Languages.japanese,
-                "__label__es": Languages.spanish,
-                "__label__ceb": Languages.cebuano,
-                "__label__tr": Languages.turkish,
-                "__label__pt": Languages.portuguese,
-                "__label__uk": Languages.ukrainian,
-                "__label__eo": Languages.esperanto,
-                "__label__pl": Languages.polish,
-                "__label__sv": Languages.swedish,
-                "__label__nl": Languages.dutch,
-                "__label__he": Languages.hebrew,
-                "__label__zh": Languages.chinese,
-                "__label__hu": Languages.hungarian,
-                "__label__ar": Languages.arabic,
-                "__label__ca": Languages.catalan,
-                "__label__fi": Languages.finnish,
-                "__label__cs": Languages.czech,
-                "__label__fa": Languages.persian,
-                "__label__sr": Languages.serbian,
-                "__label__el": Languages.greek,
-                "__label__vi": Languages.vietnamese,
-                "__label__bg": Languages.bulgarian,
-                "__label__ko": Languages.korean,
-                "__label__no": Languages.norwegian,
-                "__label__mk": Languages.macedonian,
-                "__label__ro": Languages.romanian,
-                "__label__id": Languages.indonesian,
-                "__label__th": Languages.thai,
-                "__label__hy": Languages.armenian,
-                "__label__da": Languages.danish,
-                "__label__ta": Languages.tamil,
-                "__label__hi": Languages.hindi,
-                "__label__hr": Languages.croatian,
-                "__label__sh": Languages.not_defined,
-                "__label__be": Languages.belarusian,
-                "__label__ka": Languages.georgian,
-                "__label__te": Languages.telugu,
-                "__label__kk": Languages.kazakh,
-                "__label__war": Languages.waray,
-                "__label__lt": Languages.lithuanian,
-                "__label__gl": Languages.scottish,
-                "__label__sk": Languages.slovak,
-                "__label__bn": Languages.benin,
-                "__label__eu": Languages.basque,
-                "__label__sl": Languages.slovenian,
-                "__label__kn": Languages.not_defined,
-                "__label__ml": Languages.malayalam,
-                "__label__mr": Languages.marathi,
-                "__label__et": Languages.estonian,
-                "__label__az": Languages.azerbaijani,
-                "__label__ms": Languages.not_defined,
-                "__label__sq": Languages.albanian,
-                "__label__la": Languages.latin,
-                "__label__bs": Languages.bosnian,
-                "__label__nn": Languages.norwegian_nynorsk,
-                "__label__ur": Languages.urdu,
-                "__label__lv": Languages.not_defined,
-                "__label__my": Languages.not_defined,
-                "__label__tt": Languages.not_defined,
-                "__label__af": Languages.not_defined,
-                "__label__oc": Languages.not_defined,
-                "__label__nds": Languages.not_defined,
-                "__label__ky": Languages.not_defined,
-                "__label__ast": Languages.not_defined,
-                "__label__tl": Languages.not_defined,
-                "__label__is": Languages.not_defined,
-                "__label__ia": Languages.not_defined,
-                "__label__si": Languages.not_defined,
-                "__label__gu": Languages.not_defined,
-                "__label__km": Languages.not_defined,
-                "__label__br": Languages.not_defined,
-                "__label__ba": Languages.not_defined,
-                "__label__uz": Languages.not_defined,
-                "__label__bo": Languages.not_defined,
-                "__label__pa": Languages.not_defined,
-                "__label__vo": Languages.not_defined,
-                "__label__als": Languages.not_defined,
-                "__label__ne": Languages.not_defined,
-                "__label__cy": Languages.not_defined,
-                "__label__jbo": Languages.not_defined,
-                "__label__fy": Languages.not_defined,
-                "__label__mn": Languages.not_defined,
-                "__label__lb": Languages.not_defined,
-                "__label__ce": Languages.not_defined,
-                "__label__ug": Languages.not_defined,
-                "__label__tg": Languages.not_defined,
-                "__label__sco": Languages.not_defined,
-                "__label__sa": Languages.not_defined,
-                "__label__cv": Languages.not_defined,
-                "__label__jv": Languages.not_defined,
-                "__label__min": Languages.not_defined,
-                "__label__io": Languages.not_defined,
-                "__label__or": Languages.not_defined,
-                "__label__as": Languages.not_defined,
-                "__label__new": Languages.not_defined,
-                "__label__ga": Languages.not_defined,
-                "__label__mg": Languages.not_defined,
-                "__label__an": Languages.not_defined,
-                "__label__ckb": Languages.not_defined,
-                "__label__sw": Languages.not_defined,
-                "__label__bar": Languages.not_defined,
-                "__label__lmo": Languages.not_defined,
-                "__label__yi": Languages.not_defined,
-                "__label__arz": Languages.not_defined,
-                "__label__mhr": Languages.not_defined,
-                "__label__azb": Languages.not_defined,
-                "__label__sah": Languages.not_defined,
-                "__label__pnb": Languages.not_defined,
-                "__label__su": Languages.not_defined,
-                "__label__bpy": Languages.not_defined,
-                "__label__pms": Languages.not_defined,
-                "__label__ilo": Languages.not_defined,
-                "__label__wuu": Languages.not_defined,
-                "__label__ku": Languages.not_defined,
-                "__label__ps": Languages.not_defined,
-                "__label__ie": Languages.not_defined,
-                "__label__xmf": Languages.not_defined,
-                "__label__yue": Languages.not_defined,
-                "__label__gom": Languages.not_defined,
-                "__label__li": Languages.not_defined,
-                "__label__mwl": Languages.not_defined,
-                "__label__kw": Languages.not_defined,
-                "__label__sd": Languages.not_defined,
-                "__label__hsb": Languages.not_defined,
-                "__label__scn": Languages.not_defined,
-                "__label__gd": Languages.not_defined,
-                "__label__pam": Languages.not_defined,
-                "__label__bh": Languages.not_defined,
-                "__label__mai": Languages.not_defined,
-                "__label__vec": Languages.not_defined,
-                "__label__mt": Languages.not_defined,
-                "__label__dv": Languages.not_defined,
-                "__label__wa": Languages.not_defined,
-                "__label__mzn": Languages.not_defined,
-                "__label__am": Languages.not_defined,
-                "__label__qu": Languages.not_defined,
-                "__label__eml": Languages.not_defined,
-                "__label__cbk": Languages.not_defined,
-                "__label__tk": Languages.not_defined,
-                "__label__rm": Languages.not_defined,
-                "__label__os": Languages.not_defined,
-                "__label__vls": Languages.not_defined,
-                "__label__yo": Languages.not_defined,
-                "__label__lo": Languages.not_defined,
-                "__label__lez": Languages.not_defined,
-                "__label__so": Languages.not_defined,
-                "__label__myv": Languages.not_defined,
-                "__label__diq": Languages.not_defined,
-                "__label__mrj": Languages.not_defined,
-                "__label__dsb": Languages.not_defined,
-                "__label__frr": Languages.not_defined,
-                "__label__ht": Languages.not_defined,
-                "__label__gn": Languages.not_defined,
-                "__label__bxr": Languages.not_defined,
-                "__label__kv": Languages.not_defined,
-                "__label__sc": Languages.not_defined,
-                "__label__nah": Languages.not_defined,
-                "__label__krc": Languages.not_defined,
-                "__label__bcl": Languages.not_defined,
-                "__label__nap": Languages.not_defined,
-                "__label__gv": Languages.not_defined,
-                "__label__av": Languages.not_defined,
-                "__label__rue": Languages.not_defined,
-                "__label__xal": Languages.not_defined,
-                "__label__pfl": Languages.not_defined,
-                "__label__dty": Languages.not_defined,
-                "__label__hif": Languages.not_defined,
-                "__label__co": Languages.not_defined,
-                "__label__lrc": Languages.not_defined,
-                "__label__vep": Languages.not_defined,
-                "__label__tyv": Languages.not_defined,
+                1: Languages.ENGLISH,
+                2: Languages.RUSSIAN,
+                3: Languages.GERMAN,
+                4: Languages.FRENCH,
+                5: Languages.ITALIAN,
+                6: Languages.JAPANESE,
+                7: Languages.SPANISH,
+                8: Languages.CEBUANO,
+                9: Languages.TURKISH,
+                10: Languages.PORTUGUESE,
+                11: Languages.UKRAINIAN,
+                12: Languages.ESPERANTO,
+                13: Languages.POLISH,
+                14: Languages.SWEDISH,
+                15: Languages.DUTCH,
+                16: Languages.HEBREW,
+                17: Languages.CHINESE,
+                18: Languages.HUNGARIAN,
+                19: Languages.ARABIC,
+                20: Languages.CATALAN,
+                21: Languages.FINNISH,
+                22: Languages.CZECH,
+                23: Languages.PERSIAN,
+                24: Languages.SERBIAN,
+                25: Languages.GREEK,
+                26: Languages.VIETNAMESE,
+                27: Languages.BULGARIAN,
+                28: Languages.KOREAN,
+                29: Languages.NORWEGIAN,
+                30: Languages.MACEDONIAN,
+                31: Languages.ROMANIAN,
+                32: Languages.INDONESIAN,
+                33: Languages.THAI,
+                34: Languages.ARMENIAN,
+                35: Languages.DANISH,
+                36: Languages.TAMIL,
+                37: Languages.HINDI,
+                38: Languages.CROATIAN,
+                39: Languages.NOT_DEFINED,
+                40: Languages.BELARUSIAN,
+                41: Languages.GEORGIAN,
+                42: Languages.TELUGU,
+                43: Languages.KAZAKH,
+                44: Languages.WARAY,
+                45: Languages.LITHUANIAN,
+                46: Languages.SCOTTISH,
+                47: Languages.SLOVAK,
+                48: Languages.BENIN,
+                49: Languages.BASQUE,
+                50: Languages.SLOVENIAN,
+                51: Languages.NOT_DEFINED,
+                52: Languages.MALAYALAM,
+                53: Languages.MARATHI,
+                54: Languages.ESTONIAN,
+                55: Languages.AZERBAIJANI,
+                56: Languages.NOT_DEFINED,
+                57: Languages.ALBANIAN,
+                58: Languages.LATIN,
+                59: Languages.BOSNIAN,
+                60: Languages.NORWEGIAN_NOVOSIBIRSK,
+                61: Languages.URDU,
+                62: Languages.NOT_DEFINED,
+                63: Languages.NOT_DEFINED,
+                64: Languages.NOT_DEFINED,
+                65: Languages.NOT_DEFINED,
+                66: Languages.NOT_DEFINED,
+                67: Languages.NOT_DEFINED,
+                68: Languages.NOT_DEFINED,
+                69: Languages.NOT_DEFINED,
+                70: Languages.NOT_DEFINED,
+                71: Languages.NOT_DEFINED,
+                72: Languages.NOT_DEFINED,
+                73: Languages.NOT_DEFINED,
+                74: Languages.NOT_DEFINED,
+                75: Languages.NOT_DEFINED,
+                76: Languages.NOT_DEFINED,
+                77: Languages.NOT_DEFINED,
+                78: Languages.NOT_DEFINED,
+                79: Languages.NOT_DEFINED,
+                80: Languages.NOT_DEFINED,
+                81: Languages.NOT_DEFINED,
+                82: Languages.NOT_DEFINED,
+                83: Languages.NOT_DEFINED,
+                84: Languages.NOT_DEFINED,
+                85: Languages.NOT_DEFINED,
+                86: Languages.NOT_DEFINED,
+                87: Languages.NOT_DEFINED,
+                88: Languages.NOT_DEFINED,
+                89: Languages.NOT_DEFINED,
+                90: Languages.NOT_DEFINED,
+                91: Languages.NOT_DEFINED,
+                92: Languages.NOT_DEFINED,
+                93: Languages.NOT_DEFINED,
+                94: Languages.NOT_DEFINED,
+                95: Languages.NOT_DEFINED,
+                96: Languages.NOT_DEFINED,
+                97: Languages.NOT_DEFINED,
+                98: Languages.NOT_DEFINED,
+                99: Languages.NOT_DEFINED,
+                100: Languages.NOT_DEFINED,
+                101: Languages.NOT_DEFINED,
+                102: Languages.NOT_DEFINED,
+                103: Languages.NOT_DEFINED,
+                104: Languages.NOT_DEFINED,
+                105: Languages.NOT_DEFINED,
+                106: Languages.NOT_DEFINED,
+                107: Languages.NOT_DEFINED,
+                108: Languages.NOT_DEFINED,
+                109: Languages.NOT_DEFINED,
+                110: Languages.NOT_DEFINED,
+                111: Languages.NOT_DEFINED,
+                112: Languages.NOT_DEFINED,
+                113: Languages.NOT_DEFINED,
+                114: Languages.NOT_DEFINED,
+                115: Languages.NOT_DEFINED,
+                116: Languages.NOT_DEFINED,
+                117: Languages.NOT_DEFINED,
+                118: Languages.NOT_DEFINED,
+                119: Languages.NOT_DEFINED,
+                120: Languages.NOT_DEFINED,
+                121: Languages.NOT_DEFINED,
+                122: Languages.NOT_DEFINED,
+                123: Languages.NOT_DEFINED,
+                124: Languages.NOT_DEFINED,
+                125: Languages.NOT_DEFINED,
+                126: Languages.NOT_DEFINED,
+                127: Languages.NOT_DEFINED,
+                128: Languages.NOT_DEFINED,
+                129: Languages.NOT_DEFINED,
+                130: Languages.NOT_DEFINED,
+                131: Languages.NOT_DEFINED,
+                132: Languages.NOT_DEFINED,
+                133: Languages.NOT_DEFINED,
+                134: Languages.NOT_DEFINED,
+                135: Languages.NOT_DEFINED,
+                136: Languages.NOT_DEFINED,
+                137: Languages.NOT_DEFINED,
+                138: Languages.NOT_DEFINED,
+                139: Languages.NOT_DEFINED,
+                140: Languages.NOT_DEFINED,
+                141: Languages.NOT_DEFINED,
+                142: Languages.NOT_DEFINED,
+                143: Languages.NOT_DEFINED,
+                144: Languages.NOT_DEFINED,
+                145: Languages.NOT_DEFINED,
+                146: Languages.NOT_DEFINED,
+                147: Languages.NOT_DEFINED,
+                148: Languages.NOT_DEFINED,
+                149: Languages.NOT_DEFINED,
+                150: Languages.NOT_DEFINED,
+                151: Languages.NOT_DEFINED,
+                152: Languages.NOT_DEFINED,
+                153: Languages.NOT_DEFINED,
+                154: Languages.NOT_DEFINED,
+                155: Languages.NOT_DEFINED,
+                156: Languages.NOT_DEFINED,
+                157: Languages.NOT_DEFINED,
+                158: Languages.NOT_DEFINED,
+                159: Languages.NOT_DEFINED,
+                160: Languages.NOT_DEFINED,
+                161: Languages.NOT_DEFINED,
+                162: Languages.NOT_DEFINED,
+                163: Languages.NOT_DEFINED,
+                164: Languages.NOT_DEFINED,
+                165: Languages.NOT_DEFINED,
+                166: Languages.NOT_DEFINED,
+                167: Languages.NOT_DEFINED,
+                168: Languages.NOT_DEFINED,
+                169: Languages.NOT_DEFINED,
+                170: Languages.NOT_DEFINED,
+                171: Languages.NOT_DEFINED,
+                172: Languages.NOT_DEFINED,
+                173: Languages.NOT_DEFINED,
+                174: Languages.NOT_DEFINED,
+                175: Languages.NOT_DEFINED,
+                176: Languages.NOT_DEFINED,
+            },
+            categories_orig={
+                "__label__en": Languages.ENGLISH,
+                "__label__ru": Languages.RUSSIAN,
+                "__label__de": Languages.GERMAN,
+                "__label__fr": Languages.FRENCH,
+                "__label__it": Languages.ITALIAN,
+                "__label__ja": Languages.JAPANESE,
+                "__label__es": Languages.SPANISH,
+                "__label__ceb": Languages.CEBUANO,
+                "__label__tr": Languages.TURKISH,
+                "__label__pt": Languages.PORTUGUESE,
+                "__label__uk": Languages.UKRAINIAN,
+                "__label__eo": Languages.ESPERANTO,
+                "__label__pl": Languages.POLISH,
+                "__label__sv": Languages.SWEDISH,
+                "__label__nl": Languages.DUTCH,
+                "__label__he": Languages.HEBREW,
+                "__label__zh": Languages.CHINESE,
+                "__label__hu": Languages.HUNGARIAN,
+                "__label__ar": Languages.ARABIC,
+                "__label__ca": Languages.CATALAN,
+                "__label__fi": Languages.FINNISH,
+                "__label__cs": Languages.CZECH,
+                "__label__fa": Languages.PERSIAN,
+                "__label__sr": Languages.SERBIAN,
+                "__label__el": Languages.GREEK,
+                "__label__vi": Languages.VIETNAMESE,
+                "__label__bg": Languages.BULGARIAN,
+                "__label__ko": Languages.KOREAN,
+                "__label__no": Languages.NORWEGIAN,
+                "__label__mk": Languages.MACEDONIAN,
+                "__label__ro": Languages.ROMANIAN,
+                "__label__id": Languages.INDONESIAN,
+                "__label__th": Languages.THAI,
+                "__label__hy": Languages.ARMENIAN,
+                "__label__da": Languages.DANISH,
+                "__label__ta": Languages.TAMIL,
+                "__label__hi": Languages.HINDI,
+                "__label__hr": Languages.CROATIAN,
+                "__label__sh": Languages.NOT_DEFINED,
+                "__label__be": Languages.BELARUSIAN,
+                "__label__ka": Languages.GEORGIAN,
+                "__label__te": Languages.TELUGU,
+                "__label__kk": Languages.KAZAKH,
+                "__label__war": Languages.WARAY,
+                "__label__lt": Languages.LITHUANIAN,
+                "__label__gl": Languages.SCOTTISH,
+                "__label__sk": Languages.SLOVAK,
+                "__label__bn": Languages.BENIN,
+                "__label__eu": Languages.BASQUE,
+                "__label__sl": Languages.SLOVENIAN,
+                "__label__kn": Languages.NOT_DEFINED,
+                "__label__ml": Languages.MALAYALAM,
+                "__label__mr": Languages.MARATHI,
+                "__label__et": Languages.ESTONIAN,
+                "__label__az": Languages.AZERBAIJANI,
+                "__label__ms": Languages.NOT_DEFINED,
+                "__label__sq": Languages.ALBANIAN,
+                "__label__la": Languages.LATIN,
+                "__label__bs": Languages.BOSNIAN,
+                "__label__nn": Languages.NORWEGIAN_NOVOSIBIRSK,
+                "__label__ur": Languages.URDU,
+                "__label__lv": Languages.NOT_DEFINED,
+                "__label__my": Languages.NOT_DEFINED,
+                "__label__tt": Languages.NOT_DEFINED,
+                "__label__af": Languages.NOT_DEFINED,
+                "__label__oc": Languages.NOT_DEFINED,
+                "__label__nds": Languages.NOT_DEFINED,
+                "__label__ky": Languages.NOT_DEFINED,
+                "__label__ast": Languages.NOT_DEFINED,
+                "__label__tl": Languages.NOT_DEFINED,
+                "__label__is": Languages.NOT_DEFINED,
+                "__label__ia": Languages.NOT_DEFINED,
+                "__label__si": Languages.NOT_DEFINED,
+                "__label__gu": Languages.NOT_DEFINED,
+                "__label__km": Languages.NOT_DEFINED,
+                "__label__br": Languages.NOT_DEFINED,
+                "__label__ba": Languages.NOT_DEFINED,
+                "__label__uz": Languages.NOT_DEFINED,
+                "__label__bo": Languages.NOT_DEFINED,
+                "__label__pa": Languages.NOT_DEFINED,
+                "__label__vo": Languages.NOT_DEFINED,
+                "__label__als": Languages.NOT_DEFINED,
+                "__label__ne": Languages.NOT_DEFINED,
+                "__label__cy": Languages.NOT_DEFINED,
+                "__label__jbo": Languages.NOT_DEFINED,
+                "__label__fy": Languages.NOT_DEFINED,
+                "__label__mn": Languages.NOT_DEFINED,
+                "__label__lb": Languages.NOT_DEFINED,
+                "__label__ce": Languages.NOT_DEFINED,
+                "__label__ug": Languages.NOT_DEFINED,
+                "__label__tg": Languages.NOT_DEFINED,
+                "__label__sco": Languages.NOT_DEFINED,
+                "__label__sa": Languages.NOT_DEFINED,
+                "__label__cv": Languages.NOT_DEFINED,
+                "__label__jv": Languages.NOT_DEFINED,
+                "__label__min": Languages.NOT_DEFINED,
+                "__label__io": Languages.NOT_DEFINED,
+                "__label__or": Languages.NOT_DEFINED,
+                "__label__as": Languages.NOT_DEFINED,
+                "__label__new": Languages.NOT_DEFINED,
+                "__label__ga": Languages.NOT_DEFINED,
+                "__label__mg": Languages.NOT_DEFINED,
+                "__label__an": Languages.NOT_DEFINED,
+                "__label__ckb": Languages.NOT_DEFINED,
+                "__label__sw": Languages.NOT_DEFINED,
+                "__label__bar": Languages.NOT_DEFINED,
+                "__label__lmo": Languages.NOT_DEFINED,
+                "__label__yi": Languages.NOT_DEFINED,
+                "__label__arz": Languages.NOT_DEFINED,
+                "__label__mhr": Languages.NOT_DEFINED,
+                "__label__azb": Languages.NOT_DEFINED,
+                "__label__sah": Languages.NOT_DEFINED,
+                "__label__pnb": Languages.NOT_DEFINED,
+                "__label__su": Languages.NOT_DEFINED,
+                "__label__bpy": Languages.NOT_DEFINED,
+                "__label__pms": Languages.NOT_DEFINED,
+                "__label__ilo": Languages.NOT_DEFINED,
+                "__label__wuu": Languages.NOT_DEFINED,
+                "__label__ku": Languages.NOT_DEFINED,
+                "__label__ps": Languages.NOT_DEFINED,
+                "__label__ie": Languages.NOT_DEFINED,
+                "__label__xmf": Languages.NOT_DEFINED,
+                "__label__yue": Languages.NOT_DEFINED,
+                "__label__gom": Languages.NOT_DEFINED,
+                "__label__li": Languages.NOT_DEFINED,
+                "__label__mwl": Languages.NOT_DEFINED,
+                "__label__kw": Languages.NOT_DEFINED,
+                "__label__sd": Languages.NOT_DEFINED,
+                "__label__hsb": Languages.NOT_DEFINED,
+                "__label__scn": Languages.NOT_DEFINED,
+                "__label__gd": Languages.NOT_DEFINED,
+                "__label__pam": Languages.NOT_DEFINED,
+                "__label__bh": Languages.NOT_DEFINED,
+                "__label__mai": Languages.NOT_DEFINED,
+                "__label__vec": Languages.NOT_DEFINED,
+                "__label__mt": Languages.NOT_DEFINED,
+                "__label__dv": Languages.NOT_DEFINED,
+                "__label__wa": Languages.NOT_DEFINED,
+                "__label__mzn": Languages.NOT_DEFINED,
+                "__label__am": Languages.NOT_DEFINED,
+                "__label__qu": Languages.NOT_DEFINED,
+                "__label__eml": Languages.NOT_DEFINED,
+                "__label__cbk": Languages.NOT_DEFINED,
+                "__label__tk": Languages.NOT_DEFINED,
+                "__label__rm": Languages.NOT_DEFINED,
+                "__label__os": Languages.NOT_DEFINED,
+                "__label__vls": Languages.NOT_DEFINED,
+                "__label__yo": Languages.NOT_DEFINED,
+                "__label__lo": Languages.NOT_DEFINED,
+                "__label__lez": Languages.NOT_DEFINED,
+                "__label__so": Languages.NOT_DEFINED,
+                "__label__myv": Languages.NOT_DEFINED,
+                "__label__diq": Languages.NOT_DEFINED,
+                "__label__mrj": Languages.NOT_DEFINED,
+                "__label__dsb": Languages.NOT_DEFINED,
+                "__label__frr": Languages.NOT_DEFINED,
+                "__label__ht": Languages.NOT_DEFINED,
+                "__label__gn": Languages.NOT_DEFINED,
+                "__label__bxr": Languages.NOT_DEFINED,
+                "__label__kv": Languages.NOT_DEFINED,
+                "__label__sc": Languages.NOT_DEFINED,
+                "__label__nah": Languages.NOT_DEFINED,
+                "__label__krc": Languages.NOT_DEFINED,
+                "__label__bcl": Languages.NOT_DEFINED,
+                "__label__nap": Languages.NOT_DEFINED,
+                "__label__gv": Languages.NOT_DEFINED,
+                "__label__av": Languages.NOT_DEFINED,
+                "__label__rue": Languages.NOT_DEFINED,
+                "__label__xal": Languages.NOT_DEFINED,
+                "__label__pfl": Languages.NOT_DEFINED,
+                "__label__dty": Languages.NOT_DEFINED,
+                "__label__hif": Languages.NOT_DEFINED,
+                "__label__co": Languages.NOT_DEFINED,
+                "__label__lrc": Languages.NOT_DEFINED,
+                "__label__vep": Languages.NOT_DEFINED,
+                "__label__tyv": Languages.NOT_DEFINED,
             },
             model_wrapper="FasttextLangDetector",
         ),
     }
 
     @staticmethod
-    def get_full_path_weights(name: str) -> str:
+    def get_full_path_weights(name: PathLikeOrStr) -> PathLikeOrStr:
         """
         Returns the absolute path of weights.
 
@@ -741,7 +915,7 @@ class ModelCatalog:
         :return: absolute weight path
         """
         try:
-            profile = ModelCatalog.get_profile(name)
+            profile = ModelCatalog.get_profile(os.fspath(name))
         except KeyError:
             logger.info(
                 LoggingRecord(
@@ -761,7 +935,7 @@ class ModelCatalog:
         return os.path.join(get_weights_dir_path(), name)
 
     @staticmethod
-    def get_full_path_configs(name: str) -> str:
+    def get_full_path_configs(name: PathLikeOrStr) -> PathLikeOrStr:
         """
         Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
         (without the base path to the cache config directory).
@@ -773,7 +947,7 @@ class ModelCatalog:
         :return: absolute path to the config
         """
         try:
-            profile = ModelCatalog.get_profile(name)
+            profile = ModelCatalog.get_profile(os.fspath(name))
         except KeyError:
             logger.info(
                 LoggingRecord(
@@ -787,7 +961,7 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_full_path_preprocessor_configs(name: str) -> str:
+    def get_full_path_preprocessor_configs(name: Union[str]) -> PathLikeOrStr:
         """
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
         by the transformer library.
@@ -811,21 +985,21 @@ class ModelCatalog:
         return os.path.join(get_configs_dir_path(), name)
 
     @staticmethod
-    def get_model_list() -> List[str]:
+    def get_model_list() -> list[PathLikeOrStr]:
         """
         Returns a list of absolute paths of registered models.
         """
         return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
-    def get_profile_list() -> List[str]:
+    def get_profile_list() -> list[str]:
         """
         Returns a list profile keys.
         """
         return list(ModelCatalog.CATALOG.keys())
 
     @staticmethod
-    def is_registered(path_weights: str) -> bool:
+    def is_registered(path_weights: PathLikeOrStr) -> bool:
         """
         Checks if some weights belong to a registered model
 
@@ -849,8 +1023,8 @@ class ModelCatalog:
 
         profile = ModelCatalog.CATALOG.get(name)
         if profile is not None:
-            return copy(profile)
-        raise KeyError("Model Profile does not exist. Please make sure the model is registered")
+            return profile
+        raise KeyError(f"Model Profile {name} does not exist. Please make sure the model is registered")
 
     @staticmethod
     def register(name: str, profile: ModelProfile) -> None:
@@ -866,7 +1040,7 @@ class ModelCatalog:
         ModelCatalog.CATALOG[name] = profile
 
     @staticmethod
-    def load_profiles_from_file(path: Optional[str] = None) -> None:
+    def load_profiles_from_file(path: Optional[PathLikeOrStr] = None) -> None:
         """
         Load model profiles from a jsonl file and extend `CATALOG` with the new profiles.
 
@@ -877,10 +1051,11 @@ class ModelCatalog:
         with jsonlines.open(path) as reader:
             for obj in reader:
                 if not obj["name"] in ModelCatalog.CATALOG:
+                    obj["categories"] = {int(key): get_type(val) for key, val in obj["categories"].items()}
                     ModelCatalog.register(obj["name"], ModelProfile(**obj))
 
     @staticmethod
-    def save_profiles_to_file(target_path: str) -> None:
+    def save_profiles_to_file(target_path: PathLikeOrStr) -> None:
         """
         Save model profiles to a jsonl file.
 
@@ -896,7 +1071,7 @@ class ModelCatalog:
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))
 
 
-def get_tp_weight_names(name: str) -> List[str]:
+def get_tp_weight_names(name: str) -> list[str]:
     """
     Given a path to some model weights it will return all file names according to TP naming convention
 
@@ -922,7 +1097,7 @@ def print_model_infos(add_description: bool = True, add_config: bool = True, add
     num_columns = min(6, len(profiles))
     infos = []
     for profile in profiles:
-        tbl_input: List[Union[Mapping[str, ObjectTypes], str]] = [profile.name]
+        tbl_input: list[Union[Mapping[int, ObjectTypes], str]] = [profile.name]
         if add_description:
             tbl_input.append(profile.description)
         if add_config:
@@ -957,7 +1132,7 @@ class ModelDownloadManager:
     """
 
     @staticmethod
-    def maybe_download_weights_and_configs(name: str) -> str:
+    def maybe_download_weights_and_configs(name: str) -> PathLikeOrStr:
         """
         Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
@@ -967,7 +1142,7 @@ class ModelDownloadManager:
         """
 
         absolute_path_weights = ModelCatalog.get_full_path_weights(name)
-        file_names: List[str] = []
+        file_names: list[str] = []
         if ModelCatalog.is_registered(name):
             profile = ModelCatalog.get_profile(name)
             # there is nothing to download if hf_repo_id or urls is not provided
@@ -1000,7 +1175,7 @@ class ModelDownloadManager:
         return absolute_path_weights
 
     @staticmethod
-    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+    def load_model_from_hf_hub(profile: ModelProfile, absolute_path: PathLikeOrStr, file_names: list[str]) -> None:
         """
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
@@ -1026,7 +1201,7 @@ class ModelDownloadManager:
                 )
 
     @staticmethod
-    def _load_from_gd(profile: ModelProfile, absolute_path: str, file_names: List[str]) -> None:
+    def _load_from_gd(profile: ModelProfile, absolute_path: PathLikeOrStr, file_names: list[str]) -> None:
         if profile.urls is None:
             raise ValueError("urls cannot be None")
         for size, url, file_name in zip(profile.size, profile.urls, file_names):
@@ -1034,7 +1209,7 @@ class ModelDownloadManager:
             download(str(url), directory, file_name, int(size))
 
     @staticmethod
-    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: str) -> None:
+    def load_configs_from_hf_hub(profile: ModelProfile, absolute_path: PathLikeOrStr) -> None:
         """
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
@@ -1053,9 +1228,11 @@ class ModelDownloadManager:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)
 
     @staticmethod
-    def _load_from_hf_hub(repo_id: str, file_name: str, cache_directory: str, force_download: bool = False) -> int:
+    def _load_from_hf_hub(
+        repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False
+    ) -> int:
         url = hf_hub_url(repo_id=repo_id, filename=file_name)
-        token = os.environ.get("HF_CREDENTIALS")
+        token = os.environ.get("HF_CREDENTIALS", None)
         f_path = cached_download(
             url,
             cache_dir=cache_directory,

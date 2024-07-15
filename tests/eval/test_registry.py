@@ -28,7 +28,7 @@ from deepdoctection.dataflow import DataFlow
 from deepdoctection.datasets.info import DatasetCategories
 from deepdoctection.eval import metric_registry
 from deepdoctection.eval.base import MetricBase
-from deepdoctection.utils.detection_types import JsonDict
+from deepdoctection.utils.types import JsonDict
 
 
 @mark.basic

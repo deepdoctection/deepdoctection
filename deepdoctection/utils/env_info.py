@@ -52,7 +52,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 from packaging import version
@@ -85,14 +85,14 @@ from .file_utils import (
     transformers_available,
     wandb_available,
 )
-from .logger import logger, LoggingRecord
+from .logger import LoggingRecord, logger
+from .types import KeyValEnvInfos, PathLikeOrStr
 
-__all__ = [
-    "collect_env_info",
-    "auto_select_viz_library",
-]
+__all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
+
+ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 def collect_torch_env() -> str:
@@ -108,7 +108,7 @@ def collect_torch_env() -> str:
         return get_pretty_env_info()
 
 
-def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Collect installed dependencies for all third party libraries.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -233,7 +233,7 @@ def collect_installed_dependencies(data: List[Tuple[str, str]]) -> List[Tuple[st
     return data
 
 
-def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str]) -> str:
+def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Optional[PathLikeOrStr]) -> str:
     """
     Detect the compute compatibility of a CUDA library.
 
@@ -259,7 +259,7 @@ def detect_compute_compatibility(cuda_home: Optional[str], so_file: Optional[str
 
 
 # Copied from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/tfutils/collect_env.py
-def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Returns a list of (key, value) pairs containing tensorflow information.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -274,12 +274,12 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         if version.parse(get_tf_version()) > version.parse("2.4.1"):
             os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         try:
-            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402
+            import tensorflow.python.util.deprecation as deprecation  # type: ignore # pylint: disable=E0401,R0402,E0611
 
             deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0703
             try:
-                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401
+                from tensorflow.python.util import deprecation  # type: ignore # pylint: disable=E0401,E0611
 
                 deprecation._PRINT_DEPRECATION_WARNINGS = False  # pylint: disable=W0212
             except Exception:  # pylint: disable=W0703
@@ -288,13 +288,13 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
         data.append(("Tensorflow", "None"))
         return data
 
-    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401
+    from tensorflow.python.platform import build_info  # type: ignore # pylint: disable=E0401,E0611
 
     try:
         for key, value in list(build_info.build_info.items()):
             if key == "is_cuda_build":
                 data.append(("TF compiled with CUDA", value))
-                if value and len(tf.config.list_physical_devices('GPU')):
+                if value and len(tf.config.list_physical_devices("GPU")):
                     os.environ["USE_CUDA"] = "1"
             elif key == "cuda_version":
                 data.append(("TF built with CUDA", value))
@@ -316,7 +316,7 @@ def tf_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
 
 
 # Heavily inspired by https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/collect_env.py
-def pt_info(data: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
     """Returns a list of (key, value) pairs containing Pytorch information.
 
     :param data: A list of tuples to dump all collected package information such as the name and the version
@@ -445,7 +445,7 @@ def set_dl_env_vars() -> None:
         os.environ["DD_USE_TF"] = "1"
         os.environ["USE_TF"] = "1"
 
-    if os.environ.get("DD_USE_TORCH", "0") == "1" and os.environ.get("DD_USE_TF", "0") == "1":
+    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE and os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
         logger.warning(
             "Both DD_USE_TORCH and DD_USE_TF are set. Defaulting to PyTorch. If you want a different "
             "behaviour, set DD_USE_TORCH to None before importing deepdoctection."
@@ -453,13 +453,11 @@ def set_dl_env_vars() -> None:
         os.environ["DD_USE_TF"] = "0"
         os.environ["USE_TF"] = "0"
 
-    if not os.environ.get("PYTORCH_AVAILABLE") and not os.environ.get("TENSORFLOW_AVAILABLE"):
-        logger.warning(
-            LoggingRecord(
-                msg="Neither Tensorflow or Pytorch are available. You will not be able to use any Deep Learning "
-                    "model from the library."
-            )
-        )
+    if (
+        os.environ.get("PYTORCH_AVAILABLE") not in ENV_VARS_TRUE
+        and os.environ.get("TENSORFLOW_AVAILABLE") not in ENV_VARS_TRUE
+    ):
+        logger.warning(LoggingRecord(msg="Neither Tensorflow or Pytorch are available."))
 
 
 def collect_env_info() -> str:

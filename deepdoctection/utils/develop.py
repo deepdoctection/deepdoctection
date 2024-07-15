@@ -26,19 +26,19 @@ import functools
 import inspect
 from collections import defaultdict
 from datetime import datetime
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
-from .detection_types import T
 from .logger import LoggingRecord, logger
+from .types import T
 
-__all__: List[str] = ["deprecated"]
+__all__: list[str] = ["deprecated"]
 
 # Copy and paste from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/develop.py
 
 _DEPRECATED_LOG_NUM = defaultdict(int)  # type: ignore
 
 
-def log_deprecated(name: str = "", text: str = "", eos: str = "", max_num_warnings: Optional[int] = None) -> None:
+def log_deprecated(name: str, text: str, eos: str = "", max_num_warnings: Optional[int] = None) -> None:
     """
     Log deprecation warning.
 

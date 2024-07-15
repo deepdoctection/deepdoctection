@@ -28,11 +28,11 @@ from pytest import mark
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.extern.doctrocr import DocTrRotationTransformer, DoctrTextlineDetector, DoctrTextRecognizer
 from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils.types import PixelValues
 from tests.data import Annotations
 
 
-def get_mock_word_results(np_img: ImageType, predictor, device, lib) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
+def get_mock_word_results(np_img: PixelValues, predictor, device, lib) -> List[DetectionResult]:  # type: ignore  # pylint: disable=W0613
     """
     Returns WordResults attr: word_results_list
     """
@@ -40,7 +40,7 @@ def get_mock_word_results(np_img: ImageType, predictor, device, lib) -> List[Det
 
 
 def get_mock_text_line_results(  # type: ignore
-    inputs: List[Tuple[str, ImageType]], predictor, device, lib  # pylint: disable=W0613
+    inputs: List[Tuple[str, PixelValues]], predictor, device, lib  # pylint: disable=W0613
 ) -> List[DetectionResult]:
     """
     Returns two DetectionResult
@@ -60,7 +60,7 @@ class TestDoctrTextlineDetector:
     @staticmethod
     @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_pt_doctr_detector_predicts_image(np_image: ImageType) -> None:
+    def test_pt_doctr_detector_predicts_image(np_image: PixelValues) -> None:
         """
         Detector calls doctr_predict_text_lines. Only runs in pt environment
         """
@@ -81,7 +81,7 @@ class TestDoctrTextlineDetector:
     @staticmethod
     @mark.tf_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text_lines", MagicMock(side_effect=get_mock_word_results))
-    def test_tf_doctr_detector_predicts_image(np_image: ImageType) -> None:
+    def test_tf_doctr_detector_predicts_image(np_image: PixelValues) -> None:
         """
         Detector calls doctr_predict_text_lines. Only runs in tf environment
         """
@@ -109,7 +109,7 @@ class TestDoctrTextRecognizer:
     @staticmethod
     @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_pt_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
+    def test_doctr_pt_recognizer_predicts_text(text_lines: List[Tuple[str, PixelValues]]) -> None:
         """
         Detector calls doctr_predict_text. Only runs in pt environment
         """
@@ -129,7 +129,7 @@ class TestDoctrTextRecognizer:
     @staticmethod
     @mark.tf_deps
     @patch("deepdoctection.extern.doctrocr.doctr_predict_text", MagicMock(side_effect=get_mock_text_line_results))
-    def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, ImageType]]) -> None:
+    def test_doctr_tf_recognizer_predicts_text(text_lines: List[Tuple[str, PixelValues]]) -> None:
         """
         Detector calls doctr_predict_text. Only runs in tf environment
         """
@@ -156,7 +156,7 @@ class TestDocTrRotationTransformer:
     @staticmethod
     @mark.pt_deps
     @patch("deepdoctection.extern.doctrocr.estimate_orientation", MagicMock(return_value=180.0))
-    def test_doctr_rotation_transformer_predicts_image(np_image: ImageType) -> None:
+    def test_doctr_rotation_transformer_predicts_image(np_image: PixelValues) -> None:
         """
         DocTrRotationTransformer calls predict and returns correct DetectionResult
         """
@@ -173,7 +173,7 @@ class TestDocTrRotationTransformer:
     @staticmethod
     @mark.pt_deps
     def test_doctr_rotation_transformer_rotates_image(
-        np_image: ImageType, angle_detection_result: DetectionResult
+        np_image: PixelValues, angle_detection_result: DetectionResult
     ) -> None:
         """
         DocTrRotationTransformer calls transform and returns rotated image

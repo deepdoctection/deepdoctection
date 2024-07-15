@@ -20,21 +20,21 @@ Module for mapping annotations in coco style structure
 """
 
 import os
-from typing import Dict, List, Mapping, Optional, Tuple
+from typing import Mapping, Optional
 
 from ..datapoint.annotation import CategoryAnnotation, ImageAnnotation
 from ..datapoint.box import BoundingBox
 from ..datapoint.image import Image
-from ..utils.detection_types import JsonDict
 from ..utils.fs import load_image_from_file
 from ..utils.settings import ObjectTypes
+from ..utils.types import CocoDatapointDict, JsonDict
 from .maputils import MappingContextManager, curry, maybe_get_fake_score
 
 
 @curry
 def coco_to_image(
-    dp: JsonDict,
-    categories: Dict[str, str],
+    dp: CocoDatapointDict,
+    categories: dict[int, ObjectTypes],
     load_image: bool,
     filter_empty_image: bool,
     fake_score: bool,
@@ -88,7 +88,7 @@ def coco_to_image(
             bbox = BoundingBox(absolute_coords=True, ulx=x_1, uly=y_1, height=h, width=w)
 
             annotation = ImageAnnotation(
-                category_name=categories[str(ann["category_id"])],
+                category_name=categories[ann["category_id"]],
                 bounding_box=bbox,
                 category_id=ann["category_id"],
                 score=maybe_get_fake_score(fake_score),
@@ -98,8 +98,8 @@ def coco_to_image(
 
             if coarse_sub_cat_name and coarse_mapping:
                 sub_cat = CategoryAnnotation(
-                    category_name=categories[str(coarse_mapping[ann["category_id"]])],
-                    category_id=str(coarse_mapping[ann["category_id"]]),
+                    category_name=categories[coarse_mapping[ann["category_id"]]],
+                    category_id=coarse_mapping[ann["category_id"]],
                 )
                 annotation.dump_sub_category(coarse_sub_cat_name, sub_cat)
 
@@ -109,7 +109,7 @@ def coco_to_image(
     return image
 
 
-def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
+def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
     """
     Converting an image back into the coco format. As images and anns are separated it will return a dict with the
     image information and one for its annotations.
@@ -122,7 +122,7 @@ def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
         raise TypeError(f"datapoints must be of type Image, is of type {type(dp)}")
 
     img: JsonDict = {}
-    anns: List[JsonDict] = []
+    anns: list[JsonDict] = []
 
     img["id"] = int("".join([s for s in dp.image_id if s.isdigit()]))
     img["width"] = dp.width
@@ -133,7 +133,7 @@ def image_to_coco(dp: Image) -> Tuple[JsonDict, List[JsonDict]]:
         ann: JsonDict = {
             "id": int("".join([s for s in img_ann.annotation_id if s.isdigit()])),
             "image_id": img["id"],
-            "category_id": int(img_ann.category_id),
+            "category_id": img_ann.category_id,
         }
         if img_ann.score:
             ann["score"] = img_ann.score

@@ -21,16 +21,15 @@ Wrapper for the Hugging Face Language Model for sequence and token  classificati
 from __future__ import annotations
 
 from abc import ABC
-from copy import copy
 from pathlib import Path
-from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
+from typing import Literal, Mapping, Optional, Union
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import JsonDict, Requirement
 from ..utils.file_utils import get_pytorch_requirement, get_transformers_requirement
 from ..utils.settings import TypeOrStr
-from .base import LMSequenceClassifier, SequenceClassResult
+from ..utils.types import JsonDict, PathLikeOrStr, Requirement
+from .base import LMSequenceClassifier, ModelCategories, SequenceClassResult
 from .hflayoutlm import get_tokenizer_from_model_class
 from .pt.ptutils import get_torch_device
 
@@ -69,34 +68,29 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     Abstract base class for wrapping Bert-type models  for sequence classification into the deepdoctection framework.
     """
 
-    model: Union[XLMRobertaForSequenceClassification]
-
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
-        categories: Mapping[str, TypeOrStr],
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
     ):
-        self.path_config = path_config_json
-        self.path_weights = path_weights
-        self.categories = copy(categories)  # type: ignore
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
+        self.categories = ModelCategories(init_categories=categories)
 
         self.device = get_torch_device(device)
-        self.model.to(self.device)
-        self.model.config.tokenizer_class = self.get_tokenizer_class_name(use_xlm_tokenizer)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFLmSequenceClassifierBase:
-        return self.__class__(self.path_config, self.path_weights, self.categories, self.device)
+        return self.__class__(self.path_config, self.path_weights, self.categories.get_categories(), self.device)
 
     def _validate_encodings(
-        self, **encodings: Union[List[List[str]], torch.Tensor]
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        self, **encodings: Union[list[list[str]], torch.Tensor]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         input_ids = encodings.get("input_ids")
         attention_mask = encodings.get("attention_mask")
         token_type_ids = encodings.get("token_type_ids")
@@ -120,16 +114,18 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         return input_ids, attention_mask, token_type_ids
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
-    def get_tokenizer_class_name(self, use_xlm_tokenizer: bool) -> str:
+    @staticmethod
+    def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
         """A refinement for adding the tokenizer class name to the model configs.
 
+        :param model_class_name: The model name, e.g. model.__class__.__name__
         :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
         """
-        tokenizer = get_tokenizer_from_model_class(self.model.__class__.__name__, use_xlm_tokenizer)
+        tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
 
     @staticmethod
@@ -177,18 +173,22 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
 
     def __init__(
         self,
-        path_config_json: str,
-        path_weights: str,
-        categories: Mapping[str, TypeOrStr],
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = True,
     ):
+        super().__init__(path_config_json, path_weights, categories, device)
         self.name = self.get_name(path_weights, "bert-like")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
-        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
+        self.model.to(self.device)
+        self.model.config.tokenizer_class = self.get_tokenizer_class_name(
+            self.model.__class__.__name__, use_xlm_tokenizer
+        )
 
-    def predict(self, **encodings: Union[List[List[str]], torch.Tensor]) -> SequenceClassResult:
+    def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -199,11 +199,13 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         )
 
         result.class_id += 1
-        result.class_name = self.categories[str(result.class_id)]
+        result.class_name = self.categories.categories[result.class_id]
         return result
 
     @staticmethod
-    def get_wrapped_model(path_config_json: str, path_weights: str) -> Any:
+    def get_wrapped_model(
+        path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr
+    ) -> XLMRobertaForSequenceClassification:
         """
         Get the inner (wrapped) model.
 
@@ -217,9 +219,12 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         )
 
     @staticmethod
-    def default_kwargs_for_input_mapping() -> JsonDict:
+    def default_kwargs_for_image_to_features_mapping() -> JsonDict:
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
         """
         return {}
+
+    def clear_model(self) -> None:
+        self.model = None

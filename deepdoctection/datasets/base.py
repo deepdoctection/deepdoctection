@@ -27,15 +27,15 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from inspect import signature
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Mapping, Optional, Sequence, Type, Union
 
 import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
 from ..datapoint.image import Image
-from ..utils.detection_types import Pathlike
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
+from ..utils.types import PathLikeOrStr
 from .dataflow_builder import DataFlowBaseBuilder
 from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
@@ -138,14 +138,14 @@ class SplitDataFlow(DataFlowBaseBuilder):
     Dataflow builder for splitting datasets
     """
 
-    def __init__(self, train: List[Image], val: List[Image], test: Optional[List[Image]]):
+    def __init__(self, train: list[Image], val: list[Image], test: Optional[list[Image]]):
         """
         :param train: Cached train split
         :param val: Cached val split
         :param test: Cached test split
         """
         super().__init__(location="")
-        self.split_cache: Dict[str, List[Image]]
+        self.split_cache: dict[str, list[Image]]
         if test is None:
             self.split_cache = {"train": train, "val": val}
         else:
@@ -215,8 +215,8 @@ class MergeDataset(DatasetBase):
         :param datasets: An arbitrary number of datasets
         """
         self.datasets = datasets
-        self.dataflows: Optional[Tuple[DataFlow, ...]] = None
-        self.datapoint_list: Optional[List[Image]] = None
+        self.dataflows: Optional[tuple[DataFlow, ...]] = None
+        self.datapoint_list: Optional[list[Image]] = None
         super().__init__()
         self._dataset_info.type = datasets[0].dataset_info.type
         self._dataset_info.name = "merge_" + "_".join([dataset.dataset_info.name for dataset in self.datasets])
@@ -239,7 +239,7 @@ class MergeDataset(DatasetBase):
             def __init__(self, *dataflow_builders: DataFlowBaseBuilder):
                 super().__init__("")
                 self.dataflow_builders = dataflow_builders
-                self.dataflows: Optional[Tuple[DataFlow, ...]] = None
+                self.dataflows: Optional[tuple[DataFlow, ...]] = None
 
             def build(self, **kwargs: Union[str, int]) -> DataFlow:
                 """
@@ -327,7 +327,7 @@ class MergeDataset(DatasetBase):
         self._dataflow_builder = SplitDataFlow(train_dataset, val_dataset, test_dataset)
         self._dataflow_builder.categories = self._categories()
 
-    def get_ids_by_split(self) -> Dict[str, List[str]]:
+    def get_ids_by_split(self) -> dict[str, list[str]]:
         """
         To reproduce a dataset split at a later stage, get a summary of the by having a dict of list with split and
         the image ids contained in the split.
@@ -389,7 +389,7 @@ class CustomDataset(DatasetBase):
         self,
         name: str,
         dataset_type: TypeOrStr,
-        location: Pathlike,
+        location: PathLikeOrStr,
         init_categories: Sequence[ObjectTypes],
         dataflow_builder: Type[DataFlowBaseBuilder],
         init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,

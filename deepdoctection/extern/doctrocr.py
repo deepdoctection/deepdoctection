@@ -23,12 +23,12 @@ from __future__ import annotations
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Any, List, Literal, Mapping, Optional, Tuple, Union
+from typing import Any, Literal, Mapping, Optional, Union
 from zipfile import ZipFile
 
 from lazy_imports import try_import
 
-from ..utils.detection_types import ImageType, Requirement
+from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import (
     get_doctr_requirement,
@@ -38,8 +38,9 @@ from ..utils.file_utils import (
 )
 from ..utils.fs import load_json
 from ..utils.settings import LayoutType, ObjectTypes, PageType, TypeOrStr
+from ..utils.types import PathLikeOrStr, PixelValues, Requirement
 from ..utils.viz import viz_handler
-from .base import DetectionResult, ImageTransformer, ObjectDetector, PredictorBase, TextRecognizer
+from .base import DetectionResult, ImageTransformer, ModelCategories, ObjectDetector, TextRecognizer
 from .pt.ptutils import get_torch_device
 from .tp.tfutils import get_tf_device
 
@@ -58,21 +59,24 @@ with try_import() as doctr_import_guard:
     from doctr.models.recognition.zoo import ARCHS, recognition
 
 
-def _get_doctr_requirements() -> List[Requirement]:
-    if os.environ.get("DD_USE_TF", "0") == "1":
+def _get_doctr_requirements() -> list[Requirement]:
+    if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
         return [get_tensorflow_requirement(), get_doctr_requirement(), get_tf_addons_requirements()]
-    if os.environ.get("DD_USE_TORCH", "0") == "1":
+    if os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
         return [get_pytorch_requirement(), get_doctr_requirement()]
     raise ModuleNotFoundError("Neither Tensorflow nor PyTorch has been installed. Cannot use DoctrTextRecognizer")
 
 
 def _load_model(
-    path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+    path_weights: PathLikeOrStr,
+    doctr_predictor: Union[DetectionPredictor, RecognitionPredictor],
+    device: Union[torch.device, tf.device],
+    lib: Literal["PT", "TF"],
 ) -> None:
     """Loading a model either in TF or PT. We only shift the model to the device when using PyTorch. The shift of
     the model to the device in Tensorflow is done in the predict function."""
     if lib == "PT":
-        state_dict = torch.load(path_weights, map_location=device)
+        state_dict = torch.load(os.fspath(path_weights), map_location=device)
         for key in list(state_dict.keys()):
             state_dict["model." + key] = state_dict.pop(key)
         doctr_predictor.load_state_dict(state_dict)
@@ -80,27 +84,27 @@ def _load_model(
     elif lib == "TF":
         # Unzip the archive
         params_path = Path(path_weights).parent
-        is_zip_path = path_weights.endswith(".zip")
+        is_zip_path = os.fspath(path_weights).endswith(".zip")
         if is_zip_path:
             with ZipFile(path_weights, "r") as file:
                 file.extractall(path=params_path)
                 doctr_predictor.model.load_weights(params_path / "weights")
         else:
-            doctr_predictor.model.load_weights(path_weights)
+            doctr_predictor.model.load_weights(os.fspath(path_weights))
 
 
 def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
     """Auto select the DL library from environment variables"""
-    if os.environ.get("USE_TORCH", "0") == "1":
+    if os.environ.get("USE_TORCH", "0") in ENV_VARS_TRUE:
         return "PT"
-    if os.environ.get("USE_TF", "0") == "1":
+    if os.environ.get("USE_TF", "0") in ENV_VARS_TRUE:
         return "TF"
     raise DependencyError("At least one of the env variables USE_TORCH or USE_TF must be set.")
 
 
 def doctr_predict_text_lines(
-    np_img: ImageType, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
-) -> List[DetectionResult]:
+    np_img: PixelValues, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
+) -> list[DetectionResult]:
     """
     Generating text line DetectionResult based on Doctr DetectionPredictor.
 
@@ -119,7 +123,7 @@ def doctr_predict_text_lines(
         raise DependencyError("Tensorflow or PyTorch must be installed.")
     detection_results = [
         DetectionResult(
-            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.word
+            box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.WORD
         )
         for box in raw_output[0]["words"]
     ]
@@ -127,11 +131,11 @@ def doctr_predict_text_lines(
 
 
 def doctr_predict_text(
-    inputs: List[Tuple[str, ImageType]],
+    inputs: list[tuple[str, PixelValues]],
     predictor: RecognitionPredictor,
     device: Union[torch.device, tf.device],
     lib: Literal["TF", "PT"],
-) -> List[DetectionResult]:
+) -> list[DetectionResult]:
     """
     Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
     returns the recognized text as DetectionResult
@@ -161,15 +165,15 @@ def doctr_predict_text(
 class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
     """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
 
-    def __init__(self, categories: Mapping[str, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
-        self.categories = categories  # type: ignore
+    def __init__(self, categories: Mapping[int, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
+        self.categories = ModelCategories(init_categories=categories)
         self.lib = lib if lib is not None else self.auto_select_lib()
 
-    def possible_categories(self) -> List[ObjectTypes]:
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -217,8 +221,8 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
     def __init__(
         self,
         architecture: str,
-        path_weights: str,
-        categories: Mapping[str, TypeOrStr],
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device, tf.device]] = None,
         lib: Optional[Literal["PT", "TF"]] = None,
     ) -> None:
@@ -233,7 +237,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         """
         super().__init__(categories, lib)
         self.architecture = architecture
-        self.path_weights = path_weights
+        self.path_weights = Path(path_weights)
 
         self.name = self.get_name(self.path_weights, self.architecture)
         self.model_id = self.get_model_id()
@@ -245,33 +249,37 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
 
         self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device, self.lib)
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Prediction per image.
 
         :param np_img: image as numpy array
         :return: A list of DetectionResult
         """
-        detection_results = doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
-        return detection_results
+        return doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return _get_doctr_requirements()
 
-    def clone(self) -> PredictorBase:
-        return self.__class__(self.architecture, self.path_weights, self.categories, self.device, self.lib)
+    def clone(self) -> DoctrTextlineDetector:
+        return self.__class__(
+            self.architecture, self.path_weights, self.categories.get_categories(), self.device, self.lib
+        )
 
     @staticmethod
     def load_model(
-        path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+        path_weights: PathLikeOrStr,
+        doctr_predictor: DetectionPredictor,
+        device: Union[torch.device, tf.device],
+        lib: Literal["PT", "TF"],
     ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
 
     @staticmethod
     def get_wrapped_model(
-        architecture: str, path_weights: str, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+        architecture: str, path_weights: PathLikeOrStr, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
     ) -> Any:
         """
         Get the inner (wrapped) model.
@@ -291,6 +299,9 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         doctr_predictor = detection_predictor(arch=architecture, pretrained=False, pretrained_backbone=False)
         DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device, lib)
         return doctr_predictor
+
+    def clear_model(self) -> None:
+        self.doctr_predictor = None
 
 
 class DoctrTextRecognizer(TextRecognizer):
@@ -332,10 +343,10 @@ class DoctrTextRecognizer(TextRecognizer):
     def __init__(
         self,
         architecture: str,
-        path_weights: str,
+        path_weights: PathLikeOrStr,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device, tf.device]] = None,
         lib: Optional[Literal["PT", "TF"]] = None,
-        path_config_json: Optional[str] = None,
+        path_config_json: Optional[PathLikeOrStr] = None,
     ) -> None:
         """
         :param architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
@@ -351,7 +362,7 @@ class DoctrTextRecognizer(TextRecognizer):
         self.lib = lib if lib is not None else self.auto_select_lib()
 
         self.architecture = architecture
-        self.path_weights = path_weights
+        self.path_weights = Path(path_weights)
 
         self.name = self.get_name(self.path_weights, self.architecture)
         self.model_id = self.get_model_id()
@@ -368,7 +379,7 @@ class DoctrTextRecognizer(TextRecognizer):
             self.architecture, self.path_weights, self.device, self.lib, self.path_config_json
         )
 
-    def predict(self, images: List[Tuple[str, ImageType]]) -> List[DetectionResult]:
+    def predict(self, images: list[tuple[str, PixelValues]]) -> list[DetectionResult]:
         """
         Prediction on a batch of text lines
 
@@ -380,22 +391,26 @@ class DoctrTextRecognizer(TextRecognizer):
         return []
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return _get_doctr_requirements()
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> DoctrTextRecognizer:
         return self.__class__(self.architecture, self.path_weights, self.device, self.lib)
 
     @staticmethod
     def load_model(
-        path_weights: str, doctr_predictor: Any, device: Union[torch.device, tf.device], lib: Literal["PT", "TF"]
+        path_weights: PathLikeOrStr,
+        doctr_predictor: RecognitionPredictor,
+        device: Union[torch.device, tf.device],
+        lib: Literal["PT", "TF"],
     ) -> None:
         """Loading model weights"""
         _load_model(path_weights, doctr_predictor, device, lib)
 
     @staticmethod
-    def build_model(architecture: str, lib: Literal["TF", "PT"],
-                    path_config_json: Optional[str] = None) -> "RecognitionPredictor":
+    def build_model(
+        architecture: str, lib: Literal["TF", "PT"], path_config_json: Optional[PathLikeOrStr] = None
+    ) -> RecognitionPredictor:
         """Building the model"""
 
         # inspired and adapted from https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py
@@ -418,6 +433,7 @@ class DoctrTextRecognizer(TextRecognizer):
 
             model = recognition.__dict__[architecture](pretrained=True, pretrained_backbone=True, **custom_configs)
         else:
+            # This is not documented, but you can also directly pass the model class to architecture
             if not isinstance(
                 architecture,
                 (recognition.CRNN, recognition.SAR, recognition.MASTER, recognition.ViTSTR, recognition.PARSeq),
@@ -431,10 +447,10 @@ class DoctrTextRecognizer(TextRecognizer):
     @staticmethod
     def get_wrapped_model(
         architecture: str,
-        path_weights: str,
+        path_weights: PathLikeOrStr,
         device: Union[torch.device, tf.device],
         lib: Literal["PT", "TF"],
-        path_config_json: Optional[str] = None,
+        path_config_json: Optional[PathLikeOrStr] = None,
     ) -> Any:
         """
         Get the inner (wrapped) model.
@@ -454,7 +470,7 @@ class DoctrTextRecognizer(TextRecognizer):
         return doctr_predictor
 
     @staticmethod
-    def get_name(path_weights: str, architecture: str) -> str:
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
         """Returns the name of the model"""
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
@@ -462,6 +478,9 @@ class DoctrTextRecognizer(TextRecognizer):
     def auto_select_lib() -> Literal["PT", "TF"]:
         """Auto select the DL library from the installed and from environment variables"""
         return auto_select_lib_for_doctr()
+
+    def clear_model(self) -> None:
+        self.doctr_predictor = None
 
 
 class DocTrRotationTransformer(ImageTransformer):
@@ -496,7 +515,7 @@ class DocTrRotationTransformer(ImageTransformer):
         self.ratio_threshold_for_lines = ratio_threshold_for_lines
         self.name = "doctr_rotation_transformer"
 
-    def transform(self, np_img: ImageType, specification: DetectionResult) -> ImageType:
+    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
@@ -507,19 +526,18 @@ class DocTrRotationTransformer(ImageTransformer):
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 
-    def predict(self, np_img: ImageType) -> DetectionResult:
+    def predict(self, np_img: PixelValues) -> DetectionResult:
         angle = estimate_orientation(np_img, self.number_contours, self.ratio_threshold_for_lines)
         if angle < 0:
             angle += 360
         return DetectionResult(angle=round(angle, 2))
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_doctr_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> DocTrRotationTransformer:
         return self.__class__(self.number_contours, self.ratio_threshold_for_lines)
 
-    @staticmethod
-    def possible_category() -> PageType:
-        return PageType.angle
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return (PageType.ANGLE,)

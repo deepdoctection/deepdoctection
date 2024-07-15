@@ -69,9 +69,9 @@ def test_adapter_with_uncached_dataset() -> None:
     layouttest.dataflow.splits = {"test": ""}
     layouttest.dataflow.annotation_files = {"test": "test_layout.jsonl"}
 
-    adapter = DatasetAdapter(layouttest, False, image_to_d2_frcnn_training(False))
+    adapter = DatasetAdapter(layouttest, False, image_to_d2_frcnn_training(False), number_repetitions=2)
 
     # Act & Assert
     dataset_iter = iter(adapter)
     df_list = collect_datapoint_from_dataflow(dataset_iter, max_datapoints=4)
-    assert len(df_list) == 2
+    assert len(df_list) == 4

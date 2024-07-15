@@ -79,8 +79,8 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, frcnn_fg_thresh, frcnn_
     proposal_metrics(iou)
 
     # add ground truth as proposals as well
-    boxes = tf.concat([boxes, gt_boxes], axis=0)  # (n+m) x 4
-    iou = tf.concat([iou, tf.eye(tf.shape(gt_boxes)[0])], axis=0)  # (n+m) x m
+    boxes = tf.concat([boxes, gt_boxes], axis=0)  # (n+m) x 4  # pylint: disable=E1123
+    iou = tf.concat([iou, tf.eye(tf.shape(gt_boxes)[0])], axis=0)  # (n+m) x m  # pylint: disable=E1123
     # #proposal=n+m from now on
 
     def sample_fg_bg(iou):
@@ -114,10 +114,10 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, frcnn_fg_thresh, frcnn_
     )
     fg_inds_wrt_gt = tf.gather(best_iou_ind, fg_inds)  # num_fg
 
-    all_indices = tf.concat([fg_inds, bg_inds], axis=0)  # indices w.r.t all n+m proposal boxes
+    all_indices = tf.concat([fg_inds, bg_inds], axis=0)  # indices w.r.t all n+m proposal boxes  # pylint: disable=E1123
     ret_boxes = tf.gather(boxes, all_indices)
 
-    ret_labels = tf.concat(
+    ret_labels = tf.concat(  # pylint: disable=E1123
         [tf.gather(gt_labels, fg_inds_wrt_gt), tf.zeros_like(bg_inds, dtype=tf.int64)],
         axis=0,
     )

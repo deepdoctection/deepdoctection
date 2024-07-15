@@ -26,7 +26,7 @@ from pytest import fixture
 
 from deepdoctection.datapoint import BoundingBox, convert_np_array_to_b64
 from deepdoctection.utils import get_uuid
-from deepdoctection.utils.detection_types import ImageType
+from deepdoctection.utils.types import PixelValues
 
 
 @dataclass
@@ -166,7 +166,7 @@ class WhiteImage:
         """
         return convert_np_array_to_b64(self.img)
 
-    def get_image_as_np_array(self) -> ImageType:
+    def get_image_as_np_array(self) -> PixelValues:
         """
         np.array(dtype=np.float32) image representation
         """
@@ -188,7 +188,7 @@ class CatAnn:
     """
 
     category_name = "FOO"
-    category_id = "1"
+    category_id = 1
     external_id = "567"
     uuid = "00000000-0000-0000-0000-000000000000"
 

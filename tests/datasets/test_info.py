@@ -62,7 +62,7 @@ class TestDatasetCategories:
         cats = TestDatasetCategories.setup()
 
         # Assert
-        assert cats.get_categories() == {"1": TestType.FOO, "2": TestType.BAK, "3": TestType.BAZ}
+        assert cats.get_categories() == {1: TestType.FOO, 2: TestType.BAK, 3: TestType.BAZ}
         assert not cats.is_cat_to_sub_cat()
 
         # Act
@@ -88,12 +88,12 @@ class TestDatasetCategories:
 
         # Assert
         assert cats.get_categories(name_as_key=True) == {
-            get_type("FOO_1"): "1",
-            get_type("FOO_2"): "2",
-            get_type("FOO_3"): "3",
-            get_type("BAK_11"): "4",
-            get_type("BAK_12"): "5",
-            get_type("BAZ"): "6",
+            get_type("FOO_1"): 1,
+            get_type("FOO_2"): 2,
+            get_type("FOO_3"): 3,
+            get_type("BAK_11"): 4,
+            get_type("BAK_12"): 5,
+            get_type("BAZ"): 6,
         }
 
     @staticmethod
@@ -115,9 +115,9 @@ class TestDatasetCategories:
 
         # Assert
         assert cats.get_categories(name_as_key=True, filtered=True) == {
-            TestType.FOO_1: "1",
-            TestType.BAZ: "3",
-            TestType.BAK_11: "2",
+            TestType.FOO_1: 1,
+            TestType.BAZ: 3,
+            TestType.BAK_11: 2,
         }
         assert cats.is_filtered()
 

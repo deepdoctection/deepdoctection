@@ -24,8 +24,8 @@ from typing import Any, Dict, Mapping, Optional, Union
 from pytest import fixture
 
 from deepdoctection.datapoint import Image
-from deepdoctection.utils.detection_types import ImageType, JsonDict
 from deepdoctection.utils.settings import LayoutType, ObjectTypes
+from deepdoctection.utils.types import JsonDict, PixelValues
 
 from .data import (
     DatapointCoco,
@@ -48,14 +48,14 @@ def fixture_datapoint_coco() -> Dict[str, Any]:
 
 
 @fixture(name="categories_coco")
-def fixture_categories_coco() -> Mapping[str, ObjectTypes]:
+def fixture_categories_coco() -> Mapping[int, ObjectTypes]:
     """
     Categories as Dict
     """
     return DatapointCoco().categories
 
 
-def get_coco_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_coco_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -83,7 +83,7 @@ def fixture_datapoint_pubtabnet() -> Dict[str, Any]:
 
 
 @fixture(name="categories_name_as_key_pubtabnet")
-def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, str]:
+def fixture_categories_name_as_key_pubtabnet() -> Mapping[ObjectTypes, int]:
     """
     Categories as Dict
     """
@@ -98,7 +98,7 @@ def fixture_pubtabnet_results() -> DatapointPubtabnet:
     return DatapointPubtabnet()
 
 
-def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -110,7 +110,7 @@ def get_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[
     return None
 
 
-def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, ImageType]]:
+def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     :param path: An image path
@@ -122,7 +122,7 @@ def get_always_pubtabnet_white_image(path: str, type_id: str = "np") -> Optional
 
 def get_always_pubtabnet_white_image_from_bytes(
     pdf_bytes: str, dpi: Optional[int] = None
-) -> Optional[Union[str, ImageType]]:
+) -> Optional[Union[str, PixelValues]]:
     """
     Returns a white image
     """
@@ -247,7 +247,7 @@ def fixture_raw_layoutlm_featurest() -> JsonDict:
 
 
 @fixture(name="xfund_categories_dict_name_as_key")
-def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, str]:
+def fixture_xfund_categories_dict_name_as_key() -> Mapping[ObjectTypes, int]:
     """
     categories_dict_name_as_key
     """
@@ -272,7 +272,7 @@ def fixture_datapoint_iiitar13kjson() -> Dict[str, Any]:
 
 
 @fixture(name="iiitar13k_categories_name_as_keys")
-def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, str]:
+def fixture_iiitar13k_categories_name_as_keys() -> Mapping[ObjectTypes, int]:
     """
     iiitar13k category names dict
     """

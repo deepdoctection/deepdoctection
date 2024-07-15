@@ -12,7 +12,7 @@ Some DataFlow classes for transforming and processing datapoints. Many classes h
 """
 import itertools
 from copy import copy
-from typing import Any, Callable, Iterator, List, Union
+from typing import Any, Callable, Iterator, Union
 
 import tqdm
 
@@ -164,6 +164,10 @@ class RepeatedData(ProxyDataFlow):
                 Set to -1 to repeat ``ds`` infinite times.
         """
         self.num = num
+        if self.num != -1:
+            self.dfs = itertools.tee(df, self.num)
+        else:
+            self.dfs = ()
         super().__init__(df)
 
     def __len__(self) -> int:
@@ -180,8 +184,8 @@ class RepeatedData(ProxyDataFlow):
             while True:
                 yield from self.df
         else:
-            for _ in range(self.num):
-                yield from self.df
+            for df in self.dfs:
+                yield from df
 
 
 class ConcatData(DataFlow):
@@ -197,7 +201,7 @@ class ConcatData(DataFlow):
            df = ConcatData([df_1,df_2])
     """
 
-    def __init__(self, df_lists: List[DataFlow]) -> None:
+    def __init__(self, df_lists: list[DataFlow]) -> None:
         """
         :param df_lists: a list of DataFlow.
         """
@@ -233,7 +237,7 @@ class JoinData(DataFlow):
     `JoinData` will stop once the first Dataflow throws a StopIteration
     """
 
-    def __init__(self, df_lists: List[DataFlow]) -> None:
+    def __init__(self, df_lists: list[DataFlow]) -> None:
         """
         :param df_lists: a list of DataFlow. When these dataflows have different sizes, JoinData will stop when any
                         of them is exhausted.

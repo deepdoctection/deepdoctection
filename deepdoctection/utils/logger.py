@@ -25,7 +25,6 @@ Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 `STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
 """
 
-import ast
 import errno
 import functools
 import json
@@ -37,13 +36,15 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, no_type_check
+from typing import Any, Optional, Union, no_type_check
 
 from termcolor import colored
 
-from .detection_types import Pathlike
+from .types import PathLikeOrStr
 
 __all__ = ["logger", "set_logger_dir", "auto_set_dir", "get_logger_dir"]
+
+ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 @dataclass
@@ -51,7 +52,7 @@ class LoggingRecord:
     """LoggingRecord to pass to the logger in order to distinguish from third party libraries."""
 
     msg: str
-    log_dict: Optional[Dict[Union[int, str], Any]] = field(default=None)
+    log_dict: Optional[dict[Union[int, str], Any]] = field(default=None)
 
     def __post_init__(self) -> None:
         """log_dict will be added to the log record as a dict."""
@@ -66,7 +67,7 @@ class LoggingRecord:
 class CustomFilter(logging.Filter):
     """A custom filter"""
 
-    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
 
     def filter(self, record: logging.LogRecord) -> bool:
         if self.filter_third_party_lib:
@@ -79,7 +80,7 @@ class CustomFilter(logging.Filter):
 class StreamFormatter(logging.Formatter):
     """A custom formatter to produce unified LogRecords"""
 
-    std_out_verbose = ast.literal_eval(os.environ.get("STD_OUT_VERBOSE", "False"))
+    std_out_verbose = os.environ.get("STD_OUT_VERBOSE", "False") in ENV_VARS_TRUE
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
@@ -109,7 +110,7 @@ class StreamFormatter(logging.Formatter):
 class FileFormatter(logging.Formatter):
     """A custom formatter to produce a loggings in json format"""
 
-    filter_third_party_lib = ast.literal_eval(os.environ.get("FILTER_THIRD_PARTY_LIB", "False"))
+    filter_third_party_lib = os.environ.get("FILTER_THIRD_PARTY_LIB", "False") in ENV_VARS_TRUE
 
     @no_type_check
     def format(self, record: logging.LogRecord) -> str:
@@ -132,7 +133,7 @@ class FileFormatter(logging.Formatter):
 
 
 _LOG_DIR = None
-_CONFIG_DICT: Dict[str, Any] = {
+_CONFIG_DICT: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {"customfilter": {"()": lambda: CustomFilter()}},  # pylint: disable=W0108
@@ -145,7 +146,7 @@ _CONFIG_DICT: Dict[str, Any] = {
     "root": {
         "handlers": ["streamhandler"],
         "level": os.environ.get("LOG_LEVEL", "INFO"),
-        "propagate": ast.literal_eval(os.environ.get("LOG_PROPAGATE", "False")),
+        "propagate": os.environ.get("LOG_PROPAGATE", "False") in ENV_VARS_TRUE,
     },
 }
 
@@ -171,9 +172,8 @@ def _get_time_str() -> str:
     return datetime.now().strftime("%m%d-%H%M%S")
 
 
-def _set_file(path: Pathlike) -> None:
-    if isinstance(path, Path):
-        path = path.as_posix()
+def _set_file(path: PathLikeOrStr) -> None:
+    path = os.fspath(path)
     global _FILE_HANDLER  # pylint: disable=W0603
     if os.path.isfile(path):
         backup_name = path + "." + _get_time_str()
@@ -188,7 +188,7 @@ def _set_file(path: Pathlike) -> None:
     logger.info("Argv: %s ", sys.argv)
 
 
-def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
+def set_logger_dir(dir_name: PathLikeOrStr, action: Optional[str] = None) -> None:
     """
     Set the directory for global logging.
 
@@ -213,7 +213,7 @@ def set_logger_dir(dir_name: Pathlike, action: Optional[str] = None) -> None:
         logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
-    def dir_nonempty(directory: str) -> int:
+    def dir_nonempty(directory: PathLikeOrStr) -> int:
         return os.path.isdir(directory) and len([x for x in os.listdir(directory) if x[0] != "."])
 
     if dir_nonempty(dir_name):
@@ -267,7 +267,7 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
     set_logger_dir(auto_dir_name, action=action)
 
 
-def get_logger_dir() -> Optional[str]:
+def get_logger_dir() -> Optional[PathLikeOrStr]:
     """
     The logger directory, or None if not set.
     The directory is used for general logging, tensorboard events, checkpoints, etc.

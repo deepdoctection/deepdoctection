@@ -27,17 +27,17 @@ LayoutXLM as well as LayoutLMv3 are treated there.
 
 ```python
 
-    path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
-    path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
-        
-    dataset_train = dd.get_dataset("funsd")
-    dataset_train.dataflow.categories.filter_categories(categories=dd.LayoutType.word)
+path_config_json = dd.ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
+path_weights = dd.ModelCatalog.get_full_path_weights("microsoft/layoutlm-base-uncased/pytorch_model.bin")
 
-    metric = dd.get_metric("f1")
-    
-    # Token classes are saved for each word as token_tag sub category. Here we let the metric know
-    # where to look at when collecting prediction and ground truth.  
-    metric.set_categories(sub_category_names={"word": ["token_tag"]})
+dataset_train = dd.get_dataset("funsd")
+dataset_train.dataflow.categories.filter_categories(categories=dd.LayoutType.WORD)
+
+metric = dd.get_metric("f1")
+
+# Token classes are saved for each word as token_tag sub category. Here we let the metric know
+# where to look at when collecting prediction and ground truth.  
+metric.set_categories(sub_category_names={"word": ["token_tag"]})
 ```
 
 ```python
@@ -189,13 +189,13 @@ trained model by using a confusion matrix.
         layoutlm_token_classifier = dd.HFLayoutLmTokenClassifier(path_config_json,
                                                               path_weights,
                                                               categories={
-                                                                  "1": "B-answer",
-                                                                  "2": "B-header",
-                                                                  "3": "B-question",
-                                                                  "4": "I-answer",
-                                                                  "5": "I-header",
-                                                                  "6": "I-question",
-                                                                  "7": "O"
+                                                                  1: "B-answer",
+                                                                  2: "B-header",
+                                                                  3: "B-question",
+                                                                  4: "I-answer",
+                                                                  5: "I-header",
+                                                                  6: "I-question",
+                                                                  7: "O"
                                                               })
     
         tokenizer_fast = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
@@ -249,16 +249,15 @@ trained model by using a confusion matrix.
 
 ![](./_imgs/layoutlm_token_classification_2.png)
 
-
 ```python
 
-    word_list = dp.words
-    word_list.sort(key=lambda x: x.reading_order)
-    output = [["#", "LABEL"]]
-    for word in word_list:
-        output.append([word.characters, word.token_class + "-" + word.tag])
+word_list = dp.words
+word_list.sort(key=lambda x: x.READING_ORDER)
+output = [["#", "LABEL"]]
+for word in word_list:
+    output.append([word.CHARACTERS, word.TOKEN_CLASS + "-" + word.TAG])
 
-    print(tabulate(output, headers="firstrow"))
+print(tabulate(output, headers="firstrow"))
 ```
 
 ```
@@ -392,16 +391,15 @@ trained model by using a confusion matrix.
 
 [](./_imgs/layoutlm_token_classification_4.png)
 
-
 ```python
 
-    word_list = dp.words
-    word_list.sort(key=lambda x: x.reading_order)
-    output = [["#", "LABEL"]]
-    for word in word_list:
-        output.append([word.characters, word.token_class + "-" + word.tag])
+word_list = dp.words
+word_list.sort(key=lambda x: x.READING_ORDER)
+output = [["#", "LABEL"]]
+for word in word_list:
+    output.append([word.CHARACTERS, word.TOKEN_CLASS + "-" + word.TAG])
 
-    print(tabulate(output, headers="firstrow"))
+print(tabulate(output, headers="firstrow"))
 ```
 
 ```

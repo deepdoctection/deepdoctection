@@ -18,26 +18,26 @@
 """
 AWS Textract OCR engine for text extraction
 """
+from __future__ import annotations
 
 import sys
 import traceback
-from typing import List
 
 from lazy_imports import try_import
 
 from ..datapoint.convert import convert_np_array_to_b64_b
-from ..utils.detection_types import ImageType, JsonDict, Requirement
 from ..utils.file_utils import get_boto3_requirement
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes
-from .base import DetectionResult, ObjectDetector, PredictorBase
+from ..utils.types import JsonDict, PixelValues, Requirement
+from .base import DetectionResult, ModelCategories, ObjectDetector
 
 with try_import() as import_guard:
     import boto3  # type:ignore
 
 
-def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> List[DetectionResult]:
-    all_results: List[DetectionResult] = []
+def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_lines: bool) -> list[DetectionResult]:
+    all_results: list[DetectionResult] = []
     blocks = response.get("Blocks")
 
     if blocks:
@@ -53,14 +53,14 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
                     score=block["Confidence"] / 100,
                     text=block["Text"],
                     class_id=1 if block["BlockType"] == "WORD" else 2,
-                    class_name=LayoutType.word if block["BlockType"] == "WORD" else LayoutType.line,
+                    class_name=LayoutType.WORD if block["BlockType"] == "WORD" else LayoutType.LINE,
                 )
                 all_results.append(word)
 
     return all_results
 
 
-def predict_text(np_img: ImageType, client, text_lines: bool) -> List[DetectionResult]:  # type: ignore
+def predict_text(np_img: PixelValues, client, text_lines: bool) -> list[DetectionResult]:  # type: ignore
     """
     Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
@@ -127,11 +127,11 @@ class TextractOcrDetector(ObjectDetector):
         self.text_lines = text_lines
         self.client = boto3.client("textract", **credentials_kwargs)
         if self.text_lines:
-            self.categories = {"1": LayoutType.word, "2": LayoutType.line}
+            self.categories = ModelCategories(init_categories={1: LayoutType.WORD, 2: LayoutType.LINE})
         else:
-            self.categories = {"1": LayoutType.word}
+            self.categories = ModelCategories(init_categories={1: LayoutType.WORD})
 
-    def predict(self, np_img: ImageType) -> List[DetectionResult]:
+    def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Transfer of a numpy array and call textract client. Return of the detection results.
 
@@ -142,13 +142,11 @@ class TextractOcrDetector(ObjectDetector):
         return predict_text(np_img, self.client, self.text_lines)
 
     @classmethod
-    def get_requirements(cls) -> List[Requirement]:
+    def get_requirements(cls) -> list[Requirement]:
         return [get_boto3_requirement()]
 
-    def clone(self) -> PredictorBase:
+    def clone(self) -> TextractOcrDetector:
         return self.__class__()
 
-    def possible_categories(self) -> List[ObjectTypes]:
-        if self.text_lines:
-            return [LayoutType.word, LayoutType.line]
-        return [LayoutType.word]
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.categories.get_categories(as_dict=False)

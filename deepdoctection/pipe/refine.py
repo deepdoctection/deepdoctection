@@ -19,11 +19,13 @@
 Module for refining methods of table segmentation. The refining methods lead ultimately to a table structure which
 enables html table representations
 """
+from __future__ import annotations
+
 from collections import defaultdict
 from copy import copy
 from dataclasses import asdict
 from itertools import chain, product
-from typing import DefaultDict, List, Optional, Sequence, Set, Tuple, Union
+from typing import DefaultDict, Optional, Sequence, Union
 
 import networkx as nx  # type: ignore
 
@@ -32,16 +34,15 @@ from ..datapoint.box import merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
-from ..utils.detection_types import JsonDict
-from ..utils.error import AnnotationError, ImageError
+from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
-from .base import PipelineComponent
+from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 
-def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, int], str]]:
+def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, int], str]]:
     """
     Creation of a table parquet: A table is divided into a tile parquet with the (number of rows) x
     (the number of columns) tiles.
@@ -53,17 +54,17 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
     :return: Image
     """
 
-    cell_ann_ids = table.get_relationship(Relationships.child)
+    cell_ann_ids = table.get_relationship(Relationships.CHILD)
     cells = dp.get_annotation(
-        category_names=[LayoutType.cell, CellType.header, CellType.body], annotation_ids=cell_ann_ids
+        category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY], annotation_ids=cell_ann_ids
     )
     tile_to_cells = []
 
     for cell in cells:
-        row_number = int(cell.get_sub_category(CellType.row_number).category_id)
-        col_number = int(cell.get_sub_category(CellType.column_number).category_id)
-        rs = int(cell.get_sub_category(CellType.row_span).category_id)
-        cs = int(cell.get_sub_category(CellType.column_span).category_id)
+        row_number = cell.get_sub_category(CellType.ROW_NUMBER).category_id
+        col_number = cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+        rs = cell.get_sub_category(CellType.ROW_SPAN).category_id
+        cs = cell.get_sub_category(CellType.COLUMN_SPAN).category_id
         for k in range(rs):
             for l in range(cs):
                 assert cell.annotation_id is not None, cell.annotation_id
@@ -73,15 +74,15 @@ def tiles_to_cells(dp: Image, table: ImageAnnotation) -> List[Tuple[Tuple[int, i
 
 
 def connected_component_tiles(
-    tile_to_cell_list: List[Tuple[Tuple[int, int], str]]
-) -> Tuple[List[Set[Tuple[int, int]]], DefaultDict[Tuple[int, int], List[str]]]:
+    tile_to_cell_list: list[tuple[tuple[int, int], str]]
+) -> tuple[list[set[tuple[int, int]]], DefaultDict[tuple[int, int], list[str]]]:
     """
     The assignment of bricks to their cell occupancy induces a graph, with bricks as corners and cell edges. Cells that
     lie on top of several bricks connect the underlying bricks. The graph generated according to this procedure is
     usually multiple connected. The related components and the tile/cell ids assignment are determined.
 
-    :param tile_to_cell_list: List of tuples with tile position and cell ids
-    :return: List of set with tiles that belong to the same connected component and a dict with tiles as keys and
+    :param tile_to_cell_list: list of tuples with tile position and cell ids
+    :return: list of set with tiles that belong to the same connected component and a dict with tiles as keys and
              assigned list of cell ids as values.
     """
     cell_to_tile_list = [(cell_position[1], cell_position[0]) for cell_position in tile_to_cell_list]
@@ -107,7 +108,7 @@ def connected_component_tiles(
     connected_components_tiles = []
 
     for component in connected_components_cell:
-        tiles: Set[Tuple[int, int]] = set()
+        tiles: set[tuple[int, int]] = set()
         for cell in component:
             tiles = tiles.union(set(cell_to_tile_dict[cell]))  # type: ignore
         connected_components_tiles.append(tiles)
@@ -115,7 +116,7 @@ def connected_component_tiles(
     return connected_components_tiles, tile_to_cell_dict
 
 
-def _missing_tile(inputs: Set[Tuple[int, int]]) -> Optional[Tuple[int, int]]:
+def _missing_tile(inputs: set[tuple[int, int]]) -> Optional[tuple[int, int]]:
     min_x, min_y, max_x, max_y = (
         min(a[0] for a in inputs),
         min(a[1] for a in inputs),
@@ -131,15 +132,15 @@ def _missing_tile(inputs: Set[Tuple[int, int]]) -> Optional[Tuple[int, int]]:
 
 
 def _find_component(
-    tile: Tuple[int, int], reduced_connected_tiles: List[Set[Tuple[int, int]]]
-) -> Optional[Set[Tuple[int, int]]]:
+    tile: tuple[int, int], reduced_connected_tiles: list[set[tuple[int, int]]]
+) -> Optional[set[tuple[int, int]]]:
     for comp in reduced_connected_tiles:
         if tile in comp:
             return comp
     return None
 
 
-def _merge_components(reduced_connected_tiles: List[Set[Tuple[int, int]]]) -> List[Set[Tuple[int, int]]]:
+def _merge_components(reduced_connected_tiles: list[set[tuple[int, int]]]) -> list[set[tuple[int, int]]]:
     new_reduced_connected_tiles = []
     for connected_tile in reduced_connected_tiles:
         out = _missing_tile(connected_tile)
@@ -161,17 +162,17 @@ def _merge_components(reduced_connected_tiles: List[Set[Tuple[int, int]]]) -> Li
     return new_reduced_connected_tiles
 
 
-def generate_rectangle_tiling(connected_components_tiles: List[Set[Tuple[int, int]]]) -> List[Set[Tuple[int, int]]]:
+def generate_rectangle_tiling(connected_components_tiles: list[set[tuple[int, int]]]) -> list[set[tuple[int, int]]]:
     """
     The determined connected components imply that all cells have to be combined which are above a connected component.
     In addition, however, it must also be taken into account that cells must be rectangular. This means that related
     components have to be combined whose combined cells above do not create a rectangular tiling. All tiles are combined
     in such a way that all cells above them combine to form a rectangular scheme.
 
-    :param connected_components_tiles: List of set with tiles that belong to the same connected component
-    :return: List of sets with tiles, the cells on top of which together form a rectangular scheme
+    :param connected_components_tiles: list of set with tiles that belong to the same connected component
+    :return: list of sets with tiles, the cells on top of which together form a rectangular scheme
     """
-    rectangle_tiling: List[Set[Tuple[int, int]]] = []
+    rectangle_tiling: list[set[tuple[int, int]]] = []
     inputs = connected_components_tiles
 
     while rectangle_tiling != inputs:
@@ -183,25 +184,25 @@ def generate_rectangle_tiling(connected_components_tiles: List[Set[Tuple[int, in
 
 
 def rectangle_cells(
-    rectangle_tiling: List[Set[Tuple[int, int]]], tile_to_cell_dict: DefaultDict[Tuple[int, int], List[str]]
-) -> List[Set[str]]:
+    rectangle_tiling: list[set[tuple[int, int]]], tile_to_cell_dict: DefaultDict[tuple[int, int], list[str]]
+) -> list[set[str]]:
     """
     All cells are determined that are located above combined connected components and form a rectangular scheme.
 
-    :param rectangle_tiling: List of sets with tiles, the cells on top of which together form a rectangular scheme
+    :param rectangle_tiling: list of sets with tiles, the cells on top of which together form a rectangular scheme
     :param tile_to_cell_dict: Dict with tiles as keys and assigned list of cell ids as values.
-    :return: List of set of cell ids that form a rectangular scheme
+    :return: list of set of cell ids that form a rectangular scheme
     """
-    rectangle_tiling_cells: List[Set[str]] = []
+    rectangle_tiling_cells: list[set[str]] = []
     for rect_tiling_component in rectangle_tiling:
-        rect_cell_component: Set[str] = set()
+        rect_cell_component: set[str] = set()
         for el in rect_tiling_component:
             rect_cell_component = rect_cell_component.union(set(tile_to_cell_dict[el]))
         rectangle_tiling_cells.append(rect_cell_component)
     return rectangle_tiling_cells
 
 
-def _tiling_to_cell_position(inputs: Set[Tuple[int, int]]) -> Tuple[int, int, int, int]:
+def _tiling_to_cell_position(inputs: set[tuple[int, int]]) -> tuple[int, int, int, int]:
     row_number = min(a[0] for a in inputs)
     col_number = min(a[1] for a in inputs)
     row_span = max(abs(a[0] - b[0]) + 1 for a in inputs for b in inputs)
@@ -210,8 +211,8 @@ def _tiling_to_cell_position(inputs: Set[Tuple[int, int]]) -> Tuple[int, int, in
 
 
 def _html_cell(
-    cell_position: Union[Tuple[int, int, int, int], Tuple[()]], position_filled_list: List[Tuple[int, int]]
-) -> List[str]:
+    cell_position: Union[tuple[int, int, int, int], tuple[()]], position_filled_list: list[tuple[int, int]]
+) -> list[str]:
     """
     Html table cell string generation
     """
@@ -238,12 +239,12 @@ def _html_cell(
 
 
 def _html_row(
-    row_list: List[Tuple[int, int, int, int]],
-    position_filled_list: List[Tuple[int, int]],
+    row_list: list[tuple[int, int, int, int]],
+    position_filled_list: list[tuple[int, int]],
     this_row: int,
     number_of_cols: int,
-    row_ann_id_list: List[str],
-) -> List[str]:
+    row_ann_id_list: list[str],
+) -> list[str]:
     """
     Html table row string generation
     """
@@ -275,16 +276,16 @@ def _html_row(
 
 
 def _html_table(
-    table_list: List[Tuple[int, List[Tuple[int, int, int, int]]]],
-    cells_ann_list: List[Tuple[int, List[str]]],
+    table_list: list[tuple[int, list[tuple[int, int, int, int]]]],
+    cells_ann_list: list[tuple[int, list[str]]],
     number_of_rows: int,
     number_of_cols: int,
-) -> List[str]:
+) -> list[str]:
     """
     Html table string generation
     """
     html = ["<table>"]
-    position_filled: List[Tuple[int, int]] = []
+    position_filled: list[tuple[int, int]] = []
     for idx in range(1, number_of_rows + 1):
         row_idx = list(filter(lambda x: x[0] == idx, table_list))[0][1]  # pylint:disable=W0640
         row_ann_ids = list(filter(lambda x: x[0] == idx, cells_ann_list))[0][1]  # pylint:disable=W0640
@@ -294,7 +295,7 @@ def _html_table(
     return html
 
 
-def generate_html_string(table: ImageAnnotation) -> List[str]:
+def generate_html_string(table: ImageAnnotation) -> list[str]:
     """
     Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
     representation.
@@ -307,36 +308,36 @@ def generate_html_string(table: ImageAnnotation) -> List[str]:
     table_image = table.image
     cells = table_image.get_annotation(
         category_names=[
-            LayoutType.cell,
-            CellType.header,
-            CellType.body,
-            CellType.spanning,
-            CellType.row_header,
-            CellType.column_header,
-            CellType.projected_row_header,
+            LayoutType.CELL,
+            CellType.HEADER,
+            CellType.BODY,
+            CellType.SPANNING,
+            CellType.ROW_HEADER,
+            CellType.COLUMN_HEADER,
+            CellType.PROJECTED_ROW_HEADER,
         ]
     )
-    number_of_rows = int(table_image.summary.get_sub_category(TableType.number_of_rows).category_id)
-    number_of_cols = int(table_image.summary.get_sub_category(TableType.number_of_columns).category_id)
+    number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
+    number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
     table_list = []
     cells_ann_list = []
     for row_number in range(1, number_of_rows + 1):
         cells_of_row = list(
             sorted(
                 filter(
-                    lambda cell: cell.get_sub_category(CellType.row_number).category_id
-                    == str(row_number),  # pylint: disable=W0640
+                    lambda cell: cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    == row_number,  # pylint: disable=W0640
                     cells,
                 ),
-                key=lambda cell: cell.get_sub_category(CellType.column_number).category_id,
+                key=lambda cell: cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
             )
         )
         row_list = [
             (
-                int(cell.get_sub_category(CellType.row_number).category_id),
-                int(cell.get_sub_category(CellType.column_number).category_id),
-                int(cell.get_sub_category(CellType.row_span).category_id),
-                int(cell.get_sub_category(CellType.column_span).category_id),
+                cell.get_sub_category(CellType.ROW_NUMBER).category_id,
+                cell.get_sub_category(CellType.COLUMN_NUMBER).category_id,
+                cell.get_sub_category(CellType.ROW_SPAN).category_id,
+                cell.get_sub_category(CellType.COLUMN_SPAN).category_id,
             )
             for cell in cells_of_row
         ]
@@ -421,23 +422,23 @@ class TableSegmentationRefinementService(PipelineComponent):
                     det_result = DetectionResult(
                         box=merged_box.to_list(mode="xyxy"),
                         score=-1.0,
-                        class_id=int(cells[0].category_id),
+                        class_id=cells[0].category_id,
                         class_name=get_type(cells[0].category_name),
                     )
                     new_cell_ann_id = self.dp_manager.set_image_annotation(det_result, table.annotation_id)
                     if new_cell_ann_id is not None:
                         row_number, col_number, row_span, col_span = _tiling_to_cell_position(tiling)
                         self.dp_manager.set_category_annotation(
-                            CellType.row_number, row_number, CellType.row_number, new_cell_ann_id
+                            CellType.ROW_NUMBER, row_number, CellType.ROW_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.column_number, col_number, CellType.column_number, new_cell_ann_id
+                            CellType.COLUMN_NUMBER, col_number, CellType.COLUMN_NUMBER, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.row_span, row_span, CellType.row_span, new_cell_ann_id
+                            CellType.ROW_SPAN, row_span, CellType.ROW_SPAN, new_cell_ann_id
                         )
                         self.dp_manager.set_category_annotation(
-                            CellType.column_span, col_span, CellType.column_span, new_cell_ann_id
+                            CellType.COLUMN_SPAN, col_span, CellType.COLUMN_SPAN, new_cell_ann_id
                         )
                     else:
                         # DetectionResult cannot be dumped, hence merged_box must already exist. Hence, it must
@@ -453,66 +454,58 @@ class TableSegmentationRefinementService(PipelineComponent):
                             cell.deactivate()
 
             cells = table.image.get_annotation(category_names=self.cell_names)
-            number_of_rows = max(int(cell.get_sub_category(CellType.row_number).category_id) for cell in cells)
-            number_of_cols = max(int(cell.get_sub_category(CellType.column_number).category_id) for cell in cells)
-            max_row_span = max(int(cell.get_sub_category(CellType.row_span).category_id) for cell in cells)
-            max_col_span = max(int(cell.get_sub_category(CellType.column_span).category_id) for cell in cells)
+            number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells)
+            number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells)
+            max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells)
+            max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells)
             # TODO: the summaries should be sub categories of the underlying ann
-            if table.image.summary is not None:
-                if (
-                    TableType.number_of_rows in table.image.summary.sub_categories
-                    and TableType.number_of_columns in table.image.summary.sub_categories
-                    and TableType.max_row_span in table.image.summary.sub_categories
-                    and TableType.max_col_span in table.image.summary.sub_categories
-                ):
-                    table.image.summary.remove_sub_category(TableType.number_of_rows)
-                    table.image.summary.remove_sub_category(TableType.number_of_columns)
-                    table.image.summary.remove_sub_category(TableType.max_row_span)
-                    table.image.summary.remove_sub_category(TableType.max_col_span)
-                else:
-                    raise AnnotationError(
-                        "Table summary does not contain sub categories TableType.number_of_rows, "
-                        "TableType.number_of_columns, TableType.max_row_span, TableType.max_col_span"
-                    )
+            if (
+                TableType.NUMBER_OF_ROWS in table.image.summary.sub_categories
+                and TableType.NUMBER_OF_COLUMNS in table.image.summary.sub_categories
+                and TableType.MAX_ROW_SPAN in table.image.summary.sub_categories
+                and TableType.MAX_COL_SPAN in table.image.summary.sub_categories
+            ):
+                table.image.summary.remove_sub_category(TableType.NUMBER_OF_ROWS)
+                table.image.summary.remove_sub_category(TableType.NUMBER_OF_COLUMNS)
+                table.image.summary.remove_sub_category(TableType.MAX_ROW_SPAN)
+                table.image.summary.remove_sub_category(TableType.MAX_COL_SPAN)
 
             self.dp_manager.set_summary_annotation(
-                TableType.number_of_rows, TableType.number_of_rows, number_of_rows, annotation_id=table.annotation_id
+                TableType.NUMBER_OF_ROWS, TableType.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.number_of_columns,
-                TableType.number_of_columns,
+                TableType.NUMBER_OF_COLUMNS,
+                TableType.NUMBER_OF_COLUMNS,
                 number_of_cols,
                 annotation_id=table.annotation_id,
             )
             self.dp_manager.set_summary_annotation(
-                TableType.max_row_span, TableType.max_row_span, max_row_span, annotation_id=table.annotation_id
+                TableType.MAX_ROW_SPAN, TableType.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.max_col_span, TableType.max_col_span, max_col_span, annotation_id=table.annotation_id
+                TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
             html = generate_html_string(table)
-            self.dp_manager.set_container_annotation(TableType.html, -1, TableType.html, table.annotation_id, html)
+            self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
 
-    def clone(self) -> PipelineComponent:
+    def clone(self) -> TableSegmentationRefinementService:
         return self.__class__(self.table_name, self.cell_names)
 
-    def get_meta_annotation(self) -> JsonDict:
-        return dict(
-            [
-                ("image_annotations", []),
-                (
-                    "sub_categories",
-                    {
-                        LayoutType.cell: {
-                            CellType.row_number,
-                            CellType.column_number,
-                            CellType.row_span,
-                            CellType.column_span,
-                        },
-                        LayoutType.table: {TableType.html},
-                    },
-                ),
-                ("relationships", {}),
-                ("summaries", []),
-            ]
+    def get_meta_annotation(self) -> MetaAnnotation:
+        return MetaAnnotation(
+            image_annotations=(),
+            sub_categories={
+                LayoutType.CELL: {
+                    CellType.ROW_NUMBER,
+                    CellType.COLUMN_NUMBER,
+                    CellType.ROW_SPAN,
+                    CellType.COLUMN_SPAN,
+                },
+                LayoutType.TABLE: {TableType.HTML},
+            },
+            relationships={},
+            summaries=(),
         )
+
+    def clear_predictor(self) -> None:
+        pass

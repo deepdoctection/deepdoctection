@@ -35,8 +35,8 @@ class TestMatchingService:
         setup necessary components
         """
 
-        self._parent_categories = LayoutType.cell
-        self._child_categories = LayoutType.word
+        self._parent_categories = LayoutType.CELL
+        self._child_categories = LayoutType.WORD
         self._matching_rule = "ioa"
         self._iou_threshold = None
         self._ioa_threshold = 0.499
@@ -63,8 +63,8 @@ class TestMatchingService:
         parent_anns = dp.get_annotation(category_names=self._parent_categories)
         child_anns = dp.get_annotation(category_names=self._child_categories)
 
-        relationships_word_first_parent = parent_anns[0].get_relationship(Relationships.child)
-        relationships_word_third_parent = parent_anns[2].get_relationship(Relationships.child)
+        relationships_word_first_parent = parent_anns[0].get_relationship(Relationships.CHILD)
+        relationships_word_third_parent = parent_anns[2].get_relationship(Relationships.CHILD)
 
         # Assert
         assert len(relationships_word_first_parent) == 1

@@ -19,7 +19,7 @@
 Module for matching detections according to various matching rules
 """
 
-from typing import Any, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Literal, Optional, Sequence, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -41,7 +41,7 @@ def match_anns_by_intersection(
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
     max_parent_only: bool = False,
-) -> Tuple[Any, Any, Sequence[ImageAnnotation], Sequence[ImageAnnotation]]:
+) -> tuple[Any, Any, Sequence[ImageAnnotation], Sequence[ImageAnnotation]]:
     """
     Generates an iou/ioa-matrix for parent_ann_categories and child_ann_categories and returns pairs of child/parent
     indices that are above some intersection threshold. It will also return a list of all pre selected parent and child

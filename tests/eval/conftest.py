@@ -50,12 +50,12 @@ def fixture_annotation() -> List[ImageAnnotation]:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=100.0, lrx=60.0, lry=150.0, absolute_coords=True),
             category_name="row",
-            category_id="1",
+            category_id=1,
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=15.0, uly=200.0, lrx=70.0, lry=240.0, absolute_coords=True),
             category_name="row",
-            category_id="1",
+            category_id=1,
         ),
     ]
 
@@ -63,12 +63,12 @@ def fixture_annotation() -> List[ImageAnnotation]:
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=10.0, uly=50.0, lrx=20.0, lry=250.0, absolute_coords=True),
             category_name="column",
-            category_id="2",
+            category_id=2,
         ),
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=40.0, uly=20.0, lrx=50.0, lry=240.0, absolute_coords=True),
             category_name="column",
-            category_id="2",
+            category_id=2,
         ),
     ]
     return list(itertools.chain(row_anns, col_anns))
