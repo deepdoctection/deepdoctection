@@ -254,7 +254,7 @@ class DatasetCategories:
             for category, value in sub_cat.items():
                 if category not in sub_categories:
                     continue
-                sub_cat_tmp: dict[str, Union[dict[int, ObjectTypes],dict[ObjectTypes, int], Sequence[str]]] = {}
+                sub_cat_tmp: dict[str, Union[dict[int, ObjectTypes], dict[ObjectTypes, int], Sequence[str]]] = {}
                 sub_categories_list: Union[
                     ObjectTypes, str, list[Sequence[Union[ObjectTypes, str]]], Sequence[Union[ObjectTypes, str]]
                 ]
@@ -267,8 +267,9 @@ class DatasetCategories:
                         continue
                     if values_as_dict:
                         if not name_as_key:
-                            sub_cat_tmp[sub_cat_key] = (
-                                dict(enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)))
+                            sub_cat_tmp[sub_cat_key] = dict(
+                                enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
+                            )
                         else:
                             sub_cat_tmp[sub_cat_key] = {
                                 v: k for k, v in enumerate(self.init_sub_categories[category][get_type(sub_cat_key)], 1)
