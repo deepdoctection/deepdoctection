@@ -451,7 +451,7 @@ class CustomDataset(DatasetBase):
         return self.dataflow_builder
 
     @staticmethod
-    def from_dataset_card(file_path: str, dataflow_builder: Type[DataFlowBaseBuilder]) -> CustomDataset:
+    def from_dataset_card(file_path: PathLikeOrStr, dataflow_builder: Type[DataFlowBaseBuilder]) -> CustomDataset:
         """
         This static method creates a CustomDataset instance from a dataset card.
 

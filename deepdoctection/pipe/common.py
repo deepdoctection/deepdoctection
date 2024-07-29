@@ -215,7 +215,9 @@ class PageParsingService(PipelineComponent):
         :param dp: Image
         :return: Page
         """
-        return Page.from_image(dp, self.text_container, self.floating_text_block_categories)
+        return Page.from_image(dp, text_container=self.text_container,
+                                   floating_text_block_categories=self.floating_text_block_categories,
+                                   include_residual_text_container=self.include_residual_text_container)
 
     def _init_sanity_checks(self) -> None:
         assert self.text_container in (
