@@ -77,6 +77,7 @@ __all__ = [
     "build_doctr_word",
     "get_dd_analyzer",
     "build_analyzer",
+    "set_config_by_yaml",
 ]
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"

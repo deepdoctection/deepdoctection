@@ -254,28 +254,28 @@ def load_json(path_ann: PathLikeOrStr) -> JsonDict:
     return json_dict
 
 
-def get_package_path() -> PathLikeOrStr:
+def get_package_path() -> Path:
     """
     :return: full base path of this package
     """
     return PATH
 
 
-def get_weights_dir_path() -> PathLikeOrStr:
+def get_weights_dir_path() -> Path:
     """
     :return: full base path to the model dir
     """
     return MODEL_DIR
 
 
-def get_configs_dir_path() -> PathLikeOrStr:
+def get_configs_dir_path() -> Path:
     """
     :return: full base path to the configs dir
     """
     return CONFIGS
 
 
-def get_dataset_dir_path() -> PathLikeOrStr:
+def get_dataset_dir_path() -> Path:
     """
     :return: full base path to the dataset dir
     """
