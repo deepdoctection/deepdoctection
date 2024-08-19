@@ -397,7 +397,8 @@ class CategoryAnnotation(Annotation):
                 except ValueError:
                     logger.warning(LoggingRecord(f"Relationship {key} cannot be removed because it does not exist"))
         else:
-            self.relationships[key].clear()
+            if key in self.relationships:
+                self.relationships[key].clear()
 
     def get_defining_attributes(self) -> list[str]:
         return ["category_name", "category_id"]
