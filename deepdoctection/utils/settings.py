@@ -130,6 +130,7 @@ class LayoutType(ObjectTypes):
     BACKGROUND = "background"
     PAGE_NUMBER = "page_number"
     KEY_VALUE_AREA = "key_value_area"
+    LIST_ITEM = "list_item"
 
 
 @object_types_registry.register("TableType")
