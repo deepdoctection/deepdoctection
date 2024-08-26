@@ -101,6 +101,7 @@ class DocumentType(ObjectTypes):
     GOVERNMENT_TENDERS = "government_tenders"
     MANUALS = "manuals"
     PATENTS = "patents"
+    MARK = "mark"
 
 
 @object_types_registry.register("LayoutType")

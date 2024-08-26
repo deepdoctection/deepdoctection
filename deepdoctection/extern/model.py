@@ -1051,7 +1051,7 @@ class ModelCatalog:
         with jsonlines.open(path) as reader:
             for obj in reader:
                 if not obj["name"] in ModelCatalog.CATALOG:
-                    categories = obj.get("categories") or dict()
+                    categories = obj.get("categories") or {}
                     obj["categories"] = {int(key): get_type(val) for key, val in categories.items()}
                     ModelCatalog.register(obj["name"], ModelProfile(**obj))
 
