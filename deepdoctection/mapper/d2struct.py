@@ -189,6 +189,7 @@ def to_wandb_image(
         class_set = Classes([{"name": val, "id": key} for key, val in sub_categories.items()])
     else:
         class_set = Classes([{"name": val, "id": key} for key, val in categories.items()])
+        class_labels = dict(categories.items())
 
     for ann in anns:
         bounding_box = ann.get_bounding_box(dp.image_id)
