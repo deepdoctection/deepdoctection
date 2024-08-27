@@ -139,7 +139,7 @@ def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
             ann["score"] = img_ann.score
         ann["iscrowd"] = 0
         bounding_box = img_ann.get_bounding_box(dp.image_id)
-        ann["area"] = bounding_box.area
+        ann["area"] = bounding_box.area if bounding_box.absolute_coords else bounding_box.transform(dp.width, dp.height, absolute_coords=True).area
         ann["bbox"] = bounding_box.to_list(mode="xywh")
         anns.append(ann)
 
