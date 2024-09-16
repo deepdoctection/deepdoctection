@@ -293,6 +293,8 @@ class Evaluator:
         show_words = kwargs.pop("show_words", False)
         show_token_class = kwargs.pop("show_token_class", True)
         ignore_default_token_class = kwargs.pop("ignore_default_token_class", False)
+        floating_text_block_categories = kwargs.pop("floating_text_block_categories", None)
+        include_residual_text_containers = kwargs.pop("include_residual_Text_containers", True)
 
         df_gt = self.dataset.dataflow.build(**kwargs)
         df_pr = self.dataset.dataflow.build(**kwargs)
@@ -301,7 +303,9 @@ class Evaluator:
         df_pr = MapData(df_pr, deepcopy)
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
 
-        page_parsing_component = PageParsingService(text_container=LayoutType.WORD)
+        page_parsing_component = PageParsingService(text_container=LayoutType.WORD,
+                                                    floating_text_block_categories= floating_text_block_categories,
+                                                    include_residual_text_container= bool(include_residual_text_containers))
         df_gt = page_parsing_component.predict_dataflow(df_gt)
 
         if self.pipe_component:
