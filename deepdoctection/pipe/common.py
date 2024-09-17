@@ -29,7 +29,7 @@ import numpy as np
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS, Page
-from ..mapper.match import match_anns_by_intersection, match_anns_by_distance
+from ..mapper.match import match_anns_by_distance, match_anns_by_intersection
 from ..mapper.misc import to_image
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import MetaAnnotation, PipelineComponent
@@ -75,7 +75,6 @@ class ImageCroppingService(PipelineComponent):
         pass
 
 
-
 class IntersectionMatcher:
     """
     Objects of two object classes can be assigned to one another by determining their pairwise intersection. If this is above
@@ -98,10 +97,13 @@ class IntersectionMatcher:
               of annotation ids of mapped words.
     """
 
-    def __init__(self, matching_rule: Literal["iou", "ioa"],
-                       threshold,
-                       use_weighted_intersections: bool = False,
-                       max_parent_only: bool = False) -> None:
+    def __init__(
+        self,
+        matching_rule: Literal["iou", "ioa"],
+        threshold: float,
+        use_weighted_intersections: bool = False,
+        max_parent_only: bool = False,
+    ) -> None:
         """
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
@@ -119,7 +121,9 @@ class IntersectionMatcher:
         self.use_weighted_intersections = use_weighted_intersections
         self.max_parent_only = max_parent_only
 
-    def match(self, dp, parent_categories, child_categories) -> list[tuple[str,str]]:
+    def match(self, dp: Image,
+             parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+             child_categories: Union[TypeOrStr, Sequence[TypeOrStr]]) -> list[tuple[str, str]]:
         """
         The matching algorithm
 
@@ -144,8 +148,7 @@ class IntersectionMatcher:
 
         all_parent_child_relations = []
         for idx, parent in enumerate(matched_parent_anns):
-            all_parent_child_relations.append((parent.annotation_id,
-                                               matched_child_anns[idx].annotation_id))
+            all_parent_child_relations.append((parent.annotation_id, matched_child_anns[idx].annotation_id))
 
         return all_parent_child_relations
 
@@ -165,7 +168,9 @@ class NeighbourMatcher:
 
     """
 
-    def match(self, dp, parent_categories, child_categories)-> list[tuple[str,str]]:
+    def match(self, dp: Image,
+              parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+              child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],) -> list[tuple[str, str]]:
         """
         The matching algorithm
 
@@ -176,8 +181,10 @@ class NeighbourMatcher:
         :return: A list of tuples with parent and child annotation ids
         """
 
-        return [(pair[0].annotation_id, pair[1].annotation_id) for pair in
-                match_anns_by_distance(dp, parent_categories, child_categories)]
+        return [
+            (pair[0].annotation_id, pair[1].annotation_id)
+            for pair in match_anns_by_distance(dp, parent_categories, child_categories)
+        ]
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -187,13 +194,12 @@ class MatchingService(PipelineComponent):
     assigned a relationship. The parent category will receive a relationship to the child category.
     """
 
-
     def __init__(
         self,
         parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
         child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
         matcher: Union[IntersectionMatcher, NeighbourMatcher],
-        relationship_key: Relationships
+        relationship_key: Relationships,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
@@ -225,10 +231,7 @@ class MatchingService(PipelineComponent):
         matched_pairs = self.matcher.match(dp, self.parent_categories, self.child_categories)
 
         for pair in matched_pairs:
-            self.dp_manager.set_relationship_annotation(self.relationship_key,
-                                                        pair[0],
-                                                        pair[1])
-
+            self.dp_manager.set_relationship_annotation(self.relationship_key, pair[0], pair[1])
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matcher, self.relationship_key)

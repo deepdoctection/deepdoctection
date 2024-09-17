@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import os
 from os import environ
-
 from typing import Optional, Union
 
 from lazy_imports import try_import
@@ -44,7 +43,7 @@ from ..extern.texocr import TextractOcrDetector
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService, IntersectionMatcher
+from ..pipe.common import AnnotationNmsService, IntersectionMatcher, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
@@ -81,9 +80,6 @@ __all__ = [
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-
-
-
 
 
 def config_sanity_checks(cfg: AttrDict) -> None:
@@ -357,14 +353,16 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(text)
 
     if cfg.USE_PDF_MINER or cfg.USE_OCR:
-        matcher = IntersectionMatcher(matching_rule=cfg.WORD_MATCHING.RULE,
-                                      threshold=cfg.WORD_MATCHING.THRESHOLD,
-                                      max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY)
+        matcher = IntersectionMatcher(
+            matching_rule=cfg.WORD_MATCHING.RULE,
+            threshold=cfg.WORD_MATCHING.THRESHOLD,
+            max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
+        )
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
             child_categories=LayoutType.WORD,
             matcher=matcher,
-            relationship_key=Relationships.CHILD
+            relationship_key=Relationships.CHILD,
         )
         pipe_component_list.append(match)
 

@@ -26,8 +26,8 @@ from pytest import mark
 from deepdoctection.datapoint import Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult
 from deepdoctection.pipe.anngen import DatapointManager
-from deepdoctection.utils.settings import get_type
 from deepdoctection.utils.identifier import get_uuid_from_str
+from deepdoctection.utils.settings import get_type
 
 
 class TestDatapointManager:
@@ -135,7 +135,6 @@ class TestDatapointManager:
         dp_manager.datapoint = dp_image
         ann_id = dp_manager.set_image_annotation(layout_detect_results[0])
 
-
         # Act
         assert ann_id is not None
         cont_ann_id = dp_manager.set_container_annotation(
@@ -167,16 +166,14 @@ class TestDatapointManager:
 
         # Act
         assert ann_id is not None
-        cont_ann_id = dp_manager.set_relationship_annotation(get_type("FOO"), target_ann_id,
-        ann_id)
+        assert target_ann_id is not None
+        dp_manager.set_relationship_annotation(get_type("FOO"), target_ann_id, ann_id)
 
         # Assert
         ann = dp_manager.datapoint.get_annotation(annotation_ids=target_ann_id)
         all_relationships = ann[0].get_relationship(get_type("FOO"))
 
         assert all_relationships == [ann_id]
-
-
 
     @staticmethod
     @mark.basic
