@@ -446,7 +446,7 @@ def get_dd_analyzer(
     dd_one_config_path = maybe_copy_config_to_cache(
         get_package_path(), get_configs_dir_path() / "dd", _DD_ONE, reset_config_file
     )
-    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
+    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path() / "dd", _TESSERACT)
 
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
