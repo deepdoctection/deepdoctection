@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import os
 from os import environ
-from shutil import copyfile
+
 from typing import Optional, Union
 
 from lazy_imports import try_import
@@ -55,7 +55,7 @@ from ..pipe.text import TextExtractionService
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
-from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
+from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
 from ..utils.settings import CellType, LayoutType
@@ -67,7 +67,6 @@ with try_import() as image_guard:
 
 
 __all__ = [
-    "maybe_copy_config_to_cache",
     "config_sanity_checks",
     "build_detector",
     "build_padder",
@@ -84,25 +83,7 @@ _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
 
 
-def maybe_copy_config_to_cache(
-    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
-) -> str:
-    """
-    Initial copying of various files
-    :param package_path: base path to directory of source file `file_name`
-    :param configs_dir_path: base path to target directory
-    :param file_name: file to copy
-    :param force_copy: If file is already in target directory, will re-copy the file
 
-    :return: path to the copied file_name
-    """
-
-    absolute_path_source = os.path.join(package_path, file_name)
-    absolute_path = os.path.join(configs_dir_path, os.path.join("dd", os.path.split(file_name)[1]))
-    mkdir_p(os.path.split(absolute_path)[0])
-    if not os.path.isfile(absolute_path) or force_copy:
-        copyfile(absolute_path_source, absolute_path)
-    return absolute_path
 
 
 def config_sanity_checks(cfg: AttrDict) -> None:
@@ -445,7 +426,7 @@ def get_dd_analyzer(
     else:
         raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
     dd_one_config_path = maybe_copy_config_to_cache(
-        get_package_path(), get_configs_dir_path(), _DD_ONE, reset_config_file
+        get_package_path(), get_configs_dir_path() / "dd", _DD_ONE, reset_config_file
     )
     maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
 

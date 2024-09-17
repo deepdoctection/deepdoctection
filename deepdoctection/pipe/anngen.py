@@ -272,6 +272,25 @@ class DatapointManager:
             return None
         return cont_ann.annotation_id
 
+    def set_relationship_annotation(self, relationship_name: ObjectTypes,
+                                    target_annotation_id: str,
+                                    annotation_id: str) -> Optional[str]:
+        self.assert_datapoint_passed()
+        with MappingContextManager(
+            dp_name=self.datapoint.file_name,
+            filter_level="annotation",
+            relationship_annotation={
+                "relationship_name": relationship_name.value,
+                "target_annotation_id": target_annotation_id,
+                "annotation_id": annotation_id,
+            },
+        ) as annotation_context:
+            self._cache_anns[target_annotation_id].dump_relationship(relationship_name, annotation_id)
+        if annotation_context.context_error:
+            return None
+        return target_annotation_id
+
+
     def set_summary_annotation(
         self,
         summary_key: ObjectTypes,

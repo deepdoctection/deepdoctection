@@ -41,7 +41,7 @@ with try_import() as d2_import_guard:
     from detectron2.structures import BoxMode
 
 with try_import() as wb_import_guard:
-    from wandb import Classes
+    from wandb import Classes  # type: ignore
     from wandb import Image as Wbimage
 
 
