@@ -44,7 +44,7 @@ from ..extern.texocr import TextractOcrDetector
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
+from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService, IntersectionMatcher
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
@@ -58,7 +58,7 @@ from ..utils.file_utils import detectron2_available, tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import CellType, LayoutType
+from ..utils.settings import CellType, LayoutType, Relationships
 from ..utils.transform import PadTransform
 from ..utils.types import PathLikeOrStr
 
@@ -357,12 +357,14 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(text)
 
     if cfg.USE_PDF_MINER or cfg.USE_OCR:
+        matcher = IntersectionMatcher(matching_rule=cfg.WORD_MATCHING.RULE,
+                                      threshold=cfg.WORD_MATCHING.THRESHOLD,
+                                      max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY)
         match = MatchingService(
             parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
             child_categories=LayoutType.WORD,
-            matching_rule=cfg.WORD_MATCHING.RULE,
-            threshold=cfg.WORD_MATCHING.THRESHOLD,
-            max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
+            matcher=matcher,
+            relationship_key=Relationships.CHILD
         )
         pipe_component_list.append(match)
 

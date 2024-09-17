@@ -223,6 +223,7 @@ class Relationships(ObjectTypes):
     CHILD = "child"
     READING_ORDER = "reading_order"
     SEMANTIC_ENTITY_LINK = "semantic_entity_link"
+    LAYOUT_LINK = "layout_link"
 
 
 @object_types_registry.register("Languages")
