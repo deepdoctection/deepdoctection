@@ -25,6 +25,7 @@ import os
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
+from shutil import copyfile
 from typing import Callable, Literal, Optional, Protocol, Union, overload
 from urllib.request import urlretrieve
 
@@ -50,6 +51,7 @@ __all__ = [
     "get_configs_dir_path",
     "get_weights_dir_path",
     "get_dataset_dir_path",
+    "maybe_copy_config_to_cache",
 ]
 
 
@@ -280,6 +282,26 @@ def get_dataset_dir_path() -> Path:
     :return: full base path to the dataset dir
     """
     return DATASET_DIR
+
+def maybe_copy_config_to_cache(
+    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
+) -> str:
+    """
+    Initial copying of various files
+    :param package_path: base path to directory of source file `file_name`
+    :param configs_dir_path: base path to target directory
+    :param file_name: file to copy
+    :param force_copy: If file is already in target directory, will re-copy the file
+
+    :return: path to the copied file_name
+    """
+
+    absolute_path_source = os.path.join(package_path, file_name)
+    absolute_path = os.path.join(configs_dir_path, os.path.join(os.path.split(file_name)[1]))
+    mkdir_p(os.path.split(absolute_path)[0])
+    if not os.path.isfile(absolute_path) or force_copy:
+        copyfile(absolute_path_source, absolute_path)
+    return absolute_path
 
 
 @deprecated("Use pathlib operations instead", "2022-06-08")

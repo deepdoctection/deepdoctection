@@ -153,11 +153,13 @@ class MatchingService(PipelineComponent):
             max_parent_only=self.max_parent_only,
         )
 
-        with MappingContextManager(dp_name=dp.file_name):
-            matched_child_anns = np.take(child_anns, child_index)  # type: ignore
-            matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
-            for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(Relationships.CHILD, matched_child_anns[idx].annotation_id)
+        matched_child_anns = np.take(child_anns, child_index)  # type: ignore
+        matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
+
+        for idx, parent in enumerate(matched_parent_anns):
+            self.dp_manager.set_relationship_annotation(Relationships.CHILD,
+                                                        parent.annotation_id,
+                                                        matched_child_anns[idx].annotation_id)
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
