@@ -18,7 +18,6 @@
 """
 Testing module pipe.common
 """
-from typing import Final
 from pytest import mark
 
 from deepdoctection.datapoint import Image

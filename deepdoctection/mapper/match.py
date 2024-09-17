@@ -176,8 +176,8 @@ def match_anns_by_distance(
 )-> list[tuple[ImageAnnotation, ImageAnnotation]]:
     """
     Generates pairs of parent and child annotations by calculating the euclidean distance between the centers of the
-    parent and child bounding boxes. It will return the closest child for each parent. Note, that a child can be assigned
-    multiple times to different parents.
+    parent and child bounding boxes. It will return the closest child for each parent. Note, that a child can be
+    assigned multiple times to different parents.
 
     :param dp: image datapoint
     :param parent_ann_category_names: single str or list of category names

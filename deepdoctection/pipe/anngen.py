@@ -275,6 +275,15 @@ class DatapointManager:
     def set_relationship_annotation(
         self, relationship_name: ObjectTypes, target_annotation_id: str, annotation_id: str
     ) -> Optional[str]:
+        """
+        Create a relationship annotation and dump it to the target annotation.
+
+        :param relationship_name: The relationship key
+        :param target_annotation_id: Annotation_id of the parent `ImageAnnotation`
+        :param annotation_id: The annotation_id to dump the relationship to
+
+        :return: Annotation_id of the parent `ImageAnnotation` for references if the dumpy has been successful
+        """
         self.assert_datapoint_passed()
         with MappingContextManager(
             dp_name=self.datapoint.file_name,
