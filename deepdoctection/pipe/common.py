@@ -77,8 +77,8 @@ class ImageCroppingService(PipelineComponent):
 
 class IntersectionMatcher:
     """
-    Objects of two object classes can be assigned to one another by determining their pairwise intersection. If this is above
-    a limit, a relation is created between them.
+    Objects of two object classes can be assigned to one another by determining their pairwise intersection. If this is
+    above a limit, a relation is created between them.
     The parent object class (based on its category) and the child object class are defined for the service.
 
     Either `iou` (intersection-over-union) or `ioa` (intersection-over-area) can be selected as the matching rule.
