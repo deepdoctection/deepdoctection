@@ -29,8 +29,7 @@ import numpy as np
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS, Page
-from ..mapper.maputils import MappingContextManager
-from ..mapper.match import match_anns_by_intersection
+from ..mapper.match import match_anns_by_distance, match_anns_by_intersection
 from ..mapper.misc import to_image
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
 from .base import MetaAnnotation, PipelineComponent
@@ -76,21 +75,23 @@ class ImageCroppingService(PipelineComponent):
         pass
 
 
-@pipeline_component_registry.register("MatchingService")
-class MatchingService(PipelineComponent):
+class IntersectionMatcher:
     """
-    Objects of two object classes can be assigned to one another by determining their pairwise average. If this is above
-    a limit, a relation is created between them.
-    The parent object class (based on its category) and the child object class are defined for the service. A child
-    relation is created in the parent class if the conditions are met.
+    Objects of two object classes can be assigned to one another by determining their pairwise intersection. If this is
+    above a limit, a relation is created between them.
+    The parent object class (based on its category) and the child object class are defined for the service.
 
     Either `iou` (intersection-over-union) or `ioa` (intersection-over-area) can be selected as the matching rule.
 
             # the following will assign word annotations to text and title annotation, provided that their ioa-threshold
             # is above 0.7. words below that threshold will not be assigned.
 
-            match = MatchingService(parent_categories=["TEXT","TITLE"],child_categories="WORD",matching_rule="ioa",
-                                    threshold=0.7)
+            matcher = IntersectionMatcher(matching_rule="ioa", threshold=0.7)
+
+            match_service = MatchingService(parent_categories=["text","title"],
+                                    child_categories="word",
+                                    matcher=matcher,
+                                    relationship_key=Relationships.CHILD)
 
             # Assigning means that text and title annotation will receive a relationship called "CHILD" which is a list
               of annotation ids of mapped words.
@@ -98,16 +99,12 @@ class MatchingService(PipelineComponent):
 
     def __init__(
         self,
-        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
         matching_rule: Literal["iou", "ioa"],
         threshold: float,
         use_weighted_intersections: bool = False,
         max_parent_only: bool = False,
     ) -> None:
         """
-        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
-        :param child_categories: list of categories to be used for a child class.
         :param matching_rule: "iou" or "ioa"
         :param threshold: iou/ioa threshold. Value between [0,1]
         :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
@@ -115,7 +112,99 @@ class MatchingService(PipelineComponent):
                                            that intersections with more cells will likely decrease the ioa value. By
                                            multiplying the ioa with the number of all intersection for each child this
                                            value calibrate the ioa.
-        :param max_parent_only: Will assign to each child at most one parent with maximum ioa
+        :param max_parent_only: Will assign to each child at most one parent with maximum ioa"""
+
+        if matching_rule not in ("iou", "ioa"):
+            raise ValueError("segment rule must be either iou or ioa")
+        self.matching_rule = matching_rule
+        self.threshold = threshold
+        self.use_weighted_intersections = use_weighted_intersections
+        self.max_parent_only = max_parent_only
+
+    def match(self, dp: Image,
+             parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+             child_categories: Union[TypeOrStr, Sequence[TypeOrStr]]) -> list[tuple[str, str]]:
+        """
+        The matching algorithm
+
+        :param dp: datapoint image
+        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
+        :param child_categories: list of categories to be used for a child class.
+
+        :return: A list of tuples with parent and child annotation ids
+        """
+        child_index, parent_index, child_anns, parent_anns = match_anns_by_intersection(
+            dp,
+            parent_ann_category_names=parent_categories,
+            child_ann_category_names=child_categories,
+            matching_rule=self.matching_rule,
+            threshold=self.threshold,
+            use_weighted_intersections=self.use_weighted_intersections,
+            max_parent_only=self.max_parent_only,
+        )
+
+        matched_child_anns = np.take(child_anns, child_index)  # type: ignore
+        matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
+
+        all_parent_child_relations = []
+        for idx, parent in enumerate(matched_parent_anns):
+            all_parent_child_relations.append((parent.annotation_id, matched_child_anns[idx].annotation_id))
+
+        return all_parent_child_relations
+
+
+class NeighbourMatcher:
+    """
+    Objects of two object classes can be assigned to one another by determining their pairwise distance.
+
+        # the following will assign caption annotations to figure annotation
+
+        matcher = NeighbourMatcher()
+
+        match_service = MatchingService(parent_categories=["figure"],
+                                        child_categories="caption",
+                                        matcher=matcher,
+                                        relationship_key=Relationships.LAYOUT_LINK)
+
+    """
+
+    def match(self, dp: Image,
+              parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+              child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],) -> list[tuple[str, str]]:
+        """
+        The matching algorithm
+
+        :param dp: datapoint image
+        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
+        :param child_categories: list of categories to be used for a child class.
+
+        :return: A list of tuples with parent and child annotation ids
+        """
+
+        return [
+            (pair[0].annotation_id, pair[1].annotation_id)
+            for pair in match_anns_by_distance(dp, parent_categories, child_categories)
+        ]
+
+
+@pipeline_component_registry.register("MatchingService")
+class MatchingService(PipelineComponent):
+    """
+    A service to match annotations of two categories by intersection or distance. The matched annotations will be
+    assigned a relationship. The parent category will receive a relationship to the child category.
+    """
+
+    def __init__(
+        self,
+        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        matcher: Union[IntersectionMatcher, NeighbourMatcher],
+        relationship_key: Relationships,
+    ) -> None:
+        """
+        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
+        :param child_categories: list of categories to be used for a child class.
+
         """
         self.parent_categories = (
             (get_type(parent_categories),)
@@ -127,13 +216,8 @@ class MatchingService(PipelineComponent):
             if isinstance(child_categories, str)
             else (tuple(get_type(category_name) for category_name in child_categories))
         )
-        if matching_rule not in ("iou", "ioa"):
-            raise ValueError("segment rule must be either iou or ioa")
-
-        self.matching_rule = matching_rule
-        self.threshold = threshold
-        self.use_weighted_intersections = use_weighted_intersections
-        self.max_parent_only = max_parent_only
+        self.matcher = matcher
+        self.relationship_key = relationship_key
         super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
@@ -143,24 +227,14 @@ class MatchingService(PipelineComponent):
 
         :param dp: datapoint image
         """
-        child_index, parent_index, child_anns, parent_anns = match_anns_by_intersection(
-            dp,
-            parent_ann_category_names=self.parent_categories,
-            child_ann_category_names=self.child_categories,
-            matching_rule=self.matching_rule,
-            threshold=self.threshold,
-            use_weighted_intersections=self.use_weighted_intersections,
-            max_parent_only=self.max_parent_only,
-        )
 
-        with MappingContextManager(dp_name=dp.file_name):
-            matched_child_anns = np.take(child_anns, child_index)  # type: ignore
-            matched_parent_anns = np.take(parent_anns, parent_index)  # type: ignore
-            for idx, parent in enumerate(matched_parent_anns):
-                parent.dump_relationship(Relationships.CHILD, matched_child_anns[idx].annotation_id)
+        matched_pairs = self.matcher.match(dp, self.parent_categories, self.child_categories)
+
+        for pair in matched_pairs:
+            self.dp_manager.set_relationship_annotation(self.relationship_key, pair[0], pair[1])
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(self.parent_categories, self.child_categories, self.matching_rule, self.threshold)
+        return self.__class__(self.parent_categories, self.child_categories, self.matcher, self.relationship_key)
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(

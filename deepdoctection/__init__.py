@@ -15,7 +15,6 @@ if importlib.util.find_spec("dotenv") is not None:
 
 
 # pylint: disable=wrong-import-position
-import os
 import sys
 from typing import TYPE_CHECKING
 
@@ -29,7 +28,6 @@ __version__ = 0.33
 
 _IMPORT_STRUCTURE = {
     "analyzer": [
-        "maybe_copy_config_to_cache",
         "config_sanity_checks",
         "build_detector",
         "build_padder",
@@ -237,6 +235,7 @@ _IMPORT_STRUCTURE = {
         "LabelSummarizer",
         "curry",
         "match_anns_by_intersection",
+        "match_anns_by_distance",
         "to_image",
         "maybe_load_image",
         "maybe_remove_image",
@@ -265,6 +264,8 @@ _IMPORT_STRUCTURE = {
         "DetectResultGenerator",
         "SubImageLayoutService",
         "ImageCroppingService",
+        "IntersectionMatcher",
+        "NeighbourMatcher",
         "MatchingService",
         "PageParsingService",
         "AnnotationNmsService",
@@ -364,6 +365,7 @@ _IMPORT_STRUCTURE = {
         "get_configs_dir_path",
         "get_weights_dir_path",
         "get_dataset_dir_path",
+        "maybe_copy_config_to_cache",
         "is_uuid_like",
         "get_uuid_from_str",
         "get_uuid",

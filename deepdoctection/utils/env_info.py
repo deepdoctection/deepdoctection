@@ -176,7 +176,7 @@ def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
         data.append(("Pycocotools", "None"))
 
     if scipy_available():
-        import scipy  # type: ignore
+        import scipy
 
         data.append(("Scipy", scipy.__version__))
     else:

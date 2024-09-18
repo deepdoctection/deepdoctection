@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import os
 from os import environ
-from shutil import copyfile
 from typing import Optional, Union
 
 from lazy_imports import try_import
@@ -44,7 +43,7 @@ from ..extern.texocr import TextractOcrDetector
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.common import AnnotationNmsService, MatchingService, PageParsingService
+from ..pipe.common import AnnotationNmsService, IntersectionMatcher, MatchingService, PageParsingService
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
@@ -55,10 +54,10 @@ from ..pipe.text import TextExtractionService
 from ..utils.env_info import ENV_VARS_TRUE
 from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available, tensorpack_available
-from ..utils.fs import get_configs_dir_path, get_package_path, mkdir_p
+from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import AttrDict, set_config_by_yaml
-from ..utils.settings import CellType, LayoutType
+from ..utils.settings import CellType, LayoutType, Relationships
 from ..utils.transform import PadTransform
 from ..utils.types import PathLikeOrStr
 
@@ -67,7 +66,6 @@ with try_import() as image_guard:
 
 
 __all__ = [
-    "maybe_copy_config_to_cache",
     "config_sanity_checks",
     "build_detector",
     "build_padder",
@@ -82,27 +80,24 @@ __all__ = [
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-
-
-def maybe_copy_config_to_cache(
-    package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
-) -> str:
-    """
-    Initial copying of various files
-    :param package_path: base path to directory of source file `file_name`
-    :param configs_dir_path: base path to target directory
-    :param file_name: file to copy
-    :param force_copy: If file is already in target directory, will re-copy the file
-
-    :return: path to the copied file_name
-    """
-
-    absolute_path_source = os.path.join(package_path, file_name)
-    absolute_path = os.path.join(configs_dir_path, os.path.join("dd", os.path.split(file_name)[1]))
-    mkdir_p(os.path.split(absolute_path)[0])
-    if not os.path.isfile(absolute_path) or force_copy:
-        copyfile(absolute_path_source, absolute_path)
-    return absolute_path
+_MODEL_CHOICES = {"layout": ["layout/d2_model_0829999_layout_inf_only.pt",
+                             "xrf_layout/model_final_inf_only.pt",
+                             "microsoft/table-transformer-detection/pytorch_model.bin"],
+                  "segmentation": ["item/model-1620000_inf_only.data-00000-of-00001",
+                                   "xrf_item/model_final_inf_only.pt",
+                                   "microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+                                   "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin"],
+                  "ocr": ["Tesseract", "DocTr", "Textract"],
+                  "doctr_word": ["doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"],
+                  "doctr_recognition": ["doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+                                        "doctr/crnn_vgg16_bn/pt/pytorch_model.bin"],
+                  "llm": ["gpt-3.5-turbo", "gpt-4"],
+                  "segmentation_choices": {
+    "item/model-1620000_inf_only.data-00000-of-00001": "cell/model-1800000_inf_only.data-00000-of-00001",
+    "xrf_item/model_final_inf_only.pt": "xrf_cell/model_final_inf_only.pt",
+    "microsoft/table-transformer-structure-recognition/pytorch_model.bin": None,
+    "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin": None
+}}
 
 
 def config_sanity_checks(cfg: AttrDict) -> None:
@@ -376,12 +371,16 @@ def build_analyzer(cfg: AttrDict) -> DoctectionPipe:
         pipe_component_list.append(text)
 
     if cfg.USE_PDF_MINER or cfg.USE_OCR:
-        match = MatchingService(
-            parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=LayoutType.WORD,
+        matcher = IntersectionMatcher(
             matching_rule=cfg.WORD_MATCHING.RULE,
             threshold=cfg.WORD_MATCHING.THRESHOLD,
             max_parent_only=cfg.WORD_MATCHING.MAX_PARENT_ONLY,
+        )
+        match = MatchingService(
+            parent_categories=cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
+            child_categories=LayoutType.WORD,
+            matcher=matcher,
+            relationship_key=Relationships.CHILD,
         )
         pipe_component_list.append(match)
 
@@ -445,9 +444,9 @@ def get_dd_analyzer(
     else:
         raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
     dd_one_config_path = maybe_copy_config_to_cache(
-        get_package_path(), get_configs_dir_path(), _DD_ONE, reset_config_file
+        get_package_path(), get_configs_dir_path() / "dd", _DD_ONE, reset_config_file
     )
-    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path(), _TESSERACT)
+    maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path() / "dd", _TESSERACT)
 
     # Set up of the configuration and logging
     cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)

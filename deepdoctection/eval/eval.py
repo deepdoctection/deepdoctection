@@ -303,9 +303,11 @@ class Evaluator:
         df_pr = MapData(df_pr, deepcopy)
         df_pr = self._clean_up_predict_dataflow_annotations(df_pr)
 
-        page_parsing_component = PageParsingService(text_container=LayoutType.WORD,
-                                                    floating_text_block_categories= floating_text_block_categories,
-                                                    include_residual_text_container= bool(include_residual_text_containers))
+        page_parsing_component = PageParsingService(
+            text_container=LayoutType.WORD,
+            floating_text_block_categories=floating_text_block_categories,  # type: ignore
+            include_residual_text_container=bool(include_residual_text_containers),
+        )
         df_gt = page_parsing_component.predict_dataflow(df_gt)
 
         if self.pipe_component:
