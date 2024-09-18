@@ -23,6 +23,7 @@ from typing import Any, Literal, Optional, Sequence, Union
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.spatial import distance
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import iou
@@ -164,3 +165,33 @@ def match_anns_by_intersection(
         return [], [], [], []
 
     return child_index, parent_index, child_anns, parent_anns
+
+
+def match_anns_by_distance(
+    dp: Image,
+    parent_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
+    child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
+    parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
+    child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
+)-> list[tuple[ImageAnnotation, ImageAnnotation]]:
+    """
+    Generates pairs of parent and child annotations by calculating the euclidean distance between the centers of the
+    parent and child bounding boxes. It will return the closest child for each parent. Note, that a child can be
+    assigned multiple times to different parents.
+
+    :param dp: image datapoint
+    :param parent_ann_category_names: single str or list of category names
+    :param child_ann_category_names: single str or list of category names
+    :param parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candi-
+                           dates which are not in the list.
+    :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+                          candidates which are not in the list.
+    :return:
+    """
+
+    parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
+    child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
+    child_centers = [block.get_bounding_box(dp.image_id).center for block in child_anns]
+    parent_centers = [block.get_bounding_box(dp.image_id).center for block in parent_anns]
+    child_indices = distance.cdist(parent_centers, child_centers).argmin(axis=1)
+    return [(parent_anns[i], child_anns[j]) for i, j in enumerate(child_indices)]

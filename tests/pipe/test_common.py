@@ -21,7 +21,7 @@ Testing module pipe.common
 from pytest import mark
 
 from deepdoctection.datapoint import Image
-from deepdoctection.pipe import AnnotationNmsService, MatchingService
+from deepdoctection.pipe import AnnotationNmsService, IntersectionMatcher, MatchingService
 from deepdoctection.utils.settings import LayoutType, Relationships
 
 
@@ -38,14 +38,18 @@ class TestMatchingService:
         self._parent_categories = LayoutType.CELL
         self._child_categories = LayoutType.WORD
         self._matching_rule = "ioa"
-        self._iou_threshold = None
+        self._iou_threshold = 0.499
         self._ioa_threshold = 0.499
+        self.matcher = IntersectionMatcher(
+            self._matching_rule, # type: ignore
+            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold
+        )
 
         self.matching_service = MatchingService(
-            self._parent_categories,
-            self._child_categories,
-            self._matching_rule,  # type: ignore
-            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,  # type: ignore
+            parent_categories=self._parent_categories,
+            child_categories=self._child_categories,
+            matcher=self.matcher,
+            relationship_key=Relationships.CHILD,
         )
 
     @mark.basic
