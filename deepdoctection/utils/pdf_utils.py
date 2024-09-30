@@ -107,8 +107,7 @@ def get_pdf_file_reader(path: PathLikeOrStr) -> PdfReader:
                     )
                     sys.exit()
 
-    file_reader = PdfReader(open(path, "rb"))  # pylint: disable=R1732
-    return file_reader
+    return PdfReader(path)
 
 
 def get_pdf_file_writer() -> PdfWriter:
@@ -125,11 +124,23 @@ class PDFStreamer:
 
     **Example:**
 
-             df = dataflow.DataFromIterable.PDFStreamer(path=path)
+             # Building a Dataflow with a PDFStreamer
+             df = dataflow.DataFromIterable(PDFStreamer(path=path))
              df.reset_state()
 
              for page in df:
                 ... # do whatever you like
+
+             # Something else you can do:
+            streamer = PDFStreamer(path=path)
+            pages = len(streamer)  # get the number of pages
+            random_int = random.sample(range(0, pages), 2) # select some pages
+            for ran in random_int:
+                pdf_bytes = streamer[ran]   # get the page bytes directly
+
+            streamer.close() # Do not forget to close the streamer, otherwise the file will never be closed and might
+                             # cause memory leaks if you open many files.
+
 
     """
 
@@ -150,6 +161,17 @@ class PDFStreamer:
             writer.add_page(self.file_reader.pages[k])
             writer.write(buffer)
             yield buffer.getvalue(), k
+        self.file_reader.close()
+
+    def __getitem__(self, index: int) -> bytes:
+        buffer = BytesIO()
+        writer = get_pdf_file_writer()
+        writer.add_page(self.file_reader.pages[index])
+        writer.write(buffer)
+        return buffer.getvalue()
+
+    def close(self) -> None:
+        self.file_reader.close()
 
 
 # The following functions are modified versions from the Python poppler wrapper

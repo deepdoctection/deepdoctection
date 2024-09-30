@@ -190,7 +190,7 @@ class SubImageLayoutService(PipelineComponent):
         - Optionally invoke the DetectResultGenerator
         - Generate ImageAnnotations and dump to parent image and sub image.
         """
-        sub_image_anns = dp.get_annotation_iter(category_names=self.sub_image_name)
+        sub_image_anns = dp.get_annotation(category_names=self.sub_image_name)
         for sub_image_ann in sub_image_anns:
             np_image = self.prepare_np_image(sub_image_ann)
             detect_result_list = self.predictor.predict(np_image)

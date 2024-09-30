@@ -264,7 +264,7 @@ class FintabnetBuilder(DataFlowBaseBuilder):
                     add_summary=True,
                 ),
             )
-            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation_iter(category_names=LayoutType.TABLE)])
+            df = MapData(df, lambda dp: [ann.image for ann in dp.get_annotation(category_names=LayoutType.TABLE)])
             df = FlattenData(df)
             df = MapData(df, lambda dp: dp[0])
 
