@@ -163,6 +163,29 @@ class PipelineComponent(ABC):
                 return True
         return False
 
+    def _undo(self, dp: Image) -> Image:
+        """
+        Undo the processing of the pipeline component. It will remove `ImageAnnotation`, `CategoryAnnotation` and
+        `ContainerAnnotation` with the service_id of the pipeline component.
+        """
+        if self.timer_on:
+            with timed_operation(self.__class__.__name__):
+                self.dp_manager.datapoint = dp
+                dp.remove(service_ids=self.service_id)
+        else:
+            self.dp_manager.datapoint = dp
+            dp.remove(service_ids=self.service_id)
+        return self.dp_manager.datapoint
+
+    def undo(self, df: DataFlow) -> DataFlow:
+        """
+        Mapping a datapoint via `_undo` within a dataflow pipeline
+
+        :param df: An input dataflow of Images
+        :return: A output dataflow of Images
+        """
+        return MapData(df, self._undo)
+
 
 class Pipeline(ABC):
     """

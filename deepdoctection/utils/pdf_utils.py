@@ -107,7 +107,7 @@ def get_pdf_file_reader(path: PathLikeOrStr) -> PdfReader:
                     )
                     sys.exit()
 
-    return PdfReader(path)
+    return PdfReader(os.fspath(path))
 
 
 def get_pdf_file_writer() -> PdfWriter:
@@ -171,6 +171,9 @@ class PDFStreamer:
         return buffer.getvalue()
 
     def close(self) -> None:
+        """
+        Close the file reader
+        """
         self.file_reader.close()
 
 

@@ -130,9 +130,7 @@ class TestTableSegmentationService:
                 assert item_cat.category_id == item_cat_expected.category_id
 
         # Assert cells have correctly assigned sub categories row/col/rs/cs number
-        cells = dp.get_annotation(
-            category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
-        )
+        cells = dp.get_annotation(category_names=self.table_segmentation_service.cell_names)  # pylint: disable=W0212
         cells_expected = dp_expected.get_annotation(
             category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
         )
@@ -369,15 +367,16 @@ class TestPubtablesSegmentationService:
 
         # Arrange
         dp = dp_image_tab_cell_item
-        cells = dp.get_annotation(category_names=LayoutType.CELL)
+        cells_ann_ids = [ann.annotation_id for ann in dp.get_annotation(category_names=LayoutType.CELL)]
         table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
 
-        for cell in cells:
-            dp.remove(cell)
+        dp.remove(annotation_ids=cells_ann_ids)
 
-        tab_cells = table.image.get_annotation(category_names=LayoutType.CELL)  # type: ignore
-        for cell in tab_cells:
-            table.image.remove(cell)  # type: ignore
+        tab_cells_ann_ids = [
+            ann.annotation_id for ann in table.image.get_annotation(category_names=LayoutType.CELL) # type: ignore
+        ]
+
+        table.image.remove(annotation_ids=tab_cells_ann_ids)  # type: ignore
 
         # Act
         dp = self.table_segmentation_service.pass_datapoint(dp)

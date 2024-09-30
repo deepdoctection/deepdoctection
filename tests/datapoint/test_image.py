@@ -19,15 +19,15 @@
 Testing the module datapoint.image
 """
 
-from typing import Union
 from collections import defaultdict
+from typing import Union
 
 from numpy import float32, ones
 from numpy.testing import assert_array_equal
 from pytest import mark, raises
 
 from deepdoctection.dataflow import DataFlow, MapData, SerializerJsonlines
-from deepdoctection.datapoint import BoundingBox, CategoryAnnotation, Image, ImageAnnotation, AnnotationMap
+from deepdoctection.datapoint import AnnotationMap, BoundingBox, CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.utils import get_uuid
 from deepdoctection.utils.error import ImageError
 from deepdoctection.utils.settings import get_type
@@ -389,8 +389,9 @@ class TestImage:
 
     @staticmethod
     @mark.basic
-    def test_get_annotation_id_to_annotation_maps(dp_image_with_layout_and_word_annotations: Image,
-                                                  annotation_maps: defaultdict[str, list[AnnotationMap]]) -> None:
+    def test_get_annotation_id_to_annotation_maps(
+        dp_image_with_layout_and_word_annotations: Image, annotation_maps: defaultdict[str, list[AnnotationMap]]
+    ) -> None:
         """
         get_annotation_id_to_annotation_maps
         """
@@ -405,11 +406,11 @@ class TestImage:
         # Assert
         assert ann_maps == expected_annotation_maps
 
-
     @staticmethod
     @mark.basic
-    def test_get_service_id_to_annotation_id(dp_image_with_layout_and_word_annotations: Image,
-                                             service_id_to_ann_id: dict[str, list[str]]) -> None:
+    def test_get_service_id_to_annotation_id(
+        dp_image_with_layout_and_word_annotations: Image, service_id_to_ann_id: dict[str, list[str]]
+    ) -> None:
         """
         get_service_id_to_annotation_id
         """
@@ -424,10 +425,26 @@ class TestImage:
         # Assert
         assert service_id_to_ann_id == expected_service_id_to_ann_id
 
+    @staticmethod
+    @mark.basic
+    def test_remove_by_annotation_id(dp_image_with_layout_and_word_annotations: Image) -> None:
+        """
+        remove
+        """
+
+        # Arrange
+        dp = dp_image_with_layout_and_word_annotations
+
+        # Act
+        dp.remove(annotation_ids=["c603f62d-211b-335d-9401-350b17842562", "01c4dc98-88fb-3d7e-b623-c52117bfc74a"])
+
+        # Assert
+        anns = dp.get_annotation(annotation_ids="c603f62d-211b-335d-9401-350b17842562")
+        assert not anns
 
     @staticmethod
     @mark.basic
-    def test_remove_by_service_id(dp_image_with_layout_and_word_annotations: Image):
+    def test_remove_by_service_id(dp_image_with_layout_and_word_annotations: Image) -> None:
         """
         remove
         """
@@ -439,41 +456,5 @@ class TestImage:
         dp.remove(service_ids="test_service")
 
         # Assert
-
-    @staticmethod
-    @mark.basic
-    def test_remove_by_annotation_id(dp_image_with_layout_and_word_annotations: Image):
-        """
-        remove
-        """
-
-        # Arrange
-        dp = dp_image_with_layout_and_word_annotations
-
-        # Act
-        dp.remove(annotation_ids=['c603f62d-211b-335d-9401-350b17842562','01c4dc98-88fb-3d7e-b623-c52117bfc74a'])
-
-        # Assert
-        anns = dp.get_annotation(annotation_ids='c603f62d-211b-335d-9401-350b17842562')
-        assert not anns
-
-
-    @staticmethod
-    @mark.basic
-    def test_remove_by_service_id(dp_image_with_layout_and_word_annotations: Image):
-        """
-        remove
-        """
-
-        # Arrange
-        dp = dp_image_with_layout_and_word_annotations
-
-        # Act
-        dp.remove(service_ids= "test_service")
-
-        # Assert
         anns = dp.get_annotation(service_id="test_service")
         assert not anns
-
-
-

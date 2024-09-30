@@ -121,9 +121,12 @@ class IntersectionMatcher:
         self.use_weighted_intersections = use_weighted_intersections
         self.max_parent_only = max_parent_only
 
-    def match(self, dp: Image,
-             parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-             child_categories: Union[TypeOrStr, Sequence[TypeOrStr]]) -> list[tuple[str, str]]:
+    def match(
+        self,
+        dp: Image,
+        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+    ) -> list[tuple[str, str]]:
         """
         The matching algorithm
 
@@ -168,9 +171,12 @@ class NeighbourMatcher:
 
     """
 
-    def match(self, dp: Image,
-              parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-              child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],) -> list[tuple[str, str]]:
+    def match(
+        self,
+        dp: Image,
+        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+    ) -> list[tuple[str, str]]:
         """
         The matching algorithm
 
