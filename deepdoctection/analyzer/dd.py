@@ -80,24 +80,32 @@ __all__ = [
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-_MODEL_CHOICES = {"layout": ["layout/d2_model_0829999_layout_inf_only.pt",
-                             "xrf_layout/model_final_inf_only.pt",
-                             "microsoft/table-transformer-detection/pytorch_model.bin"],
-                  "segmentation": ["item/model-1620000_inf_only.data-00000-of-00001",
-                                   "xrf_item/model_final_inf_only.pt",
-                                   "microsoft/table-transformer-structure-recognition/pytorch_model.bin",
-                                   "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin"],
-                  "ocr": ["Tesseract", "DocTr", "Textract"],
-                  "doctr_word": ["doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"],
-                  "doctr_recognition": ["doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
-                                        "doctr/crnn_vgg16_bn/pt/pytorch_model.bin"],
-                  "llm": ["gpt-3.5-turbo", "gpt-4"],
-                  "segmentation_choices": {
-    "item/model-1620000_inf_only.data-00000-of-00001": "cell/model-1800000_inf_only.data-00000-of-00001",
-    "xrf_item/model_final_inf_only.pt": "xrf_cell/model_final_inf_only.pt",
-    "microsoft/table-transformer-structure-recognition/pytorch_model.bin": None,
-    "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin": None
-}}
+_MODEL_CHOICES = {
+    "layout": [
+        "layout/d2_model_0829999_layout_inf_only.pt",
+        "xrf_layout/model_final_inf_only.pt",
+        "microsoft/table-transformer-detection/pytorch_model.bin",
+    ],
+    "segmentation": [
+        "item/model-1620000_inf_only.data-00000-of-00001",
+        "xrf_item/model_final_inf_only.pt",
+        "microsoft/table-transformer-structure-recognition/pytorch_model.bin",
+        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin",
+    ],
+    "ocr": ["Tesseract", "DocTr", "Textract"],
+    "doctr_word": ["doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"],
+    "doctr_recognition": [
+        "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        "doctr/crnn_vgg16_bn/pt/pytorch_model.bin",
+    ],
+    "llm": ["gpt-3.5-turbo", "gpt-4"],
+    "segmentation_choices": {
+        "item/model-1620000_inf_only.data-00000-of-00001": "cell/model-1800000_inf_only.data-00000-of-00001",
+        "xrf_item/model_final_inf_only.pt": "xrf_cell/model_final_inf_only.pt",
+        "microsoft/table-transformer-structure-recognition/pytorch_model.bin": None,
+        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin": None,
+    },
+}
 
 
 def config_sanity_checks(cfg: AttrDict) -> None:

@@ -136,7 +136,7 @@ class TestTextOrderService:
 
     @staticmethod
     @mark.basic
-    def test_integration_pipeline_component_wit_include_residual_text_container_to_true(
+    def test_integration_pipeline_component_with_include_residual_text_container_to_true(
         dp_image_with_layout_and_word_annotations: Image,
     ) -> None:
         """

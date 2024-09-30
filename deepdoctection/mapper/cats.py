@@ -23,7 +23,7 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
-from ..datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from ..datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation
 from ..datapoint.image import Image
 from ..utils.settings import ObjectTypes, SummaryType, TypeOrStr, get_type
 from .maputils import LabelSummarizer, curry
@@ -49,7 +49,7 @@ def cat_to_sub_cat(
     if cat_to_sub_cat_dict is None:
         return dp
     cat_to_sub_cat_dict_obj_type = {get_type(key): get_type(value) for key, value in cat_to_sub_cat_dict.items()}
-    for ann in dp.get_annotation_iter(category_names=list(cat_to_sub_cat_dict_obj_type.keys())):
+    for ann in dp.get_annotation(category_names=list(cat_to_sub_cat_dict_obj_type.keys())):
         sub_cat_type = cat_to_sub_cat_dict_obj_type[get_type(ann.category_name)]
         sub_cat = ann.get_sub_category(sub_cat_type)
         if sub_cat:
@@ -88,13 +88,13 @@ def re_assign_cat_ids(
     :return: Image
     """
 
-    anns_to_remove: list[ImageAnnotation] = []
-    for ann in dp.get_annotation_iter():
+    ann_ids_to_remove: list[str] = []
+    for ann in dp.get_annotation():
         if categories_dict_name_as_key is not None:
             if ann.category_name in categories_dict_name_as_key:
                 ann.category_id = categories_dict_name_as_key[ann.category_name]
             else:
-                anns_to_remove.append(ann)
+                ann_ids_to_remove.append(ann.annotation_id)
 
         if cat_to_sub_cat_mapping:
             if ann.category_name in cat_to_sub_cat_mapping:
@@ -104,8 +104,7 @@ def re_assign_cat_ids(
                     sub_category = ann.get_sub_category(key)
                     sub_category.category_id = sub_cat_values_dict.get(sub_category.category_name, DEFAULT_CATEGORY_ID)
 
-    for ann in anns_to_remove:
-        dp.remove(ann)
+    dp.remove(annotation_ids=ann_ids_to_remove)
 
     return dp
 
@@ -249,7 +248,7 @@ def image_to_cat_id(
         raise ValueError(f"id_name_or_value must be in ('id', 'name', 'value') but is {id_name_or_value}")
 
     if category_names or sub_categories:
-        for ann in dp.get_annotation_iter():
+        for ann in dp.get_annotation():
             if ann.category_name in category_names:
                 cat_container[ann.category_name].append(ann.category_id)
             if ann.category_name in tmp_sub_category_names:
@@ -321,11 +320,11 @@ def remove_cats(
     if isinstance(summary_sub_categories, str):
         summary_sub_categories = [summary_sub_categories]
 
-    anns_to_remove = []
+    ann_ids_to_remove = []
 
-    for ann in dp.get_annotation_iter():
+    for ann in dp.get_annotation():
         if ann.category_name in category_names:
-            anns_to_remove.append(ann)
+            ann_ids_to_remove.append(ann.annotation_id)
         if ann.category_name in sub_categories.keys():
             sub_cats_to_remove = sub_categories[ann.category_name]
             if isinstance(sub_cats_to_remove, str):
@@ -339,8 +338,7 @@ def remove_cats(
             for relation in relationships_to_remove:
                 ann.remove_relationship(key=get_type(relation))
 
-    for ann in anns_to_remove:
-        dp.remove(ann)
+    dp.remove(annotation_ids=ann_ids_to_remove)
 
     if summary_sub_categories is not None:
         for sub_cat in summary_sub_categories:

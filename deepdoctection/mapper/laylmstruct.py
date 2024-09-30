@@ -127,7 +127,7 @@ def image_to_raw_layoutlm_features(
     all_boxes = []
     all_labels: list[int] = []
 
-    anns = dp.get_annotation_iter(category_names=LayoutType.WORD)
+    anns = dp.get_annotation(category_names=LayoutType.WORD)
 
     word_id_to_segment_box = {}
     if segment_positions:

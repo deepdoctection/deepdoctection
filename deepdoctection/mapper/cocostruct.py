@@ -129,7 +129,7 @@ def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
     img["height"] = dp.height
     img["file_name"] = dp.file_name
 
-    for img_ann in dp.get_annotation_iter():
+    for img_ann in dp.get_annotation():
         ann: JsonDict = {
             "id": int("".join([s for s in img_ann.annotation_id if s.isdigit()])),
             "image_id": img["id"],

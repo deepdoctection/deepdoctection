@@ -41,8 +41,8 @@ class TestMatchingService:
         self._iou_threshold = 0.499
         self._ioa_threshold = 0.499
         self.matcher = IntersectionMatcher(
-            self._matching_rule, # type: ignore
-            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold
+            self._matching_rule,  # type: ignore
+            self._iou_threshold if self._matching_rule in ["iou"] else self._ioa_threshold,
         )
 
         self.matching_service = MatchingService(
