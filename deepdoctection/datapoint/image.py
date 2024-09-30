@@ -34,18 +34,12 @@ from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDErr
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
-from .annotation import Annotation, BoundingBox, CategoryAnnotation, ImageAnnotation
+from .annotation import Annotation, BoundingBox, CategoryAnnotation, ImageAnnotation, AnnotationMap
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
-@dataclass(frozen=True)
-class AnnotationMap:
 
-    image_annotation_id: str
-    sub_category_key: Optional[ObjectTypes] = None
-    relationship_key: Optional[ObjectTypes] = None
-    summary_key: Optional[ObjectTypes] = None
 
 
 @dataclass
@@ -427,7 +421,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["_image"]
+        return ["_image", "_annotation_ids"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -481,9 +475,14 @@ class Image:
                     for annotation_map in annotation_maps:
                         self._remove_by_annotation_id(ann_id, annotation_map)
 
-    def _remove_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap):
+    def _remove_by_annotation_id(self, annotation_id: str, location_dict: AnnotationMap) -> None:
         image_annotation_id = location_dict.image_annotation_id
-        annotation = self.get_annotation(annotation_ids=image_annotation_id)[0]
+        annotations = self.get_annotation(annotation_ids=image_annotation_id)
+        if not annotations:
+            return
+        else:
+            # There can only be one annotation with a given id
+            annotation = annotations[0]
 
         if ( location_dict.sub_category_key is None and
                 location_dict.relationship_key is None and
@@ -618,6 +617,8 @@ class Image:
         if summary_dict := kwargs.get("_summary", kwargs.get("summary")):
             image.summary = CategoryAnnotation.from_dict(**summary_dict)
             image.summary.category_name = SummaryType.SUMMARY
+
+
         return image
 
     @classmethod
@@ -739,21 +740,10 @@ class Image:
         return service_id_dict
 
     def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
-        annotation_id_dict = defaultdict(list)
+        all_ann_id_dict = defaultdict(list)
         for ann in self.get_annotation():
-            annotation_id_dict[ann.annotation_id].append(AnnotationMap(image_annotation_id=ann.annotation_id))
-            for sub_cat_key in ann.sub_categories:
-                sub_cat = ann.get_sub_category(sub_cat_key)
-                annotation_id_dict[sub_cat.annotation_id].append(AnnotationMap(image_annotation_id=ann.annotation_id,
-                                                                               sub_category_key=sub_cat_key))
-            if ann.image is not None:
-                for summary_cat_key in ann.image.summary.sub_categories:
-                    summary_cat = ann.get_summary(summary_cat_key)
-                    annotation_id_dict[summary_cat.annotation_id].append(AnnotationMap(
-                        image_annotation_id=ann.annotation_id,
-                                                                                       summary_key=summary_cat_key))
-            for rel_key in ann.relationships:
-                for rel_ann_ids in ann.get_relationship(rel_key):
-                        annotation_id_dict[rel_ann_ids].append(AnnotationMap(image_annotation_id=ann.annotation_id,
-                                                                        relationship_key=rel_key))
-        return annotation_id_dict
+            ann_id_dict = ann.get_annotation_map()
+            for key, val in ann_id_dict.items():
+                all_ann_id_dict[key].extend(val)
+
+        return all_ann_id_dict

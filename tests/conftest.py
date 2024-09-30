@@ -21,6 +21,7 @@ Module for globally accessible fixtures
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Mapping, Sequence, Tuple
+from collections import defaultdict
 
 import numpy as np
 from pytest import fixture
@@ -29,6 +30,7 @@ from deepdoctection.datapoint import (
     BoundingBox,
     CategoryAnnotation,
     ContainerAnnotation,
+    AnnotationMap,
     Image,
     ImageAnnotation,
     local_to_global_coords,
@@ -487,6 +489,14 @@ def fixture_text_lines() -> List[Tuple[str, PixelValues]]:
 def fixture_language_detect_result() -> DetectionResult:
     """fixture language_detect_result"""
     return DetectionResult(text="eng", score=0.9876)
+
+@fixture(name="annotation_maps")
+def fixture_get_annotation_maps() -> defaultdict[str, list[AnnotationMap]]:
+    return Annotations().get_annotation_maps()
+
+@fixture(name="service_id_to_ann_id")
+def fixture_service_id_to_ann_id() -> dict[str, list[str]]:
+    return Annotations().get_service_id_to_ann_id()
 
 
 def pytest_sessionstart() -> None:
