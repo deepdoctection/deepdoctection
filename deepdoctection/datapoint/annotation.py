@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from collections import defaultdict
 from typing import Optional, Union, no_type_check
 
 from ..utils.error import AnnotationError, UUIDError
@@ -64,6 +65,15 @@ def ann_from_dict(cls, **kwargs: AnnotationDict):
             for value in values:
                 ann.dump_relationship(key, value)
     return ann
+
+
+@dataclass(frozen=True)
+class AnnotationMap:
+
+    image_annotation_id: str
+    sub_category_key: Optional[ObjectTypes] = None
+    relationship_key: Optional[ObjectTypes] = None
+    summary_key: Optional[ObjectTypes] = None
 
 
 @dataclass
@@ -410,7 +420,7 @@ class CategoryAnnotation(Annotation):
 
         :return: list of attributes.
         """
-        return []
+        return ["_category_name"]
 
     @classmethod
     def from_dict(cls, **kwargs: AnnotationDict) -> CategoryAnnotation:
@@ -470,6 +480,25 @@ class ImageAnnotation(CategoryAnnotation):
         if self.image:
             return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
+
+    def get_annotation_map(self):
+        annotation_id_dict = defaultdict(list)
+        annotation_id_dict[self.annotation_id].append(AnnotationMap(image_annotation_id=self.annotation_id))
+        for sub_cat_key in self.sub_categories:
+            sub_cat = self.get_sub_category(sub_cat_key)
+            annotation_id_dict[sub_cat.annotation_id].append(AnnotationMap(image_annotation_id=self.annotation_id,
+                                                                           sub_category_key=sub_cat_key))
+        if self.image is not None:
+            for summary_cat_key in self.image.summary.sub_categories:
+                summary_cat = self.get_summary(summary_cat_key)
+                annotation_id_dict[summary_cat.annotation_id].append(AnnotationMap(
+                    image_annotation_id=self.annotation_id,
+                    summary_key=summary_cat_key))
+        for rel_key in self.relationships:
+            for rel_ann_ids in self.get_relationship(rel_key):
+                annotation_id_dict[rel_ann_ids].append(AnnotationMap(image_annotation_id=self.annotation_id,
+                                                                     relationship_key=rel_key))
+        return annotation_id_dict
 
 
 @dataclass

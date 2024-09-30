@@ -74,6 +74,7 @@ _IMPORT_STRUCTURE = {
     ],
     "datapoint": [
         "ann_from_dict",
+        "AnnotationMap",
         "Annotation",
         "CategoryAnnotation",
         "ImageAnnotation",
