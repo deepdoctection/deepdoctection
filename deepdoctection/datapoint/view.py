@@ -971,7 +971,7 @@ class Page(Image):
         highest_hierarchy_only: bool = False,
         path: Optional[PathLikeOrStr] = None,
         dry: bool = False,
-    ) -> Optional[ImageDict]:
+    ) -> Optional[Union[ImageDict, str]]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
         base64 encodings.

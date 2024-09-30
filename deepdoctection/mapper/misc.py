@@ -145,7 +145,7 @@ def image_ann_to_image(dp: Image, category_names: Union[str, list[str]], crop_im
     :return: Image
     """
 
-    img_anns = dp.get_annotation_iter(category_names=category_names)
+    img_anns = dp.get_annotation(category_names=category_names)
     for ann in img_anns:
         dp.image_ann_to_image(annotation_id=ann.annotation_id, crop_image=crop_image)
 

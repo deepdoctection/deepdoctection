@@ -180,13 +180,35 @@ class XfundBuilder(DataFlowBaseBuilder):
             "answer": TokenClasses.ANSWER,
             "header": TokenClasses.HEADER,
         }
-        ner_token_to_id_mapping = self.categories.get_sub_categories(
-            categories=LayoutType.WORD,
-            sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG, WordType.TAG, WordType.TOKEN_CLASS]},
-            keys=False,
-            values_as_dict=True,
-            name_as_key=True,
-        )
+        if LayoutType.WORD in self.categories.get_categories(filtered=True, name_as_key=True):
+            ner_token_to_id_mapping = self.categories.get_sub_categories(
+                categories=LayoutType.WORD,
+                sub_categories={LayoutType.WORD: [WordType.TOKEN_TAG, WordType.TAG, WordType.TOKEN_CLASS]},
+                keys=False,
+                values_as_dict=True,
+                name_as_key=True,
+            )
+        else:
+            ner_token_to_id_mapping = {
+                LayoutType.WORD: {
+                    WordType.TAG: {BioTag.BEGIN: 3, BioTag.INSIDE: 1, BioTag.OUTSIDE: 2},
+                    WordType.TOKEN_CLASS: {
+                        TokenClasses.ANSWER: 3,
+                        TokenClasses.HEADER: 4,
+                        TokenClasses.OTHER: 1,
+                        TokenClasses.QUESTION: 2,
+                    },
+                    WordType.TOKEN_TAG: {
+                        TokenClassWithTag.B_ANSWER: 1,
+                        TokenClassWithTag.B_HEADER: 2,
+                        TokenClassWithTag.B_QUESTION: 3,
+                        TokenClassWithTag.I_ANSWER: 4,
+                        TokenClassWithTag.I_HEADER: 5,
+                        TokenClassWithTag.I_QUESTION: 6,
+                        BioTag.OUTSIDE: 7,
+                    },
+                }
+            }
         df = MapData(
             df,
             xfund_to_image(

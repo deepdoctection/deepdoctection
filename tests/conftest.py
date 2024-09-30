@@ -26,6 +26,7 @@ import numpy as np
 from pytest import fixture
 
 from deepdoctection.datapoint import (
+    AnnotationMap,
     BoundingBox,
     CategoryAnnotation,
     ContainerAnnotation,
@@ -202,7 +203,7 @@ def fixture_dp_image_tab_cell_item(dp_image: Image) -> Image:
         dp_image.dump(ann)
     table = dp_image.get_annotation(category_names=LayoutType.TABLE)[0]
     dp_image.image_ann_to_image(table.annotation_id, True)
-    table_anns = dp_image.get_annotation_iter(category_names=[LayoutType.CELL, LayoutType.ROW, LayoutType.COLUMN])
+    table_anns = dp_image.get_annotation(category_names=[LayoutType.CELL, LayoutType.ROW, LayoutType.COLUMN])
     for ann in table_anns:
         assert isinstance(table.image, Image)
         table.image.dump(ann)
@@ -223,8 +224,8 @@ def fixture_dp_image_item_stretched(dp_image_tab_cell_item: Image) -> Image:
     dp = dp_image_tab_cell_item
     table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
     assert isinstance(table, ImageAnnotation)
-    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
-    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
+    rows = dp.get_annotation(category_names=LayoutType.ROW)
+    cols = dp.get_annotation(category_names=LayoutType.COLUMN)
     table_embedding_box = table.get_bounding_box(dp.image_id)
     for row in rows:
         assert isinstance(row, ImageAnnotation)
@@ -321,13 +322,13 @@ def fixture_dp_image_fully_segmented(
     """fixture dp_image_fully_segmented"""
 
     dp = dp_image_item_stretched
-    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
-    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
+    rows = dp.get_annotation(category_names=LayoutType.ROW)
+    cols = dp.get_annotation(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
         col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
-    cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
+    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
@@ -374,14 +375,14 @@ def fixture_dp_image_fully_segmented_fully_tiled(
     """
 
     dp = dp_image_item_stretched
-    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
-    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
+    rows = dp.get_annotation(category_names=LayoutType.ROW)
+    cols = dp.get_annotation(category_names=LayoutType.COLUMN)
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
         col.dump_sub_category(CellType.COLUMN_NUMBER, col_sub_cat)
 
     cell_sub_cats = cell_sub_cats_when_table_fully_tiled
-    cells = dp.get_annotation_iter(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
+    cells = dp.get_annotation(category_names=[LayoutType.CELL, CellType.HEADER, CellType.BODY])
 
     for cell, sub_cats in zip(cells, cell_sub_cats):
         cell.dump_sub_category(CellType.ROW_NUMBER, sub_cats[0])
@@ -487,6 +488,18 @@ def fixture_text_lines() -> List[Tuple[str, PixelValues]]:
 def fixture_language_detect_result() -> DetectionResult:
     """fixture language_detect_result"""
     return DetectionResult(text="eng", score=0.9876)
+
+
+@fixture(name="annotation_maps")
+def fixture_get_annotation_maps() -> dict[str, list[AnnotationMap]]:
+    """fixture annotation_maps"""
+    return Annotations().get_annotation_maps()
+
+
+@fixture(name="service_id_to_ann_id")
+def fixture_service_id_to_ann_id() -> dict[str, list[str]]:
+    """fixture service_id_to_ann_id"""
+    return Annotations().get_service_id_to_ann_id()
 
 
 def pytest_sessionstart() -> None:

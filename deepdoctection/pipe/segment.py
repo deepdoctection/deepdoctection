@@ -372,7 +372,7 @@ def stretch_items(
     :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
     :return: An Image
     """
-    table_anns = dp.get_annotation_iter(category_names=table_name)
+    table_anns = dp.get_annotation(category_names=table_name)
 
     for table in table_anns:
         dp = stretch_item_per_table(dp, table, row_name, col_name, remove_iou_threshold_rows, remove_iou_threshold_cols)

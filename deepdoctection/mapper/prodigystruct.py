@@ -163,7 +163,7 @@ def image_to_prodigy(dp: Image, category_names: Optional[Sequence[ObjectTypes]] 
     output["image_id"] = dp.image_id
 
     spans = []
-    for ann in dp.get_annotation_iter(category_names=category_names):
+    for ann in dp.get_annotation(category_names=category_names):
         bounding_box = ann.get_bounding_box(dp.image_id)
         if not bounding_box.absolute_coords:
             bounding_box = bounding_box.transform(dp.width, dp.height, absolute_coords=True)

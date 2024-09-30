@@ -130,10 +130,8 @@ class TestTableSegmentationService:
                 assert item_cat.category_id == item_cat_expected.category_id
 
         # Assert cells have correctly assigned sub categories row/col/rs/cs number
-        cells = dp.get_annotation_iter(
-            category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
-        )
-        cells_expected = dp_expected.get_annotation_iter(
+        cells = dp.get_annotation(category_names=self.table_segmentation_service.cell_names)  # pylint: disable=W0212
+        cells_expected = dp_expected.get_annotation(
             category_names=self.table_segmentation_service.cell_names  # pylint: disable=W0212
         )
 
@@ -172,8 +170,8 @@ def test_tile_tables_with_items_per_table(
 
     # Arrange
     dp = dp_image_item_stretched
-    rows = dp.get_annotation_iter(category_names=LayoutType.ROW)
-    cols = dp.get_annotation_iter(category_names=LayoutType.COLUMN)
+    rows = dp.get_annotation(category_names=LayoutType.ROW)
+    cols = dp.get_annotation(category_names=LayoutType.COLUMN)
 
     for row, col, row_sub_cat, col_sub_cat in zip(rows, cols, row_sub_cats, col_sub_cats):
         row.dump_sub_category(CellType.ROW_NUMBER, row_sub_cat)
@@ -369,15 +367,16 @@ class TestPubtablesSegmentationService:
 
         # Arrange
         dp = dp_image_tab_cell_item
-        cells = dp.get_annotation(category_names=LayoutType.CELL)
+        cells_ann_ids = [ann.annotation_id for ann in dp.get_annotation(category_names=LayoutType.CELL)]
         table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
 
-        for cell in cells:
-            dp.remove(cell)
+        dp.remove(annotation_ids=cells_ann_ids)
 
-        tab_cells = table.image.get_annotation(category_names=LayoutType.CELL)  # type: ignore
-        for cell in tab_cells:
-            table.image.remove(cell)  # type: ignore
+        tab_cells_ann_ids = [
+            ann.annotation_id for ann in table.image.get_annotation(category_names=LayoutType.CELL) # type: ignore
+        ]
+
+        table.image.remove(annotation_ids=tab_cells_ann_ids)  # type: ignore
 
         # Act
         dp = self.table_segmentation_service.pass_datapoint(dp)
