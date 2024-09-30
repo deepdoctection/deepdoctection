@@ -23,7 +23,7 @@ builder method of a dataset.
 from collections import defaultdict
 from typing import Any, Literal, Mapping, Optional, Sequence, Union
 
-from ..datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation, ImageAnnotation
+from ..datapoint.annotation import DEFAULT_CATEGORY_ID, CategoryAnnotation, ContainerAnnotation
 from ..datapoint.image import Image
 from ..utils.settings import ObjectTypes, SummaryType, TypeOrStr, get_type
 from .maputils import LabelSummarizer, curry
@@ -88,13 +88,13 @@ def re_assign_cat_ids(
     :return: Image
     """
 
-    anns_to_remove: list[ImageAnnotation] = []
+    ann_ids_to_remove: list[str] = []
     for ann in dp.get_annotation():
         if categories_dict_name_as_key is not None:
             if ann.category_name in categories_dict_name_as_key:
                 ann.category_id = categories_dict_name_as_key[ann.category_name]
             else:
-                anns_to_remove.append(ann)
+                ann_ids_to_remove.append(ann.annotation_id)
 
         if cat_to_sub_cat_mapping:
             if ann.category_name in cat_to_sub_cat_mapping:
@@ -104,8 +104,7 @@ def re_assign_cat_ids(
                     sub_category = ann.get_sub_category(key)
                     sub_category.category_id = sub_cat_values_dict.get(sub_category.category_name, DEFAULT_CATEGORY_ID)
 
-    for ann in anns_to_remove:
-        dp.remove(ann)
+    dp.remove(annotation_ids=ann_ids_to_remove)
 
     return dp
 

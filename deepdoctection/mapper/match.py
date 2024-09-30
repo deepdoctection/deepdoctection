@@ -173,7 +173,7 @@ def match_anns_by_distance(
     child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
-)-> list[tuple[ImageAnnotation, ImageAnnotation]]:
+) -> list[tuple[ImageAnnotation, ImageAnnotation]]:
     """
     Generates pairs of parent and child annotations by calculating the euclidean distance between the centers of the
     parent and child bounding boxes. It will return the closest child for each parent. Note, that a child can be
