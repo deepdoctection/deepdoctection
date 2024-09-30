@@ -262,7 +262,7 @@ class TestImage:
         )
         filtered_anns_4_ids = anns_to_ids(filtered_anns_4)
 
-        filtered_anns_5 = test_image.get_annotation_iter()
+        filtered_anns_5 = test_image.get_annotation()
         filtered_anns_5_ids = anns_to_ids(filtered_anns_5)
 
         filtered_anns_6 = test_image.get_annotation(service_id="test_service")
