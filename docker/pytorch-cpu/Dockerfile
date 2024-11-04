@@ -4,7 +4,7 @@ LABEL repository="deepdoctection"
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
-WORKDIR /home/repo
+WORKDIR /repo
 COPY . .
 
 RUN apt-get update && \

@@ -1,9 +1,9 @@
 FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ENV DEEPDOCTECTION_CACHE="/root/.cache/deepdoctection"
 
-WORKDIR /home/repo
+WORKDIR /repo
 COPY . .
 
 RUN apt-get update && \
@@ -22,5 +22,5 @@ ARG CUDA='cu117'
 RUN [ ${#PYTORCH} -gt 0 ] && VERSION='torch=='$PYTORCH'.*' ||  VERSION='torch'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
 RUN [ ${#TORCH_VISION} -gt 0 ] && VERSION='torchvision=='$TORCH_VISION'.*' ||  VERSION='torchvision'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
 
-#RUN python3 -m pip install -U pip setuptools
+RUN python3 -m pip install -U pip setuptools==69.5.1
 RUN python3 -m pip install --no-cache-dir ".[source-pt]"
