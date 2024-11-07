@@ -715,7 +715,7 @@ class Image:
         if suffix:
             path_json = fspath(path).replace(suffix, ".json")
         else:
-            path_json =  fspath(path) + ".json"
+            path_json = fspath(path) + ".json"
         if highest_hierarchy_only:
             self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()

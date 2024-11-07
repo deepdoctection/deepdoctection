@@ -27,20 +27,18 @@ from io import BytesIO
 from shutil import copyfile
 from typing import Generator, Optional
 
+from lazy_imports import try_import
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
-from lazy_imports import try_import
 
 from .context import save_tmp_file, timeout_manager
+from .env_info import ENV_VARS_TRUE
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
 from .types import PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
-from .env_info import ENV_VARS_TRUE
-
-
 
 with try_import() as pt_import_guard:
     import pypdfium2
@@ -269,7 +267,7 @@ def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: int = 200) -> PixelValues:
     """
 
     page = pypdfium2.PdfDocument(pdf_bytes)[0]
-    return page.render(scale=dpi* 1/72).to_numpy().astype(uint8)
+    return page.render(scale=dpi * 1 / 72).to_numpy().astype(uint8)
 
 
 def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
@@ -282,5 +280,12 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dp
     :param dpi:  Image quality in DPI/dots-per-inch (default 200)
     :return: numpy array
     """
-    return pdf_to_np_array_pdfmium(pdf_bytes, dpi) if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE \
-        else pdf_to_np_array_poppler(pdf_bytes, size, dpi)
+    if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE:
+        if size is not None:
+            logger.warning(
+                LoggingRecord(
+                    f"pdf_to_np_array_pdfmium does not support the size parameter. Will use dpi = {dpi} instead."
+                )
+            )
+        return pdf_to_np_array_pdfmium(pdf_bytes, dpi)
+    return pdf_to_np_array_poppler(pdf_bytes, size, dpi)

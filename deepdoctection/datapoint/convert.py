@@ -143,11 +143,13 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     return np_array.astype(uint8)
 
 
-def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
+def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = 200) -> PixelValues:
     """
-    Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed. This
-    function, however does not rely on the wrapper pdf2image but uses a function of this lib which calls poppler
-    directly.
+    Converts a pdf passed as bytes into a numpy array. We use poppler or pdfmium to convert the pdf to an image.
+    If both is available you can steer the selection of the render engine with environment variables:
+
+    USE_DD_POPPLER: Set to 1, "TRUE", "True" to use poppler
+    USE_DD_PDFIUM: Set to 1, "TRUE", "True" to use pdfium
 
     :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
                       `utils.fs.load_bytes_from_pdf_file`

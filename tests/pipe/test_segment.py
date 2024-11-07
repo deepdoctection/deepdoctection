@@ -373,7 +373,7 @@ class TestPubtablesSegmentationService:
         dp.remove(annotation_ids=cells_ann_ids)
 
         tab_cells_ann_ids = [
-            ann.annotation_id for ann in table.image.get_annotation(category_names=LayoutType.CELL) # type: ignore
+            ann.annotation_id for ann in table.image.get_annotation(category_names=LayoutType.CELL)  # type: ignore
         ]
 
         table.image.remove(annotation_ids=tab_cells_ann_ids)  # type: ignore

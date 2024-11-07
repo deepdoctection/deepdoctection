@@ -18,6 +18,7 @@
 """
 Testing module datapoint.convert
 """
+import os
 
 from pytest import mark
 
@@ -37,6 +38,21 @@ def test_convert_pdf_bytes_to_np_array_v2(pdf_page: TestPdfPage) -> None:
 
     # Assert
     assert np_array.shape == pdf_page.np_array_shape_default
+
+
+@mark.basic
+def test_convert_pdf_bytes_to_np_array_v2_using_pdfmium2(pdf_page: TestPdfPage) -> None:
+    """
+    testing onvert_pdf_bytes_to_np_array_v2 with Pypdfmium2 returns a np.array of correct shape
+    """
+    # Arrange
+    os.environ["USE_DD_PDFIUM"] = "True"
+
+    # Act
+    np_array = convert_pdf_bytes_to_np_array_v2(pdf_page.pdf_bytes)
+
+    # Assert
+    assert np_array.shape == (2200, 1700, 3)
 
 
 @mark.basic
