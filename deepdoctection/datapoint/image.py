@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from dataclasses import dataclass, field
-from os import environ
+from os import environ, fspath
 from pathlib import Path
 from typing import Any, Optional, Sequence, Union, no_type_check
 
@@ -412,6 +412,15 @@ class Image:
             img_dict["_image"] = None
         return img_dict
 
+    def as_json(self) -> str:
+        """
+        Returns the full image dataclass as json string.
+
+        :return:  A json string.
+        """
+
+        return json.dumps(self.as_dict(), indent=4)
+
     @staticmethod
     def remove_keys() -> list[str]:
         """
@@ -443,7 +452,8 @@ class Image:
 
         Calls `List.remove`. Make sure, the element is in the list for otherwise a ValueError will be raised.
 
-        :param annotation: The annotation to remove
+        :param annotation_ids: The annotation to remove
+        :param service_ids: The service id to remove
         """
         ann_id_to_annotation_maps = self.get_annotation_id_to_annotation_maps()
 
@@ -703,13 +713,13 @@ class Image:
             path = path / self.image_id
         suffix = path.suffix
         if suffix:
-            path_json = path.as_posix().replace(suffix, ".json")
+            path_json = fspath(path).replace(suffix, ".json")
         else:
-            path_json = path.as_posix() + ".json"
+            path_json =  fspath(path) + ".json"
         if highest_hierarchy_only:
             self.remove_image_from_lower_hierachy()
         export_dict = self.as_dict()
-        export_dict["location"] = str(export_dict["location"])
+        export_dict["location"] = fspath(export_dict["location"])
         if not image_to_json:
             export_dict["_image"] = None
         if dry:

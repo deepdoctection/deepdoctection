@@ -29,6 +29,7 @@ from typing import Generator, Optional
 
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
+from lazy_imports import try_import
 
 from .context import save_tmp_file, timeout_manager
 from .error import DependencyError, FileExtensionError
@@ -37,6 +38,12 @@ from .logger import LoggingRecord, logger
 from .types import PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
+from .env_info import ENV_VARS_TRUE
+
+
+
+with try_import() as pt_import_guard:
+    import pypdfium2
 
 __all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
 
@@ -234,7 +241,7 @@ def _run_poppler(poppler_args: list[str]) -> None:
             raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array_poppler(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.
@@ -250,3 +257,30 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dp
         image = viz_handler.read_image(tmp_name + "-1.png")
 
     return image.astype(uint8)
+
+
+def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: int = 200) -> PixelValues:
+    """
+    Convert a single pdf page from its byte representation to a numpy array using pdfium.
+
+    :param pdf_bytes: Bytes representing the PDF file
+    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
+    :return: numpy array
+    """
+
+    page = pypdfium2.PdfDocument(pdf_bytes)[0]
+    return page.render(scale=dpi* 1/72).to_numpy().astype(uint8)
+
+
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+    """
+    Convert a single pdf page from its byte representation to a numpy array. This function will either use Poppler or
+    pdfium to render the pdf.
+
+    :param pdf_bytes: Bytes representing the PDF file
+    :param size: Size of the resulting image(s), uses (width, height) standard
+    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
+    :return: numpy array
+    """
+    return pdf_to_np_array_pdfmium(pdf_bytes, dpi) if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE \
+        else pdf_to_np_array_poppler(pdf_bytes, size, dpi)

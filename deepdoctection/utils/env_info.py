@@ -56,6 +56,7 @@ from typing import Optional
 
 import numpy as np
 from packaging import version
+from pypdf.errors import DependencyError
 from tabulate import tabulate
 
 from .file_utils import (
@@ -84,11 +85,12 @@ from .file_utils import (
     tf_available,
     transformers_available,
     wandb_available,
+    pypdfium2_available,
 )
 from .logger import LoggingRecord, logger
 from .types import KeyValEnvInfos, PathLikeOrStr
 
-__all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
+__all__ = ["collect_env_info", "auto_select_viz_library", "auto_select_pdf_render_framework", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
 
@@ -532,4 +534,20 @@ def auto_select_viz_library() -> None:
         os.environ["USE_DD_OPENCV"] = "False"
 
 
+def auto_select_pdf_render_framework() -> None:
+    """Setting pdf2image as default pdf rendering library if pdfium is not installed"""
+
+    # if env variables are already set, don't change them
+    if os.environ.get("USE_DD_POPPLER") or os.environ.get("USE_DD_PDFIUM"):
+        return
+    if pypdfium2_available():
+        os.environ["USE_DD_POPPLER"] = "False"
+        os.environ["USE_DD_PDFIUM"] = "True"
+        return
+    elif pdf_to_cairo_available() or pdf_to_ppm_available():
+        os.environ["USE_DD_POPPLER"] = "True"
+        os.environ["USE_DD_PDFIUM"] = "False"
+        return
+    else:
+        raise DependencyError("No pdf rendering library found. Please install Poppler or pdfium.")
 # pylint: enable=import-outside-toplevel

@@ -18,7 +18,7 @@ if importlib.util.find_spec("dotenv") is not None:
 import sys
 from typing import TYPE_CHECKING
 
-from .utils.env_info import collect_env_info
+from .utils.env_info import collect_env_info, auto_select_pdf_render_framework
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import LoggingRecord, logger
 
@@ -304,6 +304,7 @@ _IMPORT_STRUCTURE = {
         "timed_operation",
         "collect_env_info",
         "auto_select_viz_library",
+        "auto_select_pdf_render_framework",
         "get_tensorflow_requirement",
         "tf_addons_available",
         "get_tf_addons_requirements",
@@ -427,7 +428,7 @@ _IMPORT_STRUCTURE = {
 # Setting some environment variables so that standard functions can be invoked with available hardware
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
-
+auto_select_pdf_render_framework()
 
 # Direct imports for type-checking
 if TYPE_CHECKING:
