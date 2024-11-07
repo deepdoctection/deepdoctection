@@ -18,7 +18,7 @@ if importlib.util.find_spec("dotenv") is not None:
 import sys
 from typing import TYPE_CHECKING
 
-from .utils.env_info import collect_env_info, auto_select_pdf_render_framework
+from .utils.env_info import auto_select_pdf_render_framework, collect_env_info
 from .utils.file_utils import _LazyModule, get_tf_version, pytorch_available, tf_available
 from .utils.logger import LoggingRecord, logger
 
@@ -197,6 +197,7 @@ _IMPORT_STRUCTURE = {
         "print_model_infos",
         "ModelDownloadManager",
         "PdfPlumberTextDetector",
+        "Pdfmium2TextDetector",
         "TesseractOcrDetector",
         "TesseractRotationTransformer",
         "TextractOcrDetector",

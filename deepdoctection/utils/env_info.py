@@ -76,6 +76,7 @@ from .file_utils import (
     pdf_to_cairo_available,
     pdf_to_ppm_available,
     pdfplumber_available,
+    pypdfium2_available,
     pytorch_available,
     qpdf_available,
     scipy_available,
@@ -85,7 +86,6 @@ from .file_utils import (
     tf_available,
     transformers_available,
     wandb_available,
-    pypdfium2_available,
 )
 from .logger import LoggingRecord, logger
 from .types import KeyValEnvInfos, PathLikeOrStr
@@ -544,10 +544,11 @@ def auto_select_pdf_render_framework() -> None:
         os.environ["USE_DD_POPPLER"] = "False"
         os.environ["USE_DD_PDFIUM"] = "True"
         return
-    elif pdf_to_cairo_available() or pdf_to_ppm_available():
+    if pdf_to_cairo_available() or pdf_to_ppm_available():
         os.environ["USE_DD_POPPLER"] = "True"
         os.environ["USE_DD_PDFIUM"] = "False"
         return
-    else:
-        raise DependencyError("No pdf rendering library found. Please install Poppler or pdfium.")
+    raise DependencyError("No pdf rendering library found. Please install Poppler or pdfium.")
+
+
 # pylint: enable=import-outside-toplevel
