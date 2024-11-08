@@ -616,6 +616,25 @@ def get_pillow_requirement() -> Requirement:
     return "pillow", pillow_available(), _PILLOW_ERR_MSG
 
 
+# Pypdfium2
+_PYPDFIUM2_AVAILABLE = importlib.util.find_spec("pypdfium2") is not None
+_PYPDFIUM2_ERR_MSG = f"pypdfium2 must be installed. {_GENERIC_ERR_MSG}"
+
+
+def pypdfium2_available() -> bool:
+    """
+    Returns True if pypdfium2 is installed
+    """
+    return bool(_PYPDFIUM2_AVAILABLE)
+
+
+def get_pypdfium2_requirement() -> Requirement:
+    """
+    Return pypdfium2 requirement
+    """
+    return "pypdfium2", pypdfium2_available(), _PYPDFIUM2_ERR_MSG
+
+
 # SpaCy
 _SPACY_AVAILABLE = importlib.util.find_spec("spacy") is not None
 _SPACY_ERR_MSG = f"SpaCy must be installed. {_GENERIC_ERR_MSG}"

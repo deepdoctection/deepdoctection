@@ -20,6 +20,10 @@ Some useful function for collecting environment information.
 
 This is also the place where we give an overview of the important environment variables.
 
+For env variables with boolean character, use one of the following values:
+
+{"1", "True", "TRUE", "true", "yes"}
+
 `USE_TENSORFLOW
 USE_PYTORCH
 USE_CUDA
@@ -34,6 +38,12 @@ USE_DD_OPENCV`
 decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
 to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
 Use the variables to let choose `viz_handler` according to your preferences.
+
+`USE_DD_POPPLER
+USE_DD_PDFIUM`
+
+For PDF rendering we use PyPDFium2 as default but for legacy reasons, we also support Poppler. If you want to enforce
+Poppler set one to `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False` the other to False.
 
 `HF_CREDENTIALS`
 
@@ -56,6 +66,7 @@ from typing import Optional
 
 import numpy as np
 from packaging import version
+from pypdf.errors import DependencyError
 from tabulate import tabulate
 
 from .file_utils import (
@@ -75,6 +86,7 @@ from .file_utils import (
     pdf_to_cairo_available,
     pdf_to_ppm_available,
     pdfplumber_available,
+    pypdfium2_available,
     pytorch_available,
     qpdf_available,
     scipy_available,
@@ -88,7 +100,7 @@ from .file_utils import (
 from .logger import LoggingRecord, logger
 from .types import KeyValEnvInfos, PathLikeOrStr
 
-__all__ = ["collect_env_info", "auto_select_viz_library", "ENV_VARS_TRUE"]
+__all__ = ["collect_env_info", "auto_select_viz_library", "auto_select_pdf_render_framework", "ENV_VARS_TRUE"]
 
 # pylint: disable=import-outside-toplevel
 
@@ -530,6 +542,23 @@ def auto_select_viz_library() -> None:
     else:
         os.environ["USE_DD_PILLOW"] = "True"
         os.environ["USE_DD_OPENCV"] = "False"
+
+
+def auto_select_pdf_render_framework() -> None:
+    """Setting pdf2image as default pdf rendering library if pdfium is not installed"""
+
+    # if env variables are already set, don't change them
+    if os.environ.get("USE_DD_POPPLER") or os.environ.get("USE_DD_PDFIUM"):
+        return
+    if pypdfium2_available():
+        os.environ["USE_DD_POPPLER"] = "False"
+        os.environ["USE_DD_PDFIUM"] = "True"
+        return
+    if pdf_to_cairo_available() or pdf_to_ppm_available():
+        os.environ["USE_DD_POPPLER"] = "True"
+        os.environ["USE_DD_PDFIUM"] = "False"
+        return
+    raise DependencyError("No pdf rendering library found. Please install Poppler or pdfium.")
 
 
 # pylint: enable=import-outside-toplevel
