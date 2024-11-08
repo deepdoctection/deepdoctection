@@ -25,12 +25,15 @@ import sys
 from errno import ENOENT
 from io import BytesIO
 from shutil import copyfile
-from typing import Generator, Optional
+from typing import Generator, Optional, Literal
+from pathlib import Path
 
+from lazy_imports import try_import
 from numpy import uint8
 from pypdf import PdfReader, PdfWriter, errors
 
 from .context import save_tmp_file, timeout_manager
+from .env_info import ENV_VARS_TRUE
 from .error import DependencyError, FileExtensionError
 from .file_utils import pdf_to_cairo_available, pdf_to_ppm_available, qpdf_available
 from .logger import LoggingRecord, logger
@@ -38,7 +41,15 @@ from .types import PathLikeOrStr, PixelValues
 from .utils import is_file_extension
 from .viz import viz_handler
 
-__all__ = ["decrypt_pdf_document", "get_pdf_file_reader", "get_pdf_file_writer", "PDFStreamer", "pdf_to_np_array"]
+with try_import() as pt_import_guard:
+    import pypdfium2
+
+__all__ = ["decrypt_pdf_document",
+           "get_pdf_file_reader",
+           "get_pdf_file_writer",
+           "PDFStreamer",
+           "pdf_to_np_array",
+           "split_pdf"]
 
 
 def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
@@ -234,7 +245,7 @@ def _run_poppler(poppler_args: list[str]) -> None:
             raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array_poppler(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.
@@ -250,3 +261,74 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dp
         image = viz_handler.read_image(tmp_name + "-1.png")
 
     return image.astype(uint8)
+
+
+def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: int = 200) -> PixelValues:
+    """
+    Convert a single pdf page from its byte representation to a numpy array using pdfium.
+
+    :param pdf_bytes: Bytes representing the PDF file
+    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
+    :return: numpy array
+    """
+
+    page = pypdfium2.PdfDocument(pdf_bytes)[0]
+    return page.render(scale=dpi * 1 / 72).to_numpy().astype(uint8)
+
+
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+    """
+    Convert a single pdf page from its byte representation to a numpy array. This function will either use Poppler or
+    pdfium to render the pdf.
+
+    :param pdf_bytes: Bytes representing the PDF file
+    :param size: Size of the resulting image(s), uses (width, height) standard
+    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
+    :return: numpy array
+    """
+    if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE:
+        if size is not None:
+            logger.warning(
+                LoggingRecord(
+                    f"pdf_to_np_array_pdfmium does not support the size parameter. Will use dpi = {dpi} instead."
+                )
+            )
+        return pdf_to_np_array_pdfmium(pdf_bytes, dpi)
+    return pdf_to_np_array_poppler(pdf_bytes, size, dpi)
+
+
+def split_pdf(pdf_path: PathLikeOrStr,
+              output_dir: PathLikeOrStr,
+              file_type: Literal["image","pdf"],
+              dpi: int = 200) -> None:
+    """
+    Split a pdf into single pages. The pages are saved as single pdf/png files in a subfolder of the output directory.
+
+    :param pdf_path: Path to the pdf file
+    :param output_dir: Path to the output directory
+    :param file_type: Type of the output file. Either "image" or "pdf"
+    :param dpi: Image quality in DPI/dots-per-inch (default
+    """
+    pdf_path = Path(pdf_path)
+    filename = pdf_path.stem
+    output_dir = Path(output_dir)
+    file_dir = output_dir / filename
+    if not file_dir.exists():
+        os.makedirs(file_dir)
+
+    with open(pdf_path, "rb") as file:
+        pdf = PdfReader(file)
+        for i, page in enumerate(pdf.pages):
+            writer = PdfWriter()
+            writer.add_page(page)
+            if file_type == ".pdf":
+                with open(file_dir / f"{filename}_{i}.pdf", "wb") as out:
+                    writer.write(out)
+                    writer.close()
+            else:
+                with BytesIO() as buffer:
+                    writer.write(buffer)
+                    buffer.seek(0)
+                    np_image = pdf_to_np_array(buffer.getvalue(),dpi=dpi)
+                    viz_handler.write_image(file_dir / f"{filename}_{i}.png", np_image)
+                    writer.close()
