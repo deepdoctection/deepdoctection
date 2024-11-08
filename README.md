@@ -136,7 +136,7 @@ documentation.
 
 ## Requirements
 
-![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/requirements_deepdoctection.png)
+![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/requirements_deepdoctection_081124.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 separately. 
@@ -145,12 +145,15 @@ separately.
 - Python >= 3.9
 - 1.13 <= PyTorch  **or** 2.11 <= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
 In general, if you want to train or fine-tune models, a GPU is required.
-- **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF documents into 
-images. 
+
 - With respect to the Deep Learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en)
   and [PyTorch](https://pytorch.org/get-started/locally/).
 - [Tesseract](https://github.com/tesseract-ocr/tesseract) OCR engine will be used through a Python wrapper. The core 
   engine has to be installed separately.
+
+
+- For release `v.0.34.0` and below **deep**doctection uses Python wrappers for [Poppler](https://poppler.freedesktop.org/) to convert PDF
+  documents into images. For release `v.0.35.0` this dependency will be optional.
 
 The following overview shows the availability of the models in conjunction with the DL framework.
 

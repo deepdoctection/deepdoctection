@@ -3,16 +3,21 @@
 
 ## Requirements
 
-![](./tutorials/_imgs/requirements_deepdoctection.png)
+![](./tutorials/_imgs/requirements_deepdoctection_081124.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 by the user. 
 
 - Linux **or** macOS. (Windows is not supported but there is [Dockerfile](../docker/pytorch-cpu-jupyter/Dockerfile) available)
 - Python >=  3.9
-- [Poppler](https://poppler.freedesktop.org/)
 - 1.13 <= PyTorch **or** 2.11 <= Tensorflow <2.16. On lower Tensorflow versions the code will only run inference on 
 a GPU. In general, if you want to train or fine-tune models, a GPU is required.
+
+For release `v.0.34.0` and below:
+
+- [Poppler](https://poppler.freedesktop.org/)
+
+is required for PDF processing. Starting from release `v.0.35.0`, the package `pypdfmium2` is used for PDF processing. 
 
 With respect to the deep learning framework, you must decide between [Tensorflow](https://www.tensorflow.org/install?hl=en) 
 and [PyTorch](https://pytorch.org/get-started/locally/).
