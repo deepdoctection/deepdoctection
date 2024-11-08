@@ -20,6 +20,10 @@ Some useful function for collecting environment information.
 
 This is also the place where we give an overview of the important environment variables.
 
+For env variables with boolean character, use one of the following values:
+
+{"1", "True", "TRUE", "true", "yes"}
+
 `USE_TENSORFLOW
 USE_PYTORCH
 USE_CUDA
@@ -34,6 +38,12 @@ USE_DD_OPENCV`
 decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
 to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
 Use the variables to let choose `viz_handler` according to your preferences.
+
+`USE_DD_POPPLER
+USE_DD_PDFIUM`
+
+For PDF rendering we use PyPDFium2 as default but for legacy reasons, we also support Poppler. If you want to enforce
+Poppler set one to `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False` the other to False.
 
 `HF_CREDENTIALS`
 
