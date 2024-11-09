@@ -427,7 +427,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["_image", "_annotation_ids"]
+        return ["_image", "_annotation_ids", "_category_name"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
