@@ -527,5 +527,5 @@ class ContainerAnnotation(CategoryAnnotation):
     def from_dict(cls, **kwargs: AnnotationDict) -> ContainerAnnotation:
         container_ann = ann_from_dict(cls, **kwargs)
         value = kwargs.get("value", "")
-        container_ann.value = value if isinstance(value, str) else list(value)
+        container_ann.value = value if isinstance(value, (int, float, str)) else list(value)
         return container_ann
