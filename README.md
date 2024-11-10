@@ -46,7 +46,6 @@ pipelines. Its core function does not depend on any specific deep learning libra
    [**Torchscript**](https://pytorch.org/docs/stable/jit.html) (CPU) as well and [**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2) is not required 
    anymore for basic inference.
  - More angle predictors for determining the rotation of a document based on [**Tesseract**](https://github.com/tesseract-ocr/tesseract) and [**DocTr**](https://github.com/mindee/doctr)
-   (not contained in the built-in Analyzer).
  - Token classification with [**LiLT**](https://github.com/jpWang/LiLT) via 
    [**transformers**](https://github.com/huggingface/transformers). 
    We have added a model wrapper for token classification with LiLT and added a some LiLT models to the model catalog 
