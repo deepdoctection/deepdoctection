@@ -18,6 +18,7 @@
 """
 Class AttrDict for maintaining configs and some functions for generating and saving AttrDict instances to .yaml files
 """
+from __future__ import annotations
 
 import pprint
 from typing import Any
@@ -104,6 +105,17 @@ class AttrDict:
             if not isinstance(old_v, str):
                 v = eval(v)  # pylint: disable=C0103, W0123
             setattr(dic, key, v)
+
+    def overwrite_config(self, other_config: AttrDict) -> None:
+        """
+        Overwrite the current config with values from another config.
+
+        :param other_config: The other AttrDict instance to copy values from.
+        :raises AttributeError: If a key from other_config is not an attribute of self.
+        """
+        if self._freezed:
+            raise AttributeError("Config was freezed! Cannot overwrite config.")
+        self.from_dict(other_config.to_dict())
 
     def freeze(self, freezed: bool = True) -> None:
         """
