@@ -29,14 +29,8 @@ __version__ = 0.34
 _IMPORT_STRUCTURE = {
     "analyzer": [
         "config_sanity_checks",
-        "build_detector",
-        "build_padder",
-        "build_service",
-        "build_sub_image_service",
-        "build_ocr",
-        "build_doctr_word",
         "get_dd_analyzer",
-        "build_analyzer",
+        "ServiceFactory"
     ],
     "configs": [],
     "dataflow": [
