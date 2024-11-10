@@ -22,6 +22,7 @@ from ..utils.settings import CellType, LayoutType
 
 cfg = AttrDict()
 
+
 cfg.LANGUAGE = None
 cfg.LIB = None
 cfg.DEVICE = None
@@ -32,10 +33,8 @@ cfg.USE_TABLE_SEGMENTATION = True
 cfg.TF.LAYOUT.WEIGHTS = "layout/model-800000_inf_only.data-00000-of-00001"
 cfg.TF.LAYOUT.FILTER = None
 
-
 cfg.TF.CELL.WEIGHTS = "cell/model-1800000_inf_only.data-00000-of-00001"
 cfg.TF.CELL.FILTER = None
-
 
 cfg.TF.ITEM.WEIGHTS = "item/model-1620000_inf_only.data-00000-of-00001"
 cfg.TF.ITEM.FILTER = None
