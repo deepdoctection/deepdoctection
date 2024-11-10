@@ -20,4 +20,4 @@ Package for pre-built pipelines
 """
 
 from .dd import *
-from factory import *
+from .factory import *
