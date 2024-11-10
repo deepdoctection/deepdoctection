@@ -41,7 +41,6 @@ from ..utils.types import PathLikeOrStr
 from ._config import cfg
 from .factory import ServiceFactory
 
-
 __all__ = [
     "config_sanity_checks",
     "get_dd_analyzer",

@@ -22,7 +22,6 @@ from ..utils.settings import CellType, LayoutType
 
 cfg = AttrDict()
 
-# pylint: disable=C0103
 cfg.LANGUAGE = None
 cfg.LIB = None
 cfg.DEVICE = None
@@ -148,5 +147,4 @@ cfg.TEXT_ORDERING.STARTING_POINT_TOLERANCE = 0.005
 cfg.TEXT_ORDERING.BROKEN_LINE_TOLERANCE = 0.003
 cfg.TEXT_ORDERING.HEIGHT_TOLERANCE = 2.0
 cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
-# pylint: enable=C0103
 cfg.freeze()

@@ -44,9 +44,9 @@ from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
 from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path
+from ..utils.metacfg import AttrDict
 from ..utils.settings import LayoutType, Relationships
 from ..utils.transform import PadTransform
-from ..utils.metacfg import AttrDict
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
@@ -56,7 +56,7 @@ __all__ = [
     "ServiceFactory",
 ]
 
-#from ._config import cfg
+# from ._config import cfg
 
 
 class ServiceFactory:
@@ -79,7 +79,8 @@ class ServiceFactory:
 
     @staticmethod
     def build_layout_detector(
-        config: AttrDict, mode: str,
+        config: AttrDict,
+        mode: str,
     ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
         """Building a D2-Detector, a TP-Detector as Detr-Detector or a D2-Torch Tracing Detector according to
         the config
@@ -93,8 +94,9 @@ class ServiceFactory:
             else (getattr(config.PT, mode).WEIGHTS if detectron2_available() else getattr(config.PT, mode).WEIGHTS_TS)
         )
         filter_categories = (
-            getattr(getattr(config.TF, mode), "FILTER") if config.LIB == "TF" else
-            getattr(getattr(config.PT, mode), "FILTER")
+            getattr(getattr(config.TF, mode), "FILTER")
+            if config.LIB == "TF"
+            else getattr(getattr(config.PT, mode), "FILTER")
         )
         config_path = ModelCatalog.get_full_path_configs(weights)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
@@ -233,12 +235,15 @@ class ServiceFactory:
         if config.OCR.USE_TESSERACT:
             ocr_config_path = get_configs_dir_path() / config.OCR.CONFIG.TESSERACT
             return TesseractOcrDetector(
-                ocr_config_path, config_overwrite=[f"LANGUAGES={config.LANGUAGE}"] if
-                config.LANGUAGE is not None else None
+                ocr_config_path,
+                config_overwrite=[f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGE is not None else None,
             )
         if config.OCR.USE_DOCTR:
-            weights = config.OCR.WEIGHTS.DOCTR_RECOGNITION.TF if config.LIB == "TF" else (
-                config.OCR.WEIGHTS.DOCTR_RECOGNITION.PT)
+            weights = (
+                config.OCR.WEIGHTS.DOCTR_RECOGNITION.TF
+                if config.LIB == "TF"
+                else (config.OCR.WEIGHTS.DOCTR_RECOGNITION.PT)
+            )
             weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
             profile = ModelCatalog.get_profile(weights)
             # get_full_path_configs will complete the path even if the model is not registered
@@ -275,14 +280,14 @@ class ServiceFactory:
             raise ValueError("model profile.architecture must be specified")
         if profile.categories is None:
             raise ValueError("model profile.categories must be specified")
-        return DoctrTextlineDetector(profile.architecture,
-                                     weights_path,
-                                     profile.categories,
-                                     config.DEVICE,
-                                     lib=config.LIB)
+        return DoctrTextlineDetector(
+            profile.architecture, weights_path, profile.categories, config.DEVICE, lib=config.LIB
+        )
 
     @staticmethod
-    def build_table_segmentation_service(config: AttrDict, detector: ObjectDetector,
+    def build_table_segmentation_service(
+        config: AttrDict,
+        detector: ObjectDetector,
     ) -> Union[PubtablesSegmentationService, TableSegmentationService]:
         """
         Build and return a table segmentation service based on the provided detector.
@@ -297,7 +302,8 @@ class ServiceFactory:
           configuration parameters from the `cfg` object but is tailored for different segmentation needs.
 
         :param config: configuration object
-        :param detector: An instance of `ObjectDetector` used to determine the type of table segmentation service to build.
+        :param detector: An instance of `ObjectDetector` used to determine the type of table segmentation
+        service to build.
         :return: An instance of either `PubtablesSegmentationService` or `TableSegmentationService` based on the
                  detector type.
         """
@@ -354,8 +360,9 @@ class ServiceFactory:
         :param config: configuration object
         :return: PdfPlumberTextDetector
         """
-        return PdfPlumberTextDetector(x_tolerance=config.PDF_MINER.X_TOLERANCE,
-                                      y_tolerance=config.PDF_MINER.Y_TOLERANCE)
+        return PdfPlumberTextDetector(
+            x_tolerance=config.PDF_MINER.X_TOLERANCE, y_tolerance=config.PDF_MINER.Y_TOLERANCE
+        )
 
     @staticmethod
     def build_pdf_miner_text_service(detector: PdfMiner) -> TextExtractionService:
@@ -378,10 +385,9 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_text_extraction_service(config: AttrDict, detector: Union[TesseractOcrDetector,
-    DoctrTextRecognizer,
-    TextractOcrDetector]) \
-            -> TextExtractionService:
+    def build_text_extraction_service(
+        config: AttrDict, detector: Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]
+    ) -> TextExtractionService:
         """Building a text extraction service
 
         :param config: configuration object
@@ -461,7 +467,7 @@ class ServiceFactory:
 
         if config.USE_LAYOUT:
             layout_detector = ServiceFactory.build_layout_detector(config, mode="LAYOUT")
-            layout_service = ServiceFactory.build_layout_service(detector=layout_detector, mode="LAYOUT")
+            layout_service = ServiceFactory.build_layout_service(config, detector=layout_detector, mode="LAYOUT")
             pipe_component_list.append(layout_service)
 
         # setup layout nms service

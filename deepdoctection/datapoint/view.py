@@ -509,6 +509,7 @@ class Page(Image):
         "location",
         "document_id",
         "page_number",
+        "angle",
     }
     include_residual_text_container: bool = True
 

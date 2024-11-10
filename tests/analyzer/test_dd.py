@@ -167,6 +167,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     # 15 cells for d2 and 16 for tp model
     assert len(page.tables[0].cells) in {15, 16}  # type: ignore
     # first html for tp model, second for d2 model
+
     assert page.tables[0].html in {
         "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td>139</td></tr><tr>"
         "<td>Gesamtvergiitung ?</td><td>EUR 15.315.952</td></tr><tr><td>Fixe Vergiitung</td>"
