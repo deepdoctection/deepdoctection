@@ -24,9 +24,9 @@ import subprocess
 import sys
 from errno import ENOENT
 from io import BytesIO
-from shutil import copyfile
-from typing import Generator, Optional, Literal
 from pathlib import Path
+from shutil import copyfile
+from typing import Generator, Literal, Optional
 
 from lazy_imports import try_import
 from numpy import uint8
@@ -44,12 +44,14 @@ from .viz import viz_handler
 with try_import() as pt_import_guard:
     import pypdfium2
 
-__all__ = ["decrypt_pdf_document",
-           "get_pdf_file_reader",
-           "get_pdf_file_writer",
-           "PDFStreamer",
-           "pdf_to_np_array",
-           "split_pdf"]
+__all__ = [
+    "decrypt_pdf_document",
+    "get_pdf_file_reader",
+    "get_pdf_file_writer",
+    "PDFStreamer",
+    "pdf_to_np_array",
+    "split_pdf",
+]
 
 
 def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
@@ -297,10 +299,9 @@ def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dp
     return pdf_to_np_array_poppler(pdf_bytes, size, dpi)
 
 
-def split_pdf(pdf_path: PathLikeOrStr,
-              output_dir: PathLikeOrStr,
-              file_type: Literal["image","pdf"],
-              dpi: int = 200) -> None:
+def split_pdf(
+    pdf_path: PathLikeOrStr, output_dir: PathLikeOrStr, file_type: Literal["image", "pdf"], dpi: int = 200
+) -> None:
     """
     Split a pdf into single pages. The pages are saved as single pdf/png files in a subfolder of the output directory.
 
@@ -329,6 +330,6 @@ def split_pdf(pdf_path: PathLikeOrStr,
                 with BytesIO() as buffer:
                     writer.write(buffer)
                     buffer.seek(0)
-                    np_image = pdf_to_np_array(buffer.getvalue(),dpi=dpi)
+                    np_image = pdf_to_np_array(buffer.getvalue(), dpi=dpi)
                     viz_handler.write_image(file_dir / f"{filename}_{i}.png", np_image)
                     writer.close()

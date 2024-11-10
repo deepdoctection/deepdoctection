@@ -421,6 +421,7 @@ class TesseractRotationTransformer(ImageTransformer):
     def __init__(self) -> None:
         self.name = fspath(_TESS_PATH) + "-rotation"
         self.categories = ModelCategories(init_categories={1: PageType.ANGLE})
+        self.model_id = self.get_model_id()
 
     def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """

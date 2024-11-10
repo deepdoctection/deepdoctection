@@ -193,13 +193,13 @@ class Pdfmium2TextDetector(PdfMiner):
         """
 
         if self._pdf_bytes == pdf_bytes and self._page is not None:
-            return self._page.bbox[2], self._page.bbox[3] # pylint: disable=E1101
+            return self._page.bbox[2], self._page.bbox[3]  # pylint: disable=E1101
         # if the pdf bytes is not equal to the cached pdf, will recalculate values
         pdf = PdfDocument(pdf_bytes)
         self._page = pdf.get_page(0)
         self._pdf_bytes = pdf_bytes
         if self._page is not None:
-            return self._page.get_width(), self._page.get_height() # type: ignore
+            return self._page.get_width(), self._page.get_height()  # type: ignore
         raise ValueError("Page not found")
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
