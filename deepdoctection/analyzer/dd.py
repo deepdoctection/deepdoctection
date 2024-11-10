@@ -28,8 +28,6 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from lazy_imports import try_import
-
 from ..extern.pt.ptutils import get_torch_device
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..pipe.doctectionpipe import DoctectionPipe
@@ -147,11 +145,11 @@ def get_dd_analyzer(
     if config_overwrite:
         cfg.update_args(config_overwrite)
 
-    config_sanity_checks(cfg)
+    config_sanity_checks()
     logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))  # type: ignore
 
     # will silent all TP logging while building the tower
     if tensorpack_available():
         disable_tp_layer_logging()
 
-    return ServiceFactory.build_analyzer()
+    return ServiceFactory.build_analyzer(cfg)

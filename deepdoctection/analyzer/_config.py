@@ -15,13 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline configuration for deepdoctection analyzer. Do not change the defaults in this file. It certainly not do what
-you expect. Use the configuration file to change the settings."""
+"""Pipeline configuration for deepdoctection analyzer. Do not change the defaults in this file. """
 
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType
 
 cfg = AttrDict()
+
+# pylint: disable=C0103
 cfg.LANGUAGE = None
 cfg.LIB = None
 cfg.DEVICE = None
@@ -147,4 +148,5 @@ cfg.TEXT_ORDERING.STARTING_POINT_TOLERANCE = 0.005
 cfg.TEXT_ORDERING.BROKEN_LINE_TOLERANCE = 0.003
 cfg.TEXT_ORDERING.HEIGHT_TOLERANCE = 2.0
 cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
+# pylint: enable=C0103
 cfg.freeze()
