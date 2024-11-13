@@ -193,5 +193,7 @@ def match_anns_by_distance(
     child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
     child_centers = [block.get_bounding_box(dp.image_id).center for block in child_anns]
     parent_centers = [block.get_bounding_box(dp.image_id).center for block in parent_anns]
-    child_indices = distance.cdist(parent_centers, child_centers).argmin(axis=1)
-    return [(parent_anns[i], child_anns[j]) for i, j in enumerate(child_indices)]
+    if child_centers and parent_centers:
+        child_indices = distance.cdist(parent_centers, child_centers).argmin(axis=1)
+        return [(parent_anns[i], child_anns[j]) for i, j in enumerate(child_indices)]
+    return []
