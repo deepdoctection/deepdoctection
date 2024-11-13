@@ -379,6 +379,7 @@ _IMPORT_STRUCTURE = {
         "get_pdf_file_writer",
         "PDFStreamer",
         "pdf_to_np_array",
+        "split_pdf",
         "ObjectTypes",
         "TypeOrStr",
         "object_types_registry",
