@@ -72,7 +72,7 @@ https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeva
 
 def _summarize(  # type: ignore
     self, ap: int = 1, iouThr: float = 0.9, areaRng: str = "all", maxDets: int = 100, per_category: bool = False
-) -> float:
+) -> Union[float, list[float]]:
     # pylint: disable=C0103
     p = self.params
     iStr = " {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}"
@@ -212,7 +212,7 @@ class CocoMetric(MetricBase):
 
         default_parameters = cls.get_summary_default_parameters()
         if cls._per_category:
-            default_parameters  = default_parameters * len(summary_bbox[0])
+            default_parameters = default_parameters * len(summary_bbox[0])
             summary_bbox = [item for pair in zip(*summary_bbox) for item in pair]
         val = 0
         for idx, (params, value) in enumerate(zip(default_parameters, summary_bbox)):
@@ -221,7 +221,7 @@ class CocoMetric(MetricBase):
             params["val"] = value
             if cls._per_category:
                 if idx % 2 == 0:
-                    val+=1
+                    val += 1
                 params["category_id"] = val
             results.append(params)
 
@@ -275,7 +275,6 @@ class CocoMetric(MetricBase):
         cls._f1_score = f1_score
         cls._f1_iou = f1_iou
         cls._per_category = per_category
-
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
