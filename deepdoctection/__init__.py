@@ -27,11 +27,7 @@ from .utils.logger import LoggingRecord, logger
 __version__ = 0.35
 
 _IMPORT_STRUCTURE = {
-    "analyzer": [
-        "config_sanity_checks",
-        "get_dd_analyzer",
-        "ServiceFactory"
-    ],
+    "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory"],
     "configs": [],
     "dataflow": [
         "DataFlowTerminated",
