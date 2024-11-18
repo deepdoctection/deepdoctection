@@ -92,8 +92,10 @@ def _summarize(  # type: ignore
             num_classes = s.shape[2]
             results_per_class = []
             for idx in range(num_classes):
-                # area range index 0: all area ranges
-                # max dets index -1: typically 100 per image
+                if iouThr is not None:
+                    s = self.eval["precision"]
+                    t = np.where(iouThr == p.iouThrs)[0]
+                    s = s[t]
                 precision = s[:, :, idx, aind, mind]
                 precision = precision[precision > -1]
                 res = np.mean(precision) if precision.size else float("nan")
@@ -104,6 +106,10 @@ def _summarize(  # type: ignore
             num_classes = s.shape[1]
             results_per_class = []
             for idx in range(num_classes):
+                if iouThr is not None:
+                    s = self.eval["recall"]
+                    t = np.where(iouThr == p.iouThrs)[0]
+                    s = s[t]
                 recall = s[:, idx, aind, mind]
                 recall = recall[recall > -1]
                 res = np.mean(recall) if recall.size else float("nan")
@@ -236,15 +242,16 @@ class CocoMetric(MetricBase):
                  area range and maximum detections.
         """
         if cls._f1_score:
+            for el, idx in zip(_F1_DEFAULTS, [2, 2]):
+                if cls._params:
+                    if cls._params.get("maxDets") is not None:
+                        el["maxDets"] = cls._params["maxDets"][idx]
+                el["iouThr"] = cls._f1_iou
+            return _F1_DEFAULTS
+
+        for el, idx in zip(_COCOEVAL_DEFAULTS, _MAX_DET_INDEX):
             if cls._params:
                 if cls._params.get("maxDets") is not None:
-                    for el, idx in zip(_F1_DEFAULTS, [2, 2]):
-                        el["maxDets"] = cls._params["maxDets"][idx]
-                        el["iouThr"] = cls._f1_iou
-            return _F1_DEFAULTS
-        if cls._params:
-            if cls._params.get("maxDets") is not None:
-                for el, idx in zip(_COCOEVAL_DEFAULTS, _MAX_DET_INDEX):
                     el["maxDets"] = cls._params["maxDets"][idx]
         return _COCOEVAL_DEFAULTS
 
