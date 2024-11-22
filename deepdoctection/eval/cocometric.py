@@ -71,8 +71,8 @@ https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeva
 
 
 def _summarize(  # type: ignore
-    self, ap: int = 1, iouThr: float = 0.9, areaRng: str = "all", maxDets: int = 100
-) -> float:
+    self, ap: int = 1, iouThr: float = 0.9, areaRng: str = "all", maxDets: int = 100, per_category: bool = False
+) -> Union[float, list[float]]:
     # pylint: disable=C0103
     p = self.params
     iStr = " {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}"
@@ -86,6 +86,36 @@ def _summarize(  # type: ignore
 
     aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]
     mind = [i for i, mDet in enumerate(p.maxDets) if mDet == maxDets]
+    if per_category:
+        if ap == 1:
+            s = self.eval["precision"]
+            num_classes = s.shape[2]
+            results_per_class = []
+            for idx in range(num_classes):
+                if iouThr is not None:
+                    s = self.eval["precision"]
+                    t = np.where(iouThr == p.iouThrs)[0]
+                    s = s[t]
+                precision = s[:, :, idx, aind, mind]
+                precision = precision[precision > -1]
+                res = np.mean(precision) if precision.size else float("nan")
+                results_per_class.append(float(res))
+                print(f"Precision for class {idx+1}: @[ IoU={iouStr} | area={areaRng} | maxDets={maxDets} ] = {res}")
+        else:
+            s = self.eval["recall"]
+            num_classes = s.shape[1]
+            results_per_class = []
+            for idx in range(num_classes):
+                if iouThr is not None:
+                    s = self.eval["recall"]
+                    t = np.where(iouThr == p.iouThrs)[0]
+                    s = s[t]
+                recall = s[:, idx, aind, mind]
+                recall = recall[recall > -1]
+                res = np.mean(recall) if recall.size else float("nan")
+                results_per_class.append(float(res))
+                print(f"Recall for class {idx+1}: @[ IoU={iouStr} | area={areaRng} | maxDets={maxDets} ] = {res}")
+        return results_per_class
     if ap == 1:
         # dimension of precision: [TxRxKxAxM]
         s = self.eval["precision"]
@@ -124,6 +154,7 @@ class CocoMetric(MetricBase):
     mapper = image_to_coco
     _f1_score = None
     _f1_iou = None
+    _per_category = False
     _params: dict[str, Union[list[int], list[list[int]]]] = {}
 
     @classmethod
@@ -176,18 +207,28 @@ class CocoMetric(MetricBase):
 
         if cls._f1_score:
             summary_bbox = [
-                metric.summarize_f1(1, cls._f1_iou, maxDets=metric.params.maxDets[2]),
-                metric.summarize_f1(0, cls._f1_iou, maxDets=metric.params.maxDets[2]),
+                metric.summarize_f1(1, cls._f1_iou, maxDets=metric.params.maxDets[2], per_category=cls._per_category),
+                metric.summarize_f1(0, cls._f1_iou, maxDets=metric.params.maxDets[2], per_category=cls._per_category),
             ]
         else:
             metric.summarize()
             summary_bbox = metric.stats
 
         results = []
-        for params, value in zip(cls.get_summary_default_parameters(), summary_bbox):
+
+        default_parameters = cls.get_summary_default_parameters()
+        if cls._per_category:
+            default_parameters = default_parameters * len(summary_bbox[0])
+            summary_bbox = [item for pair in zip(*summary_bbox) for item in pair]
+        val = 0
+        for idx, (params, value) in enumerate(zip(default_parameters, summary_bbox)):
             params = copy(params)
             params["mode"] = "bbox"
             params["val"] = value
+            if cls._per_category:
+                if idx % 2 == 0:
+                    val += 1
+                params["category_id"] = val
             results.append(params)
 
         return results
@@ -201,15 +242,16 @@ class CocoMetric(MetricBase):
                  area range and maximum detections.
         """
         if cls._f1_score:
+            for el, idx in zip(_F1_DEFAULTS, [2, 2]):
+                if cls._params:
+                    if cls._params.get("maxDets") is not None:
+                        el["maxDets"] = cls._params["maxDets"][idx]
+                el["iouThr"] = cls._f1_iou
+            return _F1_DEFAULTS
+
+        for el, idx in zip(_COCOEVAL_DEFAULTS, _MAX_DET_INDEX):
             if cls._params:
                 if cls._params.get("maxDets") is not None:
-                    for el, idx in zip(_F1_DEFAULTS, [2, 2]):
-                        el["maxDets"] = cls._params["maxDets"][idx]
-                        el["iouThr"] = cls._f1_iou
-                    return _F1_DEFAULTS
-        if cls._params:
-            if cls._params.get("maxDets") is not None:
-                for el, idx in zip(_COCOEVAL_DEFAULTS, _MAX_DET_INDEX):
                     el["maxDets"] = cls._params["maxDets"][idx]
         return _COCOEVAL_DEFAULTS
 
@@ -220,13 +262,16 @@ class CocoMetric(MetricBase):
         area_range: Optional[list[list[int]]] = None,
         f1_score: bool = False,
         f1_iou: float = 0.9,
+        per_category: bool = False,
     ) -> None:
         """
         Setting params for different coco metric modes.
 
         :param max_detections: The maximum number of detections to consider
         :param area_range: The area range to classify objects as "all", "small", "medium" and "large"
-        :param f1_score: Will use f1 score setting with default iouThr 0.9
+        :param f1_score: Will use f1 score setting with default iouThr 0.9. To be more precise it does not calculate
+                         the f1 score but the precision and recall for a given iou threshold. Use the harmonic mean to
+                         get the ultimate f1 score.
         :param f1_iou: Use with f1_score True and reset the f1 iou threshold
         """
         if max_detections is not None:
@@ -238,6 +283,7 @@ class CocoMetric(MetricBase):
 
         cls._f1_score = f1_score
         cls._f1_iou = f1_iou
+        cls._per_category = per_category
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
