@@ -95,6 +95,15 @@ class Annotations:
         ),
     ]
 
+    caption_anns = [ImageAnnotation(
+            bounding_box=BoundingBox(ulx=60.0, uly=90.0, lrx=65.0, lry=110.0, absolute_coords=True),
+            score=0.83,
+            category_name=LayoutType.CAPTION,
+            category_id=7,
+            model_id="test_model",
+            service_id="d0b8e9f3",
+        ),]
+
     layout_ann_for_ordering = [
         ImageAnnotation(
             bounding_box=BoundingBox(ulx=100.0, uly=160.0, lrx=200.0, lry=260.0, absolute_coords=True),
@@ -680,6 +689,9 @@ class Annotations:
             all_anns.extend(self.col_layout_anns)
             return all_anns
         return self.layout_anns
+
+    def get_caption_annotation(self) -> List[ImageAnnotation]:
+        return self.caption_anns
 
     def get_layout_ann_for_ordering(self) -> List[ImageAnnotation]:
         """

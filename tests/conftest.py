@@ -162,6 +162,12 @@ def fixture_layout_annotations() -> List[ImageAnnotation]:
     return deepcopy(Annotations().get_layout_annotation())
 
 
+@fixture(name="caption_annotations")
+def fixture_caption_annotations() -> List[ImageAnnotation]:
+    """fixture caption_annotations"""
+    return deepcopy(Annotations().get_caption_annotation())
+
+
 @fixture(name="layout_annotations_for_ordering")
 def fixture_layout_annotations_for_ordering() -> List[ImageAnnotation]:
     """fixture layout_annotations"""
@@ -188,6 +194,19 @@ def fixture_dp_image_with_layout_anns(dp_image: Image, layout_annotations: List[
         dp_image.image_ann_to_image(img_ann.annotation_id, True)
     return deepcopy(dp_image)
 
+
+@fixture(name="dp_image_with_layout_and_caption_anns")
+def fixture_dp_image_with_layout_and_caption_anns(dp_image: Image,
+                                      layout_annotations: List[ImageAnnotation],
+                                      caption_annotations: List[ImageAnnotation]) -> Image:
+    """fixture dp_image_with_anns"""
+    for img_ann in layout_annotations:
+        dp_image.dump(img_ann)
+        dp_image.image_ann_to_image(img_ann.annotation_id, True)
+    for cap_ann in caption_annotations:
+        dp_image.dump(cap_ann)
+        dp_image.image_ann_to_image(cap_ann.annotation_id, True)
+    return deepcopy(dp_image)
 
 @fixture(name="global_cell_boxes")
 def fixture_global_cell_boxes() -> List[List[BoundingBox]]:
