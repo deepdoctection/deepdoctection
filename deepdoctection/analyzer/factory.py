@@ -33,7 +33,13 @@ from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
 from ..extern.texocr import TextractOcrDetector
 from ..extern.tpdetect import TPFrcnnDetector
 from ..pipe.base import PipelineComponent
-from ..pipe.common import AnnotationNmsService, IntersectionMatcher, MatchingService, PageParsingService
+from ..pipe.common import (
+    AnnotationNmsService,
+    IntersectionMatcher,
+    MatchingService,
+    NeighbourMatcher,
+    PageParsingService,
+)
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
 from ..pipe.order import TextOrderService
@@ -78,7 +84,7 @@ class ServiceFactory:
     """
 
     @staticmethod
-    def build_layout_detector(
+    def _build_layout_detector(
         config: AttrDict,
         mode: str,
     ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
@@ -141,17 +147,38 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_rotation_detector() -> TesseractRotationTransformer:
+    def build_layout_detector(
+        config: AttrDict, mode: str
+    ) -> Union[D2FrcnnDetector, TPFrcnnDetector, HFDetrDerivedDetector, D2FrcnnTracingDetector]:
+        """Building a layout detector according to the config
+
+        :param config: configuration object
+        :param mode: either `LAYOUT`,`CELL` or `ITEM`
+        """
+        return ServiceFactory._build_layout_detector(config, mode)
+
+    @staticmethod
+    def _build_rotation_detector() -> TesseractRotationTransformer:
         """Building a rotation detector"""
         return TesseractRotationTransformer()
 
     @staticmethod
-    def build_transform_service(transform_predictor: ImageTransformer) -> SimpleTransformService:
+    def build_rotation_detector() -> TesseractRotationTransformer:
+        """Building a rotation detector"""
+        return ServiceFactory._build_rotation_detector()
+
+    @staticmethod
+    def _build_transform_service(transform_predictor: ImageTransformer) -> SimpleTransformService:
         """Building a transform service with a given predictor"""
         return SimpleTransformService(transform_predictor)
 
     @staticmethod
-    def build_padder(config: AttrDict, mode: str) -> PadTransform:
+    def build_transform_service(transform_predictor: ImageTransformer) -> SimpleTransformService:
+        """Building a transform service with a given predictor"""
+        return ServiceFactory._build_transform_service(transform_predictor)
+
+    @staticmethod
+    def _build_padder(config: AttrDict, mode: str) -> PadTransform:
         """Building a padder according to the config
 
         :param config: configuration object
@@ -164,10 +191,20 @@ class ServiceFactory:
             getattr(config.PT, mode).PAD.BOTTOM,
             getattr(config.PT, mode).PAD.LEFT,
         )
-        return PadTransform(top=top, right=right, bottom=bottom, left=left)
+        return PadTransform(top=top, right=right, bottom=bottom, left=left)  #
 
     @staticmethod
-    def build_layout_service(config: AttrDict, detector: ObjectDetector, mode: str) -> ImageLayoutService:
+    def build_padder(config: AttrDict, mode: str) -> PadTransform:
+        """Building a padder according to the config
+
+        :param config: configuration object
+        :param mode: either `LAYOUT`,`CELL` or `ITEM`
+        :return `PadTransform` instance
+        """
+        return ServiceFactory._build_padder(config, mode)
+
+    @staticmethod
+    def _build_layout_service(config: AttrDict, detector: ObjectDetector, mode: str) -> ImageLayoutService:
         """Building a layout service with a given detector
 
         :param config: configuration object
@@ -181,7 +218,18 @@ class ServiceFactory:
         return ImageLayoutService(layout_detector=detector, to_image=True, crop_image=True, padder=padder)
 
     @staticmethod
-    def build_layout_nms_service(config: AttrDict) -> AnnotationNmsService:
+    def build_layout_service(config: AttrDict, detector: ObjectDetector, mode: str) -> ImageLayoutService:
+        """Building a layout service with a given detector
+
+        :param config: configuration object
+        :param detector: will be passed to the `ImageLayoutService`
+        :param mode: either `LAYOUT`,`CELL` or `ITEM`
+        :return `ImageLayoutService` instance
+        """
+        return ServiceFactory._build_layout_service(config, detector, mode)
+
+    @staticmethod
+    def _build_layout_nms_service(config: AttrDict) -> AnnotationNmsService:
         """Building a NMS service for layout annotations
 
         :param config: configuration object
@@ -199,7 +247,15 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_sub_image_service(config: AttrDict, detector: ObjectDetector, mode: str) -> SubImageLayoutService:
+    def build_layout_nms_service(config: AttrDict) -> AnnotationNmsService:
+        """Building a NMS service for layout annotations
+
+        :param config: configuration object
+        """
+        return ServiceFactory._build_layout_nms_service(config)
+
+    @staticmethod
+    def _build_sub_image_service(config: AttrDict, detector: ObjectDetector, mode: str) -> SubImageLayoutService:
         """
         Building a sub image layout service with a given detector
 
@@ -226,7 +282,19 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+    def build_sub_image_service(config: AttrDict, detector: ObjectDetector, mode: str) -> SubImageLayoutService:
+        """
+        Building a sub image layout service with a given detector
+
+        :param config: configuration object
+        :param detector: will be passed to the `SubImageLayoutService`
+        :param mode: either `LAYOUT`,`CELL` or `ITEM`
+        :return: `SubImageLayoutService` instance
+        """
+        return ServiceFactory._build_sub_image_service(config, detector, mode)
+
+    @staticmethod
+    def _build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
         """
         Building OCR predictor
 
@@ -267,6 +335,15 @@ class ServiceFactory:
         raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
 
     @staticmethod
+    def build_ocr_detector(config: AttrDict) -> Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]:
+        """
+        Building OCR predictor
+
+        :param config: configuration object
+        """
+        return ServiceFactory._build_ocr_detector(config)
+
+    @staticmethod
     def build_doctr_word_detector(config: AttrDict) -> DoctrTextlineDetector:
         """Building `DoctrTextlineDetector` instance
 
@@ -285,7 +362,7 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_table_segmentation_service(
+    def _build_table_segmentation_service(
         config: AttrDict,
         detector: ObjectDetector,
     ) -> Union[PubtablesSegmentationService, TableSegmentationService]:
@@ -342,7 +419,32 @@ class ServiceFactory:
         return table_segmentation
 
     @staticmethod
-    def build_table_refinement_service(config: AttrDict) -> TableSegmentationRefinementService:
+    def build_table_segmentation_service(
+        config: AttrDict,
+        detector: ObjectDetector,
+    ) -> Union[PubtablesSegmentationService, TableSegmentationService]:
+        """
+        Build and return a table segmentation service based on the provided detector.
+
+        Depending on the type of the detector, this method will return either a `PubtablesSegmentationService` or a
+        `TableSegmentationService` instance. The selection is made as follows:
+
+        - If the detector is an instance of `HFDetrDerivedDetector`, a `PubtablesSegmentationService` is created and
+          returned. This service uses specific configuration parameters for segmentation, such as assignment rules,
+          thresholds, and cell names defined in the `cfg` object.
+        - For other detector types, a `TableSegmentationService` is created and returned. This service also uses
+          configuration parameters from the `cfg` object but is tailored for different segmentation needs.
+
+        :param config: configuration object
+        :param detector: An instance of `ObjectDetector` used to determine the type of table segmentation
+        service to build.
+        :return: An instance of either `PubtablesSegmentationService` or `TableSegmentationService` based on the
+                 detector type.
+        """
+        return ServiceFactory._build_table_segmentation_service(config, detector)
+
+    @staticmethod
+    def _build_table_refinement_service(config: AttrDict) -> TableSegmentationRefinementService:
         """Building a table segmentation refinement service
 
         :param config: configuration object
@@ -354,7 +456,16 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_pdf_text_detector(config: AttrDict) -> PdfPlumberTextDetector:
+    def build_table_refinement_service(config: AttrDict) -> TableSegmentationRefinementService:
+        """Building a table segmentation refinement service
+
+        :param config: configuration object
+        :return: TableSegmentationRefinementService
+        """
+        return ServiceFactory._build_table_refinement_service(config)
+
+    @staticmethod
+    def _build_pdf_text_detector(config: AttrDict) -> PdfPlumberTextDetector:
         """Building a PDF text detector
 
         :param config: configuration object
@@ -365,13 +476,31 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_pdf_miner_text_service(detector: PdfMiner) -> TextExtractionService:
+    def build_pdf_text_detector(config: AttrDict) -> PdfPlumberTextDetector:
+        """Building a PDF text detector
+
+        :param config: configuration object
+        :return: PdfPlumberTextDetector
+        """
+        return ServiceFactory._build_pdf_text_detector(config)
+
+    @staticmethod
+    def _build_pdf_miner_text_service(detector: PdfMiner) -> TextExtractionService:
         """Building a PDFMiner text extraction service
 
         :param detector: PdfMiner
         :return: TextExtractionService
         """
         return TextExtractionService(detector)
+
+    @staticmethod
+    def build_pdf_miner_text_service(detector: PdfMiner) -> TextExtractionService:
+        """Building a PDFMiner text extraction service
+
+        :param detector: PdfMiner
+        :return: TextExtractionService
+        """
+        return ServiceFactory._build_pdf_miner_text_service(detector)
 
     @staticmethod
     def build_doctr_word_detector_service(detector: DoctrTextlineDetector) -> ImageLayoutService:
@@ -385,7 +514,7 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_text_extraction_service(
+    def _build_text_extraction_service(
         config: AttrDict, detector: Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]
     ) -> TextExtractionService:
         """Building a text extraction service
@@ -401,7 +530,19 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_word_matching_service(config: AttrDict) -> MatchingService:
+    def build_text_extraction_service(
+        config: AttrDict, detector: Union[TesseractOcrDetector, DoctrTextRecognizer, TextractOcrDetector]
+    ) -> TextExtractionService:
+        """Building a text extraction service
+
+        :param config: configuration object
+        :param detector: OCR detector
+        :return: TextExtractionService
+        """
+        return ServiceFactory._build_text_extraction_service(config, detector)
+
+    @staticmethod
+    def _build_word_matching_service(config: AttrDict) -> MatchingService:
         """Building a word matching service
 
         :param config: configuration object
@@ -420,7 +561,40 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_text_order_service(config: AttrDict) -> TextOrderService:
+    def build_word_matching_service(config: AttrDict) -> MatchingService:
+        """Building a word matching service
+
+        :param config: configuration object
+        :return: MatchingService
+        """
+        return ServiceFactory._build_word_matching_service(config)
+
+    @staticmethod
+    def _build_layout_link_matching_service(config: AttrDict) -> MatchingService:
+        """Building a word matching service
+
+        :param config: configuration object
+        :return: MatchingService
+        """
+        neighbor_matcher = NeighbourMatcher()
+        return MatchingService(
+            parent_categories=config.LAYOUT_LINK.PARENTAL_CATEGORIES,
+            child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
+            matcher=neighbor_matcher,
+            relationship_key=Relationships.LAYOUT_LINK,
+        )
+
+    @staticmethod
+    def build_layout_link_matching_service(config: AttrDict) -> MatchingService:
+        """Building a word matching service
+
+        :param config: configuration object
+        :return: MatchingService
+        """
+        return ServiceFactory._build_layout_link_matching_service(config)
+
+    @staticmethod
+    def _build_text_order_service(config: AttrDict) -> TextOrderService:
         """Building a text order service
 
         :param config: configuration object
@@ -438,7 +612,16 @@ class ServiceFactory:
         )
 
     @staticmethod
-    def build_page_parsing_service(config: AttrDict) -> PageParsingService:
+    def build_text_order_service(config: AttrDict) -> TextOrderService:
+        """Building a text order service
+
+        :param config: configuration object
+        :return: TextOrderService instance
+        """
+        return ServiceFactory._build_text_order_service(config)
+
+    @staticmethod
+    def _build_page_parsing_service(config: AttrDict) -> PageParsingService:
         """Building a page parsing service
 
         :param config: configuration object
@@ -449,6 +632,15 @@ class ServiceFactory:
             floating_text_block_categories=config.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES,
             include_residual_text_container=config.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER,
         )
+
+    @staticmethod
+    def build_page_parsing_service(config: AttrDict) -> PageParsingService:
+        """Building a page parsing service
+
+        :param config: configuration object
+        :return: PageParsingService instance
+        """
+        return ServiceFactory._build_page_parsing_service(config)
 
     @staticmethod
     def build_analyzer(config: AttrDict) -> DoctectionPipe:
@@ -516,6 +708,10 @@ class ServiceFactory:
 
             text_order_service = ServiceFactory.build_text_order_service(config)
             pipe_component_list.append(text_order_service)
+
+        if config.USE_LAYOUT_LINK:
+            layout_link_matching_service = ServiceFactory.build_layout_link_matching_service(config)
+            pipe_component_list.append(layout_link_matching_service)
 
         page_parsing_service = ServiceFactory.build_page_parsing_service(config)
 
