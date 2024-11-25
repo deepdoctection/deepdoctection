@@ -17,6 +17,7 @@
 
 """Pipeline configuration for deepdoctection analyzer. Do not change the defaults in this file. """
 
+from ..datapoint.view import IMAGE_DEFAULTS
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType
 
@@ -111,7 +112,7 @@ cfg.OCR.WEIGHTS.DOCTR_WORD.PT = "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"
 cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.TF = "doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip"
 cfg.OCR.WEIGHTS.DOCTR_RECOGNITION.PT = "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
 
-cfg.TEXT_CONTAINER = LayoutType.WORD
+cfg.TEXT_CONTAINER = IMAGE_DEFAULTS["text_container"]
 cfg.WORD_MATCHING.PARENTAL_CATEGORIES = [
     LayoutType.TEXT,
     LayoutType.TITLE,
@@ -126,24 +127,16 @@ cfg.WORD_MATCHING.RULE = "ioa"
 cfg.WORD_MATCHING.THRESHOLD = 0.6
 cfg.WORD_MATCHING.MAX_PARENT_ONLY = True
 
-cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES = [
-    LayoutType.TEXT,
-    LayoutType.TITLE,
-    LayoutType.LIST,
-    LayoutType.CELL,
-    CellType.COLUMN_HEADER,
-    CellType.PROJECTED_ROW_HEADER,
-    CellType.SPANNING,
-    CellType.ROW_HEADER,
-]
-cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES = [
-    LayoutType.TEXT,
-    LayoutType.TITLE,
-    LayoutType.LIST,
-]
+cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES = IMAGE_DEFAULTS["text_block_categories"]
+cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES = IMAGE_DEFAULTS["floating_text_block_categories"]
 cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER = False
 cfg.TEXT_ORDERING.STARTING_POINT_TOLERANCE = 0.005
 cfg.TEXT_ORDERING.BROKEN_LINE_TOLERANCE = 0.003
 cfg.TEXT_ORDERING.HEIGHT_TOLERANCE = 2.0
 cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
+
+cfg.USE_LAYOUT_LINK = False
+cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = []
+cfg.LAYOUT_LINK.CHILD_CATEGORIES = []
+
 cfg.freeze()

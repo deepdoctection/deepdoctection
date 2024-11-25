@@ -25,6 +25,7 @@ from copy import copy
 from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check
 
 import numpy as np
+from typing_extensions import LiteralString
 
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, logger
@@ -40,10 +41,12 @@ from ..utils.settings import (
     WordType,
     get_type,
 )
+from ..utils.transform import ResizeTransform
 from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, Text_, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
+from .convert import box_to_point4, point4_to_box
 from .image import Image
 
 
@@ -101,7 +104,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
             return np_image
         raise AnnotationError(f"base_page.image is None for {self.annotation_id}")
 
-    def __getattr__(self, item: str) -> Optional[Union[str, int, list[str]]]:
+    def __getattr__(self, item: str) -> Optional[Union[str, int, list[str], list[ImageAnnotationBaseView]]]:
         """
         Get attributes defined by registered `self.get_attribute_names()` in a multi step process:
 
@@ -126,6 +129,9 @@ class ImageAnnotationBaseView(ImageAnnotation):
             if isinstance(sub_cat, ContainerAnnotation):
                 return sub_cat.value
             return sub_cat.category_id
+        if item in self.relationships:
+            relationship_ids = self.get_relationship(get_type(item))
+            return self.base_page.get_annotation(annotation_ids=relationship_ids)
         if self.image is not None:
             if item in self.image.summary.sub_categories:
                 sub_cat = self.get_summary(get_type(item))
@@ -165,7 +171,11 @@ class Word(ImageAnnotationBaseView):
     """
 
     def get_attribute_names(self) -> set[str]:
-        return set(WordType).union(super().get_attribute_names()).union({Relationships.READING_ORDER})
+        return (
+            set(WordType)
+            .union(super().get_attribute_names())
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+        )
 
 
 class Layout(ImageAnnotationBaseView):
@@ -246,7 +256,11 @@ class Layout(ImageAnnotationBaseView):
         }
 
     def get_attribute_names(self) -> set[str]:
-        return {"words", "text"}.union(super().get_attribute_names()).union({Relationships.READING_ORDER})
+        return (
+            {"words", "text"}
+            .union(super().get_attribute_names())
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+        )
 
     def __len__(self) -> int:
         """len of text counted by number of characters"""
@@ -433,8 +447,8 @@ class ImageDefaults(TypedDict):
     """ImageDefaults"""
 
     text_container: LayoutType
-    floating_text_block_categories: tuple[LayoutType, ...]
-    text_block_categories: tuple[LayoutType, ...]
+    floating_text_block_categories: tuple[Union[LayoutType, CellType], ...]
+    text_block_categories: tuple[Union[LayoutType, CellType], ...]
 
 
 IMAGE_DEFAULTS: ImageDefaults = {
@@ -448,9 +462,13 @@ IMAGE_DEFAULTS: ImageDefaults = {
     "text_block_categories": (
         LayoutType.TEXT,
         LayoutType.TITLE,
-        LayoutType.FIGURE,
         LayoutType.LIST,
         LayoutType.CELL,
+        LayoutType.FIGURE,
+        CellType.COLUMN_HEADER,
+        CellType.PROJECTED_ROW_HEADER,
+        CellType.SPANNING,
+        CellType.ROW_HEADER,
     ),
 }
 
@@ -510,6 +528,8 @@ class Page(Image):
         "document_id",
         "page_number",
         "angle",
+        "figures",
+        "residual_layouts",
     }
     include_residual_text_container: bool = True
 
@@ -607,6 +627,41 @@ class Page(Image):
         A list of a tables.
         """
         return self.get_annotation(category_names=LayoutType.TABLE)
+
+    @property
+    def figures(self) -> list[ImageAnnotationBaseView]:
+        """
+        A list of a figures.
+        """
+        return self.get_annotation(category_names=LayoutType.FIGURE)
+
+    @property
+    def residual_layouts(self) -> list[ImageAnnotationBaseView]:
+        """
+        A list of all residual layouts. Residual layouts are all layouts that are
+           - not floating text blocks,
+           - not text containers,
+           - not tables,
+           - not figures
+           - not cells
+           - not rows
+           - not columns
+        """
+        return self.get_annotation(category_names=self._get_residual_layout())
+
+    def _get_residual_layout(self) -> list[LiteralString]:
+        layouts = copy(list(self.floating_text_block_categories))
+        layouts.extend(
+            [
+                LayoutType.TABLE,
+                LayoutType.FIGURE,
+                self.text_container,
+                LayoutType.CELL,
+                LayoutType.ROW,
+                LayoutType.COLUMN,
+            ]
+        )
+        return [layout for layout in LayoutType if layout not in layouts]
 
     @classmethod
     def from_image(
@@ -801,12 +856,15 @@ class Page(Image):
         self,
         show_tables: bool = True,
         show_layouts: bool = True,
+        show_figures: bool = False,
+        show_residual_layouts: bool = False,
         show_cells: bool = True,
         show_table_structure: bool = True,
         show_words: bool = False,
         show_token_class: bool = True,
         ignore_default_token_class: bool = False,
         interactive: bool = False,
+        scaled_width: int = 600,
         **debug_kwargs: str,
     ) -> Optional[PixelValues]:
         """
@@ -827,12 +885,14 @@ class Page(Image):
 
         :param show_tables: Will display all tables boxes as well as cells, rows and columns
         :param show_layouts: Will display all other layout components.
+        :param show_figures: Will display all figures
         :param show_cells: Will display cells within tables. (Only available if `show_tables=True`)
         :param show_table_structure: Will display rows and columns
         :param show_words: Will display bounding boxes around words labeled with token class and bio tag (experimental)
         :param show_token_class: Will display token class instead of token tags (i.e. token classes with tags)
         :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
                             can be displayed differently.
+        :param scaled_width: Width of the image to display
         :param ignore_default_token_class: Will ignore displaying word bounding boxes with default or None token class
                                            label
         :return: If `interactive=False` will return a numpy array.
@@ -855,6 +915,11 @@ class Page(Image):
 
         if show_layouts and not debug_kwargs:
             for item in self.layouts:
+                box_stack.append(item.bbox)
+                category_names_list.append(item.category_name.value)
+
+        if show_figures and not debug_kwargs:
+            for item in self.figures:
                 box_stack.append(item.bbox)
                 category_names_list.append(item.category_name.value)
 
@@ -914,24 +979,34 @@ class Page(Image):
                         else:
                             category_names_list.append(word.token_tag.value if word.token_tag is not None else None)
 
+        if show_residual_layouts and not debug_kwargs:
+            for item in self.residual_layouts:
+                box_stack.append(item.bbox)
+                category_names_list.append(item.category_name.value)
+
         if self.image is not None:
+            scale_fx = scaled_width / self.width
+            scaled_height = int(self.height * scale_fx)
+            img = viz_handler.resize(self.image, scaled_width, scaled_height, "VIZ")
+
             if box_stack:
                 boxes = np.vstack(box_stack)
+                boxes = box_to_point4(boxes)
+                resizer = ResizeTransform(self.height, self.width, scaled_height, scaled_width, "VIZ")
+                boxes = resizer.apply_coords(boxes)
+                boxes = point4_to_box(boxes)
                 if show_words:
                     img = draw_boxes(
-                        self.image,
-                        boxes,
-                        category_names_list,
+                        np_image=img,
+                        boxes=boxes,
+                        category_names_list=category_names_list,
                         font_scale=1.0,
                         rectangle_thickness=4,
                     )
                 else:
-                    img = draw_boxes(self.image, boxes, category_names_list)
-                scale_fx, scale_fy = 1.3, 1.3
-                scaled_width, scaled_height = int(self.width * scale_fx), int(self.height * scale_fy)
-                img = viz_handler.resize(img, scaled_width, scaled_height, "VIZ")
-            else:
-                img = self.image
+                    img = draw_boxes(
+                        np_image=img, boxes=boxes, category_names_list=category_names_list, show_palette=False
+                    )
 
             if interactive:
                 interactive_imshow(img)
