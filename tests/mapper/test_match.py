@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 # File: test_match.py
-from docutils.nodes import caption
-
 # Copyright 2024 Dr. Janis Meyer. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +14,16 @@ from docutils.nodes import caption
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Testing the module mapper.match
+"""
+from deepdoctection.datapoint.image import Image
+
 from deepdoctection import LayoutType
 from deepdoctection.mapper.match import match_anns_by_distance
 
-def test_match_anns_by_intersection(dp_image_with_layout_and_caption_anns):
+
+def test_match_anns_by_intersection(dp_image_with_layout_and_caption_anns: Image) -> None:
     """
     Test match_anns_by_intersection
     """
@@ -31,7 +35,9 @@ def test_match_anns_by_intersection(dp_image_with_layout_and_caption_anns):
     table_anns = dp.get_annotation(category_names=LayoutType.TABLE)
     caption_anns = dp.get_annotation(category_names=LayoutType.CAPTION)
     output_ids = {(anns[0].annotation_id, anns[1].annotation_id) for anns in output}
-    expected_output_ids = {(table_anns[0].annotation_id, caption_anns[0].annotation_id),
-                           (table_anns[1].annotation_id, caption_anns[0].annotation_id)}
+    expected_output_ids = {
+        (table_anns[0].annotation_id, caption_anns[0].annotation_id),
+        (table_anns[1].annotation_id, caption_anns[0].annotation_id),
+    }
 
     assert output_ids == expected_output_ids
