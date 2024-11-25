@@ -24,7 +24,7 @@ from .utils.logger import LoggingRecord, logger
 
 # pylint: enable=wrong-import-position
 
-__version__ = 0.35
+__version__ = 0.36
 
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory"],
