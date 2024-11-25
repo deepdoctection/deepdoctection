@@ -205,6 +205,7 @@ def draw_boxes(
     font_scale: float = 1.0,
     rectangle_thickness: int = 4,
     box_color_by_category: bool = True,
+    show_palette: bool = True,
 ) -> PixelValues:
     """
     Dray bounding boxes with category names into image.
@@ -216,6 +217,7 @@ def draw_boxes(
     :param font_scale: Font scale of text box
     :param rectangle_thickness: Thickness of bounding box
     :param box_color_by_category:
+    :param show_palette: Whether to show a color palette of the categories
     :return: A new image np.ndarray
     """
     if color is not None:
@@ -261,19 +263,20 @@ def draw_boxes(
         )
 
     # draw a (very ugly) color palette
-    y_0 = np_image.shape[0]
-    for category, col in category_to_color.items():
-        if category is not None:
-            np_image = viz_handler.draw_text(
-                np_image,
-                (np_image.shape[1], y_0),
-                category,
-                color=col,
-                font_scale=font_scale * 3,
-                rectangle_thickness=rectangle_thickness,
-            )
-            _, text_h = viz_handler.get_text_size(category, font_scale * 2)
-            y_0 = y_0 - int(10 * text_h)
+    if show_palette:
+        y_0 = np_image.shape[0]
+        for category, col in category_to_color.items():
+            if category is not None:
+                np_image = viz_handler.draw_text(
+                    np_image,
+                    (np_image.shape[1], y_0),
+                    category,
+                    color=col,
+                    font_scale=font_scale,
+                    rectangle_thickness=rectangle_thickness,
+                )
+                _, text_h = viz_handler.get_text_size(category, font_scale * 2)
+                y_0 = y_0 - int(1 * text_h)
 
     return np_image
 
