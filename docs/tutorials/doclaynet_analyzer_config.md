@@ -16,13 +16,6 @@ os.environ["STD_OUT_VERBOSE"]="True"
 import deepdoctection as dd
 ```
 
-    /home/janis/Documents/Repos/deepdoctection_pt/.venv/lib/python3.9/site-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-    [32m[1123 17:37.37 @file_utils.py:36][0m  [32mINF[0m  [97mPyTorch version 2.1.2+cu121 available.[0m
-    [32m[1123 17:37.37 @file_utils.py:74][0m  [32mINF[0m  [97mDisabling Tensorflow because USE_TORCH is set[0m
-
-
-
 ```python
 !pip install ultralytics
 ```
@@ -282,13 +275,6 @@ plt.figure(figsize = (25,17))
 plt.axis('off')
 plt.imshow(img)
 ```
-
-
-
-
-    <matplotlib.image.AxesImage at 0x742b37f31070>
-
-
 
 
     

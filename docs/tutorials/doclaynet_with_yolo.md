@@ -17,12 +17,6 @@ We assume PyTorch and **deep**doctection with a basic setting to be installed, t
 import deepdoctection as dd
 ```
 
-    /home/janis/Documents/Repos/deepdoctection_pt/.venv/lib/python3.9/site-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-    [32m[1122 16:39.48 @file_utils.py:36][0m  [32mINF[0m  [97mPyTorch version 2.1.2+cu121 available.[0m
-    [32m[1122 16:39.48 @file_utils.py:74][0m  [32mINF[0m  [97mDisabling Tensorflow because USE_TORCH is set[0m
-
-
 
 ```python
 !pip install ultralytics
@@ -242,84 +236,6 @@ analyzer = dd.get_dd_analyzer(config_overwrite=["PT.LAYOUT.WEIGHTS=yolo/yolov10x
                                                 "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['caption','footnote', 'formula','list_item','page_footer','page_header','figure','section_header','table','text','title']"])
 ```
 
-    [32m[1122 17:40.41 @dd.py:148][0m  [32mINF[0m  [97mConfig: 
-     {'DEVICE': device(type='cuda'),
-     'LANGUAGE': None,
-     'LAYOUT_LINK': {'CHILD_CATEGORIES': ['section_header'],
-                     'PARENTAL_CATEGORIES': ['table', 'figure']},
-     'LAYOUT_NMS_PAIRS': {'COMBINATIONS': None, 'PRIORITY': None, 'THRESHOLDS': None},
-     'LIB': 'PT',
-     'OCR': {'CONFIG': {'TESSERACT': 'dd/conf_tesseract.yaml'},
-             'USE_DOCTR': False,
-             'USE_TESSERACT': True,
-             'USE_TEXTRACT': False,
-             'WEIGHTS': {'DOCTR_RECOGNITION': {'PT': 'doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt',
-                                               'TF': 'doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip'},
-                         'DOCTR_WORD': {'PT': 'doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt',
-                                        'TF': 'doctr/db_resnet50/tf/db_resnet50-adcafc63.zip'}}},
-     'PDF_MINER': {'X_TOLERANCE': 3, 'Y_TOLERANCE': 3},
-     'PT': {'CELL': {'FILTER': None,
-                     'WEIGHTS': 'cell/d2_model_1849999_cell_inf_only.pt',
-                     'WEIGHTS_TS': 'cell/d2_model_1849999_cell_inf_only.ts'},
-            'ITEM': {'FILTER': None,
-                     'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
-                     'WEIGHTS': 'item/d2_model_1639999_item_inf_only.pt',
-                     'WEIGHTS_TS': 'item/d2_model_1639999_item_inf_only.ts'},
-            'LAYOUT': {'FILTER': None,
-                       'PAD': {'BOTTOM': 60, 'LEFT': 60, 'RIGHT': 60, 'TOP': 60},
-                       'WEIGHTS': 'yolo/yolov10x_best.pt',
-                       'WEIGHTS_TS': 'layout/d2_model_0829999_layout_inf_only.ts'}},
-     'SEGMENTATION': {'ASSIGNMENT_RULE': 'ioa',
-                      'CELL_CATEGORY_ID': 12,
-                      'CELL_NAMES': [<CellType.HEADER>, <CellType.BODY>, <LayoutType.CELL>],
-                      'FULL_TABLE_TILING': True,
-                      'ITEM_NAMES': [<LayoutType.ROW>, <LayoutType.COLUMN>],
-                      'PUBTABLES_CELL_NAMES': [<CellType.SPANNING>, <CellType.ROW_HEADER>,
-                                               <CellType.COLUMN_HEADER>,
-                                               <CellType.PROJECTED_ROW_HEADER>, <LayoutType.CELL>],
-                      'PUBTABLES_ITEM_NAMES': [<LayoutType.ROW>, <LayoutType.COLUMN>],
-                      'PUBTABLES_SPANNING_CELL_NAMES': [<CellType.SPANNING>, <CellType.ROW_HEADER>,
-                                                        <CellType.COLUMN_HEADER>,
-                                                        <CellType.PROJECTED_ROW_HEADER>],
-                      'PUBTABLES_SUB_ITEM_NAMES': [<CellType.ROW_NUMBER>, <CellType.COLUMN_NUMBER>],
-                      'REMOVE_IOU_THRESHOLD_COLS': 0.001,
-                      'REMOVE_IOU_THRESHOLD_ROWS': 0.001,
-                      'STRETCH_RULE': 'equal',
-                      'SUB_ITEM_NAMES': [<CellType.ROW_NUMBER>, <CellType.COLUMN_NUMBER>],
-                      'TABLE_NAME': <LayoutType.TABLE>,
-                      'THRESHOLD_COLS': 0.4,
-                      'THRESHOLD_ROWS': 0.4},
-     'TEXT_CONTAINER': <LayoutType.WORD>,
-     'TEXT_ORDERING': {'BROKEN_LINE_TOLERANCE': 0.003,
-                       'FLOATING_TEXT_BLOCK_CATEGORIES': ['caption', 'footnote', 'formula', 'list_item',
-                                                          'page_footer', 'page_header', 'figure',
-                                                          'section_header', 'table', 'text', 'title'],
-                       'HEIGHT_TOLERANCE': 2.0,
-                       'INCLUDE_RESIDUAL_TEXT_CONTAINER': False,
-                       'LAYOUT_LINK': {'CHILD_CATEGORIES': None, 'PARENTAL_CATEGORIES': None},
-                       'PARAGRAPH_BREAK': 0.035,
-                       'STARTING_POINT_TOLERANCE': 0.005,
-                       'TEXT_BLOCK_CATEGORIES': ['title', 'text', 'list', 'cell', 'column_header',
-                                                 'projected_row_header', 'spanning', 'row_header'],
-                       'USE_LAYOUT_LINK': False},
-     'TF': {'CELL': {'FILTER': None, 'WEIGHTS': 'cell/model-1800000_inf_only.data-00000-of-00001'},
-            'ITEM': {'FILTER': None, 'WEIGHTS': 'item/model-1620000_inf_only.data-00000-of-00001'},
-            'LAYOUT': {'FILTER': None, 'WEIGHTS': 'layout/model-800000_inf_only.data-00000-of-00001'}},
-     'USE_LAYOUT': True,
-     'USE_LAYOUT_LINK': True,
-     'USE_LAYOUT_NMS': False,
-     'USE_OCR': False,
-     'USE_PDF_MINER': False,
-     'USE_ROTATOR': False,
-     'USE_TABLE_REFINEMENT': True,
-     'USE_TABLE_SEGMENTATION': False,
-     'WORD_MATCHING': {'MAX_PARENT_ONLY': True,
-                       'PARENTAL_CATEGORIES': ['text', 'title', 'list', 'cell', 'column_header',
-                                               'projected_row_header', 'spanning', 'row_header'],
-                       'RULE': 'ioa',
-                       'THRESHOLD': 0.6}}[0m
-
-
 
 ```python
 path="/home/janis/Documents/Repos/notebooks/sample/2312.13560.pdf"
@@ -332,18 +248,6 @@ df.reset_state()
 ```python
 dp = next(iter(df))
 ```
-
-    [32m[1122 17:40.43 @doctectionpipe.py:84][0m  [32mINF[0m  [97mProcessing 2312.13560_0.pdf[0m
-
-
-    
-    0: 640x512 1 Page-header, 4 Section-headers, 13 Texts, 2 Titles, 10.7ms
-    Speed: 5.0ms preprocess, 10.7ms inference, 0.3ms postprocess per image at shape (1, 3, 640, 512)
-
-
-    [32m[1122 17:40.44 @context.py:133][0m  [32mINF[0m  [97mImageLayoutService total: 0.3841 sec.[0m
-    [32m[1122 17:40.44 @context.py:133][0m  [32mINF[0m  [97mMatchingService total: 0.0001 sec.[0m
-
 
 
 ```python
@@ -361,9 +265,3 @@ plt.imshow(img)
     
 ![png](./_imgs/doclaynet_with_yolo.png)
     
-
-
-
-```python
-
-```
