@@ -50,8 +50,12 @@ pipelines. Its core function does not depend on any specific deep learning libra
    [**transformers**](https://github.com/huggingface/transformers). 
    We have added a model wrapper for token classification with LiLT and added a some LiLT models to the model catalog 
    that seem to look promising, especially if you want to train a model on non-english data. The training script for 
-   LayoutLM can be used for LiLT as well and we will be providing a notebook on how to train a model on a custom dataset soon.
- - 
+   LayoutLM can be used for LiLT as well.
+ - [**new**] There are two notebooks available that show, how to write a 
+   [custom predictor](https://github.com/deepdoctection/notebooks/blob/main/Doclaynet_Analyzer_Config.ipynb) based on 
+   a third party library that has not been supported yet and how to use 
+   [advanced configuration](https://github.com/deepdoctection/notebooks/blob/main/Doclaynet_Analyzer_Config.ipynb) to 
+   get links between layout segments e.g. captions and tables or figures.
 
 **deep**doctection provides on top of that methods for pre-processing inputs to models like cropping or resizing and to 
 post-process results, like validating duplicate outputs, relating words to detected layout segments or ordering words 
