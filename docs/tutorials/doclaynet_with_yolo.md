@@ -6,7 +6,7 @@ This notebook shows you how to write a model wrapper for YOLO models supported b
 
 If you want to see, how you can configurate **deep**doctection even further once you have such a fine graded layout detection model, we suggest to check the notebook: **Advanced_Configuration**. 
 
-Kudos to [**dinath1233**](https://github.com/adinath1233) for providing the code for the YoloDetector!
+Kudos to [**adinath1233**](https://github.com/adinath1233) for providing the code for the YoloDetector!
 
 Kudos to [**omoured**](https://huggingface.co/omoured) for training Yolo on Doclaynet!
 
