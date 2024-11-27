@@ -227,20 +227,21 @@ def get_load_image_func(
 
 def maybe_path_or_pdf(path: PathLikeOrStr) -> int:
     """
-    Checks if the path points to a directory or a pdf document. Returns 1 if the path points to a directory, 2
-    if the path points to a pdf doc or 0, if none of the previous is true.
+    Checks if the path points to a directory, a pdf document or a single image. Returns 1 if the path points to a
+    directory, 2 if the path points to a pdf doc and 3 if path points to either a PNG, JPG or JPEG or 0 if none of the
+    previous is true.
 
     :param path: A path
-    :return: A value of 0,1,2
+    :return: A value of 0,1,2,3
     """
 
-    is_dir = os.path.isdir(path)
-    if is_dir:
+    if os.path.isdir(path):
         return 1
     file_name = os.path.split(path)[1]
-    is_pdf = is_file_extension(file_name, ".pdf")
-    if is_pdf:
+    if is_file_extension(file_name, ".pdf"):
         return 2
+    if is_file_extension(file_name, [".png", ".jpeg", ".jpg", ".tif"]):
+        return 3
     return 0
 
 

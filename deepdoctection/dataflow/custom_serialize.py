@@ -593,7 +593,7 @@ class SerializerPdfDoc:
         file_name = os.path.split(path)[1]
         prefix, suffix = os.path.splitext(file_name)
         df: DataFlow
-        df = CustomDataFromIterable(PDFStreamer(path=path), max_datapoints=max_datapoints)
+        df = CustomDataFromIterable(PDFStreamer(path_or_bytes=path), max_datapoints=max_datapoints)
         df = MapData(
             df,
             lambda dp: {
