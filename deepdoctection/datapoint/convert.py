@@ -40,6 +40,7 @@ __all__ = [
     "convert_b64_to_np_array",
     "convert_np_array_to_b64",
     "convert_np_array_to_b64_b",
+    "convert_bytes_to_np_array",
     "convert_pdf_bytes_to_np_array_v2",
     "box_to_point4",
     "point4_to_box",
@@ -105,6 +106,16 @@ def convert_np_array_to_b64_b(np_image: PixelValues) -> bytes:
     :return: An image as base64 bytes.
     """
     return viz_handler.encode(np_image)
+
+
+def convert_bytes_to_np_array(image_bytes: bytes) -> PixelValues:
+    """
+    Converts an image in bytes to a numpy array
+
+    :param image_bytes: An image as bytes.
+    :return: numpy array.
+    """
+    return viz_handler.convert_bytes_to_np(image_bytes)
 
 
 @deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")

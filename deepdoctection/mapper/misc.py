@@ -27,7 +27,7 @@ from typing import Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
-from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2
+from ..datapoint.convert import convert_pdf_bytes_to_np_array_v2, convert_bytes_to_np_array
 from ..datapoint.image import Image
 from ..utils.fs import get_load_image_func, load_image_from_file
 from ..utils.types import JsonDict
@@ -49,6 +49,7 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
 
     file_name: Optional[str]
     location: Optional[str]
+    image_bytes: Optional[bytes] = None
 
     if isinstance(dp, str):
         _, file_name = os.path.split(dp)
@@ -62,6 +63,7 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
         document_id = dp.get("document_id")
         if location == "":
             location = str(dp.get("path", ""))
+        image_bytes = dp.get("image_bytes")
     else:
         raise TypeError("datapoint not of expected type for converting to image")
 
@@ -76,6 +78,8 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)
+            if image_bytes is not None:
+                dp_image.image = convert_bytes_to_np_array(image_bytes)
             else:
                 dp_image.image = load_image_from_file(location)
 

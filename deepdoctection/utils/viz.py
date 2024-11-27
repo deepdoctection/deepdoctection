@@ -312,6 +312,7 @@ class VizPackageHandler:
             "interactive_imshow": "_cv2_interactive_imshow",
             "encode": "_cv2_encode",
             "rotate_image": "_cv2_rotate_image",
+            "convert_bytes_to_np": "_cv2_convert_bytes_to_np"
         },
         "pillow": {
             "read_image": "_pillow_read_image",
@@ -325,6 +326,7 @@ class VizPackageHandler:
             "interactive_imshow": "_pillow_interactive_imshow",
             "encode": "_pillow_encode",
             "rotate_image": "_pillow_rotate_image",
+            "convert_bytes_to_np": "_pillow_convert_bytes_to_np",
         },
     }
 
@@ -483,6 +485,37 @@ class VizPackageHandler:
         im_file = BytesIO(array)
         pil_image = Image.open(im_file)
         return np.array(pil_image)[:, :, ::-1]
+
+    def convert_bytes_to_np(self, image_bytes: bytes) -> PixelValues:
+        """Converting an image as bytes into np.array
+
+        :param image_bytes: Image as np.array
+        """
+        return getattr(self, self.pkg_func_dict["convert_bytes_to_np"])(image_bytes)
+
+    @staticmethod
+    def _cv2_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
+        """
+        Convert image bytes to a numpy array using OpenCV.
+
+        :param image_bytes: Image bytes
+        :return: Image as numpy array
+        """
+        np_array = np.frombuffer(image_bytes, np.uint8)
+        np_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+        return np_image
+
+    @staticmethod
+    def _pillow_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
+        """
+        Convert image bytes to a numpy array using Pillow.
+
+        :param image_bytes: Image bytes
+        :return: Image as numpy array
+        """
+        image = Image.open(BytesIO(image_bytes))
+        np_image = np.array(image)
+        return np_image
 
     def resize(self, image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
         """

@@ -23,7 +23,7 @@ import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
-from ..dataflow import DataFlow, MapData
+from ..dataflow import DataFlow, MapData, CustomDataFromIterable, DataFromList
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS
@@ -32,22 +32,29 @@ from ..mapper.misc import to_image
 from ..utils.fs import maybe_path_or_pdf
 from ..utils.logger import LoggingRecord, logger
 from ..utils.types import PathLikeOrStr
+from ..utils.pdf_utils import PDFStreamer
+from ..utils.identifier import get_uuid_from_str
+from ..utils.utils import is_file_extension
 from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 
 
 def _collect_from_kwargs(
-    **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
-) -> Tuple[Optional[str], Optional[str], bool, int, str, DataFlow]:
+    **kwargs: Union[Optional[str], DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
+) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes]]:
+    b_bytes = kwargs.get("bytes")
     dataset_dataflow = kwargs.get("dataset_dataflow")
     path = kwargs.get("path")
     if path is None and dataset_dataflow is None:
         raise ValueError("Pass either path or dataset_dataflow as argument")
+    if path is None and b_bytes:
+        raise ValueError("When passing bytes, a path to the source document must be provided")
 
     shuffle = kwargs.get("shuffle", False)
     if not isinstance(shuffle, bool):
         raise TypeError(f"shuffle must be of type bool but is of type {type(shuffle)}")
 
+    file_type = None
     doc_path = None
     if path:
         if not isinstance(path, (str, Path)):
@@ -56,15 +63,27 @@ def _collect_from_kwargs(
         if path_type == 2:
             doc_path = path
             path = None
+        elif path_type == 3:
+            if is_file_extension(path, ".pdf"):
+                file_type = ".pdf"
+            if is_file_extension(path, ".jpg"):
+                file_type = ".jpg"
+            if is_file_extension(path, ".png"):
+                file_type = ".png"
+            if is_file_extension(path, ".jpeg"):
+                file_type = ".jpeg"
+            if not b_bytes:
+                raise ValueError("When passing a path to a single image, bytes of the image must be passed")
         elif not path_type:
             raise ValueError("Pass only a path to a directory or to a pdf file")
 
-    file_type = kwargs.get("file_type", [".jpg", ".png", ".tif"])
+    file_type = kwargs.get("file_type", [".jpg", ".png", ".jpeg", ".tif"] # type: ignore
+    if file_type is None else file_type)
 
     max_datapoints = kwargs.get("max_datapoints")
     if not isinstance(max_datapoints, (int, type(None))):
         raise TypeError(f"max_datapoints must be of type int, but is of type {type(max_datapoints)}")
-    return path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow  # type: ignore
+    return path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes  # type: ignore
 
 
 @curry
@@ -143,11 +162,14 @@ class DoctectionPipe(Pipeline):
         super().__init__(pipeline_component_list)
 
     def _entry(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
-        path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow = _collect_from_kwargs(**kwargs)
+        path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes = _collect_from_kwargs(**kwargs)
 
         df: DataFlow
 
-        if isinstance(path, (str, Path)):
+        if isinstance(b_bytes, bytes):
+            df = DoctectionPipe.bytes_to_dataflow(path=path, b_bytes=b_bytes, file_type=file_type)  # type: ignore
+
+        elif isinstance(path, (str, Path)):
             if not isinstance(file_type, (str, list)):
                 raise TypeError(f"file_type must be of type string or list, but is of type {type(file_type)}")
             df = DoctectionPipe.path_to_dataflow(path=path, file_type=file_type, shuffle=shuffle)
@@ -162,7 +184,7 @@ class DoctectionPipe(Pipeline):
 
         df = MapData(df, _proto_process(path, doc_path))
         if dataset_dataflow is None:
-            df = MapData(df, _to_image(dpi=300))  # pylint: disable=E1120
+            df = MapData(df, _to_image(dpi=os.environ.get("DPI", 300)))  # pylint: disable=E1120
         return df
 
     @staticmethod
@@ -197,6 +219,43 @@ class DoctectionPipe(Pipeline):
         """
         return _doc_to_dataflow(path, max_datapoints)
 
+    @staticmethod
+    def bytes_to_dataflow(path: str,
+                          b_bytes: bytes,
+                          file_type: Union[str, Sequence[str]],
+                          max_datapoints: Optional[int] = None) -> DataFlow:
+        """
+        Converts a bytes object to a dataflow
+
+        :param path: path to directory or an image file
+        :param b_bytes: bytes object
+        :param file_type: e.g. ".pdf", ".jpg" or [".jpg", ".png", ".jpeg", ".tif"]
+        :param max_datapoints: max number of datapoints to consider
+        :return: DataFlow
+        """
+
+        file_name = os.path.split(path)[1]
+        if isinstance(file_type, str):
+            if file_type == ".pdf":
+                prefix, suffix = os.path.splitext(file_name)
+                df: DataFlow
+                df = CustomDataFromIterable(PDFStreamer(path_or_bytes=b_bytes), max_datapoints=max_datapoints)
+                df = MapData(
+                    df,
+                    lambda dp: {
+                        "path": path,
+                        "file_name": prefix + f"_{dp[1]}" + suffix,
+                        "pdf_bytes": dp[0],
+                        "page_number": dp[1],
+                        "document_id": get_uuid_from_str(prefix),
+                    },
+                )
+        else:
+            df = DataFromList(lst=[{"path": path,
+                                    "file_name": file_name,
+                                    "image_bytes": b_bytes}])
+        return df
+
     def dataflow_to_page(self, df: DataFlow) -> DataFlow:
         """
         Converts a dataflow of images to a dataflow of pages
@@ -214,6 +273,8 @@ class DoctectionPipe(Pipeline):
                            assumed that the pdf documents consist of only one page. If there are multiple pages,
                            only the first page is processed through the pipeline.
                            Alternatively, a path to a pdf document with multiple pages.
+
+        `kwargs key bytes:` A bytes object of an image
 
         `kwargs key file_type:` Selection of the file type, if: args:`file_type` is passed
 
