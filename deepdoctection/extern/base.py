@@ -69,8 +69,7 @@ class ModelCategories:
         if self.init_categories:
             self._init_categories = MappingProxyType({key: get_type(val) for key, val in self.init_categories.items()})
         else:
-            if self._init_categories is None:
-                self._init_categories = MappingProxyType({})
+            self._init_categories = MappingProxyType({})
         self.categories = self._init_categories
 
     @overload
