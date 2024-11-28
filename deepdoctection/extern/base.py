@@ -180,7 +180,7 @@ class NerModelCategories(ModelCategories):
             self._init_categories = self.merge_bio_semantics_categories(
                 self._categories_semantics, self._categories_bio
             )
-        super().__post_init__()
+        self.categories = self._init_categories
 
     @staticmethod
     def merge_bio_semantics_categories(

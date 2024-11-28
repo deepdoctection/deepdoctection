@@ -17,9 +17,8 @@
 """
 Testing the module mapper.match
 """
-from deepdoctection.datapoint.image import Image
-
 from deepdoctection import LayoutType
+from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper.match import match_anns_by_distance
 
 
