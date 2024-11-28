@@ -312,7 +312,7 @@ class VizPackageHandler:
             "interactive_imshow": "_cv2_interactive_imshow",
             "encode": "_cv2_encode",
             "rotate_image": "_cv2_rotate_image",
-            "convert_bytes_to_np": "_cv2_convert_bytes_to_np"
+            "convert_bytes_to_np": "_cv2_convert_bytes_to_np",
         },
         "pillow": {
             "read_image": "_pillow_read_image",

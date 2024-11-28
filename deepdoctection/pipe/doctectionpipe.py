@@ -23,24 +23,24 @@ import os
 from pathlib import Path
 from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
-from ..dataflow import DataFlow, MapData, CustomDataFromIterable, DataFromList
+from ..dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
 from ..datapoint.image import Image
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..mapper.maputils import curry
 from ..mapper.misc import to_image
 from ..utils.fs import maybe_path_or_pdf
-from ..utils.logger import LoggingRecord, logger
-from ..utils.types import PathLikeOrStr
-from ..utils.pdf_utils import PDFStreamer
 from ..utils.identifier import get_uuid_from_str
+from ..utils.logger import LoggingRecord, logger
+from ..utils.pdf_utils import PDFStreamer
+from ..utils.types import PathLikeOrStr
 from ..utils.utils import is_file_extension
 from .base import Pipeline, PipelineComponent
 from .common import PageParsingService
 
 
 def _collect_from_kwargs(
-    **kwargs: Union[Optional[str], DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
+    **kwargs: Union[Optional[str], bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
 ) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes]]:
     b_bytes = kwargs.get("bytes")
     dataset_dataflow = kwargs.get("dataset_dataflow")
@@ -77,8 +77,9 @@ def _collect_from_kwargs(
         elif not path_type:
             raise ValueError("Pass only a path to a directory or to a pdf file")
 
-    file_type = kwargs.get("file_type", [".jpg", ".png", ".jpeg", ".tif"] # type: ignore
-    if file_type is None else file_type)
+    file_type = kwargs.get(
+        "file_type", [".jpg", ".png", ".jpeg", ".tif"] if file_type is None else file_type  # type: ignore
+    )
 
     max_datapoints = kwargs.get("max_datapoints")
     if not isinstance(max_datapoints, (int, type(None))):
@@ -161,7 +162,8 @@ class DoctectionPipe(Pipeline):
 
         super().__init__(pipeline_component_list)
 
-    def _entry(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
+    def _entry(self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) \
+            -> DataFlow:
         path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes = _collect_from_kwargs(**kwargs)
 
         df: DataFlow
@@ -220,10 +222,9 @@ class DoctectionPipe(Pipeline):
         return _doc_to_dataflow(path, max_datapoints)
 
     @staticmethod
-    def bytes_to_dataflow(path: str,
-                          b_bytes: bytes,
-                          file_type: Union[str, Sequence[str]],
-                          max_datapoints: Optional[int] = None) -> DataFlow:
+    def bytes_to_dataflow(
+        path: str, b_bytes: bytes, file_type: Union[str, Sequence[str]], max_datapoints: Optional[int] = None
+    ) -> DataFlow:
         """
         Converts a bytes object to a dataflow
 
@@ -250,11 +251,13 @@ class DoctectionPipe(Pipeline):
                         "document_id": get_uuid_from_str(prefix),
                     },
                 )
-        else:
-            df = DataFromList(lst=[{"path": path,
-                                    "file_name": file_name,
-                                    "image_bytes": b_bytes}])
-        return df
+            else:
+                df = DataFromList(lst=[{"path": path, "file_name": file_name, "image_bytes": b_bytes}])
+            return df
+        raise ValueError(
+            f"pass: {path}, b_bytes: {b_bytes!r}, file_type: {file_type} and max_datapoints: {max_datapoints} "
+            f"not supported"
+        )
 
     def dataflow_to_page(self, df: DataFlow) -> DataFlow:
         """
@@ -265,7 +268,9 @@ class DoctectionPipe(Pipeline):
         """
         return self.page_parser.predict_dataflow(df)
 
-    def analyze(self, **kwargs: Union[str, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) -> DataFlow:
+    def analyze(
+        self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
+    ) -> DataFlow:
         """
         `kwargs key dataset_dataflow:` Transfer a dataflow of a dataset via its dataflow builder
 

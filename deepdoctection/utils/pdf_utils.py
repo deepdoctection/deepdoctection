@@ -85,6 +85,7 @@ def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
         )
     return False
 
+
 def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
     """
     Decrypting a pdf given as bytes. Under the hood, it saves the bytes to a temporary file and then calls
@@ -100,10 +101,9 @@ def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
             with open(input_file_name, "rb") as file:
                 return file.read()
         else:
-            logger.error(
-                LoggingRecord("pdf bytes cannot be decrypted and therefore cannot be processed further.")
-            )
+            logger.error(LoggingRecord("pdf bytes cannot be decrypted and therefore cannot be processed further."))
             sys.exit()
+
 
 def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader:
     """
