@@ -62,7 +62,7 @@ def dataflow_to_json(
     if highest_hierarchy_only:
 
         def _remove_hh(dp: Image) -> Image:
-            dp.remove_image_from_lower_hierachy()
+            dp.remove_image_from_lower_hierarchy()
             return dp
 
         df = MapData(df, _remove_hh)

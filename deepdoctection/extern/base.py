@@ -69,8 +69,7 @@ class ModelCategories:
         if self.init_categories:
             self._init_categories = MappingProxyType({key: get_type(val) for key, val in self.init_categories.items()})
         else:
-            if self._init_categories is None:
-                self._init_categories = MappingProxyType({})
+            self._init_categories = MappingProxyType({})
         self.categories = self._init_categories
 
     @overload
@@ -181,7 +180,7 @@ class NerModelCategories(ModelCategories):
             self._init_categories = self.merge_bio_semantics_categories(
                 self._categories_semantics, self._categories_bio
             )
-        super().__post_init__()
+        self.categories = self._init_categories
 
     @staticmethod
     def merge_bio_semantics_categories(
