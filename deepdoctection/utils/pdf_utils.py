@@ -26,7 +26,7 @@ from errno import ENOENT
 from io import BytesIO
 from pathlib import Path
 from shutil import copyfile
-from typing import Generator, Literal, Optional
+from typing import Generator, Literal, Optional, Union
 
 from lazy_imports import try_import
 from numpy import uint8
@@ -46,6 +46,7 @@ with try_import() as pt_import_guard:
 
 __all__ = [
     "decrypt_pdf_document",
+    "decrypt_pdf_document_from_bytes",
     "get_pdf_file_reader",
     "get_pdf_file_writer",
     "PDFStreamer",
@@ -68,7 +69,6 @@ def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
     :param path: A path to the pdf file
     :return: True if document has been successfully decrypted
     """
-
     if qpdf_available():
         path_base, file_name = os.path.split(path)
         file_name_tmp = os.path.splitext(file_name)[0] + "tmp.pdf"
@@ -86,41 +86,69 @@ def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
     return False
 
 
-def get_pdf_file_reader(path: PathLikeOrStr) -> PdfReader:
+def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
+    """
+    Decrypting a pdf given as bytes. Under the hood, it saves the bytes to a temporary file and then calls
+
+    qpdf: <http://qpdf.sourceforge.net/>
+
+    :param input_bytes: A bytes object representing the pdf file
+    :return: The decrypted bytes object
+    """
+    with save_tmp_file(input_bytes, "pdf_") as (_, input_file_name):
+        is_decrypted = decrypt_pdf_document(input_file_name)
+        if is_decrypted:
+            with open(input_file_name, "rb") as file:
+                return file.read()
+        else:
+            logger.error(LoggingRecord("pdf bytes cannot be decrypted and therefore cannot be processed further."))
+            sys.exit()
+
+
+def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader:
     """
     Creates a file reader object from a pdf document. Will try to decrypt the document if it is
     encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
 
-    :param path: A path to a pdf document
+    :param path_or_bytes: A path to a pdf document
     :return: A file reader object from which you can iterate through the document.
     """
 
-    if not os.path.isfile(path):
-        raise FileNotFoundError(str(path))
-    file_name = os.path.split(path)[1]
+    if isinstance(path_or_bytes, bytes):
+        try:
+            reader = PdfReader(BytesIO(path_or_bytes))
+        except (errors.PdfReadError, AttributeError):
+            decrypted_bytes = decrypt_pdf_document_from_bytes(path_or_bytes)
+            reader = PdfReader(BytesIO(decrypted_bytes))
+        return reader
+
+    if not os.path.isfile(path_or_bytes):
+        raise FileNotFoundError(str(path_or_bytes))
+    file_name = os.path.split(path_or_bytes)[1]
     if not is_file_extension(file_name, ".pdf"):
         raise FileExtensionError(f"must be a pdf file: {file_name}")
 
-    with open(path, "rb") as file:
+    with open(path_or_bytes, "rb") as file:
         qpdf_called = False
         try:
-            input_pdf_as_bytes = PdfReader(file)
+            reader = PdfReader(file)
         except (errors.PdfReadError, AttributeError):
-            _ = decrypt_pdf_document(path)
+            _ = decrypt_pdf_document(path_or_bytes)
             qpdf_called = True
 
         if not qpdf_called:
-            if input_pdf_as_bytes.is_encrypted:
-                is_decrypted = decrypt_pdf_document(path)
+            if reader.is_encrypted:
+                is_decrypted = decrypt_pdf_document(path_or_bytes)
                 if not is_decrypted:
                     logger.error(
                         LoggingRecord(
-                            f"pdf document {path} cannot be decrypted and therefore cannot be " f"processed further."
+                            f"pdf document {path_or_bytes} cannot be decrypted and therefore cannot "
+                            f"be processed further."
                         )
                     )
                     sys.exit()
 
-    return PdfReader(os.fspath(path))
+    return PdfReader(os.fspath(path_or_bytes))
 
 
 def get_pdf_file_writer() -> PdfWriter:
@@ -157,11 +185,11 @@ class PDFStreamer:
 
     """
 
-    def __init__(self, path: PathLikeOrStr) -> None:
+    def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes]) -> None:
         """
-        :param path: to a pdf.
+        :param path_or_bytes: to a pdf.
         """
-        self.file_reader = get_pdf_file_reader(path)
+        self.file_reader = get_pdf_file_reader(path_or_bytes)
         self.file_writer = PdfWriter()
 
     def __len__(self) -> int:

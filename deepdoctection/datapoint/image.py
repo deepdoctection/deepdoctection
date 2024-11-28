@@ -587,7 +587,7 @@ class Image:
             )
             ann.image.dump(sub_image)
 
-    def remove_image_from_lower_hierachy(self, pixel_values_only: bool = False) -> None:
+    def remove_image_from_lower_hierarchy(self, pixel_values_only: bool = False) -> None:
         """Will remove all images from image annotations."""
         for ann in self.annotations:
             if pixel_values_only:
@@ -717,7 +717,7 @@ class Image:
         else:
             path_json = fspath(path) + ".json"
         if highest_hierarchy_only:
-            self.remove_image_from_lower_hierachy()
+            self.remove_image_from_lower_hierarchy()
         export_dict = self.as_dict()
         export_dict["location"] = fspath(export_dict["location"])
         if not image_to_json:
