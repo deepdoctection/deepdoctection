@@ -32,7 +32,7 @@ from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_p
 
 class TestDoctectionPipe:
     """
-    Test TestDoctectionPipe
+    Test DoctectionPipe
     """
 
     def setup_method(self) -> None:
