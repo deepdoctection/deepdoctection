@@ -78,7 +78,7 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
                         dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)
-            if image_bytes is not None:
+            elif image_bytes is not None:
                 dp_image.image = convert_bytes_to_np_array(image_bytes)
             else:
                 dp_image.image = load_image_from_file(location)

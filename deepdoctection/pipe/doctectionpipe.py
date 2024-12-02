@@ -63,9 +63,8 @@ def _collect_from_kwargs(
         if path_type == 2:
             doc_path = path
             path = None
+            file_type = ".pdf"
         elif path_type == 3:
-            if is_file_extension(path, ".pdf"):
-                file_type = ".pdf"
             if is_file_extension(path, ".jpg"):
                 file_type = ".jpg"
             if is_file_extension(path, ".png"):
