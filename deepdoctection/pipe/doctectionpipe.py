@@ -168,7 +168,9 @@ class DoctectionPipe(Pipeline):
         df: DataFlow
 
         if isinstance(b_bytes, bytes):
-            df = DoctectionPipe.bytes_to_dataflow(path=path, b_bytes=b_bytes, file_type=file_type)  # type: ignore
+            df = DoctectionPipe.bytes_to_dataflow(path=doc_path if path is None else path,
+                                                  b_bytes=b_bytes,
+                                                  file_type=file_type)  # type: ignore
 
         elif isinstance(path, (str, Path)):
             if not isinstance(file_type, (str, list)):
