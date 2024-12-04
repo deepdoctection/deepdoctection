@@ -327,9 +327,9 @@ class ServiceFactory:
             )
         if config.OCR.USE_TEXTRACT:
             credentials_kwargs = {
-                "aws_access_key_id": environ.get("ACCESS_KEY", None),
-                "aws_secret_access_key": environ.get("SECRET_KEY", None),
-                "config": Config(region_name=environ.get("REGION", None)),
+                "aws_access_key_id": environ.get("AWS_ACCESS_KEY", None),
+                "aws_secret_access_key": environ.get("AWS_SECRET_KEY", None),
+                "config": Config(region_name=environ.get("AWS_REGION", None)),
             }
             return TextractOcrDetector(**credentials_kwargs)
         raise ValueError("You have set USE_OCR=True but any of USE_TESSERACT, USE_DOCTR, USE_TEXTRACT is set to False")
