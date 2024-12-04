@@ -29,6 +29,7 @@ from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
 from ..datapoint.image import Image
+from ..mapper.misc import curry
 from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import ObjectTypes
@@ -247,17 +248,24 @@ class Pipeline(ABC):
         """
         raise NotImplementedError()
 
-    def _build_pipe(self, df: DataFlow, session_id: Optional[str] = None) -> DataFlow:
+    @staticmethod
+    @curry
+    def _undo(dp: Image, service_ids: Optional[list[str]] = None) -> Image:
         """
-        Composition of the backbone
+        Remove annotations from a datapoint
         """
-        if session_id is None and self.set_session_id:
-            session_id = self.get_session_id()
-        for component in self.pipe_component_list:
-            component.timer_on = True
-            component.dp_manager.session_id = session_id
-            df = component.predict_dataflow(df)
-        return df
+        dp.remove(service_ids=service_ids)
+        return dp
+
+    def undo(self, df: DataFlow, service_ids: Optional[set[str]] = None) -> DataFlow:
+        """
+        Mapping a datapoint via `_undo` within a dataflow pipeline
+
+        :param df: An input dataflow of Images
+        :param service_ids: A set of service ids to remove
+        :return: A output dataflow of Images
+        """
+        return MapData(df, self._undo(service_ids=service_ids))
 
     @abstractmethod
     def analyze(self, **kwargs: Any) -> DataFlow:
@@ -272,6 +280,18 @@ class Pipeline(ABC):
         can be triggered.
         """
         raise NotImplementedError()
+
+    def _build_pipe(self, df: DataFlow, session_id: Optional[str] = None) -> DataFlow:
+        """
+        Composition of the backbone
+        """
+        if session_id is None and self.set_session_id:
+            session_id = self.get_session_id()
+        for component in self.pipe_component_list:
+            component.timer_on = True
+            component.dp_manager.session_id = session_id
+            df = component.predict_dataflow(df)
+        return df
 
     def get_meta_annotation(self) -> MetaAnnotation:
         """
