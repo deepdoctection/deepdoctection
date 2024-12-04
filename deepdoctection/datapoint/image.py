@@ -34,6 +34,7 @@ from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDErr
 from ..utils.identifier import get_uuid, is_uuid_like
 from ..utils.settings import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
+from ..utils.logger import LoggingRecord, logger
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
@@ -474,8 +475,11 @@ class Image:
 
             for service_id in service_ids:
                 if service_id not in service_id_to_annotation_id:
-                    raise ImageError(f"Service id {service_id} not found")
-                annotation_ids = service_id_to_annotation_id[service_id]
+                    logger.info(
+                        LoggingRecord(
+                            f"Service_id {service_id} for image_id: {self.image_id} not found. Skipping removal."))
+
+                annotation_ids = service_id_to_annotation_id.get(service_id, [])
 
                 for ann_id in annotation_ids:
                     if ann_id not in ann_id_to_annotation_maps:
@@ -747,7 +751,7 @@ class Image:
                 if sub_cat.service_id:
                     service_id_dict[sub_cat.service_id].append(sub_cat.annotation_id)
             if ann.image is not None:
-                for summary_cat_key in ann.image.summary:
+                for summary_cat_key in ann.image.summary.sub_categories:
                     summary_cat = ann.get_summary(summary_cat_key)
                     if summary_cat.service_id:
                         service_id_dict[summary_cat.service_id].append(summary_cat.annotation_id)
