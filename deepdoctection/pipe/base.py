@@ -250,7 +250,7 @@ class Pipeline(ABC):
 
     @staticmethod
     @curry
-    def _undo(dp: Image, service_ids: Optional[set[str]]) -> Image:
+    def _undo(dp: Image, service_ids: Optional[list[str]] = None) -> Image:
         """
         Remove annotations from a datapoint
         """
