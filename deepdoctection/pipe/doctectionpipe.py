@@ -161,16 +161,17 @@ class DoctectionPipe(Pipeline):
 
         super().__init__(pipeline_component_list)
 
-    def _entry(self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]) \
-            -> DataFlow:
+    def _entry(
+        self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
+    ) -> DataFlow:
         path, file_type, shuffle, max_datapoints, doc_path, dataset_dataflow, b_bytes = _collect_from_kwargs(**kwargs)
 
         df: DataFlow
 
         if isinstance(b_bytes, bytes):
-            df = DoctectionPipe.bytes_to_dataflow(path=doc_path if path is None else path,
-                                                  b_bytes=b_bytes,
-                                                  file_type=file_type)
+            df = DoctectionPipe.bytes_to_dataflow(
+                path=doc_path if path is None else path, b_bytes=b_bytes, file_type=file_type
+            )
 
         elif isinstance(path, (str, Path)):
             if not isinstance(file_type, (str, list)):
