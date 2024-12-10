@@ -52,7 +52,7 @@ class TestDoctectionPipe:
 
         # Arrange
         df = DataFromList(lst=[dp_image])
-        df = self.pipe.analyze(dataset_dataflow=df) # type: ignore
+        df = self.pipe.analyze(dataset_dataflow=df)  # type: ignore
 
         # Act
         output = collect_datapoint_from_dataflow(df)
@@ -61,7 +61,7 @@ class TestDoctectionPipe:
         assert len(output) == 1
 
     @mark.basic
-    def test_analyze_folder(self)-> None:
+    def test_analyze_folder(self) -> None:
         """
         Analyze a folder of images
 
@@ -77,7 +77,7 @@ class TestDoctectionPipe:
         assert len(output) == 1
 
     @mark.basic
-    def test_analyze_bytes(self)-> None:
+    def test_analyze_bytes(self) -> None:
         """
         Analyze bytes of an .png
 
@@ -99,7 +99,7 @@ class TestDoctectionPipe:
         assert image.file_name == "sample_2.png"
 
     @mark.basic
-    def test_analyze_bytes_fails_without_path_argument(self)-> None:
+    def test_analyze_bytes_fails_without_path_argument(self) -> None:
         """
         If path argument is not provided, analyze bytes should raise a ValueError
         """

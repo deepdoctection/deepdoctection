@@ -162,7 +162,7 @@ class LayoutLMTrainer(Trainer):
         args: TrainingArguments,
         data_collator: LayoutLMDataCollator,
         train_dataset: DatasetAdapter,
-        eval_dataset: Optional[Dataset[Any]] = None,
+        eval_dataset: Optional[DatasetBase] = None,
     ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None

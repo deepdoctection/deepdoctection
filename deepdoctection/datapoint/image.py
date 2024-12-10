@@ -32,9 +32,9 @@ from numpy import uint8
 
 from ..utils.error import AnnotationError, BoundingBoxError, ImageError, UUIDError
 from ..utils.identifier import get_uuid, is_uuid_like
+from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import ObjectTypes, SummaryType, get_type
 from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
-from ..utils.logger import LoggingRecord, logger
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
@@ -477,7 +477,9 @@ class Image:
                 if service_id not in service_id_to_annotation_id:
                     logger.info(
                         LoggingRecord(
-                            f"Service_id {service_id} for image_id: {self.image_id} not found. Skipping removal."))
+                            f"Service_id {service_id} for image_id: {self.image_id} not found. Skipping removal."
+                        )
+                    )
 
                 annotation_ids = service_id_to_annotation_id.get(service_id, [])
 
