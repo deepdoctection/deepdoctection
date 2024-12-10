@@ -161,11 +161,12 @@ class LayoutLMTrainer(Trainer):
         model: Union[PreTrainedModel, nn.Module],
         args: TrainingArguments,
         data_collator: LayoutLMDataCollator,
-        train_dataset: Dataset[Any],
+        train_dataset: DatasetAdapter,
+        eval_dataset: Optional[Dataset[Any]] = None,
     ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None
-        super().__init__(model, args, data_collator, train_dataset)
+        super().__init__(model, args, data_collator, train_dataset, eval_dataset=eval_dataset)
 
     def setup_evaluator(
         self,
@@ -472,7 +473,7 @@ def train_hf_layoutlm(
         max_batch_size=max_batch_size,  # type: ignore
         remove_bounding_box_features=remove_box_features,
     )
-    trainer = LayoutLMTrainer(model, arguments, data_collator, dataset)
+    trainer = LayoutLMTrainer(model, arguments, data_collator, dataset, eval_dataset=dataset_val)
 
     if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
         assert metric is not None  # silence mypy
