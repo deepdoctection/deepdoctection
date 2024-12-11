@@ -30,7 +30,7 @@ from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 if TYPE_CHECKING:
-    from ..extern.hflayoutlm import HfLayoutSequenceModels, HfLayoutTokenModels
+    from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
 
 
 @pipeline_component_registry.register("LMTokenClassifierService")
@@ -66,7 +66,7 @@ class LMTokenClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HfLayoutTokenModels,
+        language_model: LayoutTokenModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -155,11 +155,11 @@ class LMTokenClassifierService(PipelineComponent):
                 else:
                     token_class_name_id = None
                 self.dp_manager.set_category_annotation(
-                    token.semantic_name, token_class_name_id, WordType.TOKEN_CLASS, token.uuid
+                    token.semantic_name, token_class_name_id, WordType.TOKEN_CLASS, token.uuid, token.score
                 )
                 self.dp_manager.set_category_annotation(token.bio_tag, None, WordType.TAG, token.uuid)
                 self.dp_manager.set_category_annotation(
-                    token.class_name, token.class_id, WordType.TOKEN_TAG, token.uuid
+                    token.class_name, token.class_id, WordType.TOKEN_TAG, token.uuid, token.score
                 )
                 words_populated.append(token.uuid)
 
@@ -188,7 +188,7 @@ class LMTokenClassifierService(PipelineComponent):
         # multiple threads
         return self.__class__(
             copy(self.tokenizer),
-            self.language_model.clone(),
+            self.language_model.clone(),  # type: ignore
             self.padding,
             self.truncation,
             self.return_overflowing_tokens,
@@ -260,7 +260,7 @@ class LMSequenceClassifierService(PipelineComponent):
     def __init__(
         self,
         tokenizer: Any,
-        language_model: HfLayoutSequenceModels,
+        language_model: LayoutSequenceModels,
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
@@ -309,7 +309,7 @@ class LMSequenceClassifierService(PipelineComponent):
     def clone(self) -> LMSequenceClassifierService:
         return self.__class__(
             copy(self.tokenizer),
-            self.language_model.clone(),
+            self.language_model.clone(),  # type: ignore
             self.padding,
             self.truncation,
             self.return_overflowing_tokens,

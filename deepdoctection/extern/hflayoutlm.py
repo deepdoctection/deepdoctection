@@ -67,20 +67,6 @@ with try_import() as tr_import_guard:
     )
 
 if TYPE_CHECKING:
-    LayoutTokenModels: TypeAlias = Union[
-        LayoutLMForTokenClassification,
-        LayoutLMv2ForTokenClassification,
-        LayoutLMv3ForTokenClassification,
-        LiltForTokenClassification,
-    ]
-
-    LayoutSequenceModels: TypeAlias = Union[
-        LayoutLMForSequenceClassification,
-        LayoutLMv2ForSequenceClassification,
-        LayoutLMv3ForSequenceClassification,
-        LiltForSequenceClassification,
-    ]
-
     HfLayoutTokenModels: TypeAlias = Union[
         LayoutLMForTokenClassification,
         LayoutLMv2ForTokenClassification,
@@ -147,7 +133,7 @@ def predict_token_classes(
     token_type_ids: torch.Tensor,
     boxes: torch.Tensor,
     tokens: list[list[str]],
-    model: LayoutTokenModels,
+    model: HfLayoutTokenModels,
     images: Optional[torch.Tensor] = None,
 ) -> list[TokenClassResult]:
     """
@@ -205,7 +191,7 @@ def predict_sequence_classes(
     attention_mask: torch.Tensor,
     token_type_ids: torch.Tensor,
     boxes: torch.Tensor,
-    model: LayoutSequenceModels,
+    model: HfLayoutSequenceModels,
     images: Optional[torch.Tensor] = None,
 ) -> SequenceClassResult:
     """
@@ -254,6 +240,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         """
         :param path_config_json: path to .json config file
@@ -281,6 +268,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             init_categories=categories, categories_semantics=categories_semantics, categories_bio=categories_bio
         )
         self.device = get_torch_device(device)
+        self.use_xlm_tokenizer = use_xlm_tokenizer
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
@@ -342,6 +330,7 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
             self.categories.categories_bio,
             self.categories.get_categories(),
             self.device,
+            self.use_xlm_tokenizer,
         )
 
     @staticmethod
@@ -427,13 +416,15 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         :param use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLM model with a different
                                   Tokenizer.
         """
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
@@ -540,13 +531,15 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param use_xlm_tokenizer: Set to True if you use a LayoutXLM model. If you use a LayoutLMv2 model keep the
                                   default value.
         """
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
@@ -666,13 +659,15 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
         :param use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLMv3 model with a different
                                   tokenizer.
         """
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
@@ -746,19 +741,23 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
         path_weights: PathLikeOrStr,
         categories: Mapping[int, TypeOrStr],
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
+        use_xlm_tokenizer: bool = False,
     ):
         self.path_config = Path(path_config_json)
         self.path_weights = Path(path_weights)
         self.categories = ModelCategories(init_categories=categories)
 
         self.device = get_torch_device(device)
+        self.use_xlm_tokenizer = use_xlm_tokenizer
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
         return [get_pytorch_requirement(), get_transformers_requirement()]
 
     def clone(self) -> HFLayoutLmSequenceClassifierBase:
-        return self.__class__(self.path_config, self.path_weights, self.categories.get_categories(), self.device)
+        return self.__class__(
+            self.path_config, self.path_weights, self.categories.get_categories(), self.device, self.use_xlm_tokenizer
+        )
 
     def _validate_encodings(
         self, **encodings: Union[list[list[str]], torch.Tensor]
@@ -856,13 +855,13 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
@@ -939,13 +938,13 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
@@ -1029,13 +1028,13 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LayoutLMv3")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
@@ -1142,13 +1141,15 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         :param device: The device (cpu,"cuda"), where to place the model.
         """
 
-        super().__init__(path_config_json, path_weights, categories_semantics, categories_bio, categories, device)
+        super().__init__(
+            path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
+        )
         self.name = self.get_name(path_weights, "LiLT")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
@@ -1232,13 +1233,13 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
-        super().__init__(path_config_json, path_weights, categories, device)
+        super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LiLT")
         self.model_id = self.get_model_id()
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.model.config.tokenizer_class = self.get_tokenizer_class_name(
-            self.model.__class__.__name__, use_xlm_tokenizer
+            self.model.__class__.__name__, self.use_xlm_tokenizer
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
@@ -1270,3 +1271,19 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
 
     def clear_model(self) -> None:
         self.model = None
+
+
+if TYPE_CHECKING:
+    LayoutTokenModels: TypeAlias = Union[
+        HFLayoutLmTokenClassifier,
+        HFLayoutLmv2TokenClassifier,
+        HFLayoutLmv3TokenClassifier,
+        HFLiltTokenClassifier,
+    ]
+
+    LayoutSequenceModels: TypeAlias = Union[
+        HFLayoutLmSequenceClassifier,
+        HFLayoutLmv2SequenceClassifier,
+        HFLayoutLmv3SequenceClassifier,
+        HFLiltSequenceClassifier,
+    ]
