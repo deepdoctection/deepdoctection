@@ -428,7 +428,7 @@ class Image:
         A list of attributes to suspend from as_dict creation.
         """
 
-        return ["_image", "_annotation_ids", "_category_name"]
+        return ["_annotation_ids", "_category_name"]
 
     def define_annotation_id(self, annotation: Annotation) -> str:
         """
@@ -572,24 +572,31 @@ class Image:
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
         if ann.image is None:
             raise ImageError("When adding sub images to ImageAnnotation then ImageAnnotation.image must not be None")
-        assert ann.bounding_box is not None
-        box = ann.bounding_box.to_list("xyxy")
+        box = ann.get_bounding_box(self.image_id).to_list("xyxy")
         proposals = self.get_annotation(category_names)
         points = np.array([prop.get_bounding_box(self.image_id).center for prop in proposals])
+        if not points.size:
+            return
         ann_ids = np.array([prop.annotation_id for prop in proposals])
         indices = np.where(
             (box[0] < points[:, 0]) & (box[1] < points[:, 1]) & (box[2] > points[:, 0]) & (box[3] > points[:, 1])
         )[0]
         selected_ids = ann_ids[indices]
         sub_images = self.get_annotation(annotation_ids=selected_ids.tolist())
+        ann_box = ann.get_bounding_box(self.image_id)
+        if not ann_box.absolute_coords:
+            ann_box = ann_box.transform(self.width, self.height, absolute_coords=True)
         for sub_image in sub_images:
             if sub_image.image is None:
                 raise ImageError(
                     "When setting an embedding to ImageAnnotation then ImageAnnotation.image must not be None"
                 )
+            sub_image_box = sub_image.get_bounding_box(self.image_id)
+            if not sub_image_box.absolute_coords:
+                sub_image_box = sub_image_box.transform(self.width, self.height, absolute_coords=True)
             sub_image.image.set_embedding(
                 annotation_id,
-                global_to_local_coords(sub_image.get_bounding_box(self.image_id), ann.get_bounding_box(self.image_id)),
+                global_to_local_coords(sub_image_box, ann_box),
             )
             ann.image.dump(sub_image)
 
