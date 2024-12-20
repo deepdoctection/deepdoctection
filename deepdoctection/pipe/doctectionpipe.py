@@ -188,7 +188,7 @@ class DoctectionPipe(Pipeline):
 
         df = MapData(df, _proto_process(path, doc_path))
         if dataset_dataflow is None:
-            df = MapData(df, _to_image(dpi=os.environ.get("DPI", 300)))  # pylint: disable=E1120
+            df = MapData(df, _to_image(dpi=int(os.environ.get("DPI", 300))))  # pylint: disable=E1120
         return df
 
     @staticmethod
