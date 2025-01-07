@@ -511,6 +511,7 @@ def create_intersection_cells(
     detect_result_cells = []
     segment_result_cells = []
     idx = 0
+    break_outer_loop = False
     for row in rows:
         for col in cols:
             detect_result_cells.append(
@@ -534,6 +535,8 @@ def create_intersection_cells(
             # it is possible to have less intersection boxes, e.g. if one cell has height/width 0
             if idx >= len(boxes_cells):
                 break
+        if break_outer_loop:
+            break
     return detect_result_cells, segment_result_cells
 
 
