@@ -534,6 +534,7 @@ def create_intersection_cells(
             idx += 1
             # it is possible to have less intersection boxes, e.g. if one cell has height/width 0
             if idx >= len(boxes_cells):
+                break_outer_loop = True
                 break
         if break_outer_loop:
             break
