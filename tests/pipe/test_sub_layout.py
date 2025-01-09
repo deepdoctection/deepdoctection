@@ -19,11 +19,12 @@
 Testing module pipe.cell
 """
 
-from typing import List
+from typing import List, Mapping
 from unittest.mock import MagicMock
 
 from pytest import mark
 
+from deepdoctection import ObjectTypes
 from deepdoctection.datapoint import BoundingBox, Image
 from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
@@ -40,8 +41,21 @@ def test_detect_result_generator(
     """
 
     # Arrange
-    categories = dataset_categories.get_categories()
-    detect_result_generator = DetectResultGenerator(categories, [[1], [2], [3], [4], [5]])
+    categories_name_as_key: Mapping[ObjectTypes, int] = {
+        LayoutType.TEXT: 1,
+        LayoutType.TITLE: 2,
+        LayoutType.TABLE: 3,
+        LayoutType.FIGURE: 4,
+        LayoutType.LIST: 5,
+    }
+    detect_result_generator = DetectResultGenerator(
+        categories_name_as_key,
+        [[LayoutType.TEXT],
+         [LayoutType.TITLE],
+         [LayoutType.TABLE],
+         [LayoutType.FIGURE],
+         [LayoutType.LIST]],
+    )
 
     # Act
     detect_result_generator.width = 600
@@ -50,7 +64,7 @@ def test_detect_result_generator(
 
     # Assert
     raw_ann_cats = {raw_ann.class_id for raw_ann in raw_anns}
-    assert raw_ann_cats == {1, 2, 3, 4, 5}
+    assert raw_ann_cats == {1, 2, 4, 5}
 
     assert raw_anns[5].box == [0.0, 0.0, dp_image.width, dp_image.height]
 

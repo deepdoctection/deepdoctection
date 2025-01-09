@@ -231,8 +231,9 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
 
         :return: DetrFeatureExtractor
         """
-        return DetrImageProcessor.from_pretrained(pretrained_model_name_or_path=
-                                                  os.fspath(path_feature_extractor_config))
+        return DetrImageProcessor.from_pretrained(
+            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config)
+        )
 
     @staticmethod
     def get_config(path_config: PathLikeOrStr) -> PretrainedConfig:
