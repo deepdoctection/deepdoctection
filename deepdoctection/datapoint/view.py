@@ -293,13 +293,23 @@ class Table(Layout):
                 LayoutType.CELL,
                 CellType.HEADER,
                 CellType.BODY,
-                CellType.PROJECTED_ROW_HEADER,
-                CellType.SPANNING,
-                CellType.ROW_HEADER,
-                CellType.COLUMN_HEADER,
+                #CellType.PROJECTED_ROW_HEADER,
+                #CellType.SPANNING,
+                #CellType.ROW_HEADER,
+                #CellType.COLUMN_HEADER,
             ],
         )
         return cell_anns
+
+    @property
+    def column_header_cells(self) -> list[ImageAnnotationBaseView]:
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        rows = self.base_page.get_annotation(category_names = LayoutType.ROW, annotation_ids = all_relation_ids)
+        header_row_numbers = [row.get_sub_category(CellType.ROW_NUMBER).category_id for row in
+                       rows if CellType.COLUMN_HEADER in row.sub_categories ]
+        return [cell for cell in self.cells
+                               if cell.get_sub_category(CellType.ROW_NUMBER).category_id in header_row_numbers]
+
 
     @property
     def rows(self) -> list[ImageAnnotationBaseView]:
