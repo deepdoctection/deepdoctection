@@ -295,27 +295,22 @@ def _html_table(
     return html
 
 
-def generate_html_string(table: ImageAnnotation) -> list[str]:
+def generate_html_string(table: ImageAnnotation, cell_names: list[ObjectTypes]) -> list[str]:
     """
     Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
     representation.
 
     :param table: An annotation that has a not None image and fully segmented cell annotation.
+    :param cell_names: List of cell names that are used for the table segmentation. Note: It must be ensured that
+                      that all cells have a row number, column number, row span and column span and that the dissection
+                      by rows and columns is completely covered by cells.
     :return: HTML representation of the table
     """
     if table.image is None:
         raise ImageError("table.image cannot be None")
     table_image = table.image
     cells = table_image.get_annotation(
-        category_names=[
-            LayoutType.CELL,
-            CellType.HEADER,
-            CellType.BODY,
-            CellType.SPANNING,
-            CellType.ROW_HEADER,
-            CellType.COLUMN_HEADER,
-            CellType.PROJECTED_ROW_HEADER,
-        ]
+        category_names=cell_names
     )
     number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
     number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id

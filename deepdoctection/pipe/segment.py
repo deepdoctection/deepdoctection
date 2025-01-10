@@ -1040,6 +1040,7 @@ class PubtablesSegmentationService(PipelineComponent):
                     CellType.COLUMN_SPAN, segment_result.cs, CellType.COLUMN_SPAN, segment_result.annotation_id
                 )
                 cell_rn_cn_to_ann_id[(segment_result.row_num, segment_result.col_num)] = segment_result.annotation_id
+
             spanning_cell_raw_segments = segment_pubtables(
                 dp,
                 table,
@@ -1099,7 +1100,7 @@ class PubtablesSegmentationService(PipelineComponent):
             self.dp_manager.set_summary_annotation(
                 TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
-            html = generate_html_string(table)
+            html = generate_html_string(table, self.cell_names + self.spanning_cell_names)
             self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
 
     def clone(self) -> PubtablesSegmentationService:
