@@ -28,7 +28,7 @@ import numpy as np
 from typing_extensions import LiteralString
 
 from ..utils.error import AnnotationError, ImageError
-from ..utils.logger import LoggingRecord, logger
+from ..utils.logger import LoggingRecord, logger, log_once
 from ..utils.settings import (
     CellType,
     LayoutType,
@@ -293,10 +293,7 @@ class Table(Layout):
                 LayoutType.CELL,
                 CellType.HEADER,
                 CellType.BODY,
-                #CellType.PROJECTED_ROW_HEADER,
-                #CellType.SPANNING,
-                #CellType.ROW_HEADER,
-                #CellType.COLUMN_HEADER,
+                CellType.SPANNING,
             ],
         )
         return cell_anns
@@ -304,12 +301,40 @@ class Table(Layout):
     @property
     def column_header_cells(self) -> list[ImageAnnotationBaseView]:
         all_relation_ids = self.get_relationship(Relationships.CHILD)
-        rows = self.base_page.get_annotation(category_names = LayoutType.ROW, annotation_ids = all_relation_ids)
-        header_row_numbers = [row.get_sub_category(CellType.ROW_NUMBER).category_id for row in
-                       rows if CellType.COLUMN_HEADER in row.sub_categories ]
-        return [cell for cell in self.cells
-                               if cell.get_sub_category(CellType.ROW_NUMBER).category_id in header_row_numbers]
+        all_cells = self.base_page.get_annotation(category_names = [LayoutType.CELL,
+                                                                    CellType.SPANNING],
+                                                  annotation_ids = all_relation_ids)
+        headers= list(filter(lambda cell: CellType.COLUMN_HEADER in cell.sub_categories, all_cells))
+        headers.sort(key=lambda x: x.column_number)
+        return headers
 
+    @property
+    def row_header_cells(self) -> list[ImageAnnotationBaseView]:
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells = self.base_page.get_annotation(category_names = [LayoutType.CELL,
+                                                                    CellType.SPANNING],
+                                                  annotation_ids = all_relation_ids)
+        row_header_cells = list(filter(lambda cell: CellType.ROW_HEADER in cell.sub_categories, all_cells))
+        row_header_cells.sort(key=lambda x: x.column_number)
+        return row_header_cells
+
+    def kv_header_rows(self, row_number: int):
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells = self.base_page.get_annotation(category_names = [LayoutType.CELL,
+                                                                    CellType.SPANNING],
+                                                  annotation_ids = all_relation_ids)
+        row_cells = list(filter(lambda cell: cell.row_number == row_number or
+                                             cell.row_number+cell.row_span == row_number, all_cells))
+        row_cells.sort(key=lambda x: x.column_number)
+        column_header_cells = self.column_header_cells
+
+        kv_dict = {}
+        for cell in row_cells:
+            for header in column_header_cells:
+                if cell.column_number == header.column_number and cell.annotation_id!=header.annotation_id:
+                    kv_dict[(header.column_number,header.text)] = cell.text
+                    break
+        return kv_dict
 
     @property
     def rows(self) -> list[ImageAnnotationBaseView]:
@@ -367,6 +392,10 @@ class Table(Layout):
         cells = self.cells
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
+            if cell.category_name == CellType.SPANNING:
+                log_once("Table has spanning cells. This implies, that the .csv output will not be correct."
+                         "To prevent spanning cell table creation set PT.ITEM.FILTER=['table','spanning'] ",
+                         "error")
             table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
                 table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
             )
@@ -446,10 +475,10 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     LayoutType.TABLE_ROTATED: Table,
     LayoutType.WORD: Word,
     LayoutType.CELL: Cell,
-    CellType.PROJECTED_ROW_HEADER: Cell,
     CellType.SPANNING: Cell,
     CellType.ROW_HEADER: Cell,
     CellType.COLUMN_HEADER: Cell,
+    CellType.PROJECTED_ROW_HEADER: Cell,
 }
 
 
@@ -475,10 +504,7 @@ IMAGE_DEFAULTS: ImageDefaults = {
         LayoutType.LIST,
         LayoutType.CELL,
         LayoutType.FIGURE,
-        CellType.COLUMN_HEADER,
-        CellType.PROJECTED_ROW_HEADER,
         CellType.SPANNING,
-        CellType.ROW_HEADER,
     ),
 }
 
@@ -952,10 +978,7 @@ class Page(Image):
                     for cell in table.cells:
                         if cell.category_name in {
                             LayoutType.CELL,
-                            CellType.PROJECTED_ROW_HEADER,
                             CellType.SPANNING,
-                            CellType.ROW_HEADER,
-                            CellType.COLUMN_HEADER,
                         }:
                             cells_found = True
                             box_stack.append(self._ann_viz_bbox(cell))
@@ -971,10 +994,9 @@ class Page(Image):
                         category_names_list.append(None)
 
         if show_cells and not cells_found and not debug_kwargs:
-            for ann in self.annotations:
-                if isinstance(ann, Cell) and ann.active:
-                    box_stack.append(self._ann_viz_bbox(ann))
-                    category_names_list.append(None)
+            for ann in self.get_annotation(category_names=[LayoutType.CELL, CellType.SPANNING]):
+                box_stack.append(self._ann_viz_bbox(ann))
+                category_names_list.append(None)
 
         if show_words and not debug_kwargs:
             all_words = []
