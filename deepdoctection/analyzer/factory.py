@@ -402,6 +402,8 @@ class ServiceFactory:
                 spanning_cell_names=config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
                 item_names=config.SEGMENTATION.PUBTABLES_ITEM_NAMES,
                 sub_item_names=config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES,
+                item_header_cell_names=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES,
+                item_header_thresholds=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS,
                 stretch_rule=config.SEGMENTATION.STRETCH_RULE,
             )
 

@@ -28,7 +28,7 @@ from typing import Literal, Optional, Sequence, Union
 import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import BoundingBox, global_to_local_coords, intersection_boxes, iou
+from ..datapoint.box import BoundingBox, global_to_local_coords, intersection_boxes, iou, merge_boxes, intersection_box
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
@@ -541,7 +541,8 @@ def create_intersection_cells(
                 )
             )
             idx += 1
-            # it is possible to have less intersection boxes, e.g. if one cell has height/width 0
+            # it is possible to have less intersection boxes, e.g. if one cell has height/width 0. We need to break both
+            # loops.
             if idx >= len(boxes_cells):
                 break_outer_loop = True
                 break
@@ -592,7 +593,7 @@ def segment_pubtables(
 
     Row and column positions as well as row and column lengths are determined for all types of spanning cells.
     All simple cells that are covered by a spanning cell as well in the table position (double allocation) are then
-    removed.
+    replaced by the spanning cell and deactivated.
 
     :param dp: Image
     :param table: table ImageAnnotation
@@ -605,6 +606,7 @@ def segment_pubtables(
                                to the column.
     :return: A list of len(number of cells) of SegmentationResult for spanning cells
     """
+
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
@@ -639,28 +641,52 @@ def segment_pubtables(
         for idx, cell in enumerate(spanning_cells):
             cell_positions_rows = cell_index_rows == idx
             rows_of_cell = [rows[k] for k in row_index[cell_positions_rows]]
-            rs = (
-                max(row.get_sub_category(CellType.ROW_NUMBER).category_id for row in rows_of_cell)
-                - min(row.get_sub_category(CellType.ROW_NUMBER).category_id for row in rows_of_cell)
-                + 1
-            )
-            if len(rows_of_cell):
-                row_number = min(row.get_sub_category(CellType.ROW_NUMBER).category_id for row in rows_of_cell)
+            if rows_of_cell:
+                min_row_cell = min(rows_of_cell, key=lambda row: row.get_sub_category(CellType.ROW_NUMBER).category_id)
+                max_row_cell = max(rows_of_cell, key=lambda row: row.get_sub_category(CellType.ROW_NUMBER).category_id)
+                max_row = max_row_cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                min_row = min_row_cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                rs = max_row - min_row + 1
+                row_number = min_row
             else:
+                rs = 0
                 row_number = 0
 
             cell_positions_cols = cell_index_cols == idx
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
-            cs = (
-                max(col.get_sub_category(CellType.COLUMN_NUMBER).category_id for col in cols_of_cell)
-                - min(col.get_sub_category(CellType.COLUMN_NUMBER).category_id for col in cols_of_cell)
-                + 1
-            )
 
-            if len(cols_of_cell):
-                col_number = min(col.get_sub_category(CellType.COLUMN_NUMBER).category_id for col in cols_of_cell)
+            if cols_of_cell:
+                min_col_cell = min(cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id)
+                max_col_cell = max(cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id)
+                max_col = max_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                min_col = min_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                cs = max_col - min_col + 1
+                col_number = min_col
             else:
+                cs = 0
                 col_number = 0
+
+            if rows_of_cell and cols_of_cell:
+                # We resize all bounding boxes of spanning cells so that they match with the grid structure, determined
+                # by the rows ans columns.
+                merge_box_image_row = merge_boxes(*[min_row_cell.get_bounding_box(dp.image_id),
+                                  max_row_cell.get_bounding_box(dp.image_id)])
+                merge_box_image_column = merge_boxes(*[min_col_cell.get_bounding_box(dp.image_id),
+                                                       max_col_cell.get_bounding_box(dp.image_id)])
+                merge_box_image= intersection_box(merge_box_image_row, merge_box_image_column)
+                merge_box_table_row = merge_boxes(*[min_row_cell.get_bounding_box(table.annotation_id),
+                                  max_row_cell.get_bounding_box(table.annotation_id)])
+                merge_box_table_column = merge_boxes(*[min_col_cell.get_bounding_box(table.annotation_id),
+                                  max_col_cell.get_bounding_box(table.annotation_id)])
+                merge_box_table = intersection_box(merge_box_table_row, merge_box_table_column)
+                merge_box_spanning_cell_row = merge_boxes(*[min_row_cell.get_bounding_box(min_row_cell.annotation_id),
+                                  max_row_cell.get_bounding_box(max_row_cell.annotation_id)])
+                merge_box_spanning_cell_column = merge_boxes(*[min_col_cell.get_bounding_box(min_col_cell.annotation_id),
+                                  max_col_cell.get_bounding_box(max_col_cell.annotation_id)])
+                merge_box_spanning_cell = intersection_box(merge_box_spanning_cell_row, merge_box_spanning_cell_column)
+                cell.image.set_embedding(dp.image_id, merge_box_image)
+                cell.image.set_embedding(table.annotation_id, merge_box_table)
+                cell.image.set_embedding(cell.annotation_id, merge_box_spanning_cell)
 
             raw_table_segments.append(
                 SegmentationResult(
@@ -920,6 +946,8 @@ class PubtablesSegmentationService(PipelineComponent):
         spanning_cell_names: Sequence[TypeOrStr],
         item_names: Sequence[TypeOrStr],
         sub_item_names: Sequence[TypeOrStr],
+        item_header_cell_names: Sequence[TypeOrStr],
+        item_header_thresholds: Sequence[float],
         cell_to_image: bool = True,
         crop_cell_image: bool = False,
         stretch_rule: Literal["left", "equal"] = "left",
@@ -939,6 +967,11 @@ class PubtablesSegmentationService(PipelineComponent):
         :param spanning_cell_names: layout type of spanning cells
         :param item_names: layout type of items (e.g. row and column)
         :param sub_item_names: layout type of sub items (e.g. row number and column number)
+        :param item_header_cell_names: layout type of item header cells (e.g. CellType.COLUMN_HEADER,
+        CellType.ROW_HEADER). Note that column header, resp. row header will be first assigned to rows, resp. columns
+        and then transferred to cells.
+        :param item_header_thresholds: iou/ioa threshold for matching header cells with items. The first threshold
+        corresponds to matching the first entry of item_names.
         :param cell_to_image: If set to 'True' it will create an 'Image' for LayoutType.cell
         :param crop_cell_image: If set to 'True' it will crop a numpy array image for LayoutType.cell.
                                 Requires 'cell_to_image=True'
@@ -959,8 +992,8 @@ class PubtablesSegmentationService(PipelineComponent):
         self.item_names = [get_type(item_name) for item_name in item_names]   # row names must be before column name
         self.sub_item_names = [get_type(item_name) for item_name in sub_item_names]
         self.stretch_rule = stretch_rule
-        self.item_header_cell_names = [CellType.COLUMN_HEADER, CellType.ROW_HEADER]
-        self.item_header_thresholds = [0.6, 0.0001] #item_header_threshold
+        self.item_header_cell_names = item_header_cell_names
+        self.item_header_thresholds = item_header_thresholds
 
         super().__init__("table_transformer_segment")
 
@@ -1058,7 +1091,11 @@ class PubtablesSegmentationService(PipelineComponent):
                 self.threshold_rows,
                 self.threshold_cols,
             )
+
             for segment_result in spanning_cell_raw_segments:
+                if (segment_result.rs==1 and segment_result.cs==1) or segment_result.rs==0 or segment_result.cs==0:
+                    self.dp_manager.deactivate_annotation(segment_result.annotation_id)
+                    continue
                 self.dp_manager.set_category_annotation(
                     CellType.ROW_NUMBER,
                     segment_result.row_num,
@@ -1092,6 +1129,9 @@ class PubtablesSegmentationService(PipelineComponent):
                     self.dp_manager.deactivate_annotation(cell_ann_id)
 
             for segment_result in spanning_cell_raw_segments:
+                if ((segment_result.rs == 1 and segment_result.cs == 1) or
+                        segment_result.rs == 0 or segment_result.cs == 0):
+                    continue
                 for rs in range(segment_result.rs):
                     for cs in range(segment_result.cs):
                         cell_rn_cn_to_ann_id[(segment_result.row_num + rs, segment_result.col_num + cs)] = (
@@ -1113,7 +1153,6 @@ class PubtablesSegmentationService(PipelineComponent):
 
             for idx, item_vals in enumerate(zip(self.item_names, self.item_header_cell_names, self.sub_item_names)):
                 item, item_header_cell_name, sub_item_name = item_vals[0],  item_vals[1], item_vals[2]
-                items_with_headers = {}
 
                 if has_item_headers[item]:
                     items = dp.get_annotation(category_names=item)
@@ -1128,8 +1167,6 @@ class PubtablesSegmentationService(PipelineComponent):
                                                                             None,
                                                                             item_header_cell_name,
                                                                             cell_ann.annotation_id)
-
-
 
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
