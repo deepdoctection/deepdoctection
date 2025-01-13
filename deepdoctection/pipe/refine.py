@@ -295,28 +295,21 @@ def _html_table(
     return html
 
 
-def generate_html_string(table: ImageAnnotation) -> list[str]:
+def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectTypes]) -> list[str]:
     """
     Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
     representation.
 
     :param table: An annotation that has a not None image and fully segmented cell annotation.
+    :param cell_names: List of cell names that are used for the table segmentation. Note: It must be ensured that
+                      that all cells have a row number, column number, row span and column span and that the dissection
+                      by rows and columns is completely covered by cells.
     :return: HTML representation of the table
     """
     if table.image is None:
         raise ImageError("table.image cannot be None")
     table_image = table.image
-    cells = table_image.get_annotation(
-        category_names=[
-            LayoutType.CELL,
-            CellType.HEADER,
-            CellType.BODY,
-            CellType.SPANNING,
-            CellType.ROW_HEADER,
-            CellType.COLUMN_HEADER,
-            CellType.PROJECTED_ROW_HEADER,
-        ]
-    )
+    cells = table_image.get_annotation(category_names=cell_names)
     number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
     number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
     table_list = []
@@ -485,7 +478,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_summary_annotation(
                 TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
-            html = generate_html_string(table)
+            html = generate_html_string(table, self.cell_names)
             self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
 
     def clone(self) -> TableSegmentationRefinementService:

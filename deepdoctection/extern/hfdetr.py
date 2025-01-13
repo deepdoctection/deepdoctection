@@ -41,6 +41,7 @@ with try_import() as tr_import_guard:
     from transformers import (  # pylint: disable=W0611
         AutoFeatureExtractor,
         DetrFeatureExtractor,
+        DetrImageProcessor,
         PretrainedConfig,
         TableTransformerForObjectDetection,
     )
@@ -55,7 +56,7 @@ def _detr_post_processing(
 def detr_predict_image(
     np_img: PixelValues,
     predictor: TableTransformerForObjectDetection,
-    feature_extractor: DetrFeatureExtractor,
+    feature_extractor: DetrImageProcessor,
     device: torch.device,
     threshold: float,
     nms_threshold: float,
@@ -224,13 +225,13 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         )
 
     @staticmethod
-    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr) -> DetrFeatureExtractor:
+    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr) -> DetrImageProcessor:
         """
         Builds the feature extractor
 
         :return: DetrFeatureExtractor
         """
-        return AutoFeatureExtractor.from_pretrained(
+        return DetrImageProcessor.from_pretrained(
             pretrained_model_name_or_path=os.fspath(path_feature_extractor_config)
         )
 

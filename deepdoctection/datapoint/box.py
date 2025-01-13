@@ -491,10 +491,8 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
 
 def merge_boxes(*boxes: BoundingBox) -> BoundingBox:
     """
-    Generating the smallest box containing an arbitrary tuple/list of boxes. This function is only implemented for boxes
-    with absolute coords = "True".
-
-    :param boxes: An arbitrary tuple/list of bounding boxes `BoundingBox` all having absolute_coords="True".
+    Generating the smallest box containing an arbitrary tuple/list of boxes.
+    :param boxes: An arbitrary tuple/list of bounding boxes `BoundingBox`.
     """
     absolute_coords = boxes[0].absolute_coords
     assert all(box.absolute_coords == absolute_coords for box in boxes), "all boxes must have same absolute_coords"

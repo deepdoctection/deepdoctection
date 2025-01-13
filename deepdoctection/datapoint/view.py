@@ -28,7 +28,7 @@ import numpy as np
 from typing_extensions import LiteralString
 
 from ..utils.error import AnnotationError, ImageError
-from ..utils.logger import LoggingRecord, logger
+from ..utils.logger import LoggingRecord, log_once, logger
 from ..utils.settings import (
     CellType,
     LayoutType,
@@ -282,24 +282,102 @@ class Table(Layout):
     """
 
     @property
-    def cells(self) -> list[ImageAnnotationBaseView]:
+    def cells(self) -> list[Cell]:
         """
         A list of a table cells.
         """
         all_relation_ids = self.get_relationship(Relationships.CHILD)
-        cell_anns = self.base_page.get_annotation(
+        cell_anns: list[Cell] = self.base_page.get_annotation(  # type: ignore
             annotation_ids=all_relation_ids,
             category_names=[
                 LayoutType.CELL,
                 CellType.HEADER,
                 CellType.BODY,
-                CellType.PROJECTED_ROW_HEADER,
                 CellType.SPANNING,
-                CellType.ROW_HEADER,
-                CellType.COLUMN_HEADER,
             ],
         )
         return cell_anns
+
+    @property
+    def column_header_cells(self) -> list[Cell]:
+        """
+        Retrieve a list of cells that are column headers in the table.
+
+        This property filters and sorts the cells in the table to return only those that are column headers.
+        The cells are sorted by their column number.
+
+        :return: A list of `Cell` objects that are column headers.
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells: list[Cell] = self.base_page.get_annotation(  # type: ignore
+            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+        )
+        headers = list(filter(lambda cell: CellType.COLUMN_HEADER in cell.sub_categories, all_cells))
+        headers.sort(key=lambda x: x.column_number)  # type: ignore
+        return headers
+
+    @property
+    def row_header_cells(self) -> list[Cell]:
+        """
+        Retrieve a list of cells that are row headers in the table.
+
+        This property filters and sorts the cells in the table to return only those that are row headers.
+        The cells are sorted by their column number.
+
+        :return: A list of `Cell` objects that are row headers.
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells: list[Cell] = self.base_page.get_annotation( # type: ignore
+            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+        )
+        row_header_cells = list(filter(lambda cell: CellType.ROW_HEADER in cell.sub_categories, all_cells))
+        row_header_cells.sort(key=lambda x: x.column_number)  # type: ignore
+        return row_header_cells
+
+    def kv_header_rows(self, row_number: int) -> Mapping[str, str]:
+        """
+        For a given row number, returns a dictionary mapping column headers to cell values in that row.
+
+        This method retrieves all cells in the specified row and matches them with their corresponding column headers.
+        It then creates a key-value pair where the key is a tuple containing the column number and header text,
+        and the value is the cell text.
+
+        :param row_number: The row number for which to retrieve the key-value pairs.
+        :return: A dictionary where keys are tuples of (column number, header text) and values are cell texts.
+
+        Example:
+        If the table has the following structure:
+        | Header1 | Header2 |
+        |---------|---------|
+        | Value1  | Value2  |
+        | Value3  | Value4  |
+
+        Calling kv_header_rows(1) would return:
+        {
+            (1, 'Header1'): 'Value1',
+            (2, 'Header2'): 'Value2'
+        }
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells = self.base_page.get_annotation(
+            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+        )
+        row_cells = list(
+            filter(
+                lambda c: row_number in (c.row_number, c.row_number + c.row_span), all_cells  # type: ignore
+            )
+        )
+        row_cells.sort(key=lambda c: c.column_number) # type: ignore
+        column_header_cells = self.column_header_cells
+
+        kv_dict: Mapping[str, str] = {}
+        for cell in row_cells:
+            for header in column_header_cells:
+                if (cell.column_number == header.column_number and  # type: ignore
+                        cell.annotation_id != header.annotation_id):  # type: ignore
+                    kv_dict[(header.column_number, header.text)] = cell.text  # type: ignore
+                    break
+        return kv_dict
 
     @property
     def rows(self) -> list[ImageAnnotationBaseView]:
@@ -335,7 +413,7 @@ class Table(Layout):
             try:
                 html_index = html_list.index(cell.annotation_id)
                 html_list.pop(html_index)
-                html_list.insert(html_index, cell.text)  # type: ignore
+                html_list.insert(html_index, cell.text)
             except ValueError:
                 logger.warning(LoggingRecord("html construction not possible", {"annotation_id": cell.annotation_id}))
 
@@ -357,6 +435,12 @@ class Table(Layout):
         cells = self.cells
         table_list = [["" for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
+            if cell.category_name == CellType.SPANNING:
+                log_once(
+                    "Table has spanning cells. This implies, that the .csv output will not be correct."
+                    "To prevent spanning cell table creation set PT.ITEM.FILTER=['table','spanning'] ",
+                    "error",
+                )
             table_list[cell.row_number - 1][cell.column_number - 1] = (  # type: ignore
                 table_list[cell.row_number - 1][cell.column_number - 1] + cell.text + " "  # type: ignore
             )
@@ -386,13 +470,13 @@ class Table(Layout):
         token_class_ids: list[str] = []
         token_tag_ids: list[str] = []
         for cell in cells:
-            text.extend(cell.text_["text"])  # type: ignore
-            words.extend(cell.text_["words"])  # type: ignore
-            ann_ids.extend(cell.text_["ann_ids"])  # type: ignore
-            token_classes.extend(cell.text_["token_classes"])  # type: ignore
-            token_tags.extend(cell.text_["token_tags"])  # type: ignore
-            token_class_ids.extend(cell.text_["token_class_ids"])  # type: ignore
-            token_tag_ids.extend(cell.text_["token_tag_ids"])  # type: ignore
+            text.extend(cell.text_["text"])
+            words.extend(cell.text_["words"])
+            ann_ids.extend(cell.text_["ann_ids"])
+            token_classes.extend(cell.text_["token_classes"])
+            token_tags.extend(cell.text_["token_tags"])
+            token_class_ids.extend(cell.text_["token_class_ids"])
+            token_tag_ids.extend(cell.text_["token_tag_ids"])
         return {
             "text": " ".join(text),
             "words": words,
@@ -414,7 +498,7 @@ class Table(Layout):
         if not cells:
             return super().words
         for cell in cells:
-            all_words.extend(cell.words)  # type: ignore
+            all_words.extend(cell.words)
         return all_words
 
     def get_ordered_words(self) -> list[ImageAnnotationBaseView]:
@@ -424,7 +508,7 @@ class Table(Layout):
             all_words = []
             cells.sort(key=lambda x: (x.ROW_NUMBER, x.COLUMN_NUMBER))
             for cell in cells:
-                all_words.extend(cell.get_ordered_words())  # type: ignore
+                all_words.extend(cell.get_ordered_words())
             return all_words
         except (TypeError, AnnotationError):
             return super().get_ordered_words()
@@ -436,10 +520,10 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     LayoutType.TABLE_ROTATED: Table,
     LayoutType.WORD: Word,
     LayoutType.CELL: Cell,
-    CellType.PROJECTED_ROW_HEADER: Cell,
     CellType.SPANNING: Cell,
     CellType.ROW_HEADER: Cell,
     CellType.COLUMN_HEADER: Cell,
+    CellType.PROJECTED_ROW_HEADER: Cell,
 }
 
 
@@ -465,10 +549,7 @@ IMAGE_DEFAULTS: ImageDefaults = {
         LayoutType.LIST,
         LayoutType.CELL,
         LayoutType.FIGURE,
-        CellType.COLUMN_HEADER,
-        CellType.PROJECTED_ROW_HEADER,
         CellType.SPANNING,
-        CellType.ROW_HEADER,
     ),
 }
 
@@ -942,10 +1023,7 @@ class Page(Image):
                     for cell in table.cells:
                         if cell.category_name in {
                             LayoutType.CELL,
-                            CellType.PROJECTED_ROW_HEADER,
                             CellType.SPANNING,
-                            CellType.ROW_HEADER,
-                            CellType.COLUMN_HEADER,
                         }:
                             cells_found = True
                             box_stack.append(self._ann_viz_bbox(cell))
@@ -961,10 +1039,9 @@ class Page(Image):
                         category_names_list.append(None)
 
         if show_cells and not cells_found and not debug_kwargs:
-            for ann in self.annotations:
-                if isinstance(ann, Cell) and ann.active:
-                    box_stack.append(self._ann_viz_bbox(ann))
-                    category_names_list.append(None)
+            for ann in self.get_annotation(category_names=[LayoutType.CELL, CellType.SPANNING]):
+                box_stack.append(self._ann_viz_bbox(ann))
+                category_names_list.append(None)
 
         if show_words and not debug_kwargs:
             all_words = []

@@ -106,6 +106,7 @@ _DEPS = [
     # test
     "pytest==8.0.2",
     "pytest-cov",
+    # other
     "wandb",
 ]
 
