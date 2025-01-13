@@ -295,7 +295,7 @@ def _html_table(
     return html
 
 
-def generate_html_string(table: ImageAnnotation, cell_names: list[ObjectTypes]) -> list[str]:
+def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectTypes]) -> list[str]:
     """
     Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
     representation.
@@ -309,9 +309,7 @@ def generate_html_string(table: ImageAnnotation, cell_names: list[ObjectTypes]) 
     if table.image is None:
         raise ImageError("table.image cannot be None")
     table_image = table.image
-    cells = table_image.get_annotation(
-        category_names=cell_names
-    )
+    cells = table_image.get_annotation(category_names=cell_names)
     number_of_rows = table_image.summary.get_sub_category(TableType.NUMBER_OF_ROWS).category_id
     number_of_cols = table_image.summary.get_sub_category(TableType.NUMBER_OF_COLUMNS).category_id
     table_list = []
@@ -480,7 +478,7 @@ class TableSegmentationRefinementService(PipelineComponent):
             self.dp_manager.set_summary_annotation(
                 TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
-            html = generate_html_string(table)
+            html = generate_html_string(table, self.cell_names)
             self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
 
     def clone(self) -> TableSegmentationRefinementService:

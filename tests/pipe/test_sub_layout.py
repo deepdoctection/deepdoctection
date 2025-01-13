@@ -26,16 +26,13 @@ from pytest import mark
 
 from deepdoctection import ObjectTypes
 from deepdoctection.datapoint import BoundingBox, Image
-from deepdoctection.datasets import DatasetCategories
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from deepdoctection.utils.settings import LayoutType
 
 
 @mark.basic
-def test_detect_result_generator(
-    dataset_categories: DatasetCategories, dp_image: Image, layout_detect_results: List[DetectionResult]
-) -> None:
+def test_detect_result_generator(dp_image: Image, layout_detect_results: List[DetectionResult]) -> None:
     """
     Testing DetectResultGenerator creates DetectionResult correctly
     """
@@ -50,11 +47,7 @@ def test_detect_result_generator(
     }
     detect_result_generator = DetectResultGenerator(
         categories_name_as_key,
-        [[LayoutType.TEXT],
-         [LayoutType.TITLE],
-         [LayoutType.TABLE],
-         [LayoutType.FIGURE],
-         [LayoutType.LIST]],
+        [[LayoutType.TEXT], [LayoutType.TITLE], [LayoutType.TABLE], [LayoutType.FIGURE], [LayoutType.LIST]],
     )
 
     # Act
