@@ -373,7 +373,7 @@ class Table(Layout):
         kv_dict: Mapping[str, str] = {}
         for cell in row_cells:
             for header in column_header_cells:
-                if (cell.column_number == header.column_number and
+                if (cell.column_number == header.column_number and  # type: ignore
                         cell.annotation_id != header.annotation_id):  # type: ignore
                     kv_dict[(header.column_number, header.text)] = cell.text  # type: ignore
                     break

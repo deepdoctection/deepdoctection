@@ -48,7 +48,7 @@ with try_import() as pt_import_guard:
     import torch.nn.functional as F
 
 with try_import() as tr_import_guard:
-    from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD  # type: ignore
+    from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
     from transformers import (
         LayoutLMForSequenceClassification,
         LayoutLMForTokenClassification,
