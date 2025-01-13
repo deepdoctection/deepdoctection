@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         python: [3.9]
         dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
         pip: [24.0]
@@ -88,7 +88,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         python: [3.9]
         dll: ["torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu"]
         pip: [24.0]
