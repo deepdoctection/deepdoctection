@@ -28,7 +28,7 @@ from typing import Literal, Optional, Sequence, Union
 import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.box import BoundingBox, global_to_local_coords, intersection_boxes, iou, merge_boxes, intersection_box
+from ..datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
 from ..datapoint.image import Image
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
@@ -54,6 +54,7 @@ class SegmentationResult:
     rs: int
     cs: int
 
+
 @dataclass
 class ItemHeaderResult:
     """
@@ -61,7 +62,6 @@ class ItemHeaderResult:
     """
 
     annotation_id: str
-    item_header: bool
 
 
 def choose_items_by_iou(
@@ -551,30 +551,42 @@ def create_intersection_cells(
     return detect_result_cells, segment_result_cells
 
 
-def header_cell_to_item_detect_result(dp: Image,
-                                      table: ImageAnnotation,
-                                      item_name: ObjectTypes,
-                                      item_header_name: ObjectTypes,
-                                      segment_rule: Literal["iou", "ioa"],
-                                      threshold: float) -> list[ItemHeaderResult]:
+def header_cell_to_item_detect_result(
+    dp: Image,
+    table: ImageAnnotation,
+    item_name: ObjectTypes,
+    item_header_name: ObjectTypes,
+    segment_rule: Literal["iou", "ioa"],
+    threshold: float,
+) -> list[ItemHeaderResult]:
+    """
+    Match header cells to items (rows or columns) based on intersection-over-union (iou) or intersection-over-area (ioa)
+    and return a list of ItemHeaderResult.
 
+    :param dp: The image containing the table and items.
+    :param table: The table image annotation.
+    :param item_name: The type of items (e.g., rows or columns) to match with header cells.
+    :param item_header_name: The type of header cells to match with items.
+    :param segment_rule: The rule to use for matching, either 'iou' or 'ioa'.
+    :param threshold: The iou/ioa threshold for matching header cells with items.
+    :return: A list of ItemHeaderResult containing the matched header cells.
+    """
     child_ann_ids = table.get_relationship(Relationships.CHILD)
-    item_index, item_header_index, items, _ = match_anns_by_intersection(dp,
-                                                               item_header_name,
-                                                               item_name,
-                                                               segment_rule,
-                                                               threshold,
-                                                               True,
-                                                                child_ann_ids,
-                                                                child_ann_ids,
-                                                               )
+    item_index, _, items, _ = match_anns_by_intersection(
+        dp,
+        item_header_name,
+        item_name,
+        segment_rule,
+        threshold,
+        True,
+        child_ann_ids,
+        child_ann_ids,
+    )
     item_headers = []
     for idx, item in enumerate(items):
         if idx in item_index:
-            item_headers.append(ItemHeaderResult(item_header=True, annotation_id=item.annotation_id))
+            item_headers.append(ItemHeaderResult(annotation_id=item.annotation_id))
     return item_headers
-
-
 
 
 def segment_pubtables(
@@ -656,8 +668,12 @@ def segment_pubtables(
             cols_of_cell = [columns[k] for k in col_index[cell_positions_cols]]
 
             if cols_of_cell:
-                min_col_cell = min(cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id)
-                max_col_cell = max(cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id)
+                min_col_cell = min(
+                    cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                )
+                max_col_cell = max(
+                    cols_of_cell, key=lambda col: col.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                )
                 max_col = max_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
                 min_col = min_col_cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
                 cs = max_col - min_col + 1
@@ -669,21 +685,41 @@ def segment_pubtables(
             if rows_of_cell and cols_of_cell:
                 # We resize all bounding boxes of spanning cells so that they match with the grid structure, determined
                 # by the rows ans columns.
-                merge_box_image_row = merge_boxes(*[min_row_cell.get_bounding_box(dp.image_id),
-                                  max_row_cell.get_bounding_box(dp.image_id)])
-                merge_box_image_column = merge_boxes(*[min_col_cell.get_bounding_box(dp.image_id),
-                                                       max_col_cell.get_bounding_box(dp.image_id)])
-                merge_box_image= intersection_box(merge_box_image_row, merge_box_image_column)
-                merge_box_table_row = merge_boxes(*[min_row_cell.get_bounding_box(table.annotation_id),
-                                  max_row_cell.get_bounding_box(table.annotation_id)])
-                merge_box_table_column = merge_boxes(*[min_col_cell.get_bounding_box(table.annotation_id),
-                                  max_col_cell.get_bounding_box(table.annotation_id)])
+                merge_box_image_row = merge_boxes(
+                    *[min_row_cell.get_bounding_box(dp.image_id), max_row_cell.get_bounding_box(dp.image_id)]
+                )
+                merge_box_image_column = merge_boxes(
+                    *[min_col_cell.get_bounding_box(dp.image_id), max_col_cell.get_bounding_box(dp.image_id)]
+                )
+                merge_box_image = intersection_box(merge_box_image_row, merge_box_image_column)
+                merge_box_table_row = merge_boxes(
+                    *[
+                        min_row_cell.get_bounding_box(table.annotation_id),
+                        max_row_cell.get_bounding_box(table.annotation_id),
+                    ]
+                )
+                merge_box_table_column = merge_boxes(
+                    *[
+                        min_col_cell.get_bounding_box(table.annotation_id),
+                        max_col_cell.get_bounding_box(table.annotation_id),
+                    ]
+                )
                 merge_box_table = intersection_box(merge_box_table_row, merge_box_table_column)
-                merge_box_spanning_cell_row = merge_boxes(*[min_row_cell.get_bounding_box(min_row_cell.annotation_id),
-                                  max_row_cell.get_bounding_box(max_row_cell.annotation_id)])
-                merge_box_spanning_cell_column = merge_boxes(*[min_col_cell.get_bounding_box(min_col_cell.annotation_id),
-                                  max_col_cell.get_bounding_box(max_col_cell.annotation_id)])
+                merge_box_spanning_cell_row = merge_boxes(
+                    *[
+                        min_row_cell.get_bounding_box(min_row_cell.annotation_id),
+                        max_row_cell.get_bounding_box(max_row_cell.annotation_id),
+                    ]
+                )
+                merge_box_spanning_cell_column = merge_boxes(
+                    *[
+                        min_col_cell.get_bounding_box(min_col_cell.annotation_id),
+                        max_col_cell.get_bounding_box(max_col_cell.annotation_id),
+                    ]
+                )
                 merge_box_spanning_cell = intersection_box(merge_box_spanning_cell_row, merge_box_spanning_cell_column)
+                if cell.image is None:
+                    raise ImageError("cell.image cannot be None")
                 cell.image.set_embedding(dp.image_id, merge_box_image)
                 cell.image.set_embedding(table.annotation_id, merge_box_table)
                 cell.image.set_embedding(cell.annotation_id, merge_box_spanning_cell)
@@ -772,7 +808,7 @@ class TableSegmentationService(PipelineComponent):
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
         self.table_name = get_type(table_name)
         self.cell_names = [get_type(cell_name) for cell_name in cell_names]
-        self.item_names = [get_type(item_name) for item_name in item_names]   # row names must be before column name
+        self.item_names = [get_type(item_name) for item_name in item_names]  # row names must be before column name
         self.sub_item_names = [get_type(sub_item_name) for sub_item_name in sub_item_names]
         self.stretch_rule = stretch_rule
         self.item_iou_threshold = 0.0001
@@ -989,10 +1025,10 @@ class PubtablesSegmentationService(PipelineComponent):
         self.cell_class_id = cell_class_id
         self.cell_to_image = cell_to_image
         self.crop_cell_image = crop_cell_image
-        self.item_names = [get_type(item_name) for item_name in item_names]   # row names must be before column name
+        self.item_names = [get_type(item_name) for item_name in item_names]  # row names must be before column name
         self.sub_item_names = [get_type(item_name) for item_name in sub_item_names]
         self.stretch_rule = stretch_rule
-        self.item_header_cell_names = item_header_cell_names
+        self.item_header_cell_names = [get_type(item_name) for item_name in item_header_cell_names]
         self.item_header_thresholds = item_header_thresholds
 
         super().__init__("table_transformer_segment")
@@ -1010,12 +1046,15 @@ class PubtablesSegmentationService(PipelineComponent):
         has_item_headers = {item: False for item in self.item_names}
         for table in table_anns:
             item_ann_ids = table.get_relationship(Relationships.CHILD)
-            for item_sub_item_name in zip(self.item_names,
-                                          self.sub_item_names,
-                                          self.item_header_cell_names,
-                                          self.item_header_thresholds):  # one pass for rows and one for cols
+            for item_sub_item_name in zip(
+                self.item_names, self.sub_item_names, self.item_header_cell_names, self.item_header_thresholds
+            ):  # one pass for rows and one for cols
                 item_name, sub_item_name, item_header_cell_name, item_header_threshold = (
-                    item_sub_item_name[0], item_sub_item_name[1], item_sub_item_name[2], item_sub_item_name[3])
+                    item_sub_item_name[0],
+                    item_sub_item_name[1],
+                    item_sub_item_name[2],
+                    item_sub_item_name[3],
+                )
                 if self.tile_table:
                     dp = tile_tables_with_items_per_table(dp, table, item_name, self.stretch_rule)
                 items = dp.get_annotation(category_names=item_name, annotation_ids=item_ann_ids)
@@ -1029,12 +1068,9 @@ class PubtablesSegmentationService(PipelineComponent):
                     )
                 )
 
-                item_headers_detect_results = header_cell_to_item_detect_result(dp,
-                                                                                table,
-                                                                                item_name,
-                                                                                item_header_cell_name,
-                                                  self.segment_rule,
-                                                  item_header_threshold)
+                item_headers_detect_results = header_cell_to_item_detect_result(
+                    dp, table, item_name, item_header_cell_name, self.segment_rule, item_header_threshold
+                )
                 if item_headers_detect_results:
                     has_item_headers[item_name] = True
 
@@ -1043,12 +1079,11 @@ class PubtablesSegmentationService(PipelineComponent):
                         sub_item_name, item_number, sub_item_name, item.annotation_id
                     )
                 for item_header_detect_result in item_headers_detect_results:
-                    self.dp_manager.set_container_annotation(
-                        category_name= item_header_cell_name,
+                    self.dp_manager.set_category_annotation(
+                        category_name=item_header_cell_name,
                         category_id=None,
                         sub_cat_key=item_header_cell_name,
                         annotation_id=item_header_detect_result.annotation_id,
-                        value=item_header_detect_result.item_header
                     )
 
             rows = dp.get_annotation(category_names=self.item_names[0], annotation_ids=item_ann_ids)
@@ -1065,14 +1100,10 @@ class PubtablesSegmentationService(PipelineComponent):
                     crop_image=self.crop_cell_image,
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_NUMBER,
-                    segment_result.row_num,
-                    CellType.ROW_NUMBER,
-                    segment_result.annotation_id
+                    CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_NUMBER,
-                    segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
+                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
                     CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
@@ -1093,32 +1124,24 @@ class PubtablesSegmentationService(PipelineComponent):
             )
 
             for segment_result in spanning_cell_raw_segments:
-                if (segment_result.rs==1 and segment_result.cs==1) or segment_result.rs==0 or segment_result.cs==0:
+                if (
+                    (segment_result.rs == 1 and segment_result.cs == 1)
+                    or segment_result.rs == 0
+                    or segment_result.cs == 0
+                ):
                     self.dp_manager.deactivate_annotation(segment_result.annotation_id)
                     continue
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_NUMBER,
-                    segment_result.row_num,
-                    CellType.ROW_NUMBER,
-                    segment_result.annotation_id
+                    CellType.ROW_NUMBER, segment_result.row_num, CellType.ROW_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_NUMBER,
-                    segment_result.col_num,
-                    CellType.COLUMN_NUMBER,
-                    segment_result.annotation_id
+                    CellType.COLUMN_NUMBER, segment_result.col_num, CellType.COLUMN_NUMBER, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.ROW_SPAN,
-                    segment_result.rs,
-                    CellType.ROW_SPAN,
-                    segment_result.annotation_id
+                    CellType.ROW_SPAN, segment_result.rs, CellType.ROW_SPAN, segment_result.annotation_id
                 )
                 self.dp_manager.set_category_annotation(
-                    CellType.COLUMN_SPAN,
-                    segment_result.cs,
-                    CellType.COLUMN_SPAN,
-                    segment_result.annotation_id
+                    CellType.COLUMN_SPAN, segment_result.cs, CellType.COLUMN_SPAN, segment_result.annotation_id
                 )
                 cells_to_deactivate = []
                 for rs in range(segment_result.rs):
@@ -1129,13 +1152,17 @@ class PubtablesSegmentationService(PipelineComponent):
                     self.dp_manager.deactivate_annotation(cell_ann_id)
 
             for segment_result in spanning_cell_raw_segments:
-                if ((segment_result.rs == 1 and segment_result.cs == 1) or
-                        segment_result.rs == 0 or segment_result.cs == 0):
+                if (
+                    (segment_result.rs == 1 and segment_result.cs == 1)
+                    or segment_result.rs == 0
+                    or segment_result.cs == 0
+                ):
                     continue
                 for rs in range(segment_result.rs):
                     for cs in range(segment_result.cs):
-                        cell_rn_cn_to_ann_id[(segment_result.row_num + rs, segment_result.col_num + cs)] = (
-                            segment_result.annotation_id)
+                        cell_rn_cn_to_ann_id[
+                            (segment_result.row_num + rs, segment_result.col_num + cs)
+                        ] = segment_result.annotation_id
 
             cells = []
             if table.image:
@@ -1152,10 +1179,10 @@ class PubtablesSegmentationService(PipelineComponent):
                 max_col_span = 0
 
             for idx, item_vals in enumerate(zip(self.item_names, self.item_header_cell_names, self.sub_item_names)):
-                item, item_header_cell_name, sub_item_name = item_vals[0],  item_vals[1], item_vals[2]
+                item_obj_type, item_header_cell_name, sub_item_name = item_vals[0], item_vals[1], item_vals[2]
 
-                if has_item_headers[item]:
-                    items = dp.get_annotation(category_names=item)
+                if has_item_headers[item_obj_type]:
+                    items = dp.get_annotation(category_names=item_obj_type)
 
                     for item_ann in items:
                         if item_header_cell_name in item_ann.sub_categories:
@@ -1163,17 +1190,22 @@ class PubtablesSegmentationService(PipelineComponent):
                             for key, value in cell_rn_cn_to_ann_id.items():
                                 if key[idx] == item_number:
                                     cell_ann = dp.get_annotation(annotation_ids=value)[0]
+                                    self.dp_manager.set_category_annotation(
+                                        item_header_cell_name,
+                                        None,
+                                        item_header_cell_name,
+                                        cell_ann.annotation_id
+                                    )
+                                else:
+                                    cell_ann = dp.get_annotation(annotation_ids=value)[0]
                                     self.dp_manager.set_category_annotation(item_header_cell_name,
                                                                             None,
-                                                                            item_header_cell_name,
+                                                                            CellType.BODY,
                                                                             cell_ann.annotation_id)
 
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(
-                TableType.NUMBER_OF_ROWS,
-                TableType.NUMBER_OF_ROWS,
-                number_of_rows,
-                annotation_id=table.annotation_id
+                TableType.NUMBER_OF_ROWS, TableType.NUMBER_OF_ROWS, number_of_rows, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
                 TableType.NUMBER_OF_COLUMNS,
@@ -1182,16 +1214,10 @@ class PubtablesSegmentationService(PipelineComponent):
                 annotation_id=table.annotation_id,
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_ROW_SPAN,
-                TableType.MAX_ROW_SPAN,
-                max_row_span,
-                annotation_id=table.annotation_id
+                TableType.MAX_ROW_SPAN, TableType.MAX_ROW_SPAN, max_row_span, annotation_id=table.annotation_id
             )
             self.dp_manager.set_summary_annotation(
-                TableType.MAX_COL_SPAN,
-                TableType.MAX_COL_SPAN,
-                max_col_span,
-                annotation_id=table.annotation_id
+                TableType.MAX_COL_SPAN, TableType.MAX_COL_SPAN, max_col_span, annotation_id=table.annotation_id
             )
             html = generate_html_string(table, self.cell_names + self.spanning_cell_names)
             self.dp_manager.set_container_annotation(TableType.HTML, -1, TableType.HTML, table.annotation_id, html)
@@ -1210,6 +1236,8 @@ class PubtablesSegmentationService(PipelineComponent):
             self.spanning_cell_names,
             self.item_names,
             self.sub_item_names,
+            self.item_header_cell_names,
+            self.item_header_thresholds,
             self.cell_to_image,
             self.crop_cell_image,
             self.stretch_rule,
