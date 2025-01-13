@@ -49,27 +49,27 @@ class DetectResultGenerator:
 
     def __init__(
         self,
-        categories: Mapping[int, ObjectTypes],
-        group_categories: Optional[list[list[int]]] = None,
-        exclude_category_ids: Optional[Sequence[int]] = None,
+        categories_name_as_key: Mapping[ObjectTypes, int],
+        group_categories: Optional[list[list[ObjectTypes]]] = None,
+        exclude_category_names: Optional[Sequence[ObjectTypes]] = None,
         absolute_coords: bool = True,
     ) -> None:
         """
-        :param categories: The dict of all possible detection categories
+        :param categories_name_as_key: The dict of all possible detection categories
         :param group_categories: If you only want to generate only one DetectResult for a group of categories, provided
                                  that the sum of the group is less than one, then you can pass a list of list for
                                  grouping category ids.
         :param absolute_coords: 'absolute_coords' value to be set in 'DetectionResult'
         """
-        self.categories = MappingProxyType(dict(categories.items()))
+        self.categories_name_as_key = MappingProxyType(dict(categories_name_as_key.items()))
         self.width: Optional[int] = None
         self.height: Optional[int] = None
         if group_categories is None:
-            group_categories = [[idx] for idx in self.categories]
+            group_categories = [[cat_name] for cat_name in self.categories_name_as_key]
         self.group_categories = group_categories
-        if exclude_category_ids is None:
-            exclude_category_ids = []
-        self.exclude_category_ids = exclude_category_ids
+        if exclude_category_names is None:
+            exclude_category_names = []
+        self.exclude_category_names = exclude_category_names
         self.dummy_for_group_generated = [False for _ in self.group_categories]
         self.absolute_coords = absolute_coords
 
@@ -83,17 +83,17 @@ class DetectResultGenerator:
 
         if self.width is None and self.height is None:
             raise ValueError("Initialize height and width first")
-
+        detect_result_list = self._detection_result_sanity_check(detect_result_list)
         count = self._create_condition(detect_result_list)
-        for category_id in self.categories:
-            if category_id not in self.exclude_category_ids:
-                if count[category_id] < 1:
-                    if not self._dummy_for_group_generated(category_id):
+        for category_name in self.categories_name_as_key:
+            if category_name not in self.exclude_category_names:
+                if count[category_name] < 1:
+                    if not self._dummy_for_group_generated(category_name):
                         detect_result_list.append(
                             DetectionResult(
                                 box=[0.0, 0.0, float(self.width), float(self.height)],  # type: ignore
-                                class_id=int(category_id),
-                                class_name=self.categories[category_id],
+                                class_id=self.categories_name_as_key[category_name],
+                                class_name=category_name,
                                 score=0.0,
                                 absolute_coords=self.absolute_coords,
                             )
@@ -102,8 +102,8 @@ class DetectResultGenerator:
         self.dummy_for_group_generated = self._initialize_dummy_for_group_generated()
         return detect_result_list
 
-    def _create_condition(self, detect_result_list: list[DetectionResult]) -> dict[int, int]:
-        count = Counter([ann.class_id for ann in detect_result_list])
+    def _create_condition(self, detect_result_list: list[DetectionResult]) -> dict[ObjectTypes, int]:
+        count = Counter([ann.class_name for ann in detect_result_list])
         cat_to_group_sum = {}
         for group in self.group_categories:
             group_sum = 0
@@ -113,9 +113,25 @@ class DetectResultGenerator:
                 cat_to_group_sum[el] = group_sum
         return cat_to_group_sum
 
-    def _dummy_for_group_generated(self, category_id: int) -> bool:
+    @staticmethod
+    def _detection_result_sanity_check(detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
+        """
+        Go through each detect_result in the list and check if the box argument has sensible coordinates:
+        ulx >= 0 and lrx - ulx >= 0 (same for y coordinate). Remove the detection result if this condition is not
+        satisfied. We need this check because if some detection results are not sane, we might end up with some
+        none existing categories.
+        """
+        sane_detect_results = []
+        for detect_result in detect_result_list:
+            if detect_result.box:
+                ulx, uly, lrx, lry = detect_result.box
+                if ulx >= 0 and lrx - ulx >= 0 and uly >= 0 and lry - uly >= 0:
+                    sane_detect_results.append(detect_result)
+        return sane_detect_results
+
+    def _dummy_for_group_generated(self, category_name: ObjectTypes) -> bool:
         for idx, group in enumerate(self.group_categories):
-            if category_id in group:
+            if category_name in group:
                 is_generated = self.dummy_for_group_generated[idx]
                 self.dummy_for_group_generated[idx] = True
                 return is_generated
@@ -176,10 +192,12 @@ class SubImageLayoutService(PipelineComponent):
         self.predictor = sub_image_detector
         super().__init__(self._get_name(sub_image_detector.name), self.predictor.model_id)
         if self.detect_result_generator is not None:
-            if self.detect_result_generator.categories != self.predictor.categories.get_categories():
+            if self.detect_result_generator.categories_name_as_key != self.predictor.categories.get_categories(
+                as_dict=True, name_as_key=True
+            ):
                 raise ValueError(
                     f"The categories of the 'detect_result_generator' must be the same as the categories of the "
-                    f"'sub_image_detector'. Got {self.detect_result_generator.categories} #"
+                    f"'sub_image_detector'. Got {self.detect_result_generator.categories_name_as_key} #"
                     f"and {self.predictor.categories.get_categories()}."
                 )
 

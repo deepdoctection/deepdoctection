@@ -51,7 +51,7 @@ from ..pipe.transform import SimpleTransformService
 from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
-from ..utils.settings import LayoutType, Relationships
+from ..utils.settings import CellType, LayoutType, Relationships
 from ..utils.transform import PadTransform
 
 with try_import() as image_guard:
@@ -264,14 +264,17 @@ class ServiceFactory:
         :param mode: either `LAYOUT`,`CELL` or `ITEM`
         :return: `SubImageLayoutService` instance
         """
-        exclude_category_ids = []
+        exclude_category_names = []
         padder = None
         if mode == "ITEM":
             if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
-                exclude_category_ids.extend([1, 3, 4, 5, 6])
+                exclude_category_names.extend(
+                    [LayoutType.TABLE, CellType.COLUMN_HEADER, CellType.PROJECTED_ROW_HEADER, CellType.SPANNING]
+                )
                 padder = ServiceFactory.build_padder(config, mode)
         detect_result_generator = DetectResultGenerator(
-            categories=detector.categories.categories, exclude_category_ids=exclude_category_ids
+            categories_name_as_key=detector.categories.get_categories(as_dict=True, name_as_key=True),
+            exclude_category_names=exclude_category_names,
         )
         return SubImageLayoutService(
             sub_image_detector=detector,
@@ -399,6 +402,8 @@ class ServiceFactory:
                 spanning_cell_names=config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
                 item_names=config.SEGMENTATION.PUBTABLES_ITEM_NAMES,
                 sub_item_names=config.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES,
+                item_header_cell_names=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES,
+                item_header_thresholds=config.SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS,
                 stretch_rule=config.SEGMENTATION.STRETCH_RULE,
             )
 

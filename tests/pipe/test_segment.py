@@ -345,6 +345,8 @@ class TestPubtablesSegmentationService:
         ]
         self.item_names = [LayoutType.ROW, LayoutType.COLUMN]
         self.sub_item_names = [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
+        self.item_header_cell_names = [CellType.ROW_HEADER, CellType.COLUMN_HEADER]
+        self.item_header_thresholds = [0.001, 0.001]
 
         self.table_segmentation_service = PubtablesSegmentationService(
             "ioa",
@@ -359,6 +361,8 @@ class TestPubtablesSegmentationService:
             self.spanning_cell_names,
             self.item_names,
             self.sub_item_names,
+            self.item_header_cell_names,
+            self.item_header_thresholds,
         )
 
     @mark.basic

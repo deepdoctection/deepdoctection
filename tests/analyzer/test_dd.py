@@ -276,7 +276,7 @@ def test_dd_analyzer_with_tatr() -> None:
     # 9 for d2 and 10 for tp model
     assert not page.layouts
     assert len(page.tables) == 1
-    assert len(page.tables[0].cells) in {11, 13, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {11, 12, 13, 16}  # type: ignore
 
 
 @mark.integration_additional
