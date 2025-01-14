@@ -228,23 +228,26 @@ class Layout(ImageAnnotationBaseView):
 
         """
         words = self.get_ordered_words()
-        characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
-            *[
-                (
-                    word.characters,
-                    word.annotation_id,
-                    word.token_class,
-                    word.token_tag,
-                    word.get_sub_category(WordType.TOKEN_CLASS).category_id
-                    if WordType.TOKEN_CLASS in word.sub_categories
-                    else None,
-                    word.get_sub_category(WordType.TOKEN_TAG).category_id
-                    if WordType.TOKEN_TAG in word.sub_categories
-                    else None,
-                )
-                for word in words
-            ]
-        )
+        if words:
+            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = zip(
+                *[
+                    (
+                        word.characters,
+                        word.annotation_id,
+                        word.token_class,
+                        word.token_tag,
+                        word.get_sub_category(WordType.TOKEN_CLASS).category_id
+                        if WordType.TOKEN_CLASS in word.sub_categories
+                        else None,
+                        word.get_sub_category(WordType.TOKEN_TAG).category_id
+                        if WordType.TOKEN_TAG in word.sub_categories
+                        else None,
+                    )
+                    for word in words
+                ]
+            )
+        else:
+            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = [], [], [], [], [], []
         return {
             "text": " ".join(characters),
             "words": characters,
