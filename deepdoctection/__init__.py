@@ -6,6 +6,7 @@ Init file for deepdoctection package. This file is used to import all submodules
 """
 
 import importlib.util
+import os
 
 # Before doing anything else, check if the .env file exists and load it
 if importlib.util.find_spec("dotenv") is not None:
@@ -423,6 +424,9 @@ _IMPORT_STRUCTURE = {
 env_info = collect_env_info()
 logger.debug(LoggingRecord(msg=env_info))
 auto_select_pdf_render_framework()
+os.environ["DPI"] = "300"
+os.environ["IMAGE_WIDTH"] = ""
+os.environ["IMAGE_HEIGHT"] = ""
 
 # Direct imports for type-checking
 if TYPE_CHECKING:

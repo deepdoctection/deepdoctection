@@ -181,8 +181,6 @@ class PDFStreamer:
 
             streamer.close() # Do not forget to close the streamer, otherwise the file will never be closed and might
                              # cause memory leaks if you open many files.
-
-
     """
 
     def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes]) -> None:
@@ -223,7 +221,10 @@ class PDFStreamer:
 
 
 def _input_to_cli_str(
-    input_file_name: PathLikeOrStr, output_file_name: PathLikeOrStr, dpi: int, size: Optional[tuple[int, int]] = None
+    input_file_name: PathLikeOrStr,
+    output_file_name: PathLikeOrStr,
+    dpi: Optional[int] = None,
+    size: Optional[tuple[int, int]] = None,
 ) -> list[str]:
     cmd_args: list[str] = []
 
@@ -237,7 +238,10 @@ def _input_to_cli_str(
     if platform.system() == "Windows":
         command = command + ".exe"
     cmd_args.append(command)
-    cmd_args.extend(["-r", str(dpi), str(input_file_name)])
+
+    if dpi:
+        cmd_args.extend(["-r", str(dpi)])
+    cmd_args.append(str(input_file_name))
     cmd_args.append("-png")
     cmd_args.append(str(output_file_name))
 
@@ -275,7 +279,9 @@ def _run_poppler(poppler_args: list[str]) -> None:
             raise PopplerError(status=proc.returncode, message="Syntax Error: PDF cannot be read with Poppler")
 
 
-def pdf_to_np_array_poppler(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array_poppler(
+    pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None
+) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
     file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.
@@ -285,7 +291,8 @@ def pdf_to_np_array_poppler(pdf_bytes: bytes, size: Optional[tuple[int, int]] = 
     :param dpi:  Image quality in DPI/dots-per-inch (default 200)
     :return: numpy array
     """
-
+    if dpi is None and size is None:
+        raise ValueError("Either dpi or size must be provided.")
     with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, input_file_name):
         _run_poppler(_input_to_cli_str(input_file_name, tmp_name, dpi, size))
         image = viz_handler.read_image(tmp_name + "-1.png")
@@ -293,7 +300,7 @@ def pdf_to_np_array_poppler(pdf_bytes: bytes, size: Optional[tuple[int, int]] = 
     return image.astype(uint8)
 
 
-def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array using pdfium.
 
@@ -301,12 +308,13 @@ def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: int = 200) -> PixelValues:
     :param dpi:  Image quality in DPI/dots-per-inch (default 200)
     :return: numpy array
     """
-
+    if dpi is None:
+        raise ValueError("dpi must be provided.")
     page = pypdfium2.PdfDocument(pdf_bytes)[0]
     return page.render(scale=dpi * 1 / 72).to_numpy().astype(uint8)
 
 
-def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: int = 200) -> PixelValues:
+def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None) -> PixelValues:
     """
     Convert a single pdf page from its byte representation to a numpy array. This function will either use Poppler or
     pdfium to render the pdf.
