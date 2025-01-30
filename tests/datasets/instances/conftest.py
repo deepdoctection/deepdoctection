@@ -33,3 +33,12 @@ def get_white_image(path: str) -> Optional[PixelValues]:
     if path:
         return np.ones((794, 596, 3), dtype=np.uint8) * 255  # type: ignore
     return None
+
+
+def get_white_image_pdf(path: str, dpi: int) -> Optional[PixelValues]:  # pylint: disable=W0613
+    """
+    white image
+    """
+    if path:
+        return np.ones((794, 596, 3), dtype=np.uint8) * 255  # type: ignore
+    return None

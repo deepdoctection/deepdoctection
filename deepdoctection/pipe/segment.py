@@ -1191,17 +1191,13 @@ class PubtablesSegmentationService(PipelineComponent):
                                 if key[idx] == item_number:
                                     cell_ann = dp.get_annotation(annotation_ids=value)[0]
                                     self.dp_manager.set_category_annotation(
-                                        item_header_cell_name,
-                                        None,
-                                        item_header_cell_name,
-                                        cell_ann.annotation_id
+                                        item_header_cell_name, None, item_header_cell_name, cell_ann.annotation_id
                                     )
                                 else:
                                     cell_ann = dp.get_annotation(annotation_ids=value)[0]
-                                    self.dp_manager.set_category_annotation(item_header_cell_name,
-                                                                            None,
-                                                                            CellType.BODY,
-                                                                            cell_ann.annotation_id)
+                                    self.dp_manager.set_category_annotation(
+                                        item_header_cell_name, None, CellType.BODY, cell_ann.annotation_id
+                                    )
 
             # TODO: the summaries should be sub categories of the underlying ann
             self.dp_manager.set_summary_annotation(

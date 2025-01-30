@@ -109,8 +109,13 @@ def _proto_process(
 
 
 @curry
-def _to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
-    return to_image(dp, dpi)
+def _to_image(
+    dp: Union[str, Mapping[str, Union[str, bytes]]],
+    dpi: Optional[int] = None,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> Optional[Image]:
+    return to_image(dp, dpi, width, height)
 
 
 def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
@@ -188,7 +193,19 @@ class DoctectionPipe(Pipeline):
 
         df = MapData(df, _proto_process(path, doc_path))
         if dataset_dataflow is None:
-            df = MapData(df, _to_image(dpi=int(os.environ.get("DPI", 300))))  # pylint: disable=E1120
+            if dpi := os.environ["DPI"]:
+                df = MapData(df, _to_image(dpi=int(dpi)))  # pylint: disable=E1120
+            else:
+                width, height = kwargs.get("width", ""), kwargs.get("height", "")
+                if not width or not height:
+                    width = os.environ["IMAGE_WIDTH"]
+                    height = os.environ["IMAGE_HEIGHT"]
+                    if not width or not height:
+                        raise ValueError(
+                            "DPI, IMAGE_WIDTH and IMAGE_HEIGHT are all None, but "
+                            "either DPI or IMAGE_WIDTH and IMAGE_HEIGHT must be set"
+                        )
+                df = MapData(df, _to_image(width=int(width), height=int(height)))  # pylint: disable=E1120
         return df
 
     @staticmethod
