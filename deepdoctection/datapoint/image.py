@@ -153,7 +153,7 @@ class Image:
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         elif isinstance(image, bytes):
-            self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=int(environ["DPI"]))  # type: ignore
+            self._image = convert_pdf_bytes_to_np_array_v2(image, dpi=int(environ["DPI"]))
             self.set_width_height(self._image.shape[1], self._image.shape[0])
             self._self_embedding()
         else:
