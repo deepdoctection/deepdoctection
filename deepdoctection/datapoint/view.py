@@ -248,13 +248,13 @@ class Layout(ImageAnnotationBaseView):
             )
         else:
             characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = (
-                [],
-                [],
-                [],
-                [],
-                [],
-                [],
-            )  # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+            )
         return {
             "text": " ".join(characters),
             "words": characters,
@@ -382,9 +382,9 @@ class Table(Layout):
         for cell in row_cells:
             for header in column_header_cells:
                 if (
-                    cell.column_number == header.column_number
+                    cell.column_number == header.column_number  # type: ignore
                     and cell.annotation_id != header.annotation_id  # type: ignore
-                ):  # type: ignore
+                ):
                     kv_dict[(header.column_number, header.text)] = cell.text  # type: ignore
                     break
         return kv_dict

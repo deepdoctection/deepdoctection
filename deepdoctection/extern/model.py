@@ -24,7 +24,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Optional, Union
 
 import jsonlines
-from huggingface_hub import cached_download, hf_hub_url  # type: ignore
+from huggingface_hub import hf_hub_download
 from tabulate import tabulate
 from termcolor import colored
 
@@ -136,51 +136,6 @@ class ModelCatalog:
             dl_library="TF",
             model_wrapper="TPFrcnnDetector",
         ),
-        "item/model-1620000.data-00000-of-00001": ModelProfile(
-            name="item/model-1620000.data-00000-of-00001",
-            description="Tensorpack row/column detection model trained on Pubtabnet",
-            config="dd/tp/conf_frcnn_rows.yaml",
-            size=[823546048, 25787],
-            tp_model=True,
-            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc",
-            hf_model_name="model-1620000",
-            hf_config_file=["conf_frcnn_rows.yaml"],
-            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
-            dl_library="TF",
-            model_wrapper="TPFrcnnDetector",
-        ),
-        "layout/model-800000.data-00000-of-00001": ModelProfile(
-            name="layout/model-800000.data-00000-of-00001",
-            description="Tensorpack layout detection model trained on Publaynet",
-            config="dd/tp/conf_frcnn_layout.yaml",
-            size=[823656748, 25796],
-            tp_model=True,
-            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet",
-            hf_model_name="model-800000",
-            hf_config_file=["conf_frcnn_layout.yaml"],
-            dl_library="TF",
-            categories={
-                1: LayoutType.TEXT,
-                2: LayoutType.TITLE,
-                3: LayoutType.LIST,
-                4: LayoutType.TABLE,
-                5: LayoutType.FIGURE,
-            },
-            model_wrapper="TPFrcnnDetector",
-        ),
-        "cell/model-1800000.data-00000-of-00001": ModelProfile(
-            name="cell/model-1800000.data-00000-of-00001",
-            description="Tensorpack cell detection model trained on Pubtabnet",
-            config="dd/tp/conf_frcnn_cell.yaml",
-            size=[823509160, 25905],
-            tp_model=True,
-            hf_repo_id="deepdoctection/tp_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c",
-            hf_model_name="model-1800000",
-            hf_config_file=["conf_frcnn_cell.yaml"],
-            categories={1: LayoutType.CELL},
-            dl_library="TF",
-            model_wrapper="TPFrcnnDetector",
-        ),
         "layout/d2_model_0829999_layout_inf_only.pt": ModelProfile(
             name="layout/d2_model_0829999_layout_inf_only.pt",
             description="Detectron2 layout detection model trained on Publaynet",
@@ -189,25 +144,6 @@ class ModelCatalog:
             tp_model=False,
             hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
             hf_model_name="d2_model_0829999_layout_inf_only.pt",
-            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={
-                1: LayoutType.TEXT,
-                2: LayoutType.TITLE,
-                3: LayoutType.LIST,
-                4: LayoutType.TABLE,
-                5: LayoutType.FIGURE,
-            },
-            dl_library="PT",
-            model_wrapper="D2FrcnnDetector",
-        ),
-        "layout/d2_model_0829999_layout.pth": ModelProfile(
-            name="layout/d2_model_0829999_layout.pth",
-            description="Detectron2 layout detection model trained on Publaynet. Checkpoint for resuming training",
-            config="dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml",
-            size=[548377327],
-            tp_model=False,
-            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_publaynet_inference_only",
-            hf_model_name="d2_model_0829999_layout.pth",
             hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
             categories={
                 1: LayoutType.TEXT,
@@ -263,32 +199,6 @@ class ModelCatalog:
             categories={1: LayoutType.CELL},
             dl_library="PT",
             model_wrapper="D2FrcnnTracingDetector",
-        ),
-        "cell/d2_model_1849999_cell.pth": ModelProfile(
-            name="cell/d2_model_1849999_cell.pth",
-            description="Detectron2 cell detection inference only model trained on Pubtabnet",
-            config="dd/d2/cell/CASCADE_RCNN_R_50_FPN_GN.yaml",
-            size=[548279023],
-            tp_model=False,
-            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_c_inference_only",
-            hf_model_name="cell/d2_model_1849999_cell.pth",
-            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={1: LayoutType.CELL},
-            dl_library="PT",
-            model_wrapper="D2FrcnnDetector",
-        ),
-        "item/d2_model_1639999_item.pth": ModelProfile(
-            name="item/d2_model_1639999_item.pth",
-            description="Detectron2 item detection model trained on Pubtabnet",
-            config="dd/d2/item/CASCADE_RCNN_R_50_FPN_GN.yaml",
-            size=[548303599],
-            tp_model=False,
-            hf_repo_id="deepdoctection/d2_casc_rcnn_X_32xd4_50_FPN_GN_2FC_pubtabnet_rc_inference_only",
-            hf_model_name="d2_model_1639999_item.pth",
-            hf_config_file=["Base-RCNN-FPN.yaml", "CASCADE_RCNN_R_50_FPN_GN.yaml"],
-            categories={1: LayoutType.ROW, 2: LayoutType.COLUMN},
-            dl_library="PT",
-            model_wrapper="D2FrcnnDetector",
         ),
         "item/d2_model_1639999_item_inf_only.pt": ModelProfile(
             name="item/d2_model_1639999_item_inf_only.pt",
@@ -1232,20 +1142,18 @@ class ModelDownloadManager:
     def _load_from_hf_hub(
         repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False
     ) -> int:
-        url = hf_hub_url(repo_id=repo_id, filename=file_name)
         token = os.environ.get("HF_CREDENTIALS", None)
-        f_path = cached_download(
-            url,
-            cache_dir=cache_directory,
-            force_filename=file_name,
-            force_download=force_download,
-            token=token,
-            legacy_cache_layout=True,
-        )
+        f_path = hf_hub_download(repo_id,
+                                 file_name,
+                                 local_dir=cache_directory, # type: ignore
+                                 force_filename=file_name,
+                                 force_download=force_download,
+                                 token=token,
+                                 )
         if f_path:
             stat_info = os.stat(f_path)
             size = stat_info.st_size
 
-            assert size > 0, f"Downloaded an empty file from {url}!"
+            assert size > 0, f"Downloaded an empty file from {f_path}!"
             return size
         raise TypeError("Returned value from cached_download cannot be Null")
