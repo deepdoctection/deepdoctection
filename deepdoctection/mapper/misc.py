@@ -38,12 +38,20 @@ with try_import() as import_guard:
     from lxml import etree  # pylint: disable=W0611
 
 
-def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int] = None) -> Optional[Image]:
+def to_image(
+    dp: Union[str, Mapping[str, Union[str, bytes]]],
+    dpi: Optional[int] = None,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> Optional[Image]:
     """
     Mapping an input from `dataflow.SerializerFiles` or similar to an Image
 
     :param dp: Image
     :param dpi: dot per inch definition for pdf resolution when converting to numpy array
+    :param width: target width of the image. This option does only work when using Poppler as PDF renderer
+    :param height: target width of the image. This option does only work when using Poppler as PDF renderer
+    :param height: target height of the image
     :return: Image
     """
 
@@ -77,7 +85,9 @@ def to_image(dp: Union[str, Mapping[str, Union[str, bytes]]], dpi: Optional[int]
                 dp_image.pdf_bytes = dp.get("pdf_bytes")
                 if dp_image.pdf_bytes is not None:
                     if isinstance(dp_image.pdf_bytes, bytes):
-                        dp_image.image = convert_pdf_bytes_to_np_array_v2(dp_image.pdf_bytes, dpi=dpi)
+                        dp_image.image = convert_pdf_bytes_to_np_array_v2(
+                            dp_image.pdf_bytes, dpi=dpi, width=width, height=height
+                        )
             elif image_bytes is not None:
                 dp_image.image = convert_bytes_to_np_array(image_bytes)
             else:

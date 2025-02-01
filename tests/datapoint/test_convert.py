@@ -51,7 +51,7 @@ def test_convert_pdf_bytes_to_np_array_v2_using_pdfmium2(pdf_page: TestPdfPage) 
     os.environ["USE_DD_PDFIUM"] = "True"
 
     # Act
-    np_array = convert_pdf_bytes_to_np_array_v2(pdf_page.pdf_bytes)
+    np_array = convert_pdf_bytes_to_np_array_v2(pdf_page.pdf_bytes, dpi=200)
 
     # Assert
     assert np_array.shape == (2200, 1700, 3)

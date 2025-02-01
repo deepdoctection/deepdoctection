@@ -393,7 +393,7 @@ def pub_to_image_uncur(  # pylint: disable=R0914
             np_image = load_image_from_file(dp["filename"])
         if is_file_extension(dp["filename"], ".pdf"):
             pdf_bytes = load_bytes_from_pdf_file(dp["filename"])
-            np_image = convert_pdf_bytes_to_np_array_v2(pdf_bytes)
+            np_image = convert_pdf_bytes_to_np_array_v2(pdf_bytes, dpi=200)
             dp = _convert_boxes(dp, np_image.shape[0])
 
         if load_image and np_image is not None:

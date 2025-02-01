@@ -154,7 +154,9 @@ def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -
     return np_array.astype(uint8)
 
 
-def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = 200) -> PixelValues:
+def convert_pdf_bytes_to_np_array_v2(
+    pdf_bytes: bytes, dpi: Optional[int] = None, width: Optional[int] = None, height: Optional[int] = None
+) -> PixelValues:
     """
     Converts a pdf passed as bytes into a numpy array. We use poppler or pdfmium to convert the pdf to an image.
     If both is available you can steer the selection of the render engine with environment variables:
@@ -165,17 +167,21 @@ def convert_pdf_bytes_to_np_array_v2(pdf_bytes: bytes, dpi: Optional[int] = 200)
     :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
                       `utils.fs.load_bytes_from_pdf_file`
     :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
+    :param width: The width of the resulting output image. This option does only work when using Poppler as
+    PDF renderer
+    :param height: The height of the resulting output image. This option does only work when using Poppler as
+    PDF renderer
     :return: Image as numpy array.
     """
 
-    with BytesIO(pdf_bytes) as pdf_file:
-        pdf = PdfReader(pdf_file).pages[0]
-    shape = pdf.mediabox  # pylint: disable=E1101
-    height = shape[3] - shape[1]
-    width = shape[2] - shape[0]
-
     if dpi is None:
-        return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))
+        if width is None or height is None:
+            with BytesIO(pdf_bytes) as pdf_file:
+                pdf = PdfReader(pdf_file).pages[0]
+            shape = pdf.mediabox  # pylint: disable=E1101
+            height = shape[3] - shape[1]
+            width = shape[2] - shape[0]
+        return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))  # type: ignore
     return pdf_to_np_array(pdf_bytes, dpi=dpi)
 
 

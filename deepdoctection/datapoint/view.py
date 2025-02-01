@@ -247,7 +247,14 @@ class Layout(ImageAnnotationBaseView):
                 ]
             )
         else:
-            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = [], [], [], [], [], []
+            characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = (
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+                [], # type: ignore
+            )
         return {
             "text": " ".join(characters),
             "words": characters,
@@ -330,7 +337,7 @@ class Table(Layout):
         :return: A list of `Cell` objects that are row headers.
         """
         all_relation_ids = self.get_relationship(Relationships.CHILD)
-        all_cells: list[Cell] = self.base_page.get_annotation( # type: ignore
+        all_cells: list[Cell] = self.base_page.get_annotation(  # type: ignore
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         row_header_cells = list(filter(lambda cell: CellType.ROW_HEADER in cell.sub_categories, all_cells))
@@ -366,18 +373,18 @@ class Table(Layout):
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         row_cells = list(
-            filter(
-                lambda c: row_number in (c.row_number, c.row_number + c.row_span), all_cells  # type: ignore
-            )
+            filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span), all_cells)  # type: ignore
         )
-        row_cells.sort(key=lambda c: c.column_number) # type: ignore
+        row_cells.sort(key=lambda c: c.column_number)  # type: ignore
         column_header_cells = self.column_header_cells
 
         kv_dict: Mapping[str, str] = {}
         for cell in row_cells:
             for header in column_header_cells:
-                if (cell.column_number == header.column_number and  # type: ignore
-                        cell.annotation_id != header.annotation_id):  # type: ignore
+                if (
+                    cell.column_number == header.column_number  # type: ignore
+                    and cell.annotation_id != header.annotation_id  # type: ignore
+                ):
                     kv_dict[(header.column_number, header.text)] = cell.text  # type: ignore
                     break
         return kv_dict

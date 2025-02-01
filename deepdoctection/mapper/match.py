@@ -101,17 +101,6 @@ def match_anns_by_intersection(
         ]
     )
 
-    # second try, if ann has empty image
-    n_dim = child_ann_boxes.ndim
-    if n_dim != 2:
-        child_ann_boxes = np.array(
-            [
-                ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
-                for ann in child_anns
-                if ann.bounding_box is not None
-            ]
-        )
-
     parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
     parent_ann_boxes = np.array(
         [
@@ -119,17 +108,6 @@ def match_anns_by_intersection(
             for ann in parent_anns
         ]
     )
-
-    # same for parent
-    n_dim = parent_ann_boxes.ndim
-    if n_dim != 2:
-        parent_ann_boxes = np.array(
-            [
-                ann.bounding_box.transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
-                for ann in parent_anns
-                if ann.bounding_box is not None
-            ]
-        )
 
     if matching_rule in ["iou"] and parent_anns and child_anns:
         iou_matrix = iou(child_ann_boxes, parent_ann_boxes)
