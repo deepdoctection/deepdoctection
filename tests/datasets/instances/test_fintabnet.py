@@ -26,11 +26,11 @@ from pytest import mark
 from deepdoctection.datasets import Fintabnet
 
 from ...test_utils import collect_datapoint_from_dataflow, get_test_path
-from .conftest import get_white_image
+from .conftest import get_white_image_pdf
 
 
 @mark.basic
-@patch("deepdoctection.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2", MagicMock(side_effect=get_white_image))
+@patch("deepdoctection.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2", MagicMock(side_effect=get_white_image_pdf))
 @patch("deepdoctection.mapper.pubstruct.load_bytes_from_pdf_file", MagicMock(return_value=b"\x01\x02"))
 @patch("deepdoctection.datasets.instances.fintabnet.set_mp_spawn", MagicMock())
 def test_dataset_fintabnet_returns_image() -> None:
@@ -50,7 +50,7 @@ def test_dataset_fintabnet_returns_image() -> None:
 
 
 @mark.basic
-@patch("deepdoctection.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2", MagicMock(side_effect=get_white_image))
+@patch("deepdoctection.mapper.pubstruct.convert_pdf_bytes_to_np_array_v2", MagicMock(side_effect=get_white_image_pdf))
 @patch("deepdoctection.mapper.pubstruct.load_bytes_from_pdf_file", MagicMock(return_value=b"\x01\x02"))
 @patch("deepdoctection.datasets.instances.fintabnet.set_mp_spawn", MagicMock())
 def test_dataset_fintabnet_with_load_image_returns_image() -> None:

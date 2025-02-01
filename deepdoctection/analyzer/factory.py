@@ -48,6 +48,7 @@ from ..pipe.segment import PubtablesSegmentationService, TableSegmentationServic
 from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
+from ..utils.error import DependencyError
 from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
@@ -61,8 +62,6 @@ with try_import() as image_guard:
 __all__ = [
     "ServiceFactory",
 ]
-
-# from ._config import cfg
 
 
 class ServiceFactory:
@@ -94,6 +93,8 @@ class ServiceFactory:
         :param config: configuration object
         :param mode: either `LAYOUT`,`CELL` or `ITEM`
         """
+        if config.LIB is None:
+            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
         weights = (
             getattr(config.TF, mode).WEIGHTS
             if config.LIB == "TF"
@@ -310,6 +311,8 @@ class ServiceFactory:
                 config_overwrite=[f"LANGUAGES={config.LANGUAGE}"] if config.LANGUAGE is not None else None,
             )
         if config.OCR.USE_DOCTR:
+            if config.LIB is None:
+                raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
             weights = (
                 config.OCR.WEIGHTS.DOCTR_RECOGNITION.TF
                 if config.LIB == "TF"
@@ -353,6 +356,8 @@ class ServiceFactory:
         :param config: configuration object
         :return: DoctrTextlineDetector
         """
+        if config.LIB is None:
+            raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
         weights = config.OCR.WEIGHTS.DOCTR_WORD.TF if config.LIB == "TF" else config.OCR.WEIGHTS.DOCTR_WORD.PT
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)

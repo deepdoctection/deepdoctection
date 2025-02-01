@@ -102,15 +102,15 @@ jobs:
               extras: pt,
               test: test,
               test_cases: test-pt }
-          #- { name: '3.12-pt',
-          #    python: '3.12',
-          #    pip: '24.0',
-          #    os: ubuntu-22.04,
-          #    dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-          #    detectron2: true,
-          #    extras: pt,
-          #    test: test,
-          #    test_cases: test-pt }
+          - { name: '3.12-pt',
+              python: '3.12',
+              pip: '24.0',
+              os: ubuntu-22.04,
+              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              detectron2: true,
+              extras: pt,
+              test: test,
+              test_cases: test-pt }
 
     steps:
       - uses: actions/checkout@v3

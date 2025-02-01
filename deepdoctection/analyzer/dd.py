@@ -32,7 +32,6 @@ from ..extern.pt.ptutils import get_torch_device
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.env_info import ENV_VARS_TRUE
-from ..utils.error import DependencyError
 from ..utils.file_utils import tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
@@ -118,13 +117,15 @@ def get_dd_analyzer(
     :return: A DoctectionPipe instance with given configs
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
-    lib = "TF" if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE else "PT"
-    if lib == "TF":
+    if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
+        lib = "TF"
         device = get_tf_device()
-    elif lib == "PT":
+    elif os.environ.get("DD_USE_TORCH", "0") in ENV_VARS_TRUE:
+        lib = "PT"
         device = get_torch_device()
     else:
-        raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+        lib = None
+        device = None
     dd_one_config_path = maybe_copy_config_to_cache(
         get_package_path(), get_configs_dir_path() / "dd", _DD_ONE, reset_config_file
     )
