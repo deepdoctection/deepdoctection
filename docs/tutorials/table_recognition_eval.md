@@ -28,16 +28,16 @@ def get_table_recognizer():
     crop = dd.ImageCroppingService(category_names="table")
     pipe_component_list.append(crop)
 
-    cell_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2CELL)
-    cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2CELL)
-    categories_cell = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2CELL).categories
+    cell_config_path = dd.ModelCatalog.get_full_path_configs("cell/d2_model_1849999_cell_inf_only.ts")
+    cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs("cell/d2_model_1849999_cell_inf_only.ts")
+    categories_cell = dd.ModelCatalog.get_profile("cell/d2_model_1849999_cell_inf_only.ts").categories
     assert categories_cell is not None
-    d_cell = dd.D2FrcnnDetector(cell_config_path, cell_weights_path, categories_cell, device="gpu")
-    item_config_path = dd.ModelCatalog.get_full_path_configs(cfg.CONFIG.D2ITEM)
-    item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(cfg.WEIGHTS.D2ITEM)
-    categories_item = dd.ModelCatalog.get_profile(cfg.WEIGHTS.D2ITEM).categories
+    d_cell = dd.D2FrcnnTracingDetector(cell_config_path, cell_weights_path, categories_cell)
+    item_config_path = dd.ModelCatalog.get_full_path_configs("item/d2_model_1639999_item_inf_only.ts")
+    item_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs("item/d2_model_1639999_item_inf_only.ts")
+    categories_item = dd.ModelCatalog.get_profile("item/d2_model_1639999_item_inf_only.ts").categories
     assert categories_item is not None
-    d_item = dd.D2FrcnnDetector(item_config_path, item_weights_path, categories_item, device="gpu")
+    d_item = dd.D2FrcnnTracingDetector(item_config_path, item_weights_path, categories_item, device="gpu")
 
     cell = dd.SubImageLayoutService(d_cell, "table", {1: 6}, True)
     pipe_component_list.append(cell)
@@ -56,6 +56,11 @@ def get_table_recognizer():
         cfg.SEGMENTATION.FULL_TABLE_TILING,
         cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
         cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
+        dd.LayoutType.TABLE,
+        [dd.CellType.HEADER,dd.CellType.BODY,dd.LayoutType.CELL],
+        [dd.LayoutType.ROW,dd.LayoutType.COLUMN],
+        [dd.CellType.ROW_NUMBER, dd.CellType.COLUMN_NUMBER],
+        cfg.SEGMENTATION.STRETCH_RULE,
     )
     pipe_component_list.append(table_segmentation)
     table_segmentation_refinement = dd.TableSegmentationRefinementService([LayoutType.TABLE,
@@ -68,6 +73,7 @@ def get_table_recognizer():
                                                                               CellType.ROW_HEADER,
                                                                           ])
     pipe_component_list.append(table_segmentation_refinement)
+    
     tess_ocr_config_path = os.path.join(get_configs_dir_path(), cfg.CONFIG.TESS_OCR)
     d_tess_ocr = dd.TesseractOcrDetector(tess_ocr_config_path)
     text = dd.TextExtractionService(d_tess_ocr, None, {1: 9})
