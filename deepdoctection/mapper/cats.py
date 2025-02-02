@@ -73,18 +73,21 @@ def re_assign_cat_ids(
     Annotations that are not in the dictionary provided will be removed.
 
     :param dp: Image
-    :param categories_dict_name_as_key: e.g. `{LayoutType.word: '1'}`
+    :param categories_dict_name_as_key: e.g. `{LayoutType.word: 1}`
     :param cat_to_sub_cat_mapping: e.g. `{<LayoutType.word>:
         {<WordType.token_class>:
-            {<FundsFirstPage.report_date>: '1',
-            <FundsFirstPage.report_type>: '2',
-            <FundsFirstPage.umbrella>: '3',
-            <FundsFirstPage.fund_name>: '4',
-            <TokenClasses.other>: '5'},
-            <WordType.tag>:
-            {<BioTag.inside>: '1',
-            <BioTag.outside>: '2',
-            <BioTag.begin>: '3'}}}`
+            {<FundsFirstPage.REPORT_DATE>: 1,
+            <FundsFirstPage.REPORT_TYPE>: 2,
+            <FundsFirstPage.UMBRELLA>: 3,
+            <FundsFirstPage.FUND_NAME>: 4,
+            <TokenClasses.OTHER>: 5},
+            <WordType.TAG>:
+            {<BioTag.INSIDE>: 1,
+            <BioTag.OUTSIDE>: 2,
+            <BioTag.BEGIN>: 3}}}`
+            To re-assign the category ids of an image summary, use the key 'default_type' for the default category, e.g.
+            `{DefaultType.DEFAULT_TYPE: {<PageType.DOCUMENT_TYPE>: {<DocumentType.INVOICE>:1,
+            <DocumentType.BANK_STATEMENT>:2}}}`
     :return: Image
     """
 
@@ -103,6 +106,14 @@ def re_assign_cat_ids(
                     sub_cat_values_dict = sub_cat_keys_to_sub_cat_values[key]
                     sub_category = ann.get_sub_category(key)
                     sub_category.category_id = sub_cat_values_dict.get(sub_category.category_name, DEFAULT_CATEGORY_ID)
+
+    if cat_to_sub_cat_mapping:
+        if "default_type" in cat_to_sub_cat_mapping:
+            sub_cat_keys_to_sub_cat_values = cat_to_sub_cat_mapping[get_type("default_type")]
+            for key in sub_cat_keys_to_sub_cat_values:
+                sub_cat_values_dict = sub_cat_keys_to_sub_cat_values[key]
+                sub_category = dp.summary.get_sub_category(key)
+                sub_category.category_id = sub_cat_values_dict.get(sub_category.category_name, DEFAULT_CATEGORY_ID)
 
     dp.remove(annotation_ids=ann_ids_to_remove)
 
