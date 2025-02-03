@@ -248,12 +248,12 @@ class Layout(ImageAnnotationBaseView):
             )
         else:
             characters, ann_ids, token_classes, token_tags, token_classes_ids, token_tag_ids = (
-                [], # type: ignore
-                [], # type: ignore
-                [], # type: ignore
-                [], # type: ignore
-                [], # type: ignore
-                [], # type: ignore
+                [],  # type: ignore
+                [],  # type: ignore
+                [],  # type: ignore
+                [],  # type: ignore
+                [],  # type: ignore
+                [],  # type: ignore
             )
         return {
             "text": " ".join(characters),
