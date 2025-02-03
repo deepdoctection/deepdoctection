@@ -24,6 +24,7 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
 from ..datapoint.image import Image
+from ..extern.base import SequenceClassResult
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
 from .base import MetaAnnotation, PipelineComponent
@@ -264,6 +265,7 @@ class LMSequenceClassifierService(PipelineComponent):
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
+        use_other_as_default_category: bool = False
     ) -> None:
         """
         :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
@@ -279,11 +281,16 @@ class LMSequenceClassifierService(PipelineComponent):
         :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
                            can be returned as an additional batch element. Not that in this case, the number of input
                            batch samples will be smaller than the output batch samples.
+        :param use_other_as_default_category: When predicting document classes, it might be possible that some pages
+                           do not get sent to the model because they are empty. If set to `True` it
+                           will assign images with no features the category `TokenClasses.OTHER`.
+
         """
         self.language_model = language_model
         self.padding = padding
         self.truncation = truncation
         self.return_overflowing_tokens = return_overflowing_tokens
+        self.use_other_as_default_category = use_other_as_default_category
         self.tokenizer = tokenizer
         self.mapping_to_lm_input_func = self.image_to_features_func(self.language_model.image_to_features_mapping())
         super().__init__(self._get_name(), self.language_model.model_id)
@@ -299,12 +306,20 @@ class LMSequenceClassifierService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         lm_input = self.mapping_to_lm_input_func(**self.required_kwargs)(dp)
+        lm_output = None
         if lm_input is None:
-            return
-        lm_output = self.language_model.predict(**lm_input)
-        self.dp_manager.set_summary_annotation(
-            PageType.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
-        )
+            if self.use_other_as_default_category:
+                class_id = self.language_model.categories.get_categories(as_dict=True,
+                                                                         name_as_key=True).get(TokenClasses.OTHER, 1)
+                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER,
+                                                class_id = class_id,
+                                                score=-1.)
+        else:
+            lm_output = self.language_model.predict(**lm_input)
+        if lm_output:
+            self.dp_manager.set_summary_annotation(
+                PageType.DOCUMENT_TYPE, lm_output.class_name, lm_output.class_id, None, lm_output.score
+            )
 
     def clone(self) -> LMSequenceClassifierService:
         return self.__class__(
