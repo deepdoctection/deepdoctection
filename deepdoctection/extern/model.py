@@ -1143,13 +1143,14 @@ class ModelDownloadManager:
         repo_id: str, file_name: str, cache_directory: PathLikeOrStr, force_download: bool = False
     ) -> int:
         token = os.environ.get("HF_CREDENTIALS", None)
-        f_path = hf_hub_download(repo_id,
-                                 file_name,
-                                 local_dir=cache_directory, # type: ignore
-                                 force_filename=file_name,
-                                 force_download=force_download,
-                                 token=token,
-                                 )
+        f_path = hf_hub_download(
+            repo_id,
+            file_name,
+            local_dir=cache_directory,  # type: ignore
+            force_filename=file_name,
+            force_download=force_download,
+            token=token,
+        )
         if f_path:
             stat_info = os.stat(f_path)
             size = stat_info.st_size
