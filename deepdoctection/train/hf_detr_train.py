@@ -73,7 +73,7 @@ class DetrDerivedTrainer(Trainer):
         model: Union[PreTrainedModel, nn.Module],
         args: TrainingArguments,
         data_collator: DetrDataCollator,
-        train_dataset: Dataset[Any],
+        train_dataset: DatasetAdapter,
     ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None

@@ -349,8 +349,8 @@ class AnnotationNmsService(PipelineComponent):
     def __init__(
         self,
         nms_pairs: Sequence[Sequence[TypeOrStr]],
-        thresholds: Union[float, list[float]],
-        priority: Optional[list[Union[Optional[TypeOrStr]]]] = None,
+        thresholds: Union[float, Sequence[float]],
+        priority: Optional[Sequence[Union[Optional[TypeOrStr]]]] = None,
     ):
         """
         :param nms_pairs: Groups of categories, either as string or by `ObjectType`.
@@ -362,7 +362,7 @@ class AnnotationNmsService(PipelineComponent):
             self.threshold = [thresholds for _ in self.nms_pairs]
         else:
             assert len(self.nms_pairs) == len(thresholds), "Sequences of nms_pairs and thresholds must have same length"
-            self.threshold = thresholds
+            self.threshold = thresholds # type: ignore
         if priority:
             assert len(self.nms_pairs) == len(priority), "Sequences of nms_pairs and priority must have same length"
 
