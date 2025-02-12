@@ -87,4 +87,4 @@ class TestFasttextLangDetector:
 
         # Assert
         assert result.text == "ita"
-        assert 0.9 <= result.score <= 1.0
+        assert 0.9 <= result.score <= 1.0  # type: ignore
