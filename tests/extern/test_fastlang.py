@@ -27,7 +27,7 @@ from numpy import float32
 from pytest import mark
 
 from deepdoctection.extern.fastlang import FasttextLangDetector
-from deepdoctection.extern.model import ModelCatalog
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 
 
 def get_mock_lang_detect_result(text_string: str) -> Tuple[Tuple[str], npt.NDArray[float32]]:  # pylint: disable = W0613
@@ -76,6 +76,7 @@ class TestFasttextLangDetector:
         # Arrange
         path_weights = ModelCatalog.get_full_path_weights("fasttext/lid.176.bin")
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
+        ModelDownloadManager.maybe_download_weights_and_configs("fasttext/lid.176.bin")
 
         assert profile.categories
         assert profile.categories_orig
