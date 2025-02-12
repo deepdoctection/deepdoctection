@@ -91,6 +91,7 @@ _DEPS = [
     "tf2onnx>=1.9.2",
     "python-doctr==0.8.1",
     "fasttext==0.9.2",
+    "fasttext-wheel",
     # dev dependencies
     "python-dotenv==1.0.0",
     "click",  # version will not break black
@@ -147,7 +148,7 @@ dist_deps = deps_list(
 additional_deps = deps_list(
     "boto3",
     "pdfplumber",
-    "fasttext",
+    "fasttext-wheel",
     "jdeskew",
     "apted",
     "distance",
