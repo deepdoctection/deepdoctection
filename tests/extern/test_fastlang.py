@@ -63,3 +63,27 @@ class TestFasttextLangDetector:
         # Assert
         assert result.text == "ita"
         assert result.score == 0.99414486
+
+
+    @staticmethod
+    @mark.additional
+    def test_non_mock_fasttext_lang_detector_predicts_language() -> None:
+        """
+        Detector calls model.predict(text_string) and processes returned results correctly. This test case does not use
+        a mock model.
+        """
+
+        # Arrange
+        path_weights = ModelCatalog.get_full_path_weights("fasttext/lid.176.bin")
+        profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
+
+        assert profile.categories
+        assert profile.categories_orig
+        fasttest_predictor = FasttextLangDetector(path_weights, profile.categories, profile.categories_orig)
+
+        # Act
+        result = fasttest_predictor.predict("Un leggero dialetto italiano")
+
+        # Assert
+        assert result.text == "ita"
+        assert 0.9 <= result.score <= 1.0
