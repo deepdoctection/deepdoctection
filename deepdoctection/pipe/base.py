@@ -100,7 +100,7 @@ class PipelineComponent(ABC):
 
         :param filter_func: A function that takes an image datapoint and returns a boolean value
         """
-        self.filter_func = filter_func
+        self.filter_func = filter_func # type: ignore
 
     @abstractmethod
     def serve(self, dp: Image) -> None:
