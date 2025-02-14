@@ -22,8 +22,10 @@ Testing module pipe.layout
 from unittest.mock import MagicMock
 
 from pytest import mark
+from sympy.integrals.meijerint_doc import category
 
-from deepdoctection.datapoint import Image, ImageAnnotation
+from deepdoctection.utils.settings import DocumentType, PageType
+from deepdoctection.datapoint import Image, ImageAnnotation, CategoryAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.layout import ImageLayoutService
 
@@ -64,3 +66,26 @@ class TestImageLayoutService:
             assert isinstance(ann.image, Image)
             ann.image = None
         assert anns == layout_annotations
+
+    @mark.basic
+    def test_pass_datapoint_with_filter_condition(self, dp_image: Image, layout_detect_results: DetectionResult,
+                                                  layout_annotations: ImageAnnotation
+    ) -> None:
+
+        # Arrange
+        def filter_invoices(dp: Image) -> bool:
+            if dp.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_name == DocumentType.INVOICE:
+                return True
+            return False
+
+        self._layout_detector.predict = MagicMock(return_value=layout_detect_results)
+        self.image_layout_service.set_inbound_filter(filter_invoices)
+        dp_image.summary.dump_sub_category(PageType.DOCUMENT_TYPE,
+                                           CategoryAnnotation(category_name= DocumentType.INVOICE))
+
+        # Act
+        dp = self.image_layout_service.pass_datapoint(dp_image)
+        anns = dp.get_annotation()
+
+        # Assert
+        assert len(anns) == 0

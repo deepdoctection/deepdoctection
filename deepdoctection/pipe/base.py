@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union, Callable
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
@@ -33,6 +33,7 @@ from ..mapper.misc import curry
 from ..utils.context import timed_operation
 from ..utils.identifier import get_uuid_from_str
 from ..utils.settings import ObjectTypes
+from ..utils.types import DP, BaseExceptionType, S, T
 from .anngen import DatapointManager
 
 
@@ -76,6 +77,30 @@ class PipelineComponent(ABC):
         self.service_id = self.get_service_id()
         self.dp_manager = DatapointManager(self.service_id, model_id)
         self.timer_on = False
+        self.maybe_filter_func: Callable[[DP], bool] = lambda dp: True
+
+    def set_inbound_filter(self, filter_func: Callable[[DP], bool]) -> None:
+        """
+        Set a filter function to decide, if an image of the inbound dataflow should be passed to self.serve.
+        The filter function should return a boolean value. If the function returns True, the image will not be processed
+        by this pipeline component.
+
+        **Example:**
+
+            ```python
+            def do_not_process_tables(dp: Image) -> bool:
+                 if "table" not in dp.get_categories_from_current_state():
+                    return True
+                 return False
+
+            layout_component = ImageLayoutService(...)
+            layout_component.set_inbound_filter(do_not_process_tables)
+            ```
+
+
+        :param filter_func: A function that takes an image datapoint and returns a boolean value
+        """
+        self.maybe_filter_func = filter_func
 
     @abstractmethod
     def serve(self, dp: Image) -> None:
@@ -92,6 +117,12 @@ class PipelineComponent(ABC):
         """
         raise NotImplementedError()
 
+    def _pass_datapoint(self, dp: Image) -> None:
+        self.dp_manager.datapoint = dp
+        if not self.maybe_filter_func(dp):
+            self.serve(dp)
+
+
     def pass_datapoint(self, dp: Image) -> Image:
         """
         Acceptance, handover to dp_manager, transformation and forwarding of dp. To measure the time, use
@@ -103,11 +134,9 @@ class PipelineComponent(ABC):
         """
         if self.timer_on:
             with timed_operation(self.__class__.__name__):
-                self.dp_manager.datapoint = dp
-                self.serve(dp)
+                self._pass_datapoint(dp)
         else:
-            self.dp_manager.datapoint = dp
-            self.serve(dp)
+            self._pass_datapoint(dp)
         return self.dp_manager.datapoint
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
@@ -205,6 +234,7 @@ class Pipeline(ABC):
 
     **Example:**
 
+            ```python
             layout = LayoutPipeComponent(layout_detector ...)
             text = TextExtractPipeComponent(text_detector ...)
             simple_pipe = MyPipeline(pipeline_component = [layout, text])
@@ -212,6 +242,7 @@ class Pipeline(ABC):
 
             for page in doc_dataflow:
                 print(page)
+            ```
 
     In doing so, page contains all document structures determined via the pipeline (either directly from the Image core
     model or already processed further).
@@ -225,10 +256,12 @@ class Pipeline(ABC):
 
     **Example:**
 
+           ```python
            pipe = MyPipeline(pipeline_component = [layout, text])
            pipe.set_session_id = True
 
            df = pipe.analyze(input = "path/to/dir") # session_id is generated automatically
+           ```
     """
 
     def __init__(self, pipeline_component_list: list[PipelineComponent]) -> None:
