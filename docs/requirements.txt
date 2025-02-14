@@ -254,7 +254,7 @@ tqdm==4.64.0
     #   huggingface-hub
     #   tensorpack
     #   transformers
-transformers==4.36.2
+transformers==4.48.0
     # via deepdoctection (setup.py)
 triton==2.1.0
     # via torch
