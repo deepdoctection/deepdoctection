@@ -16,7 +16,7 @@ filelock==3.6.0
     # via huggingface-hub
 fsspec==2023.9.2
     # via huggingface-hub
-huggingface-hub==0.17.2
+huggingface-hub==0.28.1
     # via deepdoctection (setup.py)
 idna==3.3
     # via requests
