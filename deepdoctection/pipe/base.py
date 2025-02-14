@@ -77,7 +77,7 @@ class PipelineComponent(ABC):
         self.service_id = self.get_service_id()
         self.dp_manager = DatapointManager(self.service_id, model_id)
         self.timer_on = False
-        self.maybe_filter_func: Callable[[DP], bool] = lambda dp: True
+        self.filter_func: Callable[[DP], bool] = lambda dp: False
 
     def set_inbound_filter(self, filter_func: Callable[[DP], bool]) -> None:
         """
@@ -100,7 +100,7 @@ class PipelineComponent(ABC):
 
         :param filter_func: A function that takes an image datapoint and returns a boolean value
         """
-        self.maybe_filter_func = filter_func
+        self.filter_func = filter_func
 
     @abstractmethod
     def serve(self, dp: Image) -> None:
@@ -119,7 +119,7 @@ class PipelineComponent(ABC):
 
     def _pass_datapoint(self, dp: Image) -> None:
         self.dp_manager.datapoint = dp
-        if not self.maybe_filter_func(dp):
+        if not self.filter_func(dp):
             self.serve(dp)
 
 

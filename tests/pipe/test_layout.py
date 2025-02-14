@@ -22,7 +22,6 @@ Testing module pipe.layout
 from unittest.mock import MagicMock
 
 from pytest import mark
-from sympy.integrals.meijerint_doc import category
 
 from deepdoctection.utils.settings import DocumentType, PageType
 from deepdoctection.datapoint import Image, ImageAnnotation, CategoryAnnotation
