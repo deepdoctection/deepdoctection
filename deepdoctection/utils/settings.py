@@ -101,7 +101,6 @@ class DocumentType(ObjectTypes):
     GOVERNMENT_TENDERS = "government_tenders"
     MANUALS = "manuals"
     PATENTS = "patents"
-    MARK = "mark"
 
 
 @object_types_registry.register("LayoutType")
@@ -132,6 +131,7 @@ class LayoutType(ObjectTypes):
     PAGE_NUMBER = "page_number"
     KEY_VALUE_AREA = "key_value_area"
     LIST_ITEM = "list_item"
+    MARK = "mark"
 
 
 @object_types_registry.register("TableType")
