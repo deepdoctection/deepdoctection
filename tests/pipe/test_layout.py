@@ -67,9 +67,9 @@ class TestImageLayoutService:
         assert anns == layout_annotations
 
     @mark.basic
-    def test_pass_datapoint_with_filter_condition(self, dp_image: Image, layout_detect_results: DetectionResult,
-                                                  layout_annotations: ImageAnnotation
-    ) -> None:
+    def test_pass_datapoint_with_filter_condition(self, dp_image: Image,
+                                                  layout_detect_results: DetectionResult) -> None:
+        """Test pass_datapoint with filter condition"""
 
         # Arrange
         def filter_invoices(dp: Image) -> bool:
