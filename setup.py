@@ -90,7 +90,6 @@ _DEPS = [
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
     "python-doctr==0.8.1",
-    "fasttext==0.9.2",
     "fasttext-wheel",
     # dev dependencies
     "python-dotenv==1.0.0",

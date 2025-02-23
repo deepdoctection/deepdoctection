@@ -40,6 +40,7 @@ cfg.TF.CELL.FILTER = None
 cfg.TF.ITEM.WEIGHTS = "item/model-1620000_inf_only.data-00000-of-00001"
 cfg.TF.ITEM.FILTER = None
 
+cfg.PT.ENFORCE_WEIGHTS = False
 cfg.PT.LAYOUT.WEIGHTS = "layout/d2_model_0829999_layout_inf_only.pt"
 cfg.PT.LAYOUT.WEIGHTS_TS = "layout/d2_model_0829999_layout_inf_only.ts"
 cfg.PT.LAYOUT.FILTER = None

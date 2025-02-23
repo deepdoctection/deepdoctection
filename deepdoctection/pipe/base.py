@@ -24,7 +24,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Optional, Union, Callable
+from typing import Any, Callable, Mapping, Optional, Union
 from uuid import uuid1
 
 from ..dataflow import DataFlow, MapData
@@ -100,7 +100,7 @@ class PipelineComponent(ABC):
 
         :param filter_func: A function that takes an image datapoint and returns a boolean value
         """
-        self.filter_func = filter_func # type: ignore
+        self.filter_func = filter_func  # type: ignore
 
     @abstractmethod
     def serve(self, dp: Image) -> None:
@@ -121,7 +121,6 @@ class PipelineComponent(ABC):
         self.dp_manager.datapoint = dp
         if not self.filter_func(dp):
             self.serve(dp)
-
 
     def pass_datapoint(self, dp: Image) -> Image:
         """

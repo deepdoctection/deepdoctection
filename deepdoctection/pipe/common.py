@@ -362,7 +362,7 @@ class AnnotationNmsService(PipelineComponent):
             self.threshold = [thresholds for _ in self.nms_pairs]
         else:
             assert len(self.nms_pairs) == len(thresholds), "Sequences of nms_pairs and thresholds must have same length"
-            self.threshold = thresholds # type: ignore
+            self.threshold = thresholds  # type: ignore
         if priority:
             assert len(self.nms_pairs) == len(priority), "Sequences of nms_pairs and priority must have same length"
 
