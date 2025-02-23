@@ -499,9 +499,7 @@ def train_hf_layoutlm(
         )
         pipeline_component_cls = pipeline_component_registry.get(pipeline_component_name)
         if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
-            pipeline_component = pipeline_component_cls(tokenizer_fast,
-                                                        dd_model,
-                                                        use_other_as_default_category=True)
+            pipeline_component = pipeline_component_cls(tokenizer_fast, dd_model, use_other_as_default_category=True)
         else:
             pipeline_component = pipeline_component_cls(
                 tokenizer_fast,

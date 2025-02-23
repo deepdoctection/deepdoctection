@@ -265,7 +265,7 @@ class LMSequenceClassifierService(PipelineComponent):
         padding: Literal["max_length", "do_not_pad", "longest"] = "max_length",
         truncation: bool = True,
         return_overflowing_tokens: bool = False,
-        use_other_as_default_category: bool = False
+        use_other_as_default_category: bool = False,
     ) -> None:
         """
         :param tokenizer: Tokenizer, typing allows currently anything. This will be changed in the future
@@ -309,11 +309,10 @@ class LMSequenceClassifierService(PipelineComponent):
         lm_output = None
         if lm_input is None:
             if self.use_other_as_default_category:
-                class_id = self.language_model.categories.get_categories(as_dict=True,
-                                                                         name_as_key=True).get(TokenClasses.OTHER, 1)
-                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER,
-                                                class_id = class_id,
-                                                score=-1.)
+                class_id = self.language_model.categories.get_categories(as_dict=True, name_as_key=True).get(
+                    TokenClasses.OTHER, 1
+                )
+                lm_output = SequenceClassResult(class_name=TokenClasses.OTHER, class_id=class_id, score=-1.0)
         else:
             lm_output = self.language_model.predict(**lm_input)
         if lm_output:

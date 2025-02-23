@@ -416,7 +416,7 @@ class Table(Layout):
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         row_cells = list(
-            filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span-1), all_cells)  # type: ignore
+            filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span - 1), all_cells)  # type: ignore
         )
         row_cells.sort(key=lambda c: c.column_number)  # type: ignore
         return row_cells
@@ -430,7 +430,7 @@ class Table(Layout):
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         column_cells = list(
-            filter(lambda c: column_number in (c.column_number, c.column_number + c.column_span-1), all_cells)
+            filter(lambda c: column_number in (c.column_number, c.column_number + c.column_span - 1), all_cells)
             # type: ignore
         )
         column_cells.sort(key=lambda c: c.row_number)  # type: ignore
