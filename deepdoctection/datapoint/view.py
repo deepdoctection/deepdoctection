@@ -407,6 +407,35 @@ class Table(Layout):
         col_anns = self.base_page.get_annotation(annotation_ids=all_relation_ids, category_names=[LayoutType.COLUMN])
         return col_anns
 
+    def row(self, row_number: int) -> list[ImageAnnotationBaseView]:
+        """
+        Get a list of cells in a row.
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells = self.base_page.get_annotation(
+            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+        )
+        row_cells = list(
+            filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span - 1), all_cells)  # type: ignore
+        )
+        row_cells.sort(key=lambda c: c.column_number)  # type: ignore
+        return row_cells  # type: ignore
+
+    def column(self, column_number: int) -> list[ImageAnnotationBaseView]:
+        """
+        Get a list of cells in a column.
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        all_cells = self.base_page.get_annotation(
+            category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
+        )
+        column_cells = list(
+            filter(lambda c: column_number in  # type: ignore
+                             (c.column_number, c.column_number + c.column_span - 1), all_cells)  # type: ignore
+        )
+        column_cells.sort(key=lambda c: c.row_number)  # type: ignore
+        return column_cells  # type: ignore
+
     @property
     def html(self) -> HTML:
         """

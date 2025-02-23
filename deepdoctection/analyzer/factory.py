@@ -98,7 +98,11 @@ class ServiceFactory:
         weights = (
             getattr(config.TF, mode).WEIGHTS
             if config.LIB == "TF"
-            else (getattr(config.PT, mode).WEIGHTS if detectron2_available() else getattr(config.PT, mode).WEIGHTS_TS)
+            else (
+                getattr(config.PT, mode).WEIGHTS
+                if detectron2_available() or config.PT.ENFORCE_WEIGHTS
+                else getattr(config.PT, mode).WEIGHTS_TS
+            )
         )
         filter_categories = (
             getattr(getattr(config.TF, mode), "FILTER")
