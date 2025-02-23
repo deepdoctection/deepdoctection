@@ -64,7 +64,6 @@ class TestFasttextLangDetector:
         assert result.text == "ita"
         assert result.score == 0.99414486
 
-
     @staticmethod
     @mark.additional
     def test_non_mock_fasttext_lang_detector_predicts_language() -> None:

@@ -23,10 +23,10 @@ from unittest.mock import MagicMock
 
 from pytest import mark
 
-from deepdoctection.utils.settings import DocumentType, PageType
-from deepdoctection.datapoint import Image, ImageAnnotation, CategoryAnnotation
+from deepdoctection.datapoint import CategoryAnnotation, Image, ImageAnnotation
 from deepdoctection.extern.base import DetectionResult, ObjectDetector
 from deepdoctection.pipe.layout import ImageLayoutService
+from deepdoctection.utils.settings import DocumentType, PageType
 
 
 class TestImageLayoutService:
@@ -67,8 +67,9 @@ class TestImageLayoutService:
         assert anns == layout_annotations
 
     @mark.basic
-    def test_pass_datapoint_with_filter_condition(self, dp_image: Image,
-                                                  layout_detect_results: DetectionResult) -> None:
+    def test_pass_datapoint_with_filter_condition(
+        self, dp_image: Image, layout_detect_results: DetectionResult
+    ) -> None:
         """Test pass_datapoint with filter condition"""
 
         # Arrange
@@ -79,8 +80,9 @@ class TestImageLayoutService:
 
         self._layout_detector.predict = MagicMock(return_value=layout_detect_results)
         self.image_layout_service.set_inbound_filter(filter_invoices)
-        dp_image.summary.dump_sub_category(PageType.DOCUMENT_TYPE,
-                                           CategoryAnnotation(category_name= DocumentType.INVOICE))
+        dp_image.summary.dump_sub_category(
+            PageType.DOCUMENT_TYPE, CategoryAnnotation(category_name=DocumentType.INVOICE)
+        )
 
         # Act
         dp = self.image_layout_service.pass_datapoint(dp_image)
