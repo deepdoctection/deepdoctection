@@ -419,7 +419,7 @@ class Table(Layout):
             filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span - 1), all_cells)  # type: ignore
         )
         row_cells.sort(key=lambda c: c.column_number)  # type: ignore
-        return row_cells
+        return row_cells  # type: ignore
 
     def column(self, column_number: int) -> list[ImageAnnotationBaseView]:
         """
@@ -430,11 +430,11 @@ class Table(Layout):
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         column_cells = list(
-            filter(lambda c: column_number in (c.column_number, c.column_number + c.column_span - 1), all_cells)
-            # type: ignore
+            filter(lambda c: column_number in  # type: ignore
+                             (c.column_number, c.column_number + c.column_span - 1), all_cells)  # type: ignore
         )
         column_cells.sort(key=lambda c: c.row_number)  # type: ignore
-        return column_cells
+        return column_cells  # type: ignore
 
     @property
     def html(self) -> HTML:
