@@ -720,7 +720,7 @@ class Image:
         :return: optional dict
         """
 
-        def set_image_keys_to_none(d):
+        def set_image_keys_to_none(d):  # type: ignore
             if isinstance(d, dict):
                 for key, value in d.items():
                     if key == '_image':
