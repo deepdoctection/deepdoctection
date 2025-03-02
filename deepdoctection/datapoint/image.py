@@ -702,11 +702,11 @@ class Image:
         return get_uuid(self.image_id, *container_ids)
 
     def save(
-        self,
-        image_to_json: bool = True,
-        highest_hierarchy_only: bool = False,
-        path: Optional[PathLikeOrStr] = None,
-        dry: bool = False,
+            self,
+            image_to_json: bool = True,
+            highest_hierarchy_only: bool = False,
+            path: Optional[PathLikeOrStr] = None,
+            dry: bool = False,
     ) -> Optional[Union[ImageDict, str]]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
@@ -719,6 +719,18 @@ class Image:
 
         :return: optional dict
         """
+
+        def set_image_keys_to_none(d):
+            if isinstance(d, dict):
+                for key, value in d.items():
+                    if key == '_image':
+                        d[key] = None
+                    else:
+                        set_image_keys_to_none(value)
+            elif isinstance(d, list):
+                for item in d:
+                    set_image_keys_to_none(item)
+
         if path is None:
             path = Path(self.location)
         path = Path(path)
@@ -734,7 +746,7 @@ class Image:
         export_dict = self.as_dict()
         export_dict["location"] = fspath(export_dict["location"])
         if not image_to_json:
-            export_dict["_image"] = None
+            set_image_keys_to_none(export_dict)
         if dry:
             return export_dict
         with open(path_json, "w", encoding="UTF-8") as file:
