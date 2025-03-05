@@ -32,7 +32,7 @@ from .maputils import LabelSummarizer, curry
 @curry
 def cat_to_sub_cat(
     dp: Image,
-    categories_dict_names_as_key: dict[TypeOrStr, int],
+    categories_dict_names_as_key: Optional[dict[TypeOrStr, int]] = None,
     cat_to_sub_cat_dict: Optional[dict[TypeOrStr, TypeOrStr]] = None,
 ) -> Image:
     """
@@ -45,7 +45,8 @@ def cat_to_sub_cat(
     :param cat_to_sub_cat_dict: e.g. {'foo': 'sub_cat_1', 'bak': 'sub_cat_2'}
     :return: Image with updated Annotations
     """
-
+    if categories_dict_names_as_key is None:
+        categories_dict_names_as_key = {}
     if cat_to_sub_cat_dict is None:
         return dp
     cat_to_sub_cat_dict_obj_type = {get_type(key): get_type(value) for key, value in cat_to_sub_cat_dict.items()}
@@ -54,7 +55,7 @@ def cat_to_sub_cat(
         sub_cat = ann.get_sub_category(sub_cat_type)
         if sub_cat:
             ann.category_name = sub_cat.category_name
-            ann.category_id = categories_dict_names_as_key[ann.category_name]
+            ann.category_id = categories_dict_names_as_key.get(ann.category_name,DEFAULT_CATEGORY_ID)
 
     return dp
 
