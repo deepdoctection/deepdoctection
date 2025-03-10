@@ -18,6 +18,7 @@
 """
 Module for DatasetRegistry
 """
+import inspect
 
 import catalogue  # type: ignore
 from tabulate import tabulate
@@ -47,7 +48,10 @@ def get_dataset(name: str) -> DatasetBase:
     :param name: A dataset name
     :return: An instance of a dataset
     """
-    return dataset_registry.get(name)()
+    ds = dataset_registry.get(name)
+    if inspect.isclass(ds):
+        return ds()
+    return ds
 
 
 def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None:
