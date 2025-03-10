@@ -1,6 +1,6 @@
 # Dockerfile for Docker version (>=20.10)
 
-This Dockerfile allows you to build an image to based on the base layer `nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04` 
+This Dockerfile allows you to build an image to based on the base layer `nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04` 
 with torch and GPU support for the full **deep**doctection suite.
 
 From the repo folder create an image
