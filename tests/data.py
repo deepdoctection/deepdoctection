@@ -487,9 +487,9 @@ class Annotations:
     ]  # global coordinates calculated depending on table annotation from fixture image_annotations
 
     annotation_maps = {
-        "ae3f2073-0780-3bff-ad43-99cd461917da": [
+        "51fca38d-b181-3ea2-9c97-7e265febcc86": [
             AnnotationMap(
-                image_annotation_id="ae3f2073-0780-3bff-ad43-99cd461917da",
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
                 sub_category_key=None,
                 relationship_key=None,
                 summary_key=None,
@@ -497,7 +497,7 @@ class Annotations:
         ],
         "c603f62d-211b-335d-9401-350b17842562": [
             AnnotationMap(
-                image_annotation_id="ae3f2073-0780-3bff-ad43-99cd461917da",
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
                 sub_category_key=None,
                 relationship_key=Relationships.CHILD,
                 summary_key=None,
@@ -511,7 +511,7 @@ class Annotations:
         ],
         "19c89b7e-c502-3e74-8828-622d13f4ca88": [
             AnnotationMap(
-                image_annotation_id="ae3f2073-0780-3bff-ad43-99cd461917da",
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
                 sub_category_key=None,
                 relationship_key=Relationships.CHILD,
                 summary_key=None,
@@ -658,7 +658,7 @@ class Annotations:
     }
 
     service_id_to_ann_id = {
-        "test_service": ["ae3f2073-0780-3bff-ad43-99cd461917da", "19119d0c-3c2c-3126-90c2-4dda3857d624"],
+        "test_service": ["51fca38d-b181-3ea2-9c97-7e265febcc86", "19119d0c-3c2c-3126-90c2-4dda3857d624"],
         "test_service_word": [
             "c603f62d-211b-335d-9401-350b17842562",
             "19c89b7e-c502-3e74-8828-622d13f4ca88",
@@ -668,7 +668,7 @@ class Annotations:
     }
 
     def __post_init__(self) -> None:
-        self.layout_anns[0]._annotation_id = "ae3f2073-0780-3bff-ad43-99cd461917da"  # pylint: disable=W0212
+        self.layout_anns[0]._annotation_id = "51fca38d-b181-3ea2-9c97-7e265febcc86"  # pylint: disable=W0212
         self.layout_anns[1]._annotation_id = "2c3d5826-849b-3447-aef8-4d1906a1ef9b"  # pylint: disable=W0212
         self.layout_anns[2]._annotation_id = "2f7732d4-9ff5-3518-94df-8f6a643d2e87"  # pylint: disable=W0212
         self.layout_anns[3]._annotation_id = "c24a176c-58c6-3bc4-bd95-a5a07f2943f0"  # pylint: disable=W0212

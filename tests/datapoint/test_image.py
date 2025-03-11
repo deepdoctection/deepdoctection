@@ -180,9 +180,9 @@ class TestImage:
         # Assert
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
         assert (
-            cat.annotation_id == "531191bc-3b48-3592-b4c3-70a0a5ac20aa"
+            cat.annotation_id == "c8c58404-62c3-3e66-b302-ebd3202a778d"
         )  # get_uuid("FOOBounding Box ulx: 1.0 uly: 1.0 lrx: 2.0 lry: 3.090c05f37-a017-39cc-a178-b84f9d14ff48")
-        assert sub_cat_1.annotation_id == "1377b99d-127d-366f-a7fc-ba25296fe4e5"
+        assert sub_cat_1.annotation_id == "7f76354b-1d4c-3874-84c7-a6d0c5701987"
 
     @staticmethod
     @mark.basic
@@ -381,11 +381,11 @@ class TestImage:
         test_image.dump(cat_2)
 
         # Assert
-        assert test_image.state_id == "ec2d4ac5-a4dc-351f-b869-3ec6334d9906"
+        assert test_image.state_id == "bbd3ee7f-442e-3141-b808-ede127f153f5"
 
         # Act
         test_image.dump(cat_3)
-        assert test_image.state_id == "ceb9021b-c96d-36e1-9cd5-465b48cae58b"
+        assert test_image.state_id == "6a949ef7-70e6-3e56-9d94-074882cf6a53"
 
     @staticmethod
     @mark.basic

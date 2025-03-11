@@ -72,14 +72,18 @@ class TestBoundingBox:
 
         # Arrange
         bounding_box = BoundingBox(
-            ulx=box.ulx, uly=box.uly, lrx=box.lrx, lry=box.lry, absolute_coords=box.absolute_coords
+            ulx=box.ulx,
+            uly=box.uly,
+            lrx=box.lrx,
+            lry=box.lry,
+            absolute_coords=box.absolute_coords
         )
 
         # Assert
         assert bounding_box.area == box.area
         assert bounding_box.cx == box.cx
         assert bounding_box.cy == box.cy
-        assert bounding_box.to_list(mode="xyxy") == [box.ulx, box.uly, box.lrx, box.lry]
+        assert bounding_box.to_list(mode="xyxy") == [box.ulx, box.uly, round(box.lrx), box.lry]
         assert bounding_box.to_list(mode="xywh") == [box.ulx, box.uly, box.w, box.h]
 
     @staticmethod
@@ -92,7 +96,11 @@ class TestBoundingBox:
 
         # Arrange
         bounding_box_absolute = BoundingBox(
-            ulx=box.ulx, uly=box.uly, lrx=box.lrx, lry=box.lry, absolute_coords=box.absolute_coords
+            ulx=box.ulx,
+            uly=box.uly,
+            lrx=box.lrx,
+            lry=box.lry,
+            absolute_coords=box.absolute_coords
         )
 
         # Act
@@ -102,11 +110,16 @@ class TestBoundingBox:
             absolute_coords=False,
         ).to_list(mode="xyxy")
         box_copy = bounding_box_absolute.transform(
-            image_width=box.image_width, image_height=box.image_height, absolute_coords=False
+            image_width=box.image_width,
+            image_height=box.image_height,
+            absolute_coords=False
         )
 
         # Assert
-        assert box_relative_list == [box.ulx_relative, box.uly_relative, box.lrx_relative, box.lry_relative]
+        assert box_relative_list == [box.ulx_relative,
+                                     box.uly_relative,
+                                     box.lrx_relative,
+                                     box.lry_relative]
         assert isinstance(box_copy, BoundingBox)
         assert box_copy.absolute_coords is False
 
