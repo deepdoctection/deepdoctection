@@ -65,6 +65,10 @@ def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
             if hasattr(obj, "remove_keys"):
                 if attribute.name in obj.remove_keys():
                     continue
+            if hasattr(obj, "replace_keys"):
+                old_to_new_keys = obj.replace_keys()
+                if attribute.name in old_to_new_keys:
+                    attribute.name = obj.replace_keys()[attribute.name]
             result.append((attribute.name, value))
         return dict_factory(result)
     if isinstance(obj, (list, tuple)):
