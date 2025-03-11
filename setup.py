@@ -89,7 +89,7 @@ _DEPS = [
     "pdfplumber>=0.11.0",
     "tensorflow-addons>=0.17.1",
     "tf2onnx>=1.9.2",
-    "python-doctr==0.8.1",
+    "python-doctr==0.9.0",
     "fasttext-wheel",
     # dev dependencies
     "python-dotenv==1.0.0",
