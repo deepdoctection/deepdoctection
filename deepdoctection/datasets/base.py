@@ -445,8 +445,14 @@ class CustomDataset(DatasetBase):
         super().__init__()
 
     def _info(self) -> DatasetInfo:  # type: ignore  # pylint: disable=W0221
-        return DatasetInfo(name=self.name, type=self.type, description=self.description if
-        self.description is not None else "", license="", url="", splits={})
+        return DatasetInfo(
+            name=self.name,
+            type=self.type,
+            description=self.description if self.description is not None else "",
+            license="",
+            url="",
+            splits={},
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=self.init_categories, init_sub_categories=self.init_sub_categories)

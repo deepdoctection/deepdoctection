@@ -55,7 +55,7 @@ def cat_to_sub_cat(
         sub_cat = ann.get_sub_category(sub_cat_type)
         if sub_cat:
             ann.category_name = sub_cat.category_name
-            ann.category_id = categories_dict_names_as_key.get(ann.category_name,DEFAULT_CATEGORY_ID)
+            ann.category_id = categories_dict_names_as_key.get(ann.category_name, DEFAULT_CATEGORY_ID)
 
     return dp
 

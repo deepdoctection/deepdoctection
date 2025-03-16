@@ -702,11 +702,11 @@ class Image:
         return get_uuid(self.image_id, *container_ids)
 
     def save(
-            self,
-            image_to_json: bool = True,
-            highest_hierarchy_only: bool = False,
-            path: Optional[PathLikeOrStr] = None,
-            dry: bool = False,
+        self,
+        image_to_json: bool = True,
+        highest_hierarchy_only: bool = False,
+        path: Optional[PathLikeOrStr] = None,
+        dry: bool = False,
     ) -> Optional[Union[ImageDict, str]]:
         """
         Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
@@ -723,7 +723,7 @@ class Image:
         def set_image_keys_to_none(d):  # type: ignore
             if isinstance(d, dict):
                 for key, value in d.items():
-                    if key == '_image':
+                    if key == "_image":
                         d[key] = None
                     else:
                         set_image_keys_to_none(value)

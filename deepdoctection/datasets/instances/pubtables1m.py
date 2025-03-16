@@ -63,7 +63,7 @@ with try_import() as import_guard:
     from lxml import etree
 
 _NAME = "pubtables1m_det"
-
+_SHORT_DESCRIPTION = "PubTables1M is a dataset for table detection and structure recognition."
 _DESCRIPTION = (
     "[excerpt from Brandon Smock et. all. PubTables-1M: Towards Comprehensive Table Extraction From Unstructured \n"
     "Documents] '...we release PubTables1M, a dataset of nearly one million tables from PubMed Central Open Access \n"
@@ -100,7 +100,15 @@ class Pubtables1MDet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES_DET)

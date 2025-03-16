@@ -85,6 +85,7 @@ class DatasetInfo:
     """
 
     name: str
+    short_description: str = field(default="")
     description: str = field(default="")
     license: str = field(default="")
     url: Union[str, Sequence[str]] = field(default="")

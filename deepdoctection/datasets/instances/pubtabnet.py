@@ -45,6 +45,7 @@ from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 _NAME = "pubtabnet"
+_SHORT_DESCRIPTION = "PubTabNet is a dataset for image-based table recognition."
 _DESCRIPTION = (
     "PubTabNet is a large dataset for image-based table recognition, containing 568k+ images of \n"
     "tabular data annotated with the corresponding HTML representation of the tables. The table images \n"
@@ -115,7 +116,15 @@ class Pubtabnet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)

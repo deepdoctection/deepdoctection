@@ -73,7 +73,14 @@ class LayoutTest(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)
