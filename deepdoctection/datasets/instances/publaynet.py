@@ -43,6 +43,7 @@ from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "publaynet"
+_SHORT_DESCRIPTION = "PubLayNet is a dataset for document layout analysis."
 _DESCRIPTION = (
     "PubLayNet is a dataset for document layout analysis. It contains images of research papers and "
     "articles \n"
@@ -79,7 +80,15 @@ class Publaynet(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)

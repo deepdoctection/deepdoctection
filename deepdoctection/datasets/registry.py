@@ -65,18 +65,33 @@ def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None
     data = dataset_registry.get_all()
     num_columns = min(6, len(data))
     infos = []
+
     for dataset in data.items():
         info = [dataset[0]]
+        ds = dataset[1]()
+        info.append(ds.dataset_info.type)
         if add_license:
-            info.append(dataset[1]._info().license)  # pylint: disable=W0212
+            info.append(ds.dataset_info.license)  # pylint: disable=W0212
         if add_info:
-            info.append(dataset[1]._info().description)  # pylint: disable=W0212
+            info.append(ds.dataset_info.short_description)  # pylint: disable=W0212
+        if ds.dataflow.categories is not None:  # pylint: disable=W0212
+            categories = "\n".join(ds.dataflow.categories.init_categories)  # Format categories as multi-line string
+            sub_categories = "\n".join(
+                f"{key}: {', '.join(values)}" for key, values in ds.dataflow.categories.init_sub_categories.items()
+            )  # Format sub-categories as multi-line string
+            info.append(categories)
+            info.append(sub_categories)
+        else:
+            info.append("")
+            info.append("")
         infos.append(info)
-    header = ["dataset"]
+
+    header = ["dataset", "type"]
     if add_license:
         header.append("license")
     if add_info:
         header.append("description")
+    header.append("categories")
     table = tabulate(
         infos, headers=header * (num_columns // 2), tablefmt="fancy_grid", stralign="left", numalign="left"
     )

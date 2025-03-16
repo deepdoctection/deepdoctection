@@ -48,6 +48,7 @@ from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "rvl-cdip"
+_SHORT_DESCRIPTION = "RVL-CDIP is a dataset for document classification."
 _DESCRIPTION = (
     "The RVL-CDIP (Ryerson Vision Lab Complex Document Information Processing) dataset consists of 400, 000 gray- \n"
     "scale images in 16 classes, with 25, 000 images per class . There are 320, 000 training images, 40, 000  \n"
@@ -98,7 +99,15 @@ class Rvlcdip(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)

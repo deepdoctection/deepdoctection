@@ -60,7 +60,7 @@ with try_import() as import_guard:
     from lxml import etree
 
 _NAME = "iiitar13k"
-
+_SHORT_DESCRIPTION = "IIIT-AR-13K: A New Dataset for Graphical Object Detection in Documents"
 _DESCRIPTION = (
     "[excerpt from Ajoy Mondal et. all. IIIT-AR-13K: A New Dataset for Graphical Object Detection in \n"
     "Documents] ...This dataset, IIIT-AR-13K, is created by manually annotating the bounding boxes of \n"
@@ -97,7 +97,15 @@ class IIITar13K(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES)

@@ -45,6 +45,7 @@ from ..info import DatasetCategories
 from ..registry import dataset_registry
 
 _NAME = "xfund"
+_SHORT_DESCRIPTION = "XFUND is a multilingual form understanding benchmark dataset."
 _DESCRIPTION = (
     "XFUND is a multilingual form understanding benchmark dataset that includes human-labeled forms with \n"
     "key-value pairs in 7 languages (Chinese, Japanese, Spanish, French, Italian, German, Portuguese)."
@@ -103,7 +104,15 @@ class Xfund(_BuiltInDataset):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, url=_URL, splits=_SPLITS, type=_TYPE)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            url=_URL,
+            splits=_SPLITS,
+            type=_TYPE,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)

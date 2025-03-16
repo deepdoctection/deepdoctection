@@ -527,8 +527,9 @@ class DocTrRotationTransformer(ImageTransformer):
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 
     def predict(self, np_img: PixelValues) -> DetectionResult:
-        angle = estimate_orientation(np_img, n_ct=self.number_contours,
-                                     ratio_threshold_for_lines=self.ratio_threshold_for_lines)
+        angle = estimate_orientation(
+            np_img, n_ct=self.number_contours, ratio_threshold_for_lines=self.ratio_threshold_for_lines
+        )
         if angle < 0:
             angle += 360
         return DetectionResult(angle=round(angle, 2))

@@ -45,6 +45,7 @@ from ..info import DatasetCategories, DatasetInfo
 from ..registry import dataset_registry
 
 _NAME = "doclaynet"
+_SHORT_DESCRIPTION = "DocLayNet is a human-annotated document layout segmentation dataset containing 80863 pages."
 _DESCRIPTION = (
     "DocLayNet is a human-annotated document layout segmentation dataset containing 80863 pages from a broad "
     "variety of document sources. \n"
@@ -105,7 +106,15 @@ class DocLayNet(DatasetBase):
 
     @classmethod
     def _info(cls) -> DatasetInfo:
-        return DatasetInfo(name=_NAME, description=_DESCRIPTION, license=_LICENSE, splits=_SPLITS, type=_TYPE, url=_URL)
+        return DatasetInfo(
+            name=_NAME,
+            short_description=_SHORT_DESCRIPTION,
+            description=_DESCRIPTION,
+            license=_LICENSE,
+            splits=_SPLITS,
+            type=_TYPE,
+            url=_URL,
+        )
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=_INIT_CATEGORIES, init_sub_categories=_SUB_CATEGORIES)
