@@ -394,6 +394,7 @@ class CustomDataset(DatasetBase):
         dataflow_builder: Type[DataFlowBaseBuilder],
         init_sub_categories: Optional[Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]]]] = None,
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
+        description: Optional[str] = None,
     ):
         """
         :param name: Name of the dataset. It will not be used in the code, however it might be helpful, if several
@@ -422,6 +423,7 @@ class CustomDataset(DatasetBase):
         :param annotation_files: A mapping to one or more annotation files, e.g.
 
                                        annotation_file = {"train": "train_file.json", "test": "test_file.json"}
+        :param description: A description of the dataset.
         """
 
         self.name = name
@@ -439,10 +441,12 @@ class CustomDataset(DatasetBase):
                 "annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None):`"
             )
         self.dataflow_builder = dataflow_builder(self.location, self.annotation_files)
+        self.description = description
         super().__init__()
 
     def _info(self) -> DatasetInfo:  # type: ignore  # pylint: disable=W0221
-        return DatasetInfo(name=self.name, type=self.type, description="", license="", url="", splits={})
+        return DatasetInfo(name=self.name, type=self.type, description=self.description if
+        self.description is not None else "", license="", url="", splits={})
 
     def _categories(self) -> DatasetCategories:
         return DatasetCategories(init_categories=self.init_categories, init_sub_categories=self.init_sub_categories)
