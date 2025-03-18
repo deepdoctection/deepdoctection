@@ -433,7 +433,7 @@ class Table(Layout):
             filter(
                 lambda c: column_number in (c.column_number, c.column_number + c.column_span - 1),  # type: ignore
                 all_cells,
-            )  # type: ignore
+            )
         )
         column_cells.sort(key=lambda c: c.row_number)  # type: ignore
         return column_cells  # type: ignore

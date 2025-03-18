@@ -24,7 +24,7 @@ import catalogue  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
 
-from .base import DatasetBase
+from .base import DatasetBase, CustomDataset
 
 __all__ = ["dataset_registry", "get_dataset", "print_dataset_infos"]
 
@@ -68,7 +68,10 @@ def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None
 
     for dataset in data.items():
         info = [dataset[0]]
-        ds = dataset[1]()
+        if isinstance(dataset[1], CustomDataset):
+            ds = dataset[1]
+        else:
+            ds = dataset[1]()
         info.append(ds.dataset_info.type)
         if add_license:
             info.append(ds.dataset_info.license)  # pylint: disable=W0212
