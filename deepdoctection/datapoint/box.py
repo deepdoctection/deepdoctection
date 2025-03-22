@@ -147,6 +147,24 @@ RELATIVE_COORD_CONVERTER = 10**8
 
 @dataclass
 class BoundingBox:
+    """
+    Rectangular bounding box that stores coordinates and allows different representations.
+
+    This implementation differs from the previous version by using internal integer storage with precision scaling
+    for both absolute and relative coordinates. Coordinates are stored internally as integers (_ulx, _uly, etc.)
+    with relative coordinates multiplied by RELATIVE_COORD_CONVERTER (10^8) for precision. Properties (ulx, uly, etc.)
+    handle the conversion between internal storage and exposed values.
+
+    You can define an instance by passing:
+    - Upper left point (ulx, uly) + width and height, OR
+    - Upper left point (ulx, uly) + lower right point (lrx, lry)
+
+    Notes:
+    - When absolute_coords=True, coordinates will be rounded to integers
+    - When absolute_coords=False, coordinates must be between 0 and 1
+    - The box is validated on initialization to ensure coordinates are valid
+    """
+
     absolute_coords: bool
     _ulx: int = 0
     _uly: int = 0
@@ -163,6 +181,25 @@ class BoundingBox:
                  lry: BoxCoordinate = 0,
                  width: BoxCoordinate = 0,
                  height: BoxCoordinate = 0):
+        """
+        Initialize a BoundingBox instance with the specified coordinates.
+
+        This initializer supports two ways of defining a bounding box:
+        1. Using upper-left coordinates (ulx, uly) with width and height
+        2. Using upper-left (ulx, uly) and lower-right (lrx, lry) coordinates
+
+        When absolute_coords is True, coordinates are stored as integers.
+        When absolute_coords is False, coordinates are stored as scaled integers
+        (original float values * RELATIVE_COORD_CONVERTER) for precision.
+
+        :param absolute_coords: Whether coordinates are absolute pixels (True) or normalized [0,1] values (False)
+        :param ulx: Upper-left x-coordinate (float or int)
+        :param uly: Upper-left y-coordinate (float or int)
+        :param lrx: Lower-right x-coordinate (float or int), default 0
+        :param lry: Lower-right y-coordinate (float or int), default 0
+        :param width: Width of the bounding box (float or int), default 0
+        :param height: Height of the bounding box (float or int), default 0
+        """
         self.absolute_coords = absolute_coords
         if absolute_coords:
             self._ulx = round(ulx)
@@ -222,81 +259,110 @@ class BoundingBox:
 
     @property
     def ulx(self) -> BoxCoordinate:
+        """ulx property"""
         return self._ulx / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._ulx
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
+        """ulx setter"""
         self._ulx = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._width = self._lrx - self._ulx
 
     @property
     def uly(self) -> BoxCoordinate:
+        """uly property"""
         return self._uly / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._uly
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
+        """uly setter"""
         self._uly = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._height = self._lry - self._uly
 
     @property
     def lrx(self) -> BoxCoordinate:
+        """lrx property"""
         return self._lrx / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._lrx
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
+        """lrx setter"""
         self._lrx = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._width = self._lrx - self._ulx
 
     @property
     def lry(self) -> BoxCoordinate:
+        """lry property"""
         return self._lry / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._lry
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
+        """lry setter"""
         self._lry = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._height = self._lry - self._uly
 
     @property
     def width(self) -> BoxCoordinate:
+        """width property"""
         return self._width / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._width
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
+        """width setter"""
         self._width = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._lrx = self._ulx + self._width
 
     @property
     def height(self) -> BoxCoordinate:
+        """height property"""
         return self._height / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._height
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
+        """height setter"""
         self._height = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
         self._lry = self._uly + self._height
 
     @property
     def cx(self) -> BoxCoordinate:
+        """cx property"""
         if self.absolute_coords:
             return round(self.ulx + 0.5 * self.width)
         return self.ulx + 0.5 * self.width
 
     @property
     def cy(self) -> BoxCoordinate:
+        """cy property"""
         if self.absolute_coords:
             return round(self.uly + 0.5 * self.height)
         return self.uly + 0.5 * self.height
 
     @property
     def center(self) -> tuple[BoxCoordinate,BoxCoordinate]:
+        """center property"""
         return (self.cx, self.cy)
 
     @property
     def area(self) -> Union[int,float]:
+        """area property"""
         if self.absolute_coords:
             return self.width * self.height
         raise ValueError("Cannot calculate area, when bounding box coords are relative")
 
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
+        """
+        Returns the coordinates as numpy array.
+
+        :param mode: Mode for coordinate arrangement:
+                     "xyxy" for upper left/lower right point representation,
+                     "xywh" for upper left and width/height representation or
+                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+                      returned in counter-clockwise order.
+
+        :param scale_x: rescale the x coordinate. Defaults to 1
+        :param scale_y: rescale the y coordinate. Defaults to 1
+        :return: box coordinates
+        """
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
         np_poly_scale = np.array(
             [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
@@ -311,6 +377,19 @@ class BoundingBox:
 
 
     def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[BoxCoordinate]:
+        """
+        Returns the coordinates as list
+
+        :param mode:  Mode for coordinate arrangement:
+                     "xyxy" for upper left/lower right point representation,
+                     "xywh" for upper left and width/height representation or
+                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+                      returned in counter-clockwise order.
+
+        :param scale_x: rescale the x coordinate. Defaults to 1
+        :param scale_y: rescale the y coordinate. Defaults to 1
+        :return: box coordinates
+        """
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return [
@@ -360,6 +439,16 @@ class BoundingBox:
         image_height: float,
         absolute_coords: bool = False,
     ) -> BoundingBox:
+        """
+        Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
+        created. Changing coordinates requires width and height of the whole image.
+
+        :param image_width: The horizontal image size
+        :param image_height: The vertical image size
+        :param absolute_coords: Whether to recalculate into absolute coordinates.
+
+        :return: Either a list or np.array.
+        """
         if absolute_coords != self.absolute_coords:
             if self.absolute_coords:
                 transformed_box = BoundingBox(
@@ -389,10 +478,12 @@ class BoundingBox:
 
     @staticmethod
     def remove_keys() -> list[str]:
+        """Removing keys when converting the dataclass object to a dict"""
         return ["_height", "_width"]
 
     @staticmethod
     def replace_keys() -> dict[str,str]:
+        """Replacing keys when converting the dataclass object to a dict. Useful for backward compatibility"""
         return {"_ulx":"ulx","_uly":"uly","_lrx":"lrx","_lry":"lry"}
 
     @classmethod
