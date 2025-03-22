@@ -489,6 +489,7 @@ class BoundingBox:
     @classmethod
     @no_type_check
     def from_dict(cls, **kwargs) -> BoundingBox:
+        """from dict"""
         return cls(**kwargs)
 
 
