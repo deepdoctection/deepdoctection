@@ -143,227 +143,6 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return np_iou(boxes1, boxes2)
 
 
-@dataclass
-class BoundingBoxOutScoped:
-    """
-    Rectangular bounding box dataclass for object detection. Store coordinates and allows several
-    representations. You can define an instance by passing the upper left point along with either height
-    and width or along with the lower right point. Pass absolute_coords = 'True' if you work with image
-    pixel coordinates. If you work with coordinates in the range between (0,1) then pass absolute_coords
-    ='False'. A bounding box is a disposable object. Do not change the coordinates once the have been set but define
-    a new box.
-
-    `absolute_coords` indicates, whether given coordinates are in absolute or in relative terms
-
-    `ulx`: upper left x
-
-    `uly`: upper left y
-
-    `lrx`: lower right x
-
-    `lry`: lower right y
-
-    `height`: height
-
-    `width`: width
-    """
-
-    absolute_coords: bool
-    ulx: float
-    uly: float
-    lrx: float = 0.0
-    lry: float = 0.0
-    height: float = 0.0
-    width: float = 0.0
-
-    def __post_init__(self) -> None:
-        if self.width == 0.0:
-            if self.lrx is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self.width = self.lrx - self.ulx
-        if self.height == 0.0:
-            if self.lry is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self.height = self.lry - self.uly
-
-        if self.lrx == 0.0:
-            if self.width is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self.lrx = self.ulx + self.width
-        if self.lry == 0.0:
-            if self.height is None:
-                raise BoundingBoxError("Bounding box not fully initialized")
-            self.lry = self.uly + self.height
-
-        if not (self.ulx >= 0.0 and self.uly >= 0.0):
-            raise BoundingBoxError("Bounding box ul must be >= (0.,0.)")
-        if not (self.height > 0.0 and self.width > 0.0):
-            raise BoundingBoxError(
-                f"bounding box must have height and width >0. Check coords "
-                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
-                f"lry: {self.lry}."
-            )
-        if not self.absolute_coords:
-            if not (self.ulx <= 1.0 and self.uly <= 1.0 and self.lrx <= 1.0 and self.lry <= 1.0):
-                raise BoundingBoxError("coordinates must be between 0 and 1")
-
-    @property
-    def cx(self) -> float:
-        """
-        Bounding box center x coordinate
-        """
-        return self.ulx + 0.5 * self.width
-
-    @property
-    def cy(self) -> float:
-        """
-        Bounding box center y coordinate
-        """
-        return self.uly + 0.5 * self.height
-
-    @property
-    def center(self) -> list[float]:
-        """
-        Bounding box center [x,y]
-        """
-        return [self.cx, self.cy]
-
-    @property
-    def area(self) -> float:
-        """
-        Bounding box area
-        """
-        if self.absolute_coords:
-            return self.width * self.height
-        raise ValueError("Cannot calculate area, when bounding box coords are relative")
-
-    def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
-        """
-        Returns the coordinates as numpy array.
-
-        :param mode: Mode for coordinate arrangement:
-                     "xyxy" for upper left/lower right point representation,
-                     "xywh" for upper left and width/height representation or
-                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
-                      returned in counter-clockwise order.
-
-        :param scale_x: rescale the x coordinate. Defaults to 1
-        :param scale_y: rescale the y coordinate. Defaults to 1
-        :return: box coordinates
-        """
-        np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
-        np_poly_scale = np.array(
-            [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
-        )
-        assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
-        if mode == "xyxy":
-            return np.array([self.ulx, self.uly, self.lrx, self.lry], dtype=np.float32) * np_box_scale
-        if mode == "xywh":
-            return np.array([self.ulx, self.uly, self.width, self.height], dtype=np.float32) * np_box_scale
-        return (
-            np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry], dtype=np.float32)
-            * np_poly_scale
-        )
-
-    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[float]:
-        """
-        Returns the coordinates as list
-
-        :param mode:  Mode for coordinate arrangement:
-                     "xyxy" for upper left/lower right point representation,
-                     "xywh" for upper left and width/height representation or
-                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
-                      returned in counter-clockwise order.
-
-        :param scale_x: rescale the x coordinate. Defaults to 1
-        :param scale_y: rescale the y coordinate. Defaults to 1
-        :return: box coordinates
-        """
-        assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
-        if mode == "xyxy":
-            return [
-                self.ulx * scale_x,
-                self.uly * scale_y,
-                self.lrx * scale_x,
-                self.lry * scale_y,
-            ]
-        if mode == "xywh":
-            return [
-                self.ulx * scale_x,
-                self.uly * scale_y,
-                self.width * scale_x,
-                self.height * scale_y,
-            ]
-        return [
-            self.ulx * scale_x,
-            self.uly * scale_y,
-            self.lrx * scale_x,
-            self.uly * scale_y,
-            self.lrx * scale_x,
-            self.lry * scale_y,
-            self.ulx * scale_x,
-            self.lry * scale_y,
-        ]
-
-    def transform(
-        self,
-        image_width: float,
-        image_height: float,
-        absolute_coords: bool = False,
-    ) -> "BoundingBox":
-        """
-        Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
-        created. Changing coordinates requires width and height of the whole image.
-
-        :param image_width: The horizontal image size
-        :param image_height: The vertical image size
-        :param absolute_coords: Whether to recalculate into absolute coordinates.
-
-        :return: Either a list or np.array.
-        """
-
-        if absolute_coords != self.absolute_coords:  # only transforming in this case
-            if self.absolute_coords:
-                transformed_box = BoundingBox(
-                    absolute_coords=not self.absolute_coords,
-                    ulx=max(self.ulx / image_width, 0.0),
-                    uly=max(self.uly / image_height, 0.0),
-                    lrx=min(self.lrx / image_width, 1.0),
-                    lry=min(self.lry / image_height, 1.0),
-                )
-            else:
-                transformed_box = BoundingBox(
-                    absolute_coords=not self.absolute_coords,
-                    ulx=self.ulx * image_width,
-                    uly=self.uly * image_height,
-                    lrx=self.lrx * image_width,
-                    lry=self.lry * image_height,
-                )
-            return transformed_box
-        return self
-
-    def __str__(self) -> str:
-        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
-
-    @staticmethod
-    def remove_keys() -> list[str]:
-        """
-        A list of attributes to suspend from as_dict creation.
-        """
-        return ["height", "width"]
-
-    @classmethod
-    @no_type_check
-    def from_dict(cls, **kwargs) -> "BoundingBox":
-        """
-        Create `BoundingBox` instance from dict
-
-        :param kwargs: dict with  `BoundingBox` attributes
-        :return: Initialized BoundingBox
-        """
-        return cls(**kwargs)
-
-
 RELATIVE_COORD_CONVERTER = 10**8
 
 @dataclass
@@ -519,17 +298,27 @@ class BoundingBox:
 
     def to_np_array(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> npt.NDArray[np.float32]:
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
+        np_poly_scale = np.array(
+            [scale_x, scale_y, scale_x, scale_y, scale_x, scale_y, scale_x, scale_y], dtype=np.float32
+        )
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return np.array([self.ulx, self.uly, self.lrx, self.lry], dtype=np.float32) * np_box_scale
         if mode == "xywh":
             return np.array([self.ulx, self.uly, self.width, self.height], dtype=np.float32) * np_box_scale
+        return np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry],
+                        dtype=np.float32)* np_poly_scale
 
 
-    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[float]:
+    def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[BoxCoordinate]:
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
             return [
+                round(self.ulx * scale_x),
+                round(self.uly * scale_y),
+                round(self.lrx * scale_x),
+                round(self.lry * scale_y),
+            ] if self.absolute_coords else [
                 self.ulx * scale_x,
                 self.uly * scale_y,
                 self.lrx * scale_x,
@@ -537,12 +326,24 @@ class BoundingBox:
             ]
         if mode == "xywh":
             return [
-                self.ulx * scale_x,
-                self.uly * scale_y,
-                self.width * scale_x,
-                self.height * scale_y,
-            ]
+                round(self.ulx * scale_x),
+                round(self.uly * scale_y),
+                round(self.width * scale_x),
+                round(self.height * scale_y),
+            ] if self.absolute_coords else [self.ulx * scale_x,
+                                            self.uly * scale_y,
+                                            self.width * scale_x,
+                                            self.height * scale_y]
         return [
+            round(self.ulx * scale_x),
+            round(self.uly * scale_y),
+            round(self.lrx * scale_x),
+            round(self.uly * scale_y),
+            round(self.lrx * scale_x),
+            round(self.lry * scale_y),
+            round(self.ulx * scale_x),
+            round(self.lry * scale_y),
+        ] if self.absolute_coords else [
             self.ulx * scale_x,
             self.uly * scale_y,
             self.lrx * scale_x,
@@ -582,7 +383,7 @@ class BoundingBox:
     def __str__(self) -> str:
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"BoundingBox(absolute_coords={self.absolute_coords}, ulx={self.ulx}, uly={self.uly}, lrx={self.lrx},"
                 f" lry={self.lry}, width={self.width}, height={self.height})")
 

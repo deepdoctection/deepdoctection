@@ -671,7 +671,7 @@ class DatapointCoco:
         4: LayoutType.FIGURE,
         5: LayoutType.LIST,
     }
-    first_ann_box = Box(37.59, 360.34, 251.07, 41.36)
+    first_ann_box = Box(38, 360, 251, 41)
 
     def get_white_image(self, path: str, type_id: str = "np") -> Optional[Union[str, PixelValues]]:
         """
@@ -915,7 +915,7 @@ class DatapointProdigy:
         LayoutType.FIGURE: 4,
         LayoutType.LIST: 5,
     }
-    first_ann_box = Box(1, 2.7, 14, 26.3)
+    first_ann_box = Box(1, 3, 14, 26)
 
     def get_width(self, image_loaded: bool) -> float:
         """
@@ -974,17 +974,17 @@ class DatapointImage:
         self.len_spans: int = 2
         self.first_span: JsonDict = {
             "label": TestType.FOO,
-            "annotation_id": "ec7e5bca-b4f4-3272-8952-35a500663131",
+            "annotation_id": "3a882fa7-4614-3bc2-b2f6-5c3916df404b",
             "score": 0.53,
             "type": "rect",
-            "points": [[2.6, 3.7], [2.6, 5.7], [4.6, 5.7], [4.6, 3.7]],
+            "points": [[3, 4], [3, 6], [5, 6], [5, 4]],
         }
         self.second_span: JsonDict = {
             "label": TestType.BAK,
-            "annotation_id": "b8cb337a-de1b-3bfd-bb36-603d852104f2",
+            "annotation_id": "f9a878ff-9344-3558-b3a6-a24e314c2da4",
             "score": 0.99,
             "type": "rect",
-            "points": [[16.6, 26.6], [16.6, 30.6], [30.6, 30.6], [30.6, 26.6]],
+            "points": [[17, 27], [17, 31], [31, 31], [31, 27]],
         }
         self.coco_image: JsonDict = {"id": 4217040713909021022429, "width": 96, "height": 34, "file_name": "sample.png"}
         self.coco_anns: List[JsonDict] = [
@@ -994,7 +994,7 @@ class DatapointImage:
                 "category_id": 1,
                 "iscrowd": 0,
                 "area": 4.0,
-                "bbox": [2.6, 3.7, 2.0, 2.0],
+                "bbox": [3.0, 4.0, 2.0, 2.0],
                 "score": 0.53,
             },
             {
@@ -1010,7 +1010,7 @@ class DatapointImage:
         self.categories = DatasetCategories(init_categories=[get_type("FOO"), get_type("BAK")])
         self.tp_frcnn_training: JsonDict = {
             "image": _img_np,
-            "gt_boxes": np.asarray([[2.6, 3.7, 4.6, 5.7], [16.6, 26.6, 30.6, 30.6]]).astype("float32"),
+            "gt_boxes": np.asarray([[3, 4., 5., 6.], [17., 27., 31., 31.]]).astype("float32"),
             "gt_labels": np.asarray([1, 2]).astype("float32"),
             "file_name": "/to/path",
         }
@@ -1021,8 +1021,8 @@ class DatapointImage:
             "image_id": self.image.image_id,
             "file_name": self.image.location,
             "annotations": [
-                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [2.6, 3.7, 4.6, 5.7], "category_id": 0},
-                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [16.6, 26.6, 30.6, 30.6], "category_id": 1},
+                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [3, 4, 5, 6], "category_id": 0},
+                {"bbox_mode": "BoxMode.XYXY_ABS", "bbox": [17, 27, 31, 31], "category_id": 1},
             ],
         }
         self.hf_detr_training: JsonDict = {
@@ -1033,10 +1033,10 @@ class DatapointImage:
             "file_name": self.image.location,
             "annotations": [
                 {
-                    "bbox": [2.6, 3.7, 1.9999999999999996, 2.0],
+                    "bbox": [3.0, 4.0, 2.0, 2.0],
                     "category_id": 0,
                     "image_id": "42170407",
-                    "id": "75443272",
+                    "id": "38827461",
                 },
                 {
                     "id": "83371336",

@@ -421,7 +421,7 @@ class TestImage:
 
         # Act
         service_id_to_ann_id = dp.get_service_id_to_annotation_id()
-
+        print(service_id_to_ann_id)
         # Assert
         assert service_id_to_ann_id == expected_service_id_to_ann_id
 
@@ -434,12 +434,14 @@ class TestImage:
 
         # Arrange
         dp = dp_image_with_layout_and_word_annotations
+        anns = dp.get_annotation(annotation_ids="51fca38d-b181-3ea2-9c97-7e265febcc86")
+        assert anns
 
         # Act
-        dp.remove(annotation_ids=["c603f62d-211b-335d-9401-350b17842562", "01c4dc98-88fb-3d7e-b623-c52117bfc74a"])
+        dp.remove(annotation_ids=["51fca38d-b181-3ea2-9c97-7e265febcc86", "1413d499-ce19-3a50-861c-7d8c5a7ba772"])
 
         # Assert
-        anns = dp.get_annotation(annotation_ids="c603f62d-211b-335d-9401-350b17842562")
+        anns = dp.get_annotation(annotation_ids="51fca38d-b181-3ea2-9c97-7e265febcc86")
         assert not anns
 
     @staticmethod
