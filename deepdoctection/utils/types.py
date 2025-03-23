@@ -63,7 +63,7 @@ else:
 
 
 JsonDict = dict[str, Any]
-
+BoxCoordinate = Union[int, float]
 
 # Some common deepdoctection dict-types
 AnnotationDict: TypeAlias = dict[str, Any]

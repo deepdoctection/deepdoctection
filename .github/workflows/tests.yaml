@@ -128,9 +128,6 @@ jobs:
       #  if: matrix.python == '3.12'
       #  run: python3 -m pip install setuptools
 
-      #- name: Install libcap
-      #  run: sudo apt-get install build-essential libcap-dev
-
       - name: Set Python version
         # See https://pre-commit.com/#github-actions-example
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV

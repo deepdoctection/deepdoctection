@@ -48,28 +48,28 @@ class Box:
         """
         width
         """
-        return self.lrx - self.ulx
+        return round(self.lrx - self.ulx)-1
 
     @property
     def h(self) -> float:
         """
         height
         """
-        return self.lry - self.uly
+        return round(self.lry - self.uly)
 
     @property
     def cx(self) -> float:
         """
         center x
         """
-        return self.ulx + 0.5 * self.w
+        return round(self.ulx + 0.5 * self.w)
 
     @property
     def cy(self) -> float:
         """
         center y
         """
-        return self.uly + 0.5 * self.h
+        return round(self.uly + 0.5 * self.h)
 
     @property
     def area(self) -> float:
@@ -97,7 +97,7 @@ class Box:
         """
         lry relative coordinate
         """
-        return self.lrx / self.image_width
+        return round(self.lrx) / self.image_width
 
     @property
     def lry_relative(self) -> float:
