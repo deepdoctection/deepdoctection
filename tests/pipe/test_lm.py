@@ -68,19 +68,19 @@ class TestLMTokenClassifierService:
         dp = lm_service.pass_datapoint(dp)
 
         # Assert
-        words = dp.get_annotation(annotation_ids="c603f62d-211b-335d-9401-350b17842562")
+        words = dp.get_annotation(annotation_ids="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad")
         assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
         assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.BEGIN
 
-        words = dp.get_annotation(annotation_ids="19c89b7e-c502-3e74-8828-622d13f4ca88")
+        words = dp.get_annotation(annotation_ids="44ef758d-92f5-3f57-b6a3-aa95b9606f70")
         assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
         assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.BEGIN
 
-        words = dp.get_annotation(annotation_ids="19aeb582-ca6f-3706-9cdf-aaad6ec3d64d")
+        words = dp.get_annotation(annotation_ids="1413d499-ce19-3a50-861c-7d8c5a7ba772")
         assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
         assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.INSIDE
 
-        words = dp.get_annotation(annotation_ids="65782fe2-71ff-36b8-ab72-7b48928b2098")
+        words = dp.get_annotation(annotation_ids="fd78767a-227d-3c17-83cb-586d24cb0c55")
         assert words[0].get_sub_category(WordType.TOKEN_CLASS).category_name == TokenClasses.HEADER
         assert words[0].get_sub_category(WordType.TAG).category_name == BioTag.INSIDE
 
