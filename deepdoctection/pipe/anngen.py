@@ -75,27 +75,6 @@ class DatapointManager:
         """
         assert self.datapoint_is_passed, "Pass datapoint to  DatapointManager before creating anns"
 
-    def maybe_map_category_id(self, category_id: Union[str, int]) -> int:
-        """
-        Maps categories if a category id mapping is provided in `__init__`.
-
-        :param category_id: category id via integer or string.
-        :return: mapped category id
-        """
-        if self.category_id_mapping is None:
-            return int(category_id)
-        return self.category_id_mapping[int(category_id)]
-
-    def set_category_id_mapping(self, category_id_mapping: Mapping[int, int]) -> None:
-        """
-        In many cases the category ids sent back from a model have to be modified. Pass a mapping from model
-        category ids to target annotation category ids.
-
-        :param category_id_mapping: A mapping of model category ids (sent from DetectionResult) to category ids (saved
-                                    in annotations)
-        """
-        self.category_id_mapping = category_id_mapping
-
     def set_image_annotation(
         self,
         detect_result: DetectionResult,
@@ -127,13 +106,10 @@ class DatapointManager:
         :return: the annotation_id of the generated image annotation
         """
         self.assert_datapoint_passed()
-        if detect_result.class_id is None:
-            raise ValueError("class_id of detect_result cannot be None")
         if not isinstance(detect_result.box, (list, np.ndarray)):
             raise TypeError(
                 f"detect_result.box must be of type list or np.ndarray, but is of type {(type(detect_result.box))}"
             )
-        detect_result.class_id = self.maybe_map_category_id(detect_result.class_id)
         with MappingContextManager(
             dp_name=self.datapoint.file_name, filter_level="annotation", detect_result=asdict(detect_result)
         ) as annotation_context:
@@ -155,7 +131,7 @@ class DatapointManager:
             ann = ImageAnnotation(
                 category_name=detect_result.class_name,
                 bounding_box=box,
-                category_id=detect_result.class_id,
+                category_id=detect_result.class_id if detect_result.class_id is not None else DEFAULT_CATEGORY_ID,
                 score=detect_result.score,
                 service_id=self.service_id,
                 model_id=self.model_id,

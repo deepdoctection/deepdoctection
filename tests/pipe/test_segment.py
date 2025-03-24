@@ -292,13 +292,13 @@ def test_create_intersection_cells(dp_image_tab_cell_item: Image) -> None:
     table = dp.get_annotation(category_names=LayoutType.TABLE)[0]
     table_ann_id = table.annotation_id
     detect_result_cells, segment_result_cells = create_intersection_cells(
-        rows, cols, table_ann_id, 5, [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
+        rows, cols, table_ann_id, [CellType.ROW_NUMBER, CellType.COLUMN_NUMBER]
     )
     expected_detect_result = [
-        DetectionResult(box=[15.0, 100.0, 20.0, 150.0], class_id=5, class_name=LayoutType.CELL),
-        DetectionResult(box=[40.0, 100.0, 50.0, 150.0], class_id=5, class_name=LayoutType.CELL),
-        DetectionResult(box=[15.0, 200.0, 20.0, 240.0], class_id=5, class_name=LayoutType.CELL),
-        DetectionResult(box=[40.0, 200.0, 50.0, 240.0], class_id=5, class_name=LayoutType.CELL),
+        DetectionResult(box=[15.0, 100.0, 20.0, 150.0], class_id=None, class_name=LayoutType.CELL),
+        DetectionResult(box=[40.0, 100.0, 50.0, 150.0], class_id=None, class_name=LayoutType.CELL),
+        DetectionResult(box=[15.0, 200.0, 20.0, 240.0], class_id=None, class_name=LayoutType.CELL),
+        DetectionResult(box=[40.0, 200.0, 50.0, 240.0], class_id=None, class_name=LayoutType.CELL),
     ]
     expected_segment_result = [
         SegmentationResult(row_num=1, col_num=1, rs=1, cs=1, annotation_id=""),
@@ -328,7 +328,6 @@ class TestPubtablesSegmentationService:
         self._remove_iou_threshold_rows = 0.001
         self._remove_iou_threshold_cols = 0.001
         self._tile_table_with_items = True
-        self.cell_class_id = 5
         self.table_name = LayoutType.TABLE
         self.cell_names: Sequence[Union[LayoutType, CellType]] = [
             CellType.SPANNING,
@@ -355,7 +354,6 @@ class TestPubtablesSegmentationService:
             self._tile_table_with_items,
             self._remove_iou_threshold_rows,
             self._remove_iou_threshold_cols,
-            self.cell_class_id,
             self.table_name,
             self.cell_names,
             self.spanning_cell_names,

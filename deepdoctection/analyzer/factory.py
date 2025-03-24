@@ -284,7 +284,6 @@ class ServiceFactory:
         return SubImageLayoutService(
             sub_image_detector=detector,
             sub_image_names=[LayoutType.TABLE, LayoutType.TABLE_ROTATED],
-            category_id_mapping=None,
             detect_result_generator=detect_result_generator,
             padder=padder,
         )
@@ -405,7 +404,6 @@ class ServiceFactory:
                 tile_table_with_items=config.SEGMENTATION.FULL_TABLE_TILING,
                 remove_iou_threshold_rows=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
                 remove_iou_threshold_cols=config.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-                cell_class_id=config.SEGMENTATION.CELL_CATEGORY_ID,
                 table_name=config.SEGMENTATION.TABLE_NAME,
                 cell_names=config.SEGMENTATION.PUBTABLES_CELL_NAMES,
                 spanning_cell_names=config.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES,
