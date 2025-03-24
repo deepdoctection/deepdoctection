@@ -260,6 +260,7 @@ _IMPORT_STRUCTURE = {
         "ImageCroppingService",
         "IntersectionMatcher",
         "NeighbourMatcher",
+        "FamilyCompound",
         "MatchingService",
         "PageParsingService",
         "AnnotationNmsService",
