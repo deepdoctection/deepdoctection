@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import ceil, floor
-from typing import Optional, Sequence, no_type_check, Union
+from typing import Optional, Sequence, Union, no_type_check
 
 import numpy as np
 import numpy.typing as npt
@@ -32,7 +32,7 @@ from numpy import float32
 from ..utils.error import BoundingBoxError
 from ..utils.file_utils import cocotools_available
 from ..utils.logger import LoggingRecord, logger
-from ..utils.types import PixelValues, BoxCoordinate
+from ..utils.types import BoxCoordinate, PixelValues
 
 with try_import() as import_guard:
     import pycocotools.mask as coco_mask
@@ -145,6 +145,7 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
 
 RELATIVE_COORD_CONVERTER = 10**8
 
+
 @dataclass
 class BoundingBox:
     """
@@ -173,14 +174,16 @@ class BoundingBox:
     _height: int = 0
     _width: int = 0
 
-    def __init__(self,
-                 absolute_coords: bool,
-                 ulx: BoxCoordinate,
-                 uly: BoxCoordinate,
-                 lrx: BoxCoordinate = 0,
-                 lry: BoxCoordinate = 0,
-                 width: BoxCoordinate = 0,
-                 height: BoxCoordinate = 0):
+    def __init__(
+        self,
+        absolute_coords: bool,
+        ulx: BoxCoordinate,
+        uly: BoxCoordinate,
+        lrx: BoxCoordinate = 0,
+        lry: BoxCoordinate = 0,
+        width: BoxCoordinate = 0,
+        height: BoxCoordinate = 0,
+    ):
         """
         Initialize a BoundingBox instance with the specified coordinates.
 
@@ -254,7 +257,9 @@ class BoundingBox:
                 f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, "
                 f"lry: {self.lry}."
             )
-        if not self.absolute_coords and not (0<=self.ulx<=1 and 0<=self.uly<=1 and 0<=self.lrx<=1 and 0<=self.lry<=1):
+        if not self.absolute_coords and not (
+            0 <= self.ulx <= 1 and 0 <= self.uly <= 1 and 0 <= self.lrx <= 1 and 0 <= self.lry <= 1
+        ):
             raise BoundingBoxError("coordinates must be between 0 and 1")
 
     @property
@@ -338,12 +343,12 @@ class BoundingBox:
         return self.uly + 0.5 * self.height
 
     @property
-    def center(self) -> tuple[BoxCoordinate,BoxCoordinate]:
+    def center(self) -> tuple[BoxCoordinate, BoxCoordinate]:
         """center property"""
         return (self.cx, self.cy)
 
     @property
-    def area(self) -> Union[int,float]:
+    def area(self) -> Union[int, float]:
         """area property"""
         if self.absolute_coords:
             return self.width * self.height
@@ -372,9 +377,10 @@ class BoundingBox:
             return np.array([self.ulx, self.uly, self.lrx, self.lry], dtype=np.float32) * np_box_scale
         if mode == "xywh":
             return np.array([self.ulx, self.uly, self.width, self.height], dtype=np.float32) * np_box_scale
-        return np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry],
-                        dtype=np.float32)* np_poly_scale
-
+        return (
+            np.array([self.ulx, self.uly, self.lrx, self.uly, self.lrx, self.lry, self.ulx, self.lry], dtype=np.float32)
+            * np_poly_scale
+        )
 
     def to_list(self, mode: str, scale_x: float = 1.0, scale_y: float = 1.0) -> list[BoxCoordinate]:
         """
@@ -392,46 +398,55 @@ class BoundingBox:
         """
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
-            return [
+            return (
+                [
+                    round(self.ulx * scale_x),
+                    round(self.uly * scale_y),
+                    round(self.lrx * scale_x),
+                    round(self.lry * scale_y),
+                ]
+                if self.absolute_coords
+                else [
+                    self.ulx * scale_x,
+                    self.uly * scale_y,
+                    self.lrx * scale_x,
+                    self.lry * scale_y,
+                ]
+            )
+        if mode == "xywh":
+            return (
+                [
+                    round(self.ulx * scale_x),
+                    round(self.uly * scale_y),
+                    round(self.width * scale_x),
+                    round(self.height * scale_y),
+                ]
+                if self.absolute_coords
+                else [self.ulx * scale_x, self.uly * scale_y, self.width * scale_x, self.height * scale_y]
+            )
+        return (
+            [
                 round(self.ulx * scale_x),
                 round(self.uly * scale_y),
                 round(self.lrx * scale_x),
+                round(self.uly * scale_y),
+                round(self.lrx * scale_x),
                 round(self.lry * scale_y),
-            ] if self.absolute_coords else [
+                round(self.ulx * scale_x),
+                round(self.lry * scale_y),
+            ]
+            if self.absolute_coords
+            else [
                 self.ulx * scale_x,
                 self.uly * scale_y,
                 self.lrx * scale_x,
+                self.uly * scale_y,
+                self.lrx * scale_x,
+                self.lry * scale_y,
+                self.ulx * scale_x,
                 self.lry * scale_y,
             ]
-        if mode == "xywh":
-            return [
-                round(self.ulx * scale_x),
-                round(self.uly * scale_y),
-                round(self.width * scale_x),
-                round(self.height * scale_y),
-            ] if self.absolute_coords else [self.ulx * scale_x,
-                                            self.uly * scale_y,
-                                            self.width * scale_x,
-                                            self.height * scale_y]
-        return [
-            round(self.ulx * scale_x),
-            round(self.uly * scale_y),
-            round(self.lrx * scale_x),
-            round(self.uly * scale_y),
-            round(self.lrx * scale_x),
-            round(self.lry * scale_y),
-            round(self.ulx * scale_x),
-            round(self.lry * scale_y),
-        ] if self.absolute_coords else [
-            self.ulx * scale_x,
-            self.uly * scale_y,
-            self.lrx * scale_x,
-            self.uly * scale_y,
-            self.lrx * scale_x,
-            self.lry * scale_y,
-            self.ulx * scale_x,
-            self.lry * scale_y,
-        ]
+        )
 
     def transform(
         self,
@@ -473,8 +488,10 @@ class BoundingBox:
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     def __repr__(self) -> str:
-        return (f"BoundingBox(absolute_coords={self.absolute_coords}, ulx={self.ulx}, uly={self.uly}, lrx={self.lrx},"
-                f" lry={self.lry}, width={self.width}, height={self.height})")
+        return (
+            f"BoundingBox(absolute_coords={self.absolute_coords}, ulx={self.ulx}, uly={self.uly}, lrx={self.lrx},"
+            f" lry={self.lry}, width={self.width}, height={self.height})"
+        )
 
     @staticmethod
     def remove_keys() -> list[str]:
@@ -482,9 +499,9 @@ class BoundingBox:
         return ["_height", "_width"]
 
     @staticmethod
-    def replace_keys() -> dict[str,str]:
+    def replace_keys() -> dict[str, str]:
         """Replacing keys when converting the dataclass object to a dict. Useful for backward compatibility"""
-        return {"_ulx":"ulx","_uly":"uly","_lrx":"lrx","_lry":"lry"}
+        return {"_ulx": "ulx", "_uly": "uly", "_lrx": "lrx", "_lry": "lry"}
 
     @classmethod
     @no_type_check

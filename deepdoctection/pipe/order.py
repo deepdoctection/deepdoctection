@@ -347,19 +347,15 @@ class TextLineGenerator:
     a paragraph break threshold. This allows to detect a multi column structure just by observing sub lines.
     """
 
-    def __init__(
-        self, make_sub_lines: bool, line_category_id: Union[int, str], paragraph_break: Optional[float] = None
-    ):
+    def __init__(self, make_sub_lines: bool, paragraph_break: Optional[float] = None):
         """
         :param make_sub_lines: Whether to build sub lines from lines.
-        :param line_category_id: category_id to give a text line
         :param paragraph_break: threshold of two consecutive words. If distance is larger than threshold, two sub-lines
                                 will be built. We use relative coordinates to calculate the distance between two
                                 consecutive words. A reasonable value is 0.035
         """
         if make_sub_lines and paragraph_break is None:
             raise ValueError("You must specify paragraph_break when setting make_sub_lines to True")
-        self.line_category_id = int(line_category_id)
         self.make_sub_lines = make_sub_lines
         self.paragraph_break = paragraph_break
 
@@ -367,7 +363,6 @@ class TextLineGenerator:
         return DetectionResult(
             box=box.to_list(mode="xyxy"),
             class_name=LayoutType.LINE,
-            class_id=self.line_category_id,
             absolute_coords=box.absolute_coords,
             relationships=relationships,
         )
@@ -475,18 +470,14 @@ class TextLineServiceMixin(PipelineComponent, ABC):
     def __init__(
         self,
         name: str,
-        line_category_id: int = 1,
         include_residual_text_container: bool = True,
         paragraph_break: Optional[float] = None,
     ):
         """
-        Initialize the TextLineService with a line_category_id and a TextLineGenerator instance.
+        Initialize the TextLineServiceMixin with a TextLineGenerator instance.
         """
-        self.line_category_id = line_category_id
         self.include_residual_text_container = include_residual_text_container
-        self.text_line_generator = TextLineGenerator(
-            self.include_residual_text_container, self.line_category_id, paragraph_break
-        )
+        self.text_line_generator = TextLineGenerator(self.include_residual_text_container, paragraph_break)
         super().__init__(name)
 
     def _create_lines_for_words(self, word_anns: Sequence[ImageAnnotation]) -> Sequence[ImageAnnotation]:
@@ -523,17 +514,15 @@ class TextLineService(TextLineServiceMixin):
     text lines and the words contained in the text lines. The reading order is not arranged.
     """
 
-    def __init__(self, line_category_id: int = 1, paragraph_break: Optional[float] = None):
+    def __init__(self, paragraph_break: Optional[float] = None):
         """
         Initialize `TextLineService`
 
-        :param line_category_id: category_id to give a text line
         :param paragraph_break: threshold of two consecutive words. If distance is larger than threshold, two sublines
                                 will be built
         """
         super().__init__(
             name="text_line",
-            line_category_id=line_category_id,
             include_residual_text_container=True,
             paragraph_break=paragraph_break,
         )
@@ -542,7 +531,7 @@ class TextLineService(TextLineServiceMixin):
         """
         This method returns a new instance of the class with the same configuration.
         """
-        return self.__class__(self.line_category_id, self.text_line_generator.paragraph_break)
+        return self.__class__(self.text_line_generator.paragraph_break)
 
     def serve(self, dp: Image) -> None:
         text_container_anns = dp.get_annotation(category_names=LayoutType.WORD)
@@ -605,7 +594,6 @@ class TextOrderService(TextLineServiceMixin):
         broken_line_tolerance: float = 0.003,
         height_tolerance: float = 2.0,
         paragraph_break: Optional[float] = 0.035,
-        line_category_id: int = 1,
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
@@ -647,12 +635,9 @@ class TextOrderService(TextLineServiceMixin):
             self.floating_text_block_categories = self.floating_text_block_categories + (LayoutType.LINE,)
         self.include_residual_text_container = include_residual_text_container
         self.order_generator = OrderGenerator(starting_point_tolerance, broken_line_tolerance, height_tolerance)
-        self.text_line_generator = TextLineGenerator(
-            self.include_residual_text_container, line_category_id, paragraph_break
-        )
+        self.text_line_generator = TextLineGenerator(self.include_residual_text_container, paragraph_break)
         super().__init__(
             name="text_order",
-            line_category_id=line_category_id,
             include_residual_text_container=include_residual_text_container,
             paragraph_break=paragraph_break,
         )
@@ -763,7 +748,6 @@ class TextOrderService(TextLineServiceMixin):
             self.order_generator.broken_line_tolerance,
             self.order_generator.height_tolerance,
             self.text_line_generator.paragraph_break,
-            self.text_line_generator.line_category_id,
         )
 
     def clear_predictor(self) -> None:
