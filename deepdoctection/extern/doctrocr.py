@@ -79,8 +79,8 @@ def _load_model(
         state_dict = torch.load(os.fspath(path_weights), map_location=device)
         for key in list(state_dict.keys()):
             state_dict["model." + key] = state_dict.pop(key)
-        doctr_predictor.load_state_dict(state_dict)  # type: ignore
-        doctr_predictor.to(device)  # type: ignore
+        doctr_predictor.load_state_dict(state_dict)
+        doctr_predictor.to(device)
     elif lib == "TF":
         # Unzip the archive
         params_path = Path(path_weights).parent
@@ -88,9 +88,9 @@ def _load_model(
         if is_zip_path:
             with ZipFile(path_weights, "r") as file:
                 file.extractall(path=params_path)
-                doctr_predictor.model.load_weights(params_path / "weights")  # type: ignore
+                doctr_predictor.model.load_weights(params_path / "weights")
         else:
-            doctr_predictor.model.load_weights(os.fspath(path_weights))  # type: ignore
+            doctr_predictor.model.load_weights(os.fspath(path_weights))
 
 
 def auto_select_lib_for_doctr() -> Literal["PT", "TF"]:
@@ -125,7 +125,7 @@ def doctr_predict_text_lines(
         DetectionResult(
             box=box[:4].tolist(), class_id=1, score=box[4], absolute_coords=False, class_name=LayoutType.WORD
         )
-        for box in raw_output[0]["words"]  # type: ignore
+        for box in raw_output[0]["words"]
     ]
     return detection_results
 
@@ -480,7 +480,7 @@ class DoctrTextRecognizer(TextRecognizer):
         return auto_select_lib_for_doctr()
 
     def clear_model(self) -> None:
-        self.doctr_predictor = None  # type: ignore
+        self.doctr_predictor = None
 
 
 class DocTrRotationTransformer(ImageTransformer):
