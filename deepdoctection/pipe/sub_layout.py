@@ -92,7 +92,6 @@ class DetectResultGenerator:
                         detect_result_list.append(
                             DetectionResult(
                                 box=[0.0, 0.0, float(self.width), float(self.height)],  # type: ignore
-                                class_id=self.categories_name_as_key[category_name],
                                 class_name=category_name,
                                 score=0.0,
                                 absolute_coords=self.absolute_coords,
@@ -156,14 +155,13 @@ class SubImageLayoutService(PipelineComponent):
             detect_result_generator = DetectResultGenerator(categories_items)
             d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": LayoutType.row,
             "2": LayoutType.column})
-            item_component = SubImageLayoutService(d_items, LayoutType.table, {1: 7, 2: 8}, detect_result_generator)
+            item_component = SubImageLayoutService(d_items, LayoutType.table, detect_result_generator)
     """
 
     def __init__(
         self,
         sub_image_detector: ObjectDetector,
         sub_image_names: Union[str, Sequence[TypeOrStr]],
-        category_id_mapping: Optional[dict[int, int]] = None,
         detect_result_generator: Optional[DetectResultGenerator] = None,
         padder: Optional[PadTransform] = None,
     ):
@@ -186,7 +184,6 @@ class SubImageLayoutService(PipelineComponent):
             if isinstance(sub_image_names, str)
             else tuple((get_type(cat) for cat in sub_image_names))
         )
-        self.category_id_mapping = category_id_mapping
         self.detect_result_generator = detect_result_generator
         self.padder = padder
         self.predictor = sub_image_detector
@@ -223,11 +220,6 @@ class SubImageLayoutService(PipelineComponent):
                 detect_result_list = self.detect_result_generator.create_detection_result(detect_result_list)
 
             for detect_result in detect_result_list:
-                if self.category_id_mapping:
-                    if detect_result.class_id:
-                        detect_result.class_id = self.category_id_mapping.get(
-                            detect_result.class_id, detect_result.class_id
-                        )
                 self.dp_manager.set_image_annotation(detect_result, sub_image_ann.annotation_id)
 
     def get_meta_annotation(self) -> MetaAnnotation:
@@ -254,7 +246,6 @@ class SubImageLayoutService(PipelineComponent):
         return self.__class__(
             predictor,
             self.sub_image_name,
-            self.category_id_mapping,
             self.detect_result_generator,
             padder_clone,
         )
