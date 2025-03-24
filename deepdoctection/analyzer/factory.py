@@ -39,6 +39,7 @@ from ..pipe.common import (
     MatchingService,
     NeighbourMatcher,
     PageParsingService,
+    FamilyCompound
 )
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..pipe.layout import ImageLayoutService
@@ -565,11 +566,12 @@ class ServiceFactory:
             threshold=config.WORD_MATCHING.THRESHOLD,
             max_parent_only=config.WORD_MATCHING.MAX_PARENT_ONLY,
         )
+        family_compounds = [FamilyCompound(parent_categories=config.WORD_MATCHING.PARENTAL_CATEGORIES,
+                                        child_categories=config.TEXT_CONTAINER,
+                                        relationship_key=Relationships.CHILD)]
         return MatchingService(
-            parent_categories=config.WORD_MATCHING.PARENTAL_CATEGORIES,
-            child_categories=config.TEXT_CONTAINER,
+            family_compounds=family_compounds,
             matcher=matcher,
-            relationship_key=Relationships.CHILD,
         )
 
     @staticmethod
@@ -589,11 +591,12 @@ class ServiceFactory:
         :return: MatchingService
         """
         neighbor_matcher = NeighbourMatcher()
+        family_compounds = [FamilyCompound(parent_categories=config.LAYOUT_LINK.PARENTAL_CATEGORIES,
+                                        child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
+                                        relationship_key=Relationships.LAYOUT_LINK)]
         return MatchingService(
-            parent_categories=config.LAYOUT_LINK.PARENTAL_CATEGORIES,
-            child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
+            family_compounds=family_compounds,
             matcher=neighbor_matcher,
-            relationship_key=Relationships.LAYOUT_LINK,
         )
 
     @staticmethod

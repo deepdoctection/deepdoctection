@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
@@ -193,6 +194,28 @@ class NeighbourMatcher:
         ]
 
 
+@dataclass
+class FamilyCompound:
+    """
+    A family compound is a set of parent and child categories that are related by a relationship key. The parent
+    categories will receive a relationship to the child categories.
+    """
+
+    parent_categories: Union[ObjectTypes, Sequence[ObjectTypes]]
+    child_categories: Union[ObjectTypes, Sequence[ObjectTypes]]
+    relationship_key: Relationships
+
+    def __post_init__(self)-> None:
+        if isinstance(self.parent_categories, str):
+            self.parent_categories = (get_type(self.parent_categories),)
+        else:
+            self.parent_categories = tuple(get_type(parent) for parent in self.parent_categories)
+        if isinstance(self.child_categories, str):
+            self.child_categories = (get_type(self.child_categories),)
+        else:
+            self.child_categories = tuple(get_type(child) for child in self.child_categories)
+
+
 @pipeline_component_registry.register("MatchingService")
 class MatchingService(PipelineComponent):
     """
@@ -202,28 +225,16 @@ class MatchingService(PipelineComponent):
 
     def __init__(
         self,
-        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        family_compounds: Sequence[FamilyCompound],
         matcher: Union[IntersectionMatcher, NeighbourMatcher],
-        relationship_key: Relationships,
     ) -> None:
         """
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
 
         """
-        self.parent_categories = (
-            (get_type(parent_categories),)
-            if isinstance(parent_categories, str)
-            else tuple(get_type(category_name) for category_name in parent_categories)
-        )
-        self.child_categories = (
-            (get_type(child_categories),)
-            if isinstance(child_categories, str)
-            else (tuple(get_type(category_name) for category_name in child_categories))
-        )
+        self.family_compounds = family_compounds
         self.matcher = matcher
-        self.relationship_key = relationship_key
         super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
@@ -233,20 +244,24 @@ class MatchingService(PipelineComponent):
 
         :param dp: datapoint image
         """
+        for family_compound in self.family_compounds:
+            matched_pairs = self.matcher.match(dp, family_compound.parent_categories, family_compound.child_categories)
 
-        matched_pairs = self.matcher.match(dp, self.parent_categories, self.child_categories)
-
-        for pair in matched_pairs:
-            self.dp_manager.set_relationship_annotation(self.relationship_key, pair[0], pair[1])
+            for pair in matched_pairs:
+                self.dp_manager.set_relationship_annotation(family_compound.relationship_key, pair[0], pair[1])
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(self.parent_categories, self.child_categories, self.matcher, self.relationship_key)
+        return self.__class__(self.family_compounds, self.matcher)
 
     def get_meta_annotation(self) -> MetaAnnotation:
+        relationships: dict[ObjectTypes,set[ObjectTypes]] = {}
+        for family_compound in self.family_compounds:
+            for parent_category in family_compound.parent_categories:
+                relationships[parent_category] = {family_compound.relationship_key} # type: ignore
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={},
-            relationships={parent: {Relationships.CHILD} for parent in self.parent_categories},
+            relationships=relationships,
             summaries=(),
         )
 
