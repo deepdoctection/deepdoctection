@@ -37,6 +37,8 @@ from ..extern.hfdetr import HFDetrDerivedDetector
 from ..mapper.hfstruct import DetrDataCollator, image_to_hf_detr_training
 from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
+from ..utils.error import DependencyError
+from ..utils.file_utils import wandb_available
 from ..utils.logger import LoggingRecord, logger
 from ..utils.types import PathLikeOrStr
 from ..utils.utils import string_to_dict
@@ -56,6 +58,9 @@ with try_import() as hf_import_guard:
         TrainingArguments,
     )
 
+with try_import() as wb_import_guard:
+    import wandb
+
 
 class DetrDerivedTrainer(Trainer):
     """
@@ -74,16 +79,19 @@ class DetrDerivedTrainer(Trainer):
         args: TrainingArguments,
         data_collator: DetrDataCollator,
         train_dataset: DatasetAdapter,
+        eval_dataset: Optional[DatasetBase] = None,
+
     ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None
-        super().__init__(model, args, data_collator, train_dataset)
+        super().__init__(model, args, data_collator, train_dataset, eval_dataset=eval_dataset)
 
     def setup_evaluator(
         self,
         dataset_val: DatasetBase,
         pipeline_component: PipelineComponent,
         metric: Union[Type[MetricBase], MetricBase],
+        run: Optional[wandb.sdk.wandb_run.Run] = None,
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
@@ -93,10 +101,11 @@ class DetrDerivedTrainer(Trainer):
         :param dataset_val: dataset on which to run evaluation
         :param pipeline_component: pipeline component to plug into the evaluator
         :param metric: A metric class
+        :param run: WandB run
         :param build_eval_kwargs:
         """
 
-        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1)
+        self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
         assert self.evaluator.pipe_component
         for comp in self.evaluator.pipe_component.pipe_components:
             comp.clear_predictor()
@@ -207,10 +216,14 @@ def train_hf_detr(
         "max_steps": number_samples,
         "eval_strategy": (
             "steps"
-            if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
+            if (dataset_val is not None and (metric is not None or metric_name is not None)
+                and pipeline_component_name is not None)
             else "no"
         ),
         "eval_steps": 5000,
+        "use_wandb": False,
+        "wandb_project": None,
+        "wandb_repo": "deepdoctection",
     }
 
     for conf in config_overwrite:
@@ -223,6 +236,23 @@ def train_hf_detr(
             except ValueError:
                 pass
         conf_dict[key] = val
+
+    use_wandb = conf_dict.pop("use_wandb")
+    wandb_project = str(conf_dict.pop("wandb_project"))
+    wandb_repo = str(conf_dict.pop("wandb_repo"))
+
+    # Initialize Wandb, if necessary
+    run = None
+    if use_wandb:
+        if not wandb_available():
+            raise DependencyError("WandB must be installed separately")
+        run = wandb.init(project=wandb_project, config=conf_dict)
+        run._label(repo=wandb_repo)  # pylint: disable=W0212
+        os.environ["WANDB_DISABLED"] = "False"
+        os.environ["WANDB_WATCH"] = "True"
+        os.environ["WANDB_PROJECT"] = wandb_project
+    else:
+        os.environ["WANDB_DISABLED"] = "True"
 
     # Will inform about dataloader warnings if max_steps exceeds length of dataset
     if conf_dict["max_steps"] > number_samples:  # type: ignore
@@ -240,7 +270,6 @@ def train_hf_detr(
         pretrained_model_name_or_path=path_config_json,
         num_labels=len(id2label),
     )
-    config.use_timm_backbone = True
 
     if path_weights != "":
         model = TableTransformerForObjectDetection.from_pretrained(
@@ -253,9 +282,9 @@ def train_hf_detr(
         pretrained_model_name_or_path=path_feature_extractor_config_json
     )
     data_collator = DetrDataCollator(feature_extractor)
-    trainer = DetrDerivedTrainer(model, arguments, data_collator, dataset)
+    trainer = DetrDerivedTrainer(model, arguments, data_collator, dataset, eval_dataset=dataset_val)
 
-    if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
+    if arguments.eval_strategy in (IntervalStrategy.STEPS,):
         categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
         detector = HFDetrDerivedDetector(
             path_config_json, path_weights, path_feature_extractor_config_json, categories  # type: ignore
@@ -267,6 +296,6 @@ def train_hf_detr(
             metric = metric_registry.get(metric_name)
         assert metric is not None
 
-        trainer.setup_evaluator(dataset_val, pipeline_component, metric)  # type: ignore
+        trainer.setup_evaluator(dataset_val, pipeline_component, metric, run, **build_val_dict)  # type: ignore
 
     trainer.train()
