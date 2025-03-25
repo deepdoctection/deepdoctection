@@ -123,7 +123,7 @@ class DetectResultGenerator:
         """
         sane_detect_results = []
         for detect_result in detect_result_list:
-            if detect_result.box:
+            if detect_result.box is not None:
                 ulx, uly, lrx, lry = detect_result.box
                 if ulx >= 0 and lrx - ulx >= 0 and uly >= 0 and lry - uly >= 0:
                     sane_detect_results.append(detect_result)
