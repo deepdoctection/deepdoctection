@@ -395,7 +395,7 @@ def train_hf_layoutlm(
         "remove_unused_columns": False,
         "per_device_train_batch_size": 8,
         "max_steps": number_samples,
-        "evaluation_strategy": (
+        "eval_strategy": (
             "steps"
             if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
             else "no"
@@ -475,7 +475,7 @@ def train_hf_layoutlm(
     )
     trainer = LayoutLMTrainer(model, arguments, data_collator, dataset, eval_dataset=dataset_val)
 
-    if arguments.evaluation_strategy in (IntervalStrategy.STEPS,):
+    if arguments.eval_strategy in (IntervalStrategy.STEPS,):
         assert metric is not None  # silence mypy
         if dataset_type == DatasetType.SEQUENCE_CLASSIFICATION:
             categories = dataset_val.dataflow.categories.get_categories(filtered=True)  # type: ignore
