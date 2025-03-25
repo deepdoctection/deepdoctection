@@ -48,7 +48,7 @@ class Box:
         """
         width
         """
-        return round(self.lrx - self.ulx)-1
+        return round(self.lrx - self.ulx) - 1
 
     @property
     def h(self) -> float:

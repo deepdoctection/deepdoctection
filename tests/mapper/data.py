@@ -1010,7 +1010,7 @@ class DatapointImage:
         self.categories = DatasetCategories(init_categories=[get_type("FOO"), get_type("BAK")])
         self.tp_frcnn_training: JsonDict = {
             "image": _img_np,
-            "gt_boxes": np.asarray([[3, 4., 5., 6.], [17., 27., 31., 31.]]).astype("float32"),
+            "gt_boxes": np.asarray([[3, 4.0, 5.0, 6.0], [17.0, 27.0, 31.0, 31.0]]).astype("float32"),
             "gt_labels": np.asarray([1, 2]).astype("float32"),
             "file_name": "/to/path",
         }
