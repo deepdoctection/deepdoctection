@@ -272,6 +272,7 @@ def train_hf_detr(
         pretrained_model_name_or_path=path_config_json,
         num_labels=len(id2label),
     )
+    config.use_timm_backbone = True
 
     if path_weights != "":
         model = TableTransformerForObjectDetection.from_pretrained(
