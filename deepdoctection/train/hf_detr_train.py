@@ -80,7 +80,6 @@ class DetrDerivedTrainer(Trainer):
         data_collator: DetrDataCollator,
         train_dataset: DatasetAdapter,
         eval_dataset: Optional[DatasetBase] = None,
-
     ):
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None
@@ -216,8 +215,11 @@ def train_hf_detr(
         "max_steps": number_samples,
         "eval_strategy": (
             "steps"
-            if (dataset_val is not None and (metric is not None or metric_name is not None)
-                and pipeline_component_name is not None)
+            if (
+                dataset_val is not None
+                and (metric is not None or metric_name is not None)
+                and pipeline_component_name is not None
+            )
             else "no"
         ),
         "eval_steps": 5000,
@@ -262,7 +264,7 @@ def train_hf_detr(
             )
         )
 
-    arguments = TrainingArguments(**conf_dict)
+    arguments = TrainingArguments(**conf_dict)  # pylint: disable=E1123
     logger.info(LoggingRecord(f"Config: \n {arguments.to_dict()}", arguments.to_dict()))
 
     id2label = {int(k) - 1: v for v, k in categories_dict_name_as_key.items()}
