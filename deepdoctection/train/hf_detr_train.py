@@ -205,7 +205,7 @@ def train_hf_detr(
         "remove_unused_columns": False,
         "per_device_train_batch_size": 2,
         "max_steps": number_samples,
-        "evaluation_strategy": (
+        "eval_strategy": (
             "steps"
             if (dataset_val is not None and metric is not None and pipeline_component_name is not None)
             else "no"
@@ -240,6 +240,7 @@ def train_hf_detr(
         pretrained_model_name_or_path=path_config_json,
         num_labels=len(id2label),
     )
+    config.use_timm_backbone = True
 
     if path_weights != "":
         model = TableTransformerForObjectDetection.from_pretrained(
