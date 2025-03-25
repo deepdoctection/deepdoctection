@@ -24,7 +24,7 @@ import catalogue  # type: ignore
 from tabulate import tabulate
 from termcolor import colored
 
-from .base import DatasetBase, CustomDataset
+from .base import CustomDataset, DatasetBase
 
 __all__ = ["dataset_registry", "get_dataset", "print_dataset_infos"]
 

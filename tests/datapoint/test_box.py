@@ -72,11 +72,7 @@ class TestBoundingBox:
 
         # Arrange
         bounding_box = BoundingBox(
-            ulx=box.ulx,
-            uly=box.uly,
-            lrx=box.lrx,
-            lry=box.lry,
-            absolute_coords=box.absolute_coords
+            ulx=box.ulx, uly=box.uly, lrx=box.lrx, lry=box.lry, absolute_coords=box.absolute_coords
         )
 
         # Assert
@@ -96,11 +92,7 @@ class TestBoundingBox:
 
         # Arrange
         bounding_box_absolute = BoundingBox(
-            ulx=box.ulx,
-            uly=box.uly,
-            lrx=box.lrx,
-            lry=box.lry,
-            absolute_coords=box.absolute_coords
+            ulx=box.ulx, uly=box.uly, lrx=box.lrx, lry=box.lry, absolute_coords=box.absolute_coords
         )
 
         # Act
@@ -110,16 +102,11 @@ class TestBoundingBox:
             absolute_coords=False,
         ).to_list(mode="xyxy")
         box_copy = bounding_box_absolute.transform(
-            image_width=box.image_width,
-            image_height=box.image_height,
-            absolute_coords=False
+            image_width=box.image_width, image_height=box.image_height, absolute_coords=False
         )
 
         # Assert
-        assert box_relative_list == [box.ulx_relative,
-                                     box.uly_relative,
-                                     box.lrx_relative,
-                                     box.lry_relative]
+        assert box_relative_list == [box.ulx_relative, box.uly_relative, box.lrx_relative, box.lry_relative]
         assert isinstance(box_copy, BoundingBox)
         assert box_copy.absolute_coords is False
 
@@ -130,47 +117,52 @@ class TestBoundingBox:
         [
             # Case 1: Absolute to relative transform
             (
-                    BoundingBox(absolute_coords=True, ulx=100, uly=50, lrx=300, lry=150),
-                    1000, 500,
-                    False,
-                    BoundingBox(absolute_coords=False, ulx=0.1, uly=0.1, lrx=0.3, lry=0.3)
+                BoundingBox(absolute_coords=True, ulx=100, uly=50, lrx=300, lry=150),
+                1000,
+                500,
+                False,
+                BoundingBox(absolute_coords=False, ulx=0.1, uly=0.1, lrx=0.3, lry=0.3),
             ),
             # Case 2: Relative to absolute transform
             (
-                    BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.6, lry=0.8),
-                    500, 400,
-                    True,
-                    BoundingBox(absolute_coords=True, ulx=100, uly=120, lrx=300, lry=320)
+                BoundingBox(absolute_coords=False, ulx=0.2, uly=0.3, lrx=0.6, lry=0.8),
+                500,
+                400,
+                True,
+                BoundingBox(absolute_coords=True, ulx=100, uly=120, lrx=300, lry=320),
             ),
             # Case 3: Absolute to absolute (no change expected)
             (
-                    BoundingBox(absolute_coords=True, ulx=25, uly=35, lrx=75, lry=85),
-                    200, 200,
-                    True,
-                    BoundingBox(absolute_coords=True, ulx=25, uly=35, lrx=75, lry=85)
+                BoundingBox(absolute_coords=True, ulx=25, uly=35, lrx=75, lry=85),
+                200,
+                200,
+                True,
+                BoundingBox(absolute_coords=True, ulx=25, uly=35, lrx=75, lry=85),
             ),
             # Case 4: Relative to relative (no change expected)
             (
-                    BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.4, lry=0.5),
-                    800, 600,
-                    False,
-                    BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.4, lry=0.5)
+                BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.4, lry=0.5),
+                800,
+                600,
+                False,
+                BoundingBox(absolute_coords=False, ulx=0.1, uly=0.2, lrx=0.4, lry=0.5),
             ),
             # Case 5: Absolute to relative transform with float coordinates (rounding expected)
             (
-                    BoundingBox(absolute_coords=True, ulx=100.7, uly=50.2, lrx=300.6, lry=150.4),
-                    1000, 500,
-                    False,
-                    BoundingBox(absolute_coords=False, ulx=0.101, uly=0.1, lrx=0.301, lry=0.3)
+                BoundingBox(absolute_coords=True, ulx=100.7, uly=50.2, lrx=300.6, lry=150.4),
+                1000,
+                500,
+                False,
+                BoundingBox(absolute_coords=False, ulx=0.101, uly=0.1, lrx=0.301, lry=0.3),
             ),
         ],
     )
     def test_transform_parametrized(
-            input_box: BoundingBox,
-            image_width: float,
-            image_height: float,
-            target_absolute_coords: bool,
-            expected_box: BoundingBox
+        input_box: BoundingBox,
+        image_width: float,
+        image_height: float,
+        target_absolute_coords: bool,
+        expected_box: BoundingBox,
     ) -> None:
         """
         Testing BoundingBox.transform method with various inputs
@@ -180,9 +172,7 @@ class TestBoundingBox:
         """
         # Act
         transformed_box = input_box.transform(
-            image_width=image_width,
-            image_height=image_height,
-            absolute_coords=target_absolute_coords
+            image_width=image_width, image_height=image_height, absolute_coords=target_absolute_coords
         )
 
         # Assert
