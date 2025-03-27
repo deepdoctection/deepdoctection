@@ -34,7 +34,7 @@ Module for PubTables1M-Detection-PASCAL-VOC dataset. Install the dataset followi
     │├── test_filelist.txt
     │├── train_filelist.txt
     │├── val_filelist.txt
-    ├── PubTables-1M-Structure_Annotations_Test
+    ├── PubTables-1M-Structure_Annotations_Testgit
     ├── PubTables-1M-Structure_Images_Test
 """
 from __future__ import annotations
