@@ -70,7 +70,6 @@ class TextExtractionService(PipelineComponent):
         text_extract_detector: Union[ObjectDetector, PdfMiner, TextRecognizer],
         extract_from_roi: Optional[Union[Sequence[TypeOrStr], TypeOrStr]] = None,
         run_time_ocr_language_selection: bool = False,
-        skip_if_text_extracted: bool = False,
     ):
         """
         :param text_extract_detector: ObjectDetector
@@ -79,8 +78,6 @@ class TextExtractionService(PipelineComponent):
                                                 multiple language selections. Also requires that a language detection
                                                 pipeline component ran before. It will select the expert language OCR
                                                 model based on the determined language.
-        :param skip_if_text_extracted: Set to `True` if text has already been extracted in a previous pipeline component
-                                       and should not be extracted again. Use-case: A PDF with some scanned images.
         """
 
         if extract_from_roi is None:
@@ -104,11 +101,6 @@ class TextExtractionService(PipelineComponent):
                 raise TypeError("Only TesseractOcrDetector supports multiple languages")
 
         self.run_time_ocr_language_selection = run_time_ocr_language_selection
-        self.skip_if_text_extracted = skip_if_text_extracted
-        if self.skip_if_text_extracted and isinstance(self.predictor, TextRecognizer):
-            raise ValueError(
-                "skip_if_text_extracted=True and TextRecognizer in TextExtractionService is not compatible"
-            )
 
     def serve(self, dp: Image) -> None:
         maybe_batched_text_rois = self.get_text_rois(dp)
@@ -154,11 +146,6 @@ class TextExtractionService(PipelineComponent):
         well `get_text_rois` will return an empty list.
         :return: list of ImageAnnotation or Image
         """
-        if self.skip_if_text_extracted:
-            text_categories = self.predictor.get_category_names()
-            text_anns = dp.get_annotation(category_names=text_categories)
-            if text_anns:
-                return []
 
         if self.extract_from_category:
             if self.predictor.accepts_batch:
@@ -223,7 +210,11 @@ class TextExtractionService(PipelineComponent):
         predictor = self.predictor.clone()
         if not isinstance(predictor, (ObjectDetector, PdfMiner, TextRecognizer)):
             raise ImageError(f"predictor must be of type ObjectDetector or PdfMiner, but is of type {type(predictor)}")
-        return self.__class__(predictor, deepcopy(self.extract_from_category), self.run_time_ocr_language_selection)
+        return self.__class__(
+            text_extract_detector=predictor,
+            extract_from_roi=deepcopy(self.extract_from_category),
+            run_time_ocr_language_selection=self.run_time_ocr_language_selection,
+        )
 
     def clear_predictor(self) -> None:
         self.predictor.clear_model()

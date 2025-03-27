@@ -436,24 +436,24 @@ def segment_table(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[0],
-        cell_names,
-        segment_rule,
-        threshold_rows,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[0],
+        child_ann_category_names=cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_rows,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cell_index_cols, col_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[1],
-        cell_names,
-        segment_rule,
-        threshold_cols,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[1],
+        child_ann_category_names=cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_cols,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cells = dp.get_annotation(annotation_ids=child_ann_ids, category_names=cell_names)
@@ -571,13 +571,13 @@ def header_cell_to_item_detect_result(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     item_index, _, items, _ = match_anns_by_intersection(
         dp,
-        item_header_name,
-        item_name,
-        segment_rule,
-        threshold,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_header_name,
+        child_ann_category_names=item_name,
+        matching_rule=segment_rule,
+        threshold=threshold,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
     item_headers = []
     for idx, item in enumerate(items):
@@ -619,24 +619,24 @@ def segment_pubtables(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[0],
-        spanning_cell_names,
-        segment_rule,
-        threshold_rows,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[0],
+        child_ann_category_names=spanning_cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_rows,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cell_index_cols, col_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[1],
-        spanning_cell_names,
-        segment_rule,
-        threshold_cols,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[1],
+        child_ann_category_names=spanning_cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_cols,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     spanning_cells = dp.get_annotation(annotation_ids=child_ann_ids, category_names=spanning_cell_names)
