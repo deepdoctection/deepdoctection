@@ -714,7 +714,7 @@ class ServiceFactory:
                 table_refinement_service = ServiceFactory.build_table_refinement_service(config)
                 pipe_component_list.append(table_refinement_service)
 
-        d_text_service_id = None
+        d_text_service_id = ""
         if config.USE_PDF_MINER:
             pdf_miner = ServiceFactory.build_pdf_text_detector(config)
             d_text = ServiceFactory.build_pdf_miner_text_service(pdf_miner)
