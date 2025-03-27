@@ -26,18 +26,20 @@ import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
-from ..utils.error import ImageError
-from ..utils.transform import PadTransform
-from ..utils.settings import ObjectTypes
 from ..mapper.misc import curry
+from ..utils.error import ImageError
+from ..utils.settings import ObjectTypes
+from ..utils.transform import PadTransform
 from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
 
 
 @curry
-def skip_if_category_or_service_extracted(dp: Image,
-                                          category_names: Optional[Union[str,Sequence[ObjectTypes]]]=None,
-                                          service_ids: Optional[Union[str,Sequence[str]]]=None) -> bool:
+def skip_if_category_or_service_extracted(
+    dp: Image,
+    category_names: Optional[Union[str, Sequence[ObjectTypes]]] = None,
+    service_ids: Optional[Union[str, Sequence[str]]] = None,
+) -> bool:
     """
     Skip the processing of the pipeline component if the category or service is already extracted.
 
