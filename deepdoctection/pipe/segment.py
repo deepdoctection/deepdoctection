@@ -436,24 +436,24 @@ def segment_table(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[0],
-        cell_names,
-        segment_rule,
-        threshold_rows,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[0],
+        child_ann_category_names=cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_rows,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cell_index_cols, col_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[1],
-        cell_names,
-        segment_rule,
-        threshold_cols,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[1],
+        child_ann_category_names=cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_cols,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cells = dp.get_annotation(annotation_ids=child_ann_ids, category_names=cell_names)
@@ -499,7 +499,6 @@ def create_intersection_cells(
     rows: Sequence[ImageAnnotation],
     cols: Sequence[ImageAnnotation],
     table_annotation_id: str,
-    cell_class_id: int,
     sub_item_names: Sequence[ObjectTypes],
 ) -> tuple[Sequence[DetectionResult], Sequence[SegmentationResult]]:
     """
@@ -509,7 +508,6 @@ def create_intersection_cells(
     :param rows: list of rows
     :param cols: list of columns
     :param table_annotation_id: annotation_id of underlying table ImageAnnotation
-    :param cell_class_id: The class_id to a synthetically generated DetectionResult
     :param sub_item_names: ObjectTypes for row-/column number
     :return: Pair of lists of `DetectionResult` and `SegmentationResult`.
     """
@@ -526,7 +524,6 @@ def create_intersection_cells(
             detect_result_cells.append(
                 DetectionResult(
                     box=boxes_cells[idx].to_list(mode="xyxy"),
-                    class_id=cell_class_id,
                     absolute_coords=boxes_cells[idx].absolute_coords,
                     class_name=LayoutType.CELL,
                 )
@@ -574,13 +571,13 @@ def header_cell_to_item_detect_result(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     item_index, _, items, _ = match_anns_by_intersection(
         dp,
-        item_header_name,
-        item_name,
-        segment_rule,
-        threshold,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_header_name,
+        child_ann_category_names=item_name,
+        matching_rule=segment_rule,
+        threshold=threshold,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
     item_headers = []
     for idx, item in enumerate(items):
@@ -622,24 +619,24 @@ def segment_pubtables(
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[0],
-        spanning_cell_names,
-        segment_rule,
-        threshold_rows,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[0],
+        child_ann_category_names=spanning_cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_rows,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     cell_index_cols, col_index, _, _ = match_anns_by_intersection(
         dp,
-        item_names[1],
-        spanning_cell_names,
-        segment_rule,
-        threshold_cols,
-        True,
-        child_ann_ids,
-        child_ann_ids,
+        parent_ann_category_names=item_names[1],
+        child_ann_category_names=spanning_cell_names,
+        matching_rule=segment_rule,
+        threshold=threshold_cols,
+        use_weighted_intersections=True,
+        parent_ann_ids=child_ann_ids,
+        child_ann_ids=child_ann_ids,
     )
 
     spanning_cells = dp.get_annotation(annotation_ids=child_ann_ids, category_names=spanning_cell_names)
@@ -976,7 +973,6 @@ class PubtablesSegmentationService(PipelineComponent):
         tile_table_with_items: bool,
         remove_iou_threshold_rows: float,
         remove_iou_threshold_cols: float,
-        cell_class_id: int,
         table_name: TypeOrStr,
         cell_names: Sequence[TypeOrStr],
         spanning_cell_names: Sequence[TypeOrStr],
@@ -997,7 +993,6 @@ class PubtablesSegmentationService(PipelineComponent):
                                       the adjacent row. Will do a similar shifting with columns.
         :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
         :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-        :param cell_class_id: 'category_id' for cells to be generated from intersected rows and columns
         :param table_name: layout type table
         :param cell_names: layout type of cells
         :param spanning_cell_names: layout type of spanning cells
@@ -1022,7 +1017,6 @@ class PubtablesSegmentationService(PipelineComponent):
         self.spanning_cell_names = [get_type(cell_name) for cell_name in spanning_cell_names]
         self.remove_iou_threshold_rows = remove_iou_threshold_rows
         self.remove_iou_threshold_cols = remove_iou_threshold_cols
-        self.cell_class_id = cell_class_id
         self.cell_to_image = cell_to_image
         self.crop_cell_image = crop_cell_image
         self.item_names = [get_type(item_name) for item_name in item_names]  # row names must be before column name
@@ -1089,7 +1083,7 @@ class PubtablesSegmentationService(PipelineComponent):
             rows = dp.get_annotation(category_names=self.item_names[0], annotation_ids=item_ann_ids)
             columns = dp.get_annotation(category_names=self.item_names[1], annotation_ids=item_ann_ids)
             detect_result_cells, segment_result_cells = create_intersection_cells(
-                rows, columns, table.annotation_id, self.cell_class_id, self.sub_item_names
+                rows, columns, table.annotation_id, self.sub_item_names
             )
             cell_rn_cn_to_ann_id = {}
             for detect_result, segment_result in zip(detect_result_cells, segment_result_cells):
@@ -1228,7 +1222,6 @@ class PubtablesSegmentationService(PipelineComponent):
             self.tile_table,
             self.remove_iou_threshold_rows,
             self.remove_iou_threshold_cols,
-            self.cell_class_id,
             self.table_name,
             self.cell_names,
             self.spanning_cell_names,
