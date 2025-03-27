@@ -57,7 +57,7 @@ def test_detect_result_generator(dp_image: Image, layout_detect_results: List[De
 
     # Assert
     raw_ann_cats = {raw_ann.class_id for raw_ann in raw_anns}
-    assert raw_ann_cats == {1, 2, 4, 5}
+    assert raw_ann_cats == {None, 1, 2, 4, 5}
 
     assert raw_anns[5].box == [0.0, 0.0, dp_image.width, dp_image.height]
 

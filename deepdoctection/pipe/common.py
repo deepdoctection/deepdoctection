@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
+from dataclasses import dataclass, field
 from typing import Literal, Mapping, Optional, Sequence, Union
 
 import numpy as np
@@ -49,24 +50,30 @@ class ImageCroppingService(PipelineComponent):
     generally not stored.
     """
 
-    def __init__(self, category_names: Union[TypeOrStr, Sequence[TypeOrStr]]):
+    def __init__(
+        self, category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+             service_ids: Optional[Sequence[str]] = None
+    ) -> None:
         """
         :param category_names: A single name or a list of category names to crop
         """
-
-        self.category_names = (
-            (category_names,)
-            if isinstance(category_names, str)
-            else tuple(get_type(category_name) for category_name in category_names)
-        )
+        if category_names is None:
+            self.category_names = None
+        else:
+            self.category_names = (
+                (category_names,)
+                if isinstance(category_names, str)
+                else tuple(get_type(category_name) for category_name in category_names)
+            )
+        self.service_ids = service_ids
         super().__init__("image_crop")
 
     def serve(self, dp: Image) -> None:
-        for ann in dp.get_annotation(category_names=self.category_names):
+        for ann in dp.get_annotation(category_names=self.category_names, service_ids=self.service_ids):
             dp.image_ann_to_image(ann.annotation_id, crop_image=True)
 
     def clone(self) -> ImageCroppingService:
-        return self.__class__(self.category_names)
+        return self.__class__(self.category_names, self.service_ids)
 
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
@@ -124,8 +131,10 @@ class IntersectionMatcher:
     def match(
         self,
         dp: Image,
-        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
         The matching algorithm
@@ -133,6 +142,10 @@ class IntersectionMatcher:
         :param dp: datapoint image
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
+        :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                                        parent candidates which are not in the list.
+        :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                                        children candidates which are not in the list.
 
         :return: A list of tuples with parent and child annotation ids
         """
@@ -144,6 +157,8 @@ class IntersectionMatcher:
             threshold=self.threshold,
             use_weighted_intersections=self.use_weighted_intersections,
             max_parent_only=self.max_parent_only,
+            parent_ann_service_ids=parent_ann_service_ids,
+            child_ann_service_ids=child_ann_service_ids,
         )
 
         matched_child_anns = np.take(child_anns, child_index)  # type: ignore
@@ -174,8 +189,10 @@ class NeighbourMatcher:
     def match(
         self,
         dp: Image,
-        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
         The matching algorithm
@@ -183,14 +200,52 @@ class NeighbourMatcher:
         :param dp: datapoint image
         :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
         :param child_categories: list of categories to be used for a child class.
+        :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                                        parent candidates which are not in the list.
+        :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                                        children candidates which are not in the list.
 
         :return: A list of tuples with parent and child annotation ids
         """
 
         return [
             (pair[0].annotation_id, pair[1].annotation_id)
-            for pair in match_anns_by_distance(dp, parent_categories, child_categories)
+            for pair in match_anns_by_distance(
+                dp,
+                parent_ann_category_names=parent_categories,
+                child_ann_category_names=child_categories,
+                parent_ann_service_ids=parent_ann_service_ids,
+                child_ann_service_ids=child_ann_service_ids,
+            )
         ]
+
+
+@dataclass
+class FamilyCompound:
+    """
+    A family compound is a set of parent and child categories that are related by a relationship key. The parent
+    categories will receive a relationship to the child categories.
+    """
+
+    relationship_key: Relationships
+    parent_categories: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]] = field(default=None)
+    child_categories: Optional[Union[ObjectTypes, Sequence[ObjectTypes]]] = field(default=None)
+    parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = field(default=None)
+    child_ann_service_ids: Optional[Union[str, Sequence[str]]] = field(default=None)
+
+    def __post_init__(self) -> None:
+        if isinstance(self.parent_categories, str):
+            self.parent_categories = (get_type(self.parent_categories),)
+        elif self.parent_categories is not None:
+            self.parent_categories = tuple(get_type(parent) for parent in self.parent_categories)
+        if isinstance(self.child_categories, str):
+            self.child_categories = (get_type(self.child_categories),)
+        elif self.child_categories is not None:
+            self.child_categories = tuple(get_type(child) for child in self.child_categories)
+        if isinstance(self.parent_ann_service_ids, str):
+            self.parent_ann_service_ids = (self.parent_ann_service_ids,)
+        if isinstance(self.child_ann_service_ids, str):
+            self.child_ann_service_ids = (self.child_ann_service_ids,)
 
 
 @pipeline_component_registry.register("MatchingService")
@@ -202,28 +257,15 @@ class MatchingService(PipelineComponent):
 
     def __init__(
         self,
-        parent_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
-        child_categories: Union[TypeOrStr, Sequence[TypeOrStr]],
+        family_compounds: Sequence[FamilyCompound],
         matcher: Union[IntersectionMatcher, NeighbourMatcher],
-        relationship_key: Relationships,
     ) -> None:
         """
-        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
-        :param child_categories: list of categories to be used for a child class.
-
+        :param family_compounds: A list of FamilyCompounds
+        :param matcher: A matcher object
         """
-        self.parent_categories = (
-            (get_type(parent_categories),)
-            if isinstance(parent_categories, str)
-            else tuple(get_type(category_name) for category_name in parent_categories)
-        )
-        self.child_categories = (
-            (get_type(child_categories),)
-            if isinstance(child_categories, str)
-            else (tuple(get_type(category_name) for category_name in child_categories))
-        )
+        self.family_compounds = family_compounds
         self.matcher = matcher
-        self.relationship_key = relationship_key
         super().__init__("matching")
 
     def serve(self, dp: Image) -> None:
@@ -233,20 +275,31 @@ class MatchingService(PipelineComponent):
 
         :param dp: datapoint image
         """
+        for family_compound in self.family_compounds:
+            matched_pairs = self.matcher.match(
+                dp,
+                parent_categories=family_compound.parent_categories,
+                child_categories=family_compound.child_categories,
+                parent_ann_service_ids=family_compound.parent_ann_service_ids,
+                child_ann_service_ids=family_compound.child_ann_service_ids,
+            )
 
-        matched_pairs = self.matcher.match(dp, self.parent_categories, self.child_categories)
-
-        for pair in matched_pairs:
-            self.dp_manager.set_relationship_annotation(self.relationship_key, pair[0], pair[1])
+            for pair in matched_pairs:
+                self.dp_manager.set_relationship_annotation(family_compound.relationship_key, pair[0], pair[1])
 
     def clone(self) -> PipelineComponent:
-        return self.__class__(self.parent_categories, self.child_categories, self.matcher, self.relationship_key)
+        return self.__class__(self.family_compounds, self.matcher)
 
     def get_meta_annotation(self) -> MetaAnnotation:
+        relationships: dict[ObjectTypes, set[ObjectTypes]] = {}
+        for family_compound in self.family_compounds:
+            if family_compound.parent_categories is not None:
+                for parent_category in family_compound.parent_categories:
+                    relationships[parent_category] = {family_compound.relationship_key}  # type: ignore
         return MetaAnnotation(
             image_annotations=(),
             sub_categories={},
-            relationships={parent: {Relationships.CHILD} for parent in self.parent_categories},
+            relationships=relationships,
             summaries=(),
         )
 

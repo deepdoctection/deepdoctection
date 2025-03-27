@@ -20,16 +20,39 @@ Module for layout pipeline component
 """
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Sequence, Union
 
 import numpy as np
 
 from ..datapoint.image import Image
 from ..extern.base import ObjectDetector, PdfMiner
+from ..mapper.misc import curry
 from ..utils.error import ImageError
+from ..utils.settings import ObjectTypes
 from ..utils.transform import PadTransform
 from .base import MetaAnnotation, PipelineComponent
 from .registry import pipeline_component_registry
+
+
+@curry
+def skip_if_category_or_service_extracted(
+    dp: Image,
+    category_names: Optional[Union[str, Sequence[ObjectTypes]]] = None,
+    service_ids: Optional[Union[str, Sequence[str]]] = None,
+) -> bool:
+    """
+    Skip the processing of the pipeline component if the category or service is already extracted.
+
+    **Example**
+
+        detector = # some detector
+        item_component = ImageLayoutService(detector)
+        item_component.set_inbound_filter(skip_if_category_or_service_extracted(detector.get_categories(as_dict=False)))
+    """
+
+    if dp.get_annotation(category_names=category_names, service_ids=service_ids):
+        return True
+    return False
 
 
 @pipeline_component_registry.register("ImageLayoutService")
@@ -45,7 +68,7 @@ class ImageLayoutService(PipelineComponent):
 
     **Example**
 
-            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": "ROW", "2": "COLUMNS"})
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: 'row', 2: 'column'})
             item_component = ImageLayoutService(d_items)
     """
 
@@ -55,7 +78,6 @@ class ImageLayoutService(PipelineComponent):
         to_image: bool = False,
         crop_image: bool = False,
         padder: Optional[PadTransform] = None,
-        skip_if_layout_extracted: bool = False,
     ):
         """
         :param layout_detector: object detector
@@ -65,23 +87,14 @@ class ImageLayoutService(PipelineComponent):
                            to its bounding box and populate the resulting sub image to
                            `ImageAnnotation.image.image`.
         :param padder: If not `None`, will apply the padder to the image before prediction and inverse apply the padder
-        :param skip_if_layout_extracted: When `True` will check, if there are already `ImageAnnotation` of a category
-                                         available that will be predicted by the `layout_detector`. If yes, will skip
-                                         the prediction process.
         """
         self.to_image = to_image
         self.crop_image = crop_image
         self.padder = padder
-        self.skip_if_layout_extracted = skip_if_layout_extracted
         self.predictor = layout_detector
         super().__init__(self._get_name(layout_detector.name), self.predictor.model_id)
 
     def serve(self, dp: Image) -> None:
-        if self.skip_if_layout_extracted:
-            categories = self.predictor.get_category_names()
-            anns = dp.get_annotation(category_names=categories)
-            if anns:
-                return
         if dp.image is None:
             raise ImageError("image cannot be None")
         np_image = dp.image
@@ -117,7 +130,7 @@ class ImageLayoutService(PipelineComponent):
             padder_clone = self.padder.clone()
         if not isinstance(predictor, ObjectDetector):
             raise TypeError(f"predictor must be of type ObjectDetector, but is of type {type(predictor)}")
-        return self.__class__(predictor, self.to_image, self.crop_image, padder_clone, self.skip_if_layout_extracted)
+        return self.__class__(predictor, self.to_image, self.crop_image, padder_clone)
 
     def clear_predictor(self) -> None:
         self.predictor.clear_model()
