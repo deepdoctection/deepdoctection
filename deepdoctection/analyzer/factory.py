@@ -42,7 +42,7 @@ from ..pipe.common import (
     FamilyCompound
 )
 from ..pipe.doctectionpipe import DoctectionPipe
-from ..pipe.layout import ImageLayoutService
+from ..pipe.layout import ImageLayoutService, skip_if_category_or_service_extracted
 from ..pipe.order import TextOrderService
 from ..pipe.refine import TableSegmentationRefinementService
 from ..pipe.segment import PubtablesSegmentationService, TableSegmentationService
@@ -516,15 +516,24 @@ class ServiceFactory:
         return ServiceFactory._build_pdf_miner_text_service(detector)
 
     @staticmethod
-    def build_doctr_word_detector_service(detector: DoctrTextlineDetector) -> ImageLayoutService:
+    def _build_doctr_word_detector_service(detector: DoctrTextlineDetector) -> ImageLayoutService:
         """Building a Doctr word detector service
 
         :param detector: DoctrTextlineDetector
         :return: ImageLayoutService
         """
         return ImageLayoutService(
-            layout_detector=detector, to_image=True, crop_image=True, skip_if_layout_extracted=True
-        )
+            layout_detector=detector, to_image=True, crop_image=True)
+
+    @staticmethod
+    def build_doctr_word_detector_service(detector: DoctrTextlineDetector) -> ImageLayoutService:
+        """Building a Doctr word detector service
+
+        :param detector: DoctrTextlineDetector
+        :return: ImageLayoutService
+        """
+        return ServiceFactory._build_doctr_word_detector_service(detector)
+
 
     @staticmethod
     def _build_text_extraction_service(
@@ -567,8 +576,8 @@ class ServiceFactory:
             max_parent_only=config.WORD_MATCHING.MAX_PARENT_ONLY,
         )
         family_compounds = [FamilyCompound(parent_categories=config.WORD_MATCHING.PARENTAL_CATEGORIES,
-                                        child_categories=config.TEXT_CONTAINER,
-                                        relationship_key=Relationships.CHILD)]
+                                           child_categories=config.TEXT_CONTAINER,
+                                           relationship_key=Relationships.CHILD)]
         return MatchingService(
             family_compounds=family_compounds,
             matcher=matcher,
@@ -592,8 +601,8 @@ class ServiceFactory:
         """
         neighbor_matcher = NeighbourMatcher()
         family_compounds = [FamilyCompound(parent_categories=config.LAYOUT_LINK.PARENTAL_CATEGORIES,
-                                        child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
-                                        relationship_key=Relationships.LAYOUT_LINK)]
+                                           child_categories=config.LAYOUT_LINK.CHILD_CATEGORIES,
+                                           relationship_key=Relationships.LAYOUT_LINK)]
         return MatchingService(
             family_compounds=family_compounds,
             matcher=neighbor_matcher,
@@ -700,9 +709,11 @@ class ServiceFactory:
                 table_refinement_service = ServiceFactory.build_table_refinement_service(config)
                 pipe_component_list.append(table_refinement_service)
 
+        d_text_service_id = None
         if config.USE_PDF_MINER:
             pdf_miner = ServiceFactory.build_pdf_text_detector(config)
             d_text = ServiceFactory.build_pdf_miner_text_service(pdf_miner)
+            d_text_service_id = d_text.service_id
             pipe_component_list.append(d_text)
 
         # setup ocr
@@ -711,6 +722,7 @@ class ServiceFactory:
             if config.OCR.USE_DOCTR:
                 word_detector = ServiceFactory.build_doctr_word_detector(config)
                 word_service = ServiceFactory.build_doctr_word_detector_service(word_detector)
+                word_service.set_inbound_filter(skip_if_category_or_service_extracted(service_ids=d_text_service_id))
                 pipe_component_list.append(word_service)
 
             ocr_detector = ServiceFactory.build_ocr_detector(config)

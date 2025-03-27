@@ -342,7 +342,7 @@ class Image:
         self,
         category_names: Optional[Union[str, ObjectTypes, Sequence[Union[str, ObjectTypes]]]] = None,
         annotation_ids: Optional[Union[str, Sequence[str]]] = None,
-        service_id: Optional[Union[str, Sequence[str]]] = None,
+        service_ids: Optional[Union[str, Sequence[str]]] = None,
         model_id: Optional[Union[str, Sequence[str]]] = None,
         session_ids: Optional[Union[str, Sequence[str]]] = None,
         ignore_inactive: bool = True,
@@ -356,7 +356,7 @@ class Image:
 
         :param category_names: A single name or list of names
         :param annotation_ids: A single id or list of ids
-        :param service_id: A single service name or list of service names
+        :param service_ids: A single service name or list of service names
         :param model_id: A single model name or list of model names
         :param session_ids: A single session id or list of session ids
         :param ignore_inactive: If set to `True` only active annotations are returned.
@@ -372,7 +372,7 @@ class Image:
             )
 
         ann_ids = [annotation_ids] if isinstance(annotation_ids, str) else annotation_ids
-        service_id = [service_id] if isinstance(service_id, str) else service_id
+        service_ids = [service_ids] if isinstance(service_ids, str) else service_ids
         model_id = [model_id] if isinstance(model_id, str) else model_id
         session_id = [session_ids] if isinstance(session_ids, str) else session_ids
 
@@ -387,8 +387,8 @@ class Image:
         if ann_ids is not None:
             anns = filter(lambda x: x.annotation_id in ann_ids, anns)
 
-        if service_id is not None:
-            anns = filter(lambda x: x.service_id in service_id, anns)
+        if service_ids is not None:
+            anns = filter(lambda x: x.service_id in service_ids, anns)
 
         if model_id is not None:
             anns = filter(lambda x: x.model_id in model_id, anns)

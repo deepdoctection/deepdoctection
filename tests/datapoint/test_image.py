@@ -266,13 +266,13 @@ class TestImage:
         filtered_anns_5 = test_image.get_annotation()
         filtered_anns_5_ids = anns_to_ids(filtered_anns_5)
 
-        filtered_anns_6 = test_image.get_annotation(service_id="test_service")
+        filtered_anns_6 = test_image.get_annotation(service_ids="test_service")
         filtered_anns_6_ids = anns_to_ids(filtered_anns_6)
 
         filtered_anns_7 = test_image.get_annotation(model_id="test_model")
         filtered_anns_7_ids = anns_to_ids(filtered_anns_7)
 
-        filtered_anns_8 = test_image.get_annotation(service_id="test_model", annotation_ids=[cat_2.annotation_id])
+        filtered_anns_8 = test_image.get_annotation(service_ids="test_model", annotation_ids=[cat_2.annotation_id])
         filtered_anns_8_ids = anns_to_ids(filtered_anns_8)
 
         # Assert
@@ -458,5 +458,5 @@ class TestImage:
         dp.remove(service_ids="test_service")
 
         # Assert
-        anns = dp.get_annotation(service_id="test_service")
+        anns = dp.get_annotation(service_ids="test_service")
         assert not anns

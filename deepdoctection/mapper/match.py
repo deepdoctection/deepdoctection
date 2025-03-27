@@ -41,6 +41,8 @@ def match_anns_by_intersection(
     use_weighted_intersections: bool = False,
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
+    parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+    child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     max_parent_only: bool = False,
 ) -> tuple[Any, Any, Sequence[ImageAnnotation], Sequence[ImageAnnotation]]:
     """
@@ -87,13 +89,19 @@ def match_anns_by_intersection(
                            dates which are not in the list.
     :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
                           candidates which are not in the list.
+    :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+                                   candidates which are not in the list.
+    :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+                                    candidates which are not in the list.
     :param max_parent_only: Will assign to each child at most one parent with maximum ioa
     :return: child indices, parent indices (see Example), list of parent ids and list of children ids.
     """
 
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
 
-    child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
+    child_anns = dp.get_annotation(annotation_ids=child_ann_ids,
+                                   category_names=child_ann_category_names,
+                                   service_ids=child_ann_service_ids)
     child_ann_boxes = np.array(
         [
             ann.get_bounding_box(dp.image_id).transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
@@ -101,7 +109,9 @@ def match_anns_by_intersection(
         ]
     )
 
-    parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
+    parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids,
+                                    category_names=parent_ann_category_names,
+                                    service_ids=parent_ann_service_ids)
     parent_ann_boxes = np.array(
         [
             ann.get_bounding_box(dp.image_id).transform(dp.width, dp.height, absolute_coords=True).to_list(mode="xyxy")
@@ -151,6 +161,9 @@ def match_anns_by_distance(
     child_ann_category_names: Union[TypeOrStr, Sequence[TypeOrStr]],
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
+    parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+    child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+
 ) -> list[tuple[ImageAnnotation, ImageAnnotation]]:
     """
     Generates pairs of parent and child annotations by calculating the euclidean distance between the centers of the
@@ -164,11 +177,19 @@ def match_anns_by_distance(
                            dates which are not in the list.
     :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
                           candidates which are not in the list.
+    :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+                                   candidates which are not in the list.
+    :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+                                    candidates which are not in the list.
     :return:
     """
 
-    parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids, category_names=parent_ann_category_names)
-    child_anns = dp.get_annotation(annotation_ids=child_ann_ids, category_names=child_ann_category_names)
+    parent_anns = dp.get_annotation(annotation_ids=parent_ann_ids,
+                                    category_names=parent_ann_category_names,
+                                    service_ids=parent_ann_service_ids)
+    child_anns = dp.get_annotation(annotation_ids=child_ann_ids,
+                                   category_names=child_ann_category_names,
+                                   service_ids=child_ann_service_ids)
     child_centers = [block.get_bounding_box(dp.image_id).center for block in child_anns]
     parent_centers = [block.get_bounding_box(dp.image_id).center for block in parent_anns]
     if child_centers and parent_centers:
