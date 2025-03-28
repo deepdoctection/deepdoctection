@@ -368,8 +368,10 @@ class MergeDataset(DatasetBase):
         ann_id_to_split.update({ann_id: "test" for ann_id in split_dict["test"]})
         self.buffer_datasets(**dataflow_build_kwargs)
         split_defaultdict = defaultdict(list)
-        for image in self.datapoint_list:  # type: ignore
-            split_defaultdict[ann_id_to_split[image.image_id]].append(image)
+        for image in self.datapoint_list:
+            maybe_image_id = ann_id_to_split.get(image.image_id)
+            if maybe_image_id is not None:
+                split_defaultdict[maybe_image_id].append(image)
         train_dataset = split_defaultdict["train"]
         val_dataset = split_defaultdict["val"]
         test_dataset = split_defaultdict["test"]
