@@ -43,7 +43,7 @@ class Jdeskewer(ImageTransformer):
         self.model_id = self.get_model_id()
         self.min_angle_rotation = min_angle_rotation
 
-    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
+    def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Rotation of the image according to the angle determined by the jdeskew estimator.
 

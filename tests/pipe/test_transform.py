@@ -56,7 +56,7 @@ class TestSimpleTransformService:
 
         # Arrange
         np_output_img = np.ones((794, 596, 3), dtype=np.uint8) * 255
-        self._transform_predictor.transform = MagicMock(return_value=np_output_img)
+        self._transform_predictor.transform_image = MagicMock(return_value=np_output_img)
 
         # Act
         dp = self.simple_transform.pass_datapoint(dp_image)

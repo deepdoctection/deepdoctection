@@ -23,8 +23,9 @@ of coordinates. Most have the ideas have been taken from
 
 from __future__ import annotations
 
+import inspect
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, Set
 
 import numpy as np
 import numpy.typing as npt
@@ -32,6 +33,7 @@ from numpy import float32
 
 from .types import PixelValues
 from .viz import viz_handler
+from .settings import ObjectTypes, PageType
 
 __all__ = ["ResizeTransform", "InferenceResize", "PadTransform", "normalize_image"]
 
@@ -50,6 +52,28 @@ class BaseTransform(ABC):
     def apply_image(self, img: PixelValues) -> PixelValues:
         """The transformation that should be applied to the image"""
         raise NotImplementedError()
+
+    @abstractmethod
+    def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Transformation that should be applied to coordinates. Coords are supposed to be passed as
+        np array of points"""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Inverse transformation going back from coordinates of transformed image to original image"""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """Get category names"""
+        raise NotImplementedError()
+
+    def get_init_args(self) -> Set[str]:
+        args = inspect.signature(self.__init__).parameters.keys()
+        return {arg for arg in args if arg != "self"}
+
+
 
 
 class ResizeTransform(BaseTransform):
@@ -92,6 +116,16 @@ class ResizeTransform(BaseTransform):
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords
+
+    def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Inverse transformation going back from coordinates of resized image to original image"""
+        coords[:, 0] = coords[:, 0] * (self.w * 1.0 / self.new_w)
+        coords[:, 1] = coords[:, 1] * (self.h * 1.0 / self.new_h)
+        return coords
+
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """Get category names"""
+        return (PageType.SIZE,)
 
 
 class InferenceResize:
@@ -222,3 +256,67 @@ class PadTransform(BaseTransform):
     def clone(self) -> PadTransform:
         """clone"""
         return self.__class__(self.top, self.right, self.bottom, self.left, self.mode)
+
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """Get category names"""
+        return (PageType.SIZE,)
+
+
+class RotationTransform(BaseTransform):
+    """
+    A transform for rotating images by 90, 180, 270, or 360 degrees.
+    """
+
+    def __init__(self, angle: Literal[90, 180, 270, 360]):
+        """
+        :param angle: angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
+        """
+        self.angle = angle
+        self.image_width: Optional[int] = None
+        self.image_height: Optional[int] = None
+
+    def apply_image(self, img: PixelValues) -> PixelValues:
+        """Apply rotation to image"""
+        self.image_width = img.shape[1]
+        self.image_height = img.shape[0]
+        return viz_handler.rotate_image(img, self.angle)
+
+    def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Transformation that should be applied to coordinates"""
+        if self.image_width is None or self.image_height is None:
+            raise ValueError("Initialize image_width and image_height first")
+
+        if self.angle == 90:
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            coords[:, [0, 2]] = self.image_height - coords[:, [0, 2]]
+        elif self.angle == 180:
+            coords[:, [0, 2]] = self.image_width - coords[:, [0, 2]]
+            coords[:, [1, 3]] = self.image_height - coords[:, [1, 3]]
+        elif self.angle == 270:
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            coords[:, [1, 3]] = self.image_width - coords[:, [1, 3]]
+        return coords
+
+    def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
+        """Inverse transformation going back from coordinates of rotated image to original image"""
+        if self.image_width is None or self.image_height is None:
+            raise ValueError("Initialize image_width and image_height first")
+
+        if self.angle == 90:
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            coords[:, [1, 3]] = self.image_width - coords[:, [1, 3]]
+        elif self.angle == 180:
+            coords[:, [0, 2]] = self.image_width - coords[:, [0, 2]]
+            coords[:, [1, 3]] = self.image_height - coords[:, [1, 3]]
+        elif self.angle == 270:
+            coords[:, [0, 1, 2, 3]] = coords[:, [1, 0, 3, 2]]
+            coords[:, [0, 2]] = self.image_height - coords[:, [0, 2]]
+        return coords
+
+    def clone(self) -> RotationTransform:
+        """clone"""
+        return self.__class__(self.angle)
+
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """Get category names"""
+        return (PageType.ANGLE,)

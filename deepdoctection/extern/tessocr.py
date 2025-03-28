@@ -423,7 +423,7 @@ class TesseractRotationTransformer(ImageTransformer):
         self.categories = ModelCategories(init_categories={1: PageType.ANGLE})
         self.model_id = self.get_model_id()
 
-    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
+    def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.

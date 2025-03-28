@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union, overload
 
+import numpy as np
+
 from lazy_imports import try_import
 
 from ..utils.identifier import get_uuid_from_str
@@ -39,6 +41,7 @@ from ..utils.settings import (
     token_class_with_tag_to_token_class_and_tag,
 )
 from ..utils.types import JsonDict, PixelValues, Requirement
+from ..utils.transform import BaseTransform
 
 if TYPE_CHECKING:
     with try_import() as import_guard:
@@ -621,7 +624,7 @@ class ImageTransformer(PredictorBase, ABC):
     """
 
     @abstractmethod
-    def transform(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
+    def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Abstract method transform
         """
@@ -641,3 +644,78 @@ class ImageTransformer(PredictorBase, ABC):
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """returns category names"""
         raise NotImplementedError()
+
+    def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        """
+        Transform coordinates aligned with the transform_image method.
+
+        :param detect_results: List of DetectionResults
+        :return: List of DetectionResults. If you pass uuid it is possible to track the transformed bounding boxes.
+        """
+
+        raise NotImplementedError()
+
+    def inverse_transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        """
+        Inverse transform coordinates aligned with the transform_image method. Composing transform_coords with
+        inverse_transform_coords should return the original coordinates.
+
+        :param detect_results: List of DetectionResults
+        :return: List of DetectionResults. If you pass uuid it is possible to track the transformed bounding boxes.
+        """
+
+        raise NotImplementedError()
+
+
+class DeterministicImageTransformer(ImageTransformer):
+
+    def __init__(self, base_transform: BaseTransform):
+        self.base_transform = base_transform
+        self.name = base_transform.__class__.__name__
+        self.model_id = self.get_model_id()
+
+    def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
+        return self.base_transform.apply_image(np_img)
+
+    def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        boxes = np.array([detect_result.box for detect_result in detect_results])
+        boxes= self.base_transform.apply_coords(boxes)
+        detection_results = []
+        for idx, detect_result in enumerate(detect_results):
+            detection_results.append(DetectionResult(box=boxes[idx, :].tolist(),
+                                                     class_id=detect_result.class_id,
+                                                     score=detect_result.score,
+                                                     absolute_coords=detect_result.absolute_coords,
+                                                     uuid=detect_result.uuid))
+        return detection_results
+
+    def inverse_transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
+        boxes = np.array([detect_result.box for detect_result in detect_results])
+        boxes = self.base_transform.inverse_apply_coords(boxes)
+        detection_results = []
+        for idx, detect_result in enumerate(detect_results):
+            detection_results.append(DetectionResult(box=boxes[idx, :].tolist(),
+                                                     class_id=detect_result.class_id,
+                                                     score=detect_result.score,
+                                                     absolute_coords=detect_result.absolute_coords,
+                                                     uuid=detect_result.uuid))
+        return detection_results
+
+    def clone(self) -> DeterministicImageTransformer:
+        return self.__class__(self.base_transform)
+
+    def predict(self, np_img: PixelValues) -> DetectionResult:
+        detect_result = DetectionResult()
+        for init_arg in self.base_transform.get_init_args():
+            setattr(detect_result, init_arg, getattr(self.base_transform, init_arg))
+        return detect_result
+
+    def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        return self.base_transform.get_category_names()
+
+    def get_requirements(cls) -> list[Requirement]:
+        return []
+
+    def specification_to_init(self, specification: DetectionResult) -> None:
+        for init_arg in self.base_transform.get_init_args():
+            setattr(self.base_transform, init_arg, getattr(specification, init_arg))

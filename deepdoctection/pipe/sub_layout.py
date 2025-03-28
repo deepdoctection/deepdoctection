@@ -170,7 +170,6 @@ class SubImageLayoutService(PipelineComponent):
         :param sub_image_names: Category names of ImageAnnotations to be presented to the detector.
                                 Attention: The selected ImageAnnotations must have: attr:`image` and: attr:`image.image`
                                 not None.
-        :param category_id_mapping: Mapping of category IDs. Usually, the category ids start with 1.
         :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as
                                         the 'categories' attribute of the 'sub_image_detector'. The generator will be
                                         responsible to create 'DetectionResult' for some categories, if they have not
