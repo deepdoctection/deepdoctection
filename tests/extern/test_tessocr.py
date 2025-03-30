@@ -157,7 +157,7 @@ class TestTesseractRotationTransformer:
         tess = TesseractRotationTransformer()
 
         # Act
-        np_output = tess.transform(np_image, angle_detection_result)
+        np_output = tess.transform_image(np_image, angle_detection_result)
 
         # Assert
         assert np_output.shape[0] == np_image.shape[1]

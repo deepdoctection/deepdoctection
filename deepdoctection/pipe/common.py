@@ -51,8 +51,9 @@ class ImageCroppingService(PipelineComponent):
     """
 
     def __init__(
-        self, category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-             service_ids: Optional[Sequence[str]] = None
+        self,
+        category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        service_ids: Optional[Sequence[str]] = None,
     ) -> None:
         """
         :param category_names: A single name or a list of category names to crop

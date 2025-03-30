@@ -62,6 +62,6 @@ class TestJdeskewer:
         assert detect_result.angle == 4.5326
 
         # Act
-        output_image = deskewer.transform(image, detect_result)
+        output_image = deskewer.transform_image(image, detect_result)
         assert image_gt is not None
         assert_array_equal(image_gt, output_image)

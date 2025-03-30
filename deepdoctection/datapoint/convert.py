@@ -27,7 +27,6 @@ from typing import Any, Optional, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
-from numpy.typing import NDArray
 from pypdf import PdfReader
 
 from ..utils.develop import deprecated
@@ -42,8 +41,6 @@ __all__ = [
     "convert_np_array_to_b64_b",
     "convert_bytes_to_np_array",
     "convert_pdf_bytes_to_np_array_v2",
-    "box_to_point4",
-    "point4_to_box",
     "as_dict",
 ]
 
@@ -187,24 +184,3 @@ def convert_pdf_bytes_to_np_array_v2(
             width = shape[2] - shape[0]
         return pdf_to_np_array(pdf_bytes, size=(int(width), int(height)))  # type: ignore
     return pdf_to_np_array(pdf_bytes, dpi=dpi)
-
-
-def box_to_point4(boxes: NDArray[np.float32]) -> NDArray[np.float32]:
-    """
-    :param boxes: nx4
-    :return: (nx4)x2
-    """
-    box = boxes[:, [0, 1, 2, 3, 0, 3, 2, 1]]
-    box = box.reshape((-1, 2))
-    return box
-
-
-def point4_to_box(points: NDArray[np.float32]) -> NDArray[np.float32]:
-    """
-    :param points: (nx4)x2
-    :return: nx4 boxes (x1y1x2y2)
-    """
-    points = points.reshape((-1, 4, 2))
-    min_xy = points.min(axis=1)  # nx2
-    max_xy = points.max(axis=1)  # nx2
-    return np.concatenate((min_xy, max_xy), axis=1)
