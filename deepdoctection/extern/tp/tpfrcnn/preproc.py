@@ -15,9 +15,9 @@ from typing import Any, List, Optional, Tuple
 import numpy as np
 from lazy_imports import try_import
 
-from ....datapoint.convert import box_to_point4, point4_to_box
 from ....utils.error import MalformedData
 from ....utils.logger import log_once
+from ....utils.transform import box_to_point4, point4_to_box
 from ....utils.types import JsonDict, PixelValues
 from .common import filter_boxes_inside_shape, np_iou
 from .modeling.model_fpn import get_all_anchors_fpn

@@ -31,11 +31,10 @@ import numpy.typing as npt
 from lazy_imports import try_import
 
 from ..datapoint.annotation import ContainerAnnotation
-from ..datapoint.convert import box_to_point4, point4_to_box
 from ..datapoint.image import Image
 from ..datapoint.view import Page
 from ..utils.settings import DatasetType, LayoutType, PageType, Relationships, WordType
-from ..utils.transform import ResizeTransform, normalize_image
+from ..utils.transform import ResizeTransform, box_to_point4, normalize_image, point4_to_box
 from ..utils.types import JsonDict
 from .maputils import curry
 

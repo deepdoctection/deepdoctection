@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# File: transform.py
+# File: test_transform.py
 
 # Copyright 2022 Dr. Janis Meyer. All rights reserved.
 #
@@ -55,31 +55,41 @@ class SimpleTransformService(PipelineComponent):
             transformed_image = self.transform_predictor.transform_image(dp.image, detection_result)
             self.dp_manager.datapoint.clear_image(True)
             self.dp_manager.datapoint.image = transformed_image
-            self.dp_manager.set_summary_annotation(
-                summary_key=self.transform_predictor.get_category_names()[0],
-                summary_name=self.transform_predictor.get_category_names()[0],
-                summary_number=None,
-                summary_value=getattr(detection_result, self.transform_predictor.get_category_names()[0].value, None),
-                summary_score=detection_result.score,
-            )
+            for category in self.transform_predictor.get_category_names():
+                self.dp_manager.set_summary_annotation(
+                    summary_key=category,
+                    summary_name=category,
+                    summary_number=None,
+                    summary_value=getattr(detection_result, category.value, None),
+                    summary_score=detection_result.score,
+                )
             detect_results = []
             for ann in dp.get_annotation():
-                detect_results.append(DetectionResult(box=ann.get_bounding_box().to_list(mode="xyxy"),
-                                                      class_name=ann.category_name,
-                                                      score=ann.score,
-                                                      class_id=ann.category_id,
-                                                      uuid= ann.annotation_id))
+                box = ann.get_bounding_box()
+                if not box.absolute_coords:
+                    box = box.transform(dp.width, dp.height)
+                detect_results.append(
+                    DetectionResult(
+                        box=box.to_list(mode="xyxy"),
+                        class_name=ann.category_name, # type: ignore
+                        score=ann.score,
+                        class_id=ann.category_id,
+                        uuid=ann.annotation_id,
+                    )
+                )
             output_detect_results = self.transform_predictor.transform_coords(detect_results)
-
             for detect_result in output_detect_results:
                 ann = dp.get_annotation(annotation_ids=detect_result.uuid)[0]
                 transformed_ann_id = self.dp_manager.set_image_annotation(detect_result)
-                ann.deactivate()
-                transformed_ann = self.dp_manager.get_image_annotation(annotation_ids=transformed_ann_id)[0]
+                if transformed_ann_id is None:
+                    print("here")
+                transformed_ann = self.dp_manager.datapoint.get_annotation(annotation_ids=transformed_ann_id)[0]
+
                 for key, sub_ann in ann.sub_categories.items():
                     transformed_ann.dump_sub_category(key, sub_ann)
-
-                #dp.add_annotation(detect_result.box, detect_result.class_name, detect_result.score, detect_result.class_id, detect_result.uuid)
+                if ann.image is not None:
+                    dp.image_ann_to_image(transformed_ann.annotation_id, ann.image.image is not None)
+                ann.deactivate()
 
     def clone(self) -> SimpleTransformService:
         return self.__class__(self.transform_predictor)

@@ -183,7 +183,7 @@ class TestDocTrRotationTransformer:
         transformer = DocTrRotationTransformer()
 
         # Act
-        np_output = transformer.transform(np_image, angle_detection_result)
+        np_output = transformer.transform_image(np_image, angle_detection_result)
 
         # Assert
         assert np_output.shape[0] == np_image.shape[1]

@@ -27,7 +27,6 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Sequence, Union, overload
 
 import numpy as np
-
 from lazy_imports import try_import
 
 from ..utils.identifier import get_uuid_from_str
@@ -40,8 +39,8 @@ from ..utils.settings import (
     token_class_tag_to_token_class_with_tag,
     token_class_with_tag_to_token_class_and_tag,
 )
+from ..utils.transform import BaseTransform, box_to_point4, point4_to_box
 from ..utils.types import JsonDict, PixelValues, Requirement
-from ..utils.transform import BaseTransform
 
 if TYPE_CHECKING:
     with try_import() as import_guard:
@@ -668,8 +667,28 @@ class ImageTransformer(PredictorBase, ABC):
 
 
 class DeterministicImageTransformer(ImageTransformer):
+    """
+    A wrapper for BaseTransform classes that implements the ImageTransformer interface.
+
+    This class provides a bridge between the BaseTransform system (which handles image and coordinate
+    transformations like rotation, padding, etc.) and the predictors framework by implementing the
+    ImageTransformer interface. It allows BaseTransform objects to be used within pipelines that
+    expect ImageTransformer components.
+
+    The transformer performs deterministic transformations on images and their associated coordinates,
+    enabling operations like padding, rotation, and other geometric transformations while maintaining
+    the relationship between image content and annotation coordinates.
+
+    :param base_transform: A BaseTransform instance that defines the actual transformation operations
+                          to be applied to images and coordinates.
+    """
 
     def __init__(self, base_transform: BaseTransform):
+        """
+        Initialize the DeterministicImageTransformer with a BaseTransform instance.
+
+        :param base_transform: A BaseTransform instance that defines the actual transformation operations
+        """
         self.base_transform = base_transform
         self.name = base_transform.__class__.__name__
         self.model_id = self.get_model_id()
@@ -679,26 +698,39 @@ class DeterministicImageTransformer(ImageTransformer):
 
     def transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         boxes = np.array([detect_result.box for detect_result in detect_results])
-        boxes= self.base_transform.apply_coords(boxes)
+        # boxes = box_to_point4(boxes)
+        boxes = self.base_transform.apply_coords(boxes)
+        # boxes = point4_to_box(boxes)
         detection_results = []
         for idx, detect_result in enumerate(detect_results):
-            detection_results.append(DetectionResult(box=boxes[idx, :].tolist(),
-                                                     class_id=detect_result.class_id,
-                                                     score=detect_result.score,
-                                                     absolute_coords=detect_result.absolute_coords,
-                                                     uuid=detect_result.uuid))
+            detection_results.append(
+                DetectionResult(
+                    box=boxes[idx, :].tolist(),
+                    class_name=detect_result.class_name,
+                    class_id=detect_result.class_id,
+                    score=detect_result.score,
+                    absolute_coords=detect_result.absolute_coords,
+                    uuid=detect_result.uuid,
+                )
+            )
         return detection_results
 
     def inverse_transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         boxes = np.array([detect_result.box for detect_result in detect_results])
+        boxes = box_to_point4(boxes)
         boxes = self.base_transform.inverse_apply_coords(boxes)
+        boxes = point4_to_box(boxes)
         detection_results = []
         for idx, detect_result in enumerate(detect_results):
-            detection_results.append(DetectionResult(box=boxes[idx, :].tolist(),
-                                                     class_id=detect_result.class_id,
-                                                     score=detect_result.score,
-                                                     absolute_coords=detect_result.absolute_coords,
-                                                     uuid=detect_result.uuid))
+            detection_results.append(
+                DetectionResult(
+                    box=boxes[idx, :].tolist(),
+                    class_id=detect_result.class_id,
+                    score=detect_result.score,
+                    absolute_coords=detect_result.absolute_coords,
+                    uuid=detect_result.uuid,
+                )
+            )
         return detection_results
 
     def clone(self) -> DeterministicImageTransformer:
@@ -713,9 +745,6 @@ class DeterministicImageTransformer(ImageTransformer):
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         return self.base_transform.get_category_names()
 
+    @classmethod
     def get_requirements(cls) -> list[Requirement]:
         return []
-
-    def specification_to_init(self, specification: DetectionResult) -> None:
-        for init_arg in self.base_transform.get_init_args():
-            setattr(self.base_transform, init_arg, getattr(specification, init_arg))
