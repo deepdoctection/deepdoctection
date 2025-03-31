@@ -19,12 +19,21 @@
 Testing module extern.base
 """
 
+import uuid
 from types import MappingProxyType
+from unittest.mock import MagicMock
 
+import numpy as np
 from pytest import mark
 
-from deepdoctection.extern.base import ModelCategories, NerModelCategories
+from deepdoctection.extern.base import (
+    DetectionResult,
+    DeterministicImageTransformer,
+    ModelCategories,
+    NerModelCategories,
+)
 from deepdoctection.utils.settings import get_type
+from deepdoctection.utils.transform import BaseTransform
 
 
 class TestModelCategories:
@@ -203,3 +212,96 @@ class TestNerModelCategories:
         # Assert
         expected_categories = MappingProxyType({1: get_type("B-answer"), 2: get_type("B-question")})
         assert categories == expected_categories
+
+
+class TestDeterministicImageTransformer:
+    """Test class for DeterministicImageTransformer"""
+
+    def setup_method(self) -> None:
+        """Set up test fixtures"""
+        # Create a mock BaseTransform
+        self.mock_base_transform = MagicMock(spec=BaseTransform)
+        self.mock_base_transform.get_init_args.return_value = ["angle"]
+        self.mock_base_transform.get_category_names.return_value = ("foo",)
+        self.mock_base_transform.angle = 90
+
+        # Mock the apply_image, apply_coords, and inverse_apply_coords methods
+        self.mock_base_transform.apply_image.return_value = np.ones((10, 10, 3))
+        self.mock_base_transform.apply_coords.return_value = np.array([[10, 10, 20, 20], [30, 30, 40, 40]])
+        self.mock_base_transform.inverse_apply_coords.return_value = np.array([[5, 5, 15, 15], [25, 25, 35, 35]])
+
+        # Create the transformer with mocked base_transform
+        self.transformer = DeterministicImageTransformer(self.mock_base_transform)
+
+        # Create test detection results with proper uuid4 and class_name
+        self.detection_result1 = DetectionResult(
+            box=[1, 1, 2, 2],
+            class_id=1,
+            class_name=get_type("report_date"),
+            score=0.9,
+            absolute_coords=True,
+            uuid=str(uuid.uuid4()),
+        )
+
+        self.detection_result2 = DetectionResult(
+            box=[3, 3, 4, 4],
+            class_id=2,
+            class_name=get_type("umbrella"),
+            score=0.8,
+            absolute_coords=True,
+            uuid=str(uuid.uuid4()),
+        )
+
+        self.detect_results = [self.detection_result1, self.detection_result2]
+
+    def test_transform_image(self) -> None:
+        """Test transform_image method"""
+        img = np.zeros((10, 10, 3))
+        specification = DetectionResult()
+
+        result = self.transformer.transform_image(img, specification)  # type: ignore
+
+        # Check if base_transform.apply_image was called with correct args
+        self.mock_base_transform.apply_image.assert_called_once_with(img)
+        # Check if result is what we expect from our mock
+        assert np.array_equal(result, np.ones((10, 10, 3)))
+
+    def test_transform_coords(self) -> None:
+        """Test transform_coords method"""
+        result = self.transformer.transform_coords(self.detect_results)
+
+        # Verify the base_transform.apply_coords was called
+        self.mock_base_transform.apply_coords.assert_called_once()
+
+        # Verify results maintained the correct properties
+        assert len(result) == 2
+        assert result[0].uuid == self.detection_result1.uuid
+        assert result[1].uuid == self.detection_result2.uuid
+        assert result[0].box == [10, 10, 20, 20]
+        assert result[1].box == [30, 30, 40, 40]
+        assert result[0].class_name == "report_date"
+        assert result[1].class_name == "umbrella"
+
+    def test_inverse_transform_coords(self) -> None:
+        """Test inverse_transform_coords method"""
+        result = self.transformer.inverse_transform_coords(self.detect_results)
+
+        # Verify the base_transform.inverse_apply_coords was called
+        self.mock_base_transform.inverse_apply_coords.assert_called_once()
+
+        # Verify results maintained the correct properties
+        assert len(result) == 2
+        assert result[0].uuid == self.detection_result1.uuid
+        assert result[1].uuid == self.detection_result2.uuid
+        assert result[0].box == [5, 5, 15, 15]
+        assert result[1].box == [25, 25, 35, 35]
+        assert result[0].class_id == 1
+        assert result[1].class_id == 2
+
+    def test_predict(self) -> None:
+        """Test predict method"""
+        img = np.zeros((10, 10, 3))
+        result = self.transformer.predict(img)  # type: ignore
+
+        # Check that attributes from base_transform were copied to DetectionResult
+        assert result.angle == 90

@@ -134,6 +134,14 @@ def fixture_np_image() -> PixelValues:
     return np.ones([4, 6, 3], dtype=np.float32)
 
 
+@fixture(name="np_image_large")
+def fixture_np_image_large() -> PixelValues:
+    """
+    np_array image large
+    """
+    return np.ones([400, 600, 3], dtype=np.float32)
+
+
 @fixture(name="path_to_tesseract_yaml")
 def fixture_path_to_tesseract_yaml() -> PathLikeOrStr:
     """
