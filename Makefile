@@ -101,6 +101,11 @@ package: check-venv
 	pip install --upgrade build
 	$(PYTHON) -m build
 
+package_actions: check-venv
+	@echo "--> Generating package"
+	pip install --upgrade build
+	$(PYTHON) -m build
+
 qa: lint analyze test-basic
 
 # all tests - this will never succeed in full due to dependency conflicts
