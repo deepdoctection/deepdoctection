@@ -197,7 +197,7 @@ class ServiceFactory:
             getattr(config.PT, mode).PAD.BOTTOM,
             getattr(config.PT, mode).PAD.LEFT,
         )
-        return PadTransform(top=top, right=right, bottom=bottom, left=left)  #
+        return PadTransform(pad_top=top, pad_right=right, pad_bottom=bottom, pad_left=left)  #
 
     @staticmethod
     def build_padder(config: AttrDict, mode: str) -> PadTransform:

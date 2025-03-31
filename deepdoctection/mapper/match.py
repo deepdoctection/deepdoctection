@@ -157,8 +157,8 @@ def match_anns_by_intersection(
 
 def match_anns_by_distance(
     dp: Image,
-    parent_ann_category_names:  Optional[Union[TypeOrStr, Sequence[TypeOrStr]]]=None,
-    child_ann_category_names:  Optional[Union[TypeOrStr, Sequence[TypeOrStr]]]=None,
+    parent_ann_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+    child_ann_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     parent_ann_ids: Optional[Union[Sequence[str], str]] = None,
     child_ann_ids: Optional[Union[str, Sequence[str]]] = None,
     parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,

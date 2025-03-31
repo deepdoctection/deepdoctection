@@ -41,12 +41,11 @@ from ..utils.settings import (
     WordType,
     get_type,
 )
-from ..utils.transform import ResizeTransform
+from ..utils.transform import ResizeTransform, box_to_point4, point4_to_box
 from ..utils.types import HTML, AnnotationDict, Chunks, ImageDict, PathLikeOrStr, PixelValues, Text_, csv
 from ..utils.viz import draw_boxes, interactive_imshow, viz_handler
 from .annotation import CategoryAnnotation, ContainerAnnotation, ImageAnnotation, ann_from_dict
 from .box import BoundingBox, crop_box_from_image
-from .convert import box_to_point4, point4_to_box
 from .image import Image
 
 

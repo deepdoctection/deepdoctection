@@ -67,6 +67,11 @@ class PageType(ObjectTypes):
     DOCUMENT_TYPE = "document_type"
     LANGUAGE = "language"
     ANGLE = "angle"
+    SIZE = "size"
+    PAD_TOP = "pad_top"
+    PAD_BOTTOM = "pad_bottom"
+    PAD_LEFT = "pad_left"
+    PAD_RIGHT = "pad_right"
 
 
 @object_types_registry.register("SummaryType")
