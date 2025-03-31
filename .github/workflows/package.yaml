@@ -31,7 +31,7 @@ jobs:
         run: echo "__version__ = '${GITHUB_REF#refs/tags/v}'" > deepdoctection/__init__.py
 
       - name: Build package
-        run: make package  # Nutzt dein Makefile für das Packaging
+        run: package_actions  # Nutzt dein Makefile für das Packaging
 
       - name: Upload to PyPI
         env:
