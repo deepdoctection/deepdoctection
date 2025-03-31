@@ -153,8 +153,8 @@ class SubImageLayoutService(PipelineComponent):
     **Example**
 
             detect_result_generator = DetectResultGenerator(categories_items)
-            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {"1": LayoutType.row,
-            "2": LayoutType.column})
+            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: LayoutType.row,
+            2: LayoutType.column})
             item_component = SubImageLayoutService(d_items, LayoutType.table, detect_result_generator)
     """
 
@@ -162,6 +162,7 @@ class SubImageLayoutService(PipelineComponent):
         self,
         sub_image_detector: ObjectDetector,
         sub_image_names: Union[str, Sequence[TypeOrStr]],
+        service_ids: Optional[Sequence[str]] = None,
         detect_result_generator: Optional[DetectResultGenerator] = None,
         padder: Optional[PadTransform] = None,
     ):
@@ -170,6 +171,8 @@ class SubImageLayoutService(PipelineComponent):
         :param sub_image_names: Category names of ImageAnnotations to be presented to the detector.
                                 Attention: The selected ImageAnnotations must have: attr:`image` and: attr:`image.image`
                                 not None.
+        :param service_ids: List of service ids to be used for filtering the ImageAnnotations. If None, all
+                            ImageAnnotations will be used.
         :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as
                                         the 'categories' attribute of the 'sub_image_detector'. The generator will be
                                         responsible to create 'DetectionResult' for some categories, if they have not
@@ -183,6 +186,7 @@ class SubImageLayoutService(PipelineComponent):
             if isinstance(sub_image_names, str)
             else tuple((get_type(cat) for cat in sub_image_names))
         )
+        self.service_ids = service_ids
         self.detect_result_generator = detect_result_generator
         self.padder = padder
         self.predictor = sub_image_detector
@@ -204,7 +208,7 @@ class SubImageLayoutService(PipelineComponent):
         - Optionally invoke the DetectResultGenerator
         - Generate ImageAnnotations and dump to parent image and sub image.
         """
-        sub_image_anns = dp.get_annotation(category_names=self.sub_image_name)
+        sub_image_anns = dp.get_annotation(category_names=self.sub_image_name, service_ids=self.service_ids)
         for sub_image_ann in sub_image_anns:
             np_image = self.prepare_np_image(sub_image_ann)
             detect_result_list = self.predictor.predict(np_image)
@@ -245,6 +249,7 @@ class SubImageLayoutService(PipelineComponent):
         return self.__class__(
             predictor,
             self.sub_image_name,
+            self.service_ids,
             self.detect_result_generator,
             padder_clone,
         )
