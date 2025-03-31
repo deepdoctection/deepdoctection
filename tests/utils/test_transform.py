@@ -328,8 +328,9 @@ class TestRotationTransform:
             (360, np.array([[100, 50, 200, 150]], dtype=float32), np.array([[100, 50, 200, 150]], dtype=float32)),
         ],
     )
-    def test_apply_coords(self, angle: Literal[90, 180, 270, 360], coords: npt.NDArray[np.float32],
-                          expected: npt.NDArray[np.float32]) -> None:
+    def test_apply_coords(
+        self, angle: Literal[90, 180, 270, 360], coords: npt.NDArray[np.float32], expected: npt.NDArray[np.float32]
+    ) -> None:
         """Test RotationTransform.apply_coords with parametrized angles and bounding boxes"""
         # Setup
         transform = RotationTransform(angle=angle)
@@ -351,8 +352,9 @@ class TestRotationTransform:
             (360, np.array([[150, 100, 250, 200]], dtype=float32), np.array([[150, 100, 250, 200]], dtype=float32)),
         ],
     )
-    def test_inverse_apply_coords(self, angle: Literal[90, 180, 270, 360], coords: npt.NDArray[np.float32],
-                                  expected: npt.NDArray[np.float32]) -> None:
+    def test_inverse_apply_coords(
+        self, angle: Literal[90, 180, 270, 360], coords: npt.NDArray[np.float32], expected: npt.NDArray[np.float32]
+    ) -> None:
         """Test RotationTransform.inverse_apply_coords with parametrized angles and bounding boxes"""
 
         # Setup

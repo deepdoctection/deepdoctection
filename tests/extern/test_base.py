@@ -259,7 +259,7 @@ class TestDeterministicImageTransformer:
         img = np.zeros((10, 10, 3))
         specification = DetectionResult()
 
-        result = self.transformer.transform_image(img, specification) # type: ignore
+        result = self.transformer.transform_image(img, specification)  # type: ignore
 
         # Check if base_transform.apply_image was called with correct args
         self.mock_base_transform.apply_image.assert_called_once_with(img)
@@ -298,10 +298,10 @@ class TestDeterministicImageTransformer:
         assert result[0].class_id == 1
         assert result[1].class_id == 2
 
-    def test_predict(self)  -> None:
+    def test_predict(self) -> None:
         """Test predict method"""
         img = np.zeros((10, 10, 3))
-        result = self.transformer.predict(img) # type: ignore
+        result = self.transformer.predict(img)  # type: ignore
 
         # Check that attributes from base_transform were copied to DetectionResult
         assert result.angle == 90

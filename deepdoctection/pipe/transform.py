@@ -71,7 +71,7 @@ class SimpleTransformService(PipelineComponent):
                 detect_results.append(
                     DetectionResult(
                         box=box.to_list(mode="xyxy"),
-                        class_name=ann.category_name, # type: ignore
+                        class_name=ann.category_name,  # type: ignore
                         score=ann.score,
                         class_id=ann.category_id,
                         uuid=ann.annotation_id,
