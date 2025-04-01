@@ -424,7 +424,8 @@ class DoctrTextRecognizer(TextRecognizer):
             custom_configs.pop("task", None)
             recognition_configs["mean"] = custom_configs.pop("mean")
             recognition_configs["std"] = custom_configs.pop("std")
-            batch_size = custom_configs.pop("batch_size")
+            if "batch_size" in custom_configs:
+                batch_size = custom_configs.pop("batch_size")
         recognition_configs["batch_size"] = batch_size
 
         if isinstance(architecture, str):
