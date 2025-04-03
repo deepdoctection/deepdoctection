@@ -1,0 +1,93 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_url: https://example.com/
+site_name: deepdoctection
+repo_url: https://github.com/deepdoctection/deepdoctection
+edit_uri: blob/main/docs
+site_description: A Document AI package
+
+theme:
+  name: material
+  palette:
+    primary: blue
+  logo: ./tutorials/_imgs/dd_logo_only.png
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - content.code.copy
+    - header.autohide
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+nav:
+    - Deepdoctection: index.md
+    - About: why.md
+    - Install: install.md
+    - Tutorials:
+        - Introductory tutorials:
+            - Get started: ./tutorials/get_started_notebook.md
+            - Pipelines: ./tutorials/pipelines_notebook.md
+            - Analyzer Configuration: ./tutorials/analyzer_configuration_notebook.md
+            - Analyzer with Table Transformer: ./tutorials/analyzer_with_table_transformer_notebook.md
+            - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
+            - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
+            - Datasets and evaluation: ./tutorials/datasets_and_eval_notebook.md
+            - Data structures: ./tutorials/data_structure_notebook.md
+            - LayoutLM for sequence classification: ./tutorials/using_layoutlm_for_sequence_classification_notebook.md
+
+        - Deep dive tutorials:
+            - Architecture: ./tutorials/architecture.md
+            - Datasets: ./tutorials/datasets.md
+            - Customized parsing: ./tutorials/layout_parsing_structure.md
+            - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
+            - LayoutLMv1 for financial report NER: ./tutorials/layoutlm_v1_on_custom_token_classification_notebook.md
+            - LayoutLMv2 and LayoutXLM for financial report NER: ./tutorials/layoutlm_v2_on_custom_token_classification_notebook.md
+            - LayoutLMv3 for financial report NER: ./tutorials/layoutlm_v3_on_custom_token_classification_notebook.md
+            - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
+            - Doclaynet with a YOLO predictor: ./tutorials/doclaynet_with_yolo.md
+            - Advanced Analyzer configuration: ./tutorials/doclaynet_analyzer_config.md
+
+        - Notes:
+            - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
+            - Various topics around LayoutLMv1 - part II: ./tutorials/layoutlm_various_topics_pt2.md
+        - Scripts:
+            - Evaluation Tensorpack vs. Detectron2: ./tutorials/eval_tp_vs_d2.md
+            - Various scripts: ./tutorials/table_recognition_eval.md
+            - Evaluation of table recognition: ./tutorials/table_recognition_eval.md
+            - Tensorpack training scripts: ./tutorials/scripts.md
+    - API:
+        - deepdoctection.analyzer: ./modules/deepdoctection.analyzer.md
+        - deepdoctection.dataflow: ./modules/deepdoctection.dataflow.md
+        - deepdoctection.datapoint: ./modules/deepdoctection.datapoint.md
+        - deepdoctection.datasets: ./modules/deepdoctection.datasets.md
+        - deepdoctection.datasets.instances: ./modules/deepdoctection.datasets.instances.md
+        - deepdoctection.eval: ./modules/deepdoctection.eval.md
+        - deepdoctection.extern: ./modules/deepdoctection.extern.md
+        - deepdoctection.extern.pt: ./modules/deepdoctection.extern.pt.md
+        - deepdoctection.extern.tp: ./modules/deepdoctection.extern.tp.md
+        - deepdoctection.mapper: ./modules/deepdoctection.mapper.md
+        - deepdoctection.pipe: ./modules/deepdoctection.pipe.md
+        - deepdoctection.train: ./modules/deepdoctection.train.md
+        - deepdoctection.utils: ./modules/deepdoctection.utils.md
+
+
+plugins:
+    - search:
+        lang: en
+    - mkdocstrings:
+        handlers:
+          python:
+            options:
+              line_length: 120
+              docstring_style: sphinx
+              merge_init_into_class: True
+
+# to watch lib files in mkdocs server. Uncomment, if update docs locally
+watch:
+    - deepdoctection

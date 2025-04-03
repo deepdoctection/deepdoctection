@@ -1,0 +1,145 @@
+DEVICE: null
+LANGUAGE: null
+LAYOUT_LINK:
+  CHILD_CATEGORIES: []
+  PARENTAL_CATEGORIES: []
+LAYOUT_NMS_PAIRS:
+  COMBINATIONS: null
+  PRIORITY: null
+  THRESHOLDS: null
+LIB: null
+OCR:
+  CONFIG:
+    TESSERACT: dd/conf_tesseract.yaml
+  USE_DOCTR: false
+  USE_TESSERACT: true
+  USE_TEXTRACT: false
+  WEIGHTS:
+    DOCTR_RECOGNITION:
+      PT: doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt
+      TF: doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip
+    DOCTR_WORD:
+      PT: doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
+      TF: doctr/db_resnet50/tf/db_resnet50-adcafc63.zip
+PDF_MINER:
+  X_TOLERANCE: 3
+  Y_TOLERANCE: 3
+PT:
+  CELL:
+    FILTER: null
+    WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
+    WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
+  ITEM:
+    FILTER: null
+    PAD:
+      BOTTOM: 60
+      LEFT: 60
+      RIGHT: 60
+      TOP: 60
+    WEIGHTS: item/d2_model_1639999_item_inf_only.pt
+    WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
+  LAYOUT:
+    FILTER: null
+    PAD:
+      BOTTOM: 60
+      LEFT: 60
+      RIGHT: 60
+      TOP: 60
+    WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
+    WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
+SEGMENTATION:
+  ASSIGNMENT_RULE: ioa
+  CELL_CATEGORY_ID: 12
+  CELL_NAMES:
+  - header
+  - body
+  - cell
+  FULL_TABLE_TILING: true
+  ITEM_NAMES:
+  - row
+  - column
+  PUBTABLES_CELL_NAMES:
+  - spanning
+  - row_header
+  - column_header
+  - projected_row_header
+  - cell
+  PUBTABLES_ITEM_NAMES:
+  - row
+  - column
+  PUBTABLES_SPANNING_CELL_NAMES:
+  - spanning
+  - row_header
+  - column_header
+  - projected_row_header
+  PUBTABLES_SUB_ITEM_NAMES:
+  - row_number
+  - column_number
+  PUBTABLES_ITEM_HEADER_CELL_NAMES:
+    - column_header
+    - row_header
+  PUBTABLES_ITEM_HEADER_THRESHOLDS:
+    - 0.6
+    - 0.0001
+  REMOVE_IOU_THRESHOLD_COLS: 0.001
+  REMOVE_IOU_THRESHOLD_ROWS: 0.001
+  STRETCH_RULE: equal
+  SUB_ITEM_NAMES:
+  - row_number
+  - column_number
+  TABLE_NAME: table
+  THRESHOLD_COLS: 0.4
+  THRESHOLD_ROWS: 0.4
+TEXT_CONTAINER: word
+TEXT_ORDERING:
+  BROKEN_LINE_TOLERANCE: 0.003
+  FLOATING_TEXT_BLOCK_CATEGORIES:
+  - text
+  - title
+  - figure
+  - list
+  HEIGHT_TOLERANCE: 2.0
+  INCLUDE_RESIDUAL_TEXT_CONTAINER: false
+  PARAGRAPH_BREAK: 0.035
+  STARTING_POINT_TOLERANCE: 0.005
+  TEXT_BLOCK_CATEGORIES:
+  - text
+  - title
+  - list
+  - cell
+  - figure
+  - column_header
+  - projected_row_header
+  - spanning
+  - row_header
+TF:
+  CELL:
+    FILTER: null
+    WEIGHTS: cell/model-1800000_inf_only.data-00000-of-00001
+  ITEM:
+    FILTER: null
+    WEIGHTS: item/model-1620000_inf_only.data-00000-of-00001
+  LAYOUT:
+    FILTER: null
+    WEIGHTS: layout/model-800000_inf_only.data-00000-of-00001
+USE_LAYOUT: true
+USE_LAYOUT_LINK: false
+USE_LAYOUT_NMS: false
+USE_OCR: true
+USE_PDF_MINER: false
+USE_ROTATOR: false
+USE_TABLE_REFINEMENT: true
+USE_TABLE_SEGMENTATION: true
+WORD_MATCHING:
+  MAX_PARENT_ONLY: true
+  PARENTAL_CATEGORIES:
+  - text
+  - title
+  - list
+  - cell
+  - column_header
+  - projected_row_header
+  - spanning
+  - row_header
+  RULE: ioa
+  THRESHOLD: 0.6
