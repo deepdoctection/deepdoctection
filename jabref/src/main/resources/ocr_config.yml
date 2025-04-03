@@ -1,0 +1,8 @@
+tesseract:
+  language: eng
+  page_segmentation_mode: 3
+  ocr_engine_mode: 3
+
+doctr:
+  model: resnet50
+  confidence_threshold: 0.5
