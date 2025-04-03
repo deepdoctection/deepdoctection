@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'org.jabref'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'net.sourceforge.tess4j:tess4j:4.5.4'
+    implementation 'org.apache.pdfbox:pdfbox:2.0.27'
+    implementation 'org.yaml:snakeyaml:1.29'
+
+    // Test dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+}
+
+test {
+    useJUnitPlatform()   // Enable JUnit 5 testing
+}
