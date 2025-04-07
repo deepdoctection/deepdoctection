@@ -25,7 +25,6 @@ from copy import copy
 from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check
 
 import numpy as np
-from typing_extensions import LiteralString
 
 from ..utils.error import AnnotationError, ImageError
 from ..utils.logger import LoggingRecord, log_once, logger
@@ -285,6 +284,52 @@ class Cell(Layout):
         return set(CellType).union(super().get_attribute_names())
 
 
+class List(Layout):
+    """
+    List specific subclass of `ImageAnnotationBaseView` modelled by `LayoutType`.
+    """
+
+    @property
+    def words(self) -> list[ImageAnnotationBaseView]:
+        """
+        Get a list of `ImageAnnotationBaseView` objects with `LayoutType` defined by `text_container`.
+        It will only select those among all annotations that have an entry in `Relationships.child` .
+        """
+        all_words: list[ImageAnnotationBaseView] = []
+
+        for list_item in self.list_items:
+            all_words.extend(list_item.words)  # type: ignore
+        return all_words
+
+    def get_ordered_words(self) -> list[ImageAnnotationBaseView]:
+        """Returns a list of words order by reading order. Words with no reading order will not be returned"""
+        try:
+            list_items = self.list_items
+            all_words = []
+            list_items.sort(key=lambda x: x.bbox[1])
+            for list_item in list_items:
+                all_words.extend(list_item.get_ordered_words()) # type: ignore
+            return all_words
+        except (TypeError, AnnotationError):
+            return super().get_ordered_words()
+
+    @property
+    def list_items(self) -> list[ImageAnnotationBaseView]:
+        """
+        A list of a list items.
+        """
+        all_relation_ids = self.get_relationship(Relationships.CHILD)
+        list_items = self.base_page.get_annotation(
+            annotation_ids=all_relation_ids,
+            category_names=(
+                LayoutType.LIST_ITEM,
+                LayoutType.LINE,
+            ),
+        )
+        list_items.sort(key=lambda x: x.bbox[1])
+        return list_items
+
+
 class Table(Layout):
     """
     Table specific sub class of `ImageAnnotationBaseView` modelled by `TableType`.
@@ -372,7 +417,7 @@ class Table(Layout):
             category_names=[LayoutType.CELL, CellType.SPANNING], annotation_ids=all_relation_ids
         )
         row_cells = list(
-            filter(lambda c: row_number in (c.row_number, c.row_number + c.row_span), all_cells)  # type: ignore
+            filter(lambda c: c.row_number <= row_number <= c.row_number + c.row_span - 1, all_cells)  # type: ignore
         )
         row_cells.sort(key=lambda c: c.column_number)  # type: ignore
         column_header_cells = self.column_header_cells
@@ -560,6 +605,7 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     LayoutType.TABLE_ROTATED: Table,
     LayoutType.WORD: Word,
     LayoutType.CELL: Cell,
+    LayoutType.LIST: List,
     CellType.SPANNING: Cell,
     CellType.ROW_HEADER: Cell,
     CellType.COLUMN_HEADER: Cell,
@@ -573,6 +619,7 @@ class ImageDefaults(TypedDict):
     text_container: LayoutType
     floating_text_block_categories: tuple[Union[LayoutType, CellType], ...]
     text_block_categories: tuple[Union[LayoutType, CellType], ...]
+    residual_layouts: tuple[LayoutType, ...]
 
 
 IMAGE_DEFAULTS: ImageDefaults = {
@@ -591,6 +638,7 @@ IMAGE_DEFAULTS: ImageDefaults = {
         LayoutType.FIGURE,
         CellType.SPANNING,
     ),
+    "residual_layouts": (LayoutType.LINE,),
 }
 
 
@@ -770,19 +818,8 @@ class Page(Image):
         """
         return self.get_annotation(category_names=self._get_residual_layout())
 
-    def _get_residual_layout(self) -> list[LiteralString]:
-        layouts = copy(list(self.floating_text_block_categories))
-        layouts.extend(
-            [
-                LayoutType.TABLE,
-                LayoutType.FIGURE,
-                self.text_container,
-                LayoutType.CELL,
-                LayoutType.ROW,
-                LayoutType.COLUMN,
-            ]
-        )
-        return [layout for layout in LayoutType if layout not in layouts]
+    def _get_residual_layout(self) -> tuple[LayoutType, ...]:
+        return IMAGE_DEFAULTS["residual_layouts"]
 
     @classmethod
     def from_image(

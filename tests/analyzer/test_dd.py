@@ -173,11 +173,12 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert page.height == 2339
     assert page.width == 1654
     # first number for tp model, second for pt model
-    assert len(page.text) in {5042, 5043, 5044, 5046, 5045, 5153}
+    print(page.text)
+    assert len(page.text) in {4345}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {631, 632, 642}
-    assert len(text_["ann_ids"]) in {631, 632, 642}
+    assert len(text_["words"]) in {555}
+    assert len(text_["ann_ids"]) in {555}
 
 
 @mark.tf_integration
@@ -259,7 +260,7 @@ def test_dd_analyzer_with_tatr() -> None:
     # 9 for d2 and 10 for tp model
     assert not page.layouts
     assert len(page.tables) == 1
-    assert len(page.tables[0].cells) in {11, 12, 13, 16}  # type: ignore
+    assert len(page.tables[0].cells) in {14}  # type: ignore
 
 
 @mark.integration_additional

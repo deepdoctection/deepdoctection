@@ -276,9 +276,7 @@ def train_hf_detr(
 
     if path_weights != "":
         model = TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=path_weights,
-            config=config,
-            ignore_mismatched_sizes=True
+            pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
         )
     else:
         model = TableTransformerForObjectDetection(config)
