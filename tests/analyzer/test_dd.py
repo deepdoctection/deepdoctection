@@ -174,7 +174,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert page.width == 1654
     # first number for tp model, second for pt model
     print(page.text)
-    assert len(page.text) in {4345}
+    assert len(page.text) in {4345,5042}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
     assert len(text_["words"]) in {555}
