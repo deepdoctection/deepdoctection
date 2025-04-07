@@ -441,6 +441,7 @@ def segment_table(
         matching_rule=segment_rule,
         threshold=threshold_rows,
         use_weighted_intersections=True,
+        # Rows and columns are child annotations of the table.
         parent_ann_ids=child_ann_ids,
         child_ann_ids=child_ann_ids,
     )
@@ -452,6 +453,7 @@ def segment_table(
         matching_rule=segment_rule,
         threshold=threshold_cols,
         use_weighted_intersections=True,
+        # Rows and columns are child annotations of the table.
         parent_ann_ids=child_ann_ids,
         child_ann_ids=child_ann_ids,
     )
@@ -617,6 +619,7 @@ def segment_pubtables(
     """
 
     child_ann_ids = table.get_relationship(Relationships.CHILD)
+    parent_ann_ids = [table.annotation_id]
     cell_index_rows, row_index, _, _ = match_anns_by_intersection(
         dp,
         parent_ann_category_names=item_names[0],
@@ -624,7 +627,7 @@ def segment_pubtables(
         matching_rule=segment_rule,
         threshold=threshold_rows,
         use_weighted_intersections=True,
-        parent_ann_ids=child_ann_ids,
+        parent_ann_ids=parent_ann_ids,
         child_ann_ids=child_ann_ids,
     )
 
@@ -635,7 +638,7 @@ def segment_pubtables(
         matching_rule=segment_rule,
         threshold=threshold_cols,
         use_weighted_intersections=True,
-        parent_ann_ids=child_ann_ids,
+        parent_ann_ids=parent_ann_ids,
         child_ann_ids=child_ann_ids,
     )
 

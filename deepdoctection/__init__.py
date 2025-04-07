@@ -440,7 +440,7 @@ if TYPE_CHECKING:
     from .eval import *
     from .extern import *  # type: ignore
     from .mapper import *  # type: ignore
-    from .pipe import *
+    from .pipe import *  # type: ignore
     from .train import *
     from .utils import *
 

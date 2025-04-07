@@ -577,7 +577,12 @@ class ServiceFactory:
                 parent_categories=config.WORD_MATCHING.PARENTAL_CATEGORIES,
                 child_categories=config.TEXT_CONTAINER,
                 relationship_key=Relationships.CHILD,
-            )
+            ),
+            FamilyCompound(
+                parent_categories=[LayoutType.LIST],
+                child_categories=[LayoutType.LIST_ITEM],
+                relationship_key=Relationships.CHILD,
+            ),
         ]
         return MatchingService(
             family_compounds=family_compounds,
@@ -621,6 +626,34 @@ class ServiceFactory:
         :return: MatchingService
         """
         return ServiceFactory._build_layout_link_matching_service(config)
+
+    @staticmethod
+    def _build_line_matching_service(config: AttrDict) -> MatchingService:
+        matcher = IntersectionMatcher(
+            matching_rule=config.WORD_MATCHING.RULE,
+            threshold=config.WORD_MATCHING.THRESHOLD,
+            max_parent_only=config.WORD_MATCHING.MAX_PARENT_ONLY,
+        )
+        family_compounds = [
+            FamilyCompound(
+                parent_categories=[LayoutType.LIST],
+                child_categories=[LayoutType.LINE],
+                relationship_key=Relationships.CHILD,
+            ),
+        ]
+        return MatchingService(
+            family_compounds=family_compounds,
+            matcher=matcher,
+        )
+
+    @staticmethod
+    def build_line_matching_service(config: AttrDict) -> MatchingService:
+        """Building a word matching service
+
+        :param config: configuration object
+        :return: MatchingService
+        """
+        return ServiceFactory._build_line_matching_service(config)
 
     @staticmethod
     def _build_text_order_service(config: AttrDict) -> TextOrderService:
@@ -747,6 +780,10 @@ class ServiceFactory:
         if config.USE_LAYOUT_LINK:
             layout_link_matching_service = ServiceFactory.build_layout_link_matching_service(config)
             pipe_component_list.append(layout_link_matching_service)
+
+        if config.USE_LINE_MATCHER:
+            line_list_matching_service = ServiceFactory.build_line_matching_service(config)
+            pipe_component_list.append(line_list_matching_service)
 
         page_parsing_service = ServiceFactory.build_page_parsing_service(config)
 
