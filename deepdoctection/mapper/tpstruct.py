@@ -95,11 +95,21 @@ def tf_nms_image_annotations(
     """
     if len(anns) == 1:
         return [anns[0].annotation_id]
+
     if not anns:
         return []
-    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
 
-    boxes = convert_to_tensor([ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns])
+    # First, identify priority annotations that should always be kept
+    priority_ann_ids = []
+
+    if prio:
+        for ann in anns:
+            if ann.category_name == prio:
+                priority_ann_ids.append(ann.annotation_id)
+
+    # If all annotations are priority or none are left for NMS, return all priority IDs
+    if len(priority_ann_ids) == len(anns):
+        return priority_ann_ids
 
     def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
         if ann.category_name == priority:
@@ -108,10 +118,24 @@ def tf_nms_image_annotations(
             return ann.score
         raise ValueError("score cannot be None")
 
+    # Perform NMS only on non-priority annotations
+    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
+
+    # Get boxes for non-priority annotations
+    boxes = convert_to_tensor([ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box
+                               is not None])
+
     scores = convert_to_tensor([priority_to_confidence(ann, prio) for ann in anns])
     class_mask = convert_to_tensor(len(boxes), dtype=uint8)
+
     keep = non_max_suppression(boxes, scores, class_mask, iou_threshold=threshold)
-    ann_ids_keep = ann_ids[keep]
-    if not isinstance(ann_ids_keep, str):
-        return ann_ids_keep.tolist()
-    return []
+    kept_ids = ann_ids[keep]
+
+    # Convert to list if necessary
+    if isinstance(kept_ids, str):
+        kept_ids = [kept_ids]
+    elif not isinstance(kept_ids, list):
+        kept_ids = kept_ids.tolist()
+
+    # Combine priority annotations with surviving non-priority annotations
+    return list(set(priority_ann_ids + kept_ids))
