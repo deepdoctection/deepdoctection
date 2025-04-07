@@ -102,7 +102,7 @@ def image_to_d2_frcnn_training(
     return output
 
 
-def pt_nms_image_annotations(
+def pt_nms_image_annotations_depr(
     anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
 ) -> Sequence[str]:
     """
@@ -145,6 +145,69 @@ def pt_nms_image_annotations(
     if not isinstance(ann_ids_keep, str):
         return ann_ids_keep.tolist()
     return []
+
+
+def pt_nms_image_annotations(
+    anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
+) -> Sequence[str]:
+    """
+    Processing given image annotations through NMS. This is useful, if you want to supress some specific image
+    annotation, e.g. given by name or returned through different predictors. This is the pt version, for tf check
+    `mapper.tpstruct`
+
+    :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
+    :param threshold: NMS threshold
+    :param image_id: id in order to get the embedding bounding box
+    :param prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
+    :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
+    """
+    if len(anns) == 1:
+        return [anns[0].annotation_id]
+
+    if not anns:
+        return []
+
+    # First, identify priority annotations that should always be kept
+    priority_ann_ids = []
+
+    if prio:
+        for ann in anns:
+            if ann.category_name == prio:
+                priority_ann_ids.append(ann.annotation_id)
+
+    # If all annotations are priority or none are left for NMS, return all priority IDs
+    if len(priority_ann_ids) == len(anns):
+        return priority_ann_ids
+
+    def priority_to_confidence(ann: ImageAnnotation, priority: str) -> float:
+        if ann.category_name == priority:
+            return 1.0
+        if ann.score:
+            return ann.score
+        raise ValueError("score cannot be None")
+
+    # Perform NMS only on non-priority annotations
+    ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
+
+    # Get boxes for non-priority annotations
+    boxes = torch.tensor(
+        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+    )
+
+    scores = torch.tensor([priority_to_confidence(ann, prio) for ann in anns])
+    class_mask = torch.ones(len(boxes), dtype=torch.uint8)
+
+    keep = batched_nms(boxes, scores, class_mask, threshold)
+    kept_ids = ann_ids[keep]
+
+    # Convert to list if necessary
+    if isinstance(kept_ids, str):
+        kept_ids = [kept_ids]
+    elif not isinstance(kept_ids, list):
+        kept_ids = kept_ids.tolist()
+
+    # Combine priority annotations with surviving non-priority annotations
+    return list(set(priority_ann_ids + kept_ids))
 
 
 def _get_category_attributes(
