@@ -241,8 +241,6 @@ class ServiceFactory:
 
         :param config: configuration object
         """
-        if not detectron2_available() and config.LIB == "PT":
-            raise ModuleNotFoundError("LAYOUT_NMS_PAIRS is only available for detectron2")
         if not isinstance(config.LAYOUT_NMS_PAIRS.COMBINATIONS, list) and not isinstance(
             config.LAYOUT_NMS_PAIRS.COMBINATIONS[0], list
         ):
@@ -583,6 +581,8 @@ class ServiceFactory:
                 parent_categories=[LayoutType.LIST],
                 child_categories=[LayoutType.LIST_ITEM],
                 relationship_key=Relationships.CHILD,
+                create_synthetic_parent=True,
+                synthetic_parent=LayoutType.LIST,
             ),
         ]
         return MatchingService(
