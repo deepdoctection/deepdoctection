@@ -96,12 +96,22 @@ class ServiceFactory:
         """
         if config.LIB is None:
             raise DependencyError("At least one of the env variables DD_USE_TF or DD_USE_TORCH must be set.")
+
+        if config.PT.ENFORCE_WEIGHTS:
+            if not detectron2_available():
+                use_pt_weights = False
+            else:
+                use_pt_weights = True
+        else:
+            use_pt_weights = False
+
+
         weights = (
             getattr(config.TF, mode).WEIGHTS
             if config.LIB == "TF"
             else (
                 getattr(config.PT, mode).WEIGHTS
-                if detectron2_available() or config.PT.ENFORCE_WEIGHTS
+                if use_pt_weights
                 else getattr(config.PT, mode).WEIGHTS_TS
             )
         )
