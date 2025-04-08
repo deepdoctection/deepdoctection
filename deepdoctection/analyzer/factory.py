@@ -50,7 +50,6 @@ from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
 from ..utils.error import DependencyError
-from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType, Relationships
@@ -241,8 +240,6 @@ class ServiceFactory:
 
         :param config: configuration object
         """
-        if not detectron2_available() and config.LIB == "PT":
-            raise ModuleNotFoundError("LAYOUT_NMS_PAIRS is only available for detectron2")
         if not isinstance(config.LAYOUT_NMS_PAIRS.COMBINATIONS, list) and not isinstance(
             config.LAYOUT_NMS_PAIRS.COMBINATIONS[0], list
         ):
@@ -583,6 +580,8 @@ class ServiceFactory:
                 parent_categories=[LayoutType.LIST],
                 child_categories=[LayoutType.LIST_ITEM],
                 relationship_key=Relationships.CHILD,
+                create_synthetic_parent=True,
+                synthetic_parent=LayoutType.LIST,
             ),
         ]
         return MatchingService(
