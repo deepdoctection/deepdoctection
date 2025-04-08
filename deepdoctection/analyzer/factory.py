@@ -50,7 +50,6 @@ from ..pipe.sub_layout import DetectResultGenerator, SubImageLayoutService
 from ..pipe.text import TextExtractionService
 from ..pipe.transform import SimpleTransformService
 from ..utils.error import DependencyError
-from ..utils.file_utils import detectron2_available
 from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType, Relationships

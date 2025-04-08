@@ -307,10 +307,11 @@ class MatchingService(PipelineComponent):
                             relationships={family_compound.relationship_key: child_ann.annotation_id}))
                 for detect_result in detect_result_list:
                     annotation_id = self.dp_manager.set_image_annotation(detect_result)
-                    self.dp_manager.set_relationship_annotation(family_compound.relationship_key,
-                                                                annotation_id,
-                                                                detect_result.relationships[
-                                                                    family_compound.relationship_key])
+                    if annotation_id is not None and detect_result.relationships is not None:
+                        self.dp_manager.set_relationship_annotation(family_compound.relationship_key,
+                                                                    annotation_id,
+                                                                    detect_result.relationships.get(
+                                                                        family_compound.relationship_key, None))
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.family_compounds, self.matcher)
