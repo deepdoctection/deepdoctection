@@ -32,7 +32,7 @@ from ..extern.pt.ptutils import get_torch_device
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.env_info import ENV_VARS_TRUE
-from ..utils.file_utils import tensorpack_available
+from ..utils.file_utils import tensorpack_available, detectron2_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
@@ -140,6 +140,12 @@ def get_dd_analyzer(
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
+    if not detectron2_available() or cfg.PT.LAYOUT.WEIGHTS is None:
+        cfg.PT.ENFORCE_WEIGHTS.LAYOUT=False
+    if not detectron2_available() or cfg.PT.ITEM.WEIGHTS is None:
+        cfg.PT.ENFORCE_WEIGHTS.ITEM=False
+    if not detectron2_available() or cfg.PT.CELL.WEIGHTS is None:
+        cfg.PT.ENFORCE_WEIGHTS.CELL=False
     cfg.freeze()
 
     if config_overwrite:
