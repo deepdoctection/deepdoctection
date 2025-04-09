@@ -95,6 +95,7 @@ _IMPORT_STRUCTURE = {
         "Image",
         "Word",
         "Layout",
+        "List",
         "Cell",
         "Table",
         "Page",
