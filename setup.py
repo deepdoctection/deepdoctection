@@ -235,7 +235,7 @@ setup(
     extras_require=EXTRA_DEPS,
     packages=find_packages(exclude=["tests", "tests.*", "tests_d2"]),
     package_data={
-        "deepdoctection.configs": ["*.yaml"],
+        "deepdoctection.configs": ["*.yaml", "*.jsonl"],
         "deepdoctection.datasets.instances.xsl": ["*.xsl"],
         "deepdoctection": ["py.typed"],
     },

@@ -22,7 +22,8 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check
+from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check, Tuple
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -613,34 +614,36 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
 }
 
 
-class ImageDefaults(TypedDict):
+
+@dataclass
+class ImageDefaults:
     """ImageDefaults"""
 
-    text_container: LayoutType
-    floating_text_block_categories: tuple[Union[LayoutType, CellType], ...]
-    text_block_categories: tuple[Union[LayoutType, CellType], ...]
-    residual_layouts: tuple[LayoutType, ...]
+    TEXT_CONTAINER: LayoutType = LayoutType.WORD
+    FLOATING_TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+        default_factory=lambda: (
+            LayoutType.TEXT,
+            LayoutType.TITLE,
+            LayoutType.FIGURE,
+            LayoutType.LIST,
+        )
+    )
+    TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+        default_factory=lambda: (
+            LayoutType.TEXT,
+            LayoutType.TITLE,
+            LayoutType.LIST,
+            LayoutType.CELL,
+            LayoutType.FIGURE,
+            CellType.SPANNING,
+        )
+    )
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(
+        default_factory=lambda: (LayoutType.LINE,)
+    )
 
 
-IMAGE_DEFAULTS: ImageDefaults = {
-    "text_container": LayoutType.WORD,
-    "floating_text_block_categories": (
-        LayoutType.TEXT,
-        LayoutType.TITLE,
-        LayoutType.FIGURE,
-        LayoutType.LIST,
-    ),
-    "text_block_categories": (
-        LayoutType.TEXT,
-        LayoutType.TITLE,
-        LayoutType.LIST,
-        LayoutType.CELL,
-        LayoutType.FIGURE,
-        CellType.SPANNING,
-    ),
-    "residual_layouts": (LayoutType.LINE,),
-}
-
+IMAGE_DEFAULTS = ImageDefaults()
 
 @no_type_check
 def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectTypes) -> ImageAnnotationBaseView:
@@ -686,6 +689,7 @@ class Page(Image):
     text_container: ObjectTypes
     floating_text_block_categories: list[ObjectTypes]
     image_orig: Image
+    residual_text_block_categories: list[ObjectTypes]
     _attribute_names: set[str] = {
         "text",
         "chunks",
@@ -699,6 +703,7 @@ class Page(Image):
         "angle",
         "figures",
         "residual_layouts",
+        "document_summary"
     }
     include_residual_text_container: bool = True
 
@@ -816,10 +821,8 @@ class Page(Image):
            - not rows
            - not columns
         """
-        return self.get_annotation(category_names=self._get_residual_layout())
+        return self.get_annotation(category_names=self.residual_text_block_categories)
 
-    def _get_residual_layout(self) -> tuple[LayoutType, ...]:
-        return IMAGE_DEFAULTS["residual_layouts"]
 
     @classmethod
     def from_image(
@@ -827,6 +830,7 @@ class Page(Image):
         image_orig: Image,
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
         base_page: Optional[Page] = None,
     ) -> Page:
@@ -836,6 +840,8 @@ class Page(Image):
         :param image_orig: `Image` instance to convert
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
         :param floating_text_block_categories: A list of top level layout objects
+        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor tables but should
+                                 be accessible via `Page.residual_layouts`.
         :param include_residual_text_container: This will regard synthetic text line annotations as floating text
                                                 blocks and therefore incorporate all image annotations of category
                                                 `word` when building text strings.
@@ -845,10 +851,13 @@ class Page(Image):
         """
 
         if text_container is None:
-            text_container = IMAGE_DEFAULTS["text_container"]
+            text_container = IMAGE_DEFAULTS.TEXT_CONTAINER
 
         if not floating_text_block_categories:
-            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
+            floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+
+        if not residual_text_block_categories:
+            residual_text_block_categories = IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
 
         if include_residual_text_container and LayoutType.LINE not in floating_text_block_categories:
             floating_text_block_categories = tuple(floating_text_block_categories) + (LayoutType.LINE,)
@@ -882,6 +891,7 @@ class Page(Image):
                         image_orig=image,
                         text_container=text_container,
                         floating_text_block_categories=floating_text_block_categories,
+                        residual_text_block_categories=residual_text_block_categories,
                         include_residual_text_container=include_residual_text_container,
                         base_page=page,
                     )
@@ -891,6 +901,7 @@ class Page(Image):
             page.summary = CategoryAnnotation.from_dict(**summary_dict)
             page.summary.category_name = SummaryType.SUMMARY
         page.floating_text_block_categories = floating_text_block_categories  # type: ignore
+        page.residual_text_block_categories = residual_text_block_categories  # type: ignore
         page.text_container = text_container
         page.include_residual_text_container = include_residual_text_container
         return page
@@ -1233,18 +1244,25 @@ class Page(Image):
         file_path: str,
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[list[ObjectTypes]] = None,
+        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
     ) -> Page:
         """Reading JSON file and building a `Page` object with given config.
         :param file_path: Path to file
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
         :param floating_text_block_categories: A list of top level layout objects
+        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor
+                                               tables but should be accessible via `Page.residual_layouts`.
         :param include_residual_text_container: This will regard synthetic text line annotations as floating text
                                                 blocks and therefore incorporate all image annotations of category
                                                 `word` when building text strings.
         """
         image = Image.from_file(file_path)
-        return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)
+        return cls.from_image(image_orig=image,
+                              text_container=text_container,
+                              floating_text_block_categories=floating_text_block_categories,
+                              residual_text_block_categories=residual_text_block_categories,
+                              include_residual_text_container=include_residual_text_container)
 
     def get_token(self) -> list[Mapping[str, str]]:
         """Return a list of tuples with word and non default token tags"""
@@ -1263,5 +1281,6 @@ class Page(Image):
             self.image_orig,
             self.text_container,
             self.floating_text_block_categories,
+            self.residual_text_block_categories,
             self.include_residual_text_container,
         )

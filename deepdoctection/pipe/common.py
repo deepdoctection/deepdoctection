@@ -344,6 +344,7 @@ class PageParsingService(PipelineComponent):
             self,
             text_container: TypeOrStr,
             floating_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+            residual_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
             include_residual_text_container: bool = True,
     ):
         """
@@ -355,12 +356,15 @@ class PageParsingService(PipelineComponent):
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
             floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
-            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
+            floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+        if residual_text_block_categories is None:
+            residual_text_block_categories = IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
 
         self.text_container = get_type(text_container)
         self.floating_text_block_categories = tuple(
             (get_type(text_block) for text_block in floating_text_block_categories)
         )
+        self.residual_text_block_categories = residual_text_block_categories
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
         super().__init__(self.name)
@@ -378,6 +382,7 @@ class PageParsingService(PipelineComponent):
             dp,
             text_container=self.text_container,
             floating_text_block_categories=self.floating_text_block_categories,
+            residual_text_block_categories=self.residual_text_block_categories,
             include_residual_text_container=self.include_residual_text_container,
         )
 
@@ -398,6 +403,7 @@ class PageParsingService(PipelineComponent):
         return self.__class__(
             deepcopy(self.text_container),
             deepcopy(self.floating_text_block_categories),
+            deepcopy(self.residual_text_block_categories),
             self.include_residual_text_container,
         )
 

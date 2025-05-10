@@ -946,11 +946,11 @@ class PubtablesSegmentationService(PipelineComponent):
     this service build a pipeline as follows:
 
     **Example:**
-
+        ```
         layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
         recognition = SubImageLayoutService(table_recognition_detector, LayoutType.TABLE, {1: 6, 2:7, 3:8, 4:9}, True)
         segment = PubtablesSegmentationService('ioa', 0.4, 0.4, True, 0.8, 0.8, 7)
-        ...
+        ```
 
         pipe = DoctectionPipe([layout, recognition, segment])
 

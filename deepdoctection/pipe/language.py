@@ -82,7 +82,9 @@ class LanguageDetectionService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         if self.text_detector is None:
-            page = Page.from_image(dp, self.text_container, self.floating_text_block_categories)
+            page = Page.from_image(image_orig=dp,
+                                   text_container=self.text_container,
+                                   floating_text_block_categories=self.floating_text_block_categories)
             text = page.text_no_line_break
         else:
             if dp.image is None:

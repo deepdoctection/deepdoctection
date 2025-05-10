@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Literal, Mapping, Optional, Sequence, Union
+from typing import Literal, Mapping, Optional, Sequence, Union, TYPE_CHECKING
 
 from lazy_imports import try_import
 
@@ -39,12 +39,16 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (  # pylint: disable=W0611
-        AutoFeatureExtractor,
-        DetrFeatureExtractor,
-        DetrImageProcessor,
+        DetrImageProcessorFast,
+        DeformableDetrImageProcessorFast,
         PretrainedConfig,
         TableTransformerForObjectDetection,
+        DeformableDetrForObjectDetection
     )
+
+    if TYPE_CHECKING:
+        EligibleDetrModel = Union[TableTransformerForObjectDetection, DeformableDetrForObjectDetection]
+        DetrImageProcessor = Union[DetrImageProcessorFast, DeformableDetrImageProcessorFast]
 
 
 def _detr_post_processing(
@@ -55,7 +59,7 @@ def _detr_post_processing(
 
 def detr_predict_image(
     np_img: PixelValues,
-    predictor: TableTransformerForObjectDetection,
+    predictor: EligibleDetrModel,
     feature_extractor: DetrImageProcessor,
     device: torch.device,
     threshold: float,
@@ -195,7 +199,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         self.config = self.get_config(path_config_json)
 
         self.hf_detr_predictor = self.get_model(self.path_weights, self.config)
-        self.feature_extractor = self.get_pre_processor(self.path_feature_extractor_config)
+        self.feature_extractor = self.get_pre_processor(self.path_feature_extractor_config, self.config)
 
         self.device = get_torch_device(device)
         self.hf_detr_predictor.to(self.device)
@@ -212,7 +216,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_model(path_weights: PathLikeOrStr, config: PretrainedConfig) -> TableTransformerForObjectDetection:
+    def get_model(path_weights: PathLikeOrStr, config: PretrainedConfig) -> EligibleDetrModel:
         """
         Builds the Detr model
 
@@ -220,20 +224,39 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         :param config: `PretrainedConfig`
         :return: TableTransformerForObjectDetection instance
         """
-        return TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=os.fspath(path_weights), config=config
-        )
+        if "TableTransformerForObjectDetection" in config.architectures:
+            return TableTransformerForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config)
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
 
     @staticmethod
-    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr) -> DetrImageProcessor:
+    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr, config: PretrainedConfig) -> DetrImageProcessor:
         """
         Builds the feature extractor
 
         :return: DetrFeatureExtractor
         """
-        return DetrImageProcessor.from_pretrained(
-            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config)
-        )
+        if "TableTransformerForObjectDetection" in config.architectures:
+            return DetrImageProcessorFast.from_pretrained(
+            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
+            )
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrImageProcessorFast.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
+            )
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
 
     @staticmethod
     def get_config(path_config: PathLikeOrStr) -> PretrainedConfig:

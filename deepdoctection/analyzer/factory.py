@@ -113,6 +113,8 @@ class ServiceFactory:
         config_path = ModelCatalog.get_full_path_configs(weights)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
+        if config.LIB == "PT" and profile.padding is not None:
+            getattr(config.PT, mode).PADDING =  profile.padding
         categories = profile.categories if profile.categories is not None else {}
 
         if profile.model_wrapper in ("TPFrcnnDetector",):
@@ -219,7 +221,7 @@ class ServiceFactory:
         :return `ImageLayoutService` instance
         """
         padder = None
-        if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
+        if getattr(config.PT, mode).PADDING:
             padder = ServiceFactory.build_padder(config, mode=mode)
         return ImageLayoutService(layout_detector=detector, to_image=True, crop_image=True, padder=padder)
 

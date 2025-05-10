@@ -65,9 +65,9 @@ def test_page_from_image(dp_image_with_layout_and_word_annotations: Image) -> No
 
     # Act
     page = Page.from_image(
-        dp_image,
-        LayoutType.WORD,
-        [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST],
+        image_orig=dp_image,
+        text_container=LayoutType.WORD,
+        floating_text_block_categories=[LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST],
     )
 
     # Assert
@@ -90,7 +90,8 @@ def test_image_with_anns_can_be_saved(image: WhiteImage) -> None:
     test_image.dump(cat_1)
 
     # Act
-    page = Page.from_image(test_image, LayoutType.TABLE, [LayoutType.TABLE])
+    page = Page.from_image(image_orig=test_image, text_container=LayoutType.TEXT,
+                           floating_text_block_categories=[LayoutType.TABLE])
 
     try:
         page.save(dry=True)
