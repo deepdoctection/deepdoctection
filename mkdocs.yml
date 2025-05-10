@@ -31,9 +31,12 @@ nav:
     - Install: install.md
     - Tutorials:
         - Introductory tutorials:
-            - Get started: ./tutorials/get_started_notebook.md
+            - Get started: ./tutorials/Analyzer_Get_Started.md
+            - More on parsing: ./tutorials/Analyzer_More_On_Parsing.md
+            - Configuration: ./tutorials/Analyzer_Configuration.md
+            - Configuration samples: ./tutorials/Analyzer_Configuration_Samples.md
+            - Model Registry and new models: ./tutorials/Analyzer_Model_Registry_And_New_Models.md
             - Pipelines: ./tutorials/pipelines_notebook.md
-            - Analyzer Configuration: ./tutorials/analyzer_configuration_notebook.md
             - Analyzer with Table Transformer: ./tutorials/analyzer_with_table_transformer_notebook.md
             - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
             - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
@@ -50,7 +53,7 @@ nav:
             - LayoutLMv2 and LayoutXLM for financial report NER: ./tutorials/layoutlm_v2_on_custom_token_classification_notebook.md
             - LayoutLMv3 for financial report NER: ./tutorials/layoutlm_v3_on_custom_token_classification_notebook.md
             - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
-            - Doclaynet with a YOLO predictor: ./tutorials/doclaynet_with_yolo.md
+            - Doclaynet with a YOLO predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
             - Advanced Analyzer configuration: ./tutorials/doclaynet_analyzer_config.md
 
         - Notes:

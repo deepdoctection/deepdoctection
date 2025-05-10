@@ -878,10 +878,14 @@ class TableSegmentationService(PipelineComponent):
 
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
-                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells)
-                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells)
-                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells)
-                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells)
+                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
+                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
+                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells if
+                                   CellType.ROW_NUMBER in cell.sub_categories)
+                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells if
+                                   CellType.ROW_NUMBER in cell.sub_categories)
                 # TODO: the summaries should be sub categories of the underlying ann
                 self.dp_manager.set_summary_annotation(
                     TableType.NUMBER_OF_ROWS,
@@ -946,11 +950,11 @@ class PubtablesSegmentationService(PipelineComponent):
     this service build a pipeline as follows:
 
     **Example:**
-
+        ```
         layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
         recognition = SubImageLayoutService(table_recognition_detector, LayoutType.TABLE, {1: 6, 2:7, 3:8, 4:9}, True)
         segment = PubtablesSegmentationService('ioa', 0.4, 0.4, True, 0.8, 0.8, 7)
-        ...
+        ```
 
         pipe = DoctectionPipe([layout, recognition, segment])
 
@@ -1166,10 +1170,14 @@ class PubtablesSegmentationService(PipelineComponent):
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
             if cells:
-                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells)
-                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells)
-                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells)
-                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells)
+                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
+                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
+                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
+                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells if
+                                     CellType.ROW_NUMBER in cell.sub_categories)
             else:
                 number_of_rows = 0
                 number_of_cols = 0

@@ -56,7 +56,7 @@ class AttrDict:
         """
         __setattr__
         """
-        if self._freezed and name not in self.__dict__:
+        if self._freezed and name!="_freezed":
             raise AttributeError(f"Config was freezed! Unknown config: {name}")
         super().__setattr__(name, value)
 

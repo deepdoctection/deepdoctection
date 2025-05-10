@@ -99,7 +99,7 @@ _DEPS = [
     "pylint==2.17.4",
     "mypy==1.4.1",
     # docs
-    "jinja2==3.0.3",
+    "jinja2",
     "mkdocs-material",
     "mkdocstrings-python",
     "griffe==0.25.0",
@@ -154,22 +154,15 @@ additional_deps = deps_list(
     "lxml",
 )
 
-# Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr")
-
-source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
+pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr", "pycocotools")
 
 # Putting all together
 tf_deps = dist_deps + tf_deps + additional_deps
 pt_deps = dist_deps + pt_deps + additional_deps
-source_pt_deps = dist_deps + source_pt_deps + additional_deps
 
-
-# if sys.platform == "linux":
-#    source_pt_deps.extend(deps_list("python-prctl"))
 
 # dependencies for rtd. Only needed to create requirements.txt
 docs_deps = deps_list(
@@ -216,7 +209,6 @@ dev_deps = deps_list(
 EXTRA_DEPS = {
     "tf": tf_deps,
     "pt": pt_deps,
-    "source-pt": source_pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
@@ -235,7 +227,7 @@ setup(
     extras_require=EXTRA_DEPS,
     packages=find_packages(exclude=["tests", "tests.*", "tests_d2"]),
     package_data={
-        "deepdoctection.configs": ["*.yaml"],
+        "deepdoctection.configs": ["*.yaml", "*.jsonl"],
         "deepdoctection.datasets.instances.xsl": ["*.xsl"],
         "deepdoctection": ["py.typed"],
     },
@@ -248,6 +240,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     python_requires=">=3.9",

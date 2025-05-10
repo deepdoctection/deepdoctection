@@ -50,6 +50,7 @@ with try_import() as pt_import_guard:
 with try_import() as hf_import_guard:
     from transformers import (
         AutoFeatureExtractor,
+        DeformableDetrForObjectDetection,
         IntervalStrategy,
         PretrainedConfig,
         PreTrainedModel,
@@ -275,11 +276,29 @@ def train_hf_detr(
     config.use_timm_backbone = True
 
     if path_weights != "":
-        model = TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
-        )
+        if "TableTransformerForObjectDetection" in config.architectures:
+            model = TableTransformerForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
+            )
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
     else:
-        model = TableTransformerForObjectDetection(config)
+        if "TableTransformerForObjectDetection" in config.architectures:
+            model = TableTransformerForObjectDetection(config)
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            model = DeformableDetrForObjectDetection(config)
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
 
     feature_extractor = AutoFeatureExtractor.from_pretrained(
         pretrained_model_name_or_path=path_feature_extractor_config_json

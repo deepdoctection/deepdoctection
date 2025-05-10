@@ -624,12 +624,12 @@ class TextOrderService(TextLineServiceMixin):
         if isinstance(text_block_categories, (str, ObjectTypes)):
             text_block_categories = (get_type(text_block_categories),)
         if text_block_categories is None:
-            text_block_categories = IMAGE_DEFAULTS["text_block_categories"]
+            text_block_categories = IMAGE_DEFAULTS.TEXT_BLOCK_CATEGORIES
         self.text_block_categories = tuple((get_type(category) for category in text_block_categories))
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
             floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
-            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
+            floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
         self.floating_text_block_categories = tuple((get_type(category) for category in floating_text_block_categories))
         if include_residual_text_container:
             self.floating_text_block_categories = self.floating_text_block_categories + (LayoutType.LINE,)

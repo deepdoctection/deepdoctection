@@ -79,6 +79,7 @@ class SummaryType(ObjectTypes):
     """Summary type member"""
 
     SUMMARY = "summary"
+    DOCUMENT_SUMMARY = "document_summary"
 
 
 @object_types_registry.register("DocumentType")
@@ -435,6 +436,7 @@ if os.environ.get("DEEPDOCTECTION_CACHE"):
 else:
     dd_cache_home = Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache")) / "deepdoctection"
 
+CACHE_DIR = dd_cache_home
 MODEL_DIR = dd_cache_home / "weights"
 
 # configs cache directory

@@ -369,6 +369,18 @@ class Pipeline(ABC):
             return comp_info_name_as_key[name]
         return comp_info
 
+    def get_pipeline_component(self, service_id: Optional[str] = None, name: Optional[str] = None) -> PipelineComponent:
+        """
+        Get a pipeline component by service_id or name.
+        :param service_id: service_id of the pipeline component to search for
+        :param name: name of the pipeline component to search for
+        :return: The pipeline component if found, otherwise None
+        """
+        for comp in self.pipe_component_list:
+            if comp.service_id == service_id or comp.name == name:
+                return comp
+        raise ValueError(f"Pipeline component not found with service_id={service_id} or name={name}")
+
     @staticmethod
     def get_session_id() -> str:
         """

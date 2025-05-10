@@ -32,7 +32,7 @@ from urllib.request import urlretrieve
 from .develop import deprecated
 from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
+from .settings import CACHE_DIR, CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
 from .types import B64, B64Str, JsonDict, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
@@ -48,6 +48,7 @@ __all__ = [
     "load_json",
     "sub_path",
     "get_package_path",
+    "get_cache_dir_path",
     "get_configs_dir_path",
     "get_weights_dir_path",
     "get_dataset_dir_path",
@@ -262,6 +263,13 @@ def get_package_path() -> Path:
     :return: full base path of this package
     """
     return PATH
+
+
+def get_cache_dir_path() -> Path:
+    """
+    :return: full base path to the cache dir
+    """
+    return CACHE_DIR
 
 
 def get_weights_dir_path() -> Path:
