@@ -22,7 +22,8 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check
+from dataclasses import dataclass, field
+from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check, Dict
 
 import numpy as np
 
@@ -146,10 +147,10 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
 
         # sub categories and summary sub categories are valid attribute names
-        attribute_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
+        attr_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
         if self.image:
-            attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
-        return attribute_names
+            attr_names = attr_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
     def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotationBaseView:
@@ -169,11 +170,10 @@ class Word(ImageAnnotationBaseView):
     """
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            set(WordType)
-            .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
-        )
+        attr_names = (set(WordType)
+                      .union(super().get_attribute_names())
+                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
 
 class Layout(ImageAnnotationBaseView):
@@ -264,11 +264,10 @@ class Layout(ImageAnnotationBaseView):
         }
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            {"words", "text"}
-            .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
-        )
+        attr_names = ({"words", "text"}.union(super()
+                                       .get_attribute_names())
+                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     def __len__(self) -> int:
         """len of text counted by number of characters"""
@@ -281,7 +280,8 @@ class Cell(Layout):
     """
 
     def get_attribute_names(self) -> set[str]:
-        return set(CellType).union(super().get_attribute_names())
+        attr_names = set(CellType).union(super().get_attribute_names())
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
 
 class List(Layout):
@@ -308,7 +308,7 @@ class List(Layout):
             all_words = []
             list_items.sort(key=lambda x: x.bbox[1])
             for list_item in list_items:
-                all_words.extend(list_item.get_ordered_words()) # type: ignore
+                all_words.extend(list_item.get_ordered_words())  # type: ignore
             return all_words
         except (TypeError, AnnotationError):
             return super().get_ordered_words()
@@ -505,11 +505,10 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            set(TableType)
-            .union(super().get_attribute_names())
-            .union({"cells", "rows", "columns", "html", "csv", "text"})
-        )
+        attr_names = (set(TableType)
+                      .union(super().get_attribute_names())
+                      .union({"cells", "rows", "columns", "html", "csv", "text"}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @property
     def csv(self) -> csv:
@@ -599,47 +598,59 @@ class Table(Layout):
             return super().get_ordered_words()
 
 
-IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
-    **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
-    LayoutType.TABLE: Table,
-    LayoutType.TABLE_ROTATED: Table,
-    LayoutType.WORD: Word,
-    LayoutType.CELL: Cell,
-    LayoutType.LIST: List,
-    CellType.SPANNING: Cell,
-    CellType.ROW_HEADER: Cell,
-    CellType.COLUMN_HEADER: Cell,
-    CellType.PROJECTED_ROW_HEADER: Cell,
-}
 
-
-class ImageDefaults(TypedDict):
+@dataclass
+class ImageDefaults:
     """ImageDefaults"""
 
-    text_container: LayoutType
-    floating_text_block_categories: tuple[Union[LayoutType, CellType], ...]
-    text_block_categories: tuple[Union[LayoutType, CellType], ...]
-    residual_layouts: tuple[LayoutType, ...]
+    TEXT_CONTAINER: LayoutType = LayoutType.WORD
+    FLOATING_TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+        default_factory=lambda: (
+            LayoutType.TEXT,
+            LayoutType.TITLE,
+            LayoutType.LIST,
+            LayoutType.KEY_VALUE_AREA,
+
+        )
+    )
+    TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
+        default_factory=lambda: (
+            LayoutType.TEXT,
+            LayoutType.TITLE,
+            LayoutType.LIST_ITEM,
+            LayoutType.LIST,
+            LayoutType.CAPTION,
+            LayoutType.PAGE_HEADER,
+            LayoutType.PAGE_FOOTER,
+            LayoutType.PAGE_NUMBER,
+            LayoutType.MARK,
+            LayoutType.KEY_VALUE_AREA,
+            LayoutType.FIGURE,
+            CellType.SPANNING,
+            LayoutType.CELL,
+        )
+    )
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(default_factory=lambda: (LayoutType.PAGE_HEADER,
+                                                                                            LayoutType.PAGE_FOOTER,
+                                                                                            LayoutType.MARK,
+                                                                                            LayoutType.PAGE_NUMBER,))
+    IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = field(
+        default_factory=lambda: { # type: ignore
+            **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
+            LayoutType.TABLE: Table,
+            LayoutType.TABLE_ROTATED: Table,
+            LayoutType.WORD: Word,
+            LayoutType.CELL: Cell,
+            LayoutType.LIST: List,
+            CellType.SPANNING: Cell,
+            CellType.ROW_HEADER: Cell,
+            CellType.COLUMN_HEADER: Cell,
+            CellType.PROJECTED_ROW_HEADER: Cell,
+        }
+    )
 
 
-IMAGE_DEFAULTS: ImageDefaults = {
-    "text_container": LayoutType.WORD,
-    "floating_text_block_categories": (
-        LayoutType.TEXT,
-        LayoutType.TITLE,
-        LayoutType.FIGURE,
-        LayoutType.LIST,
-    ),
-    "text_block_categories": (
-        LayoutType.TEXT,
-        LayoutType.TITLE,
-        LayoutType.LIST,
-        LayoutType.CELL,
-        LayoutType.FIGURE,
-        CellType.SPANNING,
-    ),
-    "residual_layouts": (LayoutType.LINE,),
-}
+IMAGE_DEFAULTS = ImageDefaults()
 
 
 @no_type_check
@@ -655,9 +666,9 @@ def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectType
 
     # We need to handle annotations that are text containers like words
     if annotation.category_name == text_container:
-        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
     else:
-        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
     ann_dict = annotation.as_dict()
     layout = layout_class.from_dict(**ann_dict)
     if image_dict := ann_dict.get("image"):
@@ -686,6 +697,7 @@ class Page(Image):
     text_container: ObjectTypes
     floating_text_block_categories: list[ObjectTypes]
     image_orig: Image
+    residual_text_block_categories: list[ObjectTypes]
     _attribute_names: set[str] = {
         "text",
         "chunks",
@@ -699,6 +711,7 @@ class Page(Image):
         "angle",
         "figures",
         "residual_layouts",
+        "document_summary",
     }
     include_residual_text_container: bool = True
 
@@ -816,10 +829,7 @@ class Page(Image):
            - not rows
            - not columns
         """
-        return self.get_annotation(category_names=self._get_residual_layout())
-
-    def _get_residual_layout(self) -> tuple[LayoutType, ...]:
-        return IMAGE_DEFAULTS["residual_layouts"]
+        return self.get_annotation(category_names=self.residual_text_block_categories)
 
     @classmethod
     def from_image(
@@ -827,6 +837,7 @@ class Page(Image):
         image_orig: Image,
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
+        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
         base_page: Optional[Page] = None,
     ) -> Page:
@@ -836,6 +847,9 @@ class Page(Image):
         :param image_orig: `Image` instance to convert
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
         :param floating_text_block_categories: A list of top level layout objects
+        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor
+        tables but should
+                                 be accessible via `Page.residual_layouts`.
         :param include_residual_text_container: This will regard synthetic text line annotations as floating text
                                                 blocks and therefore incorporate all image annotations of category
                                                 `word` when building text strings.
@@ -845,10 +859,13 @@ class Page(Image):
         """
 
         if text_container is None:
-            text_container = IMAGE_DEFAULTS["text_container"]
+            text_container = IMAGE_DEFAULTS.TEXT_CONTAINER
 
         if not floating_text_block_categories:
-            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
+            floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+
+        if not residual_text_block_categories:
+            residual_text_block_categories = IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
 
         if include_residual_text_container and LayoutType.LINE not in floating_text_block_categories:
             floating_text_block_categories = tuple(floating_text_block_categories) + (LayoutType.LINE,)
@@ -882,6 +899,7 @@ class Page(Image):
                         image_orig=image,
                         text_container=text_container,
                         floating_text_block_categories=floating_text_block_categories,
+                        residual_text_block_categories=residual_text_block_categories,
                         include_residual_text_container=include_residual_text_container,
                         base_page=page,
                     )
@@ -891,6 +909,7 @@ class Page(Image):
             page.summary = CategoryAnnotation.from_dict(**summary_dict)
             page.summary.category_name = SummaryType.SUMMARY
         page.floating_text_block_categories = floating_text_block_categories  # type: ignore
+        page.residual_text_block_categories = residual_text_block_categories  # type: ignore
         page.text_container = text_container
         page.include_residual_text_container = include_residual_text_container
         return page
@@ -1166,11 +1185,15 @@ class Page(Image):
                         boxes=boxes,
                         category_names_list=category_names_list,
                         font_scale=1.0,
-                        rectangle_thickness=4,
+                        rectangle_thickness=2,
                     )
                 else:
                     img = draw_boxes(
-                        np_image=img, boxes=boxes, category_names_list=category_names_list, show_palette=False
+                        np_image=img,
+                        boxes=boxes,
+                        category_names_list=category_names_list,
+                        show_palette=False,
+                        rectangle_thickness=2,
                     )
 
             if interactive:
@@ -1184,7 +1207,8 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union(cls._attribute_names)
+        attr_names= set(PageType).union(cls._attribute_names)
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
     def add_attribute_name(cls, attribute_name: Union[str, ObjectTypes]) -> None:
@@ -1233,18 +1257,27 @@ class Page(Image):
         file_path: str,
         text_container: Optional[ObjectTypes] = None,
         floating_text_block_categories: Optional[list[ObjectTypes]] = None,
+        residual_text_block_categories: Optional[Sequence[ObjectTypes]] = None,
         include_residual_text_container: bool = True,
     ) -> Page:
         """Reading JSON file and building a `Page` object with given config.
         :param file_path: Path to file
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
         :param floating_text_block_categories: A list of top level layout objects
+        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor
+                                               tables but should be accessible via `Page.residual_layouts`.
         :param include_residual_text_container: This will regard synthetic text line annotations as floating text
                                                 blocks and therefore incorporate all image annotations of category
                                                 `word` when building text strings.
         """
         image = Image.from_file(file_path)
-        return cls.from_image(image, text_container, floating_text_block_categories, include_residual_text_container)
+        return cls.from_image(
+            image_orig=image,
+            text_container=text_container,
+            floating_text_block_categories=floating_text_block_categories,
+            residual_text_block_categories=residual_text_block_categories,
+            include_residual_text_container=include_residual_text_container,
+        )
 
     def get_token(self) -> list[Mapping[str, str]]:
         """Return a list of tuples with word and non default token tags"""
@@ -1263,5 +1296,6 @@ class Page(Image):
             self.image_orig,
             self.text_container,
             self.floating_text_block_categories,
+            self.residual_text_block_categories,
             self.include_residual_text_container,
         )

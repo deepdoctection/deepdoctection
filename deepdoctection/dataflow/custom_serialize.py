@@ -77,8 +77,8 @@ class FileClosingIterator:
         """
         Initializes the FileClosingIterator with a file object and its iterator.
 
-        :param file_obj (TextIO): The file object to read data from.
-        :param     iterator (Iterator): The actual iterator of the file object.
+        :param file_obj: The file object to read data from.
+        :param iterator: The actual iterator of the file object.
         """
         self.file_obj = file_obj
         self.iterator = iterator

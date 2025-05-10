@@ -68,7 +68,7 @@ class ServiceFactory:
     """
     Factory class for building various components of the deepdoctection analyzer pipeline.
 
-    This class uses the `cfg` configuration object from `_config.py`, which is an instance of the `AttrDict` class.
+    This class uses the `cfg` configuration object from `config.py`, which is an instance of the `AttrDict` class.
     The configuration is not passed explicitly in an `__init__` method but is accessed directly within the methods.
 
     The class provides static methods to build different services and detectors required for the pipeline, such as
@@ -78,7 +78,7 @@ class ServiceFactory:
 
     Extending the Class:
         This class can be extended by using inheritance and adding new methods or overriding existing ones.
-        To extend the configuration attributes, you can modify the `cfg` object in `_config.py` to include new
+        To extend the configuration attributes, you can modify the `cfg` object in `config.py` to include new
         settings or parameters required for the new methods.
     """
 
@@ -101,7 +101,7 @@ class ServiceFactory:
             if config.LIB == "TF"
             else (
                 getattr(config.PT, mode).WEIGHTS
-                if getattr(config.PT.ENFORCE_WEIGHTS,mode)
+                if getattr(config.PT.ENFORCE_WEIGHTS, mode)
                 else getattr(config.PT, mode).WEIGHTS_TS
             )
         )
@@ -113,6 +113,8 @@ class ServiceFactory:
         config_path = ModelCatalog.get_full_path_configs(weights)
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
+        if config.LIB == "PT" and profile.padding is not None:
+            getattr(config.PT, mode).PADDING = profile.padding
         categories = profile.categories if profile.categories is not None else {}
 
         if profile.model_wrapper in ("TPFrcnnDetector",):
@@ -219,7 +221,7 @@ class ServiceFactory:
         :return `ImageLayoutService` instance
         """
         padder = None
-        if detector.__class__.__name__ in ("HFDetrDerivedDetector",):
+        if getattr(config.PT, mode).PADDING:
             padder = ServiceFactory.build_padder(config, mode=mode)
         return ImageLayoutService(layout_detector=detector, to_image=True, crop_image=True, padder=padder)
 

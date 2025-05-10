@@ -122,8 +122,9 @@ def tf_nms_image_annotations(
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
 
     # Get boxes for non-priority annotations
-    boxes = convert_to_tensor([ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box
-                               is not None])
+    boxes = convert_to_tensor(
+        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+    )
 
     scores = convert_to_tensor([priority_to_confidence(ann, prio) for ann in anns])
     class_mask = convert_to_tensor(len(boxes), dtype=uint8)

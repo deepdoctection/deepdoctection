@@ -485,13 +485,18 @@ class BoundingBox:
         return self
 
     def __str__(self) -> str:
-        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+        return (f"Bounding Box(absolute_coords: {self.absolute_coords},"
+                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry})")
 
     def __repr__(self) -> str:
         return (
             f"BoundingBox(absolute_coords={self.absolute_coords}, ulx={self.ulx}, uly={self.uly}, lrx={self.lrx},"
             f" lry={self.lry}, width={self.width}, height={self.height})"
         )
+
+    def get_legacy_string(self) -> str:
+        """Legacy string representation of the bounding box. Do not use"""
+        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod
     def remove_keys() -> list[str]:

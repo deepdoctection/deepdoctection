@@ -440,7 +440,8 @@ class Image:
         """
 
         attributes = annotation.get_defining_attributes()
-        attributes_values = [str(getattr(annotation, attribute)) for attribute in attributes]
+        attributes_values = [str(getattr(annotation, attribute)) if attribute!="bounding_box"
+                             else getattr(annotation,"bounding_box").get_legacy_string() for attribute in attributes]
         return get_uuid(*attributes_values, str(self.image_id))
 
     def remove(
@@ -743,6 +744,8 @@ class Image:
             path_json = fspath(path) + ".json"
         if highest_hierarchy_only:
             self.remove_image_from_lower_hierarchy()
+        else:
+            self.remove_image_from_lower_hierarchy(pixel_values_only=True)
         export_dict = self.as_dict()
         export_dict["location"] = fspath(export_dict["location"])
         if not image_to_json:

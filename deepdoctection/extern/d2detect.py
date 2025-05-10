@@ -441,7 +441,9 @@ class D2FrcnnTracingDetector(D2FrcnnDetectorMixin):
         cfg = set_config_by_yaml(path_yaml)
         config_overwrite = config_overwrite if config_overwrite else []
         config_overwrite.extend([f"MODEL.WEIGHTS={os.fspath(path_weights)}"])
+        cfg.freeze(False)
         cfg.update_args(config_overwrite)
+        cfg.freeze()
         return cfg
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:

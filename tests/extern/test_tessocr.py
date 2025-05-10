@@ -74,7 +74,7 @@ class TestTesseractOcrDetector:
             TesseractOcrDetector(path_yaml=path_to_tesseract_yaml)
 
     @staticmethod
-    @pytest.mark.basic
+    @pytest.mark.additional
     @patch("deepdoctection.utils.file_utils.get_tesseract_version", MagicMock(return_value=3.15))
     @patch("deepdoctection.extern.tessocr.predict_text", MagicMock(side_effect=get_mock_word_results))
     def test_tesseract_ocr_predicts_image(path_to_tesseract_yaml: str, np_image: PixelValues) -> None:
@@ -115,7 +115,7 @@ class TestTesseractRotationTransformer:
     """
 
     @staticmethod
-    @pytest.mark.basic
+    @pytest.mark.additional
     @patch(
         "deepdoctection.extern.tessocr.predict_rotation",
         MagicMock(
@@ -145,7 +145,7 @@ class TestTesseractRotationTransformer:
         assert result.score == 8.70
 
     @staticmethod
-    @pytest.mark.basic
+    @pytest.mark.additional
     def test_tesseract_rotation_transformer_rotates_image(
         np_image: PixelValues, angle_detection_result: DetectionResult
     ) -> None:

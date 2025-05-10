@@ -52,9 +52,9 @@ class ImageCroppingService(PipelineComponent):
     """
 
     def __init__(
-            self,
-            category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            service_ids: Optional[Sequence[str]] = None,
+        self,
+        category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        service_ids: Optional[Sequence[str]] = None,
     ) -> None:
         """
         :param category_names: A single name or a list of category names to crop
@@ -107,11 +107,11 @@ class IntersectionMatcher:
     """
 
     def __init__(
-            self,
-            matching_rule: Literal["iou", "ioa"],
-            threshold: float,
-            use_weighted_intersections: bool = False,
-            max_parent_only: bool = False,
+        self,
+        matching_rule: Literal["iou", "ioa"],
+        threshold: float,
+        use_weighted_intersections: bool = False,
+        max_parent_only: bool = False,
     ) -> None:
         """
         :param matching_rule: "iou" or "ioa"
@@ -131,12 +131,12 @@ class IntersectionMatcher:
         self.max_parent_only = max_parent_only
 
     def match(
-            self,
-            dp: Image,
-            parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
-            child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        self,
+        dp: Image,
+        parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
         The matching algorithm
@@ -189,12 +189,12 @@ class NeighbourMatcher:
     """
 
     def match(
-            self,
-            dp: Image,
-            parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
-            child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        self,
+        dp: Image,
+        parent_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        child_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        parent_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
+        child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
         The matching algorithm
@@ -260,9 +260,9 @@ class MatchingService(PipelineComponent):
     """
 
     def __init__(
-            self,
-            family_compounds: Sequence[FamilyCompound],
-            matcher: Union[IntersectionMatcher, NeighbourMatcher],
+        self,
+        family_compounds: Sequence[FamilyCompound],
+        matcher: Union[IntersectionMatcher, NeighbourMatcher],
     ) -> None:
         """
         :param family_compounds: A list of FamilyCompounds
@@ -300,18 +300,22 @@ class MatchingService(PipelineComponent):
                 detect_result_list = []
                 for child_ann in child_anns:
                     if child_ann.annotation_id not in child_ann_ids:
-                        detect_result_list.append(DetectionResult(
-                            class_name=family_compound.synthetic_parent,
-                            box=child_ann.get_bounding_box(dp.image_id).to_list(mode="xyxy"),
-                            absolute_coords=child_ann.get_bounding_box(dp.image_id).absolute_coords,
-                            relationships={family_compound.relationship_key: child_ann.annotation_id}))
+                        detect_result_list.append(
+                            DetectionResult(
+                                class_name=family_compound.synthetic_parent,
+                                box=child_ann.get_bounding_box(dp.image_id).to_list(mode="xyxy"),
+                                absolute_coords=child_ann.get_bounding_box(dp.image_id).absolute_coords,
+                                relationships={family_compound.relationship_key: child_ann.annotation_id},
+                            )
+                        )
                 for detect_result in detect_result_list:
                     annotation_id = self.dp_manager.set_image_annotation(detect_result)
                     if annotation_id is not None and detect_result.relationships is not None:
-                        self.dp_manager.set_relationship_annotation(family_compound.relationship_key,
-                                                                    annotation_id,
-                                                                    detect_result.relationships.get(
-                                                                        family_compound.relationship_key, None))
+                        self.dp_manager.set_relationship_annotation(
+                            family_compound.relationship_key,
+                            annotation_id,
+                            detect_result.relationships.get(family_compound.relationship_key, None),
+                        )
 
     def clone(self) -> PipelineComponent:
         return self.__class__(self.family_compounds, self.matcher)
@@ -341,10 +345,11 @@ class PageParsingService(PipelineComponent):
     """
 
     def __init__(
-            self,
-            text_container: TypeOrStr,
-            floating_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
-            include_residual_text_container: bool = True,
+        self,
+        text_container: TypeOrStr,
+        floating_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        residual_text_block_categories: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
+        include_residual_text_container: bool = True,
     ):
         """
         :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
@@ -355,12 +360,16 @@ class PageParsingService(PipelineComponent):
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
             floating_text_block_categories = (get_type(floating_text_block_categories),)
         if floating_text_block_categories is None:
-            floating_text_block_categories = IMAGE_DEFAULTS["floating_text_block_categories"]
+            floating_text_block_categories = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+        if residual_text_block_categories is None:
+            residual_text_block_categories = IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES
 
         self.text_container = get_type(text_container)
         self.floating_text_block_categories = tuple(
             (get_type(text_block) for text_block in floating_text_block_categories)
         )
+        self.residual_text_block_categories = tuple(get_type(text_block) for text_block in
+                                                    residual_text_block_categories)
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
         super().__init__(self.name)
@@ -378,6 +387,7 @@ class PageParsingService(PipelineComponent):
             dp,
             text_container=self.text_container,
             floating_text_block_categories=self.floating_text_block_categories,
+            residual_text_block_categories=self.residual_text_block_categories,
             include_residual_text_container=self.include_residual_text_container,
         )
 
@@ -398,6 +408,7 @@ class PageParsingService(PipelineComponent):
         return self.__class__(
             deepcopy(self.text_container),
             deepcopy(self.floating_text_block_categories),
+            deepcopy(self.residual_text_block_categories),
             self.include_residual_text_container,
         )
 
@@ -426,10 +437,10 @@ class AnnotationNmsService(PipelineComponent):
     """
 
     def __init__(
-            self,
-            nms_pairs: Sequence[Sequence[TypeOrStr]],
-            thresholds: Union[float, Sequence[float]],
-            priority: Optional[Sequence[Union[Optional[TypeOrStr]]]] = None,
+        self,
+        nms_pairs: Sequence[Sequence[TypeOrStr]],
+        thresholds: Union[float, Sequence[float]],
+        priority: Optional[Sequence[Union[Optional[TypeOrStr]]]] = None,
     ):
         """
         :param nms_pairs: Groups of categories, either as string or by `ObjectType`.

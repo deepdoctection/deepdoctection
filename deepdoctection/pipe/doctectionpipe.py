@@ -132,8 +132,6 @@ class DoctectionPipe(Pipeline):
     Prototype for a document layout pipeline. Contains implementation for loading document types (images in directory,
     single PDF document, dataflow from datasets), conversions in dataflows and building a pipeline.
 
-
-
     See `deepdoctection.analyzer.dd` for a concrete implementation.
 
     See also the explanations in `base.Pipeline`.
@@ -159,7 +157,9 @@ class DoctectionPipe(Pipeline):
         page_parsing_service: Optional[PageParsingService] = None,
     ):
         self.page_parser = (
-            PageParsingService(text_container=IMAGE_DEFAULTS["text_container"])
+            PageParsingService(
+                text_container=IMAGE_DEFAULTS.TEXT_CONTAINER,
+            )
             if page_parsing_service is None
             else page_parsing_service
         )
