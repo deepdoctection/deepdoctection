@@ -23,6 +23,7 @@ from deepdoctection import LayoutType
 from deepdoctection.datapoint.image import Image
 from deepdoctection.mapper.match import match_anns_by_distance
 
+
 @mark.basic
 def test_match_anns_by_intersection(dp_image_with_layout_and_caption_anns: Image) -> None:
     """

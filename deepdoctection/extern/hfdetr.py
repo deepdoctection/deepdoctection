@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Literal, Mapping, Optional, Sequence, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
@@ -39,11 +39,11 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (  # pylint: disable=W0611
-        DetrImageProcessorFast,
+        DeformableDetrForObjectDetection,
         DeformableDetrImageProcessorFast,
+        DetrImageProcessorFast,
         PretrainedConfig,
         TableTransformerForObjectDetection,
-        DeformableDetrForObjectDetection
     )
 
     if TYPE_CHECKING:
@@ -228,14 +228,14 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
             return TableTransformerForObjectDetection.from_pretrained(
                 pretrained_model_name_or_path=os.fspath(path_weights), config=config
             )
-        elif "DeformableDetrForObjectDetection" in config.architectures:
+        if "DeformableDetrForObjectDetection" in config.architectures:
             return DeformableDetrForObjectDetection.from_pretrained(
-                pretrained_model_name_or_path=os.fspath(path_weights), config=config)
-        else:
-            raise ValueError(
-                f"Model architecture {config.architectures} not eligible. Please use either "
-                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
             )
+        raise ValueError(
+            f"Model architecture {config.architectures} not eligible. Please use either "
+            "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+        )
 
     @staticmethod
     def get_pre_processor(path_feature_extractor_config: PathLikeOrStr, config: PretrainedConfig) -> DetrImageProcessor:
@@ -246,17 +246,16 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         """
         if "TableTransformerForObjectDetection" in config.architectures:
             return DetrImageProcessorFast.from_pretrained(
-            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
+                pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
             )
-        elif "DeformableDetrForObjectDetection" in config.architectures:
+        if "DeformableDetrForObjectDetection" in config.architectures:
             return DeformableDetrImageProcessorFast.from_pretrained(
                 pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
             )
-        else:
-            raise ValueError(
-                f"Model architecture {config.architectures} not eligible. Please use either "
-                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
-            )
+        raise ValueError(
+            f"Model architecture {config.architectures} not eligible. Please use either "
+            "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+        )
 
     @staticmethod
     def get_config(path_config: PathLikeOrStr) -> PretrainedConfig:

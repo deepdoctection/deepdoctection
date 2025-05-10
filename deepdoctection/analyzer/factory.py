@@ -101,7 +101,7 @@ class ServiceFactory:
             if config.LIB == "TF"
             else (
                 getattr(config.PT, mode).WEIGHTS
-                if getattr(config.PT.ENFORCE_WEIGHTS,mode)
+                if getattr(config.PT.ENFORCE_WEIGHTS, mode)
                 else getattr(config.PT, mode).WEIGHTS_TS
             )
         )
@@ -114,7 +114,7 @@ class ServiceFactory:
         weights_path = ModelDownloadManager.maybe_download_weights_and_configs(weights)
         profile = ModelCatalog.get_profile(weights)
         if config.LIB == "PT" and profile.padding is not None:
-            getattr(config.PT, mode).PADDING =  profile.padding
+            getattr(config.PT, mode).PADDING = profile.padding
         categories = profile.categories if profile.categories is not None else {}
 
         if profile.model_wrapper in ("TPFrcnnDetector",):

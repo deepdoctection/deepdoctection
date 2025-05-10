@@ -768,10 +768,12 @@ def image_to_raw_lm_features(
 
     # We do not need to configure residual_text_block_categories here, because text_ does ignore these layout sections
     # anyway
-    page = Page.from_image(image_orig=dp,
-                           text_container=text_container,
-                           floating_text_block_categories=floating_text_block_categories,
-                           include_residual_text_container=include_residual_text_container)
+    page = Page.from_image(
+        image_orig=dp,
+        text_container=text_container,
+        floating_text_block_categories=floating_text_block_categories,
+        include_residual_text_container=include_residual_text_container,
+    )
 
     text_ = page.text_
 

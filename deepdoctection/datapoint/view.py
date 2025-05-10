@@ -22,8 +22,8 @@ simplify consumption
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, Mapping, Optional, Sequence, Type, TypedDict, Union, no_type_check, Tuple
 from dataclasses import dataclass, field
+from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
 
 import numpy as np
 
@@ -309,7 +309,7 @@ class List(Layout):
             all_words = []
             list_items.sort(key=lambda x: x.bbox[1])
             for list_item in list_items:
-                all_words.extend(list_item.get_ordered_words()) # type: ignore
+                all_words.extend(list_item.get_ordered_words())  # type: ignore
             return all_words
         except (TypeError, AnnotationError):
             return super().get_ordered_words()
@@ -614,7 +614,6 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
 }
 
 
-
 @dataclass
 class ImageDefaults:
     """ImageDefaults"""
@@ -638,12 +637,11 @@ class ImageDefaults:
             CellType.SPANNING,
         )
     )
-    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(
-        default_factory=lambda: (LayoutType.LINE,)
-    )
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(default_factory=lambda: (LayoutType.LINE,))
 
 
 IMAGE_DEFAULTS = ImageDefaults()
+
 
 @no_type_check
 def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectTypes) -> ImageAnnotationBaseView:
@@ -703,7 +701,7 @@ class Page(Image):
         "angle",
         "figures",
         "residual_layouts",
-        "document_summary"
+        "document_summary",
     }
     include_residual_text_container: bool = True
 
@@ -823,7 +821,6 @@ class Page(Image):
         """
         return self.get_annotation(category_names=self.residual_text_block_categories)
 
-
     @classmethod
     def from_image(
         cls,
@@ -840,7 +837,8 @@ class Page(Image):
         :param image_orig: `Image` instance to convert
         :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
         :param floating_text_block_categories: A list of top level layout objects
-        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor tables but should
+        :param residual_text_block_categories: A list of layout objects that are neither floating text blocks nor
+        tables but should
                                  be accessible via `Page.residual_layouts`.
         :param include_residual_text_container: This will regard synthetic text line annotations as floating text
                                                 blocks and therefore incorporate all image annotations of category
@@ -1258,11 +1256,13 @@ class Page(Image):
                                                 `word` when building text strings.
         """
         image = Image.from_file(file_path)
-        return cls.from_image(image_orig=image,
-                              text_container=text_container,
-                              floating_text_block_categories=floating_text_block_categories,
-                              residual_text_block_categories=residual_text_block_categories,
-                              include_residual_text_container=include_residual_text_container)
+        return cls.from_image(
+            image_orig=image,
+            text_container=text_container,
+            floating_text_block_categories=floating_text_block_categories,
+            residual_text_block_categories=residual_text_block_categories,
+            include_residual_text_container=include_residual_text_container,
+        )
 
     def get_token(self) -> list[Mapping[str, str]]:
         """Return a list of tuples with word and non default token tags"""

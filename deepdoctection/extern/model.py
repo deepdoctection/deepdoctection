@@ -28,10 +28,16 @@ from huggingface_hub import hf_hub_download
 from tabulate import tabulate
 from termcolor import colored
 
-from ..utils.fs import (download, get_configs_dir_path, get_weights_dir_path, maybe_copy_config_to_cache,
-                        get_cache_dir_path, get_package_path)
+from ..utils.fs import (
+    download,
+    get_cache_dir_path,
+    get_configs_dir_path,
+    get_package_path,
+    get_weights_dir_path,
+    maybe_copy_config_to_cache,
+)
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import CellType, Languages, LayoutType, ObjectTypes, get_type
+from ..utils.settings import  ObjectTypes, get_type
 from ..utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]
@@ -258,10 +264,11 @@ class ModelCatalog:
                 writer.write(profile.as_dict())
         writer.close()
 
+
 # Loading default profiles
 dd_profile_path = maybe_copy_config_to_cache(
-        get_package_path(), get_cache_dir_path(), "deepdoctection/configs/profiles.jsonl", False
-    )
+    get_package_path(), get_cache_dir_path(), "deepdoctection/configs/profiles.jsonl", False
+)
 ModelCatalog.load_profiles_from_file(dd_profile_path)
 # Additional profiles can be added
 ModelCatalog.load_profiles_from_file(os.environ.get("MODEL_CATALOG", None))

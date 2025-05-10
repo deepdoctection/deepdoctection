@@ -21,7 +21,6 @@ from ..datapoint.view import IMAGE_DEFAULTS
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType
 
-
 cfg = AttrDict()
 
 # General note: All models used in *.WEIGHTS must be registered in the ModelCatalog.
@@ -258,8 +257,8 @@ cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS = 0.001
 
 # Ensures that predicted rows and columns fully cover the table region.
 # When enabled, rows will be stretched horizontally and vertically to fit the full region.
-# For rows, the first row will be stretched to the top, and the space to the second row is used to estimate the bottom edge.
-# This rule applies similarly to columns.
+# For rows, the first row will be stretched to the top, and the space to the second row is used to estimate the
+# bottom edge. This rule applies similarly to columns.
 cfg.SEGMENTATION.FULL_TABLE_TILING = True
 
 # Defines how row and column boundaries are stretched when tiling is enabled.

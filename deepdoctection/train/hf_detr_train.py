@@ -50,11 +50,11 @@ with try_import() as pt_import_guard:
 with try_import() as hf_import_guard:
     from transformers import (
         AutoFeatureExtractor,
+        DeformableDetrForObjectDetection,
         IntervalStrategy,
         PretrainedConfig,
         PreTrainedModel,
         TableTransformerForObjectDetection,
-        DeformableDetrForObjectDetection,
         Trainer,
         TrainingArguments,
     )
@@ -278,13 +278,12 @@ def train_hf_detr(
     if path_weights != "":
         if "TableTransformerForObjectDetection" in config.architectures:
             model = TableTransformerForObjectDetection.from_pretrained(
-                pretrained_model_name_or_path=path_weights,
-                config=config,
-                ignore_mismatched_sizes=True
+                pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
             )
         elif "DeformableDetrForObjectDetection" in config.architectures:
             return DeformableDetrForObjectDetection.from_pretrained(
-                pretrained_model_name_or_path=os.fspath(path_weights), config=config)
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
         else:
             raise ValueError(
                 f"Model architecture {config.architectures} not eligible. Please use either "

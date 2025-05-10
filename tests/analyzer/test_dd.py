@@ -33,36 +33,38 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=["USE_TABLE_SEGMENTATION=False",
-                                                 "USE_OCR=False",
-                                                 "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-                                                 "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-                                                 "PT.ITEM.FILTER=None",
-                                                 "PT.LAYOUT.PAD.TOP=60",
-                                                 "PT.LAYOUT.PAD.RIGHT=60",
-                                                 "PT.LAYOUT.PAD.BOTTOM=60",
-                                                 "PT.LAYOUT.PAD.LEFT=60",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-                                                 "WORD_MATCHING.THRESHOLD=0.6",
-                                                 "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-                                                 "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
-                                                 "USE_LAYOUT_LINK=False",
-                                                 "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-                                                 "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-                                                 "OCR.USE_DOCTR=False",
-                                                 "OCR.USE_TESSERACT=True",
-                                                 "USE_LAYOUT_NMS=False",
-                                                 "USE_TABLE_REFINEMENT=True",
-                                                 "USE_LINE_MATCHER=False",
-                                                 "PT.ENFORCE_WEIGHTS.LAYOUT=True",
-                                                 "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-                                                 "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-                                                 "LAYOUT_NMS_PAIRS.PRIORITY=None",
-                                                 "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
-                                                 ])
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
+            "USE_TABLE_SEGMENTATION=False",
+            "USE_OCR=False",
+            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
+            "PT.ITEM.FILTER=None",
+            "PT.LAYOUT.PAD.TOP=60",
+            "PT.LAYOUT.PAD.RIGHT=60",
+            "PT.LAYOUT.PAD.BOTTOM=60",
+            "PT.LAYOUT.PAD.LEFT=60",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
+            "WORD_MATCHING.THRESHOLD=0.6",
+            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
+            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
+            "USE_LAYOUT_LINK=False",
+            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
+            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
+            "OCR.USE_DOCTR=False",
+            "OCR.USE_TESSERACT=True",
+            "USE_LAYOUT_NMS=False",
+            "USE_TABLE_REFINEMENT=True",
+            "USE_LINE_MATCHER=False",
+            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
+            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
+            "LAYOUT_NMS_PAIRS.PRIORITY=None",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -86,36 +88,38 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=["USE_TABLE_SEGMENTATION=False",
-                                                 "USE_OCR=False",
-                                                 "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-                                                 "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-                                                 "PT.ITEM.FILTER=None",
-                                                 "PT.LAYOUT.PAD.TOP=60",
-                                                 "PT.LAYOUT.PAD.RIGHT=60",
-                                                 "PT.LAYOUT.PAD.BOTTOM=60",
-                                                 "PT.LAYOUT.PAD.LEFT=60",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-                                                 "WORD_MATCHING.THRESHOLD=0.6",
-                                                 "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-                                                 "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
-                                                 "USE_LAYOUT_LINK=False",
-                                                 "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-                                                 "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-                                                 "OCR.USE_DOCTR=False",
-                                                 "OCR.USE_TESSERACT=True",
-                                                 "USE_LAYOUT_NMS=False",
-                                                 "USE_TABLE_REFINEMENT=True",
-                                                 "USE_LINE_MATCHER=False",
-                                                 "PT.ENFORCE_WEIGHTS.LAYOUT=True",
-                                                 "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-                                                 "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-                                                 "LAYOUT_NMS_PAIRS.PRIORITY=None",
-                                                 "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
-    ])
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
+            "USE_TABLE_SEGMENTATION=False",
+            "USE_OCR=False",
+            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
+            "PT.ITEM.FILTER=None",
+            "PT.LAYOUT.PAD.TOP=60",
+            "PT.LAYOUT.PAD.RIGHT=60",
+            "PT.LAYOUT.PAD.BOTTOM=60",
+            "PT.LAYOUT.PAD.LEFT=60",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
+            "WORD_MATCHING.THRESHOLD=0.6",
+            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
+            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
+            "USE_LAYOUT_LINK=False",
+            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
+            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
+            "OCR.USE_DOCTR=False",
+            "OCR.USE_TESSERACT=True",
+            "USE_LAYOUT_NMS=False",
+            "USE_TABLE_REFINEMENT=True",
+            "USE_LINE_MATCHER=False",
+            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
+            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
+            "LAYOUT_NMS_PAIRS.PRIORITY=None",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -139,35 +143,37 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=["USE_OCR=False",
-                                                 "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-                                                 "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-                                                 "PT.ITEM.FILTER=None",
-                                                 "PT.LAYOUT.PAD.TOP=60",
-                                                 "PT.LAYOUT.PAD.RIGHT=60",
-                                                 "PT.LAYOUT.PAD.BOTTOM=60",
-                                                 "PT.LAYOUT.PAD.LEFT=60",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-                                                 "WORD_MATCHING.THRESHOLD=0.6",
-                                                 "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-                                                 "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
-                                                 "USE_LAYOUT_LINK=False",
-                                                 "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-                                                 "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-                                                 "OCR.USE_DOCTR=False",
-                                                 "OCR.USE_TESSERACT=True",
-                                                 "USE_LAYOUT_NMS=False",
-                                                 "USE_TABLE_REFINEMENT=True",
-                                                 "USE_LINE_MATCHER=False",
-                                                 "PT.ENFORCE_WEIGHTS.LAYOUT=True",
-                                                 "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-                                                 "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-                                                 "LAYOUT_NMS_PAIRS.PRIORITY=None",
-                                                 "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
-    ])
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
+            "USE_OCR=False",
+            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
+            "PT.ITEM.FILTER=None",
+            "PT.LAYOUT.PAD.TOP=60",
+            "PT.LAYOUT.PAD.RIGHT=60",
+            "PT.LAYOUT.PAD.BOTTOM=60",
+            "PT.LAYOUT.PAD.LEFT=60",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
+            "WORD_MATCHING.THRESHOLD=0.6",
+            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
+            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
+            "USE_LAYOUT_LINK=False",
+            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
+            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
+            "OCR.USE_DOCTR=False",
+            "OCR.USE_TESSERACT=True",
+            "USE_LAYOUT_NMS=False",
+            "USE_TABLE_REFINEMENT=True",
+            "USE_LINE_MATCHER=False",
+            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
+            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
+            "LAYOUT_NMS_PAIRS.PRIORITY=None",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -205,35 +211,37 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=["USE_OCR=False",
-                                                 "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
-                                                 "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
-                                                 "PT.ITEM.FILTER=None",
-                                                 "PT.LAYOUT.PAD.TOP=60",
-                                                 "PT.LAYOUT.PAD.RIGHT=60",
-                                                 "PT.LAYOUT.PAD.BOTTOM=60",
-                                                 "PT.LAYOUT.PAD.LEFT=60",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
-                                                 "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
-                                                 "WORD_MATCHING.THRESHOLD=0.6",
-                                                 "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
-                                                 "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
-                                                 "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
-                                                 "USE_LAYOUT_LINK=False",
-                                                 "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
-                                                 "LAYOUT_LINK.CHILD_CATEGORIES=[]",
-                                                 "OCR.USE_DOCTR=False",
-                                                 "OCR.USE_TESSERACT=True",
-                                                 "USE_LAYOUT_NMS=False",
-                                                 "USE_TABLE_REFINEMENT=True",
-                                                 "USE_LINE_MATCHER=False",
-                                                 "PT.ENFORCE_WEIGHTS.LAYOUT=True",
-                                                 "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
-                                                 "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
-                                                 "LAYOUT_NMS_PAIRS.PRIORITY=None",
-                                                 "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
-                                                 ])
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
+            "USE_OCR=False",
+            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
+            "PT.ITEM.FILTER=None",
+            "PT.LAYOUT.PAD.TOP=60",
+            "PT.LAYOUT.PAD.RIGHT=60",
+            "PT.LAYOUT.PAD.BOTTOM=60",
+            "PT.LAYOUT.PAD.LEFT=60",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS=0.001",
+            "SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS=0.001",
+            "WORD_MATCHING.THRESHOLD=0.6",
+            "WORD_MATCHING.PARENTAL_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.TEXT_BLOCK_CATEGORIES=['text','title','list','figure','cell','spanning']",
+            "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['text','title','list','figure']",
+            "TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER=False",
+            "USE_LAYOUT_LINK=False",
+            "LAYOUT_LINK.PARENTAL_CATEGORIES=[]",
+            "LAYOUT_LINK.CHILD_CATEGORIES=[]",
+            "OCR.USE_DOCTR=False",
+            "OCR.USE_TESSERACT=True",
+            "USE_LAYOUT_NMS=False",
+            "USE_TABLE_REFINEMENT=True",
+            "USE_LINE_MATCHER=False",
+            "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
+            "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
+            "LAYOUT_NMS_PAIRS.PRIORITY=None",
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -288,11 +296,11 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert page.width == 1654
     # first number for tp model, second for pt model
     print(page.text)
-    assert len(page.text) in {4343,4345,4346,5042}
+    assert len(page.text) in {4343, 4345, 4346, 5042}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {555,631}
-    assert len(text_["ann_ids"]) in {555,631}
+    assert len(text_["words"]) in {555, 631}
+    assert len(text_["ann_ids"]) in {555, 631}
 
 
 @mark.tf_integration
@@ -379,11 +387,10 @@ def test_dd_analyzer_with_tatr() -> None:
             "USE_LAYOUT_NMS=False",
             "USE_TABLE_REFINEMENT=True",
             "USE_LINE_MATCHER=False",
-            "PT.ENFORCE_WEIGHTS.LAYOUT=True",
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
         ]
     )
 
@@ -398,7 +405,7 @@ def test_dd_analyzer_with_tatr() -> None:
     # 9 for d2 and 10 for tp model
     assert not page.layouts
     assert len(page.tables) == 1
-    assert len(page.tables[0].cells) in {12,14}  # type: ignore
+    assert len(page.tables[0].cells) in {12, 14}  # type: ignore
 
 
 @mark.integration_additional
@@ -434,7 +441,6 @@ def test_dd_analyzer_with_doctr() -> None:
             "USE_LAYOUT_NMS=False",
             "USE_TABLE_REFINEMENT=True",
             "USE_LINE_MATCHER=False",
-            "PT.ENFORCE_WEIGHTS.LAYOUT=True",
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
@@ -490,11 +496,10 @@ def test_dd_tf_analyzer_with_doctr() -> None:
             "USE_LAYOUT_NMS=False",
             "USE_TABLE_REFINEMENT=True",
             "USE_LINE_MATCHER=False",
-            "PT.ENFORCE_WEIGHTS.LAYOUT=True",
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
         ]
     )
 
