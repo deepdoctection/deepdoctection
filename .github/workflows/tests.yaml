@@ -53,7 +53,7 @@ jobs:
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
-              tesseract: false,
+              tesseract: true,
               detectron2: false,
               extras: pt,
               test_cases: test-pt }
