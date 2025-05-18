@@ -62,7 +62,7 @@ jobs:
               pip: '24.0',
               os: ubuntu-22.04,
               dll: tensorflow-cpu==2.11,
-              tesseract: false,
+              tesseract: true,
               detectron2: false,
               extras: tf,
               test_cases: test-tf }
@@ -71,7 +71,7 @@ jobs:
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-              tesseract: false,
+              tesseract: true,
               detectron2: true,
               extras: pt,
               test_cases: test-pt }
@@ -80,7 +80,7 @@ jobs:
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-              tesseract: false,
+              tesseract: true,
               detectron2: false,
               extras: pt,
               test_cases: test-pt }
@@ -89,7 +89,7 @@ jobs:
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-              tesseract: false,
+              tesseract: true,
               detectron2: false,
               extras: pt,
               test_cases: test-pt }
