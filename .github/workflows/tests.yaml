@@ -39,15 +39,6 @@ jobs:
               detectron2: false,
               extras: ,
               test_cases: test-pt-legacy}
-          - { name: '3.9-tf-legacy',
-              python: '3.9',
-              pip: '24.0',
-              os: ubuntu-22.04,
-              dll: tensorflow-cpu==2.11,
-              tesseract: true,
-              detectron2: false,
-              extras: ,
-              test_cases: test-tf-legacy }
           - { name: '3.9-pt',
               python: '3.9',
               pip: '24.0',

@@ -98,9 +98,6 @@ test-additional: test-basic
 test-pt-legacy:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_legacy" tests
 
-test-tf-legacy:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_legacy" tests
-
 test-tf: test-additional
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_deps" tests
 

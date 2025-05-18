@@ -81,7 +81,7 @@ def test_legacy_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert page.width == 1654
 
 
-@mark.tf_legacy
+@mark.tf_deps
 def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
@@ -204,7 +204,7 @@ def test_legacy_dd_analyzer_builds_and_process_image_layout_and_tables_correctly
     assert page.width == 1654
 
 
-@mark.tf_legacy
+@mark.tf_deps
 def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting USE_OCR = False
@@ -303,7 +303,7 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(text_["ann_ids"]) in {555, 631}
 
 
-@mark.tf_legacy
+@mark.tf_deps
 def test_dd_tf_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = True and USE_OCR = True
@@ -463,7 +463,7 @@ def test_dd_analyzer_with_doctr() -> None:
     )
 
 
-@mark.tf_legacy
+@mark.tf_deps
 def test_dd_tf_analyzer_with_doctr() -> None:
     """
     Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True
