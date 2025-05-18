@@ -154,11 +154,10 @@ additional_deps = deps_list(
     "lxml",
 )
 
-# Tensorflow dependencies. We also add pycocotools as they wouldn't have been added otherwise
 tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "python-doctr", "pycocotools")
 
 # PyTorch dependencies
-pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr")
+pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr", "pycocotools")
 
 #source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
 
