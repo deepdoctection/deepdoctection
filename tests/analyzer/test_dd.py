@@ -403,7 +403,7 @@ def test_dd_analyzer_with_tatr() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert not page.layouts
+    assert page.layouts
     assert len(page.tables) == 1
     assert len(page.tables[0].cells) in {12, 14}  # type: ignore
 

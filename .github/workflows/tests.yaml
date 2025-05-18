@@ -45,7 +45,7 @@ jobs:
               os: ubuntu-22.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
               tesseract: true,
-              detectron2: false,
+              detectron2: true,
               extras: pt,
               test_cases: test-pt }
           - { name: '3.9-tf',
@@ -81,7 +81,7 @@ jobs:
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
               tesseract: true,
-              detectron2: false,
+              detectron2: true,
               extras: pt,
               test_cases: test-pt }
           - { name: '3.12-pt',
@@ -90,7 +90,7 @@ jobs:
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
               tesseract: true,
-              detectron2: false,
+              detectron2: true,
               extras: pt,
               test_cases: test-pt }
 
