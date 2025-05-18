@@ -623,21 +623,36 @@ class ImageDefaults:
         default_factory=lambda: (
             LayoutType.TEXT,
             LayoutType.TITLE,
-            LayoutType.FIGURE,
+            LayoutType.LIST_ITEM,
             LayoutType.LIST,
+            LayoutType.KEY_VALUE_AREA,
+
         )
     )
     TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
         default_factory=lambda: (
             LayoutType.TEXT,
             LayoutType.TITLE,
+            LayoutType.LIST_ITEM,
             LayoutType.LIST,
-            LayoutType.CELL,
+            LayoutType.CAPTION,
+            LayoutType.PAGE_HEADER,
+            LayoutType.PAGE_FOOTER,
+            LayoutType.PAGE_NUMBER,
+            LayoutType.MARK,
+            LayoutType.KEY_VALUE_AREA,
             LayoutType.FIGURE,
+            CellType.COLUMN_HEADER,
+            CellType.PROJECTED_ROW_HEADER,
             CellType.SPANNING,
+            CellType.ROW_HEADER,
+            LayoutType.CELL,
         )
     )
-    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(default_factory=lambda: (LayoutType.LINE,))
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(default_factory=lambda: (LayoutType.PAGE_HEADER,
+                                                                                            LayoutType.PAGE_FOOTER,
+                                                                                            LayoutType.MARK,
+                                                                                            LayoutType.PAGE_NUMBER,))
 
 
 IMAGE_DEFAULTS = ImageDefaults()

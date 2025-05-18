@@ -66,30 +66,6 @@ install-dd-test: check-venv
 	@echo "--> Done installing test dependencies"
 	@echo ""
 
-install-jupyterlab-setup: check-venv
-	@echo "--> Installing Jupyter Lab"
-	pip install jupyterlab>=3.0.0
-	@echo "--> Done installing Jupyter Lab"
-
-install-kernel-dd: check-venv
-	@echo "--> Installing IPkernel setup and setup kernel deepdoctection"
-	pip install --user ipykernel
-	$(PYTHON) -m ipykernel install --user --name=deep-doc
-	@echo "--> Done installing kernel deep-doc"
-
-install-kernel-dd-mac: check-venv
-	@echo "--> Installing IPkernel setup and setup kernel deepdoctection"
-	pip install ipykernel
-	$(PYTHON) -m ipykernel install --name=deep-doc
-	@echo "--> Done installing kernel deep-doc"
-
-install-prodigy-setup: check-venv install-jupyterlab-setup
-	@echo "--> Installing Jupyter Lab Prodigy plugin"
-	pip install jupyterlab-prodigy
-	jupyter labextension list
-	@echo "--> Done installing Jupyter Lab Prodigy plugin"
-	@echo ""
-
 isort:
 	isort  deepdoctection tests setup.py
 
@@ -113,31 +89,24 @@ test:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
 
-test-build:
-	pip install --upgrade build
-	$(PYTHON) -m build
-	pip install --upgrade twine
-	$(PYTHON) -m twine upload --repository testpypi dist/*
-
 test-basic:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
 
-test-basic-pt: test-integration
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m basic tests
+test-additional: test-basic
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m additional tests
 
-test-tf:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or tf_deps" tests
+test-pt-legacy:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_legacy" tests
 
-test-pt: test-integration-additional
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "basic or additional or pt_deps" tests
+test-tf-legacy:
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_legacy" tests
+
+test-tf: test-additional
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "tf_deps" tests
+
+test-pt: test-additional
+	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "pt_deps" tests
 	pytest --cov=deepdoctection --cov-branch --cov-report=html tests_d2
-
-test-integration:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
-
-test-integration-additional:
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration" tests
-	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "integration_additional" tests
 
 test-gpu:
 	pytest --cov=deepdoctection --cov-branch --cov-report=html -m "requires_gpu" tests

@@ -53,7 +53,7 @@ cfg.USE_LAYOUT = True
 
 # Enables optional fine-grained Non-Maximum Suppression (NMS) after layout detection.
 # Configure via LAYOUT_NMS_PAIRS.* settings.
-cfg.USE_LAYOUT_NMS = False
+cfg.USE_LAYOUT_NMS = True
 
 # Enables table segmentation (third and later pipeline components).
 # Applies row/column detection, optional cell detection, and segmentation services.
@@ -62,7 +62,7 @@ cfg.USE_TABLE_SEGMENTATION = True
 
 # Enables optional refinement of table structure to ensure valid HTML generation.
 # Should be set to False when using the Table Transformer approach.
-cfg.USE_TABLE_REFINEMENT = True
+cfg.USE_TABLE_REFINEMENT = False
 
 # Enables text extraction using PDFPlumber. Only works on PDFs with embedded text layers.
 # Configure additional behavior using PDF_MINER.*
@@ -83,7 +83,7 @@ cfg.USE_LINE_MATCHER = False
 # Relevant when LIB = TF. Specifies the layout detection model.
 # This model should detect multiple or single objects across an entire page.
 # Currently, only one default model is supported.
-cfg.TF.LAYOUT.WEIGHTS = "layout/model-800000_inf_only.data-00000-of-00001"
+cfg.TF.LAYOUT.WEIGHTS = "Aryn/deformable-detr-DocLayNet/model.safetensors"
 
 # Filters out unnecessary categories from the layout detection model output.
 # Accepts either a list of strings (e.g., ['list', 'figure']) or a list of ObjectTypes
@@ -123,16 +123,16 @@ cfg.PT.LAYOUT.FILTER = None
 cfg.PT.LAYOUT.PADDING = False
 
 # Padding value for the top edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.TOP = 60
+cfg.PT.LAYOUT.PAD.TOP = 0
 
 # Padding value for the right edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.RIGHT = 60
+cfg.PT.LAYOUT.PAD.RIGHT = 0
 
 # Padding value for the bottom edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.BOTTOM = 60
+cfg.PT.LAYOUT.PAD.BOTTOM = 0
 
 # Padding value for the left edge of the image. Required by some layout detection models.
-cfg.PT.LAYOUT.PAD.LEFT = 60
+cfg.PT.LAYOUT.PAD.LEFT = 0
 
 # Non-Maximum Suppression (NMS) configuration for overlapping layout elements.
 # For each element pair, define:
@@ -144,9 +144,25 @@ cfg.PT.LAYOUT.PAD.LEFT = 60
 # LAYOUT_NMS_PAIRS.COMBINATIONS = [['table', 'title'], ['table', 'text']]
 # LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001, 0.01]
 # LAYOUT_NMS_PAIRS.PRIORITY = ['table', None]
-cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = None
-cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = None
-cfg.LAYOUT_NMS_PAIRS.PRIORITY = None
+cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [[LayoutType.TABLE,LayoutType.TITLE],
+                                     [LayoutType.TABLE,LayoutType.TEXT],
+                                     [LayoutType.TABLE,LayoutType.KEY_VALUE_AREA],
+                                     [LayoutType.TABLE,LayoutType.LIST_ITEM],
+                                     [LayoutType.TABLE,LayoutType.LIST],
+                                     [LayoutType.TITLE,LayoutType.TEXT],
+                                     [LayoutType.TEXT,LayoutType.KEY_VALUE_AREA],
+                                     [LayoutType.TEXT,LayoutType.LIST_ITEM],
+                                     [LayoutType.KEY_VALUE_AREA,LayoutType.LIST_ITEM]]
+cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.05,0.01,0.01,0.01]
+cfg.LAYOUT_NMS_PAIRS.PRIORITY = [LayoutType.TABLE,
+                                 LayoutType.TABLE,
+                                 LayoutType.TABLE,
+                                 LayoutType.TABLE,
+                                 LayoutType.TABLE,
+                                 LayoutType.TEXT,
+                                 LayoutType.TEXT,
+                                 None,
+                                 LayoutType.KEY_VALUE_AREA]
 
 # Relevant when LIB = TF. Specifies the item detection model (for rows and columns).
 # Currently, only the default model is supported.
@@ -163,7 +179,7 @@ cfg.PT.ENFORCE_WEIGHTS.ITEM = True
 
 # Specifies the PyTorch model weights for item detection.
 # Use either .pt or .safetensors files.
-cfg.PT.ITEM.WEIGHTS = "item/d2_model_1639999_item_inf_only.pt"
+cfg.PT.ITEM.WEIGHTS = "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin"
 
 # Specifies the TorchScript model for item detection.
 # Use .ts files for deployment without model implementation dependencies.
@@ -173,7 +189,7 @@ cfg.PT.ITEM.WEIGHTS_TS = "item/d2_model_1639999_item_inf_only.ts"
 # For example, the model microsoft/table-transformer-structure-recognition/pytorch_model.bin
 # predicts not only rows and columns, but also tables. To prevent redundant outputs, use:
 # PT.ITEM.FILTER = ['table']
-cfg.PT.ITEM.FILTER = None
+cfg.PT.ITEM.FILTER = ['table']
 
 # Enables image padding for item detection. Required for models such as
 # microsoft/table-transformer-structure-recognition/pytorch_model.bin to optimize accuracy.
@@ -250,10 +266,10 @@ cfg.SEGMENTATION.THRESHOLD_COLS = 0.4
 # Helps prevent multiple row spans caused by overlapping detections.
 # Note: for better alignment, SEGMENTATION.FULL_TABLE_TILING can be enabled.
 # Using a low threshold here may result in a very coarse grid.
-cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS = 0.001
+cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS = 0.2
 
 # Same as above, but applied to columns.
-cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS = 0.001
+cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS = 0.2
 
 # Ensures that predicted rows and columns fully cover the table region.
 # When enabled, rows will be stretched horizontally and vertically to fit the full region.
@@ -338,14 +354,14 @@ cfg.PDF_MINER.Y_TOLERANCE = 3
 # Enables Tesseract as the OCR engine.
 # Note: Tesseract must be installed separately. This integration does not use pytesseract.
 # Configuration options are defined in a separate file: conf_tesseract.yaml.
-cfg.OCR.USE_TESSERACT = True
+cfg.OCR.USE_TESSERACT = False
 
 # Path to the Tesseract configuration file.
 cfg.OCR.CONFIG.TESSERACT = "dd/conf_tesseract.yaml"
 
 # Enables DocTR as the OCR engine.
 # DocTR provides flexible and lightweight OCR models with strong accuracy and versatility.
-cfg.OCR.USE_DOCTR = False
+cfg.OCR.USE_DOCTR = True
 
 # Enables AWS Textract as the OCR engine.
 # Requires the following environment variables to be set:
@@ -388,7 +404,7 @@ cfg.WORD_MATCHING.RULE = "ioa"
 
 # Threshold for the selected matching rule (IOU or IOA).
 # Text containers must exceed this threshold to be assigned to a layout section.
-cfg.WORD_MATCHING.THRESHOLD = 0.6
+cfg.WORD_MATCHING.THRESHOLD = 0.3
 
 # If a text container overlaps with multiple layout sections,
 # setting this to True will assign it only to the best-matching (i.e., highest-overlapping) section.
@@ -406,7 +422,7 @@ cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES = IMAGE_DEFAULTS.FLOATING_TEXT_
 # Determines whether residual (unmatched) text containers should be included in the ordering process.
 # If set to True, orphaned text containers are grouped into lines and added to the layout ordering.
 # If set to False, unmatched text containers will not appear in the output.
-cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER = False
+cfg.TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER = True
 
 # Tolerance used to determine whether a text block's left/right coordinate lies within a column’s boundary.
 # Helps with assigning text blocks to columns based on horizontal alignment.
@@ -430,11 +446,11 @@ cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
 
 # Specifies the parent layout categories in the link relationship.
 # These are the elements to which related components (e.g., captions) should be linked.
-cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = []
+cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE,LayoutType.TABLE]
 
 # Specifies the child layout categories in the link relationship.
 # These are typically smaller or subordinate elements (e.g., captions).
-cfg.LAYOUT_LINK.CHILD_CATEGORIES = []
+cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
 
 # Freezes the configuration to make it immutable.
 # This prevents accidental modification at runtime.

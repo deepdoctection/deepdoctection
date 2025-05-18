@@ -26,8 +26,8 @@ from deepdoctection.datapoint import Page
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
 
-@mark.integration
-def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
+@mark.pt_legacy
+def test_legacy_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
     """
@@ -81,7 +81,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert page.width == 1654
 
 
-@mark.tf_integration
+@mark.tf_legacy
 def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = False and USE_OCR = False
@@ -136,8 +136,8 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert page.width == 1654
 
 
-@mark.integration
-def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
+@mark.pt_legacy
+def test_legacy_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting USE_OCR = False
     """
@@ -204,7 +204,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert page.width == 1654
 
 
-@mark.tf_integration
+@mark.tf_legacy
 def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
     """
     Analyzer integration test with setting USE_OCR = False
@@ -270,8 +270,8 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -
     assert page.width == 1654
 
 
-@mark.integration
-def test_dd_analyzer_builds_and_process_image_correctly() -> None:
+@mark.pt_legacy
+def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = True and USE_OCR = True
     """
@@ -303,7 +303,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(text_["ann_ids"]) in {555, 631}
 
 
-@mark.tf_integration
+@mark.tf_legacy
 def test_dd_tf_analyzer_builds_and_process_image_correctly() -> None:
     """
     Analyzer integration test with setting USE_TABLE_SEGMENTATION = True and USE_OCR = True
@@ -355,7 +355,7 @@ def test_dd_tf_analyzer_builds_and_process_image_correctly() -> None:
     assert len(text_["ann_ids"]) in {529}
 
 
-@mark.integration_additional
+@mark.pt_deps
 def test_dd_analyzer_with_tatr() -> None:
     """
     Analyzer integration test with setting USE_OCR=False and table transformer for table detection and table recognition
@@ -408,7 +408,7 @@ def test_dd_analyzer_with_tatr() -> None:
     assert len(page.tables[0].cells) in {12, 14}  # type: ignore
 
 
-@mark.integration_additional
+@mark.pt_deps
 def test_dd_analyzer_with_doctr() -> None:
     """
     Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True
@@ -463,7 +463,7 @@ def test_dd_analyzer_with_doctr() -> None:
     )
 
 
-@mark.tf_integration
+@mark.tf_legacy
 def test_dd_tf_analyzer_with_doctr() -> None:
     """
     Analyzer integration test with setting USE_LAYOUT=False and USE_TABLE_SEGMENTATION=False and OCR.USE_DOCTR=True
@@ -516,3 +516,4 @@ def test_dd_tf_analyzer_with_doctr() -> None:
     assert page.text_no_line_break in (
         """Festlegung der VV und angemessene Risikoadjustierung Die VV-Pools der DWS Gruppe werden einer angemessenen Anpassung der Risiken unterzogen, die die Adjustierung ex ante als auch ex post umfasst. Die angewandte robuste Methode soll sicherstellen, dass bei der Festlegung der W sowohl der risikoadjustierten Leistung als auch der Kapital- und Liquiditatsausstattung der DWS Gruppe Rechnung getragen wird. Die Er mittlung des Gesamtbetrags der W orientiert sich primar an ( der Tragfâhigkeit fur die DWS Gruppe (das heilt, was kann" die DWS Gruppe langfristig an W im Einklang mit regulatorischen Anforderungen gewahren) und (i) der Leistung (das heiBst, was wsollte" die DWS Gruppe an W gewahren, um fur eine angemessene leistungsbezogene Vergutung zus sorgen und gleichzeitig den langfristigen Erfolg des Unternehmens zu sichern). Die DWS Gruppe hat fur die Festlegung der W auf Ebene der individueller Mitarbeiter die Grundsâtze fur die Festlegung der variablen Vergutung" eingefuhrt. Diese ent tha en Informationen uber die Faktoren und MessgroBen, die bei Entscheidungen zur IVV berucksichtigt werden mussen. Dazu zâhlen beispielsweise Investmentperformance, Kundenbindung, Erwagungen zur Unternehmenskultur sowie Zielvereinbarungen und Leistungsbeurtellung im Rahmen des Ganzheitliche Leistung" -Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli- narmaBnahmen sowie deren Einfluss auf die W einbezogen. Bei per Ermessensentscheidung erfolgenden Sub-Pool-Zuteilungen verwendet das DWS DCC die internen (finanziellen und nichtfinanziellen) Balanced Scorecard-Kennzahlen zur Erstellung differenzierter und leistungsbezogener W-Pools. Vergutung fur das Jahr 2018 Nach der hervorragenden Entwicklung im Jahr 2017 hatte die globale Vermogenmervastungabande 2018 mit einigen Schwierigkeiten zu kâmpfen. Grunde waren ungunstige Marktbedin- gungen, starkere geopolitische Spannungen und die negative Stimmung unter den Anlegern, vor allem am europaischen Retail-Markt. Auch die DWS Gruppe blieb von dieser Entwicklung nicht verschont. Vor diesem Hintergrund hat das DCC die Tragfahigkeit der W fur das Jahr 2018 kontrolliert und festgestellt, dass die Kapital- und Liquiditatsausstatung der DWS Gruppe unter Berucksichti- gung des Ergebnisses vor und nach Steuern klar uber den regulatorisch vorgeschriebenen Mindestanforderungen und dem internen Schwellenwert fur die Risikotoleranz liegt. Als Teil der im Marz 2019 fur das Performance-Jahr 2018 gewâhrten W wurde die Gruppenkomponente allen berechtigten Mitarbeitern auf Basis der Bewertung der vier festgelegten Leistungs- kennzahlen gewahrt. Der Vorstand der Deutsche Bank AG hat fur 2018 unter Berucksichtigung der betrâchtlichen Leistungen der Mitarbeiter und in seinem Ermessen einen Zielerreichungsgrad von 70 % festgelegt. Identifizierung von Risikotragern Gemals Gesetz vom 17. Dezember 2010 uber die Organismen fur gemeinsame Anlagen (in seiner jeweils gultigen Fassung) sowie den ESMA-Leitlinien unter Berucksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit vesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt (Risikotrager"). Das identifizierungsverfahven basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr ver walteten Fonds: (a) Geschaftsfuhungy/Senior Management (b) Portfolio-/ Investmentmanager; (c) Kontrollfunktionen, (d) Mitarbeite er mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikotrager) mit wesentlichem Einfluss, (f) sonstige Mitarbeiter in der gleichen Vergutungsstufe wie sonstige Risikotrager. Mindestens 40 % der W fur Risikotrager werden aufgeschoben vergeben. Des Weiteren werden fur wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasie et erten oder fondsbasierten Instrur imenten der DWS Gruppe gewahrt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfallbedingungen unterworfen, um eine angemessene nachtragliche Risikoadjustierung zu gewahr leisten. Bei einem W-Betrag von weniger als EUR 50.000 erhalten Risikotrager ihre gesamte W in bar und ohne Aufschub. Zusammenfassung der Informationen zur Vergutung fur die Gesellschaft fur 2018 1 Jahresdurchschnitt der Mitarbeiterzahl 139 EUR 15.315.952 Gesamtvergutung Fixe Vergutung EUR 13.151.856 Variable Vergutung EUR 2.164. .096 davon: Carried Interest EUR 0 Gesamtvergutung fur Senior Management 3 EUR 1.468.434 Gesamtvergutung fur sonstige Risikotrager EUR 324.229 Gesamtvergutung fur Mitarbeiter mit Kontrolfunktionen EUR 554.046 Vergutungsdaten fur Delegierte, an die die Gesellschaft Portfolio- oder Rasliomanagementaufoaben ubertragen hat, sind nicht in der Tabelle erfasst. Unter Berucksichtigung diverser Vergutungsbestandteile entsprechend den Definitionen in den ESMA-Leitlinien, die Geldzahlungen oder leistungen (wie Bargeld, Anteile, Optionsscheine, Rentenbeitrage) oder Nicht-(direkte) Geldleistungen (wie Gehatsnebenleistungen oder Sondervergdtungen fur Fahrzeuge, Mobiltelefone, usw.) umfassen. Senior Management" umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfullt die Definition als Fuhrungskrafte der Gesellschaft. Uber den Vorstand hinaus wurden keine weiteren Fuhrungskrafte identifiziert. 22"""  # pylint: disable=C0301  # pylint: disable=C0301
     )
+

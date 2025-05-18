@@ -160,12 +160,12 @@ tf_deps = deps_list("tensorpack", "protobuf", "tensorflow-addons", "tf2onnx", "p
 # PyTorch dependencies
 pt_deps = deps_list("timm", "transformers", "accelerate", "python-doctr")
 
-source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
+#source_pt_deps = pt_deps + deps_list("detectron2 @ git+https://github.com/deepdoctection/detectron2.git")
 
 # Putting all together
 tf_deps = dist_deps + tf_deps + additional_deps
 pt_deps = dist_deps + pt_deps + additional_deps
-source_pt_deps = dist_deps + source_pt_deps + additional_deps
+#source_pt_deps = dist_deps + source_pt_deps + additional_deps
 
 
 # if sys.platform == "linux":
@@ -216,7 +216,7 @@ dev_deps = deps_list(
 EXTRA_DEPS = {
     "tf": tf_deps,
     "pt": pt_deps,
-    "source-pt": source_pt_deps,
+    #"source-pt": source_pt_deps,
     "docs": docs_deps,
     "dev": dev_deps,
     "test": test_deps,
