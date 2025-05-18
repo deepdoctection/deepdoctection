@@ -130,7 +130,7 @@ jobs:
       - name: Install tesseract
         if: matrix.tesseract
         run: sudo apt-get -y update &&
-             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu &&
+             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
 
       - name: Install DL library
         if: matrix.dll
