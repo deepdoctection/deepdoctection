@@ -135,8 +135,6 @@ def get_dd_analyzer(
     file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
     cfg.freeze(freezed=False)
     cfg.overwrite_config(file_cfg)
-
-    cfg.freeze(freezed=False)
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device

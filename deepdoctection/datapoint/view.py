@@ -623,7 +623,6 @@ class ImageDefaults:
         default_factory=lambda: (
             LayoutType.TEXT,
             LayoutType.TITLE,
-            LayoutType.LIST_ITEM,
             LayoutType.LIST,
             LayoutType.KEY_VALUE_AREA,
 

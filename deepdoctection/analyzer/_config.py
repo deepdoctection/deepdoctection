@@ -83,7 +83,7 @@ cfg.USE_LINE_MATCHER = False
 # Relevant when LIB = TF. Specifies the layout detection model.
 # This model should detect multiple or single objects across an entire page.
 # Currently, only one default model is supported.
-cfg.TF.LAYOUT.WEIGHTS = "Aryn/deformable-detr-DocLayNet/model.safetensors"
+cfg.TF.LAYOUT.WEIGHTS = "layout/model-800000_inf_only.data-00000-of-00001"
 
 # Filters out unnecessary categories from the layout detection model output.
 # Accepts either a list of strings (e.g., ['list', 'figure']) or a list of ObjectTypes
@@ -104,7 +104,7 @@ cfg.PT.ENFORCE_WEIGHTS.LAYOUT = True
 # layout/d2_model_0829999_layout_inf_only.pt,
 # microsoft/table-transformer-detection/pytorch_model.bin,
 # Aryn/deformable-detr-DocLayNet/model.safetensors).
-cfg.PT.LAYOUT.WEIGHTS = "layout/d2_model_0829999_layout_inf_only.pt"
+cfg.PT.LAYOUT.WEIGHTS = "Aryn/deformable-detr-DocLayNet/model.safetensors"
 
 # Specifies the TorchScript version of the layout model.
 # Must detect single or multiple objects across the full page.
