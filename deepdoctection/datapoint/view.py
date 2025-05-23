@@ -641,10 +641,7 @@ class ImageDefaults:
             LayoutType.MARK,
             LayoutType.KEY_VALUE_AREA,
             LayoutType.FIGURE,
-            CellType.COLUMN_HEADER,
-            CellType.PROJECTED_ROW_HEADER,
             CellType.SPANNING,
-            CellType.ROW_HEADER,
             LayoutType.CELL,
         )
     )
@@ -1189,11 +1186,15 @@ class Page(Image):
                         boxes=boxes,
                         category_names_list=category_names_list,
                         font_scale=1.0,
-                        rectangle_thickness=4,
+                        rectangle_thickness=2,
                     )
                 else:
                     img = draw_boxes(
-                        np_image=img, boxes=boxes, category_names_list=category_names_list, show_palette=False
+                        np_image=img,
+                        boxes=boxes,
+                        category_names_list=category_names_list,
+                        show_palette=False,
+                        rectangle_thickness=2,
                     )
 
             if interactive:

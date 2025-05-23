@@ -149,12 +149,14 @@ cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [[LayoutType.TABLE,LayoutType.TITLE],
                                      [LayoutType.TABLE,LayoutType.KEY_VALUE_AREA],
                                      [LayoutType.TABLE,LayoutType.LIST_ITEM],
                                      [LayoutType.TABLE,LayoutType.LIST],
+                                     [LayoutType.TABLE,LayoutType.FIGURE],
                                      [LayoutType.TITLE,LayoutType.TEXT],
                                      [LayoutType.TEXT,LayoutType.KEY_VALUE_AREA],
                                      [LayoutType.TEXT,LayoutType.LIST_ITEM],
                                      [LayoutType.KEY_VALUE_AREA,LayoutType.LIST_ITEM]]
-cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.05,0.01,0.01,0.01]
+cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.01,0.05,0.01,0.01,0.01]
 cfg.LAYOUT_NMS_PAIRS.PRIORITY = [LayoutType.TABLE,
+                                 LayoutType.TABLE,
                                  LayoutType.TABLE,
                                  LayoutType.TABLE,
                                  LayoutType.TABLE,
@@ -294,10 +296,6 @@ cfg.SEGMENTATION.CELL_NAMES = [CellType.HEADER, CellType.BODY, LayoutType.CELL]
 # Lists all cell types used by the Table Transformer approach (PubtablesSegmentationService).
 # LayoutType.CELL is synthetically generated and not predicted by the structure recognition model.
 cfg.SEGMENTATION.PUBTABLES_CELL_NAMES = [
-    CellType.SPANNING,
-    CellType.ROW_HEADER,
-    CellType.COLUMN_HEADER,
-    CellType.PROJECTED_ROW_HEADER,
     LayoutType.CELL,
 ]
 
@@ -305,9 +303,6 @@ cfg.SEGMENTATION.PUBTABLES_CELL_NAMES = [
 # These need to be matched with row or column elements.
 cfg.SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES = [
     CellType.SPANNING,
-    CellType.ROW_HEADER,
-    CellType.COLUMN_HEADER,
-    CellType.PROJECTED_ROW_HEADER,
 ]
 
 # Lists the layout categories used to identify row and column elements.
@@ -325,7 +320,9 @@ cfg.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES = [CellType.ROW_NUMBER, CellType.COLUM
 
 # Used in PubtablesSegmentationService.
 # Specifies which cells should be treated as header cells that need to be linked to row/column elements.
-cfg.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES = [CellType.COLUMN_HEADER, CellType.ROW_HEADER]
+cfg.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES = [CellType.COLUMN_HEADER,
+                                                     CellType.ROW_HEADER,
+                                                     CellType.PROJECTED_ROW_HEADER]
 
 # Defines the threshold values for matching column/row header cells to their respective rows/columns
 # in the Table Transformer approach. The matching rule is defined in SEGMENTATION.ASSIGNMENT_RULE.

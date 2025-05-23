@@ -18,6 +18,8 @@ LAYOUT_NMS_PAIRS:
     - list_item
   - - table
     - list
+  - - table
+    - figure
   - - title
     - text
   - - text
@@ -32,6 +34,7 @@ LAYOUT_NMS_PAIRS:
   - table
   - table
   - table
+  - table
   - text
   - text
   - null
@@ -41,6 +44,7 @@ LAYOUT_NMS_PAIRS:
   - 0.01
   - 0.01
   - 0.001
+  - 0.01
   - 0.01
   - 0.05
   - 0.01
@@ -110,14 +114,11 @@ SEGMENTATION:
   - row
   - column
   PUBTABLES_CELL_NAMES:
-  - spanning
-  - row_header
-  - column_header
-  - projected_row_header
   - cell
   PUBTABLES_ITEM_HEADER_CELL_NAMES:
   - column_header
   - row_header
+  - projected_row_header
   PUBTABLES_ITEM_HEADER_THRESHOLDS:
   - 0.6
   - 0.0001
@@ -126,9 +127,6 @@ SEGMENTATION:
   - column
   PUBTABLES_SPANNING_CELL_NAMES:
   - spanning
-  - row_header
-  - column_header
-  - projected_row_header
   PUBTABLES_SUB_ITEM_NAMES:
   - row_number
   - column_number
