@@ -485,7 +485,8 @@ class BoundingBox:
         return self
 
     def __str__(self) -> str:
-        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+        return (f"Bounding Box(absolute_coords: {self.absolute_coords},"
+                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry})")
 
     def __repr__(self) -> str:
         return (

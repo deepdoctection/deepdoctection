@@ -147,10 +147,10 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
 
         # sub categories and summary sub categories are valid attribute names
-        attribute_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
+        attr_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
         if self.image:
-            attribute_names = attribute_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
-        return attribute_names
+            attr_names = attr_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
     def from_dict(cls, **kwargs: AnnotationDict) -> ImageAnnotationBaseView:
@@ -170,11 +170,10 @@ class Word(ImageAnnotationBaseView):
     """
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            set(WordType)
-            .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
-        )
+        attr_names = (set(WordType)
+                      .union(super().get_attribute_names())
+                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
 
 class Layout(ImageAnnotationBaseView):
@@ -265,11 +264,10 @@ class Layout(ImageAnnotationBaseView):
         }
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            {"words", "text"}
-            .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
-        )
+        attr_names = ({"words", "text"}.union(super()
+                                       .get_attribute_names())
+                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     def __len__(self) -> int:
         """len of text counted by number of characters"""
@@ -282,7 +280,8 @@ class Cell(Layout):
     """
 
     def get_attribute_names(self) -> set[str]:
-        return set(CellType).union(super().get_attribute_names())
+        attr_names = set(CellType).union(super().get_attribute_names())
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
 
 class List(Layout):
@@ -506,11 +505,10 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> set[str]:
-        return (
-            set(TableType)
-            .union(super().get_attribute_names())
-            .union({"cells", "rows", "columns", "html", "csv", "text"})
-        )
+        attr_names = (set(TableType)
+                      .union(super().get_attribute_names())
+                      .union({"cells", "rows", "columns", "html", "csv", "text"}))
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @property
     def csv(self) -> csv:
@@ -1208,7 +1206,8 @@ class Page(Image):
         """
         :return: A set of registered attributes.
         """
-        return set(PageType).union(cls._attribute_names)
+        attr_names= set(PageType).union(cls._attribute_names)
+        return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
     def add_attribute_name(cls, attribute_name: Union[str, ObjectTypes]) -> None:

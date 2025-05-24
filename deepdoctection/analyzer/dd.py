@@ -47,32 +47,6 @@ __all__ = [
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-_MODEL_CHOICES = {
-    "layout": [
-        "layout/d2_model_0829999_layout_inf_only.pt",
-        "xrf_layout/model_final_inf_only.pt",
-        "microsoft/table-transformer-detection/pytorch_model.bin",
-    ],
-    "segmentation": [
-        "item/model-1620000_inf_only.data-00000-of-00001",
-        "xrf_item/model_final_inf_only.pt",
-        "microsoft/table-transformer-structure-recognition/pytorch_model.bin",
-        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin",
-    ],
-    "ocr": ["Tesseract", "DocTr", "Textract"],
-    "doctr_word": ["doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"],
-    "doctr_recognition": [
-        "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
-        "doctr/crnn_vgg16_bn/pt/pytorch_model.bin",
-    ],
-    "llm": ["gpt-3.5-turbo", "gpt-4"],
-    "segmentation_choices": {
-        "item/model-1620000_inf_only.data-00000-of-00001": "cell/model-1800000_inf_only.data-00000-of-00001",
-        "xrf_item/model_final_inf_only.pt": "xrf_cell/model_final_inf_only.pt",
-        "microsoft/table-transformer-structure-recognition/pytorch_model.bin": None,
-        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin": None,
-    },
-}
 
 
 def config_sanity_checks() -> None:
@@ -89,6 +63,7 @@ def config_sanity_checks() -> None:
 
 def get_dd_analyzer(
     reset_config_file: bool = True,
+    load_default_config_file: bool = False,
     config_overwrite: Optional[list[str]] = None,
     path_config_file: Optional[PathLikeOrStr] = None,
 ) -> DoctectionPipe:
@@ -109,6 +84,8 @@ def get_dd_analyzer(
 
     :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
                               resetting all configurations if set to `True`.
+    :param load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`.
+                                If set to `False`, the config file will be ignored.
     :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
                              highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
                                                      "USE_OCR=False",
@@ -131,10 +108,11 @@ def get_dd_analyzer(
     )
     maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path() / "dd", _TESSERACT)
 
-    # Set up of the configuration and logging
-    file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
     cfg.freeze(freezed=False)
-    cfg.overwrite_config(file_cfg)
+    if load_default_config_file:
+        # Set up of the configuration and logging
+        file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
+        cfg.overwrite_config(file_cfg)
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
