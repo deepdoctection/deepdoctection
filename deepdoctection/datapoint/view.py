@@ -1126,6 +1126,10 @@ class Page(Image):
                 all_words.extend(layout.words)
             for table in self.tables:
                 all_words.extend(table.words)
+            for figure in self.figures:
+                all_words.extend(figure.words)
+            for res_layout in self.residual_layouts:
+                all_words.extend(res_layout.words)
             if not all_words:
                 all_words = self.get_annotation(category_names=LayoutType.WORD)
             if not ignore_default_token_class:
