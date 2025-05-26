@@ -84,7 +84,7 @@ def get_dd_analyzer(
 
     :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
                               resetting all configurations if set to `True`.
-    :param load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`.
+    :param load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`
                                 If set to `False`, the config file will be ignored.
     :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
                              highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",

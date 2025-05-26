@@ -181,8 +181,8 @@ class TestImage:
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
         assert (
             cat.annotation_id == "c8c58404-62c3-3e66-b302-ebd3202a778d"
-        )  # get_uuid("FOOBounding Box ulx: 1.0 uly: 1.0 lrx: 2.0 lry: 3.090c05f37-a017-39cc-a178-b84f9d14ff48")
-        assert sub_cat_1.annotation_id == "7f76354b-1d4c-3874-84c7-a6d0c5701987"
+        )
+        assert sub_cat_1.annotation_id == "ec31cfdf-c1aa-383e-99a8-7f80a7f29f05"
 
     @staticmethod
     @mark.basic

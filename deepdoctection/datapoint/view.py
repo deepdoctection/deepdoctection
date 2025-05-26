@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from copy import copy
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
+from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check, Dict
 
 import numpy as np
 
@@ -597,20 +597,6 @@ class Table(Layout):
         except (TypeError, AnnotationError):
             return super().get_ordered_words()
 
-"""
-IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
-    **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
-    LayoutType.TABLE: Table,
-    LayoutType.TABLE_ROTATED: Table,
-    LayoutType.WORD: Word,
-    LayoutType.CELL: Cell,
-    LayoutType.LIST: List,
-    CellType.SPANNING: Cell,
-    CellType.ROW_HEADER: Cell,
-    CellType.COLUMN_HEADER: Cell,
-    CellType.PROJECTED_ROW_HEADER: Cell,
-}
-"""
 
 
 @dataclass
@@ -649,7 +635,7 @@ class ImageDefaults:
                                                                                             LayoutType.MARK,
                                                                                             LayoutType.PAGE_NUMBER,))
     IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = field(
-        default_factory=lambda: {
+        default_factory=lambda: { # type: ignore
             **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
             LayoutType.TABLE: Table,
             LayoutType.TABLE_ROTATED: Table,

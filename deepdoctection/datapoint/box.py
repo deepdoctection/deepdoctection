@@ -494,6 +494,9 @@ class BoundingBox:
             f" lry={self.lry}, width={self.width}, height={self.height})"
         )
 
+    def get_legacy_string(self) -> str:
+        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+
     @staticmethod
     def remove_keys() -> list[str]:
         """Removing keys when converting the dataclass object to a dict"""
