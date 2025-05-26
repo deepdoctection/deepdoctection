@@ -26,8 +26,12 @@ LAYOUT_NMS_PAIRS:
     - key_value_area
   - - text
     - list_item
+  - - text
+    - caption
   - - key_value_area
     - list_item
+  - - figure
+    - caption
   PRIORITY:
   - table
   - table
@@ -38,7 +42,9 @@ LAYOUT_NMS_PAIRS:
   - text
   - text
   - null
+  - caption
   - key_value_area
+  - figure
   THRESHOLDS:
   - 0.001
   - 0.01
@@ -50,6 +56,8 @@ LAYOUT_NMS_PAIRS:
   - 0.01
   - 0.01
   - 0.01
+  - 0.01
+  - 0.001
 LIB: null
 OCR:
   CONFIG:

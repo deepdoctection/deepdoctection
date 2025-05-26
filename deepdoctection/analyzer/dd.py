@@ -37,7 +37,7 @@ from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.types import PathLikeOrStr
-from ._config import cfg
+from .config import cfg
 from .factory import ServiceFactory
 
 __all__ = [
@@ -122,10 +122,10 @@ def get_dd_analyzer(
         cfg.PT.ENFORCE_WEIGHTS.ITEM = False
     if not detectron2_available() or cfg.PT.CELL.WEIGHTS is None:
         cfg.PT.ENFORCE_WEIGHTS.CELL = False
-    cfg.freeze()
 
     if config_overwrite:
         cfg.update_args(config_overwrite)
+    cfg.freeze()
 
     config_sanity_checks()
     logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))  # type: ignore

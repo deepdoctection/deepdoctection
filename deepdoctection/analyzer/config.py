@@ -153,8 +153,10 @@ cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [[LayoutType.TABLE,LayoutType.TITLE],
                                      [LayoutType.TITLE,LayoutType.TEXT],
                                      [LayoutType.TEXT,LayoutType.KEY_VALUE_AREA],
                                      [LayoutType.TEXT,LayoutType.LIST_ITEM],
-                                     [LayoutType.KEY_VALUE_AREA,LayoutType.LIST_ITEM]]
-cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.01,0.05,0.01,0.01,0.01]
+                                     [LayoutType.TEXT,LayoutType.CAPTION],
+                                     [LayoutType.KEY_VALUE_AREA,LayoutType.LIST_ITEM],
+                                     [LayoutType.FIGURE,LayoutType.CAPTION]]
+cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.01,0.05,0.01,0.01,0.01,0.01,0.001]
 cfg.LAYOUT_NMS_PAIRS.PRIORITY = [LayoutType.TABLE,
                                  LayoutType.TABLE,
                                  LayoutType.TABLE,
@@ -164,7 +166,9 @@ cfg.LAYOUT_NMS_PAIRS.PRIORITY = [LayoutType.TABLE,
                                  LayoutType.TEXT,
                                  LayoutType.TEXT,
                                  None,
-                                 LayoutType.KEY_VALUE_AREA]
+                                 LayoutType.CAPTION,
+                                 LayoutType.KEY_VALUE_AREA,
+                                 LayoutType.FIGURE]
 
 # Relevant when LIB = TF. Specifies the item detection model (for rows and columns).
 # Currently, only the default model is supported.

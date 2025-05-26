@@ -597,7 +597,7 @@ class Table(Layout):
         except (TypeError, AnnotationError):
             return super().get_ordered_words()
 
-
+"""
 IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = {
     **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
     LayoutType.TABLE: Table,
@@ -610,6 +610,7 @@ IMAGE_ANNOTATION_TO_LAYOUTS: dict[ObjectTypes, Type[Union[Layout, Table, Word]]]
     CellType.COLUMN_HEADER: Cell,
     CellType.PROJECTED_ROW_HEADER: Cell,
 }
+"""
 
 
 @dataclass
@@ -647,6 +648,20 @@ class ImageDefaults:
                                                                                             LayoutType.PAGE_FOOTER,
                                                                                             LayoutType.MARK,
                                                                                             LayoutType.PAGE_NUMBER,))
+    IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = field(
+        default_factory=lambda: {
+            **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
+            LayoutType.TABLE: Table,
+            LayoutType.TABLE_ROTATED: Table,
+            LayoutType.WORD: Word,
+            LayoutType.CELL: Cell,
+            LayoutType.LIST: List,
+            CellType.SPANNING: Cell,
+            CellType.ROW_HEADER: Cell,
+            CellType.COLUMN_HEADER: Cell,
+            CellType.PROJECTED_ROW_HEADER: Cell,
+        }
+    )
 
 
 IMAGE_DEFAULTS = ImageDefaults()
@@ -665,9 +680,9 @@ def ann_obj_view_factory(annotation: ImageAnnotation, text_container: ObjectType
 
     # We need to handle annotations that are text containers like words
     if annotation.category_name == text_container:
-        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[LayoutType.WORD]
     else:
-        layout_class = IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
+        layout_class = IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS[annotation.category_name]
     ann_dict = annotation.as_dict()
     layout = layout_class.from_dict(**ann_dict)
     if image_dict := ann_dict.get("image"):

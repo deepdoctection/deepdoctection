@@ -68,7 +68,7 @@ class ServiceFactory:
     """
     Factory class for building various components of the deepdoctection analyzer pipeline.
 
-    This class uses the `cfg` configuration object from `_config.py`, which is an instance of the `AttrDict` class.
+    This class uses the `cfg` configuration object from `config.py`, which is an instance of the `AttrDict` class.
     The configuration is not passed explicitly in an `__init__` method but is accessed directly within the methods.
 
     The class provides static methods to build different services and detectors required for the pipeline, such as
@@ -78,7 +78,7 @@ class ServiceFactory:
 
     Extending the Class:
         This class can be extended by using inheritance and adding new methods or overriding existing ones.
-        To extend the configuration attributes, you can modify the `cfg` object in `_config.py` to include new
+        To extend the configuration attributes, you can modify the `cfg` object in `config.py` to include new
         settings or parameters required for the new methods.
     """
 
