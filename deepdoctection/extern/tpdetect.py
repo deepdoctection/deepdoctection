@@ -149,8 +149,10 @@ class TPFrcnnDetector(TensorpackPredictor, TPFrcnnDetectorMixin):
 
         hyper_param_config = set_config_by_yaml(path_yaml)
 
-        if len(config_overwrite):
+        hyper_param_config.freeze(freezed=False)
+        if config_overwrite:
             hyper_param_config.update_args(config_overwrite)
+        hyper_param_config.freeze()
 
         model_frcnn_config(config=hyper_param_config, categories=categories, print_summary=False)
         return ResNetFPNModel(config=hyper_param_config)
