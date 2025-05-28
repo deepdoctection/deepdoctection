@@ -425,7 +425,7 @@ class ModelDownloadManager:
         if repo_id is None:
             raise ValueError("hf_repo_id cannot be None")
         directory, _ = os.path.split(absolute_path)
-        if not profile.hf_config_file:
+        if profile.hf_config_file is None:
             raise ValueError("hf_config_file cannot be None")
         for file_name in profile.hf_config_file:
             ModelDownloadManager._load_from_hf_hub(repo_id, file_name, directory)

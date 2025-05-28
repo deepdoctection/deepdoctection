@@ -62,7 +62,7 @@ Not every document class needs to be processed in the same way:
 With **deep**doctection, individual tasks (layout analysis, OCR, PDF text mining, LayoutLM call) can be combined in a 
 pipeline. The components of a pipeline can be some that call models but also components that are purely rule-based. 
 
-[**deep**doctection's analyzer](./tutorials/get_started_notebook.md) is an example of a pipeline.  
+[**deep**doctection's analyzer](./tutorials/Analyzer_Get_Started.md) is an example of a pipeline.  
 
 
 ## Datasets

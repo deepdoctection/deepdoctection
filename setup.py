@@ -99,7 +99,7 @@ _DEPS = [
     "pylint==2.17.4",
     "mypy==1.4.1",
     # docs
-    "jinja2==3.0.3",
+    "jinja2",
     "mkdocs-material",
     "mkdocstrings-python",
     "griffe==0.25.0",
