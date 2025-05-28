@@ -319,8 +319,8 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
 
     assert len(page.layouts) in {11}
     assert {layout.category_name.value for layout in page.layouts} == {'text'}  # type: ignore
-    assert ({layout.category_name.value for layout in page.residual_layouts} ==
-            {'page_footer','page_header'}) # type: ignore
+    assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
+            {'page_footer','page_header'})
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
@@ -349,8 +349,8 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
 
     assert len(page.layouts) in {11}
     assert {layout.category_name.value for layout in page.layouts} == {'text'} # type: ignore
-    assert ({layout.category_name.value for layout in page.residual_layouts} ==
-            {'page_footer','page_header'}) # type: ignore
+    assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
+            {'page_footer','page_header'})
 
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
     assert page.tables[0].html in {'<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'
@@ -380,8 +380,8 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
 
     assert len(page.layouts) in {13}
     assert {layout.category_name.value for layout in page.layouts} == {'line', 'text'} # type: ignore
-    assert ({layout.category_name.value for layout in page.residual_layouts} ==
-            {'page_footer','page_header'}) # type: ignore
+    assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
+            {'page_footer','page_header'})
 
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
     assert page.tables[0].html in {'<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'

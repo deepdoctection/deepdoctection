@@ -241,9 +241,10 @@ def train_faster_rcnn(
     config_overwrite.append(log_dir)
 
     config = set_config_by_yaml(path_config_yaml)
-
+    config.freeze(False)
     if config_overwrite:
         config.update_args(config_overwrite)
+    config.freeze(True)
 
     categories = dataset_train.dataflow.categories.get_categories(filtered=True)
     model_frcnn_config(config, categories, False)
