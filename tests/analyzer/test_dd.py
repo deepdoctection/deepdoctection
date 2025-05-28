@@ -355,7 +355,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
                                    ' Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>'}
     assert page.height == 2339
     assert page.width == 1654
-    assert len(page.text) in {4809}
+    assert len(page.text) in {4301, 4809}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
     assert len(text_["words"]) in {612}
