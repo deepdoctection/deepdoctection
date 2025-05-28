@@ -159,6 +159,7 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     # Arrange
     analyzer = get_dd_analyzer(config_overwrite=
             ["USE_TABLE_SEGMENTATION=True",
+            "USE_OCR=True",
             "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
             "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
             "PT.ITEM.FILTER=None",

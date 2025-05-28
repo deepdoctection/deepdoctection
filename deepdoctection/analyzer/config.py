@@ -51,8 +51,9 @@ Attributes:
     USE_ROTATOR: Enables the initial pipeline component using TesseractRotationTransformer to auto-rotate pages
         by 90-degree increments. All subsequent components process the rotated page.
 
-    USE_LAYOUT: Enables layout analysis component (second in the pipeline) for either full document layout analysis (DLA)
-        or single-object detection. Additional configurations via PT.LAYOUT.*, TF.LAYOUT.*, and PT.ENFORCE_WEIGHTS.LAYOUT.
+    USE_LAYOUT: Enables layout analysis component (second in the pipeline) for either full document layout analysis
+        (DLA) or single-object detection. Additional configurations via PT.LAYOUT.*, TF.LAYOUT.*, and
+        PT.ENFORCE_WEIGHTS.LAYOUT.
 
     USE_LAYOUT_NMS: Enables optional fine-grained Non-Maximum Suppression (NMS) after layout detection.
         Configure via LAYOUT_NMS_PAIRS.* settings.
@@ -186,7 +187,8 @@ not with the Table Transformer method.
     PT.ENFORCE_WEIGHTS.CELL: Determines whether PT.CELL.WEIGHTS should take priority over PT.CELL.WEIGHTS_TS.
         If set to True, standard PyTorch weights are enforced.
 
-    PT.CELL.WEIGHTS: Specifies the PyTorch model weights for cell detection using standard formats (.pt or .safetensors).
+    PT.CELL.WEIGHTS: Specifies the PyTorch model weights for cell detection using standard formats (.pt or
+                     .safetensors).
 
     PT.CELL.WEIGHTS_TS: Specifies the TorchScript model for cell detection (.ts format).
 
@@ -204,12 +206,12 @@ not with the Table Transformer method.
         Can be either 'iou' (Intersection over Union) or 'ioa' (Intersection over Area).
         In the Table Transformer approach, this also applies to special cell types like spanning or header cells.
 
-    SEGMENTATION.THRESHOLD_ROWS: Threshold for assigning a (special) cell to a row based on the chosen rule (IOU or IOA).
-        The row assignment is based on the highest-overlapping row.
+    SEGMENTATION.THRESHOLD_ROWS: Threshold for assigning a (special) cell to a row based on the chosen rule (IOU or
+        IOA). The row assignment is based on the highest-overlapping row.
         Multiple overlaps can lead to increased rowspan.
 
-    SEGMENTATION.THRESHOLD_COLS: Threshold for assigning a (special) cell to a column based on the chosen rule (IOU or IOA).
-        The column assignment is based on the highest-overlapping column.
+    SEGMENTATION.THRESHOLD_COLS: Threshold for assigning a (special) cell to a column based on the chosen rule (IOU or
+        IOA). The column assignment is based on the highest-overlapping column.
 
     SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS: Removes overlapping rows based on an IoU threshold.
         Helps prevent multiple row spans caused by overlapping detections.
@@ -234,8 +236,9 @@ not with the Table Transformer method.
     SEGMENTATION.CELL_NAMES: Lists the layout or cell types used in the original Deepdoctection approach.
         Used by TableSegmentationService for cell assignments.
 
-    SEGMENTATION.PUBTABLES_CELL_NAMES: Lists all cell types used by the Table Transformer approach (PubtablesSegmentationService).
-        LayoutType.CELL is synthetically generated and not predicted by the structure recognition model.
+    SEGMENTATION.PUBTABLES_CELL_NAMES: Lists all cell types used by the Table Transformer approach
+        (PubtablesSegmentationService). LayoutType.CELL is synthetically generated and not predicted by the structure
+        recognition model.
 
     SEGMENTATION.PUBTABLES_SPANNING_CELL_NAMES: Subset of PUBTABLES_CELL_NAMES that represent spanning/header cells.
         These need to be matched with row or column elements.
@@ -245,15 +248,17 @@ not with the Table Transformer method.
 
     SEGMENTATION.PUBTABLES_ITEM_NAMES: Equivalent to ITEM_NAMES but used in the Table Transformer approach.
 
-    SEGMENTATION.SUB_ITEM_NAMES: Used in TableSegmentationService to specify sub-category annotations for row and column numbers.
+    SEGMENTATION.SUB_ITEM_NAMES: Used in TableSegmentationService to specify sub-category annotations for row and
+        column numbers.
 
     SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES: Equivalent to SUB_ITEM_NAMES, but used with the Table Transformer approach.
 
     SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES: Used in PubtablesSegmentationService.
         Specifies which cells should be treated as header cells that need to be linked to row/column elements.
 
-    SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS: Defines the threshold values for matching column/row header cells to their respective rows/columns
-        in the Table Transformer approach. The matching rule is defined in SEGMENTATION.ASSIGNMENT_RULE.
+    SEGMENTATION.PUBTABLES_ITEM_HEADER_THRESHOLDS: Defines the threshold values for matching column/row header cells to
+        their respective rows/columns in the Table Transformer approach. The matching rule is defined in
+        SEGMENTATION.ASSIGNMENT_RULE.
 
 ## Text Extraction Configuration
 
@@ -311,9 +316,11 @@ All other engines must be set to False.
         It is recommended to align this value with IMAGE_DEFAULTS.TEXT_CONTAINER
         rather than modifying it directly in the config.
 
-    WORD_MATCHING.PARENTAL_CATEGORIES: Specifies the layout categories considered as potential parents of text containers.
+    WORD_MATCHING.PARENTAL_CATEGORIES: Specifies the layout categories considered as potential parents of text
+        containers.
 
-    WORD_MATCHING.RULE: Rule used for matching: either 'iou' (intersection over union) or 'ioa' (intersection over area).
+    WORD_MATCHING.RULE: Rule used for matching: either 'iou' (intersection over union) or 'ioa' (intersection over
+        area).
 
     WORD_MATCHING.THRESHOLD: Threshold for the selected matching rule (IOU or IOA).
         Text containers must exceed this threshold to be assigned to a layout section.
@@ -322,17 +329,19 @@ All other engines must be set to False.
         setting this to True will assign it only to the best-matching (i.e., highest-overlapping) section.
         Prevents duplication of text in the output.
 
-    TEXT_ORDERING.TEXT_BLOCK_CATEGORIES: Specifies which layout categories must be ordered (e.g., paragraphs, list items).
-        These are layout blocks that will be processed by the TextOrderingService.
+    TEXT_ORDERING.TEXT_BLOCK_CATEGORIES: Specifies which layout categories must be ordered (e.g., paragraphs, list
+        items). These are layout blocks that will be processed by the TextOrderingService.
 
-    TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES: Specifies which text blocks are considered floating (not aligned with strict columns or grids).
-        These will be linked with a subcategory of type Relationships.READING_ORDER.
+    TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES: Specifies which text blocks are considered floating (not aligned with
+        strict columns or grids). These will be linked with a subcategory of type Relationships.READING_ORDER.
 
-    TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER: Determines whether residual (unmatched) text containers should be included in the ordering process.
+    TEXT_ORDERING.INCLUDE_RESIDUAL_TEXT_CONTAINER: Determines whether residual (unmatched) text containers should be
+        included in the ordering process.
         If set to True, orphaned text containers are grouped into lines and added to the layout ordering.
         If set to False, unmatched text containers will not appear in the output.
 
-    TEXT_ORDERING.STARTING_POINT_TOLERANCE: Tolerance used to determine whether a text block's left/right coordinate lies within a column's boundary.
+    TEXT_ORDERING.STARTING_POINT_TOLERANCE: Tolerance used to determine whether a text block's left/right coordinate
+        lies within a column's boundary.
         Helps with assigning text blocks to columns based on horizontal alignment.
 
     TEXT_ORDERING.BROKEN_LINE_TOLERANCE: Horizontal distance threshold for grouping words into the same line.
@@ -341,8 +350,8 @@ All other engines must be set to False.
     TEXT_ORDERING.HEIGHT_TOLERANCE: Used for ordering vertically broken floating text blocks into coherent columns.
         Defines vertical alignment tolerance between adjacent text blocks.
 
-    TEXT_ORDERING.PARAGRAPH_BREAK: Defines the spacing threshold that indicates a paragraph break in vertically arranged text blocks.
-        Helps determine reading order in multi-column, broken layouts.
+    TEXT_ORDERING.PARAGRAPH_BREAK: Defines the spacing threshold that indicates a paragraph break in vertically
+        arranged text blocks. Helps determine reading order in multi-column, broken layouts.
 
 ## Layout Linking Configuration
 

@@ -494,7 +494,8 @@ class BoundingBox:
             f" lry={self.lry}, width={self.width}, height={self.height})"
         )
 
-    def _get_legacy_string(self) -> str:
+    def get_legacy_string(self) -> str:
+        """Legacy string representation of the bounding box. Do not use"""
         return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod

@@ -441,7 +441,7 @@ class Image:
 
         attributes = annotation.get_defining_attributes()
         attributes_values = [str(getattr(annotation, attribute)) if attribute!="bounding_box"
-                             else getattr(annotation,"bounding_box")._get_legacy_string() for attribute in attributes]
+                             else getattr(annotation,"bounding_box").get_legacy_string() for attribute in attributes]
         return get_uuid(*attributes_values, str(self.image_id))
 
     def remove(

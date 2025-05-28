@@ -189,7 +189,56 @@ def test_dd_analyzer_with_doctr() -> None:
     assert len(page.layouts) in {53, 55, 63}
     print(page.text_no_line_break)
     assert page.text_no_line_break in (
-        """Festlegung der VV und angemessene Risikoadjustierung Die W-Pools der DWS Gruppe werden einer angemessenen Anpassung der Risiken unterzogen, die die Adjustierung ex ante als auch ex post umfasst. Die angewandte robuste Method d soll sicherstellen, dass bei der Festlegung der W sowohl der risikoadjustierten Leistung als auch der Kapital- und Liguiditatsaustattung der DWS Gruppe Rechnung getragen wird. Die mittlung des Gesamtbetrags der W orientiert sich primàr an 0 der Tragfâhigkeit fur die DWS Gruppe (das heiBt, was kann" die DWS Gruppe langfristig an) Wi im Einklang mit regulatorisch Anforderungen gewâhren) und ( der Leistung (das heilt, was sollte" die DWS Gruppe an W gewâhren, um fur eine angemessene leistungsbezogene Vergutung zu sorgen und gleichzeit den langfristigen Erfolg des Unternehmens zu sichern). Die DWS Gruppe hat fûr die Festlegung der W auf Ebene der individuellen Mitarbeiter die Grundsâtze for die Festlegung der variablen Vergutung" eingefuhrt. Diese enthalten Informatione Uber die Faktoren und MessgroBen, die bei Entscheidungen: zur W berlcksichtigt werden mussen. Dazu zâhlen beispielsweise Investmentperiomance. Kundenbindung, Erwàgungen Unternehmenskutur sowie Zielvereinbarungen und Leistungsbeurteilung im Rahmen des Ganzheitliche Leistung" -Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli narmalSnahmen sowie deren Einfluss auf die W einbezogen. Bei per Ermessensentscherdiung erfolgenden Sub-PoolZuteilungen verwendet das DWS DCC die internen (finanziellen und nichtfinanziellen) Balanced Scorecard-Kennzahlen zur Erstellung differenzierter und leistungsbezogener W-Pools. Vergutung fur das Jahr 2018 Nach der hervorragenden Entwicklung im Jahr 2017 hatte die globale easealpibande 2018 mit einigen Schwierigkeiten zu kâmpfen. Grûnde waren unguinstige Marktbedin- gungen, stârkere geopolitische Spannungen und die negative Stimmung unter den Anlegern, vor allem am europàischen Retail-Markt. Auch die DWS Gruppe blieb von dieser Entwicklung nicht verschont. Vor diesem Hintergrund hat das DCC die Tragfahigkeit der W fur das Jahr 2018 kontrolliert und festgestellt, dass die Kapital- und Liguditaitsausstattung der DWS Gruppe unter Berlcksichti gung des Ergebnisses vor und nach Steuern klar Uber den regulatorisch vorgeschriebenen Mindestanforderungen und dem internen Schwellenwert fur die Risikotoleranz liegt Als Teil der im Màrz 2019 fur das Performance-Jahr 2018 gewâhrten W wurde die Gruppenkomponente allen berechtigten Mitarbeitern auf Basis der Bewertung der vier festgelegten Leistungs kennzahlen gewàhrt. Der Vorstand der Deutsche Bank AG hat fûr 2018 unter Berlcksichtigung der betràchtlichen Leistungen der Mitarbeiter und in seinem Ermessen einen Zielerreichungsgrad von 70 % festgelegt. Identifizierung von Risikotràger GemaBs Gesetz vom 17 Dezember 2010 Uber die Organismen fûr gemeinsame Anlagen (in seiner jeweils gultigen Fassung) sowie den ESMA-Leitlinien unter Berlcksichtigung der OGAW- Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft ermittelt GRisikotrâger"). Das dentifiaerungsveriahren basiert auf der Bewertung des Einflusses folgender Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr ver walteten Fonds: (a) GeschatstihungSenior Management, (b) Portfolio-1 Investmentmanager. (c) Kontrolfunktionen, (d) Mitarbeiter mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikotràger) mit wesentlichem Einfluss, () sonstige Mitarbeiter in der gleichen Vergitungsstufe wie sonstige Risikotrâger. Mindestens 40 % der wi fur Risikotràger werden aufgeschoben vergeben. Des Weiteren werden fur wichtige Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewàhrt. Alle aufgeschobenen Komponenten sind bestimmten Leistungs- und Verfalbedingungen unterworfen, um eine angemessene nachtràgliche Risikoadjustierung zu gewàhr leisten. Bei einem W-Betrag von weniger als EUR 50.000 erhalten Risikotrâger ihre gesamte w in bar und ohne Aufschub. Zusammenfassung der Informationen zur Vergutung fur die Gesellschaft fur 20181 Jahresdurchschnitt der Mitarbeiterzahl 139 EUR 15.315. .952 Gesamtvergutung? Fixe Vergutung EUR 13.151.856 Variable Vergutung EUR 2.164.096 davon: Carried Interest EURO Gesamtvergutung fur Senior Management EUR 1.468.434 Gesamtvergutung fûr sonstige Risikotrâger EUR 324.229 Gesamtvergutung fur Mitarbeiter mit Kontrollfunktionen EUR 554.046 Vergûtungsdaten fur Delegierte, an die die Gesellschaft Portfolio- oder Rskomangementaupaben Ubertragen hat, sind nicht in der Tabelle erfasst. Unter Berlcksichtigung diverser Vergdtungsbestandteile entsprechend den Definitionen in den ESMA-Leitinien, die Geldzahlungen oder -leistungen (wie Bargeld, Anteile, Optionsscheir Rentenbeitràge) oder Nicht-Idirekte) Geldleistungen (wie Gehaltsnebenleistungen oder Sondervergitungen fur Fahrzeuge, Mobiltelefone, usw.) umfassen. Senior Management" umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfillt die Definition als Fuhrungskrâfte der Gesellschaft. Ober den Vorstand hinaus wurden keine weitere Fuhrungskrâfte identifiziert. 22""",  # pylint: disable=C0301
+        """Festlegung der VV und angemessene Risikoadjustierung Die W-Pools der DWS Gruppe werden einer angemessenen 
+        Anpassung der Risiken unterzogen, die die Adjustierung ex ante als auch ex post umfasst. Die angewandte 
+        robuste Method d soll sicherstellen, dass bei der Festlegung der W sowohl der risikoadjustierten Leistung als 
+        auch der Kapital- und Liguiditatsaustattung der DWS Gruppe Rechnung getragen wird. Die mittlung des 
+        Gesamtbetrags der W orientiert sich primàr an 0 der Tragfâhigkeit fur die DWS Gruppe (das heiBt, was kann" 
+        die DWS Gruppe langfristig an) Wi im Einklang mit regulatorisch Anforderungen gewâhren) und ( der Leistung 
+        (das heilt, was sollte" die DWS Gruppe an W gewâhren, um fur eine angemessene leistungsbezogene Vergutung zu 
+        sorgen und gleichzeit den langfristigen Erfolg des Unternehmens zu sichern). Die DWS Gruppe hat fûr die 
+        Festlegung der W auf Ebene der individuellen Mitarbeiter die Grundsâtze for die Festlegung der variablen 
+        Vergutung" eingefuhrt. Diese enthalten Informatione Uber die Faktoren und MessgroBen, die bei Entscheidungen: 
+        zur W berlcksichtigt werden mussen. Dazu zâhlen beispielsweise Investmentperiomance. Kundenbindung, Erwàgungen 
+        Unternehmenskutur sowie Zielvereinbarungen und Leistungsbeurteilung im Rahmen des Ganzheitliche Leistung" 
+        -Ansatzes. Zudem werden Hinweise der Kontrollfunktionen und Diszipli narmalSnahmen sowie deren Einfluss auf 
+        die W einbezogen. Bei per Ermessensentscherdiung erfolgenden Sub-PoolZuteilungen verwendet das DWS DCC die 
+        internen (finanziellen und nichtfinanziellen) Balanced Scorecard-Kennzahlen zur Erstellung differenzierter 
+        und leistungsbezogener W-Pools. Vergutung fur das Jahr 2018 Nach der hervorragenden Entwicklung im Jahr 2017 
+        hatte die globale easealpibande 2018 mit einigen Schwierigkeiten zu kâmpfen. Grûnde waren unguinstige 
+        Marktbedin- gungen, stârkere geopolitische Spannungen und die negative Stimmung unter den Anlegern, vor 
+        allem am europàischen Retail-Markt. Auch die DWS Gruppe blieb von dieser Entwicklung nicht verschont. Vor 
+        diesem Hintergrund hat das DCC die Tragfahigkeit der W fur das Jahr 2018 kontrolliert und festgestellt, dass 
+        die Kapital- und Liguditaitsausstattung der DWS Gruppe unter Berlcksichti gung des Ergebnisses vor und nach 
+        Steuern klar Uber den regulatorisch vorgeschriebenen Mindestanforderungen und dem internen Schwellenwert fur 
+        die Risikotoleranz liegt Als Teil der im Màrz 2019 fur das Performance-Jahr 2018 gewâhrten W wurde die 
+        Gruppenkomponente allen berechtigten Mitarbeitern auf Basis der Bewertung der vier festgelegten Leistungs 
+        kennzahlen gewàhrt. Der Vorstand der Deutsche Bank AG hat fûr 2018 unter Berlcksichtigung der betràchtlichen 
+        Leistungen der Mitarbeiter und in seinem Ermessen einen Zielerreichungsgrad von 70 % festgelegt. 
+        Identifizierung von Risikotràger GemaBs Gesetz vom 17 Dezember 2010 Uber die Organismen fûr gemeinsame 
+        Anlagen (in seiner jeweils gultigen Fassung) sowie den ESMA-Leitlinien unter Berlcksichtigung der OGAW- 
+        Richtlinie hat die Gesellschaft Mitarbeiter mit wesentlichem Einfluss auf das Risikoprofil der Gesellschaft 
+        ermittelt GRisikotrâger"). Das dentifiaerungsveriahren basiert auf der Bewertung des Einflusses folgender 
+        Kategorien von Mitarbeitern auf das Risikoprofil der Gesellschaft oder einen von ihr ver walteten Fonds: (a) 
+        GeschatstihungSenior Management, (b) Portfolio-1 Investmentmanager. (c) Kontrolfunktionen, (d) Mitarbeiter 
+        mit Leitungsfunktionen in Verwaltung, Marketing und Human Resources, (e) sonstige Mitarbeiter (Risikotràger) 
+        mit wesentlichem Einfluss, () sonstige Mitarbeiter in der gleichen Vergitungsstufe wie sonstige Risikotrâger. 
+        Mindestens 40 % der wi fur Risikotràger werden aufgeschoben vergeben. Des Weiteren werden fur wichtige 
+        Anlageexperten mindestens 50 % sowohl des direkt ausgezahlten als auch des aufgeschobenen Teils in Form von 
+        aktienbasierten oder fondsbasierten Instrumenten der DWS Gruppe gewàhrt. Alle aufgeschobenen Komponenten sind 
+        bestimmten Leistungs- und Verfalbedingungen unterworfen, um eine angemessene nachtràgliche Risikoadjustierung 
+        zu gewàhr leisten. Bei einem W-Betrag von weniger als EUR 50.000 erhalten Risikotrâger ihre gesamte w in bar 
+        und ohne Aufschub. Zusammenfassung der Informationen zur Vergutung fur die Gesellschaft fur 20181 
+        Jahresdurchschnitt der Mitarbeiterzahl 139 EUR 15.315. .952 Gesamtvergutung? Fixe Vergutung EUR 13.151.856 
+        Variable Vergutung EUR 2.164.096 davon: Carried Interest EURO Gesamtvergutung fur Senior Management EUR 
+        1.468.434 Gesamtvergutung fûr sonstige Risikotrâger EUR 324.229 Gesamtvergutung fur Mitarbeiter mit 
+        Kontrollfunktionen EUR 554.046 Vergûtungsdaten fur Delegierte, an die die Gesellschaft Portfolio- oder 
+        Rskomangementaupaben Ubertragen hat, sind nicht in der Tabelle erfasst. Unter Berlcksichtigung diverser 
+        Vergdtungsbestandteile entsprechend den Definitionen in den ESMA-Leitinien, die Geldzahlungen oder -leistungen 
+        (wie Bargeld, Anteile, Optionsscheir Rentenbeitràge) oder Nicht-Idirekte) Geldleistungen (wie 
+        Gehaltsnebenleistungen oder Sondervergitungen fur Fahrzeuge, Mobiltelefone, usw.) umfassen. Senior 
+        Management" umfasst nur den Vorstand der Gesellschaft. Der Vorstand erfillt die Definition als Fuhrungskrâfte 
+        der Gesellschaft. Ober den Vorstand hinaus wurden keine weitere Fuhrungskrâfte identifiziert. 22""",  # pylint: disable=C0301
     )
 
 
