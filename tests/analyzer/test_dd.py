@@ -339,7 +339,14 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert {layout.category_name.value for layout in page.layouts} == {'line', 'list', 'text', 'title'} # type: ignore
     print(page.tables[0].html)
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
-    assert page.tables[0].html in {'<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'
+    assert page.tables[0].html in {'<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td></td></tr><tr><td>'
+                                   'Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td><td>'
+                                   'EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>'
+                                   '</tr><tr><td>davon: Carried Interest</td><td></td></tr><tr><td>Gesamtvergutung'
+                                   ' fur Senior Management</td><td>EUR 1.468.434</td></tr><tr><td>fûr sonstige'
+                                   ' Risikotrâger</td><td>EUR 324.229</td></tr><tr><td>fur Mitarbeiter mit'
+                                   ' Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>',
+                                   '<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'
                                    'Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td>'
                                    '<td>EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>'
                                    '</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergutung'
