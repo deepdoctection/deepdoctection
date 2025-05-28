@@ -90,6 +90,7 @@ def test_legacy_dd_analyzer_builds_and_process_image_layout_and_tables_correctly
     # Arrange
     analyzer = get_dd_analyzer(
         config_overwrite=[
+            "USE_TABLE_SEGMENTATION=True",
             "USE_OCR=False",
             "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
             "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
@@ -157,7 +158,8 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
 
     # Arrange
     analyzer = get_dd_analyzer(config_overwrite=
-            ["PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
+            ["USE_TABLE_SEGMENTATION=True",
+            "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
             "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
             "PT.ITEM.FILTER=None",
             "PT.LAYOUT.PAD.TOP=60",
