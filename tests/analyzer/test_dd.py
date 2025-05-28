@@ -269,7 +269,7 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {11,12}
-    assert {layout.category_name.value for layout in page.layouts} == {'text'}  # type: ignore
+    assert {layout.category_name.value for layout in page.layouts} == {'list', 'text', 'title'}  # type: ignore
     assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
             {'page_footer','page_header'})
     assert len(page.tables) == 1
@@ -301,7 +301,7 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {11,12}
-    assert {layout.category_name.value for layout in page.layouts} == {'text'} # type: ignore
+    assert {layout.category_name.value for layout in page.layouts} == {'list', 'text', 'title'} # type: ignore
     assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
             {'page_footer','page_header'})
 
@@ -336,7 +336,7 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert isinstance(page, Page)
 
     assert len(page.layouts) in {13,17}
-    assert {layout.category_name.value for layout in page.layouts} == {'line', 'text'} # type: ignore
+    assert {layout.category_name.value for layout in page.layouts} == {'line', 'list', 'text', 'title'} # type: ignore
     assert ({layout.category_name.value for layout in page.residual_layouts} == # type: ignore
             {'page_footer','page_header'})
 
