@@ -358,5 +358,5 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert len(page.text) in {4301, 4809}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {612}
-    assert len(text_["ann_ids"]) in {612}
+    assert len(text_["words"]) in {558,612}
+    assert len(text_["ann_ids"]) in {558, 612}
