@@ -1,4 +1,9 @@
-![title](./_imgs/dd_logo.png) 
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <h3 align="center">
+  A Document AI Package
+  </h3>
+</p>
 
 # Analyzer Configuration
 
