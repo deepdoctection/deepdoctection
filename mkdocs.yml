@@ -1,34 +1,62 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_url: https://example.com/
 site_name: deepdoctection
+site_author: Dr. Janis Meyer
+site_description: A Document AI package
 repo_url: https://github.com/deepdoctection/deepdoctection
 edit_uri: blob/main/docs
-site_description: A Document AI package
 
 theme:
   name: material
   palette:
     primary: blue
+    accent: indigo
   logo: ./tutorials/_imgs/dd_logo_only.png
   features:
     - navigation.tabs
     - navigation.indexes
     - content.code.copy
+    - content.code.annotate
     - header.autohide
+    - content.tabs.link
+  icon:
+    annotation: material/alpha-i-circle
+    admonition:
+      note: fontawesome/solid/exclamation
+      info: fontawesome/solid/circle-info
+      tip: fontawesome/solid/bullhorn
+      warning: fontawesome/solid/triangle-exclamation
+      failure: fontawesome/solid/bomb
+      example: fontawesome/solid/flask
 
 markdown_extensions:
+  - tables
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.tabbed:
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 
 nav:
-    - Deepdoctection: index.md
-    - About: why.md
-    - Install: install.md
+    - index.md
+    - install.md
+    - Get started: ./tutorials/Analyzer_Get_Started.md
     - Tutorials:
         - Introductory tutorials:
             - Get started: ./tutorials/Analyzer_Get_Started.md
@@ -90,6 +118,7 @@ plugins:
               line_length: 120
               docstring_style: sphinx
               merge_init_into_class: True
+              heading_level: 3
 
 # to watch lib files in mkdocs server. Uncomment, if update docs locally
 watch:
