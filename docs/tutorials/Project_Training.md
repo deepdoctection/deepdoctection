@@ -1,10 +1,22 @@
-# Train a model on a union of datasets and log training with Weights & Biases
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <h3 align="center">
+  </h3>
+</p>
 
-One problem with most Document Layout Analysis datasets is that they have very limited layout variability. This causes models to generalize poorly to other domains. 
+# Project: Training a model on several datasets
 
-We show how to easily merge datasets with deepdoctection and monitor the training with Weights & Biases. 
+One problem with most Document Layout Analysis datasets is that they have very limited layout variability. This causes 
+models to generalize poorly to other domains. 
+
+We show how to merge datasets with **deep**doctection and monitor the training with Weights & Biases. 
 
 We use a union of subsets from Doclaynet and Publaynet and resume training of a pre-trained layout model.
+
+## Step 1: Rescaling Doclaynet images
+
+Doclaynet images are scaled to 1000x1000 pixels, wheras Publaynet images have a 4/3 height/width ratio. 
+We re-scale Doclaynet images in order to have the same width/height ratio.  
 
 
 ```python
@@ -15,14 +27,7 @@ from fvcore.transforms import ScaleTransform
 import wandb
 
 import deepdoctection as dd
-```
 
-## Step 1: Rescaling Doclaynet images
-
-Doclaynet images are scaled to 1000x1000 pixels, wheres Publaynet images have a 4/3 height/width ratio. We therefore re-scale Doclaynet images in order to have the same width/height ratio.  
-
-
-```python
 @dd.curry
 def scale_transform(dp, scaler, apply_image=False):
     dp._bbox = None
@@ -43,7 +48,8 @@ def filter_list_images(dp):
     return dp
 ```
 
-We save all resized images in DocLayNet_core/PNG_resized. We run the code for the splits `train`,`val` and `test`. You will need around 50GB of space. If this is too much, you can also play with smaller `new_h`, `new_w` values.
+We save all resized images in DocLayNet_core/PNG_resized. We run the code for the splits `train`,`val` and `test`. 
+We will need around 50GB of space. If this is too much, we can also play with smaller `new_h`, `new_w` values.
 
 
 ```python
@@ -59,19 +65,20 @@ df.reset_state()
 for idx, dp in enumerate(df):
     print(f"processing: {idx}")
     path = dd.get_dataset_dir_path() / "DocLayNet_core/PNG_resized" / dp.file_name
-    cv2.imwrite(str(path),dp.image)
+	dd.viz_handler.write_image(path, dp.image)
 ```
 
 ## Step 2: Merging datasets
 
 Doclaynet and Publaynet have different labels. Therefore we re-label some Doclaynet categories in order so that we
-get "text","title","list","table","figure". 
+get `text`,`title`, `list`, `table`, `figure`. We already covered this [here](Evaluation_And_Fine_Tuning.md).
 
-We have to re-scale coordinates to align with the new image size, we therefore pass all datapoints on the fly 
-through `scale_transform`. One other thing we observed is that the style how `list` have been annotated is different to
-how the annotation style in Publaynet: Doclaynet labels each list item separately in one bounding box wheres in Publaynet a `list` bounding box encloses all list items.    
+After re-scaling the images, we also have to re-scale the ground truth label coordinates.  
+
+One other thing we observed is that the style how `list` have been annotated is different to
+how the annotation style in Publaynet: Doclaynet labels each list items separately in one bounding box wheres in 
+Publaynet a `list` bounding box encloses all list items.    
     
-After buffering annotations (no images (!)) we shuffle all datapoints and build `train`, `val` and `test` split.
 
 ```python
 doclaynet = dd.get_dataset("doclaynet")
@@ -95,9 +102,9 @@ doclaynet.dataflow.categories._categories_update = [dd.LayoutType.TEXT,
                                                     dd.LayoutType.TABLE,
                                                     dd.LayoutType.FIGURE]
 
-df_doc = doclaynet.dataflow.build(split="train", resized=True)  # requires to create resized images
-df_doc_val = doclaynet.dataflow.build(split="val", resized=True)  # requires to create resized images
-df_doc_test = doclaynet.dataflow.build(split="test", resized=True)  # requires to create resized images
+df_doc = doclaynet.dataflow.build(split="train", resized=True)  
+df_doc_val = doclaynet.dataflow.build(split="val", resized=True)
+df_doc_test = doclaynet.dataflow.build(split="test", resized=True) 
 
 scaler = ScaleTransform(h=1025,
                         w=1025,
@@ -125,7 +132,8 @@ merge.split_datasets(ratio=0.01)
 
 ## Step 3: Saving the split as Artifact
 
-To reproduce results and know what datapoint belongs to what split, we create and log an artifact that saves the mapping between `image_id` of each datapoint and its split class. 
+To reproduce results and know what datapoint belongs to what split, we create and log an artifact that saves the 
+mapping between `image_id` of each datapoint and its split class. 
 
 
 ```python
@@ -146,11 +154,11 @@ wandb.log_artifact(artifact)
 wandb.finish()
 ```
 
-### Step 4: Setup training and monitoring training process
+## Step 4: Setup training and monitoring training process
 
 Next we setup our configuration and start our training. To monitor the training process with W&B dashboard 
-we set `WANDB.USE_WANDB=True` as well as `WANDB.PROJECT=layout_detection`. We can stop the training process at each step we
-want. To resume training, please follow Step 5.
+we set `WANDB.USE_WANDB=True` as well as `WANDB.PROJECT=layout_detection`. We can stop the training process at each step 
+we want.
 
 
 ```python
@@ -158,36 +166,38 @@ path_config = dd.ModelCatalog.get_full_path_configs("layout/d2_model_0829999_lay
 path_weights = dd.ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout.pth")
 categories = dd.ModelCatalog.get_profile("layout/d2_model_0829999_layout.pth").categories
 coco = dd.metric_registry.get("coco")
-```
 
-
-```python
-dd.train_d2_faster_rcnn(path_config,
-                        merge,
-                        path_weights,
-                        ["SOLVER.IMS_PER_BATCH=2", 
-                         "SOLVER.MAX_ITER=240000", 
-                         "SOLVER.CHECKPOINT_PERIOD=4000",
-                         "SOLVER.STEPS=(160000, 190000)", 
-                         "TEST.EVAL_PERIOD=4000", 
-                         "MODEL.BACKBONE.FREEZE_AT=0",
-                         "WANDB.USE_WANDB=True", 
-                         "WANDB.PROJECT=layout_detection"],
-                         "/path/to/dir",
-                         None,
-                         merge,
-                         None,
-                         None,
-                         coco,
-                         "ImageLayoutService")
+dd.train_d2_faster_rcnn(path_config_yaml=path_config,
+                        dataset_train=merge,
+                        path_weights=path_weights,
+                        config_overwrite= ["SOLVER.IMS_PER_BATCH=2", 
+                                           "SOLVER.MAX_ITER=240000", 
+                                           "SOLVER.CHECKPOINT_PERIOD=4000",
+                                           "SOLVER.STEPS=(160000, 190000)", 
+                                           "TEST.EVAL_PERIOD=4000", 
+                                           "MODEL.BACKBONE.FREEZE_AT=0",
+                                           "WANDB.USE_WANDB=True", 
+                                           "WANDB.PROJECT=layout_detection"],
+                        log_dir="/path/to/dir",
+                        build_train_config=None,
+                        dataset_val=merge,
+                        build_val_config=None,
+                        metric_name=None,
+                        metric=coco,
+                        pipeline_component_name="ImageLayoutService")
 ```
 
 ## Step 5: Resume training
 
-If we want to resume training maybe after starting a new jupyter kernel we need to re-create our dataset split.
-So we need to execute Step 2 to re-load annotations and the artifact with splits information from W&B. With 
-`create_split_by_id` we can easily reconstruct our split and resume training. If we do not change the logging dir
-Detectron2 will use the last checkpoint we saved and resume training from there. 
+If we want to resume training we need to re-create our dataset split.
+
+So we need to execute Step 2 to re-load annotations and the artifact with splits information from Weights & Biases. 
+With `create_split_by_id` we can easily reconstruct our split and resume training. 
+
+!!! info
+
+    If we do not change the logging dir Detectron2 will use the last checkpoint we saved and resume training from 
+    there. 
 
 
 ```python
@@ -200,25 +210,24 @@ for row in table.data:
     split_dict[row[0]].append(row[1])
     
 merge.create_split_by_id(split_dict)
-```
 
-
-```python
-dd.train_d2_faster_rcnn(path_config,
-                        merge,
-                        path_weights,
-                        ["SOLVER.IMS_PER_BATCH=2", "SOLVER.MAX_ITER=240000", 
+dd.train_d2_faster_rcnn(path_config_yaml=path_config,
+                        dataset_train=merge,
+                        path_weights=path_weights,
+                        config_overwrite=[
+						 "SOLVER.IMS_PER_BATCH=2", 
+						 "SOLVER.MAX_ITER=240000", 
                          "SOLVER.CHECKPOINT_PERIOD=4000",
                          "SOLVER.STEPS=(160000, 190000)", 
                          "TEST.EVAL_PERIOD=4000", 
                          "MODEL.BACKBONE.FREEZE_AT=0",
                          "WANDB.USE_WANDB=True", 
                          "WANDB.PROJECT=layout_detection"],
-                         "/path/to/dir",
-                         None,
-                         merge,
-                         None,
-                         None,
-                         coco,
-                         "ImageLayoutService")
+                         log_dir="/path/to/dir",
+                         build_train_config=None,
+                         dataset_val=merge,
+                         build_val_config=None,
+                         metric_name=None,
+                         metric=coco,
+                         pipeline_component_name="ImageLayoutService")
 ```

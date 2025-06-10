@@ -69,10 +69,6 @@ def get_dd_analyzer(
 ) -> DoctectionPipe:
     """
 
-    .. attention::
-
-   Climate change is real.
-
     Factory function for creating the built-in **deep**doctection analyzer.
 
     The Standard Analyzer is a pipeline that comprises the following analysis components:

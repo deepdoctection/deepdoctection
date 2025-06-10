@@ -56,56 +56,57 @@ markdown_extensions:
 nav:
     - index.md
     - install.md
-    - Get started: ./tutorials/Analyzer_Get_Started.md
     - Tutorials:
-        - Introductory tutorials:
-            - Get started: ./tutorials/Analyzer_Get_Started.md
-            - More on parsing: ./tutorials/Analyzer_More_On_Parsing.md
-            - Configuration: ./tutorials/Analyzer_Configuration.md
-            - Configuration samples: ./tutorials/Analyzer_Configuration_Samples.md
-            - Model Registry and new models: ./tutorials/Analyzer_Model_Registry_And_New_Models.md
-            - Pipelines: ./tutorials/pipelines_notebook.md
-            - Analyzer with Table Transformer: ./tutorials/analyzer_with_table_transformer_notebook.md
-            - Custom pipeline: ./tutorials/custom_pipeline_notebook.md
-            - Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
-            - Datasets and evaluation: ./tutorials/datasets_and_eval_notebook.md
-            - Data structures: ./tutorials/data_structure_notebook.md
-            - LayoutLM for sequence classification: ./tutorials/using_layoutlm_for_sequence_classification_notebook.md
+          - Get Started: ./tutorials/Analyzer_Get_Started.md
+          - More On Parsing: ./tutorials/Analyzer_More_On_Parsing.md
+          - Configuration: ./tutorials/Analyzer_Configuration.md
+          - Configuration Samples: ./tutorials/Analyzer_Configuration_Samples.md
+          - Model Registry And New Models: ./tutorials/Analyzer_Model_Registry_And_New_Models.md
+          - Doclaynet With A YOLO Predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
+          - Pipelines: ./tutorials/Pipelines.md
+          - Data Structures: ./tutorials/Data_Structure.md
+          - Datasets: ./tutorials/Datasets.md
+          - Architecture: ./tutorials/Architecture.md
+          - Evaluation And Fine-Tuning: ./tutorials/Evaluation_And_Fine_Tuning.md
+    - Projects:
+          - Training a model on several datasets: ./tutorials/Project_Training.md
+          - Custom pipeline: ./tutorials/Custom_Pipeline.md
+          #- Running pre-trained models from Layout-Parser:  ./tutorials/running_pre_trained_models_from_third_party_libraries_notebook.md
+          #- LayoutLM for sequence classification: ./tutorials/using_layoutlm_for_sequence_classification_notebook.md
 
-        - Deep dive tutorials:
-            - Architecture: ./tutorials/architecture.md
-            - Datasets: ./tutorials/datasets.md
-            - Customized parsing: ./tutorials/layout_parsing_structure.md
-            - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
-            - LayoutLMv1 for financial report NER: ./tutorials/layoutlm_v1_on_custom_token_classification_notebook.md
-            - LayoutLMv2 and LayoutXLM for financial report NER: ./tutorials/layoutlm_v2_on_custom_token_classification_notebook.md
-            - LayoutLMv3 for financial report NER: ./tutorials/layoutlm_v3_on_custom_token_classification_notebook.md
-            - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
-            - Doclaynet with a YOLO predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
-            - Advanced Analyzer configuration: ./tutorials/doclaynet_analyzer_config.md
+    #- Deep dive tutorials:
+    #      - Architecture: ./tutorials/architecture.md
+    #      - Customized parsing: ./tutorials/layout_parsing_structure.md
+    #      - LayoutLM for token classification: ./tutorials/layoutlm_for_token_classification.md
+    #      - LayoutLMv1 for financial report NER: ./tutorials/layoutlm_v1_on_custom_token_classification_notebook.md
+          #- LayoutLMv2 and LayoutXLM for financial report NER: ./tutorials/layoutlm_v2_on_custom_token_classification_notebook.md
+          #- LayoutLMv3 for financial report NER: ./tutorials/layoutlm_v3_on_custom_token_classification_notebook.md
+    #      - Training on multiple datasets and logging: ./tutorials/training_and_logging.md
+    #      - Doclaynet with a YOLO predictor: ./tutorials/Analyzer_Doclaynet_With_YOLO.md
+          #- Advanced Analyzer configuration: ./tutorials/doclaynet_analyzer_config.md
 
-        - Notes:
-            - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
-            - Various topics around LayoutLMv1 - part II: ./tutorials/layoutlm_various_topics_pt2.md
-        - Scripts:
-            - Evaluation Tensorpack vs. Detectron2: ./tutorials/eval_tp_vs_d2.md
-            - Various scripts: ./tutorials/table_recognition_eval.md
-            - Evaluation of table recognition: ./tutorials/table_recognition_eval.md
-            - Tensorpack training scripts: ./tutorials/scripts.md
+    #- Notes:
+    #      - Various topics around LayoutLMv1 - part I: ./tutorials/layoutlm_various_topics_pt1.md
+    #      - Various topics around LayoutLMv1 - part II: ./tutorials/layoutlm_various_topics_pt2.md
+    #- Scripts:
+    #      - Evaluation Tensorpack vs. Detectron2: ./tutorials/eval_tp_vs_d2.md
+    #      - Various scripts: ./tutorials/table_recognition_eval.md
+    #      - Evaluation of table recognition: ./tutorials/table_recognition_eval.md
+    #      - Tensorpack training scripts: ./tutorials/scripts.md
     - API:
-        - deepdoctection.analyzer: ./modules/deepdoctection.analyzer.md
-        - deepdoctection.dataflow: ./modules/deepdoctection.dataflow.md
-        - deepdoctection.datapoint: ./modules/deepdoctection.datapoint.md
-        - deepdoctection.datasets: ./modules/deepdoctection.datasets.md
-        - deepdoctection.datasets.instances: ./modules/deepdoctection.datasets.instances.md
-        - deepdoctection.eval: ./modules/deepdoctection.eval.md
-        - deepdoctection.extern: ./modules/deepdoctection.extern.md
-        - deepdoctection.extern.pt: ./modules/deepdoctection.extern.pt.md
-        - deepdoctection.extern.tp: ./modules/deepdoctection.extern.tp.md
-        - deepdoctection.mapper: ./modules/deepdoctection.mapper.md
-        - deepdoctection.pipe: ./modules/deepdoctection.pipe.md
-        - deepdoctection.train: ./modules/deepdoctection.train.md
-        - deepdoctection.utils: ./modules/deepdoctection.utils.md
+        - analyzer: ./modules/deepdoctection.analyzer.md
+        - dataflow: ./modules/deepdoctection.dataflow.md
+        - datapoint: ./modules/deepdoctection.datapoint.md
+        - datasets: ./modules/deepdoctection.datasets.md
+        - datasets.instances: ./modules/deepdoctection.datasets.instances.md
+        - eval: ./modules/deepdoctection.eval.md
+        - extern: ./modules/deepdoctection.extern.md
+        - extern.pt: ./modules/deepdoctection.extern.pt.md
+        - extern.tp: ./modules/deepdoctection.extern.tp.md
+        - mapper: ./modules/deepdoctection.mapper.md
+        - pipe: ./modules/deepdoctection.pipe.md
+        - train: ./modules/deepdoctection.train.md
+        - utils: ./modules/deepdoctection.utils.md
 
 
 plugins:

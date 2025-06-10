@@ -10,20 +10,9 @@
 </p>
 
 
-**deep**doctection is a Python library that orchestrates document extraction and document layout analysis tasks using
-deep learning models. It does not implement models but enables you to build pipelines using highly acknowledged
-libraries for object detection, OCR and selected NLP tasks and provides an integrated framework for fine-tuning,
-evaluating and running models. 
-
 [Installation](./install.md){ .md-button }
 [Quickstart](./tutorials/Analyzer_Get_Started.md){ .md-button style="margin-left: 200px;"}
+[FAQ](./tutorials/faq.md){ .md-button }
 
 <div class="grid cards" markdown>
 
--  [Architecture](./architecture.md)
-- :fontawesome: __JavaScript__ for interactivity
-- :fontawesome-brands-css3: __CSS__ for text running out of boxes
-- :fontawesome-brands-internet-explorer: __Internet Explorer__ ... huh?
-
-</div>
-<i class="fa-solid fa-laptop-code"></i>
