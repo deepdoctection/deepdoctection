@@ -21,7 +21,7 @@ Module for language detection pipeline component
 from typing import Optional, Sequence
 
 from ..datapoint.image import Image
-from ..datapoint.view import Page
+from ..datapoint.view import Page, ImageDefaults
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
@@ -71,7 +71,7 @@ class LanguageDetectionService(PipelineComponent):
 
         self.predictor = language_detector
         self.text_detector = text_detector
-        self.text_container = get_type(text_container) if text_container is not None else text_container
+        self.text_container = get_type(text_container) if text_container is not None else ImageDefaults.TEXT_CONTAINER
         self.floating_text_block_categories = (
             tuple(get_type(text_block) for text_block in floating_text_block_categories)
             if (floating_text_block_categories is not None)

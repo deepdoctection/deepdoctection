@@ -1,4 +1,8 @@
-![title](./_imgs/dd_logo.png) 
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <h3 align="center">
+  </h3>
+</p>
 
 
 # More on Parsing
@@ -9,6 +13,7 @@ returned. Now, we will look at another example and demonstrate what other kinds 
 
 We begin by instantiating the analyzer, which we configure slightly differently from the default settings.
 
+## First config changes
 
 ```python
 import deepdoctection as dd
@@ -16,15 +21,8 @@ from matplotlib import pyplot as plt
 
 analyzer = dd.get_dd_analyzer(config_overwrite=['USE_LAYOUT_LINK=True']) # (1)
 
-pdf_path = Path.cwd() / "sample/2312.13560.pdf"
-df = analyzer.analyze(path=pdf_path)
-df.reset_state() 
-```
-
-1. We set the `USE_LAYOUT_LINK` parameter to `True`. This enables the analyzer to link captions to figures and tables.
-
-
-```python
+df = analyzer.analyze(path="/path/to/dir/2312.13560.pdf")
+df.reset_state()
 doc=iter(df)
 page = next(doc)
 
@@ -33,9 +31,10 @@ plt.axis('off')
 plt.imshow(page.viz())
 ```
 
+1. We set the `USE_LAYOUT_LINK` parameter to `True`. This enables the analyzer to link captions to figures and tables.
+
     
 ![png](./_imgs/analyzer_more_on_parsing_01.png)
-    
 
 
 !!! info "Note"
@@ -52,7 +51,8 @@ The watermark on the left is noticeable — it is not displayed. These are `resi
 ```python
 plt.figure(figsize = (25,17))
 plt.axis('off')
-plt.imshow(page.viz(page_header="category_name", page_footer="category_name")) # (1) 
+plt.imshow(page.viz(page_header="category_name", 
+                    page_footer="category_name")) # (1) 
 ```
 
 1. Pass the layout section`s category_name as argument. It`s value is the value we want to display, in this case it`s 
@@ -150,33 +150,44 @@ proximity.
 
 
 ```python
-for caption in figure.layout_link:
-    print(f"annotation_id: {caption.annotation_id}, text: {caption.text}")
+caption = figure.layout_link[0]
+print(f"annotation_id: {caption.annotation_id}, text: {caption.text}")
 ```
 
-    text: Fig. 1. Overview of our KNN-CTC framework, which com- bines CTC and KNN models. The KNN model consists of two stages: datastore construction (blue dashed lines) and candi- date retrieval (orange lines)., annotation_id: 46bd4e42-8d50-30fb-883a-6c4d82b236af
+??? info "Output"
+
+    text: Fig. 1. Overview of our KNN-CTC framework, which com- bines CTC and KNN models. The KNN model consists of two
+    stages: datastore construction (blue dashed lines) and candi- date retrieval (orange lines)., annotation_id: 
+    46bd4e42-8d50-30fb-883a-6c4d82b236af
 
 
-We conclude our tutorial with some special features. Suppose you have a specific layout segment. Using get_layout_context, you can retrieve the surrounding layout segments within a given context_size, i.e., the k layout segments that appear before and after it in the reading order.
+We conclude  with some special features. Suppose you have a specific layout segment. Using get_layout_context, we can 
+retrieve the surrounding layout segments within a given context_size, i.e., the `k` layout segments that appear before
+and after it in the reading order.
 
 
 ```python
-for layout in page.get_layout_context(annotation_id="13a5f0ea-19e5-3317-b50c-e4c829a73d09",context_size=1):
-    print("-----------------")
+for layout in page.get_layout_context(annotation_id="13a5f0ea-19e5-3317-b50c-e4c829a73d09", context_size=1):
     print(f"annotation_id: {layout.annotation_id}, text: {layout.text}")
 ```
 
-    -----------------
-    annotation_id: 40d63bea-9815-3e97-906f-76b501c67667, text: (2)
-    -----------------
-    annotation_id: 13a5f0ea-19e5-3317-b50c-e4c829a73d09, text: Candidate retrieval: During the decoding phase, our process commences by generating the intermediate represen-
-    -----------------
-    annotation_id: 13cb9477-f605-324a-b497-9f42335c747d, text: tation f(Xi) alongside the CTC output PCTC(YIx). Pro- ceeding further, we leverage the intermediate representations f(Xi) as queries, facilitating the retrieval of the k-nearest neighbors N. We then compute a softmax probability distri- bution over the neighbors, aggregating the probability mass for each vocabulary item by:
+??? info "Output"
 
+    annotation_id: 40d63bea-9815-3e97-906f-76b501c67667, text: (2)
+    annotation_id: 13a5f0ea-19e5-3317-b50c-e4c829a73d09, text: Candidate retrieval: During the decoding phase, our 
+    process commences by generating the intermediate represen-
+    annotation_id: 13cb9477-f605-324a-b497-9f42335c747d, text: tation f(Xi) alongside the CTC output PCTC(YIx). Pro- 
+    ceeding further, we leverage the intermediate representations f(Xi) as queries, facilitating the retrieval of the 
+    k-nearest neighbors N. We then compute a softmax probability distri- bution over the neighbors, aggregating the 
+    probability mass for each vocabulary item by:
+
+## Analyzer metadata 
 
 What does the analyzer predict? 
 
-We can use the meta annotations to find out which attributes are determined for which object types. The attribute image_annotations represent all layout segments constructed by the analyzer. Ultimately, `ImageAnnotation`s are everything that can be enclosed by a bounding box. 
+We can use the meta annotations to find out which attributes are determined for which object types. The attribute 
+`image_annotations` represent all layout segments constructed by the analyzer. Ultimately, `ImageAnnotation`s are 
+everything that can be enclosed by a bounding box. 
 
 
 ```python
@@ -184,32 +195,33 @@ meta_annotations = analyzer.get_meta_annotation()
 meta_annotations.image_annotations
 ```
 
+??? info "Output"
+    
+    <pre>
+     (DefaultType.DEFAULT_TYPE,
+     LayoutType.CAPTION,
+     LayoutType.TEXT,
+     LayoutType.TITLE,
+     LayoutType.FOOTNOTE,
+     LayoutType.FORMULA,
+     LayoutType.LIST_ITEM,
+     LayoutType.PAGE_FOOTER,
+     LayoutType.PAGE_HEADER,
+     LayoutType.FIGURE,
+     LayoutType.SECTION_HEADER,
+     LayoutType.TABLE,
+     LayoutType.COLUMN,
+     LayoutType.ROW,
+     CellType.COLUMN_HEADER,
+     CellType.PROJECTED_ROW_HEADER,
+     CellType.SPANNING,
+     LayoutType.WORD,
+     LayoutType.LINE)
+     </pre>
 
 
-
-    (<DefaultType.DEFAULT_TYPE>,
-     <LayoutType.CAPTION>,
-     <LayoutType.TEXT>,
-     <LayoutType.TITLE>,
-     <LayoutType.FOOTNOTE>,
-     <LayoutType.FORMULA>,
-     <LayoutType.LIST_ITEM>,
-     <LayoutType.PAGE_FOOTER>,
-     <LayoutType.PAGE_HEADER>,
-     <LayoutType.FIGURE>,
-     <LayoutType.SECTION_HEADER>,
-     <LayoutType.TABLE>,
-     <LayoutType.COLUMN>,
-     <LayoutType.ROW>,
-     <CellType.COLUMN_HEADER>,
-     <CellType.PROJECTED_ROW_HEADER>,
-     <CellType.SPANNING>,
-     <LayoutType.WORD>,
-     <LayoutType.LINE>)
-
-
-
-The `sub_categories` represent attributes associated with specific `ImageAnnotations`. For a table cell, for example, these include: <CellType.COLUMN_NUMBER>, <CellType.COLUMN_SPAN>, <CellType.ROW_NUMBER> and <CellType.ROW_SPAN>. 
+The `sub_categories` represent attributes associated with specific `ImageAnnotations`. For a table cell, for example,
+these include: `<CellType.COLUMN_NUMBER>, <CellType.COLUMN_SPAN>, <CellType.ROW_NUMBER> and <CellType.ROW_SPAN>`. 
 
 
 ```python
@@ -217,37 +229,38 @@ meta_annotations.sub_categories
 ```
 
 
+??? info "Output"
 
-
-    {<LayoutType.CELL>: {<CellType.COLUMN_NUMBER>,
-      <CellType.COLUMN_SPAN>,
-      <CellType.ROW_NUMBER>,
-      <CellType.ROW_SPAN>},
-     <CellType.SPANNING>: {<CellType.COLUMN_NUMBER>,
-      <CellType.COLUMN_SPAN>,
-      <CellType.ROW_NUMBER>,
-      <CellType.ROW_SPAN>},
-     <CellType.ROW_HEADER>: {<CellType.COLUMN_NUMBER>,
-      <CellType.COLUMN_SPAN>,
-      <CellType.ROW_NUMBER>,
-      <CellType.ROW_SPAN>},
-     <CellType.COLUMN_HEADER>: {<CellType.COLUMN_NUMBER>,
-      <CellType.COLUMN_SPAN>,
-      <CellType.ROW_NUMBER>,
-      <CellType.ROW_SPAN>},
-     <CellType.PROJECTED_ROW_HEADER>: {<CellType.COLUMN_NUMBER>,
-      <CellType.COLUMN_SPAN>,
-      <CellType.ROW_NUMBER>,
-      <CellType.ROW_SPAN>},
-     <LayoutType.ROW>: {<CellType.ROW_NUMBER>},
-     <LayoutType.COLUMN>: {<CellType.COLUMN_NUMBER>},
-     <LayoutType.WORD>: {<WordType.CHARACTERS>, <Relationships.READING_ORDER>},
-     <LayoutType.TEXT>: {<Relationships.READING_ORDER>},
-     <LayoutType.TITLE>: {<Relationships.READING_ORDER>},
-     <LayoutType.LIST>: {<Relationships.READING_ORDER>},
-     <LayoutType.KEY_VALUE_AREA>: {<Relationships.READING_ORDER>},
-     <LayoutType.LINE>: {<Relationships.READING_ORDER>}}
-
+    <pre>
+    {LayoutType.CELL: {CellType.COLUMN_NUMBER,
+                      CellType.COLUMN_SPAN,
+                      CellType.ROW_NUMBER,
+                      CellType.ROW_SPAN}, 
+    CellType.SPANNING: {CellType.COLUMN_NUMBER,
+                      CellType.COLUMN_SPAN,
+                      CellType.ROW_NUMBER,
+                      CellType.ROW_SPAN},
+    CellType.ROW_HEADER: {CellType.COLUMN_NUMBER,
+                      CellType.COLUMN_SPAN,
+                      CellType.ROW_NUMBER,
+                      CellType.ROW_SPAN},
+    CellType.COLUMN_HEADER: {CellType.COLUMN_NUMBER,
+                      CellType.COLUMN_SPAN,
+                      CellType.ROW_NUMBER,
+                      CellType.ROW_SPAN},
+    CellType.PROJECTED_ROW_HEADER: {CellType.COLUMN_NUMBER,
+                      CellType.COLUMN_SPAN,
+                      CellType.ROW_NUMBER,
+                      CellType.ROW_SPAN},
+    LayoutType.ROW: {CellType.ROW_NUMBER},
+    LayoutType.COLUMN: {CellType.COLUMN_NUMBER},
+    LayoutType.WORD: {WordType.CHARACTERS, Relationships.READING_ORDER},
+    LayoutType.TEXT: {Relationships.READING_ORDER},
+    LayoutType.TITLE: {Relationships.READING_ORDER},
+    LayoutType.LIST: {Relationships.READING_ORDER},
+    LayoutType.KEY_VALUE_AREA: {Relationships.READING_ORDER},
+    LayoutType.LINE: {Relationships.READING_ORDER}}
+    </pre>
 
 
 The relationships represent one or more relations between different `ImageAnnotation`s. 
@@ -258,45 +271,53 @@ meta_annotations.relationships
 ```
 
 
+??? info "Output"
+
+    <pre>
+    {LayoutType.TABLE: {Relationships.CHILD, 
+                        Relationships.LAYOUT_LINK},
+    LayoutType.TABLE_ROTATED: {Relationships.CHILD},
+    LayoutType.TEXT: {Relationships.CHILD},
+    LayoutType.TITLE: {Relationships.CHILD},
+    LayoutType.LIST_ITEM: {Relationships.CHILD},
+    LayoutType.LIST: {Relationships.CHILD},
+    LayoutType.CAPTION: {Relationships.CHILD},
+    LayoutType.PAGE_HEADER: {Relationships.CHILD},
+    LayoutType.PAGE_FOOTER: {Relationships.CHILD},
+    LayoutType.PAGE_NUMBER: {Relationships.CHILD},
+    LayoutType.MARK: {Relationships.CHILD},
+    LayoutType.KEY_VALUE_AREA: {Relationships.CHILD},
+    LayoutType.FIGURE: {Relationships.CHILD, 
+                        Relationships.LAYOUT_LINK},
+    CellType.SPANNING: {Relationships.CHILD},
+    LayoutType.CELL: {Relationships.CHILD}}
+    </pre>
 
 
-    {<LayoutType.TABLE>: {<Relationships.CHILD>, <Relationships.LAYOUT_LINK>},
-     <LayoutType.TABLE_ROTATED>: {<Relationships.CHILD>},
-     <LayoutType.TEXT>: {<Relationships.CHILD>},
-     <LayoutType.TITLE>: {<Relationships.CHILD>},
-     <LayoutType.LIST_ITEM>: {<Relationships.CHILD>},
-     <LayoutType.LIST>: {<Relationships.CHILD>},
-     <LayoutType.CAPTION>: {<Relationships.CHILD>},
-     <LayoutType.PAGE_HEADER>: {<Relationships.CHILD>},
-     <LayoutType.PAGE_FOOTER>: {<Relationships.CHILD>},
-     <LayoutType.PAGE_NUMBER>: {<Relationships.CHILD>},
-     <LayoutType.MARK>: {<Relationships.CHILD>},
-     <LayoutType.KEY_VALUE_AREA>: {<Relationships.CHILD>},
-     <LayoutType.FIGURE>: {<Relationships.CHILD>, <Relationships.LAYOUT_LINK>},
-     <CellType.SPANNING>: {<Relationships.CHILD>},
-     <LayoutType.CELL>: {<Relationships.CHILD>}}
-
-
-
-The summaries describe facts presented at the page level — for instance, a `document_type`. This pipeline does not have a document type classifier.
+The summaries describe facts presented at the page level — for instance, a `document_type`. This pipeline does not have
+a document type classifier.
 
 
 ```python
 meta_annotations.summaries
 ```
 
+??? info "Output"
+
     ()
 
 
-
-By the way, don’t be confused by the obscure way the different categories are displayed. The categories are specific enum members. Each enum member can be converted into a string type, and vice versa — a string type can be converted back into an enum member:
+By the way, don’t be confused by the obscure way the different categories are displayed. The categories are specific 
+enum members. Each enum member can be converted into a string type, and vice versa — a string type can be converted 
+back into an enum member:
 
 
 ```python
 dd.LayoutType.CELL, dd.LayoutType.CELL.value, dd.get_type('cell')
 ```
 
+??? info "Output"
 
-    (<LayoutType.CELL>, 'cell', <LayoutType.CELL>)
+    (LayoutType.CELL, 'cell', LayoutType.CELL)
 
 

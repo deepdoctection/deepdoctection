@@ -1,4 +1,8 @@
-![title](./_imgs/dd_logo.png)
+<p align="center">
+  <img src="https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/dd_logo.png" alt="Deep Doctection Logo" width="60%">
+  <h3 align="center">
+  </h3>
+</p>
 
 # Adding new models and running with **deep**doctection
 
@@ -6,18 +10,24 @@ The `ModelCatalog` is a registry that allows models and their metadata to be inv
 This enables faster instantiation and easier use of models within a pipeline. We provide a brief overview of the 
 available tools for model registration and downloading, and then demonstrate how to seamlessly use pre-trained models 
 in **deep**doctection.
-Of course, using a model in this way assumes that a corresponding model wrapper has already been implemented. If this 
-is not the case, the [**notebook**](Analyzer_Doclaynet_With_YOLO.md) illustrates how such a model wrapper can be 
-implemented and integrated into a pipeline.
+
+!!! info "Writing a custom model wrapper"
+
+    Of course, using a model in this way assumes that a corresponding model wrapper has already been implemented. If this 
+    is not the case, the [**notebook**](Analyzer_Doclaynet_With_YOLO.md) illustrates how such a model wrapper can be 
+    implemented and integrated into a pipeline.
 
 ## Model Catalog
 
 The `ModelCatalog` is a class for registering models along with essential metadata.
-By default (unless otherwise configured), the model definitions are stored in the file 
-`~/.cache/deepdoctection/profiles.jsonl`. When **deep**doctection is imported, the model information is automatically 
-loaded.
-Model weights and model configuration files are stored in separate directories. Metadata for a specific model can be 
-accessed via its corresponding `ModelProfile`.
+
+!!! info
+
+    By default (unless otherwise configured), the model definitions are stored in the file 
+    `~/.cache/deepdoctection/profiles.jsonl`. When **deep**doctection is imported, the model information is automatically 
+    loaded.
+    Model weights and model configuration files are stored in separate directories. Metadata for a specific model can be 
+    accessed via its corresponding `ModelProfile`.
 
 
 ```python
@@ -29,38 +39,70 @@ from matplotlib import pyplot as plt
 dd.ModelCatalog.get_profile_list()
 ```
 
+??? info "Output"
 
     ['layout/model-800000_inf_only.data-00000-of-00001',
+
      'cell/model-1800000_inf_only.data-00000-of-00001',
+
      'item/model-1620000_inf_only.data-00000-of-00001',
+
      'layout/d2_model_0829999_layout_inf_only.pt',
+
      'layout/d2_model_0829999_layout_inf_only.ts',
+
      'cell/d2_model_1849999_cell_inf_only.pt',
+
      'cell/d2_model_1849999_cell_inf_only.ts',
+
      'item/d2_model_1639999_item_inf_only.pt',
+
      'item/d2_model_1639999_item_inf_only.ts',
+
      'nielsr/lilt-xlm-roberta-base/pytorch_model.bin',
+
      'SCUT-DLVCLab/lilt-infoxlm-base/pytorch_model.bin',
+
      'SCUT-DLVCLab/lilt-roberta-en-base/pytorch_model.bin',
+
      'microsoft/layoutlm-base-uncased/pytorch_model.bin',
+
      'microsoft/layoutlm-large-uncased/pytorch_model.bin',
+
      'microsoft/layoutlmv2-base-uncased/pytorch_model.bin',
+
      'microsoft/layoutxlm-base/pytorch_model.bin',
+
      'microsoft/layoutlmv3-base/pytorch_model.bin',
+
      'microsoft/table-transformer-detection/pytorch_model.bin',
+
      'microsoft/table-transformer-structure-recognition/pytorch_model.bin',
+
      'doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt',
+
      'doctr/db_resnet50/tf/db_resnet50-adcafc63.zip',
+
      'doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt',
+
      'doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip',
+
      'FacebookAI/xlm-roberta-base/pytorch_model.bin',
+
      'fasttext/lid.176.bin',
+
      'deepdoctection/tatr_tab_struct_v2/pytorch_model.bin',
+
      'layout/d2_model_0829999_layout.pth',
+
      'cell/d2_model_1849999_cell.pth',
+
      'item/d2_model_1639999_item.pth',
+
      'Felix92/doctr-torch-parseq-multilingual-v1/pytorch_model.bin',
+
      'doctr/crnn_vgg16_bn/pt/master-fde31e4a.pt',
+
      'Aryn/deformable-detr-DocLayNet/model.safetensors']
 
 
@@ -72,20 +114,16 @@ import pathlib
 dd.ModelCatalog.get_full_path_weights('layout/d2_model_0829999_layout_inf_only.pt').replace(str(pathlib.Path.home()),"~")
 ```
 
-
-
+??? info "Output"
 
     '~/.cache/deepdoctection/weights/layout/d2_model_0829999_layout_inf_only.pt'
-
-
 
 
 ```python
 dd.ModelCatalog.get_full_path_configs('layout/d2_model_0829999_layout_inf_only.pt').replace(str(pathlib.Path.home()),"~")
 ```
 
-
-
+??? info "Output"
 
     '~/.cache/deepdoctection/configs/dd/d2/layout/CASCADE_RCNN_R_50_FPN_GN.yaml'
 
@@ -98,8 +136,7 @@ from dataclasses import asdict
 asdict(dd.ModelCatalog.get_profile('layout/d2_model_0829999_layout_inf_only.pt'))
 ```
 
-
-
+??? info "Output"
 
     {'name': 'layout/d2_model_0829999_layout_inf_only.pt',
      'description': 'Detectron2 layout detection model trained on Publaynet',
@@ -130,12 +167,12 @@ We now demonstrate how to register a pre-trained model and subsequently use it w
 
 For this purpose, we use a pre-trained model from the [**Layout-Parser**](https://layout-parser.github.io) repository.
 This model is supported by Detectron2. The model weights can be found [**here**](https://www.dropbox.com/s/6ewh6g8rqt2ev3a/model_final.pth?dl=1), 
-and the model configuration [**here**](https://www.dropbox.com/s/6ewh6g8rqt2ev3a/model_final.pth?dl=1). The model has been pre-trained on a historical newspaper dataset and detects the following layout segments: PHOTOGRAPH, ILLUSTRATION, MAP, COMIC, EDITORIAL_CARTOON, HEADLINE, and ADVERTISEMENT. These categories do not yet exist in the **deep**doctection ecosystem and must be registered beforehand.
+and the model configuration [**here**](https://www.dropbox.com/s/6ewh6g8rqt2ev3a/model_final.pth?dl=1). The model has been pre-trained on a historical newspaper dataset and
+detects the following layout segments: PHOTOGRAPH, ILLUSTRATION, MAP, COMIC, EDITORIAL_CARTOON, HEADLINE, and
+ADVERTISEMENT. These categories do not yet exist in the **deep**doctection ecosystem and must be registered beforehand.
 
 
-
-
-
+### Registering the new layout categories
 
 ```python
 @dd.object_types_registry.register("NewspaperType")
@@ -154,26 +191,21 @@ class NewspaperExtension(dd.ObjectTypes):
 We also need to specify how these layout sections should behave. Ultimately, they should be treated in the same way 
 as residual layout sections.
 
-
 ```python
 from deepdoctection.datapoint import IMAGE_DEFAULTS
-```
 
-
-```python
 IMAGE_DEFAULTS.IMAGE_ANNOTATION_TO_LAYOUTS.update({i: dd.Layout for i in NewspaperExtension})
 IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES= IMAGE_DEFAULTS.RESIDUAL_TEXT_BLOCK_CATEGORIES + tuple(cat for cat in NewspaperExtension)
 ```
 
-Adding the model `layoutparser/newspaper/model_final.pth` requires to save weights to `~/.cache/deepdoctection/layoutparser/newspaper/model_final.pth` and the config to `~/.cache/deepdoctection/layoutparser/newspaper/config.yml`.
+Adding the model `layoutparser/newspaper/model_final.pth` requires to save weights to 
+`~/.cache/deepdoctection/layoutparser/newspaper/model_final.pth` and the config to 
+`~/.cache/deepdoctection/layoutparser/newspaper/config.yml`.
 
-You can save the new profile to the `profiles.jsonl` file
 
 ```python
 dd.ModelCatalog.save_profiles_to_file("/path/to/target/profiles.jsonl")
 
-
-```python
 dd.ModelCatalog.register("layoutparser/newspaper/model_final.pth", dd.ModelProfile(
     name="layoutparser/newspaper/model_final.pth",
     description="layout detection ",
@@ -198,10 +230,7 @@ Once the model is registered we can use this model in the `analyzer`:
 analyzer = dd.get_dd_analyzer(config_overwrite=["PT.LAYOUT.WEIGHTS=layoutparser/newspaper/model_final.pth",
                                                 "USE_OCR=False",
                                                 "USE_TABLE_SEGMENTATION=False",])
-```
 
-
-```python
 df = analyzer.analyze(path="/path/to/dir/newspaper_layout")
 df.reset_state()
 
@@ -222,8 +251,7 @@ plt.imshow(image)
 dp.residual_layouts
 ```
 
-
-
+??? info "Output"
 
     [Layout(active=True, _annotation_id='df22c03b-896c-323c-b5ae-2e4b1fd1faf3', service_id='9dcc2fbd', model_id='cfa02246', session_id=None, category_name=<NewspaperExtension.PHOTOGRAPH>, _category_name=<NewspaperExtension.PHOTOGRAPH>, category_id=1, score=0.9747101664543152, sub_categories={}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=453, uly=806, lrx=786, lry=1291, width=333, height=485)),
      Layout(active=True, _annotation_id='77d4e101-e45a-35fe-ab2c-53465c9c2a14', service_id='9dcc2fbd', model_id='cfa02246', session_id=None, category_name=<NewspaperExtension.HEADLINE>, _category_name=<NewspaperExtension.HEADLINE>, category_id=6, score=0.8193893432617188, sub_categories={}, relationships={}, bounding_box=BoundingBox(absolute_coords=True, ulx=33, uly=286, lrx=868, lry=456, width=835, height=170)),
