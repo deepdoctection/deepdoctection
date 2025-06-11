@@ -8,6 +8,7 @@ edit_uri: blob/main/docs
 
 theme:
   name: material
+  custom_dir: docs/assets
   palette:
     primary: blue
     accent: indigo
@@ -28,7 +29,8 @@ theme:
       warning: fontawesome/solid/triangle-exclamation
       failure: fontawesome/solid/bomb
       example: fontawesome/solid/flask
-
+extra_css:
+  - assets/styles/custom.css
 markdown_extensions:
   - tables
   - pymdownx.highlight:
@@ -75,19 +77,19 @@ nav:
           - LayoutLM For Sequence Classification: ./tutorials/LayoutLM_For_Seq_Class.md
           - LayoutLM For Custom Token Classification: ./tutorials/LayoutLM_For_Custom_Token_Class.md
     - API:
-        - analyzer: ./modules/deepdoctection.analyzer.md
-        - dataflow: ./modules/deepdoctection.dataflow.md
-        - datapoint: ./modules/deepdoctection.datapoint.md
-        - datasets: ./modules/deepdoctection.datasets.md
-        - datasets.instances: ./modules/deepdoctection.datasets.instances.md
-        - eval: ./modules/deepdoctection.eval.md
-        - extern: ./modules/deepdoctection.extern.md
-        - extern.pt: ./modules/deepdoctection.extern.pt.md
-        - extern.tp: ./modules/deepdoctection.extern.tp.md
-        - mapper: ./modules/deepdoctection.mapper.md
-        - pipe: ./modules/deepdoctection.pipe.md
-        - train: ./modules/deepdoctection.train.md
-        - utils: ./modules/deepdoctection.utils.md
+        - Analyzer: ./modules/deepdoctection.analyzer.md
+        - Dataflow: ./modules/deepdoctection.dataflow.md
+        - Datapoint: ./modules/deepdoctection.datapoint.md
+        - Datasets: ./modules/deepdoctection.datasets.md
+        - Datasets Instances: ./modules/deepdoctection.datasets.instances.md
+        - Eval: ./modules/deepdoctection.eval.md
+        - Extern: ./modules/deepdoctection.extern.md
+        - Extern PT: ./modules/deepdoctection.extern.pt.md
+        - Extern TP: ./modules/deepdoctection.extern.tp.md
+        - Mapper: ./modules/deepdoctection.mapper.md
+        - Pipe: ./modules/deepdoctection.pipe.md
+        - Train: ./modules/deepdoctection.train.md
+        - Utils: ./modules/deepdoctection.utils.md
 
 
 plugins:
@@ -99,8 +101,11 @@ plugins:
             options:
               line_length: 120
               docstring_style: sphinx
-              merge_init_into_class: True
-              heading_level: 3
+              merge_init_into_class: false
+              heading_level: 1
+              show_symbol_type_heading: true
+              show_signature: false
+
 
 # to watch lib files in mkdocs server. Uncomment, if update docs locally
 watch:

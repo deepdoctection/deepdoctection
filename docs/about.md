@@ -1,91 +1,106 @@
-# About **deep**doctection
 
+# About **deep**doctection
 
 ## Documents
 
-Documents in the business environment as well as in private use are ubiquitous and represent an essential source of
-information of various kinds for readers. Even more, documents represent an essential basis for humanity to record
-information and make it consumable for others.
+Documents are everywhere: in business, administration, and private life. They are a foundational medium for storing and 
+communicating information. Well-crafted documents combine content, structure, and visual layout to guide the reader 
+#and highlight the most important data.
 
-Good documents live from their content, from their structure, but also from the visual presentation of their content.
-The visual aspect should possibly simplify the search for certain information, but also make the core
-information easily removable. What is important about these points is that they address people's perception so that
-they can internalize the content.
+Machines, however, do not benefit from these human-centric features. Extracting structured information from documents 
+is inherently difficult due to diverse layouts, complex tables, figures, and handwritten or visually embedded 
+information. Multi-column text, non-standard reading orders, and forms with implicit key-value structures are just a 
+few of the many challenges.
 
-A priori, machines cannot benefit from those features at all. This makes automated information extraction from documents
-so difficult. Multi-column layouts with intuitive, but perhaps not always conventional reading orders, complex
-structured tables that only make sense in the context of a preceding title or note, figures and diagrams or even forms
-that store key-value pairs like a structured interview, all of these structures pose enormous challenges to the
-acquisition of information for machines. The problems in this environment could go on forever!
-
-With the new possibilities that deep learning makes available, there are also completely new ways of tackling the
-problem of information extraction. The capacity of the models to generate features from low-level structures and thus
-to represent good probability distributions on the basis of large amounts of data can lead to solutions that are far
-superior to conventional approaches with human-defined rules.
-
+Deep learning offers powerful tools to address these challenges. Instead of relying on fixed, human-defined rules, 
+neural networks can learn representations from large-scale data and capture structural patterns that enable accurate 
+information extraction.
 
 ## Document AI
 
-Quoted from [Document AI: Benchmarks, Models and Applications](https://arxiv.org/abs/2111.08609):
+> *Document AI, or Document Intelligence, is a booming research topic with increased industrial demand in recent 
+   years. It mainly refers to the process of automated understanding, classifying and extracting information with rich 
+   typesetting formats from webpages, digital-born documents or scanned documents through AI technology.*
+> [Document AI: Benchmarks, Models and Applications](https://arxiv.org/abs/2111.08609)
 
-    *[...]Document AI, or Document Intelligence, is a booming research topic with increased industrial
-    demand in recent years. It mainly refers to the process of automated understanding, classifying
-    and extracting information with rich typesetting formats from webpages, digital-born documents or
-    scanned documents through AI technology. Due to the diversity of layouts and formats, low-quality
-    scanned document images, and the complexity of the template structure, Document AI is a very
-    challenging task and has attracted widespread attention in related research areas.[...]*
-
+Document AI is a fast-evolving discipline. New research, datasets, and models appear regularly. While many projects 
+offer pre-trained models and code, the usability in production systems is often limited.
 
 ## Purpose
 
-Document AI as a discipline continues to develop and not a day goes by without a new paper with new
-results on this topic being published on arxiv. In many cases, researchers and developers have also established
-to provide a repo with code for verification or evaluation, experiments and further exploration. One key question,
-however, remains: How can this great work be made more usable? **deep**doctection aims to make this work accessible
-through **wrappers** of third party libraries. The prerequisite for this is that pre-trained models are available and
-the source code is robust.
+**deep**doctection was built to bridge the gap between academic research and practical document automation. It wraps 
+third-party models into a unified framework, making them easy to use and combine. When models are robust and 
+pre-trained weights are available, **deep**doctection enables quick experimentation and deployment.
 
-Document Analysis and Visual Document Understanding consists of many facets, but often models try to solve one task. 
-In order to achieve a usable service, one has to integrate different solutions into one framework. **deep**doctection 
-offers this framework so that you can call different services one after another in a **pipeline** using just a few 
-command lines.
-
+Many models specialize in single tasks (e.g., table detection, NER, OCR). But real-world use cases require combining 
+multiple components in a single workflow. **deep**doctection offers such pipelines and supports chaining 
+deeplearning and rule-based modules in a flexible and modular architecture.
 
 ## Pipelines
 
-Not every document class needs to be processed in the same way: 
+Not every document requires the same processing pipeline:
 
-- Native PDF documents do not require a computationally intensive OCR process. 
-- For pure text extraction, you may want to consider tables separately or not at all. 
-- However, you may also want to perform text or token classification with Foundation Models. 
+* Native PDFs may not need OCR.
+* Tables may or may not be relevant.
+* Classification tasks might rely on visual and textual features combined.
 
-With **deep**doctection, individual tasks (layout analysis, OCR, PDF text mining, LayoutLM call) can be combined in a 
-pipeline. The components of a pipeline can be some that call models but also components that are purely rule-based. 
+With **deep**doctection, pipelines can be constructed using components for layout analysis, OCR, PDF text extraction, 
+visual-language models, and more.
 
-[**deep**doctection's analyzer](./tutorials/Analyzer_Get_Started.md) is an example of a pipeline.  
-
+The [**analyzer**](./tutorials/Analyzer_Get_Started.md) is an example of a composable pipeline.
 
 ## Datasets
 
-Document AI datasets, especially labeled datasets are rare. The reason for this:
+Document AI relies on datasets, but labeled data is rare:
 
-- Documents in companies are internal and not intended for the public. 
-- Datasets often have to be labeled manually. 
+* Most business documents are confidential.
+* Annotation is expensive and domain-specific.
 
-**deep**doctection does not offer a labeling framework but once you have a labeled dataset it offers the possibility 
-to set up [**datasets**](./tutorials/datasets.md) from a template so that they can be used for fine-tuning models. 
-There are some examples of public datasets (e.g. [Publaynet][deepdoctection.datasets.instances.publaynet], 
-[XFund][deepdoctection.datasets.instances.xfund], ...) that can be used to train models and serve as blue-print
-
+While **deep**doctection does not provide labeling tools, it supports converting your labeled data into a structured 
+[**dataset format**](./tutorials/Datasets.md) for training and evaluation. Templates exist for several public datasets 
+such as [Publaynet][deepdoctection.datasets.instances.publaynet] or [XFUND][deepdoctection.datasets.instances.xfund], 
+which can serve as blueprints.
 
 ## Fine-tuning
 
-The likelihood that the model knows what your documents look like and process them to your satisfaction is low. 
+Pretrained models may not generalize well to your documents. But with **transfer learning**, they can be adapted using 
+limited labeled data.
 
-But with **transfer-learning/fine-tuning** models can be adjusted to your documents. If the models are pre-trained, 
-you need much less labelled data.
+**deep**doctection provides [training scripts][deepdoctection.train] and an 
+[evaluator](./tutorials/Evaluation.md) to train and validate models on custom datasets.
 
-**deep**doctection offers [**training scripts**][deepdoctection.train] for many of the models provided, with which 
-fine-tuning on a custom dataset can be triggered quickly. On top of set, there is a very powerful 
-[**evaluator**](./tutorials/datasets_and_eval_notebook.md) so that you can compare the predictions with your gold 
-standard.
+## Large Language Models (LLMs) and Vision-Language Models (VLLMs)
+
+Large Language Models and multimodal Vision-Language Models are increasingly being used for document understanding 
+tasks such as classification, key-value extraction, and summarization. However, there are critical challenges that 
+must be addressed:
+
+### 1. Lack of Grounding / Traceability
+
+LLMs typically output plain text without bounding boxes or positional references. This makes it difficult to:
+
+* Verify whether the extracted information actually exists in the original document.
+* Detect hallucinations without human inspection.
+
+A key requirement for trustworthy document extraction is **back-tracing**: the ability to map model outputs back to 
+document coordinates or text regions. This traceability is a core principle of **deep**doctection.
+
+### 2. Valid Evaluation Datasets
+
+Many public document datasets may have been included in the training data of large foundation models. As a result:
+
+* Evaluation on such data may be biased or over-optimistic.
+* Truly informative benchmarks require private, proprietary datasets.
+
+**deep**doctection facilitates dataset integration for such secure and domain-specific benchmarks.
+
+### 3. Integration Roadmap
+
+We are actively working to make LLMs and VLLMs first-class citizens in the **deep**doctection ecosystem. Future pipeline 
+components will support:
+
+* Structured prompt generation from visual layout.
+* Answer-to-position alignment.
+* Hybrid pipelines combining traditional layout parsing with LLM inference.
+
+Stay tuned as we bring the capabilities of foundation models into structured and verifiable document pipelines.
