@@ -299,7 +299,6 @@ class RotationTransform(BaseTransform):
     def __init__(self, angle: Literal[90, 180, 270, 360]):
         """
         :param angle: angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
-        :param mode: coordinate format - "xyxy" (bounding box), "xywh" (width/height), "poly" (polygon points)
         """
         self.angle = angle
         self.image_width: Optional[int] = None

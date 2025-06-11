@@ -702,7 +702,7 @@ class VizPackageHandler:
         """
         Display an image in a pop-up window
 
-        :param img: An image (expect BGR) to show.
+        :param np_image: An image (expect BGR) to show.
         """
         name = "q, x: quit / s: save"
         cv2.imshow(name, np_image)
