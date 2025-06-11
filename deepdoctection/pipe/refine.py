@@ -392,8 +392,8 @@ class TableSegmentationRefinementService(PipelineComponent):
 
     """
 
-    def __init__(self, table_name: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]) -> None:
-        self.table_name = table_name
+    def __init__(self, table_names: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]) -> None:
+        self.table_name = table_names
         self.cell_names = cell_names
         super().__init__("table_segment_refine")
 

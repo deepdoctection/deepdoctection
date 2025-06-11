@@ -21,11 +21,11 @@ categories_orig = dd.ModelCatalog.get_profile("fasttext/lid.176.bin").categories
 dd.ModelCatalog.get_profile("fasttext/lid.176.bin").model_wrapper # (1) 
 ```
 
+1. `model_wrapper` is the name of the model wrapper we need to use from the `deepdoctection.extern` module.
+
 ??? info "Output"
 
     'FasttextLangDetector'
-
-1. `model_wrapper` is the name of the model wrapper we need to use from the `deepdoctection.extern` module.
 
 
 ```python

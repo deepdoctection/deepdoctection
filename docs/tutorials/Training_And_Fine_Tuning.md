@@ -4,152 +4,9 @@
   </h3>
 </p>
 
-# Evaluation and fine-tuning a pre-trained
 
 
-## Evaluation
-
-In many situation we are not interested in evaluating raw predictions of a model but on results which have been 
-polished through several post-processing steps. In other situations, we want to measure accuracy/precision etc. not 
-after running one but several models. 
-
-!!! note "Example"
-
-    For example, getting the HTML representation of a table requires output from several predictors.
-    Evaluating along a pipeline allows us to see how model prediction(s) and post processing works in conjunction. 
-
-**deep**doctection comes equipped with an Evaluator that allows us to run evaluation not on a model but on a
-pipeline component or a full pipeline.   
-
-We will take a document layout analysis model that has been trained on `Publaynet` and want to evaluate this model 
-on `Doclaynet`. 
-
-!!! info
-
-    `Publaynet` is a dataset with images from scientific, i.e. medical research papers. It has around 350K samples with
-     five different layout types: `figure`, `table`, `list`, `text` and `title`. It is quite versatile on its domain.
-    `Doclaynet` is a dataset annotated by humans with images from documents from Finance, Science, Patents, 
-     Tenders, Law texts and Manuals. It is more diverse than `Publaynet` and has around 80K samples.
-
-
-```python
-config_yaml_path = dd.ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
-weights_path = dd.ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
-categories = dd.ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt").categories
-layout_detector = dd.D2FrcnnDetector(config_yaml_path,weights_path,categories)
-layout_service = dd.ImageLayoutService(layout_detector)
-```
-
-Next, we need a metric.
-
-
-```python
-coco_metric = dd.get_metric("coco")
-```
-
-Now for the dataset. Doclaynet has several other labels but there is a mapping that collapses all Doclaynet labels into
-Publaynet labels. 
-
-
-```python
-doclaynet.dataflow.categories.get_categories()
-```
-
-??? info "Output"
-
-    <pre>
-    {1: LayoutType.CAPTION, 
-     2: LayoutType.FOOTNOTE, 
-     3: LayoutType.FORMULA, 
-     4: LayoutType.LIST, 
-     5: LayoutType.PAGE_FOOTER, 
-     6: LayoutType.PAGE_HEADER, 
-     7: LayoutType.FIGURE, 
-     8: LayoutType.SECTION_HEADER, 
-     9: LayoutType.TABLE, 
-     10: LayoutType.TEXT, 
-     11: LayoutType.TITLE}
-    </pre>
-
-
-```python
-doclaynet.dataflow.categories._init_sub_categories
-```
-
-??? info "Output"
-
-    <pre>
-    {LayoutType.CAPTION: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.FOOTNOTE: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.FORMULA: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.LIST: {DatasetType.PUBLAYNET: [LayoutType.LIST]},
-    LayoutType.PAGE_FOOTER: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.PAGE_HEADER: {DatasetType.PUBLAYNET: [LayoutType.TITLE]},
-    LayoutType.FIGURE: {DatasetType.PUBLAYNET: [LayoutType.FIGURE]},
-    LayoutType.SECTION_HEADER: {DatasetType.PUBLAYNET: [LayoutType.TITLE]},
-    LayoutType.TABLE: {DatasetType.PUBLAYNET: [LayoutType.TABLE]},
-    LayoutType.TEXT: {DatasetType.PUBLAYNET: [LayoutType.TEXT]},
-    LayoutType.TITLE: {DatasetType.PUBLAYNET: [LayoutType.TITLE]}}
-    </pre>
-
-
-The sub category `DatasetType.PUBLAYNET` provides the mapping into Publaynet labels.
-
-
-```python
-cat_to_sub_cat = doclaynet.dataflow.categories.get_sub_categories()
-cat_to_sub_cat = {key:val[0] for key, val in cat_to_sub_cat.items()}
-doclaynet.dataflow.categories.set_cat_to_sub_cat(cat_to_sub_cat)
-```
-
-Now, that dataset, pipeline component and metric have been setup, we can build the evaluator.
-
-
-```python
-evaluator = dd.Evaluator(dataset=doclaynet,
-						 component_or_pipeline=layout_service, 
-						 metric=coco_metric)
-```
-
-We start evaluation using the `run` method. `max_datapoints` limits the number of samples to at most 100 samples. The 
-`val` split is used by default.
-
-
-```python
-evaluator = dd.Evaluator(doclaynet,layout_service, coco_metric)
-output= evaluator.run(max_datapoints=100)
-```
-
-??? info "Output"
-
-    creating index...
-    index created!
-    creating index...
-    index created!
-    Running per image evaluation...
-    Evaluate annotation type *bbox*
-    DONE (t=0.12s).
-    Accumulating evaluation results...
-    DONE (t=0.03s).
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.147
-     Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.195
-     Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.144
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.010
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.022
-     Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.200
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.100
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.171
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.174
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.009
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.031
-     Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.231
-
-
-The result shows that Doclaynet has a very different layout compared to Publaynet where the model has been trained on. 
-To get a feeling, results on the Publaynet test split are in the range of 0.9+ !
-
-
-## Fine tuning
+# Fine tuning
 
 We can fine-tune several models to improve accuracy/precision/recall on our data. There are some [training scripts]
 [deepdoctection.train] available that we can use straight away. The configuration below gives you a decent (not too 
@@ -420,4 +277,92 @@ dd.train_d2_faster_rcnn(path_config_yaml=config_yaml_path,
       PROJECT: None
       REPO: deepdoctection
       USE_WANDB: False
+
+## Example: Tensorpack Training Scripts
+
+The following are the training scripts for the cell and row/column detection models 
+trained on Pubtabnet.
+
+### Cell detection
+
+```python
+
+ import os
+ import deepdoctection as dd
+
+ pubtabnet = dd.get_dataset("pubtabnet")
+ pubtabnet.dataflow.categories.filter_categories(categories="cell")
+ 
+ path_config_yaml=os.path.join(dd.get_configs_dir_path(),"tp/cell/conf_frcnn_cell.yaml")
+ path_weights = "/path/to/dir/model-3540000.data-00000-of-00001"
+ 
+config_overwrite=["TRAIN.LR_SCHEDULE=2x", 
+                "TRAIN.STEPS_PER_EPOCH=500",
+                "TRAIN.EVAL_PERIOD=20",
+                "PREPROC.TRAIN_SHORT_EDGE_SIZE=[400,600]",
+                "TRAIN.CHECKPOINT_PERIOD=20",
+                "BACKBONE.FREEZE_AT=0"]
+  
+ dataset_train = pubtabnet
+ build_train_config=["max_datapoints=500000"]
+ 
+ dataset_val = pubtabnet
+ build_val_config = ["max_datapoints=4000"]
+ 
+ coco_metric = dd.metric_registry.get("coco")
+ coco_metric.set_params(max_detections=[50,200,600], 
+                        area_range=[[0,1000000],[0,200],[200,800],[800,1000000]])
+ 
+ dd.train_faster_rcnn(path_config_yaml=path_config_yaml,
+                      dataset_train=dataset_train,
+                      path_weights=path_weights,
+                      config_overwrite=config_overwrite,
+                      log_dir="/path/to/dir/train",
+                      build_train_config=build_train_config,
+                      dataset_val=dataset_val,
+                      build_val_config=build_val_config,
+                      metric=coco_metric,
+                      pipeline_component_name="ImageLayoutService"
+                      )
+```
+
+### Row and Column detection
+
+```python
+
+ import os
+ import deepdoctection as dd
+ 
+ pubtabnet = dd.get_dataset("pubtabnet")
+ pubtabnet.dataflow.categories.set_cat_to_sub_cat({"item":"item"})
+ pubtabnet.dataflow.categories.filter_categories(["row","column"])
+ 
+ path_config_yaml=os.path.join(dd.get_configs_dir_path(),"tp/rows/conf_frcnn_rows.yaml")
+ path_weights = os.path.join(dd.get_weights_dir_path(),"item/model-1750000.data-00000-of-00001")
+ 
+config_overwrite=["TRAIN.STEPS_PER_EPOCH=5000",
+                  "TRAIN.EVAL_PERIOD=20",
+                  "TRAIN.STARTING_EPOCH=1",
+                  "PREPROC.TRAIN_SHORT_EDGE_SIZE=[400,600]",
+                  "TRAIN.CHECKPOINT_PERIOD=20",
+                  "BACKBONE.FREEZE_AT=0"]
+  
+ dataset_train = pubtabnet
+ build_train_config=["max_datapoints=500000","rows_and_cols=True"]
+ 
+ dataset_val = pubtabnet
+ build_val_config = ["max_datapoints=4000","rows_and_cols=True"]
+ 
+ dd.train_faster_rcnn(path_config_yaml=path_config_yaml,
+                      dataset_train=pubtabnet,
+                      path_weights=path_weights,
+                      config_overwrite=config_overwrite,
+                      log_dir="/path/to/dir/train",
+                      build_train_config=build_train_config,
+                      dataset_val=dataset_val,
+                      build_val_config=build_val_config,
+                      metric_name="coco",
+                      pipeline_component_name="ImageLayoutService"
+                      )
+```
 
