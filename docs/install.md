@@ -16,12 +16,11 @@ by the user.
 
 ??? info "Poppler vs. PDFium"
 
-    The package **deep**doctection supports two different libraries for PDF processing: 
-    [Poppler](https://poppler.freedesktop.org/) and [pypdfmium2](
+    The package **deep**doctection supports two different libraries for PDF processing:
     For release `v.0.34.0` and below [Poppler](https://poppler.freedesktop.org/) is required for PDF processing. Starting 
-    from release `v.0.35.0`, the package `pypdfmium2` is used for PDF processing and the default choice. If both are 
-    available you can choose which one to use by setting environment variables, e.g. `USE_DD_POPPLER=True` and 
-    `USE_DD_PDFIUM=False`.
+    from release `v.0.35.0`, [`pypdfmium2`](https://github.com/pypdfium2-team/pypdfium2) is used for PDF processing and 
+    the default choice. If both are available you can choose which one to use by setting environment variables, e.g. 
+    `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False`.
 
 ??? info "PIL vs. OpenCV"
 
