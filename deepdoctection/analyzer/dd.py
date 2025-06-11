@@ -16,11 +16,10 @@
 # limitations under the License.
 
 """
-Module for **deep**doctection analyzer.
+## **deep**doctection analyzer.
 
--factory build_analyzer for a given config
-
--user factory with a reduced config setting
+- factory build_analyzer for a given config
+- user factory with a reduced config setting
 """
 
 from __future__ import annotations
@@ -68,31 +67,30 @@ def get_dd_analyzer(
     path_config_file: Optional[PathLikeOrStr] = None,
 ) -> DoctectionPipe:
     """
-
     Factory function for creating the built-in **deep**doctection analyzer.
 
-    The Standard Analyzer is a pipeline that comprises the following analysis components:
+    Info:
+        The Standard Analyzer is a pipeline that comprises the following analysis components:
 
-    - Document layout analysis
+        - Rotation
+        - Document layout analysis
+        - Table segmentation
+        - Text extraction/OCR
+        - Reading order
+        - Layout linking
 
-    - Table segmentation
+    Args:
+        reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
+            resetting all configurations if set to `True`.
+        load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`.
+            If set to `False`, the config file will be ignored.
+        config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml`
+            configuration with highest priority, e.g. `["USE_TABLE_SEGMENTATION=False", "USE_OCR=False",
+            "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]`.
+        path_config_file: Path to a custom config file. Can be outside of the `.cache` directory.
 
-    - Text extraction/OCR
-
-    - Reading order
-
-    We refer to the various notebooks and docs for running an analyzer and changing the configs.
-
-    :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
-                              resetting all configurations if set to `True`.
-    :param load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`
-                                If set to `False`, the config file will be ignored.
-    :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
-                             highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
-                                                     "USE_OCR=False",
-                                                     "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]
-    :param path_config_file: Path to a custom config file. Can be outside of the .cache directory.
-    :return: A DoctectionPipe instance with given configs
+    Returns:
+        DoctectionPipe: A `DoctectionPipe` instance with given configs.
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
     if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:

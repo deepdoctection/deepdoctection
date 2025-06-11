@@ -1,9 +1,9 @@
-# Installation
+# 
 
 
 ## Requirements
 
-![](./tutorials/_imgs/requirements_deepdoctection_220525.png)
+![](./tutorials/_imgs/install_01.png)
 
 Everything in the overview listed below the **deep**doctection layer are necessary requirements and have to be installed 
 by the user.

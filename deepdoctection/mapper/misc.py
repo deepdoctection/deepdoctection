@@ -51,7 +51,6 @@ def to_image(
     :param dpi: dot per inch definition for pdf resolution when converting to numpy array
     :param width: target width of the image. This option does only work when using Poppler as PDF renderer
     :param height: target width of the image. This option does only work when using Poppler as PDF renderer
-    :param height: target height of the image
     :return: Image
     """
 

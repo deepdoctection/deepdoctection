@@ -71,7 +71,7 @@ for idx, dp in enumerate(df):
 ## Step 2: Merging datasets
 
 Doclaynet and Publaynet have different labels. Therefore we re-label some Doclaynet categories in order so that we
-get `text`,`title`, `list`, `table`, `figure`. We already covered this [here](Evaluation_And_Fine_Tuning.md).
+get `text`,`title`, `list`, `table`, `figure`. We already covered this [here](Evaluation.md).
 
 After re-scaling the images, we also have to re-scale the ground truth label coordinates.  
 
