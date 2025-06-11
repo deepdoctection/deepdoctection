@@ -50,8 +50,8 @@ The config file will be used once we set `dd.get_dd_analyzer(load_default_config
 
 !!! info 
 
-   We can use the configuration file or the `config_overwrite` argument to overwrite the default setting
-   Note, that `config_overwrite` has higher priority. 
+    We can use the configuration file or the `config_overwrite` argument to overwrite the default setting
+    Note, that `config_overwrite` has higher priority. 
 
 ## High level Configuration
 

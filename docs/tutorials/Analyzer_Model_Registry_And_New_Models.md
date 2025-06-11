@@ -41,70 +41,40 @@ dd.ModelCatalog.get_profile_list()
 
 ??? info "Output"
 
+    <pre>
     ['layout/model-800000_inf_only.data-00000-of-00001',
-
      'cell/model-1800000_inf_only.data-00000-of-00001',
-
      'item/model-1620000_inf_only.data-00000-of-00001',
-
      'layout/d2_model_0829999_layout_inf_only.pt',
-
      'layout/d2_model_0829999_layout_inf_only.ts',
-
      'cell/d2_model_1849999_cell_inf_only.pt',
-
      'cell/d2_model_1849999_cell_inf_only.ts',
-
      'item/d2_model_1639999_item_inf_only.pt',
-
      'item/d2_model_1639999_item_inf_only.ts',
-
      'nielsr/lilt-xlm-roberta-base/pytorch_model.bin',
-
      'SCUT-DLVCLab/lilt-infoxlm-base/pytorch_model.bin',
-
      'SCUT-DLVCLab/lilt-roberta-en-base/pytorch_model.bin',
-
      'microsoft/layoutlm-base-uncased/pytorch_model.bin',
-
      'microsoft/layoutlm-large-uncased/pytorch_model.bin',
-
      'microsoft/layoutlmv2-base-uncased/pytorch_model.bin',
-
      'microsoft/layoutxlm-base/pytorch_model.bin',
-
      'microsoft/layoutlmv3-base/pytorch_model.bin',
-
      'microsoft/table-transformer-detection/pytorch_model.bin',
-
      'microsoft/table-transformer-structure-recognition/pytorch_model.bin',
-
      'doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt',
-
      'doctr/db_resnet50/tf/db_resnet50-adcafc63.zip',
-
      'doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt',
-
      'doctr/crnn_vgg16_bn/tf/crnn_vgg16_bn-76b7f2c6.zip',
-
      'FacebookAI/xlm-roberta-base/pytorch_model.bin',
-
      'fasttext/lid.176.bin',
-
      'deepdoctection/tatr_tab_struct_v2/pytorch_model.bin',
-
      'layout/d2_model_0829999_layout.pth',
-
      'cell/d2_model_1849999_cell.pth',
-
      'item/d2_model_1639999_item.pth',
-
      'Felix92/doctr-torch-parseq-multilingual-v1/pytorch_model.bin',
-
      'doctr/crnn_vgg16_bn/pt/master-fde31e4a.pt',
-
      'Aryn/deformable-detr-DocLayNet/model.safetensors']
-
+	 </pre>
 
 
 
@@ -138,6 +108,7 @@ asdict(dd.ModelCatalog.get_profile('layout/d2_model_0829999_layout_inf_only.pt')
 
 ??? info "Output"
 
+    <pre>
     {'name': 'layout/d2_model_0829999_layout_inf_only.pt',
      'description': 'Detectron2 layout detection model trained on Publaynet',
      'size': [274632215],
@@ -158,6 +129,7 @@ asdict(dd.ModelCatalog.get_profile('layout/d2_model_0829999_layout_inf_only.pt')
      'model_wrapper': 'D2FrcnnDetector',
      'architecture': None,
      'padding': None}
+    </pre>
 
 
 

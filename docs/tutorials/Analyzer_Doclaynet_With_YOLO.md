@@ -245,10 +245,22 @@ we need to list them in `TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES`. Otherwis
 
 
 ```python
-analyzer = dd.get_dd_analyzer(config_overwrite=["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
-                                                "USE_TABLE_SEGMENTATION=False",
-                                                "USE_OCR=False",
-                                                "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=['caption','footnote', 'formula','list_item','page_footer','page_header','figure','section_header','table','text','title']"])
+config_overwrite = ["PT.LAYOUT.WEIGHTS=yolo/yolov10x_best.pt",
+                    "USE_TABLE_SEGMENTATION=False",
+                    "USE_OCR=False",
+                    "TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES=
+					['caption',
+					 'footnote', 
+					 'formula',
+					 'list_item',
+					 'page_footer',
+					 'page_header', 
+					 'figure',
+					 'section_header',
+					 'table',
+					 'text',
+					 'title']"]
+analyzer = dd.get_dd_analyzer(config_overwrite=config_overwrite)
 ```
 
 
@@ -257,10 +269,7 @@ path="/path/to/dir/document.pdf"
 
 df = analyzer.analyze(path=path)
 df.reset_state()
-```
 
-
-```python
 dp = next(iter(df))
 ```
 
