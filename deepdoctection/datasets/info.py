@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for storing dataset info (e.g. general meta data or categories)
+## General meta data or categories
 """
 
 from copy import copy
@@ -27,7 +27,9 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union, no_type_che
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
 
-__all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
+__all__ = ["DatasetInfo",
+           "DatasetCategories",
+           "get_merged_categories"]
 
 
 @overload
@@ -53,10 +55,13 @@ def _get_dict(
     """
     Converts a list into a dict, where keys/values are the list indices.
 
-    :param l: A list of categories
-    :param name_as_key: Whether to return the dict with category names as key (True)
-    :param starts_with: index count start
-    :return: A dictionary of list indices/list elements.
+    Args:
+        l: A list of categories
+        name_as_key: Whether to return the dict with category names as key (`True`)
+        starts_with: index count start
+
+    Returns:
+        A dictionary of list indices/list elements.
     """
     if name_as_key:
         return {v: k for k, v in enumerate(l, starts_with)}
@@ -66,22 +71,17 @@ def _get_dict(
 @dataclass
 class DatasetInfo:
     """
-    DatasetInfo is a simple dataclass that stores some meta-data information about a dataset.
+    `DatasetInfo` is a simple dataclass that stores some meta-data information about a dataset.
 
-    `name`: Name of the dataset. Using the name you can retrieve the dataset from the
-    `registry.DatasetRegistry`.
-
-    `description`: Short description of the dataset.
-
-    `license`: License to the dataset.
-
-    `url`: url, where the dataset can be downloaded from.
-
-    `splits`: A dict of splits. The value must store the relative path, where the split can be found.
-
-    `type`: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
-    sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification ('TOKEN_CLASSIFICATION').
-    Optionally, pass `None`.
+     Attributes:
+        name: Name of the dataset. Using the name you can retrieve the dataset from the `registry.DatasetRegistry`.
+        description: Short description of the dataset.
+        license: License to the dataset.
+        url: url, where the dataset can be downloaded from.
+        splits: A `dict` of splits. The value must store the relative path, where the split can be found.
+        type: The type describes whether this is a dataset for object detection (pass 'OBJECT_DETECTION'),
+              sequence classification (pass 'SEQUENCE_CLASSIFICATION') or token classification ('TOKEN_CLASSIFICATION').
+              Optionally, pass `None`.
     """
 
     name: str
@@ -96,8 +96,11 @@ class DatasetInfo:
         """
         Get the split directory by its key (if it exists).
 
-        :param key: The key to a split (i.e. "train", "val", "test")
-        :return: The local directory path to the split. An empty string if the key doesn't exist.
+        Args:
+            key: The key to a split (i.e. `train`, `val`,`test`)
+
+        Returns:
+            The local directory path to the split. An empty string if the key doesn't exist.
         """
 
         return self.splits[key]
@@ -112,22 +115,26 @@ class DatasetCategories:
     for the index/category name relationship and guarantees that a sequence of natural numbers for the categories
     is always returned as the category-id even after replacing and/or filtering.
 
-    `init_categories`: A list of category names. The list must include all categories that can occur within the
-    annotations.
+    Attributes:
+        init_categories: A list of `category_name`s. The list must include all categories that can occur within the
+                         annotations.
+        init_sub_categories: A dict of categories/sub-categories. Each sub-category that can appear in the
+                             annotations in combination with a category must be listed.
 
-    `init_sub_categories`: A dict of categories/sub-categories. Each sub-category that can appear in the
-    annotations in combination with a category must be listed.
-
-    **Example:**
+    Example:
 
         An annotation file hast the category/sub-category combinations for three datapoints:
 
-            (cat1,s1),(cat1,s2), (cat2,s2).
+        ```python
+        (cat1,s1),(cat1,s2), (cat2,s2).
+        ```
 
         You must list `init_categories`, `init_sub_categories` as follows:
 
-            init_categories = [cat1,cat2]
-            init_sub_categories = {cat1: [s1,s2],cat2: [s2]}
+        ```python
+        init_categories = [cat1,cat2]
+        init_sub_categories = {cat1: [s1,s2],cat2: [s2]}
+        ```
 
     Use `filter_categories` or `set_cat_to_sub_cat` to filter or swap categories with sub-categories.
     """
@@ -173,14 +180,17 @@ class DatasetCategories:
         categories of replaced categories with sub categories. However, you must correctly pass arguments to return the
         state you want.
 
-        :param as_dict: Will pass a dict if set to 'True' otherwise a list.
-        :param name_as_key: Categories are stored as key/value pair in a dict with integers as keys. name_as_key set to
-                            "False" will swap keys and values.
-        :param init: If set to "True" it will return the list/dict of categories as initially provided. Manipulations
-                     due to replacing/filtering will not be regarded.
-        :param filtered: If set to "True" will return an unfiltered list of all categories. If a replacing has been
-                         invoked selected sub categories will be returned.
-        :return: A dict of index/category names (or the other way around) or a list of category names.
+        Args:
+            as_dict: Will pass a dict if set to 'True' otherwise a list.
+            name_as_key: Categories are stored as key/value pair in a dict with integers as keys. `name_as_key` set to
+                         `False` will swap keys and values.
+            init: If set to `True` it will return the list/dict of categories as initially provided. Manipulations
+                  due to replacing/filtering will not be regarded.
+            filtered: If set to `True` will return an unfiltered list of all categories. If a replacing has been
+                      invoked selected sub categories will be returned.
+
+        Returns:
+            A dict of index/category names (or the other way around) or a list of category names.
         """
         if init:
             if as_dict:
@@ -209,14 +219,17 @@ class DatasetCategories:
         """
         Returns a dict of list with a category name and their sub categories.
 
-        :param categories: A single category or list of category names
-        :param sub_categories: A mapping of categories to sub category keys on which the result should be filtered. Only
+        Args:
+            categories: A single category or list of category names
+            sub_categories: A mapping of categories to sub category keys on which the result should be filtered. Only
                                relevant, if `keys=False`
-        :param keys: Will only pass keys if set to `True`.
-        :param values_as_dict: Will generate a dict with indices and sub category value names if set to `True`.
-        :param name_as_key: sub category values are stored as key/value pair in a dict with integers as keys.
+            keys: Will only pass keys if set to `True`.
+            values_as_dict: Will generate a dict with indices and sub category value names if set to `True`.
+            name_as_key: sub category values are stored as key/value pair in a dict with integers as keys.
                             name_as_key set to `False` will swap keys and values.
-        :return: Dict with all selected categories.
+
+        Returns:
+            Dict with all selected categories.
         """
         _categories: Sequence[ObjectTypes]
         if isinstance(categories, (ObjectTypes, str)):
@@ -293,14 +306,16 @@ class DatasetCategories:
         This method can only be called once per object. Re-setting or further replacing of categories would make the
         code messy and is therefore not allowed.
 
-        **Example:**
-
-                  cat_to_sub_cat={cat1: sub_cat1}
+        Example:
+            ```python
+            cat_to_sub_cat={cat1: sub_cat1}
+            ```
 
             will replace cat1 with sub_cat1 as category. This will also be respected when returning datapoints.
 
-        :param cat_to_sub_cat: A dict of pairs of category/sub-category. Note that the combination must be available
-                               according to the initial settings.
+        Args:
+            cat_to_sub_cat: A dict of pairs of category/sub-category. Note that the combination must be available
+                            according to the initial settings.
         """
 
         _cat_to_sub_cat = {get_type(key): get_type(value) for key, value in cat_to_sub_cat.items()}
@@ -327,7 +342,8 @@ class DatasetCategories:
         Filter categories of a dataset. This will keep all the categories chosen and remove all others.
         This method can only be called once per object.
 
-        :param categories: A single category name or a list of category names.
+        Args:
+            categories: A single `category_name` or a list of `category_name`s.
         """
 
         if not self._allow_update:
@@ -344,13 +360,14 @@ class DatasetCategories:
     @property
     def cat_to_sub_cat(self) -> Optional[Mapping[ObjectTypes, ObjectTypes]]:
         """
-        cat_to_sub_cat
+        `cat_to_sub_cat`
         """
         return self._cat_to_sub_cat
 
     def is_cat_to_sub_cat(self) -> bool:
         """
-        returns `True` if a category is replaced with sub categories
+        Returns:
+            `True` if a category is replaced with sub categories
         """
         if self._cat_to_sub_cat is not None:
             return True
@@ -358,7 +375,8 @@ class DatasetCategories:
 
     def is_filtered(self) -> bool:
         """
-        return `True` if categories are filtered
+        Returns:
+            `True` if categories are filtered
         """
         if hasattr(self, "_categories_filter_update"):
             return True
@@ -379,8 +397,11 @@ def get_merged_categories(*categories: DatasetCategories) -> DatasetCategories:
     as well but no sub category than the merged dataset will have no sub categories at all. Whereas in a similar setting
     dataset B has sub category `foo`:`bak`, then `bak` will be an optional sub category for the merged dataset as well.
 
-    :param categories: A tuple/list of dataset categories
-    :return: An instance of `DatasetCategories` to be used as `DatasetCategories` for merged datasets
+    Args:
+        categories: A tuple/list of dataset categories
+
+    Returns:
+        An instance of `DatasetCategories` to be used as `DatasetCategories` for merged datasets
     """
 
     # working with lists is not possible as the order of categories is important here

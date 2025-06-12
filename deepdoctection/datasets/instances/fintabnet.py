@@ -154,32 +154,26 @@ class FintabnetBuilder(DataFlowBaseBuilder):
 
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
-        Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
-        of the dataflow:
+            Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
+            of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+            Args:
+                kwargs:
+                    (split) Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                    (build_mode) Returns the full image or crops a table according to the table bounding box. Pass `table`
+                                 if you only want the cropped table. Default: `""`
+                    (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                    (rows_and_cols) Will add 'item' image annotations that either represent a row or a column of a table.
+                                    Default: `True`
+                    (load_image) Will load the image for each datapoint. Default: `False`
+                    (use_multi_proc) Uses multiple processes for PDF conversion. Default: `True`
+                    (use_multi_proc_strict) Uses strict mode in multiprocessing. Default: `False`
+                    (fake_score) Adds a fake score so that annotations look like predictions. Default: `False`
+                    (pubtables_like) Treats the dataset as PubTables-like. Default: `False`
 
-        `build_mode:` Returns the full image or crops a table according to the table bounding box. Pass `table`
-                           if you only want the cropped table. Default: ""
-
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `rows_and_cols:` Will add a 'item' image annotations that either represent a row or a column of a table.
-                              Note, that the type of the item (i.e. being a row or a column) can be inferred from the
-                              sub category added. Note further, that "item" are not originally part of the annotations
-                              and are inferred from cell positions and their associated table semantic. Default: `True`
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `use_multi_proc:` As the original files are stored as pdf conversion into a numpy array is time-consuming.
-                        When setting use_multi_proc to True is will use several processes depending on the number
-                        of CPUs available.
-
-        `use_multi_proc_strict:` Will use strict mode in multiprocessing.
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: dataflow
-        """
+            Returns:
+                Dataflow
+            """
 
         split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")

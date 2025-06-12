@@ -25,6 +25,7 @@ Module for DocLayNet dataset. Place the dataset as follows
     ├── PNG
     │ ├── 0a0d43e301facee9e99cc33b9b16e732dd207135f4027e75f6aea2bf117535a2.png
 """
+
 from __future__ import annotations
 
 import os
@@ -101,7 +102,7 @@ _SUB_CATEGORIES: Mapping[ObjectTypes, Mapping[ObjectTypes, Sequence[ObjectTypes]
 @dataset_registry.register("doclaynet")
 class DocLayNet(DatasetBase):
     """
-    DocLayNetSeq
+    `DocLayNet`
     """
 
     @classmethod
@@ -125,7 +126,7 @@ class DocLayNet(DatasetBase):
 
 class DocLayNetBuilder(DataFlowBaseBuilder):
     """
-    DocLayNetBuilder dataflow builder
+    `DocLayNetBuilder` dataflow builder
     """
 
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
@@ -133,15 +134,14 @@ class DocLayNetBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+        Args:
+            kwargs: (split) Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+                    (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                    (load_image) Will load the image for each datapoint.  Default: `False`
+                    (fake_score) Will add a fake score so that annotations look like predictions
 
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: None
-
-        `load_image:` Will load the image for each datapoint.  Default: False
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: dataflow
+        Returns:
+            Dataflow
         """
         split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")
@@ -233,11 +233,14 @@ class DocLayNetSeqBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-        `load_image:` Will load the image for each datapoint.  Default: `False`
+        Args:
+            kwargs:
+                (split) Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (load_image) Will load the image for each datapoint. Default: `False`
 
-        :return: dataflow
+        Returns:
+            Dataflow
         """
         split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")

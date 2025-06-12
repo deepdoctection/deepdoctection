@@ -10,11 +10,11 @@
 ------------------------------------------------------------------------------------------------------------------------
 # NEW 
 
-Version `v.0.34` includes a significant redesign of the Analyzer's default configuration.  Key changes include:
+Version `v.0.43` includes a significant redesign of the Analyzer's default configuration.  Key changes include:
 
 * More powerful models for Document Layout Analysis and OCR.
 * Expanded functionality.
-* Reduced dependencies.
+* Less dependencies.
 
 ------------------------------------------------------------------------------------------------------------------------
 

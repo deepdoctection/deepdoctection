@@ -66,7 +66,7 @@ _INIT_CATEGORIES = [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST, LayoutTy
 @dataset_registry.register("testlayout")
 class LayoutTest(_BuiltInDataset):
     """
-    LayoutTest
+    `LayoutTest`
     """
 
     _name = _NAME
@@ -99,16 +99,16 @@ class LayoutTestBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. Only "test" is for this small sample available
+        Args:
+            kwargs:
+                (split) Split of the dataset. Only `test` is available for this small sample. Default: `test`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (fake_score) Will add a fake score so that annotations look like predictions. Default: `False`
 
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: Dataflow
-        """
+        Returns:
+            Dataflow
+            """
         split = str(kwargs.get("split", "test"))
         max_datapoints = kwargs.get("max_datapoints")
         if max_datapoints is not None:

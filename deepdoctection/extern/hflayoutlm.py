@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-HF Layoutlm model for diverse downstream tasks.
+HF Layoutlm models.
 """
 from __future__ import annotations
 
@@ -87,9 +87,12 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
     We do not use the tokenizer for a particular model that the transformer library provides. Thie mapping therefore
     returns the tokenizer that should be used for a particular model.
 
-    :param model_class: The model as stated in the transformer library.
-    :param use_xlm_tokenizer: True if one uses the LayoutXLM. (The model cannot be distinguished from LayoutLMv2).
-    :return: Tokenizer instance to use.
+    Args:
+        model_class: The model as stated in the transformer library.
+        use_xlm_tokenizer: True if one uses the `LayoutXLM`. (The model cannot be distinguished from `LayoutLMv2`).
+
+    Returns:
+        Tokenizer instance to use.
     """
     return {
         ("LayoutLMForTokenClassification", False): LayoutLMTokenizerFast.from_pretrained(
@@ -137,15 +140,18 @@ def predict_token_classes(
     images: Optional[torch.Tensor] = None,
 ) -> list[TokenClassResult]:
     """
-    :param uuids: A list of uuids that correspond to a word that induces the resulting token
-    :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-    :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-    :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-    :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-    :param tokens: List of original tokens taken from LayoutLMTokenizer
-    :param model: layoutlm model for token classification
-    :param images: A list of torch image tensors or None
-    :return: A list of TokenClassResults
+    Args:
+        uuids: A list of uuids that correspond to a word that induces the resulting token
+        input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+        attention_mask: The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+        token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+        boxes: Torch tensor of bounding boxes of type 'xyxy'
+        tokens: List of original tokens taken from `LayoutLMTokenizer`
+        model: layoutlm model for token classification
+        images: A list of torch image tensors or None
+
+    Returns:
+        A list of `TokenClassResult`s
     """
 
     if images is None:
@@ -195,13 +201,16 @@ def predict_sequence_classes(
     images: Optional[torch.Tensor] = None,
 ) -> SequenceClassResult:
     """
-    :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-    :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-    :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-    :param boxes: Torch tensor of bounding boxes of type 'xyxy'
-    :param model: layoutlm model for sequence classification
-    :param images: A list of torch image tensors or None
-    :return: SequenceClassResult
+    Args:
+        input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+        attention_mask: The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
+        token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+        boxes: Torch tensor of bounding boxes of type `xyxy`
+        model: layoutlm model for sequence classification
+        images: A list of torch image tensors or None
+
+    Returns:
+        SequenceClassResult
     """
 
     if images is None:
@@ -229,7 +238,7 @@ def predict_sequence_classes(
 
 class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
     """
-    Abstract base class for wrapping LayoutLM models for token classification into the deepdoctection framework.
+    Abstract base class for wrapping `LayoutLM` models for token classification into the framework.
     """
 
     def __init__(
@@ -243,17 +252,18 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
         use_xlm_tokenizer: bool = False,
     ):
         """
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
-                                     entities self. To be consistent with detectors use only values >0. Conversion will
-                                     be done internally.
-        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
-                               consistent with detectors use only values>0. Conversion will be done internally.
-        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
-        :param device: The device (cpu,"cuda"), where to place the model.
-        :param use_xlm_tokenizer: True if one uses the LayoutXLM or a lilt model built with a xlm language model, e.g.
-                                  info-xlm or roberta-xlm. (LayoutXLM cannot be distinguished from LayoutLMv2).
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories_semantics: A dict with key (indices) and values (category names) for `NER` semantics, i.e. the
+                                 entities self. To be consistent with detectors use only values `>0`. Conversion will
+                                 be done internally.
+            categories_bio: A dict with key (indices) and values (category names) for `NER` tags (i.e. `BIO`). To be
+                           consistent with detectors use only `values>0`. Conversion will be done internally.
+            categories: If you have a pre-trained model you can pass a complete dict of NER categories
+            device: The device (cpu,"cuda"), where to place the model.
+            use_xlm_tokenizer: True if one uses the `LayoutXLM` or a lilt model built with a xlm language model, e.g.
+                              `info-xlm` or `roberta-xlm`. (`LayoutXLM` cannot be distinguished from LayoutLMv2).
         """
 
         if categories is None:
@@ -340,10 +350,15 @@ class HFLayoutLmTokenClassifierBase(LMTokenClassifier, ABC):
 
     @staticmethod
     def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
-        """A refinement for adding the tokenizer class name to the model configs.
+        """
+        A refinement for adding the tokenizer class name to the model configs.
 
-        :param model_class_name: The model name, e.g. model.__class__.__name__
-        :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
+        Args:
+            model_class_name: The model name, e.g. `model.__class__.__name__`
+            use_xlm_tokenizer: Whether to use a `XLM` tokenizer.
+
+        Returns:
+            The name of the tokenizer class.
         """
         tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
@@ -366,31 +381,32 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
     Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+        layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
+                                              categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                           'E-header', 'E-question', 'I-answer', 'I-header',
+                                                           'I-question', 'O', 'S-answer', 'S-header',
+                                                           'S-question'])
 
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
-                                                               'E-header', 'E-question', 'I-answer', 'I-header',
-                                                               'I-question', 'O', 'S-answer', 'S-header',
-                                                               'S-question'])
+        # token classification service
+        layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
-            # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -404,17 +420,18 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         use_xlm_tokenizer: bool = False,
     ):
         """
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
-                                     entities self. To be consistent with detectors use only values >0. Conversion will
-                                     be done internally.
-        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
-                               consistent with detectors use only values>0. Conversion will be done internally.
-        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
-        :param device: The device (cpu,"cuda"), where to place the model.
-        :param use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLM model with a different
-                                  Tokenizer.
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
+                                 entities self. To be consistent with detectors use only values `>0`. Conversion will
+                                 be done internally.
+            categories_bio: A dict with key (indices) and values (category names) for `NER` tags (i.e. BIO). To be
+                           consistent with detectors use only values>0. Conversion will be done internally.
+            categories: If you have a pre-trained model you can pass a complete dict of NER categories
+            device: The device (cpu,"cuda"), where to place the model.
+            use_xlm_tokenizer: Do not change this value unless you pre-trained a LayoutLM model with a different
+                              Tokenizer.
         """
         super().__init__(
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
@@ -431,17 +448,16 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
-        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+        Args:
+            encodings: input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+                       attention_mask: The associated attention masks from padded sequences taken from
+                                       `LayoutLMTokenizer`
+                       token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+                       boxes: Torch tensor of bounding boxes of type `xyxy`
+                       tokens: List of original tokens taken from `LayoutLMTokenizer`
 
-        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
-
-        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
-
-        `boxes:` Torch tensor of bounding boxes of type 'xyxy'
-
-        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
-
-        :return: A list of TokenClassResults
+        Returns:
+            A list of `TokenClassResult`s
         """
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
@@ -459,9 +475,12 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to .json config file
+            path_weights: path to model artifact
+
+        Returns:
+            `nn.Module`
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMForTokenClassification.from_pretrained(
@@ -481,31 +500,32 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     Note, that you must use `LayoutLMTokenizerFast` as tokenizer. `LayoutLMv2TokenizerFast` will not be accepted.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+        layoutlm = HFLayoutLmv2TokenClassifier("path/to/config.json","path/to/model.bin",
+                                              categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                           'E-header', 'E-question', 'I-answer', 'I-header',
+                                                           'I-question', 'O', 'S-answer', 'S-header',
+                                                           'S-question'])
 
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmv2TokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
-                                                               'E-header', 'E-question', 'I-answer', 'I-header',
-                                                               'I-question', 'O', 'S-answer', 'S-header',
-                                                               'S-question'])
+        # token classification service
+        layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
 
-            # token classification service
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -519,17 +539,18 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
         use_xlm_tokenizer: bool = False,
     ):
         """
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
-                                     entities self. To be consistent with detectors use only values >0. Conversion will
-                                     be done internally.
-        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
-                               consistent with detectors use only values>0. Conversion will be done internally.
-        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
-        :param device: The device (cpu,"cuda"), where to place the model.
-        :param use_xlm_tokenizer: Set to True if you use a LayoutXLM model. If you use a LayoutLMv2 model keep the
-                                  default value.
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories_semantics: A dict with key (indices) and values (category names) for `NER` semantics, i.e. the
+                                 entities self. To be consistent with detectors use only values `>0`. Conversion will
+                                 be done internally.
+            categories_bio: A dict with key (indices) and values (category names) for `NER` tags (i.e. `BIO`). To be
+                           consistent with detectors use only values>0. Conversion will be done internally.
+            categories: If you have a pre-trained model you can pass a complete dict of `NER` categories
+            device: The device (cpu,"cuda"), where to place the model.
+            use_xlm_tokenizer: Set to True if you use a LayoutXLM model. If you use a `LayoutLMv2` model keep the
+                              default value.
         """
         super().__init__(
             path_config_json, path_weights, categories_semantics, categories_bio, categories, device, use_xlm_tokenizer
@@ -544,19 +565,18 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
-        Launch inference on LayoutLm for token classification. Pass the following arguments
+        Launch inference on `LayoutLm` for token classification. Pass the following arguments
 
-        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+        Args:
+            encodings: input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+                       attention_mask: The associated attention masks from padded sequences taken from
+                                       `LayoutLMTokenizer`
+                       token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+                       boxes: Torch tensor of bounding boxes of type `xyxy`
+                       tokens: List of original tokens taken from `LayoutLMTokenizer`
 
-        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
-
-        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
-
-        `boxes:` Torch tensor of bounding boxes of type `xyxy`
-
-        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
-
-        :return: A list of TokenClassResults
+        Returns:
+            A list of `TokenClassResult`s
         """
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
@@ -799,8 +819,9 @@ class HFLayoutLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
         """A refinement for adding the tokenizer class name to the model configs.
 
-        :param model_class_name: The model name, e.g. model.__class__.__name__
-        :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
+        Args:
+            model_class_name: The model name, e.g. `model.__class__.__name__`
+            use_xlm_tokenizer: Whether to use a `XLM` tokenizer.
         """
         tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
@@ -823,28 +844,29 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
     classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+        layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+                                              categories=["handwritten", "presentation", "resume"])
 
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmSequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories=["handwritten", "presentation", "resume"])
+        # token classification service
+        layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
-            # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -855,6 +877,16 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
+        """
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories: A dict with key (indices) and values (category names) for sequence classification.
+                        To be consistent with detectors use only values `>0`. Conversion will be done internally.
+            device: The device ("cpu","cuda"), where to place the model.
+            use_xlm_tokenizer: Do not change this value unless you pre-trained a `LayoutLM` model with a different
+                              Tokenizer.
+        """
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LayoutLM")
         self.model_id = self.get_model_id()
@@ -865,6 +897,16 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
+        """
+        Launch inference on LayoutLm for sequence classification. Pass the following arguments
+
+        Args:
+            encodings: input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+                       attention_mask: The associated attention masks from padded sequences taken from
+                                       `LayoutLMTokenizer`
+                       token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+                       boxes: Torch tensor of bounding boxes of type `xyxy`
+        """
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
         result = predict_sequence_classes(
@@ -886,9 +928,12 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+
+        Returns:
+            'nn.Module'
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMForSequenceClassification.from_pretrained(
@@ -906,28 +951,29 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     itself. Note that this model is equipped with a head that is only useful for classifying the input sequence. For
     token classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+        layoutlm = HFLayoutLmv2SequenceClassifier("path/to/config.json","path/to/model.bin",
+                                              categories=["handwritten", "presentation", "resume"])
 
-            # hf tokenizer and token classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            layoutlm = HFLayoutLmv2SequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories=["handwritten", "presentation", "resume"])
+        # token classification service
+        layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
-            # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -938,6 +984,16 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
         use_xlm_tokenizer: bool = False,
     ):
+        """
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories: A dict with key (indices) and values (category names) for sequence classification.
+                        To be consistent with detectors use only values `>0`. Conversion will be done internally.
+            device: The device ("cpu","cuda"), where to place the model.
+            use_xlm_tokenizer: Do not change this value unless you pre-trained a `LayoutLM` model with a different
+                              Tokenizer.
+        """
         super().__init__(path_config_json, path_weights, categories, device, use_xlm_tokenizer)
         self.name = self.get_name(path_weights, "LayoutLMv2")
         self.model_id = self.get_model_id()
@@ -948,6 +1004,16 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         )
 
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
+        """
+        Launch inference on LayoutLm for sequence classification. Pass the following arguments
+
+        Args:
+            encodings: input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+                       attention_mask: The associated attention masks from padded sequences taken from
+                                       `LayoutLMTokenizer`
+                       token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+                       boxes: Torch tensor of bounding boxes of type `xyxy`
+        """
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
         images = encodings.get("image")
         if isinstance(images, torch.Tensor):
@@ -976,9 +1042,12 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+
+        Returns:
+            'nn.Module'
         """
         config = LayoutLMv2Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv2ForSequenceClassification.from_pretrained(
@@ -996,28 +1065,29 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
     itself. Note that this model is equipped with a head that is only useful for classifying the input sequence. For
     token classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
+        layoutlm = HFLayoutLmv3SequenceClassifier("path/to/config.json","path/to/model.bin",
+                                              categories=["handwritten", "presentation", "resume"])
 
-            # hf tokenizer and token classifier
-            tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
-            layoutlm = HFLayoutLmv3SequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories=["handwritten", "presentation", "resume"])
+        # token classification service
+        layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
 
-            # token classification service
-            layoutlm_service = LMSequenceClassifierService(tokenizer,layoutlm)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,layoutlm_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -1072,9 +1142,12 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+
+        Returns:
+            'nn.Module'
         """
         config = LayoutLMv3Config.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config_json))
         return LayoutLMv3ForSequenceClassification.from_pretrained(
@@ -1092,31 +1165,32 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
     Note that this model is equipped with a head that is only useful when classifying tokens. For sequence
     classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
+        lilt = HFLiltTokenClassifier("path/to/config.json","path/to/model.bin",
+                                              categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                           'E-header', 'E-question', 'I-answer', 'I-header',
+                                                           'I-question', 'O', 'S-answer', 'S-header',
+                                                           'S-question'])
 
-            # hf tokenizer and token classifier
-            tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
-            lilt = HFLiltTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
-                                                               'E-header', 'E-question', 'I-answer', 'I-header',
-                                                               'I-question', 'O', 'S-answer', 'S-header',
-                                                               'S-question'])
+        # token classification service
+        lilt_service = LMTokenClassifierService(tokenizer,lilt)
 
-            # token classification service
-            lilt_service = LMTokenClassifierService(tokenizer,lilt)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -1130,15 +1204,16 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         use_xlm_tokenizer: bool = False,
     ):
         """
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :param categories_semantics: A dict with key (indices) and values (category names) for NER semantics, i.e. the
-                                     entities self. To be consistent with detectors use only values >0. Conversion will
-                                     be done internally.
-        :param categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. BIO). To be
-                               consistent with detectors use only values>0. Conversion will be done internally.
-        :param categories: If you have a pre-trained model you can pass a complete dict of NER categories
-        :param device: The device (cpu,"cuda"), where to place the model.
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+            categories_semantics: A dict with key (indices) and values (category names) for `NER` semantics, i.e. the
+                                 entities self. To be consistent with detectors use only values `>0`. Conversion will
+                                 be done internally.
+            categories_bio: A dict with key (indices) and values (category names) for NER tags (i.e. `BIO`). To be
+                           consistent with detectors use only values>0. Conversion will be done internally.
+            categories: If you have a pre-trained model you can pass a complete dict of `NER` categories
+            device: The device ("cpu","cuda"), where to place the model.
         """
 
         super().__init__(
@@ -1156,17 +1231,16 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Launch inference on LayoutLm for token classification. Pass the following arguments
 
-        `input_ids:` Token converted to ids to be taken from `LayoutLMTokenizer`
+        Args:
+            encodings: input_ids: Token converted to ids to be taken from `LayoutLMTokenizer`
+                       attention_mask: The associated attention masks from padded sequences taken from
+                                       `LayoutLMTokenizer`
+                       token_type_ids: Torch tensor of token type ids taken from `LayoutLMTokenizer`
+                       boxes: Torch tensor of bounding boxes of type `xyxy`
+                       tokens: List of original tokens taken from `LayoutLMTokenizer`
 
-        `attention_mask:` The associated attention masks from padded sequences taken from `LayoutLMTokenizer`
-
-        `token_type_ids:` Torch tensor of token type ids taken from `LayoutLMTokenizer`
-
-        `boxes:` Torch tensor of bounding boxes of type 'xyxy'
-
-        `tokens:` List of original tokens taken from `LayoutLMTokenizer`
-
-        :return: A list of TokenClassResults
+        Returns:
+            A list of `TokenClassResult`s
         """
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
@@ -1182,9 +1256,12 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+
+        Returns:
+            `nn.Module`
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return LiltForTokenClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)
@@ -1200,29 +1277,30 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
     classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and sequence classifier
+        tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+        lilt = HFLiltSequenceClassifier("path/to/config.json",
+                                            "path/to/model.bin",
+                                            categories=["handwritten", "presentation", "resume"])
 
-            # hf tokenizer and sequence classifier
-            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-            lilt = HFLiltSequenceClassifier("path/to/config.json",
-                                                "path/to/model.bin",
-                                                categories=["handwritten", "presentation", "resume"])
+        # sequence classification service
+        lilt_service = LMSequenceClassifierService(tokenizer,lilt)
 
-            # sequence classification service
-            lilt_service = LMSequenceClassifierService(tokenizer,lilt)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,lilt_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -1262,9 +1340,12 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to `.json` config file
+            path_weights: path to model artifact
+
+        Returns:
+            `nn.Module`
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return LiltForSequenceClassification.from_pretrained(pretrained_model_name_or_path=path_weights, config=config)

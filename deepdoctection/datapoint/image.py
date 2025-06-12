@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Dataclass Image
+## Dataclass Image
 """
 from __future__ import annotations
 
@@ -51,35 +51,39 @@ class Image:
     Data points from datasets must be mapped in this format so that the processing tools (pipeline components) can
     be called up without further adjustment.
 
-    In the case of full pipelines, the image data model is also the highest hierarchy class in which document pages
-    including their discovered features can be processed.
-
-    An image can be provided with an image_id by providing the external_id, which can be clearly identified
-    as a md5 hash string. If such an id is not given, an image_id is derived from the file_name and, if necessary,
-    from the given location.
-
-    When initializing the object, the following arguments can be specified:
-
-    `file_name`: Should be equal to the name of a physical file representing the image. If the image is part
-    of a larger document (e.g. pdf-document) the file_name should be populated as a concatenation of the document file
-    and its page number.
-
-    `location`: Full path to the document or to the physical file. Loading functions from disk use this attribute.
-
-    `external_id`: A string or integer value for generating an image id.
+    An image can be provided with an `image_id` by providing the `external_id`, which can be clearly identified
+    as a `md5` hash. If such an id is not given, an `image_id` will be derived from `file_name` and, if necessary,
+    from `location`.
 
     All other attributes represent containers (lists or dicts) that can be populated and managed using their own method.
 
-    In `image`, the image may be saved as np.array. Allocation as base64 encoding string or as pdf bytes are
-    possible and are converted via a `image.setter`. Other formats are rejected. As a result of the transfer,
-    the width and height of the image are determined. These are accessible via `width` or `height`.
-    Using `embeddings`, various bounding boxes can be saved that describe the position of the image as a
-    sub-image of another image. The bounding box is accessed in relation to the embedding image via the annotation_id.
-    Embeddings are often used in connection with annotations in which `image` is populated.
+    In `image`, the image may be saved as `np.array`. Allocation as `base64` encoding string or as pdf bytes are
+    possible and are converted via a `image.setter`. Other formats are rejected.
+    If an image of a given size is added, the width and height of the image are determined.
 
-    All ImageAnnotations associated with the image are used in the list annotations. Other types of annotation are
-    not permitted and must either be transported as  sub-category of an ImageAnnotation or placed as a summary
-    annotation in the `summary`.
+    Using `embeddings`, various bounding boxes can be saved that describe the position of the image as a
+    sub-image. The bounding box is accessed in relation to the embedding image via the `annotation_id`.
+    Embeddings are often used in connection with annotations in which the `image` is populated.
+
+    All `ImageAnnotations` of the image are saved in the list annotations. Other types of annotation are
+    not permitted.
+
+    Args:
+        file_name: Should be equal to the name of a physical file representing the image. If the image is part
+                   of a larger document (e.g. pdf-document) the file_name should be populated as a concatenation of
+                   the document file and its page number.
+        location: Full path to the document or to the physical file. Loading functions from disk use this attribute.
+        document_id: A unique identifier for the document. If not set, it will be set to the `image_id`.
+        page_number: The page number of the image in the document. If not set, it will be set to 0.
+        external_id: A string or integer value for generating an `image_id`.
+        _image_id: A unique identifier for the image. If not set, it will be set to a generated `uuid`.
+        _image: The image as a numpy array. If not set, it will be set to None. Do not set this attribute directly.
+        _bbox: The bounding box of the image. If not set, it will be set to None. Do not set this attribute directly.
+        embeddings: A dictionary of `image_id` to `BoundingBox`es. If not set, it will be set to an empty dict.
+        annotations: A list of `ImageAnnotation` objects. Use `get_annotation` to retrieve annotations.
+        _annotation_ids: A list of `annotation_id`s. Used internally to ensure uniqueness of annotations.
+        _summary: A `CategoryAnnotation` for image-level informations. If not set, it will be set to None.
+
     """
 
     file_name: str
@@ -109,7 +113,7 @@ class Image:
     @property
     def image_id(self) -> str:
         """
-        image_id
+        `image_id`
         """
         if self._image_id is not None:
             return self._image_id
@@ -118,7 +122,7 @@ class Image:
     @image_id.setter
     def image_id(self, input_id: str) -> None:
         """
-        image_id setter
+        `image_id` setter
         """
         if self._image_id is not None:
             raise ImageError("image_id already defined and cannot be reset")
@@ -140,10 +144,14 @@ class Image:
     def image(self, image: Optional[Union[str, PixelValues, bytes]]) -> None:
         """
         Sets the image for internal storage. Will convert to numpy array before storing internally.
-        Note: If the input is an np.array, ensure that the image is in BGR-format as this is the standard
-        format for the whole package.
-        :param image: Accepts numpy arrays, base64 encodings or bytes generated from pdf documents.
-                      Everything else will be rejected.
+
+        Note:
+            If the input is an np.array, ensure that the image is in BGR-format as this is the standard
+            format for the whole package.
+
+        Args:
+            image: Accepts `np.array`s, `base64` encodings or `bytes` generated from pdf documents.
+                   Everything else will be rejected.
         """
 
         if isinstance(image, property):
@@ -184,7 +192,7 @@ class Image:
     @property
     def pdf_bytes(self) -> Optional[bytes]:
         """
-        pdf_bytes. This attribute will be set dynamically and is not part of the core Image data model
+        `pdf_bytes`. This attribute will be set dynamically and is not part of the core Image data model
         """
         if hasattr(self, "_pdf_bytes"):
             return getattr(self, "_pdf_bytes")
@@ -193,7 +201,7 @@ class Image:
     @pdf_bytes.setter
     def pdf_bytes(self, pdf_bytes: bytes) -> None:
         """
-        pdf_bytes setter
+        `pdf_bytes` setter
         """
         assert isinstance(pdf_bytes, bytes)
         if not hasattr(self, "_pdf_bytes"):
@@ -203,9 +211,10 @@ class Image:
         """
         Removes the `Image.image`. Useful, if the image must be a lightweight object.
 
-        :param clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
-                           if the image is going to be replaced with a transform. It will also remove the self
-                           embedding entry
+        Args:
+            clear_bbox: If set to `True` it will remove the image width and height. This is necessary,
+                        if the image is going to be replaced with a transform. It will also remove the self
+                        embedding entry
         """
         self._image = None
         if clear_bbox:
@@ -214,20 +223,26 @@ class Image:
 
     def get_image(self) -> _Img:  # type: ignore # pylint: disable=E0602
         """
-        Get the image either in base64 string representation or as np.array.
+        Get the image either in base64 string representation or as `np.array`.
 
+        Example:
+            ```python
             image.get_image().to_np_array()
+            ```
 
-        or
+            or
 
+            ```python
             image.get_image().to_b64()
+            ```
 
-        :return: desired image encoding representation
+        Returns:
+            Desired image encoding representation
         """
 
         class _Img:
             """
-            Helper class. Do not use it in your code.
+            Helper class. Do not use it.
             """
 
             def __init__(self, img: Optional[PixelValues]):
@@ -256,7 +271,7 @@ class Image:
     @property
     def width(self) -> float:
         """
-        width
+        `width`
         """
         if self._bbox is None:
             raise ImageError("Width not available. Call set_width_height first")
@@ -265,7 +280,7 @@ class Image:
     @property
     def height(self) -> float:
         """
-        height
+        `height`
         """
         if self._bbox is None:
             raise ImageError("Height not available. Call set_width_height first")
@@ -276,8 +291,9 @@ class Image:
         Defines bounding box of the image if not already set. Use this, if you do not want to keep the image separated
         for memory reasons.
 
-        :param width: width of image
-        :param height: height of image
+        Args:
+            width: width of image
+            height: height of image
         """
         if self._bbox is None:
             self._bbox = BoundingBox(ulx=0.0, uly=0.0, height=height, width=width, absolute_coords=True)
@@ -288,8 +304,9 @@ class Image:
         Set embedding pair. Pass an image_id and a bounding box defining the spacial position of this image with
         respect to the embedding image.
 
-        :param image_id: A uuid of the embedding image.
-        :param bounding_box: bounding box of this image in terms of the embedding image.
+        Args:
+            image_id: A uuid of the embedding image.
+            bounding_box: bounding box of this image in terms of the embedding image.
         """
         if not isinstance(bounding_box, BoundingBox):
             raise BoundingBoxError(f"Bounding box must be of type BoundingBox, is of type {type(bounding_box)}")
@@ -299,8 +316,11 @@ class Image:
         """
         Returns the bounding box according to the `image_id`.
 
-        :param image_id: uuid string of the embedding image
-        :return: The bounding box of this instance in terms of the embedding image
+        Args:
+            image_id: uuid string of the embedding image
+
+        Returns:
+            The bounding box of this instance in terms of the embedding image
         """
 
         return self.embeddings[image_id]
@@ -309,7 +329,8 @@ class Image:
         """
         Remove an embedding from the image.
 
-        :param image_id: uuid string of the embedding image
+        Args:
+            image_id: `uuid` string of the embedding image
         """
         if image_id in self.embeddings:
             self.embeddings.pop(image_id)
@@ -324,7 +345,8 @@ class Image:
         an image. It gives the annotation an `annotation_id` in relation to the `image_id` in order to ensure uniqueness
         across all images.
 
-        :param annotation: image annotation to store
+        Args:
+            annotation: image annotation to store
         """
         if not isinstance(annotation, ImageAnnotation):
             raise AnnotationError(
@@ -349,19 +371,21 @@ class Image:
     ) -> list[ImageAnnotation]:
         """
         Selection of annotations from the annotation container. Filter conditions can be defined by specifying
-        the annotation_id or the category name. (Since only image annotations are currently allowed in the container,
-        annotation_type is a redundant filter condition.) Only annotations that have  active = 'True' are
-        returned. If more than one condition is provided, only annotations will be returned that satisfy all conditions.
+        the `annotation_id` or `category_name`.
+        Only annotations that have  active = 'True' are returned. If more than one condition is provided, only
+        annotations will be returned that satisfy all conditions.
         If no condition is provided, it will return all active annotations.
 
-        :param category_names: A single name or list of names
-        :param annotation_ids: A single id or list of ids
-        :param service_ids: A single service name or list of service names
-        :param model_id: A single model name or list of model names
-        :param session_ids: A single session id or list of session ids
-        :param ignore_inactive: If set to `True` only active annotations are returned.
+        Args:
+            category_names: A single name or list of names
+            annotation_ids: A single id or list of ids
+            service_ids: A single service name or list of service names
+            model_id: A single model name or list of model names
+            session_ids: A single session id or list of session ids
+            ignore_inactive: If set to `True` only active annotations are returned.
 
-        :return: A (possibly empty) list of Annotations
+        Returns:
+            A (possibly empty) list of `ImageAnnotation`s
         """
 
         if category_names is not None:
@@ -403,7 +427,8 @@ class Image:
         Returns the full image dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes
         defined by `remove_keys`.
 
-        :return:  A custom dict.
+        Returns:
+            A custom `dict`.
         """
 
         img_dict = as_dict(self, dict_factory=dict)
@@ -417,7 +442,8 @@ class Image:
         """
         Returns the full image dataclass as json string.
 
-        :return:  A json string.
+        Returns:
+            A `JSON` object.
         """
 
         return json.dumps(self.as_dict(), indent=4)
@@ -425,7 +451,7 @@ class Image:
     @staticmethod
     def remove_keys() -> list[str]:
         """
-        A list of attributes to suspend from as_dict creation.
+        A list of attributes to suspend from `as_dict` creation.
         """
 
         return ["_annotation_ids", "_category_name"]
@@ -435,8 +461,11 @@ class Image:
         Generate a uuid for a given annotation. To guarantee uniqueness the generation depends on the datapoint
         `image_id` as well as on the annotation.
 
-        :param annotation:  An annotation to generate the uuid for
-        :return: uuid string
+        Args:
+            annotation:  An annotation to generate the `uuid` for
+
+        Returns:
+            uuid string
         """
 
         attributes = annotation.get_defining_attributes()
@@ -452,10 +481,14 @@ class Image:
         """
         Instead of removing consider deactivating annotations.
 
-        Calls `List.remove`. Make sure, the element is in the list for otherwise a ValueError will be raised.
+        Calls `List.remove`.
 
-        :param annotation_ids: The annotation to remove
-        :param service_ids: The service id to remove
+        Args:
+            annotation_ids: The annotation to remove
+            service_ids: The service id to remove
+
+        Raises:
+            ValueError: If the annotation or service id is not found in the image.
         """
         ann_id_to_annotation_maps = self.get_annotation_id_to_annotation_maps()
 
@@ -530,8 +563,9 @@ class Image:
         by the bounding box. The image is cut out and the determinable fields such as height, width and the embeddings
         are determined. The partial image is not saved if `crop_image = 'False'` is set.
 
-        :param annotation_id: An annotation id of the image annotations.
-        :param crop_image: Whether to store the cropped image as np.array.
+        Args:
+            annotation_id: An annotation id of the image annotations.
+            crop_image: Whether to store the cropped image as `np.array`.
         """
 
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
@@ -565,9 +599,10 @@ class Image:
         image of the image annotation. All annotations of this image are also dumped onto the image of the image
         annotation, provided that their bounding boxes are completely in the box of the annotation under consideration.
 
-        :param annotation_id: image annotation you want to assign image annotation from this image. Note, that the
-                              annotation must have a not None `image`.
-        :param category_names: Filter the proposals of all image categories of this image by some given category names.
+        Args:
+            annotation_id: image annotation you want to assign image annotation from this image. Note, that the
+                           annotation must have a not None `image`.
+            category_names: Filter the proposals of all image categories of this image by some given category names.
         """
 
         ann = self.get_annotation(annotation_ids=annotation_id)[0]
@@ -618,8 +653,11 @@ class Image:
         """
         Create `Image` instance from dict.
 
-        :param kwargs: dict with  `Image` attributes and nested dicts for initializing annotations,
-        :return: Initialized image
+        Args:
+            kwargs: dict with  `Image` attributes and nested dicts for initializing annotations,
+
+        Returns:
+            Initialized image
         """
         image = cls(kwargs.get("file_name"), kwargs.get("location"), kwargs.get("external_id"))
         image._image_id = kwargs.get("_image_id")
@@ -649,10 +687,13 @@ class Image:
     @no_type_check
     def from_file(cls, file_path: str) -> Image:
         """
-        Create `Image` instance from .json file.
+        Create `Image` instance from `.json` file.
 
-        :param file_path: file_path
-        :return: Initialized image
+        Args:
+            file_path: file_path
+
+        Returns:
+            Initialized image
         """
         with open(file_path, "r", encoding="UTF-8") as file:
             image = Image.from_dict(**json.load(file))
@@ -663,7 +704,8 @@ class Image:
         """
         Returns the list of attributes that define the `state_id` of an image.
 
-        :return: List of attributes
+        Returns:
+            list of attributes
         """
         return ["annotations", "embeddings", "_image", "_summary"]
 
@@ -673,7 +715,8 @@ class Image:
         Different to `image_id` this id does depend on every state attributes and might therefore change
         over time.
 
-        :return: Annotation state instance
+        Returns:
+            Annotation state instance
         """
         container_ids = []
         attributes = self.get_state_attributes()
@@ -710,13 +753,15 @@ class Image:
         dry: bool = False,
     ) -> Optional[Union[ImageDict, str]]:
         """
-        Export image as dictionary. As numpy array cannot be serialized `image` values will be converted into
-        base64 encodings.
-        :param image_to_json: If True will save the image as b64 encoded string in output
-        :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
-        :param path: Path to save the .json file to. If `None` results will be saved in the folder of the original
-                     document.
-        :param dry: Will run dry, i.e. without saving anything but returning the dict
+        Export image as dictionary. As `np.array` cannot be serialized `image` values will be converted into
+        `base64` encodings.
+
+        Args:
+            image_to_json: If `True` will save the image as b64 encoded string in output
+            highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
+            path: Path to save the .json file to. If `None` results will be saved in the folder of the original
+                  document.
+            dry: Will run dry, i.e. without saving anything but returning the `dict`
 
         :return: optional dict
         """
@@ -757,14 +802,16 @@ class Image:
         return path_json
 
     def get_categories_from_current_state(self) -> set[str]:
-        """Returns all active dumped categories"""
+        """Returns:
+             All active dumped categories
+        """
         return {ann.category_name for ann in self.get_annotation()}
 
     def get_service_id_to_annotation_id(self) -> defaultdict[str, list[str]]:
         """
-        Returns a dictionary with service ids as keys and lists of annotation ids that have been generated by the
-        service
-        :return: default with service ids as keys and lists of annotation ids as values
+        Returns:
+            A dictionary with `service_id`s as keys and lists of annotation ids that have been generated by the
+            service
         """
         service_id_dict = defaultdict(list)
         for ann in self.get_annotation():
@@ -784,10 +831,11 @@ class Image:
 
     def get_annotation_id_to_annotation_maps(self) -> defaultdict[str, list[AnnotationMap]]:
         """
-        Returns a dictionary with annotation ids as keys and lists of AnnotationMap as values. The range of ids
-        is the union of all ImageAnnotation, CategoryAnnotation and ContainerAnnotation of the image.
+        Returns a dictionary with annotation ids as keys and lists of `AnnotationMap` as values. The range of ids
+        is the union of all `ImageAnnotation`, `CategoryAnnotation` and `ContainerAnnotation` of the image.
 
-        :return: default dict with annotation ids as keys and lists of AnnotationMap as values
+        Returns:
+            `defaultdict` with `annotation_id`s as keys and lists of `AnnotationMap` as values
         """
         all_ann_id_dict = defaultdict(list)
         for ann in self.get_annotation():

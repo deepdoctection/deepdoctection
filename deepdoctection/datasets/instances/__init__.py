@@ -16,7 +16,9 @@
 # limitations under the License.
 
 """
-Init file for instances package. Place all datasets in a directory using the structure
+## Dataset instances.
+
+Place all datasets in a deepdoctection's cache
 
     deepdoctection
     ├── datasets
@@ -24,9 +26,11 @@ Init file for instances package. Place all datasets in a directory using the str
     │ ├── dataset_2
     │ ├── dataset_3
 
-If not sure use
+If not sure:
 
+    ```python
     print(dataset_instance.dataflow.get_workdir())
+    ```
 """
 
 from .doclaynet import *

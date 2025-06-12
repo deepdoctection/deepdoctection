@@ -13,7 +13,9 @@
 # Apache 2.0 License for more details.
 
 """
-Tree distance similarity metric taken from <https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py>
+Tree distance similarity metric
+
+Taken from <https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py>
 """
 
 import statistics
@@ -81,7 +83,8 @@ class TableTree(Tree):
 
 class CustomConfig(Config):
     """
-    CustomConfig for calculating APTED tree edit distance. Check APTED docs for more information
+    `CustomConfig` for calculating `APTED` tree edit distance.
+    Check APTED docs for more information
     """
 
     @staticmethod
@@ -90,7 +93,7 @@ class CustomConfig(Config):
         return max(map(len, sequences))
 
     def normalized_distance(self, *sequences: Any) -> float:
-        """Get distance from 0 to 1"""
+        """Get distance from `0` to `1`"""
         return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
 
     def rename(self, node1: Any, node2: Any) -> float:
@@ -104,7 +107,7 @@ class CustomConfig(Config):
 
 
 class TEDS:
-    """Tree Edit Distance based Similarity"""
+    """Tree Edit Distance similarity"""
 
     def __init__(self, structure_only: bool = False):
         self.structure_only = structure_only
@@ -123,7 +126,7 @@ class TEDS:
             self.__tokens__ += list(node.tail)
 
     def load_html_tree(self, node: TableTree, parent: Optional[TableTree] = None) -> Optional[TableTree]:
-        """Converts HTML tree to the format required by apted"""
+        """Converts `HTML` tree to the format required by APTED"""
         global __tokens__  # pylint: disable = W0602
         if node.tag == "td":
             if self.structure_only:
@@ -151,8 +154,15 @@ class TEDS:
         return None
 
     def evaluate(self, inputs: tuple[str, str]) -> float:
-        """Computes TEDS score between the prediction and the ground truth of a
+        """
+        Computes TEDS score between the prediction and the ground truth of a
         given sample
+
+        Args:
+            inputs: A tuple of ground truth and prediction in xml format
+
+        Returns:
+            A float value between 0.0 and 1.0, where 1.0 means perfect match
         """
 
         ground_truth, pred = inputs[0], inputs[1]
@@ -192,8 +202,13 @@ class TEDS:
 def teds_metric(gt_list: list[str], predict_list: list[str], structure_only: bool) -> tuple[float, int]:
     """
     Computes tree edit distance score (TEDS) between the prediction and the ground truth of a batch of samples. The
-    approach to measure similarity of tables by means of their html representation has been adovacated in
-    <https://arxiv.org/abs/1911.10683> .
+    approach to measure similarity of tables by means of their html representation has been advocated in
+    <https://arxiv.org/abs/1911.10683>
+
+    Args:
+        gt_list: A list of ground truth samples in `xml` format
+        predict_list: A list of predictions in `xml` format
+        structure_only: If `True`, only the structure of the table is considered, but no text
 
     """
     teds = TEDS(structure_only=structure_only)
@@ -218,7 +233,7 @@ def teds_metric(gt_list: list[str], predict_list: list[str], structure_only: boo
 @metric_registry.register("teds")
 class TedsMetric(MetricBase):
     """
-    Metric induced by `teds`
+    Metric induced by `TEDS`
     """
 
     metric = teds_metric  # type: ignore

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for wrapping datasets into a pytorch dataset framework.
+Wrapping datasets into a PyTorch dataset framework.
 """
 
 
@@ -46,9 +46,8 @@ class DatasetAdapter(IterableDataset):  # type: ignore
     pytorch frameworks (e.g. Detectron2). It wraps the dataset and defines the compulsory
     `__iter__` using  `dataflow.build` .
 
-    DatasetAdapter is meant for training and will therefore produce an infinite number of datapoints
+    `DatasetAdapter` is meant for training and will therefore produce an infinite number of datapoints
     by shuffling and restart iteration once the previous dataflow is exhausted.
-
     """
 
     def __init__(
@@ -61,14 +60,15 @@ class DatasetAdapter(IterableDataset):  # type: ignore
         **build_kwargs: str,
     ) -> None:
         """
-        :param name_or_dataset: Registered name of the dataset or an instance.
-        :param cache_dataset: If set to true, it will cache the dataset (without loading images). If possible,
-                              some statistics, e.g. number of specific labels will be printed.
-        :param image_to_framework_func: A mapping function that converts image datapoints into the framework format
-        :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
-                              labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
-                              `WordType.token_class`.
-        :param build_kwargs: optional parameters for defining the dataflow.
+        Args:
+            name_or_dataset: Registered name of the dataset or an instance.
+            cache_dataset: If set to `True`, it will cache the dataset (without loading images). If possible,
+                           some statistics, e.g. number of specific labels will be printed.
+            image_to_framework_func: A mapping function that converts image datapoints into the framework format
+            use_token_tag: Will only be used for dataset_type="token_classification". If `use_token_tag=True`, will use
+                           labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
+                           `WordType.token_class`.
+            build_kwargs: optional parameters for defining the dataflow.
         """
         if number_repetitions == -1 and not cache_dataset:
             raise ValueError(
