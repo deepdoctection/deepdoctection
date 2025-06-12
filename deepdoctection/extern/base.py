@@ -17,8 +17,9 @@
 
 
 """
-Abstract classes for unifying external base- and Doctection predictors
+Base classes for unifying external predictors
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -50,15 +51,18 @@ if TYPE_CHECKING:
 @dataclass
 class ModelCategories:
     """
-    Categories for models (except models for NER tasks) are managed in this class. Different to DatasetCategories,
-    these members are immutable.
+    Categories for models (except models for NER tasks) are managed in this class.
+    Different to `DatasetCategories`, these members are immutable.
 
-    **Example**:
+    Example:
 
+        ```python
         categories = ModelCategories(init_categories={1: "text", 2: "title"})
         cats = categories.get_categories(as_dict=True)  # {1: LayoutType.text, 2: LayoutType.title}
         categories.filter_categories = [LayoutType.text]  # filter out text
         cats = categories.get_categories(as_dict=True)  # {2: LayoutType.title}
+        ```
+
     """
 
     init_categories: Optional[Mapping[int, TypeOrStr]] = field(repr=False)
@@ -94,9 +98,12 @@ class ModelCategories:
         """
         Get the categories
 
-        :param as_dict: return as dict
-        :param name_as_key: if as_dict=`True` and name_as_key=`True` will swap key and value
-        :return: categories dict
+        Args:
+            as_dict: return as dict
+            name_as_key: if `as_dict=True` and `name_as_key=True` will swap key and value
+
+        Returns:
+            categories dict
         """
         if as_dict:
             if name_as_key:
@@ -110,26 +117,30 @@ class ModelCategories:
 
     @property
     def filter_categories(self) -> Sequence[ObjectTypes]:
-        """filter_categories"""
+        """`filter_categories`"""
         return self._filter_categories
 
     @filter_categories.setter
     def filter_categories(self, categories: Sequence[ObjectTypes]) -> None:
-        """categories setter"""
+        """`categories` setter"""
         self._filter_categories = categories
         self.categories = self.get_categories()
 
     def shift_category_ids(self, shift_by: int) -> MappingProxyType[int, ObjectTypes]:
         """
-        Shift category ids
+        Shift `category_id`s
 
-         **Example**:
-
+        Example:
+            ```python
             categories = ModelCategories(init_categories={"1": "text", "2": "title"})
             cats = categories.shift_category_ids(1) # {"2": LayoutType.text, "3": LayoutType.title}
+            ```
 
-        :param shift_by: The value to shift the category id to the left or to the right
-        :return: shifted categories
+         Args:
+            shift_by: The value to shift the category id to the left or to the right
+
+        Returns:
+            shifted categories
         """
         return MappingProxyType({k + shift_by: v for k, v in self.get_categories().items()})
 
@@ -140,21 +151,23 @@ class NerModelCategories(ModelCategories):
     Categories for models for NER tasks. It can handle the merging of token classes and bio tags to build a new set
     of categories.
 
-    **Example**:
-
+    Example:
+        ```python
         categories = NerModelCategories(categories_semantics=["question", "answer"], categories_bio=["B", "I"])
         cats = categories.get_categories(as_dict=True)  # {"1": TokenClassWithTag.b_question,
                                                            "2": TokenClassWithTag.i_question,
                                                            "3": TokenClassWithTag.b_answer,
                                                            "4": TokenClassWithTag.i_answer}
+        ```
 
     You can also leave the categories unchanged:
 
-    **Example**:
-
+    Example:
+        ```python
         categories = NerModelCategories(init_categories={"1": "question", "2": "answer"})
         cats = categories.get_categories(as_dict=True)  # {"1": TokenClasses.question,
                                                            "2": TokenClasses.answer}
+        ```
     """
 
     categories_semantics: Optional[Sequence[TypeOrStr]] = field(default=None)
@@ -191,16 +204,22 @@ class NerModelCategories(ModelCategories):
         """
         Merge bio and semantics categories
 
-        **Example**:
+        Example:
 
+            ```python
             categories = NerModelCategories(categories_semantics=["question", "answer"], categories_bio=["B", "I"])
             cats = categories.get_categories(as_dict=True)  # {"1": TokenClassWithTag.b_question,
                                                                "2": TokenClassWithTag.i_question,
                                                                "3": TokenClassWithTag.b_answer,
                                                                "4": TokenClassWithTag.i_answer}
-        :param categories_semantics: semantic categories (without tags)
-        :param categories_bio: bio tags
-        :return: A mapping of categories with tags
+            ```
+
+        Args:
+            categories_semantics: semantic categories (without tags)
+            categories_bio: bio tags
+
+        Returns:
+            A mapping of categories with tags
         """
         categories_list = sorted(
             {
@@ -216,13 +235,18 @@ class NerModelCategories(ModelCategories):
         """
         Disentangle token class and tag. It will return separate ObjectTypes for token class and tag.
 
-        **Example**:
+        Example:
 
+            ```python
              NerModelCategories.disentangle_token_class_and_tag(TokenClassWithTag.b_question)
              # (TokenClasses.question, TokenTags.begin)
+            ```
 
-        :param category_name: A category name with token class and tag
-        :return: Tuple of disentangled token class and tag
+        Args:
+            category_name: A category name with token class and tag
+
+        Returns:
+            Tuple of disentangled token class and tag
         """
         return token_class_with_tag_to_token_class_and_tag(category_name)
 
@@ -252,6 +276,13 @@ class PredictorBase(ABC):
     def get_requirements(cls) -> list[Requirement]:
         """
         Get a list of requirements for running the detector
+
+        Returns:
+            A list of requirements, where each requirement is a tuple of the form:
+            (requirement_name, is_available, description)
+            - `requirement_name`: The name of the requirement.
+            - `is_available`: A boolean indicating whether the requirement is available.
+            - `description`: A string describing the error code.
         """
         raise NotImplementedError()
 
@@ -265,6 +296,12 @@ class PredictorBase(ABC):
     def get_model_id(self) -> str:
         """
         Get the generating model
+
+        Returns:
+            A string representing the `model_id`, which is derived from the name of the predictor.
+
+        Raises:
+            ValueError: If the name is not set
         """
         if self.name is not None:
             return get_uuid_from_str(self.name)[:8]
@@ -286,27 +323,17 @@ class DetectionResult:
     """
     Simple mutable storage for detection results.
 
-    `box`: [ulx,uly,lrx,lry]
-
-    `class_id`: category id
-
-    `score`: prediction score
-
-    `mask`: binary mask
-
-    `absolute_coords` : absolute coordinates
-
-    `class_name`: category name
-
-    `text`: text string. Used for OCR predictors
-
-    `block`: block number. For reading order from some ocr predictors
-
-    `line`: line number. For reading order from some ocr predictors
-
-    `uuid`: uuid. For assigning detection result (e.g. text to image annotations)
-
-
+    Attributes:
+        box: [ulx,uly,lrx,lry]
+        class_id: category id
+        score: prediction score
+        mask: binary mask
+        absolute_coords: absolute coordinates
+        class_name: category name
+        text: text string. Used for OCR predictors
+        block: block number. For reading order from some ocr predictors
+        line: line number. For reading order from some ocr predictors
+        uuid: uuid. For assigning detection result (e.g. text to image annotations)
     """
 
     box: Optional[list[float]] = None
@@ -328,9 +355,10 @@ class ObjectDetector(PredictorBase, ABC):
     Abstract base class for object detection. This can be anything ranging from layout detection to OCR.
     Use this to connect external detectors with deepdoctection predictors on images.
 
-    **Example:**
-
-            MyFancyTensorpackPredictor(TensorpackPredictor,ObjectDetector)
+    Example:
+        ```python
+        MyFancyTensorpackPredictor(TensorpackPredictor,ObjectDetector)
+        ```
 
     and implement the `predict`.
     """
@@ -341,20 +369,23 @@ class ObjectDetector(PredictorBase, ABC):
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
         Abstract method predict
+
+        Args:
+            np_img: A numpy array representing the image to be processed by the predictor.
         """
         raise NotImplementedError()
 
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in `predict`
+        Whether to accept batches in `predict`
         """
         return False
 
     @abstractmethod
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """
-        Abstract method get_category_names
+        `get_category_names`
         """
         raise NotImplementedError()
 
@@ -369,7 +400,11 @@ class ObjectDetector(PredictorBase, ABC):
 class PdfMiner(PredictorBase, ABC):
     """
     Abstract base class for mining information from PDF documents. Reads in a bytes stream from a PDF document page.
-    Use this to connect external pdf miners and wrap them into Deep-Doctection predictors.
+    Use this to connect external pdf miners and wrap them into deepdoctection predictors.
+
+    Attributes:
+        categories: ModelCategories
+        _pdf_bytes: Optional[bytes]: Bytes of the PDF document page to be processed by the predictor.
     """
 
     categories: ModelCategories
@@ -379,6 +414,12 @@ class PdfMiner(PredictorBase, ABC):
     def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
         """
         Abstract method predict
+
+        Args:
+            pdf_bytes: A bytes stream representing the PDF document page to be processed by the predictor.
+
+        Returns:
+            A list of DetectionResult objects containing the results of the prediction.
         """
         raise NotImplementedError()
 
@@ -386,6 +427,12 @@ class PdfMiner(PredictorBase, ABC):
     def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Abstract method get_width_height
+
+        Args:
+            pdf_bytes: A bytes stream representing the PDF document page.
+
+        Returns:
+            A tuple containing the width and height of the PDF document page.
         """
         raise NotImplementedError()
 
@@ -395,36 +442,43 @@ class PdfMiner(PredictorBase, ABC):
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in `predict`
+        Whether to accept batches in `predict`
+
+        Returns:
+            bool: True if the predictor accepts batches, False otherwise.
         """
         return False
 
     @abstractmethod
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
         """
-        Abstract method get_category_names
+        `get_category_names`
         """
         raise NotImplementedError()
 
 
 class TextRecognizer(PredictorBase, ABC):
     """
-    Abstract base class for text recognition. In contrast to ObjectDetector one assumes that `predict` accepts
-    batches of numpy arrays. More precisely, when using `predict` pass a list of tuples with uuids (e.g. image_id,
-    or annotation_id) or numpy arrays.
+    Abstract base class for text recognition. In contrast to `ObjectDetector` one assumes that `predict` accepts
+    batches of `np.arrays`. More precisely, when using `predict` pass a list of tuples with uuids (e.g. `image_id`,
+    or `annotation_id`) or `np.array`s.
     """
 
     @abstractmethod
     def predict(self, images: list[tuple[str, PixelValues]]) -> list[DetectionResult]:
         """
         Abstract method predict
+
+        Args:
+            images: A list of tuples, where each tuple contains a unique identifier (e.g., `annotation_id`)
+                    and a `np.array` representing the image to be processed by the predictor.
         """
         raise NotImplementedError()
 
     @property
     def accepts_batch(self) -> bool:
         """
-        whether to accept batches in `predict`
+        Whether to accept batches in `predict`
         """
         return True
 
@@ -439,21 +493,15 @@ class TokenClassResult:
     """
     Simple mutable storage for token classification results
 
-     `id`: uuid of token (not unique)
-
-     `token_id`: token id
-
-     `token`: token
-
-     `class_id`: category id
-
-     `class_name`: category name
-
-     `semantic_name`: semantic name
-
-     `bio_tag`: bio tag
-
-     `score`: prediction score
+    Attributes:
+       id: uuid of token (not unique)
+       token_id: token id
+       token: token
+       class_id: category id
+       class_name: category name
+       semantic_name: semantic name
+       bio_tag: bio tag
+       score: prediction score
     """
 
     uuid: str
@@ -471,10 +519,11 @@ class SequenceClassResult:
     """
     Storage for sequence classification results
 
-    `class_id`: category id
-    `class_name`: category name
-    `score`: prediction score
-    `class_name_orig`: original class name
+    Attributes:
+        class_id: category_id
+        class_name: category_name
+        score: prediction score
+        class_name_orig: original class name
     """
 
     class_id: int
@@ -485,14 +534,19 @@ class SequenceClassResult:
 
 class LMTokenClassifier(PredictorBase, ABC):
     """
-    Abstract base class for token classifiers. If you want to connect external token classifiers with Deepdoctection
-    predictors wrap them into a class derived from this class. Note, that this class is still DL library agnostic.
+    Abstract base class for token classifiers. If you want to connect external token classifiers with deepdoctection
+    predictors wrap them into a class derived from this class.
     """
 
     @abstractmethod
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> list[TokenClassResult]:
         """
         Abstract method predict
+
+        Args:
+            encodings: A dictionary of encodings, where each key is a string representing the encoding type
+                       (e.g., "input_ids", "attention_mask") and the value is a list of lists of strings or a
+                       torch.Tensor representing the encoded input data.
         """
         raise NotImplementedError()
 
@@ -514,10 +568,11 @@ class LMTokenClassifier(PredictorBase, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
-        """Converting image into model features must often be divided into several steps. This is because the process
+        """
+        Converting image into model features must often be divided into several steps. This is because the process
         method during training and serving might differ: For training there might be additional augmentation steps
         required or one might add some data batching. For this reason we have added two methods
-        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
+        `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name either for
         training or inference purposes:
 
         `image_to_raw_features_mapping` is used for training and transforms an image into raw features that can be
@@ -528,7 +583,8 @@ class LMTokenClassifier(PredictorBase, ABC):
 
     @staticmethod
     def image_to_features_mapping() -> str:
-        """Converting image into model features must often be divided into several steps. This is because the process
+        """
+        Converting image into model features must often be divided into several steps. This is because the process
         method during training and serving might differ: For training there might be additional augmentation steps
         required or one might add some data batching. For this reason we have added two methods
         `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
@@ -574,7 +630,8 @@ class LMSequenceClassifier(PredictorBase, ABC):
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
-        """Converting image into model features must often be divided into several steps. This is because the process
+        """
+        Converting image into model features must often be divided into several steps. This is because the process
         method during training and serving might differ: For training there might be additional augmentation steps
         required or one might add some data batching. For this reason we have added two methods
         `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
@@ -588,7 +645,8 @@ class LMSequenceClassifier(PredictorBase, ABC):
 
     @staticmethod
     def image_to_features_mapping() -> str:
-        """Converting image into model features must often be divided into several steps. This is because the process
+        """
+        Converting image into model features must often be divided into several steps. This is because the process
         method during training and serving might differ: For training there might be additional augmentation steps
         required or one might add some data batching. For this reason we have added two methods
         `image_to_raw_features_mapping`, `image_to_features_mapping` that return a mapping function name for either for
@@ -605,27 +663,39 @@ class LMSequenceClassifier(PredictorBase, ABC):
 
 class LanguageDetector(PredictorBase, ABC):
     """
-    Abstract base class for language detectors. The `predict` accepts a string of arbitrary length and returns an
-    ISO-639 code for the detected language.
+    Abstract base class for language detectors.
     """
 
     @abstractmethod
     def predict(self, text_string: str) -> DetectionResult:
         """
         Abstract method predict
+
+        Args:
+            text_string: A string representing the text to be processed by the predictor.
+
+        Returns:
+            A DetectionResult object containing the detected language information (ISO-639 code).
         """
         raise NotImplementedError()
 
 
 class ImageTransformer(PredictorBase, ABC):
     """
-    Abstract base class for transforming an image. The `transform` accepts and returns a numpy array
+    Abstract base class for transforming an image.
     """
 
     @abstractmethod
     def transform_image(self, np_img: PixelValues, specification: DetectionResult) -> PixelValues:
         """
         Abstract method transform
+
+        Args:
+            np_img: A `np.array` representing the image to be transformed.
+            specification: A `DetectionResult` instance containing specifications for the transformation.
+
+        Returns:
+            A `np.array` representing the transformed image.
         """
         raise NotImplementedError()
 
@@ -633,6 +703,11 @@ class ImageTransformer(PredictorBase, ABC):
     def predict(self, np_img: PixelValues) -> DetectionResult:
         """
         Abstract method predict
+        Args:
+            np_img: A `np.array` representing the image to be processed by the predictor.
+
+        Rweturns:
+            A `DetectionResult` object containing the prediction results regarding the transformation.
         """
         raise NotImplementedError()
 
@@ -648,19 +723,25 @@ class ImageTransformer(PredictorBase, ABC):
         """
         Transform coordinates aligned with the transform_image method.
 
-        :param detect_results: List of DetectionResults
-        :return: List of DetectionResults. If you pass uuid it is possible to track the transformed bounding boxes.
+        Args:
+            detect_results: List of `DetectionResult`s
+
+        Returns:
+            List of DetectionResults. If you pass `uuid` it is possible to track the transformed bounding boxes.
         """
 
         raise NotImplementedError()
 
     def inverse_transform_coords(self, detect_results: Sequence[DetectionResult]) -> Sequence[DetectionResult]:
         """
-        Inverse transform coordinates aligned with the transform_image method. Composing transform_coords with
+        Inverse transform coordinates aligned with the `transform_image` method. Composing transform_coords with
         inverse_transform_coords should return the original coordinates.
 
-        :param detect_results: List of DetectionResults
-        :return: List of DetectionResults. If you pass uuid it is possible to track the transformed bounding boxes.
+        Args:
+            detect_results: List of `DetectionResult`s
+
+        Returns:
+            List of `DetectionResult`s. If you pass `uuid` it is possible to track the transformed bounding boxes.
         """
 
         raise NotImplementedError()
@@ -678,16 +759,14 @@ class DeterministicImageTransformer(ImageTransformer):
     The transformer performs deterministic transformations on images and their associated coordinates,
     enabling operations like padding, rotation, and other geometric transformations while maintaining
     the relationship between image content and annotation coordinates.
-
-    :param base_transform: A BaseTransform instance that defines the actual transformation operations
-                          to be applied to images and coordinates.
     """
 
-    def __init__(self, base_transform: BaseTransform):
+    def __init__(self, base_transform: BaseTransform) -> None:
         """
         Initialize the DeterministicImageTransformer with a BaseTransform instance.
 
-        :param base_transform: A BaseTransform instance that defines the actual transformation operations
+        Args:
+            base_transform: A BaseTransform instance that defines the actual transformation operations
         """
         self.base_transform = base_transform
         self.name = base_transform.__class__.__name__

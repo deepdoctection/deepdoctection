@@ -27,7 +27,7 @@ and reference it via the `MODEL_CATALOG` environment variable.
 
 Relevant only for Tesseract OCR. Specifies the language model to use.
 Supported language codes are listed at:
-https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html.
+<https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html>.
 
 Note:
     Models must be downloaded in advance.
@@ -42,7 +42,7 @@ Attributes:
     LANGUAGE:
         Relevant only for Tesseract OCR. Specifies the OCR model to use.
         Supported language codes are listed at:
-        https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html.
+        <https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html>.
         Note: models must be downloaded in advance.
 
     LIB:

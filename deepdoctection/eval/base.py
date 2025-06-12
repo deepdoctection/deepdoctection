@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for the base class for evaluations and metrics
+Base classes for evaluations and metrics
 """
 
 from abc import ABC, abstractmethod
@@ -42,6 +42,11 @@ class MetricBase(ABC):
     Using `get_distance`, ground truth and prediction dataflow can be read in and evaluated.
     `dump` is a helper method that is often called via `get_distance`. Here, the dataflows should be
     executed and the results should be saved in separate lists.
+
+    Attributes:
+        name (str): Name of the metric, usually the class name.
+        metric (Callable[[Any, Any], Optional[Any]]): The metric function that computes the distance.
+        _results (list[MetricResults]): Internal storage for results of the metric computation.
     """
 
     name: str
@@ -65,6 +70,9 @@ class MetricBase(ABC):
     def get_requirements(cls) -> list[Requirement]:
         """
         Get a list of requirements for running the detector
+
+        Returns:
+            List of requirements
         """
         raise NotImplementedError()
 
@@ -74,11 +82,15 @@ class MetricBase(ABC):
         cls, dataflow_gt: DataFlow, dataflow_predictions: DataFlow, categories: DatasetCategories
     ) -> list[MetricResults]:
         """
-        Takes of the ground truth processing strand as well as the prediction strand and generates the metric results.
+        Takes of the ground truth dataflow as well as the dataflow and generates the metric results.
 
-        :param dataflow_gt: Dataflow with ground truth annotations.
-        :param dataflow_predictions: Dataflow with predictions.
-        :param categories:  DatasetCategories with respect to the underlying dataset.
+        Args:
+            dataflow_gt: Dataflow with ground truth annotations.
+            dataflow_predictions: Dataflow with predictions.
+            categories: DatasetCategories with respect to the underlying dataset.
+
+        Returns:
+            List of metric results
         """
         raise NotImplementedError()
 
@@ -91,9 +103,13 @@ class MetricBase(ABC):
         Dump the dataflow with ground truth annotations and predictions. Use it as auxiliary method and call it from
         `get_distance`.
 
-        :param dataflow_gt: Dataflow with ground truth annotations.
-        :param dataflow_predictions: Dataflow with predictions.
-        :param categories: DatasetCategories with respect to the underlying dataset.
+        Args:
+            dataflow_gt: Dataflow with ground truth annotations.
+            dataflow_predictions: Dataflow with predictions.
+            categories: DatasetCategories with respect to the underlying dataset.
+
+        Returns:
+            Tuple containing ground truth and predictions
         """
         raise NotImplementedError()
 
@@ -103,8 +119,11 @@ class MetricBase(ABC):
         Converts the result from `get_distance` to a dict. It concatenates all keys of the inner dict and uses
         the metric result 'val' as value.
 
-        :param results: List of dict as input
-        :return: Dict with metric results.
+        Args:
+            results: List of dict as input
+
+        Returns:
+            MetricResults: Dict with metric results.
         """
         output: MetricResults = {}
         for res in results:

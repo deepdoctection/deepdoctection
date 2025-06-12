@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for MetricRegistry
+MetricRegistry
 """
 
 import catalogue  # type: ignore
@@ -30,7 +30,10 @@ def get_metric(name: str) -> MetricBase:
     """
     Returns an instance of a metric with a given name.
 
-    :param name: A metric name
-    :return: An instance of a metric
+    Args:
+        A metric name
+
+    Returns:
+        A metric instance
     """
     return metric_registry.get(name)()

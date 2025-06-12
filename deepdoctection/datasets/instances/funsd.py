@@ -54,8 +54,10 @@ def load_file(path_ann: PathLikeOrStr) -> FunsdDict:
     """
     Loading json file
 
-    :param path_ann: path
-    :return: dict
+    Args:
+        path_ann: path
+    Returns:
+        dict
     """
     anns = load_json(path_ann)
     path, file_name = os.path.split(path_ann)
@@ -144,11 +146,14 @@ class FunsdBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. "train" and "test" is available
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
+        Args:
+            kwargs:
+                (split) Split of the dataset. Can be `train` or `test`. Default: `test`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
 
-        :return: Dataflow
+        Returns:
+            Dataflow
         """
 
         split = str(kwargs.get("split", "test"))

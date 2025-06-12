@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Module for Accuracy metric
+Accuracy metrics (micro, macro, F1 and per label) for classification tasks.
 """
+
 from collections import Counter
 from typing import Counter as TypeCounter
 from typing import Mapping, Optional, Sequence, Union
@@ -73,14 +74,19 @@ def _confusion(np_label_gt: NDArray[int32], np_label_pr: NDArray[int32]) -> NDAr
 
 def accuracy(label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None) -> float:
     """
-    Calculates the accuracy given predictions and labels. Ignores masked indices. Uses
-    `sklearn.metrics.accuracy_score`
+    Calculates the accuracy given predictions and labels. Ignores masked indices.
+    Uses `sklearn.metrics.accuracy_score`
 
-    :param label_gt: list of ground truth labels
-    :param label_predictions: list of predictions. Must have the same length as label_gt
-    :param masks: An optional list with masks to ignore some samples.
+    Args:
+        label_gt: List of ground truth labels
+        label_predictions: List of predictions. Must have the same length as label_gt
+        masks: An optional list with masks to ignore some samples
 
-    :return: Accuracy score with only unmasked values to be considered
+    Returns:
+        Accuracy score with only unmasked values considered
+
+    Raises:
+        ValueError: If lengths of label_gt and label_predictions are not equal
     """
 
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
@@ -99,13 +105,15 @@ def confusion(
     label_gt: Sequence[int], label_predictions: Sequence[int], masks: Optional[Sequence[int]] = None
 ) -> NDArray[int32]:
     """
-    Calculates the accuracy matrix given the predictions and labels. Ignores masked indices.
+    Calculates the confusion matrix given the predictions and labels.
 
-    :param label_gt: list of ground truth labels
-    :param label_predictions: list of predictions. Must have the same length as label_gt
-    :param masks: list with masks of same length as label_gt.
+    Args:
+        label_gt: List of ground truth labels
+        label_predictions: List of predictions. Must have the same length as label_gt
+        masks: List with masks of same length as label_gt
 
-    :return: numpy array
+    Returns:
+        Confusion matrix as numpy array
     """
 
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
@@ -123,14 +131,16 @@ def precision(
     micro: bool = False,
 ) -> NDArray[float32]:
     """
-    Calculates the precision for a multi classification problem using a confusion matrix. The output will
-    be the precision by category.
+    Calculates the precision for a multi-classification problem using a confusion matrix.
 
-    :param label_gt: list of ground truth labels
-    :param label_predictions: list of predictions. Must have the same length as label_gt
-    :param masks: list with masks of same length as label_gt.
-    :param micro: If True, it will calculate the micro average precision
-    :return:  numpy array
+    Args:
+        label_gt: List of ground truth labels
+        label_predictions: List of predictions. Must have the same length as label_gt
+        masks: List with masks of same length as label_gt
+        micro: If True, calculates the micro average precision
+
+    Returns:
+        Precision scores by category or micro average
     """
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
 
@@ -153,14 +163,16 @@ def recall(
     micro: bool = False,
 ) -> NDArray[float32]:
     """
-    Calculates the recall for a multi classification problem using a confusion matrix. The output will
-    be the recall by category.
+    Calculates the recall for a multi-classification problem using a confusion matrix.
 
-    :param label_gt: list of ground truth labels
-    :param label_predictions: list of predictions. Must have the same length as label_gt
-    :param masks: list with masks of same length as label_gt.
-    :param micro: If True, it will calculate the micro average recall
-    :return:  numpy array
+    Args:
+        label_gt: List of ground truth labels
+        label_predictions: List of predictions. Must have the same length as label_gt
+        masks: List with masks of same length as label_gt
+        micro: If True, calculates the micro average recall
+
+    Returns:
+        Recall scores by category or micro average
     """
     np_label_gt, np_label_pr = np.asarray(label_gt), np.asarray(label_predictions)
 
@@ -184,15 +196,17 @@ def f1_score(
     per_label: bool = True,
 ) -> NDArray[float32]:
     """
-    Calculates the recall for a multi classification problem using a confusion matrix. The output will
-    be the recall by category.
+    Calculates the `F1` score for a multi-classification problem.
 
-    :param label_gt: list of ground truth labels
-    :param label_predictions: list of predictions. Must have the same length as label_gt
-    :param masks: list with masks of same length as label_gt.
-    :param micro: If True, it will calculate the micro average f1 score
-    :param per_label: If True, it will return the f1 score per label, otherwise will return the mean of all f1's
-    :return:  numpy array
+    Args:
+        label_gt: List of ground truth labels
+        label_predictions: List of predictions. Must have the same length as label_gt
+        masks: List with masks of same length as label_gt
+        micro: If True, calculates the micro average f1 score
+        per_label: If True, returns the f1 score per label, otherwise returns the mean of all f1's
+
+    Returns:
+        `F1` scores by category, micro average, or mean value
     """
 
     np_precision = precision(label_gt, label_predictions, masks, micro)
@@ -205,7 +219,13 @@ def f1_score(
 
 class ClassificationMetric(MetricBase):
     """
-    Metric induced by `accuracy`
+    Base metric class for classification metrics.
+
+    Attributes:
+        mapper: Function to map images to `category_id`
+        _cats: Optional sequence of `ObjectTypes`
+        _sub_cats: Optional mapping of object types to object types or sequences of `ObjectTypes`
+        _summary_sub_cats: Optional sequence of `ObjectTypes` for summary
     """
 
     mapper = image_to_cat_id
@@ -279,20 +299,20 @@ class ClassificationMetric(MetricBase):
         summary_sub_category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
     ) -> None:
         """
-        Set categories that are supposed to be evaluated. If sub_categories have to be considered then they need to be
-        passed explicitly.
+        Set categories that are supposed to be evaluated.
 
-        **Example:**
+        If `sub_categories` have to be considered, they need to be passed explicitly.
 
-            You want to evaluate sub_cat1, sub_cat2 of cat1 and sub_cat3 of cat2. Set
+        Example:
+            ```python
+            # Evaluate sub_cat1, sub_cat2 of cat1 and sub_cat3 of cat2
+            set_categories(sub_category_names={cat1: [sub_cat1, sub_cat2], cat2: sub_cat3})
+            ```
 
-                 sub_category_names = {cat1: [sub_cat1, sub_cat2], cat2: sub_cat3}
-
-
-        :param category_names: list of category names
-        :param sub_category_names: Dict of categories and their sub categories that are supposed to be evaluated,
-                                   e.g. {"FOO": ["bak","baz"]} will evaluate "bak" and "baz"
-        :param summary_sub_category_names: string or list of summary sub categories
+        Args:
+            category_names: List of category names
+            sub_category_names: Dict of categories and their sub categories to be evaluated
+            summary_sub_category_names: String or list of summary sub categories
         """
 
         if category_names is not None:
@@ -352,7 +372,7 @@ class ClassificationMetric(MetricBase):
     def sub_cats(
         self,
     ) -> Optional[Union[Mapping[ObjectTypes, ObjectTypes], Mapping[ObjectTypes, Sequence[ObjectTypes]]]]:
-        """sub cats"""
+        """`sub_cats`"""
         return self._sub_cats
 
     @property
@@ -474,7 +494,7 @@ class RecallMetric(PrecisionMetric):
 @metric_registry.register("f1")
 class F1Metric(PrecisionMetric):
     """
-    Metric induced by `f1_score`. Will calculate the f1 per category
+    Metric induced by `f1_score`. Will calculate the F1 per category
     """
 
     name = "F1"
@@ -523,7 +543,7 @@ class RecallMetricMicro(PrecisionMetricMicro):
 @metric_registry.register("f1_micro")
 class F1MetricMicro(PrecisionMetricMicro):
     """
-    Metric induced by `f1_score`. Will calculate the micro average f1
+    Metric induced by `f1_score`. Will calculate the micro average F1
     """
 
     name = "Micro F1"

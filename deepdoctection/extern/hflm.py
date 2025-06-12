@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Wrapper for the Hugging Face Language Model for sequence and token  classification
+Wrapper for the HF Language Model for sequence and token classification
 """
 from __future__ import annotations
 
@@ -48,11 +48,14 @@ def predict_sequence_classes(
     model: Union[XLMRobertaForSequenceClassification],
 ) -> SequenceClassResult:
     """
-    :param input_ids: Token converted to ids to be taken from LayoutLMTokenizer
-    :param attention_mask: The associated attention masks from padded sequences taken from LayoutLMTokenizer
-    :param token_type_ids: Torch tensor of token type ids taken from LayoutLMTokenizer
-    :param model: layoutlm model for sequence classification
-    :return: SequenceClassResult
+    Args:
+        input_ids: Token converted to ids to be taken from `XLMRobertaTokenizer`
+        attention_mask: The associated attention masks from padded sequences taken from `XLMRobertaTokenizer`
+        token_type_ids: Torch tensor of token type ids taken from `XLMRobertaTokenizer`
+        model: `XLMRobertaForSequenceClassification` model for sequence classification
+
+    Returns:
+        `SequenceClassResult`
     """
 
     outputs = model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
@@ -65,7 +68,7 @@ def predict_sequence_classes(
 
 class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
     """
-    Abstract base class for wrapping Bert-type models  for sequence classification into the deepdoctection framework.
+    Abstract base class for wrapping Bert-type models for sequence classification into the deepdoctection framework.
     """
 
     def __init__(
@@ -115,27 +118,51 @@ class HFLmSequenceClassifierBase(LMSequenceClassifier, ABC):
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
-        """Returns the name of the model"""
+        """
+        Returns the name of the model
+
+        Args:
+            path_weights: Path to model weights
+            architecture: Architecture name
+
+        Returns:
+            str: Model name
+        """
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
 
     @staticmethod
     def get_tokenizer_class_name(model_class_name: str, use_xlm_tokenizer: bool) -> str:
-        """A refinement for adding the tokenizer class name to the model configs.
+        """
+        A refinement for adding the tokenizer class name to the model configs.
 
-        :param model_class_name: The model name, e.g. model.__class__.__name__
-        :param use_xlm_tokenizer: Whether to use a XLM tokenizer.
+        Args:
+            model_class_name: The model name, e.g. `model.__class__.__name__`
+            use_xlm_tokenizer: Whether to use a `XLM` tokenizer.
+
+        Returns:
+            str: Tokenizer class name
         """
         tokenizer = get_tokenizer_from_model_class(model_class_name, use_xlm_tokenizer)
         return tokenizer.__class__.__name__
 
     @staticmethod
     def image_to_raw_features_mapping() -> str:
-        """Returns the mapping function to convert images into raw features."""
+        """
+        Returns the mapping function to convert images into raw features.
+
+        Returns:
+            str: Name of the mapping function
+        """
         return "image_to_raw_lm_features"
 
     @staticmethod
     def image_to_features_mapping() -> str:
-        """Returns the mapping function to convert images into features."""
+        """
+        Returns the mapping function to convert images into features.
+
+        Returns:
+            str: Name of the mapping function
+        """
         return "image_to_lm_features"
 
 
@@ -147,28 +174,29 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
     Note that this model is equipped with a head that is only useful for classifying the input sequence. For token
     classification and other things please use another model of the family.
 
-    **Example**
+    Example:
+        ```python
+        # setting up compulsory ocr service
+        tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+        tess = TesseractOcrDetector(tesseract_config_path)
+        ocr_service = TextExtractionService(tess)
 
-            # setting up compulsory ocr service
-            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-            tess = TesseractOcrDetector(tesseract_config_path)
-            ocr_service = TextExtractionService(tess)
+        # hf tokenizer and token classifier
+        tokenizer = XLMRobertaTokenizerFast.from_pretrained("FacebookAI/xlm-roberta-base")
+        roberta = HFLmSequenceClassifier("path/to/config.json","path/to/model.bin",
+                                              categories=["handwritten", "presentation", "resume"])
 
-            # hf tokenizer and token classifier
-            tokenizer = XLMRobertaTokenizerFast.from_pretrained("FacebookAI/xlm-roberta-base")
-            roberta = HFLmSequenceClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories=["handwritten", "presentation", "resume"])
+        # token classification service
+        roberta_service = LMSequenceClassifierService(tokenizer,roberta)
 
-            # token classification service
-            roberta_service = LMSequenceClassifierService(tokenizer,roberta)
+        pipe = DoctectionPipe(pipeline_component_list=[ocr_service,roberta_service])
 
-            pipe = DoctectionPipe(pipeline_component_list=[ocr_service,roberta_service])
+        path = "path/to/some/form"
+        df = pipe.analyze(path=path)
 
-            path = "path/to/some/form"
-            df = pipe.analyze(path=path)
-
-            for dp in df:
-                ...
+        for dp in df:
+            ...
+        ```
     """
 
     def __init__(
@@ -209,9 +237,12 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         """
         Get the inner (wrapped) model.
 
-        :param path_config_json: path to .json config file
-        :param path_weights: path to model artifact
-        :return: 'nn.Module'
+        Args:
+            path_config_json: path to .json config file
+            path_weights: path to model artifact
+
+        Returns:
+            `XLMRobertaForSequenceClassification`
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return XLMRobertaForSequenceClassification.from_pretrained(
@@ -223,6 +254,9 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
         """
         Add some default arguments that might be necessary when preparing a sample. Overwrite this method
         for some custom setting.
+
+        Returns:
+            JsonDict: Dictionary with default arguments
         """
         return {}
 

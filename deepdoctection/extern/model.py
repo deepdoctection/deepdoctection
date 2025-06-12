@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for ModelCatalog and ModelDownloadManager
+`ModelCatalog` and`ModelDownloadManager`
 """
 
 import os
@@ -46,7 +46,7 @@ __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelPr
 @dataclass(frozen=True)
 class ModelProfile:
     """
-    Class for model profile. Add for each model one ModelProfile to the ModelCatalog
+    Class for model profile. Add for each model one `ModelProfile` to the `ModelCatalog`
     """
 
     name: str
@@ -69,7 +69,8 @@ class ModelProfile:
 
     def as_dict(self) -> dict[str, Any]:
         """
-        returns a dict of the dataclass
+        Returns:
+            A dict of the dataclass
         """
         return asdict(self)
 
@@ -80,22 +81,38 @@ class ModelCatalog:
 
     To get an overview of all registered models
 
+    Example:
+        ```python
         print(ModelCatalog.get_model_list())
+        ```
 
     To get a model card for some specific model:
 
+    Example:
+        ```python
         profile = ModelCatalog.get_profile("layout/model-800000_inf_only.data-00000-of-00001")
         print(profile.description)
+        ```
 
     Some models will have their weights and configs stored in the cache. To instantiate predictors one will sometimes
     need their path. Use
 
+    Example:
+        ```python
         path_weights = ModelCatalog.get_full_path_configs("layout/model-800000_inf_only.data-00000-of-00001")
         path_configs = ModelCatalog.get_full_path_weights("layout/model-800000_inf_only.data-00000-of-00001")
+        ```
 
     To register a new model
 
+    Example:
+        ```python
         ModelCatalog.get_full_path_configs("my_new_model")
+        ```
+
+    Attributes:
+        CATALOG (dict[str, ModelProfile]): A dict of model profiles. The key is the model name and the value is a
+            `ModelProfile` object.
     """
 
     CATALOG: dict[str, ModelProfile] = {}
@@ -105,11 +122,15 @@ class ModelCatalog:
         """
         Returns the absolute path of weights.
 
-        Note, that weights are sometimes not defined by only one artefact. The returned string will only represent one
-        weights artefact.
+        Note:
+            Weights are sometimes not defined by only one artifact. The returned string will only represent one
+            weights artifact.
 
-        :param name: model name
-        :return: absolute weight path
+        Args:
+            name: model name
+
+        Returns:
+            absolute weight path
         """
         try:
             profile = ModelCatalog.get_profile(os.fspath(name))
@@ -134,14 +155,18 @@ class ModelCatalog:
     @staticmethod
     def get_full_path_configs(name: PathLikeOrStr) -> PathLikeOrStr:
         """
-        Return the absolute path of configs for some given weights. Alternatively, pass last a path to a config file
+        Absolute path of configs for some given weights. Alternatively, pass a path to a config file
         (without the base path to the cache config directory).
 
-        Note, that configs are sometimes not defined by only one file. The returned string will only represent one
-        file.
+        Note:
+            Configs are sometimes not defined by only one file. The returned string will only represent one
+            file.
 
-        :param name: model name
-        :return: absolute path to the config
+        Args:
+            name: model name
+
+        Returns:
+            Absolute path to the config
         """
         try:
             profile = ModelCatalog.get_profile(os.fspath(name))
@@ -163,8 +188,11 @@ class ModelCatalog:
         Return the absolute path of preprocessor configs for some given weights. Preprocessor are occasionally provided
         by the transformer library.
 
-        :param name: model name
-        :return: absolute path to the preprocessor config
+        Args:
+            name: model name
+
+        Returns:
+            Absolute path to the preprocessor config
         """
 
         try:
@@ -184,14 +212,16 @@ class ModelCatalog:
     @staticmethod
     def get_model_list() -> list[PathLikeOrStr]:
         """
-        Returns a list of absolute paths of registered models.
+        Returns:
+            A list of absolute paths of registered models.
         """
         return [os.path.join(get_weights_dir_path(), profile.name) for profile in ModelCatalog.CATALOG.values()]
 
     @staticmethod
     def get_profile_list() -> list[str]:
         """
-        Returns a list profile keys.
+        Returns:
+            A list profile keys.
         """
         return list(ModelCatalog.CATALOG.keys())
 
@@ -200,8 +230,11 @@ class ModelCatalog:
         """
         Checks if some weights belong to a registered model
 
-        :param path_weights: relative or absolute path
-        :return: True if the weights are registered in `ModelCatalog`
+        Args:
+            path_weights: relative or absolute path
+
+        Returns:
+            `True` if the weights are registered in `ModelCatalog`
         """
         if (ModelCatalog.get_full_path_weights(path_weights) in ModelCatalog.get_model_list()) or (
             path_weights in ModelCatalog.get_model_list()
@@ -214,8 +247,11 @@ class ModelCatalog:
         """
         Returns the profile of given model name, i.e. the config file, size and urls.
 
-        :param name: model name
-        :return: A dict of model/weights profiles
+        Args:
+            name: model name
+
+        Returns:
+            A dict of model/weights profiles
         """
 
         profile = ModelCatalog.CATALOG.get(name)
@@ -228,9 +264,10 @@ class ModelCatalog:
         """
         Register a model with its profile
 
-        :param name: Name of the model. We use the file name of the model along with its path (starting from the
-                     weights .cache dir. e.g. 'my_model/model_123.pkl'.
-        :param profile: profile of the model
+        Args:
+            name: Name of the model. We use the file name of the model along with its path (starting from the
+                  weights `.cache`. e.g. `my_model/model_123.pkl`.
+            profile: profile of the model
         """
         if name in ModelCatalog.CATALOG:
             raise KeyError("Model already registered")
@@ -239,9 +276,10 @@ class ModelCatalog:
     @staticmethod
     def load_profiles_from_file(path: Optional[PathLikeOrStr] = None) -> None:
         """
-        Load model profiles from a jsonl file and extend `CATALOG` with the new profiles.
+        Load model profiles from a `jsonl` file and extend `CATALOG` with the new profiles.
 
-        :param path: Path to the file. `None` is allowed but it will do nothing.
+        Args:
+            path: Path to the file. `None` is allowed but will do nothing.
         """
         if not path:
             return
@@ -255,9 +293,10 @@ class ModelCatalog:
     @staticmethod
     def save_profiles_to_file(target_path: PathLikeOrStr) -> None:
         """
-        Save model profiles to a jsonl file.
+        Save model profiles to a `jsonl` file.
 
-        :param target_path: Path to the file.
+        Args:
+            target_path: Path to the file.
         """
         with jsonlines.open(target_path, mode="w") as writer:
             for profile in ModelCatalog.CATALOG.values():
@@ -278,8 +317,11 @@ def get_tp_weight_names(name: str) -> list[str]:
     """
     Given a path to some model weights it will return all file names according to TP naming convention
 
-    :param name: TP model name
-    :return: A list of TP file names
+    Args:
+        name: TP model name
+
+    Returns:
+        A list of TP file names
     """
     _, file_name = os.path.split(name)
     prefix, _ = file_name.split(".")
@@ -294,6 +336,11 @@ def print_model_infos(add_description: bool = True, add_config: bool = True, add
     """
     Prints a table with all registered model profiles and some of their attributes (name, description, config and
     categories)
+
+    Args:
+        add_description: If `True`, the description of the model will be printed
+        add_config: If `True`, the config of the model will be printed
+        add_categories: If `True`, the categories of the model will be printed
     """
 
     profiles = ModelCatalog.CATALOG.values()
@@ -330,8 +377,11 @@ class ModelDownloadManager:
     Class for organizing downloads of config files and weights from various sources. Internally, it will use model
     profiles to know where things are stored.
 
+    Example:
+        ```python
         # if you are not sure about the model name use the ModelCatalog
         ModelDownloadManager.maybe_download_weights_and_configs("layout/model-800000_inf_only.data-00000-of-00001")
+        ```
     """
 
     @staticmethod
@@ -340,8 +390,10 @@ class ModelDownloadManager:
         Check if some model is registered. If yes, it will check if their weights
         must be downloaded. Only weights that have not the same expected size will be downloaded again.
 
-        :param name: A path to some model weights
-        :return: Absolute path to model weights if model is registered
+        Args:
+            name: A path to some model weights
+        Returns:
+            Absolute path to model weights, if model is registered
         """
 
         absolute_path_weights = ModelCatalog.get_full_path_weights(name)
@@ -383,10 +435,11 @@ class ModelDownloadManager:
         Load a model from the Huggingface hub for a given profile and saves the model at the directory of the given
         path.
 
-        :param profile: Profile according to `ModelCatalog.get_profile(path_weights)`
-        :param absolute_path: Absolute path (incl. file name) of target file
-        :param file_names: Optionally, replace the file name of the ModelCatalog. This is necessary e.g. for Tensorpack
-                           models
+        Args:
+            profile: Profile according to `ModelCatalog.get_profile(path_weights)`
+            absolute_path: Absolute path (incl. file name) of target file
+            file_names: Optionally, replace the file name of the `ModelCatalog`. This is necessary e.g. for Tensorpack
+                        models
         """
         repo_id = profile.hf_repo_id
         if repo_id is None:
@@ -417,8 +470,9 @@ class ModelDownloadManager:
         Load config file(s) from the Huggingface hub for a given profile and saves the model at the directory of the
         given path.
 
-        :param profile: Profile according to `ModelCatalog.get_profile(path_weights)`
-        :param absolute_path:  Absolute path (incl. file name) of target file
+        Args:
+            profile: Profile according to `ModelCatalog.get_profile(path_weights)`
+            absolute_path:  Absolute path (incl. file name) of target file
         """
 
         repo_id = profile.hf_repo_id

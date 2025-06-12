@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for saving
+## Saving samples from a DataFlow
 """
 
 import json
@@ -42,17 +42,18 @@ def dataflow_to_json(
     highest_hierarchy_only: bool = False,
 ) -> None:
     """
-    Save a dataflow consisting of `datapoint.Image` to a jsonl file. Each image will be dumped into a separate
-    JSON object.
+    Save a dataflow consisting of `datapoint.Image` to a `jsonl` file. Each image will be dumped into a separate
+    `JSON` object.
 
-    :param df: Input dataflow
-    :param path: Path to save the file(s) to
-    :param single_files: will save image results to a single JSON file. If False all images of the dataflow will be d
-                         dumped into a single jsonl file.
-    :param file_name: file name, only needed for jsonl files
-    :param max_datapoints: Will stop saving after dumping max_datapoint images.
-    :param save_image_in_json: Will save the image to the JSON object
-    :param highest_hierarchy_only: If True it will remove all image attributes of ImageAnnotations
+    Args:
+        df: Input dataflow
+        path: Path to save the file(s) to
+        single_files: Will save image results to a single `JSON` file. If False all images of the dataflow will be
+                      dumped into a single `.jsonl` file.
+        file_name: file name, only needed for `jsonl` files
+        max_datapoints: Will stop saving after dumping max_datapoint images.
+        save_image_in_json: Will save the image to the `JSON` object
+        highest_hierarchy_only: If `True` it will remove all image attributes of `ImageAnnotation`s
     """
     path = Path(path)
     if single_files:

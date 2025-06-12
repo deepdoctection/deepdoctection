@@ -131,15 +131,17 @@ class XfundBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. `train` and `val` is available
+        Args:
+            kwargs:
+                (split) Split of the dataset. `train` and `val` are available. Default: `val`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (languages) Will select only samples of selected languages. Available languages:
+                            `de`, `es`, `fr`, `it`, `ja`, `pt`, `zh`. If `None`, all
+                            languages are taken. Default: `None`
 
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `languages:` Will select only samples of selected languages. Available languages: `de`, `es`, `fr`, `it`, `ja` ,
-                     `pt`, `zh`. If default will take any language.
-        :return: Dataflow
+        Returns:
+            Dataflow
         """
 
         split = str(kwargs.get("split", "val"))

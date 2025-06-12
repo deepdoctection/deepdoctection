@@ -25,8 +25,9 @@ class DataFromList(RNGDataFlow):
 
     def __init__(self, lst: list[Any], shuffle: bool = True) -> None:
         """
-        :param lst: input list. Each element is a datapoint.
-        :param shuffle: shuffle data.
+        Args:
+            lst: input list. Each element is a datapoint.
+            shuffle: shuffle data.
         """
         super().__init__()
         self.lst = lst
@@ -53,7 +54,8 @@ class DataFromIterable(DataFlow):
 
     def __init__(self, iterable: Iterable[Any]) -> None:
         """
-        :param iterable: an iterable object
+        Args:
+            iterable: an iterable object
         """
         self._itr = iterable
         self._len: Optional[int] = None
@@ -86,12 +88,13 @@ class FakeData(RNGDataFlow):
         domain: tuple[Union[float, int], Union[float, int]] = (0, 1),
     ):
         """
-        :param  shapes: a list of lists/tuples. Shapes of each component.
-        :param  size: size of this DataFlow.
-        :param  random: whether to randomly generate data every iteration.
+        Args:
+            shapes: a list of lists/tuples. Shapes of each component.
+            size: size of this DataFlow.
+            random: whether to randomly generate data every iteration.
                         Note that merely generating the data could sometimes be time-consuming!
-        :param dtype: data type as string, or a list of data types.
-        :param domain: (min, max) tuple, or a list of such tuples
+            dtype: data type as string, or a list of data types.
+            domain: (min, max) tuple, or a list of such tuples
         """
 
         super().__init__()
@@ -136,13 +139,15 @@ class PickleSerializer:
     @staticmethod
     def dumps(obj: Any) -> bytes:
         """
-        :param obj: bytes
+        Args:
+            obj: bytes
         """
         return pickle.dumps(obj, protocol=-1)
 
     @staticmethod
     def loads(buf: Any) -> Any:
         """
-        :param buf: bytes
+        Args:
+            buf: bytes
         """
         return pickle.loads(buf)
