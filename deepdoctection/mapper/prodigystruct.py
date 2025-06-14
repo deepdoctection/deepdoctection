@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for mapping annotations to and from prodigy data structure
+Module for mapping annotations to and from prodigy data structure.
 """
 
 import os
@@ -41,19 +41,23 @@ def prodigy_to_image(
     category_name_mapping: Optional[Mapping[str, str]] = None,
 ) -> Optional[Image]:
     """
-    Map a datapoint of annotation structure as given as from Prodigy database to an Image
-    structure.
+    Maps a datapoint of annotation structure from Prodigy database to an `Image` structure.
 
-    :param dp: A datapoint in dict structure as returned from Prodigy database
-    :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
-    :param load_image: If 'True' it will load image to attr:`Image.image`
-    :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
-                       will be added.
-    :param path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file
-                              of the datapoint can be found.
-    :param accept_only_answer: Filter every datapoint that has the answer 'reject' or 'ignore'.
-    :param category_name_mapping: Map incoming category names, e.g. {"source_name":"target_name"}
-    :return: Image
+    Args:
+        dp: A datapoint in dict structure as returned from Prodigy database.
+        categories_name_as_key: A dict of categories, e.g. `DatasetCategories.get_categories(name_as_key=True)`.
+        load_image: If `True`, it will load image to `Image.image`.
+        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in (0,1) will be added.
+        path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file of the datapoint can be found.
+        accept_only_answer: Filter every datapoint that has the answer `reject` or `ignore`.
+        category_name_mapping: Map incoming category names, e.g. `{"source_name":"target_name"}`.
+
+    Returns:
+        `Image`
+
+    Note:
+        If `accept_only_answer` is `True`, only datapoints with the answer `accept` will be processed.
+
     """
 
     if accept_only_answer and dp.get("answer") != "accept":
@@ -147,12 +151,20 @@ def prodigy_to_image(
 @curry
 def image_to_prodigy(dp: Image, category_names: Optional[Sequence[ObjectTypes]] = None) -> JsonDict:
     """
-    The mapper to transform the normalized image representation of datasets into the format
-    for visualising the annotation components in Prodigy.
+    Transforms the normalized image representation of datasets into the format for visualizing the annotation components in Prodigy.
 
-    :param dp: An image
-    :param category_names: A list of category names to filter the annotations
-    :return: A dictionary with compulsory keys: "text" and "spans"
+    Args:
+        dp: An `Image`.
+        category_names: A list of category names to filter the annotations.
+
+    Returns:
+        A dictionary with compulsory keys: `text` and `spans`.
+
+    Example:
+        ```python
+        image_to_prodigy(image_instance)
+        ```
+
     """
 
     output: JsonDict = {}

@@ -65,10 +65,13 @@ def predict_text(np_img: PixelValues, client, text_lines: bool) -> list[Detectio
     Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
 
-    :param client: botocore textract client
-    :param np_img: Image in np.array.
-    :param text_lines: If True, it will return DetectionResults of Text lines as well.
-    :return: A list of textract extractions wrapped in DetectionResult
+    Args:
+        client: botocore textract client
+        np_img: Image in `np.array`.
+        text_lines: If `True`, it will return `DetectionResult`s of Text lines as well.
+
+    Returns:
+        A list of `DetectionResult`
     """
 
     width, height = np_img.shape[1], np_img.shape[0]
@@ -95,16 +98,23 @@ def predict_text(np_img: PixelValues, client, text_lines: bool) -> list[Detectio
 class TextractOcrDetector(ObjectDetector):
     """
     Text object detector based on AWS Textract OCR engine. Note that an AWS account as well as some additional
-    installations are required, i.e AWS CLI and boto3. Note further, that the service is not free of charge. Additional
-    information can be found at: <https://docs.aws.amazon.com/textract/?id=docs_gateway> .
+    installations are required, i.e `AWS CLI` and `boto3`.
+    Note:
+        The service is not free of charge. Additional information can be found at:
+        <https://docs.aws.amazon.com/textract/?id=docs_gateway> .
 
-    The detector only calls the base OCR engine and does not return additional Textract document analysis features.
+    The detector only calls the base `OCR` engine and does not return additional Textract document analysis features.
 
+    Example:
+
+        ```python
         textract_predictor = TextractOcrDetector()
         detection_result = textract_predictor.predict(bgr_image_as_np_array)
+        ```
 
-    or
+        or
 
+        ```python
         textract_predictor = TextractOcrDetector()
         text_extract = TextExtractionService(textract_predictor)
 
@@ -113,13 +123,15 @@ class TextractOcrDetector(ObjectDetector):
 
         for dp in df:
             ...
+        ```
 
     """
 
     def __init__(self, text_lines: bool = False, **credentials_kwargs: str) -> None:
         """
-        :param text_lines: If True, it will return DetectionResults of Text lines as well.
-        :param credentials_kwargs: `aws_access_key_id`, `aws_secret_access_key` or `aws_session_token`
+        Args:
+            text_lines: If `True`, it will return `DetectionResult`s of Text lines as well.
+            credentials_kwargs: `aws_access_key_id`, `aws_secret_access_key` or `aws_session_token`
         """
         self.name = "textract"
         self.model_id = self.get_model_id()
@@ -133,10 +145,13 @@ class TextractOcrDetector(ObjectDetector):
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
-        Transfer of a numpy array and call textract client. Return of the detection results.
+        Transfer of a `np.array` and call textract `client`. Return of the `DetectionResult`s.
 
-        :param np_img: image as numpy array
-        :return: A list of DetectionResult
+        Args:
+            np_img: image as `np.array`
+
+        Returns:
+            A list of `DetectionResult`s
         """
 
         return predict_text(np_img, self.client, self.text_lines)

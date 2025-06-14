@@ -42,20 +42,30 @@ def coco_to_image(
     coarse_sub_cat_name: Optional[ObjectTypes] = None,
 ) -> Optional[Image]:
     """
-    Map a dataset in coco format that has been serialized to image format. This serialized input requirements hold
-    when a coco style sheet is loaded via `SerializerCoco.load`.
+    Maps a dataset in `COCO` format that has been serialized to image format.
 
-    :param dp: a datapoint in serialized coco format.
-    :param categories: A dict of categories, e.g. `DatasetCategories.get_categories`
-    :param load_image: If 'True' it will load image to attr: Image.image
-    :param filter_empty_image: Will return None, if datapoint has no annotations
-    :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
-                       will be added.
-    :param coarse_mapping: A mapping to map categories into broader categories. Note that the coarser categories must
-                           already be included in the original mapping.
-    :param coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping.
-    :return: Image
+    This serialized input requirements hold when a `COCO` style sheet is loaded via `SerializerCoco.load`.
+
+    Args:
+        dp: A datapoint in serialized COCO format.
+        categories: A dict of categories, e.g. `DatasetCategories.get_categories`.
+        load_image: If `True`, it will load image to `Image.image`.
+        filter_empty_image: Will return `None` if datapoint has no annotations.
+        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in `(0,1)` will be added.
+        coarse_mapping: A mapping to map categories into broader categories. Note that the coarser categories must
+                        already be included in the original mapping.
+        coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping.
+
+    Returns:
+        `Image` or `None`.
+
+    Raises:
+        ValueError: If `coarse_sub_cat_name` is provided but `coarse_mapping` is not.
+
+    Note:
+        A coarse mapping must be provided when `coarse_sub_cat_name` has been passed.
     """
+
 
     if coarse_sub_cat_name and coarse_mapping is None:
         raise ValueError("A coarse mapping must be provided when coarse_sub_cat_name have been passed")
@@ -111,11 +121,19 @@ def coco_to_image(
 
 def image_to_coco(dp: Image) -> tuple[JsonDict, list[JsonDict]]:
     """
-    Converting an image back into the coco format. As images and anns are separated it will return a dict with the
-    image information and one for its annotations.
+    Converts an image back into the `COCO` format.
 
-    :param dp: An image
-    :return: A tuple of dicts, the first corresponding to the coco-image object, the second to their coco-annotations
+    As images and annotations are separated, it will return a dict with the image information and one for its
+    annotations.
+
+    Args:
+        dp: An `Image`.
+
+    Returns:
+        A tuple of dicts, the first corresponding to the COCO-image object, the second to their COCO-annotations.
+
+    Raises:
+        TypeError: If `dp` is not of type `Image`.
     """
 
     if not isinstance(dp, Image):

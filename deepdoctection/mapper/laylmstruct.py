@@ -89,35 +89,31 @@ def image_to_raw_layoutlm_features(
     segment_positions: Optional[Union[LayoutType, Sequence[LayoutType]]] = None,
 ) -> Optional[RawLayoutLMFeatures]:
     """
-    Mapping a datapoint into an intermediate format for layoutlm. Features will be provided into a dict and this mapping
+    Maps a datapoint into an intermediate format for LayoutLM. Features are provided in a dict and this mapping
     can be used for sequence or token classification as well as for inference. To generate input features for the model
-    please `use raw_features_to_layoutlm_features`.
+    please use `raw_features_to_layoutlm_features`.
 
+    Args:
+        dp: `Image`.
+        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use this.
+        input_width: Max width of box coordinates. Transforms the image and all box coordinates accordingly.
+        input_height: Target height of box coordinates. Transforms the image and all box coordinates accordingly.
+        image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to `input_width`, whereas
+            the image has to be resized to a different width. This input will only resize the `image` width.
+        image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to `input_height`,
+            whereas the image has to be resized to a different height. This input will only resize the `image` height.
+        color_mode: Either `BGR` or `RGB`. Note that LayoutLMv2 uses `BGR` because of Detectron2 backbone, whereas
+            LayoutLMv3 uses `RGB`.
+        pixel_mean: (3,) array for `BGR` or `RGB` mean.
+        pixel_std: (3,) array for `BGR` or `RGB` std.
+        use_token_tag: Used only for `dataset_type="token_classification"`. If `True`, uses labels from subcategory
+            `WordType.token_tag` (with `B,I,O` suffix), otherwise `WordType.token_class`.
+        segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to have
+            a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
 
-    :param dp: Image
-    :param dataset_type: Either SEQUENCE_CLASSIFICATION or TOKEN_CLASSIFICATION. When using a built-in dataset use
-    :param input_width: max width of box coordinates. Under the hood, it will transform the image and all box
-                        coordinates accordingly.
-    :param input_height: target height of box coordinates. Under the hood, it will transform the image and all box
-                        coordinates accordingly.
-    :param image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_width, whereas
-                        the image has to be resized to a different width. This input will only resize the `image` width.
-    :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
-                         whereas the image has to be resized to a different height. This input will only resize the
-                         `image` height.
-    :param color_mode: Either "BGR" or "RGB". Note, that LayoutLMv2 uses "BGR" because of Detectron2 backbone, whereas
-                       LayoutLMv3 uses "RGB".
-    :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
-    :param pixel_std: (3,) array for "BGR" resp. "RGB" std
-    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
-                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
-                          `WordType.token_class`.
-    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
-                              Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
-                              the layout segments need to have a child-relationship with words. If a word does not
-                              appear as child, it will use the word bounding box.
-    :return: dictionary with the following arguments:
-            'image_id', 'width', 'height', 'ann_ids', 'words', 'bbox' and 'dataset_type'.
+    Returns:
+        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and `dataset_type`.
     """
 
     raw_features: RawLayoutLMFeatures = RawLayoutLMFeatures({})
@@ -212,9 +208,13 @@ def image_to_raw_layoutlm_features(
 
 def layoutlm_features_to_pt_tensors(features: LayoutLMFeatures) -> LayoutLMFeatures:
     """
-    Converting list of floats to pytorch tensors
-    :param features: LayoutLMFeatures
-    :return: LayoutLMFeatures
+    Converts a list of floats to PyTorch tensors.
+
+    Args:
+        features: `LayoutLMFeatures`.
+
+    Returns:
+        `LayoutLMFeatures`.
     """
 
     _image_key = "pixel_values" if "pixel_values" in features else "image"
@@ -240,13 +240,23 @@ def _tokenize_with_sliding_window(
     return_tensors: Optional[Literal["pt"]] = None,
 ) -> Union[JsonDict, BatchEncoding]:
     """
-    Runs a tokenizer: If there are no overflowing tokens, the tokenizer output will be returned as it is.
-    If there are overflowing tokens, sliding windows have to be built. As it is easier to prepare the sliding windows
-    from raw tokenized outputs we run the tokenizer a second time without truncating and build the sliding windows from
-    this second output.
-    The current implementation has a bug in that sense, that for higher batch sizes it will only return overflowing
-    samples. It is therefore recommended that if the dataset consist of many samples with lots of tokens one should
-    use a low per device batch size.
+    Runs a tokenizer. If there are no overflowing tokens, the tokenizer output will be returned as is.
+    If there are overflowing tokens, sliding windows are built. Sliding windows are prepared from raw tokenized outputs
+    by running the tokenizer a second time without truncating and building the sliding windows from this output.
+
+    Note:
+        The current implementation has a bug: for higher batch sizes it will only return overflowing samples.
+        If the dataset consists of many samples with lots of tokens, use a low per device batch size.
+
+    Args:
+        raw_features: List of `RawLayoutLMFeatures` or `RawLMFeatures`.
+        tokenizer: `PreTrainedTokenizerFast`.
+        sliding_window_stride: Stride for sliding window.
+        max_batch_size: Maximum batch size.
+        return_tensors: If `pt`, returns torch tensors.
+
+    Returns:
+        `JsonDict` or `BatchEncoding`.
     """
     # first try: we require return_overflowing_tokens=True. If the number of raw features is equal to
     # overflow_to_sample_mapping then there is nothing more to do because the sample has less than max_length
@@ -413,33 +423,36 @@ def raw_features_to_layoutlm_features(
     remove_bounding_boxes: bool = False,
 ) -> LayoutLMFeatures:
     """
-    Mapping raw features to tokenized input sequences for LayoutLM models.
+    Maps raw features to tokenized input sequences for LayoutLM models.
 
-    :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
-                         boxes, dataset_type`.
-    :param tokenizer: A fast tokenizer for the model. Note, that the conventional python based tokenizer provided by the
-                      Transformer library do not return essential word_id/token_id mappings making the feature
-                      generation a lot more difficult. We therefore do not allow these tokenizer.
-    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
-                    `do_not_pad`.
-    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
-                       maximum acceptable input length for the model if that argument is not provided. This will
-                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
-                       sequences (or a batch of pairs) is provided.
-                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
-                       model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can
-                                  be returned as an additional batch element. Not that in this case, the number of input
-                                  batch samples will be smaller than the output batch samples.
-    :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
-                           of lists.
-    :param remove_columns_for_training: Will remove all superfluous columns that are not required for training.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
-                                  will be created with each window having max_length sequence input. When using
-                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
-                                  with windows shifted `sliding_window_stride` to the right.
-    :return: dictionary with the following arguments:  `image_ids, width, height, ann_ids, input_ids,
-             token_type_ids, attention_mask, bbox, labels`.
+    Args:
+        raw_features: A dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`,
+            `boxes`, `dataset_type`.
+        tokenizer: A fast tokenizer for the model. The conventional Python-based tokenizer provided by the
+            Transformers library does not return essential word_id/token_id mappings, making feature generation
+            more difficult. Only fast tokenizers are allowed.
+        padding: Padding strategy to be passed to the tokenizer. Must be either `max_length`, `longest`, or
+            `do_not_pad`.
+        truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
+            maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
+            admissible input size).
+        return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens can
+            be returned as an additional batch element. In this case, the number of input batch samples will be smaller
+            than the output batch samples.
+        return_tensors: If `pt`, returns torch tensors. If not provided, batches will be lists of lists.
+        remove_columns_for_training: Removes all superfluous columns that are not required for training.
+        sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding windows
+            will be created with each window having `max_length` sequence input. When using
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
+            `sliding_window_stride` to the right.
+        max_batch_size: Maximum batch size.
+        remove_bounding_boxes: If `True`, removes bounding box features.
+
+    Returns:
+        Dictionary with the following arguments: `image_ids`, `width`, `height`, `ann_ids`, `input_ids`,
+        `token_type_ids`, `attention_mask`, `bbox`, `labels`.
     """
 
     if isinstance(raw_features, dict):
@@ -578,28 +591,29 @@ def raw_features_to_layoutlm_features(
 @dataclass
 class LayoutLMDataCollator:
     """
-    Data collator that will dynamically tokenize, pad and truncate the inputs received.
+    Data collator that will dynamically tokenize, pad, and truncate the inputs received.
 
-    :param tokenizer: A fast tokenizer for the model. Note, that the conventional python based tokenizer provided by the
-                      Transformer library do not return essential word_id/token_id mappings making the feature
-                      generation a lot more difficult. We therefore do not allow these tokenizer.
-    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
-                    `do_not_pad`.
-    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
-                       maximum acceptable input length for the model if that argument is not provided. This will
-                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
-                       sequences (or a batch of pairs) is provided.
-                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
-                       model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens can
-                                  be returned as an additional batch element. Not that in this case, the number of input
-                                  batch samples will be smaller than the output batch samples.
-    :param return_tensors: If `pt` will return torch Tensors. If no argument is provided that the batches will be lists
-                           of lists.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length sliding windows
-                           will be created with each window having max_length sequence input. When using
-                           `sliding_window_stride=0` no strides will be created, otherwise it will create slides
-                           with windows shifted `sliding_window_stride` to the right.
+    Args:
+        tokenizer: A fast tokenizer for the model. The conventional Python-based tokenizer provided by the
+            Transformers library does not return essential word_id/token_id mappings, making feature generation
+            more difficult. Only fast tokenizers are allowed.
+        padding: Padding strategy to be passed to the tokenizer. Must be either `max_length`, `longest`, or
+            `do_not_pad`.
+        truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
+            maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
+            admissible input size).
+        return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens can
+            be returned as an additional batch element. In this case, the number of input batch samples will be smaller
+            than the output batch samples.
+        return_tensors: If `pt`, returns torch tensors. If not provided, batches will be lists of lists.
+        sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding windows
+            will be created with each window having `max_length` sequence input. When using
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
+            `sliding_window_stride` to the right.
+        max_batch_size: Maximum batch size.
+        remove_bounding_box_features: If `True`, removes bounding box features.
     """
 
     tokenizer: PreTrainedTokenizerFast
@@ -621,11 +635,15 @@ class LayoutLMDataCollator:
 
     def __call__(self, raw_features: Union[RawLayoutLMFeatures, list[RawLayoutLMFeatures]]) -> LayoutLMFeatures:
         """
-        Calling the DataCollator to form model inputs for training and inference. Takes a single raw
-        :param raw_features: A dictionary with the following arguments: `image_id, width, height, ann_ids, words,
-                             boxes, dataset_type`.
-        :return: LayoutLMFeatures with arguments `image_ids, width, height, ann_ids, input_ids,
-                 token_type_ids, attention_masks, boxes, labels`.
+        Calls the `DataCollator` to form model inputs for training and inference.
+
+        Args:
+            raw_features: A dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`,
+                `boxes`, `dataset_type`.
+
+        Returns:
+            `LayoutLMFeatures` with arguments `image_ids`, `width`, `height`, `ann_ids`, `input_ids`,
+            `token_type_ids`, `attention_masks`, `boxes`, `labels`.
         """
         return raw_features_to_layoutlm_features(
             raw_features,  # type: ignore
@@ -660,54 +678,56 @@ def image_to_layoutlm_features(
     sliding_window_stride: int = 0,
 ) -> Optional[LayoutLMFeatures]:
     """
-    Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
+    Mapping function to generate LayoutLM features from `Image` to be used for inference in a pipeline component.
     `LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
     with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
     used internally in `LMTokenClassifierService`.
 
-            tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
+    Example:
+        ```python
+        tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
+        layoutlm = HFLayoutLmTokenClassifier("path/to/config.json", "path/to/model.bin",
+                                             categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
+        layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm)
+        ```
 
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
+    Args:
+        dp: `Image` datapoint.
+        tokenizer: Tokenizer compatible with the language model.
+        padding: Padding strategy to be passed to the tokenizer. Must be either `max_length`, `longest`, or
+            `do_not_pad`.
+        truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
+            maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
+            admissible input size).
+        return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens
+            can be returned as an additional batch element. In this case, the number of input batch samples will be
+            smaller than the output batch samples.
+        return_tensors: Output tensor features. Either `pt` for PyTorch models or `None` if features should be
+            returned in list objects.
+        input_width: Standard input size for image coordinates. All LayoutLM models require input features to be
+            normalized to an image width equal to 1000.
+        input_height: Standard input size for image coordinates. All LayoutLM models require input features to be
+            normalized to an image height equal to 1000.
+        image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to `input_width`, whereas
+            the image has to be resized to a different width. This input will only resize the `image` width.
+        image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to `input_height`,
+            whereas the image has to be resized to a different height. This input will only resize the `image` height.
+        color_mode: Either `BGR` or `RGB`. Note that LayoutLMv2 uses `BGR` because of Detectron2 backbone, whereas
+            LayoutLMv3 uses `RGB`.
+        pixel_mean: (3,) array for `BGR` or `RGB` mean.
+        pixel_std: (3,) array for `BGR` or `RGB` std.
+        segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to have
+            a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
+        sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding
+            windows will be created with each window having `max_length` sequence input. When using
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
+            `sliding_window_stride` to the right.
 
-    :param dp: Image datapoint
-    :param tokenizer: Tokenizer compatible with the language model
-    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
-                    `do_not_pad`.
-    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
-                       maximum acceptable input length for the model if that argument is not provided. This will
-                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
-                       sequences (or a batch of pairs) is provided.
-                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
-                       model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
-                                      can be returned as an additional batch element. Not that in this case, the number
-                                      of input batch samples will be smaller than the output batch samples.
-    :param return_tensors: Output tensor features. Either 'pt' for PyTorch models or None, if features should be
-                           returned in list objects.
-    :param input_width: Standard input size for image coordinates. All LayoutLM models require input features to be
-                        normalized to an image width equal to 1000.
-    :param input_height: Standard input size for image coordinates. All LayoutLM models require input features to be
-                         normalized to an image height equal to 1000.
-    :param image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_width, whereas
-                        the image has to be resized to a different width. This input will only resize the `image` width.
-    :param image_height: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to input_height,
-                         whereas the image has to be resized to a different height. This input will only resize the
-                         `image` height.
-    :param color_mode: Either "BGR" or "RGB". Note, that LayoutLMv2 uses "BGR" because of Detectron2 backbone, whereas
-                       LayoutLMv3 uses "RGB".
-    :param pixel_mean: (3,) array for "BGR" resp. "RGB" mean
-    :param pixel_std: (3,) array for "BGR" resp. "RGB" std
-    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
-                              Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
-                              the layout segments need to have a child-relationship with words. If a word does not
-                              appear as child, it will use the word bounding box.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length a sliding
-                                  windows will be created with each window having max_length sequence input. When using
-                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
-                                  with windows shifted `sliding_window_stride` to the right.
-    :return: A dict of layoutlm features
+    Returns:
+        A dict of LayoutLM features.
     """
     raw_features = image_to_raw_layoutlm_features(
         None,
@@ -745,23 +765,22 @@ def image_to_raw_lm_features(
     include_residual_text_container: bool = False,
 ) -> Optional[RawLMFeatures]:
     """
-    Mapping a datapoint into an intermediate format for bert-like models. Features will be provided into a dict and
+    Maps a datapoint into an intermediate format for BERT-like models. Features are provided in a dict and
     this mapping can be used for sequence or token classification as well as for inference. To generate input features
-    for the model please `use raw_features_to_layoutlm_features`.
+    for the model, please use `raw_features_to_layoutlm_features`.
 
+    Args:
+        dp: `Image`.
+        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use this.
+        use_token_tag: Used only for `dataset_type="token_classification"`. If `True`, uses labels from subcategory
+            `WordType.token_tag` (with `B,I,O` suffix), otherwise `WordType.token_class`.
+        text_container: A `LayoutType` to get the text from. It will steer the output of `Layout.words`.
+        floating_text_block_categories: A list of top-level layout objects.
+        include_residual_text_container: Regards synthetic text line annotations as floating text blocks and therefore
+            incorporates all image annotations of category `word` when building text strings.
 
-    :param dp: Image
-    :param dataset_type: Either SEQUENCE_CLASSIFICATION or TOKEN_CLASSIFICATION. When using a built-in dataset use
-    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
-                          labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
-                          `WordType.token_class`.
-    :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
-    :param floating_text_block_categories: A list of top level layout objects
-    :param include_residual_text_container: This will regard synthetic text line annotations as floating text
-                                            blocks and therefore incorporate all image annotations of category
-                                            `word` when building text strings.
-    :return: dictionary with the following arguments:
-            'image_id', 'width', 'height', 'ann_ids', 'words', 'bbox' and 'dataset_type'.
+    Returns:
+        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and `dataset_type`.
     """
 
     raw_features: RawLMFeatures = RawLMFeatures({})
@@ -815,42 +834,45 @@ def image_to_lm_features(
     include_residual_text_container: bool = False,
 ) -> Optional[LayoutLMFeatures]:
     """
-    Mapping function to generate layoutlm features from `Image` to be used for inference in a pipeline component.
+    Mapping function to generate LayoutLM features from `Image` to be used for inference in a pipeline component.
     `LanguageModelPipelineComponent` has a positional argument `mapping_to_lm_input_func` that must be chosen
     with respect to the language model chosen. This mapper is devoted to generating features for LayoutLM. It will be
     used internally in `LMTokenClassifierService`.
 
-            tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
-            layoutlm = HFLayoutLmTokenClassifier("path/to/config.json","path/to/model.bin",
-                                                  categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
+    Example:
+        ```python
+        tokenizer = LayoutLMTokenizer.from_pretrained("mrm8488/layoutlm-finetuned-funsd")
+        layoutlm = HFLayoutLmTokenClassifier("path/to/config.json", "path/to/model.bin",
+                                             categories_explicit=['B-ANSWER', 'B-QUESTION', 'O'])
+        layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm)
+        ```
 
-            layoutlm_service = LMTokenClassifierService(tokenizer,layoutlm)
+    Args:
+        dp: `Image` datapoint.
+        tokenizer: Tokenizer compatible with the language model.
+        padding: Padding strategy to be passed to the tokenizer. Must be either `max_length`, `longest`, or
+            `do_not_pad`.
+        truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
+            maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
+            admissible input size).
+        return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens
+            can be returned as an additional batch element. In this case, the number of input batch samples will be
+            smaller than the output batch samples.
+        return_tensors: Output tensor features. Either `pt` for PyTorch models or `None` if features should be
+            returned in list objects.
+        sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding
+            windows will be created with each window having `max_length` sequence input. When using
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
+            `sliding_window_stride` to the right.
+        text_container: A `LayoutType` to get the text from. It will steer the output of `Layout.words`.
+        floating_text_block_categories: A list of top-level layout objects.
+        include_residual_text_container: Regards synthetic text line annotations as floating text blocks and therefore
+            incorporates all image annotations of category `word` when building text strings.
 
-    :param dp: Image datapoint
-    :param tokenizer: Tokenizer compatible with the language model
-    :param padding: A padding strategy to be passed to the tokenizer. Must bei either `max_length, longest` or
-                    `do_not_pad`.
-    :param truncation: If "True" will truncate to a maximum length specified with the argument max_length or to the
-                       maximum acceptable input length for the model if that argument is not provided. This will
-                       truncate token by token, removing a token from the longest sequence in the pair if a pair of
-                       sequences (or a batch of pairs) is provided.
-                       If `False` then no truncation (i.e., can output batch with sequence lengths greater than the
-                       model maximum admissible input size).
-    :param return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
-                                      can be returned as an additional batch element. Not that in this case, the number
-                                      of input batch samples will be smaller than the output batch samples.
-    :param return_tensors: Output tensor features. Either 'pt' for PyTorch models or None, if features should be
-                           returned in list objects.
-    :param sliding_window_stride: If the output of the tokenizer exceeds the max_length sequence length a sliding
-                                  windows will be created with each window having max_length sequence input. When using
-                                  `sliding_window_stride=0` no strides will be created, otherwise it will create slides
-                                  with windows shifted `sliding_window_stride` to the right.
-    :param text_container: A LayoutType to get the text from. It will steer the output of `Layout.words`.
-    :param floating_text_block_categories: A list of top level layout objects
-    :param include_residual_text_container: This will regard synthetic text line annotations as floating text
-                                            blocks and therefore incorporate all image annotations of category
-                                            `word` when building text strings.
-    :return: A dict of lm features
+    Returns:
+        A dict of LM features.
     """
     raw_features = image_to_raw_lm_features(  # pylint: disable=E1102
         dataset_type=None,

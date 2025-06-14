@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-TP Faster RCNN model as predictor for deepdoctection pipeline
+TP Faster-RCNN model
 """
 from __future__ import annotations
 
