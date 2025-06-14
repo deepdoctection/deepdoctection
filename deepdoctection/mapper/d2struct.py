@@ -57,11 +57,14 @@ def image_to_d2_frcnn_training(
     available, for otherwise the annotation will be filtered.
     Note, that the returned dict will not suffice for training as gt for RPN and anchors still need to be created.
 
-    :param dp: Image
-    :param add_mask: True is not implemented (yet).
-    :param category_names: A list of category names for training a model. Pass nothing to train with all annotations
-    :return: Dict with 'image', 'width', 'height', 'image_id', 'annotations' where 'annotations' is a list of dict
-             with 'bbox_mode' (D2 internal bounding box description), 'bbox' and 'category_id'.
+    Args:
+        dp: Image
+        add_mask: `True` is not implemented (yet).
+        category_names: A list of category names for training a model. Pass nothing to train with all annotations
+
+    Returns:
+        Dict with 'image', 'width', 'height', 'image_id', 'annotations' where 'annotations' is a list of dict
+        with 'bbox_mode' (D2 internal bounding box description), 'bbox' and 'category_id'.
     """
     if not os.path.isfile(dp.location) and dp.image is None:
         return None
@@ -110,11 +113,14 @@ def pt_nms_image_annotations_depr(
     annotation, e.g. given by name or returned through different predictors. This is the pt version, for tf check
     `mapper.tpstruct`
 
-    :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
-    :param threshold: NMS threshold
-    :param image_id: id in order to get the embedding bounding box
-    :param prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
-    :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
+    Args:
+        anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
+        threshold: NMS threshold
+        image_id: id in order to get the embedding bounding box
+        prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
+
+    Returns:
+        A list of `annotation_id`s that belong to the given input sequence and that survive the NMS process
     """
     if len(anns) == 1:
         return [anns[0].annotation_id]
@@ -151,15 +157,18 @@ def pt_nms_image_annotations(
     anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
 ) -> Sequence[str]:
     """
-    Processing given image annotations through NMS. This is useful, if you want to supress some specific image
-    annotation, e.g. given by name or returned through different predictors. This is the pt version, for tf check
+    Processes given image annotations through NMS (Non-Maximum Suppression). Useful for suppressing specific image
+    annotations, e.g., given by name or returned through different predictors. This is the pt version, for tf check
     `mapper.tpstruct`
 
-    :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
-    :param threshold: NMS threshold
-    :param image_id: id in order to get the embedding bounding box
-    :param prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
-    :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
+    Args:
+        anns: A sequence of `ImageAnnotation`. All annotations will be treated as if they belong to one category.
+        threshold: NMS threshold.
+        image_id: ID to get the embedding bounding box.
+        prio: If an annotation has priority, its score will be set to 1 so that it will never be suppressed.
+
+    Returns:
+        A list of `annotation_id` that belong to the given input sequence and that survive the NMS process.
     """
     if len(anns) == 1:
         return [anns[0].annotation_id]
@@ -213,6 +222,16 @@ def pt_nms_image_annotations(
 def _get_category_attributes(
     ann: ImageAnnotation, cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None
 ) -> tuple[ObjectTypes, int, Optional[float]]:
+    """
+    Gets the category attributes for an annotation, optionally using a mapping from category to sub-category.
+
+    Args:
+        ann: `ImageAnnotation`
+        cat_to_sub_cat: Optional mapping from `ObjectTypes` to `ObjectTypes`.
+
+    Returns:
+        Tuple of `ObjectTypes`, `category_id`, and `score`.
+    """
     if cat_to_sub_cat:
         sub_cat_key = cat_to_sub_cat.get(get_type(ann.category_name))
         if sub_cat_key in ann.sub_categories:
@@ -230,16 +249,23 @@ def to_wandb_image(
     cat_to_sub_cat: Optional[Mapping[ObjectTypes, ObjectTypes]] = None,
 ) -> tuple[str, Wbimage]:
     """
-    Converting a deepdoctection image into a wandb image
+    Converts a deepdoctection `Image` into a `W&B` image.
 
-    :param dp: deepdoctection image
-    :param categories: dict of categories. The categories refer to categories of `ImageAnnotation`s.
-    :param sub_categories:  dict of sub categories. If provided, these categories will define the classes for the table
-    :param cat_to_sub_cat: dict of category to sub category keys. Suppose your category `foo` has a sub category defined
-                           by the key `sub_foo`. The range sub category values must then be given by `sub_categories`
-                           and to extract the sub category values one must pass `{"foo": "sub_foo"}
+    Args:
+        dp: deepdoctection `Image`
+        categories: Dict of categories. The categories refer to categories of `ImageAnnotation`.
+        sub_categories: Dict of `sub_categories`. If provided, these categories will define the classes for the table.
+        cat_to_sub_cat: Dict of category to sub_category keys. Suppose your category `foo` has a sub-category defined
+                        by the key `sub_foo`. The range of sub-category values must then be given by `sub_categories`,
+                        and to extract the sub-category values, one must pass `{"foo": "sub_foo"}`.
 
-    :return: a W&B image
+    Returns:
+        Tuple of `image_id` and a W&B image.
+
+    Example:
+        ```python
+        to_wandb_image(dp, categories)
+        ```
     """
     if dp.image is None:
         raise ValueError("Cannot convert to W&B image type when Image.image is None")

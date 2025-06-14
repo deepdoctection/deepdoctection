@@ -46,55 +46,64 @@ def match_anns_by_intersection(
     max_parent_only: bool = False,
 ) -> tuple[Any, Any, Sequence[ImageAnnotation], Sequence[ImageAnnotation]]:
     """
-    Generates an iou/ioa-matrix for parent_ann_categories and child_ann_categories and returns pairs of child/parent
-    indices that are above some intersection threshold. It will also return a list of all pre selected parent and child
+    Generates an iou/ioa-matrix for `parent_ann_categories` and `child_ann_categories` and returns pairs of child/parent
+    indices that are above some intersection threshold. It will also return a list of all pre-selected parent and child
     annotations.
 
-    **Example:**
+    Example:
+        ```python
+        match_anns_by_intersection()
+        ```
 
-    Let `p_i, c_j` be annotations ids of parent and children according to some category names.
+        Let `p_i, c_j` be annotation ids of parent and children according to some category names.
 
-    |**ioa**|**c_1**|**c_2**|
-    |-------|-------|-------|
-    |**p_1**|  0.3  |  0.8  |
-    |**p_2**|  0.4  |  0.1  |
-    |**p_3**|  1.   |  0.4  |
+        | ioa   | c_1 | c_2 |
+        |-------|-----|-----|
+        | p_1   | 0.3 | 0.8 |
+        | p_2   | 0.4 | 0.1 |
+        | p_3   | 1.0 | 0.4 |
 
-    With `ioa_threshold = 0.5` it will return:
+        With `ioa_threshold = 0.5` it will return:
 
-     `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
+        `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
 
-    For each child the sum of all ioas with all parents sum up to 1. Hence, the ioa with one parent will in general
-    decrease if one child intersects with more parents. Take two childs one matching two parents with an ioa of 0.5 each
-    while the second matching four parents with an ioa of 0.25 each. In this situation it is difficult to assign
-    children according to a given threshold and one also has to take into account the number of parental intersection
-    for each child. Setting `use_weighted_intersections` to True will multiply each ioa with the number of intersection
-    making it easier to work with an absolute threshold.
+        For each child, the sum of all ioas with all parents sum up to 1. Hence, the ioa with one parent will in general
+        decrease if one child intersects with more parents. Take two children, one matching two parents with an ioa of 0.5 each,
+        while the second matches four parents with an ioa of 0.25 each. In this situation, it is difficult to assign
+        children according to a given threshold and one also has to take into account the number of parental intersections
+        for each child.
 
-    In some situation you want to assign to each child at most one parent. Setting `max_parent_only` to `True` it will
-    select the parent with the highest ioa. Note, there is currently no implementation for iou.
+        Note:
+            Setting `use_weighted_intersections` to True will multiply each ioa with the number of intersections,
+            making it easier to work with an absolute threshold.
 
-    :param dp: image datapoint
-    :param parent_ann_category_names: single str or list of category names
-    :param child_ann_category_names: single str or list of category names
-    :param matching_rule: intersection measure type, either "iou" or "ioa"
-    :param threshold: Threshold, for mat given matching rule. Will assign every child ann with iou/ioa above the
-                      threshold to the parental annotation.
-    :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
-                                       the ioa_matrix it will use mat weighted ioa in order to take into account that
-                                       intersections with more cells will likely decrease the ioa value. By multiplying
-                                       the ioa with the number of all intersection for each child this value calibrate
-                                       the ioa.
-    :param parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candi-
-                           dates which are not in the list.
-    :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
-                          candidates which are not in the list.
-    :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                   parent candidates which are not in the list.
-    :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                  children candidates which are not in the list.
-    :param max_parent_only: Will assign to each child at most one parent with maximum ioa
-    :return: child indices, parent indices (see Example), list of parent ids and list of children ids.
+        Note:
+            In some situations, you want to assign to each child at most one parent. Setting `max_parent_only` to True will
+            select the parent with the highest ioa. There is currently no implementation for iou.
+
+    Args:
+        dp: Image datapoint.
+        matching_rule: Intersection measure type, either `iou` or `ioa`.
+        threshold: Threshold for the given matching rule. Will assign every child annotation with iou/ioa above the
+            threshold to the parental annotation.
+        use_weighted_intersections: This is currently only implemented for matching_rule `ioa`. Instead of using
+            the ioa_matrix, it will use a weighted ioa in order to take into account that intersections with more cells
+            will likely decrease the ioa value. By multiplying the ioa with the number of all intersections for each child,
+            this value calibrates the ioa.
+        parent_ann_category_names: Single str or list of category names.
+        child_ann_category_names: Single str or list of category names.
+        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candidates
+            which are not in the list.
+        child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+            candidates which are not in the list.
+        parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+            candidates which are not in the list.
+        child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+            candidates which are not in the list.
+        max_parent_only: Will assign to each child at most one parent with maximum ioa.
+
+    Returns:
+        child indices, parent indices (see Example), list of parent ids and list of children ids.
     """
 
     assert matching_rule in ["iou", "ioa"], "matching rule must be either iou or ioa"
@@ -166,21 +175,26 @@ def match_anns_by_distance(
 ) -> list[tuple[ImageAnnotation, ImageAnnotation]]:
     """
     Generates pairs of parent and child annotations by calculating the euclidean distance between the centers of the
-    parent and child bounding boxes. It will return the closest child for each parent. Note, that a child can be
-    assigned multiple times to different parents.
+    parent and child bounding boxes. It will return the closest child for each parent.
 
-    :param dp: image datapoint
-    :param parent_ann_category_names: single str or list of category names
-    :param child_ann_category_names: single str or list of category names
-    :param parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candi-
-                           dates which are not in the list.
-    :param child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
-                          candidates which are not in the list.
-    :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                   parent candidates which are not in the list.
-    :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                  children candidates which are not in the list.
-    :return:
+    Note:
+        A child can be assigned multiple times to different parents.
+
+    Args:
+        dp: Image datapoint.
+        parent_ann_category_names: Single str or list of category names.
+        child_ann_category_names: Single str or list of category names.
+        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candidates
+            which are not in the list.
+        child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+            candidates which are not in the list.
+        parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+            candidates which are not in the list.
+        child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other children
+            candidates which are not in the list.
+
+    Returns:
+        List of tuples of parent and child annotations.
     """
 
     parent_anns = dp.get_annotation(

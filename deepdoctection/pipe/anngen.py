@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for datapoint populating helpers
+Datapoint manager
 """
 from dataclasses import asdict
 from typing import Optional, Union
@@ -33,8 +33,8 @@ from ..utils.settings import ObjectTypes, Relationships
 
 class DatapointManager:
     """
-    Class whose methods provide an API for manipulating image datapoints. This includes the creation and storage of
-    annotations in the cache of the image but also in the annotations themselves.
+    This class provides an API for manipulating image datapoints. This includes the creation and storage of
+    annotations in the cache of the image as well as in the annotations themselves.
 
     When the image is transferred, the annotations are stored in a cache dictionary so that access via the annotation ID
     can be performed efficiently.
@@ -53,7 +53,13 @@ class DatapointManager:
     @property
     def datapoint(self) -> Image:
         """
-        datapoint
+        Gets the datapoint.
+
+        Returns:
+            The datapoint.
+
+        Raises:
+            ValueError: If no datapoint is passed.
         """
         if self._datapoint is not None:
             return self._datapoint
@@ -62,7 +68,10 @@ class DatapointManager:
     @datapoint.setter
     def datapoint(self, dp: Image) -> None:
         """
-        datapoint
+        Sets the datapoint.
+
+        Args:
+            dp: The datapoint to set.
         """
         self._datapoint = dp
         self._cache_anns = {ann.annotation_id: ann for ann in dp.get_annotation()}
@@ -70,7 +79,10 @@ class DatapointManager:
 
     def assert_datapoint_passed(self) -> None:
         """
-        assert that datapoint is passed
+        Asserts that a datapoint is passed.
+
+        Raises:
+            AssertionError: If a datapoint has not been passed to `DatapointManager` before creating annotations.
         """
         assert self.datapoint_is_passed, "Pass datapoint to  DatapointManager before creating anns"
 
@@ -84,25 +96,34 @@ class DatapointManager:
         detect_result_max_height: Optional[float] = None,
     ) -> Optional[str]:
         """
-        Creating an image annotation from a raw `DetectionResult` dataclass. Beside dumping the annotation to the
-        `ImageAnnotation` cache you can also dump the annotation to the `image` of an annotation with given
-        `annotation_id`. This is handy if, you know, you want to send the sub image to a subsequent pipeline component.
+        Creates an image annotation from a raw `DetectionResult` dataclass.
 
-        Moreover, it is possible to generate an Image of the given raw annotation and store it in its `image`. The
-        resulting image is given as a sub image of `self` defined by it bounding box coordinates. Use `crop_image`
-        to explicitly store the sub image as numpy array.
+        In addition to dumping the annotation to the `ImageAnnotation` cache, you can also dump the annotation to the
+        `image` of an annotation with a given `annotation_id`. This is useful if you want to send the sub image to a
+        subsequent pipeline component.
 
-        :param detect_result: A `DetectionResult` in general coming from ObjectDetector
-        :param to_annotation_id: Will dump the created image annotation to `image` of the given annotation_id.
-                                 Requires the to_annotation to have a not `None` image.
-        :param to_image: If True will populate `image`.
-        :param crop_image: Makes only sense if to_image=True and if a numpy array is stored in the original image.
-                           Will generate `Image.image`.
-        :param detect_result_max_width: If detect result has a different scaling scheme from the image it refers to,
-                                        pass the max width possible so coords can be rescaled.
-        :param detect_result_max_height: If detect result has a different scaling scheme from the image it refers to,
-                                        pass the max height possible so coords can be rescaled.
-        :return: the annotation_id of the generated image annotation
+        It is also possible to generate an `Image` of the given raw annotation and store it in its `image`. The
+        resulting image is given as a sub image of `self` defined by its bounding box coordinates. Use `crop_image` to
+        explicitly store the sub image as a numpy array.
+
+        Args:
+            detect_result: A `DetectionResult`, generally coming from `ObjectDetector`.
+            to_annotation_id: Dumps the created image annotation to `image` of the given `annotation_id`. Requires the
+            target annotation to have a non-None image.
+            to_image: If True, will populate `image`.
+            crop_image: Only makes sense if `to_image` is True and if a numpy array is stored in the original image.
+                        Will generate `Image.image`.
+            detect_result_max_width: If the detect result has a different scaling scheme from the image it refers to,
+                                     pass the max width possible so coordinates can be rescaled.
+            detect_result_max_height: If the detect result has a different scaling scheme from the image it refers to,
+                                      pass the max height possible so coordinates can be rescaled.
+
+        Returns:
+            The `annotation_id` of the generated image annotation, or `None` if there was a context error.
+
+        Raises:
+            TypeError: If `detect_result.box` is not of type list or `np.ndarray`.
+            ValueError: If the parent annotation's image is None or if the annotation's image is None.
         """
         self.assert_datapoint_passed()
         if not isinstance(detect_result.box, (list, np.ndarray)):
@@ -170,14 +191,17 @@ class DatapointManager:
         score: Optional[float] = None,
     ) -> Optional[str]:
         """
-        Create a category annotation and dump it as sub category to an already created annotation.
+        Creates a category annotation and dumps it as a subcategory to an already created annotation.
 
-        :param category_name: category name
-        :param category_id: category id
-        :param sub_cat_key: the key to dump the created annotation to.
-        :param annotation_id: id, of the parent annotation. Currently, this can only be an image annotation.
-        :param score: Add a score.
-        :return: the annotation_id of the generated category annotation
+        Args:
+            category_name: The category name.
+            category_id: The category id.
+            sub_cat_key: The key to dump the created annotation to.
+            annotation_id: The id of the parent annotation. Currently, this can only be an image annotation.
+            score: The score to add.
+
+        Returns:
+            The `annotation_id` of the generated category annotation, or `None` if there was a context error.
         """
         self.assert_datapoint_passed()
         with MappingContextManager(
@@ -212,15 +236,18 @@ class DatapointManager:
         score: Optional[float] = None,
     ) -> Optional[str]:
         """
-        Create a container annotation and dump it as sub category to an already created annotation.
+        Creates a container annotation and dumps it as a subcategory to an already created annotation.
 
-        :param category_name: category name
-        :param category_id: category id
-        :param sub_cat_key: the key to dump the created annotation to.
-        :param annotation_id: id, of the parent annotation. Currently, this can only be an image annotation.
-        :param value: A value to store
-        :param score: Add a score.
-        :return: annotation_id of the generated container annotation
+        Args:
+            category_name: The category name.
+            category_id: The category id.
+            sub_cat_key: The key to dump the created annotation to.
+            annotation_id: The id of the parent annotation. Currently, this can only be an image annotation.
+            value: The value to store.
+            score: The score to add.
+
+        Returns:
+            The `annotation_id` of the generated container annotation, or None if there was a context error.
         """
         self.assert_datapoint_passed()
         with MappingContextManager(
@@ -251,13 +278,16 @@ class DatapointManager:
         self, relationship_name: ObjectTypes, target_annotation_id: str, annotation_id: str
     ) -> Optional[str]:
         """
-        Create a relationship annotation and dump it to the target annotation.
+        Creates a relationship annotation and dumps it to the target annotation.
 
-        :param relationship_name: The relationship key
-        :param target_annotation_id: Annotation_id of the parent `ImageAnnotation`
-        :param annotation_id: The annotation_id to dump the relationship to
+        Args:
+            relationship_name: The relationship key.
+            target_annotation_id: The `annotation_id` of the parent `ImageAnnotation`.
+            annotation_id: The `annotation_id` to dump the relationship to.
 
-        :return: Annotation_id of the parent `ImageAnnotation` for references if the dumpy has been successful
+        Returns:
+            The `annotation_id` of the parent `ImageAnnotation` for reference if the dump has been successful, or `None`
+            if there was a context error.
         """
         self.assert_datapoint_passed()
         with MappingContextManager(
@@ -284,16 +314,20 @@ class DatapointManager:
         annotation_id: Optional[str] = None,
     ) -> Optional[str]:
         """
-        Creates a sub category of a summary annotation. If a summary of the given `annotation_id` does not exist, it
-        will create a new one.
-        :param summary_key: will store the category annotation as sub category
-        :param summary_name: will create the summary name as category name
-        :param summary_number: will store the value in category_id.
-        :param summary_value: will create a ContainerAnnotation and store the corresponding value
-        :param summary_score: will store the score
-        :param annotation_id: id of the parent annotation. Note, that the parent annotation must have `image` to
-        be not None.
-        :return: `annotation_id` of the generated category annotation
+        Creates a subcategory of a summary annotation.
+
+        If a summary of the given `annotation_id` does not exist, it will create a new one.
+
+        Args:
+            summary_key: Stores the category annotation as a subcategory.
+            summary_name: Creates the summary name as the category name.
+            summary_number: Stores the value in `category_id`.
+            summary_value: Creates a `ContainerAnnotation` and stores the corresponding value.
+            summary_score: Stores the score.
+            annotation_id: The id of the parent annotation. Note that the parent annotation must have `image` not None.
+
+        Returns:
+            The `annotation_id` of the generated category annotation, or None if there was a context error.
         """
         self.assert_datapoint_passed()
         if annotation_id is not None:
@@ -340,13 +374,22 @@ class DatapointManager:
 
     def deactivate_annotation(self, annotation_id: str) -> None:
         """
-        Deactivate annotation by given annotation_id
+        Deactivates the annotation by the given `annotation_id`.
 
-        :param annotation_id: annotation_id
+        Args:
+            annotation_id: The `annotation_id` to deactivate.
         """
         ann = self._cache_anns[annotation_id]
         ann.deactivate()
 
     def get_annotation(self, annotation_id: str) -> ImageAnnotation:
-        """get single `ImageAnnotation`"""
+        """
+        Gets a single `ImageAnnotation`.
+
+        Args:
+        annotation_id: The `annotation_id` of the annotation to retrieve.
+
+        Returns:
+        The `ImageAnnotation` corresponding to the given `annotation_id`.
+        """
         return self._cache_anns[annotation_id]

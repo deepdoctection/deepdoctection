@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for pipeline with Tensorpack predictors
+Module for document processing pipeline
 """
 
 import os
@@ -42,6 +42,20 @@ from .common import PageParsingService
 def _collect_from_kwargs(
     **kwargs: Union[Optional[str], bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
 ) -> Tuple[Optional[str], Union[str, Sequence[str]], bool, int, str, DataFlow, Optional[bytes]]:
+    """
+    Collects and validates keyword arguments for dataflow construction.
+
+    Args:
+        **kwargs: Keyword arguments that may include `path`, `bytes`, `dataset_dataflow`, `shuffle`, `file_type`, and
+        `max_datapoints`.
+
+    Returns:
+        Tuple containing `path`, `file_type`, `shuffle`, `max_datapoints`, `doc_path`, `dataset_dataflow`, and `b_bytes`.
+
+    Raises:
+        ValueError: If neither `path` nor `dataset_dataflow` is provided, or if required arguments are missing.
+        TypeError: If argument types are incorrect.
+    """
     b_bytes = kwargs.get("bytes")
     dataset_dataflow = kwargs.get("dataset_dataflow")
     path = kwargs.get("path")
@@ -115,10 +129,35 @@ def _to_image(
     width: Optional[int] = None,
     height: Optional[int] = None,
 ) -> Optional[Image]:
+    """
+    Converts a data point to an `Image` object.
+
+    Args:
+        dp: The data point, which can be a string or a mapping.
+        dpi: Dots per inch for the image.
+        width: Width of the image.
+        height: Height of the image.
+
+    Returns:
+        An `Image` object or None.
+    """
     return to_image(dp, dpi, width, height)
 
 
 def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
+    """
+    Creates a dataflow from a PDF document.
+
+    Args:
+        path: Path to the PDF document.
+        max_datapoints: Maximum number of data points to consider.
+
+    Returns:
+        A `DataFlow` object.
+
+    Raises:
+        FileExistsError: If the file does not exist.
+    """
     if not os.path.isfile(path):
         raise FileExistsError(f"{path} not a file")
 
@@ -129,26 +168,24 @@ def _doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) 
 
 class DoctectionPipe(Pipeline):
     """
-    Prototype for a document layout pipeline. Contains implementation for loading document types (images in directory,
-    single PDF document, dataflow from datasets), conversions in dataflows and building a pipeline.
+    Prototype for a document layout pipeline.
+
+    Contains implementation for loading document types (images in directory, single PDF document, dataflow from
+     datasets), conversions in dataflows, and building a pipeline.
 
     See `deepdoctection.analyzer.dd` for a concrete implementation.
 
     See also the explanations in `base.Pipeline`.
 
-    By default, `DoctectionPipe` will instantiate a default `PageParsingService`
+    By default, `DoctectionPipe` will instantiate a default `PageParsingService`:
 
-        PageParsingService(text_container=LayoutType.word,
-                           text_block_categories=[LayoutType.title,
-                                                  LayoutType.text,
-                                                  LayoutType.list,
-                                                  LayoutType.table])
+    Example:
+        ```python
+        pipe = DoctectionPipe([comp_1, com_2], PageParsingService(text_container= my_custom_setting))
+        ```
 
-    but you can overwrite the current setting:
-
-    **Example:**
-
-            pipe = DoctectionPipe([comp_1, com_2], PageParsingService(text_container= my_custom_setting))
+    Note:
+        You can overwrite the current setting by providing a custom `PageParsingService`.
     """
 
     def __init__(
@@ -156,6 +193,13 @@ class DoctectionPipe(Pipeline):
         pipeline_component_list: List[PipelineComponent],
         page_parsing_service: Optional[PageParsingService] = None,
     ):
+        """
+        Initializes the `DoctectionPipe`.
+
+        Args:
+            pipeline_component_list: List of pipeline components.
+            page_parsing_service: Optional custom `PageParsingService`.
+        """
         self.page_parser = (
             PageParsingService(
                 text_container=IMAGE_DEFAULTS.TEXT_CONTAINER,
@@ -216,13 +260,19 @@ class DoctectionPipe(Pipeline):
         shuffle: bool = False,
     ) -> DataFlow:
         """
-        Processing method for directories
+        Processing method for directories.
 
-        :param path: path to directory
-        :param file_type: file type to consider (single str or list of strings)
-        :param max_datapoints: max number of datapoints to consider
-        :param shuffle: Shuffle file names in order to stream them randomly
-        :return: dataflow
+        Args:
+            path: Path to directory.
+            file_type: File type to consider (single string or list of strings).
+            max_datapoints: Maximum number of data points to consider.
+            shuffle: Whether to shuffle file names for random streaming.
+
+        Returns:
+            A `DataFlow` object.
+
+        Raises:
+            NotADirectoryError: If the path is not a directory.
         """
         if not os.path.isdir(path):
             raise NotADirectoryError(f"{os.fspath(path)} not a directory")
@@ -232,11 +282,14 @@ class DoctectionPipe(Pipeline):
     @staticmethod
     def doc_to_dataflow(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
         """
-        Processing method for documents
+        Processing method for documents.
 
-        :param path: path to directory
-        :param max_datapoints: max number of datapoints to consider
-        :return: dataflow
+        Args:
+            path: Path to the document.
+            max_datapoints: Maximum number of data points to consider.
+
+        Returns:
+            A `DataFlow` object.
         """
         return _doc_to_dataflow(path, max_datapoints)
 
@@ -245,13 +298,19 @@ class DoctectionPipe(Pipeline):
         path: str, b_bytes: bytes, file_type: Union[str, Sequence[str]], max_datapoints: Optional[int] = None
     ) -> DataFlow:
         """
-        Converts a bytes object to a dataflow
+        Converts a bytes object to a dataflow.
 
-        :param path: path to directory or an image file
-        :param b_bytes: bytes object
-        :param file_type: e.g. ".pdf", ".jpg" or [".jpg", ".png", ".jpeg", ".tif"]
-        :param max_datapoints: max number of datapoints to consider
-        :return: DataFlow
+        Args:
+            path: Path to directory or an image file.
+            b_bytes: Bytes object.
+            file_type: File type, e.g., `.pdf`, `.jpg`, or a list of image file types.
+            max_datapoints: Maximum number of data points to consider.
+
+        Returns:
+            A `DataFlow` object.
+
+        Raises:
+            ValueError: If the combination of arguments is not supported.
         """
 
         file_name = os.path.split(path)[1]
@@ -280,10 +339,13 @@ class DoctectionPipe(Pipeline):
 
     def dataflow_to_page(self, df: DataFlow) -> DataFlow:
         """
-        Converts a dataflow of images to a dataflow of pages
+        Converts a dataflow of images to a dataflow of pages.
 
-        :param df: Dataflow
-        :return: Dataflow
+        Args:
+            df: Dataflow.
+
+        Returns:
+            A dataflow of pages.
         """
         return self.page_parser.predict_dataflow(df)
 
@@ -291,18 +353,19 @@ class DoctectionPipe(Pipeline):
         self, **kwargs: Union[str, bytes, DataFlow, bool, int, PathLikeOrStr, Union[str, List[str]]]
     ) -> DataFlow:
         """
-        `kwargs key dataset_dataflow:` Transfer a dataflow of a dataset via its dataflow builder
+        Args:
+            `kwargs key dataset_dataflow:` Transfer a dataflow of a dataset via its dataflow builder
 
-        `kwargs key path:` A path to a directory in which either image documents or pdf files are located. It is
-                           assumed that the pdf documents consist of only one page. If there are multiple pages,
-                           only the first page is processed through the pipeline.
-                           Alternatively, a path to a pdf document with multiple pages.
+            `kwargs key path:` A path to a directory in which either image documents or pdf files are located. It is
+                               assumed that the pdf documents consist of only one page. If there are multiple pages,
+                               only the first page is processed through the pipeline.
+                               Alternatively, a path to a pdf document with multiple pages.
 
-        `kwargs key bytes:` A bytes object of an image
+            `kwargs key bytes:` A bytes object of an image
 
-        `kwargs key file_type:` Selection of the file type, if: args:`file_type` is passed
+            `kwargs key file_type:` Selection of the file type, if: args:`file_type` is passed
 
-        `kwargs key max_datapoints:` Stops processing as soon as max_datapoints images have been processed
+            `kwargs key max_datapoints:` Stops processing as soon as max_datapoints images have been processed
 
         :return: dataflow
         """

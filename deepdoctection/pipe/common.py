@@ -46,9 +46,11 @@ elif os.environ.get("DD_USE_TF"):
 @pipeline_component_registry.register("ImageCroppingService")
 class ImageCroppingService(PipelineComponent):
     """
-    Crop sub images given by bounding boxes of some annotations. This service is not necessary for
-    `ImageLayoutService` and is more intended for saved files where sub images are
+    Crop sub images given by bounding boxes of some annotations.
+
+    This service is not necessary for `ImageLayoutService` and is more intended for saved files where sub images are
     generally not stored.
+
     """
 
     def __init__(
@@ -57,7 +59,9 @@ class ImageCroppingService(PipelineComponent):
         service_ids: Optional[Sequence[str]] = None,
     ) -> None:
         """
-        :param category_names: A single name or a list of category names to crop
+        Args:
+            category_names: A single name or a list of category names to crop.
+            service_ids: Optional list of service IDs.
         """
         if category_names is None:
             self.category_names = None
@@ -86,24 +90,24 @@ class ImageCroppingService(PipelineComponent):
 
 class IntersectionMatcher:
     """
-    Objects of two object classes can be assigned to one another by determining their pairwise intersection. If this is
-    above a limit, a relation is created between them.
+    Objects of two object classes can be assigned to one another by determining their pairwise intersection.
+    If this is above a limit, a relation is created between them.
+
     The parent object class (based on its category) and the child object class are defined for the service.
 
     Either `iou` (intersection-over-union) or `ioa` (intersection-over-area) can be selected as the matching rule.
 
-            # the following will assign word annotations to text and title annotation, provided that their ioa-threshold
-            # is above 0.7. words below that threshold will not be assigned.
+    Example:
+        ```python
+        matcher = IntersectionMatcher(matching_rule="ioa", threshold=0.7)
+        match_service = MatchingService(parent_categories=["text","title"],
+                                        child_categories="word",
+                                        matcher=matcher,
+                                        relationship_key=Relationships.CHILD)
+        ```
 
-            matcher = IntersectionMatcher(matching_rule="ioa", threshold=0.7)
-
-            match_service = MatchingService(parent_categories=["text","title"],
-                                    child_categories="word",
-                                    matcher=matcher,
-                                    relationship_key=Relationships.CHILD)
-
-            # Assigning means that text and title annotation will receive a relationship called "CHILD" which is a list
-              of annotation ids of mapped words.
+    Assigning means that text and title annotation will receive a relationship called `CHILD` which is a list
+    of annotation ids of mapped words.
     """
 
     def __init__(
@@ -114,14 +118,18 @@ class IntersectionMatcher:
         max_parent_only: bool = False,
     ) -> None:
         """
-        :param matching_rule: "iou" or "ioa"
-        :param threshold: iou/ioa threshold. Value between [0,1]
-        :param use_weighted_intersections: This is currently only implemented for matching_rule 'ioa'. Instead of using
-                                           the ioa_matrix it will use mat weighted ioa in order to take into account
-                                           that intersections with more cells will likely decrease the ioa value. By
-                                           multiplying the ioa with the number of all intersection for each child this
-                                           value calibrate the ioa.
-        :param max_parent_only: Will assign to each child at most one parent with maximum ioa"""
+        Args:
+            matching_rule: `iou` or `ioa`.
+            threshold: iou/ioa threshold. Value between [0,1].
+            use_weighted_intersections: This is currently only implemented for matching_rule `ioa`. Instead of using
+                the ioa_matrix it will use mat weighted ioa in order to take into account that intersections with more
+                cells will likely decrease the ioa value. By multiplying the ioa with the number of all intersection for
+                each child this value calibrate the ioa.
+        max_parent_only: Will assign to each child at most one parent with maximum ioa.
+
+        Raises:
+            ValueError: If `matching_rule` is not `iou` or `ioa`.
+        """
 
         if matching_rule not in ("iou", "ioa"):
             raise ValueError("segment rule must be either iou or ioa")
@@ -139,17 +147,19 @@ class IntersectionMatcher:
         child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
-        The matching algorithm
+        The matching algorithm.
 
-        :param dp: datapoint image
-        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
-        :param child_categories: list of categories to be used for a child class.
-        :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                        parent candidates which are not in the list.
-        :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                        children candidates which are not in the list.
+        Args:
+            dp: `Image` datapoint.
+            parent_categories: List of categories to be used as parent class. Will generate a child-relationship.
+            child_categories: List of categories to be used for a child class.
+            parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                parent candidates which are not in the list.
+            child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                children candidates which are not in the list.
 
-        :return: A list of tuples with parent and child annotation ids
+        Returns:
+            A list of tuples with parent and child annotation ids.
         """
         child_index, parent_index, child_anns, parent_anns = match_anns_by_intersection(
             dp,
@@ -177,15 +187,14 @@ class NeighbourMatcher:
     """
     Objects of two object classes can be assigned to one another by determining their pairwise distance.
 
-        # the following will assign caption annotations to figure annotation
-
+    Example:
+        ```python
         matcher = NeighbourMatcher()
-
         match_service = MatchingService(parent_categories=["figure"],
                                         child_categories="caption",
                                         matcher=matcher,
                                         relationship_key=Relationships.LAYOUT_LINK)
-
+        ```
     """
 
     def match(
@@ -197,17 +206,19 @@ class NeighbourMatcher:
         child_ann_service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> list[tuple[str, str]]:
         """
-        The matching algorithm
+        The matching algorithm.
 
-        :param dp: datapoint image
-        :param parent_categories: list of categories to be used a for parent class. Will generate a child-relationship
-        :param child_categories: list of categories to be used for a child class.
-        :param parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                        parent candidates which are not in the list.
-        :param child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
-                                        children candidates which are not in the list.
+        Args:
+            dp: `Image` datapoint.
+            parent_categories: List of categories to be used as parent class. Will generate a child-relationship.
+            child_categories: List of categories to be used for a child class.
+            parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                parent candidates which are not in the list.
+            child_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other
+                children candidates which are not in the list.
 
-        :return: A list of tuples with parent and child annotation ids
+        Returns:
+            A list of tuples with parent and child annotation ids.
         """
 
         return [
@@ -225,8 +236,17 @@ class NeighbourMatcher:
 @dataclass
 class FamilyCompound:
     """
-    A family compound is a set of parent and child categories that are related by a relationship key. The parent
-    categories will receive a relationship to the child categories.
+    A family compound is a set of parent and child categories that are related by a relationship key.
+    The parent categories will receive a relationship to the child categories.
+
+    Attributes:
+        relationship_key: The relationship key.
+        parent_categories: Parent categories.
+        child_categories: Child categories.
+        parent_ann_service_ids: Parent annotation service IDs.
+        child_ann_service_ids: Child annotation service IDs.
+        create_synthetic_parent: Whether to create a synthetic parent.
+        synthetic_parent: The synthetic parent.
     """
 
     relationship_key: Relationships
@@ -255,8 +275,12 @@ class FamilyCompound:
 @pipeline_component_registry.register("MatchingService")
 class MatchingService(PipelineComponent):
     """
-    A service to match annotations of two categories by intersection or distance. The matched annotations will be
-    assigned a relationship. The parent category will receive a relationship to the child category.
+    A service to match annotations of two categories by intersection or distance.
+
+    The matched annotations will be assigned a relationship. The parent category will receive a
+    relationship to the child category.
+
+
     """
 
     def __init__(
@@ -265,8 +289,9 @@ class MatchingService(PipelineComponent):
         matcher: Union[IntersectionMatcher, NeighbourMatcher],
     ) -> None:
         """
-        :param family_compounds: A list of FamilyCompounds
-        :param matcher: A matcher object
+        Args:
+            family_compounds: A list of `FamilyCompound`.
+            matcher: A matcher object.
         """
         self.family_compounds = family_compounds
         self.matcher = matcher
@@ -274,10 +299,10 @@ class MatchingService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         """
-        - generates pairwise match-score by intersection
-        - generates child relationship at parent level
+        Generates pairwise match-score by intersection and generates child relationship at parent level.
 
-        :param dp: datapoint image
+        Args:
+            dp: `Image` datapoint.
         """
         for family_compound in self.family_compounds:
             matched_pairs = self.matcher.match(
@@ -340,8 +365,12 @@ class MatchingService(PipelineComponent):
 @pipeline_component_registry.register("PageParsingService")
 class PageParsingService(PipelineComponent):
     """
-    A "pseudo" pipeline component that can be added to a pipeline to convert `Image`s into `Page` formats. It allows a
-    custom parsing depending on customizing options of other pipeline components.
+    A "pseudo" pipeline component that can be added to a pipeline to convert `Image`s into `Page` formats.
+
+    It allows a custom parsing depending on customizing options of other pipeline components.
+
+    Info:
+        This component is not meant to be used in the `serve` method.
     """
 
     def __init__(
@@ -352,9 +381,12 @@ class PageParsingService(PipelineComponent):
         include_residual_text_container: bool = True,
     ):
         """
-        :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
-                               ordered within all text blocks.
-        :param floating_text_block_categories: name of image annotation that have a relation with text containers.
+        Args:
+            text_container: Name of an image annotation that has a `CHARS` sub category. These annotations will be
+                ordered within all text blocks.
+            floating_text_block_categories: Name of image annotation that have a relation with text containers.
+            residual_text_block_categories: Name of image annotation that have a relation with text containers.
+            include_residual_text_container: Whether to include residual text container.
         """
         self.name = "page_parser"
         if isinstance(floating_text_block_categories, (str, ObjectTypes)):
@@ -379,9 +411,13 @@ class PageParsingService(PipelineComponent):
 
     def pass_datapoint(self, dp: Image) -> Page:
         """
-        converts Image to Page
-        :param dp: Image
-        :return: Page
+        Converts `Image` to `Page`.
+
+        Args:
+            dp: `Image`.
+
+        Returns:
+            `Page`.
         """
         return Page.from_image(
             dp,
@@ -399,12 +435,18 @@ class PageParsingService(PipelineComponent):
 
     def get_meta_annotation(self) -> MetaAnnotation:
         """
-        meta annotation. We do not generate any new annotations here
+        Returns:
+            `MetaAnnotation`. No new annotations are generated here.
         """
         return MetaAnnotation(image_annotations=(), sub_categories={}, relationships={}, summaries=())
 
     def clone(self) -> PageParsingService:
-        """clone"""
+        """
+        Clone the `PageParsingService`.
+
+        Returns:
+            A cloned `PageParsingService`.
+        """
         return self.__class__(
             deepcopy(self.text_container),
             deepcopy(self.floating_text_block_categories),
@@ -420,15 +462,18 @@ class PageParsingService(PipelineComponent):
 class AnnotationNmsService(PipelineComponent):
     """
     A service to pass `ImageAnnotation` to a non-maximum suppression (NMS) process for given pairs of categories.
+
     `ImageAnnotation`s are subjected to NMS process in groups:
     If `nms_pairs=[[LayoutType.text, LayoutType.table],[LayoutType.title, LayoutType.table]]` all `ImageAnnotation`
     subject to these categories are being selected and identified as one category.
     After NMS the discarded image annotation will be deactivated.
 
-    **Example**
-
+    Example:
+        ```python
         AnnotationNmsService(nms_pairs=[[LayoutType.text, LayoutType.table],[LayoutType.title, LayoutType.table]],
-                             thresholds=[0.7,0.7])   # for each pair a threshold has to be provided
+                             thresholds=[0.7,0.7])
+        ```
+        For each pair a threshold has to be provided.
 
     For a pair of categories, one can also select a category which has always priority even if the score is lower.
     This is useful if one expects some categories to be larger and want to keep them.
@@ -443,9 +488,14 @@ class AnnotationNmsService(PipelineComponent):
         priority: Optional[Sequence[Union[Optional[TypeOrStr]]]] = None,
     ):
         """
-        :param nms_pairs: Groups of categories, either as string or by `ObjectType`.
-        :param thresholds: Suppression threshold. If only one value is provided, it will apply the threshold to all
-                           pairs. If a list is provided, make sure to add as many list elements as `nms_pairs`.
+        Args:
+            nms_pairs: Groups of categories, either as string or by `ObjectType`.
+            thresholds: Suppression threshold. If only one value is provided, it will apply the threshold to all
+                pairs. If a list is provided, make sure to add as many list elements as `nms_pairs`.
+            priority: Optional list of categories which have always priority.
+
+        Raises:
+            AssertionError: If the length of `nms_pairs` and `thresholds` or `priority` do not match.
         """
         self.nms_pairs = [[get_type(val) for val in pair] for pair in nms_pairs]
         if isinstance(thresholds, float):
@@ -467,6 +517,13 @@ class AnnotationNmsService(PipelineComponent):
         super().__init__("nms")
 
     def serve(self, dp: Image) -> None:
+        """
+        Args:
+            dp: `Image`.
+
+        Returns:
+            None.
+        """
         for pair, threshold, prio in zip(self.nms_pairs, self.threshold, self.priority):
             anns = dp.get_annotation(category_names=pair)
             ann_ids_to_keep = nms_image_annotations(anns, threshold, dp.image_id, prio)
@@ -487,27 +544,41 @@ class AnnotationNmsService(PipelineComponent):
 @pipeline_component_registry.register("ImageParsingService")
 class ImageParsingService:
     """
-    A super light service that calls `to_image` when processing datapoints. Might be useful if you build a pipeline that
-    is not derived from `DoctectionPipe`.
+    A super light service that calls `to_image` when processing datapoints.
+
+    Might be useful if you build a pipeline that is not derived from `DoctectionPipe`.
+
     """
 
     def __init__(self, dpi: Optional[int] = None):
         """
-        :param dpi: dpi resolution when converting PDFs into pixel values
+        Args:
+            dpi: dpi resolution when converting PDFs into pixel values.
         """
         self.name = "image"
         self.dpi = dpi
 
     def pass_datapoint(self, dp: Union[str, Mapping[str, Union[str, bytes]]]) -> Optional[Image]:
-        """pass a datapoint"""
+        """
+        Pass a datapoint.
+
+        Args:
+            dp: A datapoint, either a string or a mapping.
+
+        Returns:
+            `Image` or None.
+        """
         return to_image(dp, self.dpi)
 
     def predict_dataflow(self, df: DataFlow) -> DataFlow:
         """
-        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline
+        Mapping a datapoint via `pass_datapoint` within a dataflow pipeline.
 
-        :param df: An input dataflow
-        :return: A output dataflow
+        Args:
+            df: An input `DataFlow`.
+
+        Returns:
+            An output `DataFlow`.
         """
         return MapData(df, self.pass_datapoint)
 

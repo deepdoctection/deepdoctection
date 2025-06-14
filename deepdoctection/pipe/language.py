@@ -36,20 +36,22 @@ class LanguageDetectionService(PipelineComponent):
 
     There are two ways to use this component:
 
-    - By analyzing the already extracted and ordered text. For this purpose, a page object is parsed internally and
-      the full text is passed to the language_detector. This approach provides the greatest precision.
+    1. By analyzing the already extracted and ordered text. For this purpose, a `Page` object is parsed internally and
+    the full text is passed to the `language_detector`. This approach provides the greatest precision.
 
-    - By previous text extraction with an object detector and subsequent transfer of concatenated word elements to the
-      language_detector. Only one OCR detector can be used here. This method can be used, for example, to select an OCR
-      detector that specializes in a language using. Although the word recognition is less accurate
-      when choosing any detector, the results are confident enough to rely on the results, especially when extracting
-      longer text passages. So, a TextExtractionService, for example, can be selected as the subsequent pipeline
-      component. The words determined by the OCR detector are not transferred to the image object.
+    2. By previous text extraction with an object detector and subsequent transfer of concatenated word elements to the
+    `language_detector`. Only one OCR detector can be used here. This method can be used, for example, to select an OCR
+    detector that specializes in a language. Although the word recognition is less accurate
+    when choosing any detector, the results are confident enough to rely on, especially when extracting
+    longer text passages. So, a `TextExtractionService`, for example, can be selected as the subsequent pipeline
+    component. The words determined by the OCR detector are not transferred to the image object.
 
-          lang_detector = FasttextLangDetector(path_weights,profile.categories)
-          component = LanguageDetectionService(lang_detector, text_container="word",
-                                               text_block_names=["text","title","table"])
-
+    Example:
+        ```python
+        lang_detector = FasttextLangDetector(path_weights, profile.categories)
+        component = LanguageDetectionService(lang_detector, text_container="word",
+                                             text_block_names=["text", "title", "table"])
+        ```
     """
 
     def __init__(
@@ -60,13 +62,15 @@ class LanguageDetectionService(PipelineComponent):
         floating_text_block_categories: Optional[Sequence[TypeOrStr]] = None,
     ):
         """
-        :param language_detector: Detector to determine text
-        :param text_container: text container, needed to generate the reading order. Not necessary when passing a
-                               text detector.
-        :param text_detector: Object detector to extract text. You cannot use a Pdfminer here.
+        Initializes a `LanguageDetectionService` instance.
 
-        :param floating_text_block_categories: text blocks, needed for generating the reading order. Not necessary
-                                 when passing a text detector.
+        Args:
+            language_detector: Detector to determine text.
+            text_container: Text container, needed to generate the reading order. Not necessary when passing a
+                `text_detector`.
+            text_detector: Object detector to extract text. You cannot use a Pdfminer here.
+            floating_text_block_categories: Text blocks, needed for generating the reading order. Not necessary
+                when passing a `text_detector`.
         """
 
         self.predictor = language_detector
@@ -81,6 +85,15 @@ class LanguageDetectionService(PipelineComponent):
         super().__init__(self._get_name(self.predictor.name))
 
     def serve(self, dp: Image) -> None:
+        """
+        Serves the language detection on the given `Image`.
+
+        Args:
+            dp: The `Image` datapoint to process.
+
+        Raises:
+            ImageError: If `dp.image` is `None` and a `text_detector` is used.
+        """
         if self.text_detector is None:
             page = Page.from_image(
                 image_orig=dp,

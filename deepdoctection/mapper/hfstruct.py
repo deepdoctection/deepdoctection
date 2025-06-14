@@ -46,13 +46,19 @@ def image_to_hf_detr_training(
     category_names: Optional[Union[TypeOrStr, Sequence[Union[TypeOrStr]]]] = None,
 ) -> Optional[JsonDict]:
     """
-    Maps an image to a detr input datapoint dict, that, after collating can be used for training.
+    Maps an `image` to a detr input datapoint `dict`, that, after collating, can be used for training.
 
-    :param dp: Image
-    :param add_mask: True is not implemented (yet).
-    :param category_names: A list of category names for training a model. Pass nothing to train with all annotations
-    :return: Dict with 'image', 'width', 'height', 'image_id', 'annotations' where 'annotations' is a list of dict
-             with 'boxes' and 'class_labels'.
+    Args:
+        dp: `Image`
+        add_mask: `True` is not implemented (yet).
+        category_names: A list of `category_name`s for training a model. Pass nothing to train with all annotations.
+
+    Returns:
+        Dict with `image`, `width`, `height`, `image_id`, `annotations` where `annotations` is a list of dicts with
+        `boxes` and `class_labels`.
+
+    Note:
+        If `add_mask` is True, segmentation in `deepdoctection` is not supported.
     """
 
     if not os.path.isfile(dp.location) and dp.image is None:
@@ -96,12 +102,12 @@ def image_to_hf_detr_training(
 @dataclass
 class DetrDataCollator:
     """
-    Data collator that will prepare a list of raw features to a BatchFeature that can be used
-    to train a Detr or Tabletransformer model.
+    Data collator that will prepare a list of raw features to a `BatchFeature` that can be used to train a Detr or Tabletransformer model.
 
-    :param feature_extractor:  DetrFeatureExtractor
-    :param padder: An optional PadTransform instance
-    :param return_tensors: "pt" or None
+    Args:
+        feature_extractor: `DetrFeatureExtractor`
+        padder: An optional `PadTransform` instance.
+        return_tensors: "pt" or None.
     """
 
     feature_extractor: DetrFeatureExtractor  # TODO: Replace deprecated DetrFeatureExtractor with DetrImageProcessor
@@ -110,12 +116,15 @@ class DetrDataCollator:
 
     def __call__(self, raw_features: list[JsonDict]) -> BatchFeature:
         """
-        Creating BatchFeature from a list of dict of raw features.
+        Creating `BatchFeature` from a list of dict of raw features.
 
-        :param raw_features: A list of dict with keys: 'image' or 'file_name', "width', "height' and 'annotations'.
-                             'annotations' mus be a list of dict as well, where each dict element must contain
-                             annotation information following COCO standard.
-        :return: BatchFeature
+        Args:
+            raw_features: A list of dicts with keys: `image` or `file_name`, `width`, `height`, and `annotations`.
+            `annotations` must be a list of dicts as well, where each dict element must contain annotation
+            information following `COCO` standard.
+
+        Returns:
+            `BatchFeature`
         """
         images_input = []
 
@@ -136,10 +145,13 @@ class DetrDataCollator:
 
     def maybe_pad_image_and_transform(self, feature: JsonDict) -> JsonDict:
         """
-        Pads an 'image' and transforming bounding boxes from annotations.
+        Pads an `image` and transforms bounding boxes from `annotations`.
 
-        :param feature: A dict of raw_features
-        :return: Same as input
+        Args:
+            feature: A dict of `raw_features`.
+
+        Returns:
+            Same as input.
         """
         if self.padder is None:
             return feature
