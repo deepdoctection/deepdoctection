@@ -17,7 +17,7 @@
 
 """
 Module for pipeline component of table segmentation. Uses row/column detector and infers segmentations by using
-ious/ioas of rows and columns.
+`ious`/`ioas` of rows and columns.
 """
 
 from __future__ import annotations
@@ -45,7 +45,14 @@ __all__ = ["TableSegmentationService", "SegmentationResult", "PubtablesSegmentat
 @dataclass
 class SegmentationResult:
     """
-    Simple mutable storage for segmentation results
+    Mutable storage for segmentation results.
+
+    Args:
+        annotation_id: The annotation ID.
+        row_num: The row number.
+        col_num: The column number.
+        rs: The row span.
+        cs: The column span.
     """
 
     annotation_id: str
@@ -72,17 +79,20 @@ def choose_items_by_iou(
     reference_item_proposals: Optional[list[ImageAnnotation]] = None,
 ) -> Image:
     """
-    Deactivate image annotations that have ious with each other above some threshold. It will deactivate an annotation
-    that has iou above some threshold with another annotation and that has a lesser score.
+    Deactivate image annotations that have `ious` with each other above some threshold. It will deactivate an annotation
+    that has `iou` above some threshold with another annotation and that has a lesser score.
 
+    Args:
+        dp: `image`.
+        item_proposals: Annotations to choose from. If `reference_item_proposals` is `None` it will compare items with
+                        each other.
+        iou_threshold: `iou_threshold`.
+        above_threshold: Whether to deactivate items above the threshold.
+        reference_item_proposals: Annotations as reference. If provided, it will compare `item_proposals` with
+                                 `reference_item_proposals`.
 
-    :param dp: image
-    :param item_proposals: Annotations to choose from. If `reference_item_proposals` is None it will compare items with
-                           each other
-    :param iou_threshold: iou_threshold
-    :param above_threshold:
-    :param reference_item_proposals: Annotations as reference. If provided, it will compare `item_proposals` with
-                                     `reference_item_proposals`
+    Returns:
+        The updated `Image`.
     """
     if len(item_proposals) <= 1:  # we want to ensure to have at least one element.
         return dp
@@ -133,15 +143,17 @@ def stretch_item_per_table(
     lines across the entire width of the table, lines are stretched from the left to the right edge of the table if the
     y coordinates remain the same. Columns between the top and bottom of the table can be stretched in an analogous way.
 
-    :param dp: Image
-    :param table: table image annotation
-    :param row_name: item name for horizontal stretching
-    :param col_name:  item name for vertical stretching
-    :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
-    :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-    :return: Image
-    """
+    Args:
+        dp: `Image`.
+        table: Table `ImageAnnotation`.
+        row_name: Item name for horizontal stretching.
+        col_name: Item name for vertical stretching.
+        remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
+        remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
 
+    Returns:
+        The updated `Image`.
+    """
     item_ann_ids = table.get_relationship(Relationships.CHILD)
 
     rows = dp.get_annotation(category_names=row_name, annotation_ids=item_ann_ids)
@@ -331,18 +343,20 @@ def tile_tables_with_items_per_table(
     coordinate axes. The first item is stretched to the top or right-hand edge of the table. The next item down or to
     the right is stretched to the lower or right edge of the previous item.
 
-    :param dp: Image
-    :param table: table
-    :param item_name: names.C.ROW or names.C.COL
-    :param stretch_rule: Tiling can be achieved by two different stretching rules for rows and columns.
-                         - 'left': The upper horizontal edge of a row will be shifted up to the lower horizontal edge
-                                   of the upper neighboring row. Similarly, the left sided vertical edge of a column
-                                   will be shifted towards the right sided vertical edge of the left sided neighboring
-                                   column.
-                         - 'equal': Upper and lower horizontal edge of rows will be shifted to the middle of the gap
-                                    of two neighboring rows. Similarly, left and right sided vertical edge of a column
-                                    will be shifted to the middle of the gap of two neighboring columns.
-    :return: Image
+    Args:
+        dp: `Image`.
+        table: Table.
+        item_name: `names.C.ROW` or `names.C.COL`.
+        stretch_rule: Tiling can be achieved by two different stretching rules for rows and columns.
+            - `left`: The upper horizontal edge of a row will be shifted up to the lower horizontal edge of the upper
+                      neighboring row. Similarly, the left sided vertical edge of a column will be shifted towards the
+                      right sided vertical edge of the left sided neighboring column.
+            - `equal`: Upper and lower horizontal edge of rows will be shifted to the middle of the gap of two
+                       neighboring rows. Similarly, left and right sided vertical edge of a column will be shifted to
+                       the middle of the gap of two neighboring columns.
+
+    Returns:
+        The updated `Image`.
     """
 
     item_ann_ids = table.get_relationship(Relationships.CHILD)
@@ -371,15 +385,18 @@ def stretch_items(
     remove_iou_threshold_cols: float,
 ) -> Image:
     """
-    Stretch rows and columns from item detector to full table length and width. See `stretch_item_per_table`
+    Stretch rows and columns from item detector to full table length and width. See `stretch_item_per_table`.
 
-    :param dp: Image
-    :param table_name: category name for a table category ann.
-    :param row_name: category name for row category ann
-    :param col_name: category name for column category ann
-    :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
-    :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-    :return: An Image
+    Args:
+        dp: `Image`.
+        table_name: Category name for a table category annotation.
+        row_name: Category name for row category annotation.
+        col_name: Category name for column category annotation.
+        remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
+        remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
+
+    Returns:
+        An `Image`.
     """
     table_anns = dp.get_annotation(category_names=table_name)
 
@@ -394,8 +411,11 @@ def _default_segment_table(cells: list[ImageAnnotation]) -> list[SegmentationRes
     Error segmentation handling when segmentation goes wrong. It will generate a default segmentation, e.g. no real
     segmentation.
 
-    :param cells: list of all cells of one table
-    :return: list of segmentation results
+    Args:
+        cells: List of all cells of one table.
+
+    Returns:
+        List of `SegmentationResult`.
     """
     raw_table_segments = []
     for cell in cells:
@@ -415,22 +435,25 @@ def segment_table(
     threshold_cols: float,
 ) -> list[SegmentationResult]:
     """
-    Segments a table,i.e. produces for each cell a SegmentationResult. It uses numbered rows and columns that have to
-    be predicted by an appropriate detector. E.g. for calculating row and rwo spans it first infers the iou of a cell
-    with all rows. All ious with rows above iou_threshold_rows will induce the cell to have that row number. As there
-    might be several rows, the row number of the cell will be the smallest of the number of all intersected rows. The
-    row span will be equal the number of all rows with iou above the iou threshold.
+    Segments a table, i.e. produces for each cell a `SegmentationResult`. It uses numbered rows and columns that have
+    to be predicted by an appropriate detector. For calculating row and row spans it first infers the `iou` of a cell
+    with all rows. All `ious` with rows above `iou_threshold_rows` will induce the cell to have that row number. As
+    there might be several rows, the row number of the cell will be the smallest of the number of all intersected rows.
+    The row span will be equal to the number of all rows with `iou` above the `iou` threshold.
 
-    :param dp: A datapoint
-    :param table: the table as image annotation.
-    :param item_names: A list of item names (e.g. "row" and "column")
-    :param cell_names: A list of cell names (e.g. "cell")
-    :param segment_rule: 'iou' or 'ioa'
-    :param threshold_rows: the iou/ioa threshold of a cell with a row in order to conclude that the cell belongs
-                               to the row.
-    :param threshold_cols: the iou/ioa threshold of a cell with a column in order to conclude that the cell belongs
-                               to the column.
-    :return: A list of len(number of cells) of SegmentationResult.
+    Args:
+        dp: A datapoint.
+        table: The table as `ImageAnnotation`.
+        item_names: A list of item names (e.g. `row` and `column`).
+        cell_names: A list of cell names (e.g. `cell`).
+        segment_rule: `iou` or `ioa`.
+        threshold_rows: The `iou`/`ioa` threshold of a cell with a row in order to conclude that the cell belongs to
+                        the row.
+        threshold_cols: The `iou`/`ioa` threshold of a cell with a column in order to conclude that the cell belongs to
+                        the column.
+
+    Returns:
+        A list of `SegmentationResult` for each cell.
     """
 
     child_ann_ids = table.get_relationship(Relationships.CHILD)
@@ -507,11 +530,14 @@ def create_intersection_cells(
     Given rows and columns with row- and column number sub categories, create a list of `DetectionResult` and
     `SegmentationResult` as intersection of all their intersection rectangles.
 
-    :param rows: list of rows
-    :param cols: list of columns
-    :param table_annotation_id: annotation_id of underlying table ImageAnnotation
-    :param sub_item_names: ObjectTypes for row-/column number
-    :return: Pair of lists of `DetectionResult` and `SegmentationResult`.
+    Args:
+        rows: List of rows.
+        cols: List of columns.
+        table_annotation_id: Annotation ID of underlying table `ImageAnnotation`.
+        sub_item_names: `ObjectTypes` for row-/column number.
+
+    Returns:
+        Pair of lists of `DetectionResult` and `SegmentationResult`.
     """
     boxes_rows = [row.get_bounding_box(table_annotation_id) for row in rows]
     boxes_cols = [col.get_bounding_box(table_annotation_id) for col in cols]
@@ -559,16 +585,19 @@ def header_cell_to_item_detect_result(
     threshold: float,
 ) -> list[ItemHeaderResult]:
     """
-    Match header cells to items (rows or columns) based on intersection-over-union (iou) or intersection-over-area (ioa)
-    and return a list of ItemHeaderResult.
+    Match header cells to items (rows or columns) based on intersection-over-union (`iou`) or
+    intersection-over-area (`ioa`) and return a list of `ItemHeaderResult`.
 
-    :param dp: The image containing the table and items.
-    :param table: The table image annotation.
-    :param item_name: The type of items (e.g., rows or columns) to match with header cells.
-    :param item_header_name: The type of header cells to match with items.
-    :param segment_rule: The rule to use for matching, either 'iou' or 'ioa'.
-    :param threshold: The iou/ioa threshold for matching header cells with items.
-    :return: A list of ItemHeaderResult containing the matched header cells.
+    Args:
+        dp: The image containing the table and items.
+        table: The table `ImageAnnotation`.
+        item_name: The type of items (e.g., rows or columns) to match with header cells.
+        item_header_name: The type of header cells to match with items.
+        segment_rule: The rule to use for matching, either `iou` or `ioa`.
+        threshold: The `iou`/`ioa` threshold for matching header cells with items.
+
+    Returns:
+        A list of `ItemHeaderResult` containing the matched header cells.
     """
     child_ann_ids = table.get_relationship(Relationships.CHILD)
     item_index, _, items, _ = match_anns_by_intersection(
@@ -606,16 +635,19 @@ def segment_pubtables(
     All simple cells that are covered by a spanning cell as well in the table position (double allocation) are then
     replaced by the spanning cell and deactivated.
 
-    :param dp: Image
-    :param table: table ImageAnnotation
-    :param item_names: A list of item names (e.g. "row" and "column")
-    :param spanning_cell_names: A list of spanning cell names (e.g. "projected_row_header" and "spanning")
-    :param segment_rule: 'iou' or 'ioa'
-    :param threshold_rows: the iou/ioa threshold of a cell with a row in order to conclude that the cell belongs
-                               to the row.
-    :param threshold_cols: the iou/ioa threshold of a cell with a column in order to conclude that the cell belongs
-                               to the column.
-    :return: A list of len(number of cells) of SegmentationResult for spanning cells
+    Args:
+        dp: `Image`.
+        table: Table `ImageAnnotation`.
+        item_names: A list of item names (e.g. `row` and `column`).
+        spanning_cell_names: A list of spanning cell names (e.g. `projected_row_header` and `spanning`).
+        segment_rule: `iou` or `ioa`.
+        threshold_rows: The `iou`/`ioa` threshold of a cell with a row in order to conclude that the cell belongs to
+                        the row.
+        threshold_cols: The `iou`/`ioa` threshold of a cell with a column in order to conclude that the cell belongs to
+                        the column.
+
+    Returns:
+        A list of `SegmentationResult` for spanning cells.
     """
 
     child_ann_ids = table.get_relationship(Relationships.CHILD)
@@ -751,21 +783,24 @@ class TableSegmentationService(PipelineComponent):
     via intersection.
 
     - Predicted rows are stretched horizontally to the edges of the table. Columns are stretched vertically. There is
-      also the option of stretching rows and columns so that they completely pave the table (set tile_table_with_items
-      =True).
+      also the option of stretching rows and columns so that they completely pave the table (set
+      `tile_table_with_items=True`).
 
     - Next, rows and columns are given a row or column number by sorting them vertically or horizontally
       according to the box center.
 
-    - The averages are then determined in pairs separately for rows and columns (more precisely: Iou /
-      intersection-over-union or ioa / intersection-over-area of rows and cells or columns and cells. A cell is
-      assigned a row position if the iou / ioa is above a defined threshold.
+    - The averages are then determined in pairs separately for rows and columns (more precisely: `Iou` /
+      intersection-over-union or `ioa` / intersection-over-area of rows and cells or columns and cells. A cell is
+      assigned a row position if the `iou` / `ioa` is above a defined threshold.
 
     - The minimum row or column with which the cell was matched is used as the row and column of the cell. Row span /
       col span result from the number of matched rows and columns.
 
-    It should be noted that this method means that cell positions can be assigned multiple times by different cells.
-    If this should be excluded, `TableSegmentationRefinementService` can be used to merge cells.
+    Note:
+        It should be noted that this method means that cell positions can be assigned multiple times by different cells.
+        If this should be excluded, `TableSegmentationRefinementService` can be used to merge cells.
+
+
     """
 
     def __init__(
@@ -783,18 +818,19 @@ class TableSegmentationService(PipelineComponent):
         stretch_rule: Literal["left", "equal"] = "left",
     ):
         """
-        :param segment_rule: rule to assign cell to row, columns resp. must be either iou or ioa
-        :param threshold_rows: iou/ioa threshold for rows
-        :param threshold_cols: iou/ioa threshold for columns
-        :param tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of
-                                      the adjacent row. Will do a similar shifting with columns.
-        :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
-        :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-        :param table_name: layout type table
-        :param cell_names: layout type of cells
-        :param item_names: layout type of items (e.g. row and column)
-        :param sub_item_names: cell types of sub items (e.g. row number and column number)
-        :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
+        Args:
+            segment_rule: Rule to assign cell to row, columns resp. must be either `iou` or `ioa`.
+            threshold_rows: `iou`/`ioa` threshold for rows.
+            threshold_cols: `iou`/`ioa` threshold for columns.
+            tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of the
+                                   adjacent row. Will do a similar shifting with columns.
+            remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
+            remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
+            table_name: Layout type table.
+            cell_names: Layout type of cells.
+            item_names: Layout type of items (e.g. row and column).
+            sub_item_names: Cell types of sub items (e.g. row number and column number).
+            stretch_rule: Check the description in `tile_tables_with_items_per_table`.
         """
         if segment_rule not in ("iou", "ioa"):
             raise ValueError("segment_rule must be either iou or ioa")
@@ -949,28 +985,30 @@ class PubtablesSegmentationService(PipelineComponent):
     `CellType.ROW_HEADER`, `CellType.COLUMN_HEADER`, `CellType.PROJECTED_ROW_HEADER`. For table recognition using
     this service build a pipeline as follows:
 
-    **Example:**
-        ```
+    Example:
+        ```python
         layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
         recognition = SubImageLayoutService(table_recognition_detector, LayoutType.TABLE, {1: 6, 2:7, 3:8, 4:9}, True)
         segment = PubtablesSegmentationService('ioa', 0.4, 0.4, True, 0.8, 0.8, 7)
-        ```
-
         pipe = DoctectionPipe([layout, recognition, segment])
+        ```
 
     Under the hood this service performs the following tasks:
 
     - Stretching of rows and columns horizontally and vertically, so that the underlying table is fully tiled by rows
       and columns.
     - Enumerating rows and columns.
-    - For intersecting rows and columns it will create an 'ImageAnnotation' of category 'LayoutType.cell'.
-    - Using spanning cells from the detector to determine their 'row_number' and column_number' position.
+    - For intersecting rows and columns it will create an `ImageAnnotation` of category `LayoutType.cell`.
+    - Using spanning cells from the detector to determine their `row_number` and `column_number` position.
     - Using cells and spanning cells, it will generate a tiling of the table with cells. When some cells have a position
       with some spanning cells, it will deactivate those simple cells and prioritize the spanning cells.
     - Determining the HTML representation of table.
 
-    Different from the 'TableSegmentationService' this service does not require a refinement service: the advantage of
-    this method is, that the segmentation can already be 'HTMLized'.
+    Info:
+        Different from the `TableSegmentationService` this service does not require a refinement service: the advantage
+        of this method is, that the segmentation can already be 'HTMLized'.
+
+
     """
 
     def __init__(
@@ -993,28 +1031,28 @@ class PubtablesSegmentationService(PipelineComponent):
         stretch_rule: Literal["left", "equal"] = "left",
     ) -> None:
         """
-
-        :param segment_rule: rule to assign spanning cells to row, columns resp. must be either iou or ioa
-        :param threshold_rows: iou/ioa threshold for rows
-        :param threshold_cols: iou/ioa threshold for columns
-        :param tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of
-                                      the adjacent row. Will do a similar shifting with columns.
-        :param remove_iou_threshold_rows: iou threshold for removing overlapping rows
-        :param remove_iou_threshold_cols: iou threshold for removing overlapping columns
-        :param table_name: layout type table
-        :param cell_names: layout type of cells
-        :param spanning_cell_names: layout type of spanning cells
-        :param item_names: layout type of items (e.g. row and column)
-        :param sub_item_names: layout type of sub items (e.g. row number and column number)
-        :param item_header_cell_names: layout type of item header cells (e.g. CellType.COLUMN_HEADER,
-        CellType.ROW_HEADER). Note that column header, resp. row header will be first assigned to rows, resp. columns
-        and then transferred to cells.
-        :param item_header_thresholds: iou/ioa threshold for matching header cells with items. The first threshold
-        corresponds to matching the first entry of item_names.
-        :param cell_to_image: If set to 'True' it will create an 'Image' for LayoutType.cell
-        :param crop_cell_image: If set to 'True' it will crop a numpy array image for LayoutType.cell.
-                                Requires 'cell_to_image=True'
-        :param stretch_rule: Check the description in `tile_tables_with_items_per_table`
+    Args:
+        segment_rule: Rule to assign spanning cells to row, columns resp. must be either `iou` or `ioa`.
+        threshold_rows: `iou`/`ioa` threshold for rows.
+        threshold_cols: `iou`/`ioa` threshold for columns.
+        tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of the
+                               adjacent row. Will do a similar shifting with columns.
+        remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
+        remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
+        table_name: Layout type table.
+        cell_names: Layout type of cells.
+        spanning_cell_names: Layout type of spanning cells.
+        item_names: Layout type of items (e.g. row and column).
+        sub_item_names: Layout type of sub items (e.g. row number and column number).
+        item_header_cell_names: Layout type of item header cells (e.g. `CellType.COLUMN_HEADER`, `CellType.ROW_HEADER`).
+                                Note that column header, resp. row header will be first assigned to rows, resp. columns
+                                and then transferred to cells.
+        item_header_thresholds: `iou`/`ioa` threshold for matching header cells with items. The first threshold
+                                corresponds to matching the first entry of `item_names`.
+        cell_to_image: If set to `True` it will create an `Image` for `LayoutType.cell`.
+        crop_cell_image: If set to `True` it will crop a numpy array image for `LayoutType.cell`. Requires
+                        `cell_to_image=True`.
+        stretch_rule: Check the description in `tile_tables_with_items_per_table`.
         """
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows

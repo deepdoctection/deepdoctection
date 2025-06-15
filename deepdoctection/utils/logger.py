@@ -3,23 +3,23 @@
 
 # Copyright (c) Tensorpack Contributors
 # Licensed under the Apache License, Version 2.0 (the "License")
+
 """
 This file is modified from
-https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/logger.py
+<https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/logger.py>
 
 The logger module itself has the common logging functions of Python's
 `logging.Logger`.
 
-**Example:**
+Example:
+    ```python
+    from deepdoctection.utils.logger import logger
 
-    ..code-block::python
-
-        from deepdoctection.utils.logger import logger
-
-        logger.set_logger_dir("path/to/dir")
-        logger.info("Something has happened")
-        logger.warning("Attention!")
-        logger.error("Error happened!")
+    logger.set_logger_dir("path/to/dir")
+    logger.info("Something has happened")
+    logger.warning("Attention!")
+    logger.error("Error happened!")
+    ```
 
 Log levels can be set via the environment variable `LOG_LEVEL` (default: INFO).
 `STD_OUT_VERBOSE` will print a verbose message to the terminal (default: False).
@@ -49,7 +49,17 @@ ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 @dataclass
 class LoggingRecord:
-    """LoggingRecord to pass to the logger in order to distinguish from third party libraries."""
+    """
+    `LoggingRecord` to pass to the logger in order to distinguish from third party libraries.
+
+    Note:
+        `log_dict` will be added to the log record as a dict.
+
+    Args:
+        msg: The log message.
+        log_dict: Optional dictionary to add to the log record.
+
+    """
 
     msg: str
     log_dict: Optional[dict[Union[int, str], Any]] = field(default=None)
@@ -192,17 +202,16 @@ def set_logger_dir(dir_name: PathLikeOrStr, action: Optional[str] = None) -> Non
     """
     Set the directory for global logging.
 
-    :param dir_name: log directory
-    :param action: an action of ["k","d","q"] to be performed
-                   when the directory exists. Will ask user by default.
+    Args:
+        dir_name: Log directory.
+        action: An action of ["k", "d", "q"] to be performed when the directory exists. Will ask user by default.
+            "d": Delete the directory. Note that the deletion may fail when the directory is used by tensorboard.
+            "k": Keep the directory. This is useful when you resume from a previous training and want the directory to
+                 look as if the training was not interrupted.
+            Note that this option does not load old models or any other old states for you. It simply does nothing.
 
-                   "d": delete the directory. Note that the deletion may fail when
-                   the directory is used by tensorboard.
-                   "k": keep the directory. This is useful when you resume from a
-                   previous training and want the directory to look as if the
-                   training was not interrupted.
-                   Note that this option does not load old models or any other
-                   old states for you. It simply does nothing.
+    Raises:
+        OSError: If the directory exists and an invalid action is selected.
     """
     if isinstance(dir_name, Path):
         dir_name = dir_name.as_posix()
@@ -253,10 +262,11 @@ def set_logger_dir(dir_name: PathLikeOrStr, action: Optional[str] = None) -> Non
 def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> None:
     """
     Will set the log directory to './train_log/{script_name}:{name}'.
-    'script_name' is the name of the main python file currently running.
+    `script_name` is the name of the main python file currently running.
 
-    :param action: an action of ["k","d","q"] to be performed (see also func: set_logger_dir)
-    :param name: Optional suffix of file name.
+    Args:
+        action: An action of ["k", "d", "q"] to be performed (see also `set_logger_dir`).
+        name: Optional suffix of file name.
     """
 
     mod = sys.modules["__main__"]
@@ -269,8 +279,10 @@ def auto_set_dir(action: Optional[str] = None, name: Optional[str] = None) -> No
 
 def get_logger_dir() -> Optional[PathLikeOrStr]:
     """
-    The logger directory, or None if not set.
-    The directory is used for general logging, tensorboard events, checkpoints, etc.
+    The logger directory, or `None` if not set.
+
+    Returns:
+        The directory used for general logging, tensorboard events, checkpoints, etc.
     """
     return _LOG_DIR
 
@@ -278,11 +290,16 @@ def get_logger_dir() -> Optional[PathLikeOrStr]:
 @functools.lru_cache(maxsize=None)
 def log_once(message: str, function: str = "info") -> None:
     """
-    Log certain message only once. Call this function more than one times with
-    the same message will result in no-op.
+    Log certain message only once. Calling this function more than once with
+    the same message will result in no operation.
 
-    :param message:  message to log
-    :param function: the name of the logger method. e.g. "info", "warn", "error".
-    :return:
+    Example:
+        ```python
+        log_once("This will only be logged once", "info")
+        ```
+
+    Args:
+        message: Message to log.
+        function: The name of the logger method. For example, "info", "warn", "error".
     """
     getattr(logger, function)(message)

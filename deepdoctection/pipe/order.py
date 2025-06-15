@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for ordering text and layout segments pipeline components
+Ordering text and layout segments
 """
 from __future__ import annotations
 
@@ -43,22 +43,22 @@ from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, 
 
 class OrderGenerator:
     """
-    Class for implementing text ordering logic and tasks that have preparational character. This includes logic for
-    grouping word type `ImageAnnotation` into text lines, splitting text lines into sub-lines (by detecting gaps
-    between words) as well as ordering text blocks (e.g. titles, tables, etc.).
+    Class for implementing text ordering logic and tasks that have preparational character.
+
+    This includes logic for grouping word type `ImageAnnotation` into text lines, splitting text lines into sub-lines
+     (by detecting gaps between words), as well as ordering text blocks (e.g., titles, tables, etc.).
     """
 
     def __init__(self, starting_point_tolerance: float, broken_line_tolerance: float, height_tolerance: float):
         """
-        Parameters for steering grouping and ordering on word level as well as on text block level.
-
-        :param starting_point_tolerance: Threshold to identify if two text blocks belong to one column: To check if two
-                                         text blocks belong to the same column, one condition says, that
-                                         x-coordinates of vertices should not differ more than this threshold
-        :param broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be
-                                      in two different sub lines (because they belong to two different text columns).
-        :param height_tolerance: Threshold to identify if two columns lying over each other belong together or need to
-                                 be separated. Scaling factor of relative text block height.
+        Args:
+            starting_point_tolerance: Threshold to identify if two text blocks belong to one column. To check if two text
+                                      blocks belong to the same column, one condition says that x-coordinates of vertices
+                                      should not differ more than this threshold.
+            broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be in two
+                                   different sub-lines (because they belong to two different text columns).
+            height_tolerance: Threshold to identify if two columns lying over each other belong together or need to be
+                              separated. Scaling factor of relative text block height.
         """
         self.starting_point_tolerance = starting_point_tolerance
         self.broken_line_tolerance = broken_line_tolerance
@@ -70,11 +70,27 @@ class OrderGenerator:
     def group_words_into_lines(
         word_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
     ) -> list[tuple[int, int, str]]:
-        """Arranging words into horizontal text lines and sorting text lines vertically in order to give
-        an enumeration of words that is used for establishing the reading order. Using this reading order arragement
-        makes only sense for words within a rectangle and needs to be revised in more complex appearances.
-        Function returns triplets for every word ann `(word reading order position, text line position, word annotation
-        id)`.
+        """
+        Arranges words into horizontal text lines and sorts text lines vertically to provide an enumeration of words
+        used for establishing the reading order.
+
+        Using this reading order arrangement makes sense only for words within a rectangle and needs to be revised in
+        more complex appearances.
+
+        Example:
+            ```python
+            group_words_into_lines(word_anns, image_id)
+            ```
+
+        Args:
+            word_anns: Sequence of `ImageAnnotation` representing words.
+            image_id: Optional image ID.
+
+        Returns:
+            List of triplets for every word annotation: (word reading order position, text line position, word
+            annotation id).
+
+
         """
         reading_lines = []
         rows: list[dict[str, float]] = []
@@ -118,11 +134,22 @@ class OrderGenerator:
         line_anns: Sequence[ImageAnnotation], image_id: Optional[str] = None
     ) -> list[tuple[int, int, str]]:
         """
-        Sorting reading lines. Returns for a list of `ImageAnnotation` an list of tuples (each tuple containing the
-        reading order and the `annotation_id` for each list element.
-        :param line_anns: text line `ImageAnnotation`
-        :param image_id: image_id of underyling image (to find get the bounding boxes)
-        :return: `list[(reading_order, reading_order,annotation_id)]`
+        Sorts reading lines.
+
+        Returns for a list of `ImageAnnotation` a list of tuples, each tuple containing the reading order and the
+        `annotation_id` for each list element.
+
+        Args:
+            line_anns: Sequence of text line `ImageAnnotation`.
+            image_id: Image ID of underlying image (to get the bounding boxes).
+
+        Returns:
+            List of tuples (reading_order, reading_order, annotation_id).
+
+        Example:
+            ```python
+            group_lines_into_lines(line_anns, image_id)
+            ```
         """
         reading_lines = []
         for ann in line_anns:
@@ -173,17 +200,27 @@ class OrderGenerator:
         self, anns: list[ImageAnnotation], image_width: float, image_height: float, image_id: Optional[str] = None
     ) -> Sequence[tuple[int, str]]:
         """
-        Determining a text ordering of text blocks. These text blocks should be larger sections than barely words.
-        It will first try to detect columns, then try to consolidate columns and finally try to detecting connected
-        components of columns. A connected component of columns is a group of columns that lie next to each other.
-        Having to connected components lying over each other will infer a reading order where the upper block of
-        connected component will be read first followed by text blocks of columns of the second.
+        Determines a text ordering of text blocks.
 
-        :param anns: list of `ImageAnnotation` with all list element to sort.
-        :param image_width: image width (to re-calculate bounding boxes into relative coords)
-        :param image_height: image height (to re-calculate bounding boxes into relative coords)
-        :param image_id: image id
-        :return: list of tuples with reading order position and `annotation_id`
+        These text blocks should be larger sections than just words. It will first try to detect columns, then try to
+        consolidate columns, and finally try to detect connected components of columns. A connected component of columns
+        is a group of columns that lie next to each other. Having two connected components lying over each other will
+        infer a reading order where the upper block of the connected component will be read first, followed by text
+        blocks of columns of the second.
+
+        Example:
+            ```python
+            order_blocks(anns, image_width, image_height, image_id)
+            ```
+
+        Args:
+            anns: List of `ImageAnnotation` with all elements to sort.
+            image_width: Image width (to re-calculate bounding boxes into relative coordinates).
+            image_height: Image height (to re-calculate bounding boxes into relative coordinates).
+            image_id: Image ID.
+
+        Returns:
+            List of tuples with reading order position and `annotation_id`.
         """
         if not anns:
             return []
@@ -343,16 +380,24 @@ class OrderGenerator:
 
 class TextLineGenerator:
     """
-    Class for generating synthetic text lines from words. Possible to break text lines into sub lines by using
-    a paragraph break threshold. This allows to detect a multi column structure just by observing sub lines.
+    Class for generating synthetic text lines from words.
+
+    Possible to break text lines into sub-lines by using a paragraph break threshold. This allows detection of a
+    multi-column structure just by observing sub-lines.
+
+
     """
 
     def __init__(self, make_sub_lines: bool, paragraph_break: Optional[float] = None):
         """
-        :param make_sub_lines: Whether to build sub lines from lines.
-        :param paragraph_break: threshold of two consecutive words. If distance is larger than threshold, two sub-lines
-                                will be built. We use relative coordinates to calculate the distance between two
-                                consecutive words. A reasonable value is 0.035
+    Args:
+        make_sub_lines: Whether to build sub-lines from lines.
+        paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sub-lines will be
+        built. Relative coordinates are used to calculate the distance between two consecutive words. A reasonable
+        value is `0.035`.
+
+    Raises:
+        ValueError: If `make_sub_lines` is `True` and `paragraph_break` is `None`.
         """
         if make_sub_lines and paragraph_break is None:
             raise ValueError("You must specify paragraph_break when setting make_sub_lines to True")
@@ -376,13 +421,22 @@ class TextLineGenerator:
         highest_level: bool = True,
     ) -> Sequence[DetectionResult]:
         """
-        Creating detecting result of lines (or sub lines) from given word type `ImageAnnotation`.
+        Creates detection result of lines (or sub-lines) from given word type `ImageAnnotation`.
 
-        :param word_anns: list og given word type `ImageAnnotation`
-        :param image_width: image width
-        :param image_height: image height
-        :param image_id: image id
-        :return:
+        Example:
+            ```python
+            create_detection_result(word_anns, image_width, image_height, image_id)
+            ```
+
+        Args:
+            word_anns: List of given word type `ImageAnnotation`.
+            image_width: Image width.
+            image_height: Image height.
+            image_id: Image ID.
+            highest_level: Whether this is the highest level of line creation.
+
+        Returns:
+            Sequence of `DetectionResult`.
         """
         if not word_anns:
             return []
@@ -462,9 +516,12 @@ class TextLineGenerator:
 
 class TextLineServiceMixin(PipelineComponent, ABC):
     """
-    This class is used to create text lines similar to TextOrderService.
-    It uses the logic of the TextOrderService but modifies it to suit its needs.
-    It specifically uses the _create_lines_for_words method and modifies the serve method.
+    This class is used to create text lines similar to `TextOrderService`.
+
+    It uses the logic of the `TextOrderService` but modifies it to suit its needs. It specifically uses the
+     `_create_lines_for_words` method and modifies the `serve` method.
+
+
     """
 
     def __init__(
@@ -474,7 +531,10 @@ class TextLineServiceMixin(PipelineComponent, ABC):
         paragraph_break: Optional[float] = None,
     ):
         """
-        Initialize the TextLineServiceMixin with a TextLineGenerator instance.
+        Args:
+            name: Name of the service.
+            include_residual_text_container: Whether to include residual text containers.
+            paragraph_break: Paragraph break threshold.
         """
         self.include_residual_text_container = include_residual_text_container
         self.text_line_generator = TextLineGenerator(self.include_residual_text_container, paragraph_break)
@@ -482,7 +542,13 @@ class TextLineServiceMixin(PipelineComponent, ABC):
 
     def _create_lines_for_words(self, word_anns: Sequence[ImageAnnotation]) -> Sequence[ImageAnnotation]:
         """
-        This method creates lines for words using the TextLineGenerator instance.
+        Creates lines for words using the `TextLineGenerator` instance.
+
+        Args:
+            word_anns: Sequence of `ImageAnnotation`.
+
+        Returns:
+            Sequence of `ImageAnnotation`.
         """
         detection_result_list = self.text_line_generator.create_detection_result(
             word_anns,
@@ -504,22 +570,24 @@ class TextLineServiceMixin(PipelineComponent, ABC):
 
 class TextLineService(TextLineServiceMixin):
     """
-    Some OCR systems do not identify lines of text but only provide text boxes for words. This is not sufficient
-    for certain applications. This service determines rule-based text lines based on word boxes. One difficulty is
-    that text lines are not continuous but are interrupted, for example in multi-column layouts.
-    These interruptions are taken into account insofar as the gap between two words on almost the same page height
-    must not be too large.
+    Some OCR systems do not identify lines of text but only provide text boxes for words.
 
-    The service constructs new ImageAnnotation of the category `LayoutType.line` and forms relations between the
-    text lines and the words contained in the text lines. The reading order is not arranged.
+    This is not sufficient for certain applications. This service determines rule-based text lines based on word boxes.
+    One difficulty is that text lines are not continuous but are interrupted, for example, in multi-column layouts.
+    These interruptions are taken into account insofar as the gap between two words on almost the same page height must
+    not be too large.
+
+    The service constructs new `ImageAnnotation` of the category `LayoutType.line` and forms relations between the text
+    lines and the words contained in the text lines. The reading order is not arranged.
+
+
     """
 
     def __init__(self, paragraph_break: Optional[float] = None):
         """
-        Initialize `TextLineService`
-
-        :param paragraph_break: threshold of two consecutive words. If distance is larger than threshold, two sublines
-                                will be built
+        Args:
+            paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two
+                             sub-lines will be built.
         """
         super().__init__(
             name="text_line",
@@ -553,24 +621,24 @@ class TextLineService(TextLineServiceMixin):
 class TextOrderService(TextLineServiceMixin):
     """
     Reading order of words within floating text blocks as well as reading order of blocks within simple text blocks.
-    To understand the difference between floating text blocks and simple text blocks consider a page containing an
-    article and a table. Table cells are text blocks that contain words which must be sorted.
-    However, they do not belong to floating text that encircle a table. They are rather an element that is supposed to
-    be read independently.
 
-    A heuristic argument for its ordering is used where the underlying assumption is the reading order from left to
-    right.
+    To understand the difference between floating text blocks and simple text blocks, consider a page containing an
+    article and a table. Table cells are text blocks that contain words which must be sorted. However, they do not
+    belong to floating text that encircle a table. They are rather an element that is supposed to be read independently.
 
-        - For the reading order within a text block, text containers (i.e. image annotations that contain character
-          sub annotations) are sorted based on their bounding box center and then lines are formed: Each word induces a
-          new line, provided that its center is not in a line that has already
-          been created by an already processed word. The entire block width is defined as the line width
-          and the upper or lower line limit of the word bounding box as the upper or lower line limit. The reading order
-          of the words is from left to right within a line. The reading order of the lines is from top to bottom.
+    A heuristic argument for its ordering is used where the underlying assumption is the reading order from left
+    to right.
 
-        - For the reading order of text blocks within a page, the blocks are sorted using a similar procedure, with the
-          difference that columns are formed instead of lines. Column lengths are defined as the length of the entire
-          page and the left and right text block boundaries as the left and right column boundaries.
+    - For the reading order within a text block, text containers (i.e., image annotations that contain character
+      sub-annotations) are sorted based on their bounding box center and then lines are formed: Each word induces a new
+      line, provided that its center is not in a line that has already been created by an already processed word. The
+      entire block width is defined as the line width and the upper or lower line limit of the word bounding box as the
+      upper or lower line limit. The reading order of the words is from left to right within a line. The reading order
+      of the lines is from top to bottom.
+
+    - For the reading order of text blocks within a page, the blocks are sorted using a similar procedure, with the
+      difference that columns are formed instead of lines. Column lengths are defined as the length of the entire page
+      and the left and right text block boundaries as the left and right column boundaries.
 
     A category annotation per word is generated, which fixes the order per word in the block, as well as a category
     annotation per block, which saves the reading order of the block per page.
@@ -578,10 +646,19 @@ class TextOrderService(TextLineServiceMixin):
     The blocks are defined in `text_block_categories` and text blocks that should be considered when generating
     narrative text must be added in `floating_text_block_categories`.
 
-        order = TextOrderService(text_container="word",
-                                 text_block_categories=["title", "text", "list", "cell",
-                                                        "head", "body"],
-                                 floating_text_block_categories=["title", "text", "list"])
+    Example:
+
+        ```python
+        order = TextOrderService(
+            text_container="word",
+            text_block_categories=["title", "text", "list", "cell", "head", "body"],
+            floating_text_block_categories=["title", "text", "list"]
+        )
+        ```
+
+    Note:
+        The blocks are defined in `text_block_categories` and text blocks that should be considered when generating
+        narrative text must be added in `floating_text_block_categories`.
     """
 
     def __init__(
@@ -596,29 +673,31 @@ class TextOrderService(TextLineServiceMixin):
         paragraph_break: Optional[float] = 0.035,
     ):
         """
-        :param text_container: name of an image annotation that has a CHARS sub category. These annotations will be
-                               ordered within all text blocks.
-        :param text_block_categories: name of image annotation that have a relation with text containers and where
-                                      text containers need to be sorted. It will default to
-                                      `..datapoint.view.IMAGE_DEFAULTS["text_block_categories"]`
-        :param floating_text_block_categories: name of image annotation that belong to floating text. These annotations
-                               form the highest hierarchy of text blocks that will be ordered to generate a narrative
-                               output of text. It will default to
-                               `..datapoint.view.IMAGE_DEFAULTS["floating_text_block_categories"]`
-        :param include_residual_text_container: Text containers with no parent text block (e.g. not matched with any
-                                                parent annotation in `MatchingService`) will not be assigned with a
-                                                reading. (Reading order will only be assigned to image annotations that
-                                                are floating_text_block_categories or text containers matched with
-                                                text block annotations.) Setting `include_residual_text_container=True`
-                                                will build synthetic text lines from text containers and regard these
-                                                text lines as floating text blocks.
-        :param starting_point_tolerance: Threshold to identify if two text blocks belong to one column: To check if two
-                                         text blocks belong to the same column, one condition says, that
-                                         x-coordinates of vertices should not differ more than this threshold
-        :param broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be
-                                      in two different sub-lines (because they belong to two different text columns).
-        :param height_tolerance: Threshold to identify if two columns lying over each other belong together or need to
-                                 be separated. Scaling factor of relative text block height.
+    Args:
+        text_container: `Name` of an image annotation that has a CHARS sub-category. These annotations will be ordered
+                        within all text blocks.
+        text_block_categories: `Name` of image annotation that have a relation with text containers and where text
+                               containers need to be sorted. Defaults to `IMAGE_DEFAULTS["text_block_categories"]`.
+        floating_text_block_categories: Name of image annotation that belong to floating text. These annotations form
+                                        the highest hierarchy of text blocks that will be ordered to generate a
+                                        narrative output of text. Defaults to
+                                        `IMAGE_DEFAULTS["floating_text_block_categories"]`.
+        include_residual_text_container: Text containers with no parent text block (e.g., not matched with any parent
+                                         annotation in `MatchingService`) will not be assigned with a reading.
+                                         (Reading order will only be assigned to image annotations that are
+                                         `floating_text_block_categories` or text containers matched with text block
+                                         annotations.) Setting `include_residual_text_container=True` will build
+                                         synthetic text lines from text containers and regard these text lines as
+                                         floating text blocks.
+        starting_point_tolerance: Threshold to identify if two text blocks belong to one column. To check if two text
+                                  blocks belong to the same column, one condition says that x-coordinates of vertices
+                                  should not differ more than this threshold.
+        broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be in two
+                               different sub-lines (because they belong to two different text columns).
+        height_tolerance: Threshold to identify if two columns lying over each other belong together or need to be
+                          separated. Scaling factor of relative text block height.
+        paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sublines will be
+                         built.
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):
@@ -676,10 +755,13 @@ class TextOrderService(TextLineServiceMixin):
 
     def order_text_in_text_block(self, text_block_ann: ImageAnnotation) -> None:
         """
-        Order text within a text block. It will take all child-like text containers (determined by a
-        `MatchingOrderService`)  from a block and going to order all items line-wise.
+        Orders text within a text block.
 
-        :param text_block_ann: text block annotation (category one of `text_block_categories`).
+        It will take all child-like text containers (determined by a `MatchingOrderService`) from a block and order
+        all items line-wise.
+
+        Args:
+            text_block_ann: Text block annotation (category one of `text_block_categories`).
         """
         text_container_ids = text_block_ann.get_relationship(Relationships.CHILD)
         text_container_ann = self.dp_manager.datapoint.get_annotation(
@@ -700,9 +782,10 @@ class TextOrderService(TextLineServiceMixin):
 
     def order_blocks(self, text_block_anns: list[ImageAnnotation]) -> None:
         """
-        Ordering of text blocks. Will use the internal order generator.
+        Orders text blocks using the internal order generator.
 
-        :param text_block_anns: list of `ImageAnnotation`.
+        Args:
+            text_block_anns: List of `ImageAnnotation`.
         """
         block_order_list = self.order_generator.order_blocks(
             text_block_anns, self.dp_manager.datapoint.width, self.dp_manager.datapoint.height

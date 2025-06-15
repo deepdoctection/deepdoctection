@@ -2,7 +2,6 @@
 ::: deepdoctection.datapoint
     options:
         show_submodules: True
-        docstring_style: google
         filters:
             - "!__post_init__"
             - "!as_dict"

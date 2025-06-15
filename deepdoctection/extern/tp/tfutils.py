@@ -37,7 +37,15 @@ with try_import() as tf_import_guard:
 
 def is_tfv2() -> bool:
     """
-    Returns whether TF is operating in V2 mode.
+    Returns whether TensorFlow is operating in V2 mode.
+
+    Returns:
+        Whether TensorFlow is operating in V2 mode.
+
+    Example:
+        ```python
+        is_tfv2()
+        ```
     """
     try:
         from tensorflow.python import tf2  # pylint: disable=C0415
@@ -49,7 +57,15 @@ def is_tfv2() -> bool:
 
 def disable_tfv2() -> bool:
     """
-    Disable TF in V2 mode.
+    Disables TensorFlow V2 mode.
+
+    Returns:
+        Whether TensorFlow V2 mode was disabled.
+
+    Example:
+        ```python
+        disable_tfv2()
+        ```
     """
 
     tfv1 = tf.compat.v1
@@ -62,20 +78,31 @@ def disable_tfv2() -> bool:
 
 def disable_tp_layer_logging() -> None:
     """
-    Disables TP layer logging, if not already set
+    Disables tensorpack layer logging, if not already set.
+
+    Example:
+        ```python
+        disable_tp_layer_logging()
+        ```
     """
     disable_layer_logging()
 
 
 def get_tf_device(device: Optional[Union[str, tf.device]] = None) -> tf.device:
     """
-    Selecting a device on which to load a model. The selection follows a cascade of priorities:
+    Selects a device on which to load a model. The selection follows a cascade of priorities:
 
-    - If a device string is provided, it is used. If the string is "cuda" or "GPU", the first GPU is used.
-    - If the environment variable "USE_CUDA" is set, a GPU is used. If more GPUs are available it will use the first one
+    - If a `device` string is provided, it is used. If the string is "cuda" or "GPU", the first GPU is used.
+    - If the environment variable `USE_CUDA` is set, a GPU is used. If more GPUs are available it will use the first one.
 
-    :param device: Device string
-    :return: Tensorflow device
+    Args:
+        device: Device string.
+
+    Returns:
+        TensorFlow device.
+
+    Raises:
+        EnvironmentError: If `USE_CUDA` is set but no GPU device is found, or if no CPU device is found.
     """
     if device is not None:
         if isinstance(device, ContextManager):

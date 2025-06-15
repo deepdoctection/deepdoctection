@@ -16,13 +16,7 @@
 # limitations under the License.
 
 """
-Some visualisation utils. Copied and pasted from
-
-<https://github.com/tensorpack/tensorpack/blob/master/tensorpack/utils/viz.py>
-
-and
-
-<https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/colormap.py>
+Visualisation utils. Copied and pasted from
 """
 
 import base64
@@ -185,9 +179,12 @@ _COLORS = (
 
 def random_color(rgb: bool = True, maximum: int = 255) -> tuple[int, int, int]:
     """
-    :param rgb: Whether to return RGB colors or BGR colors.
-    :param maximum: either 255 or 1
-    :return:
+    Args:
+        rgb: Whether to return RGB colors or BGR colors.
+        maximum: Either 255 or 1.
+
+    Returns:
+        A tuple of three integers representing the color.
     """
 
     idx = np.random.randint(0, len(_COLORS))
@@ -208,17 +205,24 @@ def draw_boxes(
     show_palette: bool = True,
 ) -> PixelValues:
     """
-    Dray bounding boxes with category names into image.
+    Draw bounding boxes with category names into image.
 
-    :param np_image: Image as np.ndarray
-    :param boxes: A numpy array of shape Nx4 where each row is [x1, y1, x2, y2].
-    :param category_names_list: List of N category names.
-    :param color: A 3-tuple BGR color (in range [0, 255])
-    :param font_scale: Font scale of text box
-    :param rectangle_thickness: Thickness of bounding box
-    :param box_color_by_category:
-    :param show_palette: Whether to show a color palette of the categories
-    :return: A new image np.ndarray
+    Args:
+        np_image: Image as `np.ndarray`.
+        boxes: A numpy array of shape Nx4 where each row is `[x1, y1, x2, y2]`.
+        category_names_list: List of N category names.
+        color: A 3-tuple BGR color (in range `[0, 255]`).
+        font_scale: Font scale of text box.
+        rectangle_thickness: Thickness of bounding box.
+        box_color_by_category: Whether to color boxes by category.
+        show_palette: Whether to show a color palette of the categories.
+
+    Returns:
+        A new image as `np.ndarray`.
+
+    Raises:
+        AssertionError: If the length of `category_names_list` does not match the number of boxes, or if any area is
+                        not positive, or if boxes are out of image bounds.
     """
     if color is not None:
         box_color_by_category = False
@@ -284,9 +288,15 @@ def draw_boxes(
 @no_type_check
 def interactive_imshow(img: PixelValues) -> None:
     """
-    Display an image in a pop-up window
+    Display an image in a pop-up window.
 
-    :param img: An image (expect BGR) to show.
+    Args:
+        img: An image (expect BGR) to show.
+
+    Example:
+        ```python
+        interactive_imshow(img)
+        ```
     """
     viz_handler.interactive_imshow(img)
 
@@ -340,9 +350,15 @@ class VizPackageHandler:
     @staticmethod
     def _select_package() -> str:
         """
-        USE_DD_OPENCV has priority and will enforce to use OpenCV
-        Otherwise it will use Pillow as default package
-        :return: either 'pillow' or 'cv2'
+        `USE_DD_OPENCV` has priority and will enforce to use OpenCV.
+        Otherwise it will use Pillow as default package.
+
+        Returns:
+            Either 'pillow' or 'cv2'.
+
+        Raises:
+            EnvironmentError: If both `USE_DD_OPENCV` and `USE_DD_PILLOW` are set to `False` or `True`.
+            DependencyError: If the required package is not available.
         """
         maybe_cv2 = "cv2" if os.environ.get("USE_DD_OPENCV", "False") in ENV_VARS_TRUE else None
         maybe_pil = "pillow" if os.environ.get("USE_DD_PILLOW", "True") in ENV_VARS_TRUE else None
@@ -378,23 +394,30 @@ class VizPackageHandler:
 
     def refresh(self) -> None:
         """
-        Refresh the viz_handler setting. Useful if you change the env variable on run time and want to take account of
-        the changes.
+        Refresh the `viz_handler` setting. Useful if you change the environment variable at runtime and want to take
+        account of the changes.
 
-        **Example**
+        Example:
+            ```python
+            os.env["USE_DD_OPENCV"]="True"
+            viz_handler.refresh()
+            ```
 
-           os.env["USE_DD_OPENCV"]="True"
-           viz_handler.refresh()             # this will reset the original config and now use OpenCV
-
-        :return:
+        Returns:
+            None
         """
         package = self._select_package()
         self._set_vars(package)
 
     def read_image(self, path: PathLikeOrStr) -> PixelValues:
-        """Reading an image from file and returning a np.array
+        """
+        Reading an image from file and returning a `np.array`.
 
-        :param path: Use /path/to/dir/file_name.[suffix]
+        Args:
+            path: Use `/path/to/dir/file_name.[suffix]`.
+
+        Returns:
+            Image as `np.array`.
         """
         return getattr(self, self.pkg_func_dict["read_image"])(path)
 
@@ -409,10 +432,15 @@ class VizPackageHandler:
         return np_image
 
     def write_image(self, path: PathLikeOrStr, image: PixelValues) -> None:
-        """Writing an image as np.array to a file.
+        """
+        Writing an image as `np.array` to a file.
 
-        :param path: Use /path/to/dir/file_name.[suffix]
-        :param image: pixel values as np.array
+        Args:
+            path: Use `/path/to/dir/file_name.[suffix]`.
+            image: Pixel values as `np.array`.
+
+        Returns:
+            None
         """
         return getattr(self, self.pkg_func_dict["write_image"])(path, image)
 
@@ -426,9 +454,14 @@ class VizPackageHandler:
         pil_image.save(os.fspath(path))
 
     def encode(self, np_image: PixelValues) -> bytes:
-        """Converting an image as np.array into a b64 representation
+        """
+        Converting an image as `np.array` into a b64 representation.
 
-        :param np_image: Image as np.array
+        Args:
+            np_image: Image as `np.array`.
+
+        Returns:
+            Image as bytes.
         """
         return getattr(self, self.pkg_func_dict["encode"])(np_image)
 
@@ -446,9 +479,14 @@ class VizPackageHandler:
         return buffered.getvalue()
 
     def convert_np_to_b64(self, image: PixelValues) -> str:
-        """Converting an image given as np.array into a b64 encoded string
+        """
+        Converting an image given as `np.array` into a b64 encoded string.
 
-        :param image: Image as np.array
+        Args:
+            image: Image as `np.array`.
+
+        Returns:
+            b64 encoded string.
         """
         return getattr(self, self.pkg_func_dict["convert_np_to_b64"])(image)
 
@@ -466,10 +504,13 @@ class VizPackageHandler:
 
     def convert_b64_to_np(self, image: B64Str) -> PixelValues:
         """
-        Converting an image as b64 encoded string into np.array
+        Converting an image as b64 encoded string into `np.array`.
 
-        :param image: b64 encoded string
-        :return: np.array
+        Args:
+            image: b64 encoded string.
+
+        Returns:
+            `np.array`.
         """
         return getattr(self, self.pkg_func_dict["convert_b64_to_np"])(image)
 
@@ -487,32 +528,25 @@ class VizPackageHandler:
         return np.array(pil_image)[:, :, ::-1]
 
     def convert_bytes_to_np(self, image_bytes: bytes) -> PixelValues:
-        """Converting an image as bytes into np.array
+        """
+        Converting an image as bytes into `np.array`.
 
-        :param image_bytes: Image as np.array
+        Args:
+            image_bytes: Image as bytes.
+
+        Returns:
+            Image as `np.array`.
         """
         return getattr(self, self.pkg_func_dict["convert_bytes_to_np"])(image_bytes)
 
     @staticmethod
     def _cv2_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
-        """
-        Convert image bytes to a numpy array using OpenCV.
-
-        :param image_bytes: Image bytes
-        :return: Image as numpy array
-        """
         np_array = np.frombuffer(image_bytes, np.uint8)
         np_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         return np_image
 
     @staticmethod
     def _pillow_convert_bytes_to_np(image_bytes: bytes) -> PixelValues:
-        """
-        Convert image bytes to a numpy array using Pillow.
-
-        :param image_bytes: Image bytes
-        :return: Image as numpy array
-        """
         image = Image.open(BytesIO(image_bytes))
         np_image = np.array(image)
         return np_image
@@ -520,16 +554,19 @@ class VizPackageHandler:
     def resize(self, image: PixelValues, width: int, height: int, interpolation: str) -> PixelValues:
         """
         Resize a given image to new width, height. Specifying an interpolation method is required. Depending on the
-        chosen image library use one of the following:
+         chosen image library use one of the following:
 
         PIL: NEAREST, BOX, BILINEAR, BICUBIC, VIZ (available for CV2 as well)
         CV2: INTER_NEAREST, INTER_LINEAR, INTER_AREA, VIZ
 
-        :param image: image as np.array
-        :param width: the new image width
-        :param height: the new image height
-        :param interpolation: interpolation method as string.
-        :return: resized image as np.array
+        Args:
+            image: Image as `np.array`.
+            width: The new image width.
+            height: The new image height.
+            interpolation: Interpolation method as string.
+
+        Returns:
+            Resized image as `np.array`.
         """
         return getattr(self, self.pkg_func_dict["resize"])(image, width, height, interpolation)
 
@@ -562,10 +599,14 @@ class VizPackageHandler:
 
     def get_text_size(self, text: str, font_scale: float) -> tuple[int, int]:
         """
-        Return the text size for a given font scale
-        :param text: text as string
-        :param font_scale: scale
-        :return: A tuple with width and height of the text
+        Return the text size for a given font scale.
+
+        Args:
+            text: Text as string.
+            font_scale: Scale.
+
+        Returns:
+            A tuple with width and height of the text.
         """
         return getattr(self, self.pkg_func_dict["get_text_size"])(text, font_scale)
 
@@ -583,11 +624,14 @@ class VizPackageHandler:
         """
         Drawing a rectangle into an image with a given color (b,g,r) and given thickness.
 
-        :param np_image: image
-        :param box: box (x_min, y_min, x_max, y_max)
-        :param color: (b,g,r) between 0 and 255
-        :param thickness: pixel width of the rectangle lines
-        :return: image with rectangle
+        Args:
+            np_image: Image.
+            box: Box (x_min, y_min, x_max, y_max).
+            color: (b,g,r) between 0 and 255.
+            thickness: Pixel width of the rectangle lines.
+
+        Returns:
+            Image with rectangle.
         """
         return getattr(self, self.pkg_func_dict["draw_rectangle"])(np_image, box, color, thickness)
 
@@ -618,16 +662,19 @@ class VizPackageHandler:
         rectangle_thickness: int = 1,
     ) -> PixelValues:
         """
-        Drawing a text into a numpy image. The result will differ between PIL and CV2 (and will not look that good when
-        using PIL).
+        Drawing a text into a numpy image. The result will differ between PIL and CV2 (and will not look that good
+        when using PIL).
 
-        :param np_image: image
-        :param pos: x_min, y_min position of the starting point of the text
-        :param text: text string
-        :param color: (b,g,r) between 0 and 255
-        :param font_scale: scale of font. This will only be used within a OPenCV framework
-        :param rectangle_thickness: thickness of the rectangle border
-        :return: image with text
+        Args:
+            np_image: Image.
+            pos: x_min, y_min position of the starting point of the text.
+            text: Text string.
+            color: `(b,g,r)` between 0 and 255.
+            font_scale: Scale of font. This will only be used within an OpenCV framework.
+            rectangle_thickness: Thickness of the rectangle border.
+
+        Returns:
+            Image with text.
         """
         return getattr(self, self.pkg_func_dict["draw_text"])(
             np_image, pos, text, color, font_scale, rectangle_thickness
@@ -642,17 +689,6 @@ class VizPackageHandler:
         font_scale: float,
         rectangle_thickness: int,
     ) -> PixelValues:
-        """
-        Draw text on an image.
-
-        :param np_image: image as np.ndarray
-        :param pos: x_min, y_min position of the starting point of the text
-        :param text: text string to draw
-        :param color: a 3-tuple BGR color in [0, 255]
-        :param font_scale: float
-        :param rectangle_thickness: thickness of the rectangle border
-        :return: numpy array
-        """
 
         np_image = np_image.astype(np.uint8)
         x_0, y_0 = int(pos[0]), int(pos[1])
@@ -686,7 +722,6 @@ class VizPackageHandler:
         font_scale: float,  # pylint: disable=W0613
         rectangle_thickness: int,  # pylint: disable=W0613
     ) -> PixelValues:
-        """Draw a text in an image using PIL."""
         # using PIL default font size that does not scale to larger image sizes.
         # Compare with https://github.com/python-pillow/Pillow/issues/6622
         pil_image = Image.fromarray(np.uint8(np_image[:, :, ::-1]))
@@ -695,15 +730,18 @@ class VizPackageHandler:
         return np.array(pil_image)[:, :, ::-1]
 
     def interactive_imshow(self, np_image: PixelValues) -> None:
-        """Displaying an image in a separate window"""
+        """
+        Displaying an image in a separate window.
+
+        Args:
+            np_image: Image as `np.array`.
+
+        Returns:
+            None
+        """
         return getattr(self, self.pkg_func_dict["interactive_imshow"])(np_image)
 
     def _cv2_interactive_imshow(self, np_image: PixelValues) -> None:
-        """
-        Display an image in a pop-up window
-
-        :param np_image: An image (expect BGR) to show.
-        """
         name = "q, x: quit / s: save"
         cv2.imshow(name, np_image)
 
@@ -732,7 +770,16 @@ class VizPackageHandler:
         pil_image.show(name)
 
     def rotate_image(self, np_image: PixelValues, angle: float) -> PixelValues:
-        """Rotating an image by some angle"""
+        """
+        Rotating an image by some angle.
+
+        Args:
+            np_image: Image as `np.array`.
+            angle: Angle to rotate.
+
+        Returns:
+            Rotated image as `np.array`.
+        """
         return getattr(self, self.pkg_func_dict["rotate_image"])(np_image, angle)
 
     @staticmethod

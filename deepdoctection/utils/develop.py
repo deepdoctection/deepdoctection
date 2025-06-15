@@ -40,12 +40,16 @@ _DEPRECATED_LOG_NUM = defaultdict(int)  # type: ignore
 
 def log_deprecated(name: str, text: str, eos: str = "", max_num_warnings: Optional[int] = None) -> None:
     """
-    Log deprecation warning.
+    Logs a deprecation warning.
 
-    :param name: name of the deprecated item.
-    :param text: information about the deprecation.
-    :param eos: end of service date such as "YYYY-MM-DD".
-    :param max_num_warnings: the maximum number of times to print this warning
+    Args:
+        name: Name of the deprecated item.
+        text: Information about the deprecation.
+        eos: End of service date such as "YYYY-MM-DD".
+        max_num_warnings: The maximum number of times to print this warning.
+
+    Note:
+        Either `name` or `text` must be provided.
     """
     assert name or text
     if eos:
@@ -71,18 +75,22 @@ def deprecated(
     text: str = "", eos: str = "", max_num_warnings: Optional[int] = None
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
+    Decorator to deprecate a function.
 
-    :param text: same as `log_deprecated`.
-    :param eos: same as `log_deprecated`.
-    :param max_num_warnings: same as `log_deprecated`.
+    Example:
+        ```python
+        @deprecated("Explanation of what to do instead.", "2017-11-4")
+        def foo(...):
+            pass
+        ```
 
-    :return: A decorator which deprecates the function.
+    Args:
+        text: Same as `log_deprecated`.
+        eos: Same as `log_deprecated`.
+        max_num_warnings: Same as `log_deprecated`.
 
-    **Example:**
-
-            @deprecated("Explanation of what to do instead.", "2017-11-4")
-            def foo(...):
-                pass
+    Returns:
+        A decorator which deprecates the function.
     """
 
     def get_location() -> str:

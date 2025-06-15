@@ -330,12 +330,17 @@ _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG = {
 
 def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes) -> ObjectTypes:
     """
-    Mapping TokenClassWithTag enum member from token class and tag, e.g. `TokenClasses.header` and `BioTag.inside`
-    maps to TokenClassWithTag.i_header.
+    Maps a `TokenClassWithTag` enum member from a token class and tag, e.g. `TokenClasses.header` and `BioTag.inside`
+    maps to `TokenClassWithTag.i_header`.
 
-    :param token: TokenClasses member
-    :param tag: BioTag member
-    :return: TokenClassWithTag member
+    Args:
+        token: TokenClasses member.
+        tag: BioTag member.
+
+    Returns: TokenClassWithTag member.
+
+    Raises:
+        TypeError: If token is not of type TokenClasses or tag is not of type BioTag.
     """
     if isinstance(token, TokenClasses) and isinstance(tag, BioTag):
         return _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG[(token, tag)]
@@ -350,8 +355,11 @@ def token_class_with_tag_to_token_class_and_tag(
     """
     This is the reverse mapping from TokenClassWithTag members to TokenClasses and BioTag
 
-    :param token_class_with_tag: TokenClassWithTag member
-    :return: Tuple of TokenClasses member and BioTag member
+    Args:
+        token_class_with_tag: `TokenClassWithTag` member
+
+    Returns:
+        Tuple of `TokenClasses` member and `BioTag` member
     """
     return {val: key for key, val in _TOKEN_AND_TAG_TO_TOKEN_CLASS_WITH_TAG.items()}.get(token_class_with_tag)
 
@@ -406,10 +414,13 @@ def update_black_list(item: str) -> None:
 
 
 def get_type(obj_type: Union[str, ObjectTypes]) -> ObjectTypes:
-    """Get an object type property from a given string. Does nothing if an ObjectType is passed
+    """
+    Get an object type property from a given string. Does nothing if an `ObjectType` is passed
 
-    :param obj_type: String or ObjectTypes
-    :return: ObjectType
+    Args:
+        obj_type: String or ObjectTypes
+    Returns:
+        `ObjectType`
     """
     if isinstance(obj_type, ObjectTypes):
         return obj_type

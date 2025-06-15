@@ -16,7 +16,10 @@
 # limitations under the License.
 
 """
-Compatibility classes and methods related to Tensorpack package
+Compatibility classes and methods related to Tensorpack package.
+
+Info:
+    This module provides compatibility classes and methods related to the Tensorpack package.
 """
 from __future__ import annotations
 
@@ -43,23 +46,32 @@ if not import_guard.is_successful():
 
 class ModelDescWithConfig(ModelDesc, ABC):  # type: ignore
     """
-    A wrapper for Tensorpack ModelDesc for bridging the gap between Tensorpack and DD API. Only for storing a
-    configuration of hyperparameters and maybe training settings.
+    A wrapper for `Tensorpack ModelDesc` for bridging the gap between Tensorpack and DD API.
+
+    Only for storing a configuration of hyperparameters and maybe training settings.
+
+
     """
 
     def __init__(self, config: AttrDict) -> None:
         """
-        :param config: Config setting
+        Args:
+            config: Config setting.
         """
         super().__init__()
         self.cfg = config
 
     def get_inference_tensor_names(self) -> tuple[list[str], list[str]]:
         """
-        Returns lists of tensor names to be used to create an inference callable. "build_graph" must create tensors
-        of these names when called under inference context.
+        Returns lists of tensor names to be used to create an inference callable.
 
-        :return: Tuple of list input and list output names. The names must coincide with tensor within the model.
+        `build_graph` must create tensors of these names when called under inference context.
+
+        Returns:
+            Tuple of list input and list output names. The names must coincide with tensor within the model.
+
+        Raises:
+            NotImplementedError: If not implemented in subclass.
         """
         raise NotImplementedError()
 
@@ -82,10 +94,11 @@ class TensorpackPredictor(ABC):
 
     def __init__(self, model: ModelDescWithConfig, path_weights: PathLikeOrStr, ignore_mismatch: bool) -> None:
         """
-        :param model: Model, either as ModelDescWithConfig or derived from that class.
-        :param path_weights: Model weights of the prediction config.
-        :param ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
-                                if a pre-trained model is to be fine-tuned on a custom dataset.
+        Args:
+            model: Model, either as `ModelDescWithConfig` or derived from that class.
+            path_weights: Model weights of the prediction config.
+            ignore_mismatch: When True will ignore mismatches between checkpoint weights and models. This is needed
+                if a pre-trained model is to be fine-tuned on a custom dataset.
         """
         self._model = model
         self.path_weights = Path(path_weights)
@@ -96,7 +109,10 @@ class TensorpackPredictor(ABC):
 
     def get_predictor(self) -> OfflinePredictor:
         """
-        :return: Returns an OfflinePredictor.
+        Returns an `OfflinePredictor`.
+
+        Returns:
+            Returns an `OfflinePredictor`.
         """
         return OfflinePredictor(self.predict_config)
 
@@ -117,16 +133,38 @@ class TensorpackPredictor(ABC):
         path_yaml: PathLikeOrStr, categories: Mapping[int, ObjectTypes], config_overwrite: Union[list[str], None]
     ) -> ModelDescWithConfig:
         """
-        Implement the config generation, its modification and instantiate a version of the model. See
-        `pipe.tpfrcnn.TPFrcnnDetector` for an example
+        Implement the config generation, its modification and instantiate a version of the model.
+
+        See `pipe.tpfrcnn.TPFrcnnDetector` for an example.
+
+        Raises:
+            NotImplementedError: If not implemented in subclass.
+
+        Args:
+            path_yaml: Path to the yaml file.
+            categories: Mapping of categories.
+            config_overwrite: List of config overwrites or None.
+
+        Returns:
+            An instance of `ModelDescWithConfig`.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def predict(self, np_img: PixelValues) -> Any:
         """
-        Implement, how `self.tp_predictor` is invoked and raw prediction results are generated. Do use only raw
-        objects and nothing, which is related to the DD API.
+        Implement how `self.tp_predictor` is invoked and raw prediction results are generated.
+
+        Do use only raw objects and nothing, which is related to the DD API.
+
+        Args:
+            np_img: The input image as pixel values.
+
+        Returns:
+            Raw prediction results.
+
+        Raises:
+            NotImplementedError: If not implemented in subclass.
         """
         raise NotImplementedError()
 

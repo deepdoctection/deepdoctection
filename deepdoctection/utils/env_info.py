@@ -16,41 +16,53 @@
 # limitations under the License.
 
 """
-Some useful function for collecting environment information.
+Function for collecting environment information.
 
-This is also the place where we give an overview of the important environment variables.
+This is also the place where we give an overview of some environment variables.
 
 For env variables with boolean character, use one of the following values:
 
+```python
 {"1", "True", "TRUE", "true", "yes"}
+```
 
-`USE_TENSORFLOW
+```python
+USE_TENSORFLOW
 USE_PYTORCH
 USE_CUDA
-USE_MPS`
+USE_MPS
+```
 
 are responsible for selecting the predictors based on the installed DL framework and available devices.
 It is not recommended to touch them.
 
-`USE_DD_PILLOW
-USE_DD_OPENCV`
+```python
+USE_DD_PILLOW
+USE_DD_OPENCV
+```
 
 decide what image processing library the `viz_handler` should use. The default library is PIL and OpenCV need
 to be installed separately. However, if both libraries have been detected `viz_handler` will opt for OpenCV.
 Use the variables to let choose `viz_handler` according to your preferences.
 
-`USE_DD_POPPLER
-USE_DD_PDFIUM`
+```python
+USE_DD_POPPLER
+USE_DD_PDFIUM
+```
 
 For PDF rendering we use PyPDFium2 as default but for legacy reasons, we also support Poppler. If you want to enforce
-Poppler set one to `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False` the other to False.
+Poppler set one to `USE_DD_POPPLER=True` and `USE_DD_PDFIUM=False` the other to `False`.
 
-`HF_CREDENTIALS`
+```python
+HF_CREDENTIALS
+```
 
 will be used by the `ModelDownloadManager` to pass your credentials if you have a model registered that resides in a
 private repo.
 
-`MODEL_CATALOG`
+```python
+MODEL_CATALOG
+```
 
 can store an (absolute) path to a `.jsonl` file.
 
@@ -108,7 +120,12 @@ ENV_VARS_TRUE: set[str] = {"1", "True", "TRUE", "true", "yes"}
 
 
 def collect_torch_env() -> str:
-    """Wrapper for torch.utils.collect_env.get_pretty_env_info"""
+    """
+    Wrapper for `torch.utils.collect_env.get_pretty_env_info`.
+
+    Returns:
+        The environment information as a string.
+    """
     try:
         import torch.__config__
 
@@ -121,10 +138,14 @@ def collect_torch_env() -> str:
 
 
 def collect_installed_dependencies(data: KeyValEnvInfos) -> KeyValEnvInfos:
-    """Collect installed dependencies for all third party libraries.
+    """
+    Collect installed dependencies for all third party libraries.
 
-    :param data: A list of tuples to dump all collected package information such as the name and the version
-    :return: A list of tuples containing the name of the library and the version (if available)
+    Args:
+        data: A list of tuples to dump all collected package information such as the name and the version.
+
+    Returns:
+        A list of tuples containing the name of the library and the version (if available).
     """
 
     if tensorpack_available():
@@ -249,9 +270,12 @@ def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Op
     """
     Detect the compute compatibility of a CUDA library.
 
-    :param cuda_home: The path to the CUDA installation
-    :param so_file: The path to the shared object file
-    :return: The compute compatibility of the CUDA library
+    Args:
+        cuda_home: The path to the CUDA installation.
+        so_file: The path to the shared object file.
+
+    Returns:
+        The compute compatibility of the CUDA library.
     """
     try:
         cuobjdump = os.path.join(cuda_home, "bin", "cuobjdump")  # type: ignore
@@ -272,10 +296,14 @@ def detect_compute_compatibility(cuda_home: Optional[PathLikeOrStr], so_file: Op
 
 # Copied from https://github.com/tensorpack/tensorpack/blob/master/tensorpack/tfutils/collect_env.py
 def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
-    """Returns a list of (key, value) pairs containing tensorflow information.
+    """
+    Returns a list of (key, value) pairs containing TensorFlow information.
 
-    :param data: A list of tuples to dump all collected package information such as the name and the version
-    :return: A list of tuples containing all the collected information
+    Args:
+        data: A list of tuples to dump all collected package information such as the name and the version.
+
+    Returns:
+        A list of tuples containing all the collected information.
     """
     if tf_available():
         import tensorflow as tf  # type: ignore # pylint: disable=E0401
@@ -329,10 +357,14 @@ def tf_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
 
 # Heavily inspired by https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/collect_env.py
 def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
-    """Returns a list of (key, value) pairs containing Pytorch information.
+    """
+    Returns a list of (key, value) pairs containing PyTorch information.
 
-    :param data: A list of tuples to dump all collected package information such as the name and the version
-    :return: A list of tuples containing all the collected information
+    Args:
+        data: A list of tuples to dump all collected package information such as the name and the version.
+
+    Returns:
+        A list of tuples containing all the collected information.
     """
 
     if pytorch_available():
@@ -437,17 +469,18 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
 
 
 def set_dl_env_vars() -> None:
-    """Set the environment variables that steer the selection of the DL framework.
-    If both PyTorch and TensorFlow are available, PyTorch will be selected by default.
-    It is possible that for testing purposes, e.g. on Colab you can find yourself with a pre-installed Tensorflow
-    version. If you want to enforce PyTorch you must set:
+    """
+    Set the environment variables that steer the selection of the DL framework.
 
-    os.environ["DD_USE_TORCH"] = "1"
-    os.environ["USE_TORCH"] = "1"      # necessary if you make use of DocTr's OCR engine
-    os.environ["DD_USE_TF"] = "0"
-    os.environ["USE_TF"] = "0"      # it's better to explcitly disable Tensorflow
+    If both PyTorch and TensorFlow are available, PyTorch will be selected by default. For testing purposes, e.g. on Colab, you may find yourself with a pre-installed TensorFlow version. If you want to enforce PyTorch, you must set:
 
-
+    Example:
+        ```python
+        os.environ["DD_USE_TORCH"] = "1"
+        os.environ["USE_TORCH"] = "1"      # necessary if you make use of DocTr's OCR engine
+        os.environ["DD_USE_TF"] = "0"
+        os.environ["USE_TF"] = "0"      # it's better to explicitly disable TensorFlow
+        ```
     """
 
     if os.environ.get("PYTORCH_AVAILABLE") and os.environ.get("DD_USE_TORCH") is None:
@@ -474,8 +507,10 @@ def set_dl_env_vars() -> None:
 
 def collect_env_info() -> str:
     """
+    Collects and returns environment information.
 
-    :return:
+    Returns:
+        A string containing the collected environment information.
     """
     data = []
     data.append(("sys.platform", sys.platform))  # check-template.yml depends on it
@@ -531,7 +566,12 @@ def collect_env_info() -> str:
 
 
 def auto_select_viz_library() -> None:
-    """Setting PIL as default image library if cv2 is not installed"""
+    """
+    Sets PIL as the default image library if OpenCV is not installed.
+
+    Note:
+        If environment variables are already set, this function will not change them.
+    """
 
     # if env variables are already set, don't change them
     if os.environ.get("USE_DD_PILLOW") or os.environ.get("USE_DD_OPENCV"):
@@ -545,7 +585,15 @@ def auto_select_viz_library() -> None:
 
 
 def auto_select_pdf_render_framework() -> None:
-    """Setting pdf2image as default pdf rendering library if pdfium is not installed"""
+    """
+    Sets `pdf2image` as the default PDF rendering library if pdfium is not installed.
+
+    Note:
+        If environment variables are already set, this function will not change them.
+
+    Raises:
+        DependencyError: If no PDF rendering library is found. Please install Poppler or pdfium.
+    """
 
     # if env variables are already set, don't change them
     if os.environ.get("USE_DD_POPPLER") or os.environ.get("USE_DD_PDFIUM"):

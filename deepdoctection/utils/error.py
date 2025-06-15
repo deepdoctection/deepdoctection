@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for custom exceptions
+Custom exceptions
 """
 
 
@@ -37,23 +37,27 @@ class UUIDError(BaseException):
 
 
 class DependencyError(BaseException):
-    """Special exception only for missing dependencies. We do not use the internals ImportError or
-    ModuleNotFoundError."""
+    """Special exception only for missing dependencies. We do not use the internals `ImportError` or
+    `ModuleNotFoundError`."""
 
 
 class DataFlowTerminatedError(BaseException):
     """
-    An exception indicating that the DataFlow is unable to produce any more
-    data, i.e. something wrong happened so that calling `__iter__`
-    cannot give a valid iterator anymore.
-    In most DataFlow this will never be raised.
+    An exception indicating that the `DataFlow` is unable to produce any more data.
+
+    This exception is raised when something wrong happens so that calling `__iter__` cannot give a valid iterator anymore.
+    In most `DataFlow` this will never be raised.
     """
 
 
 class DataFlowResetStateNotCalledError(BaseException):
     """
-    An exception indicating that `reset_state()` has not been called before starting
-    iteration.
+    An exception indicating that `reset_state()` has not been called before starting iteration.
+
+    Example:
+        ```python
+        raise DataFlowResetStateNotCalledError()
+        ```
     """
 
     def __init__(self) -> None:
@@ -62,7 +66,9 @@ class DataFlowResetStateNotCalledError(BaseException):
 
 class MalformedData(BaseException):
     """
-    Exception class for malformed data. Use this class if something does not look right with the data
+    Exception class for malformed data.
+
+    Use this class if something does not look right with the data.
     """
 
 

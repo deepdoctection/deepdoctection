@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Some useful contextmanagers for various tasks
+Contextmanagers for various tasks
 """
 
 import subprocess
@@ -40,13 +40,24 @@ __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
 @contextmanager
 def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
     """
-    Manager for time handling while some process being called
+    Manager for time handling while some process is being called.
 
-       with timeout_manager(some_process,60) as timeout:
-           ...
+    Example:
+        ```python
+        with timeout_manager(some_process, 60) as timeout:
+            ...
+        ```
 
-    :param proc: process
-    :param seconds: seconds to wait
+    Args:
+        proc: Process.
+        seconds: Seconds to wait.
+
+    Yields:
+        str: Error string from the process.
+
+    Raises:
+        RuntimeError: If the process times out.
+
 
     """
     try:
@@ -74,13 +85,20 @@ def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # ty
 @contextmanager
 def save_tmp_file(image: Union[B64Str, PixelValues, B64], prefix: str) -> Iterator[tuple[str, str]]:
     """
-    Save image temporarily and handle the clean-up once not necessary anymore
+    Save image temporarily and handle the clean-up once not necessary anymore.
 
-        with save_tmp_file(some_np_image,"tmp") as (tmp_name, input_file_name):
-            ....
+    Args:
+        image: Image as string or `np.array`.
+        prefix: Prefix of the temp file name.
 
-    :param image: image as string or numpy array
-    :param prefix: prefix of the temp file name
+    Yields:
+        Tuple containing the temporary file name and the input file name.
+
+    Example:
+        ```python
+         with save_tmp_file(some_np_image, "tmp") as (tmp_name, input_file_name):
+             ...
+        ```
     """
     try:
         with NamedTemporaryFile(prefix=prefix, delete=False) as file:
@@ -112,18 +130,21 @@ def save_tmp_file(image: Union[B64Str, PixelValues, B64], prefix: str) -> Iterat
 @contextmanager
 def timed_operation(message: str, log_start: bool = False) -> Generator[Any, None, None]:
     """
-    Contextmanager with a timer.
+    Context manager with a timer.
 
-    ... code-block:: python
-
+    Example:
+        ```python
         with timed_operation(message="Your stdout message", log_start=True):
-
             with open("log.txt", "a") as file:
-               ...
+                ...
+        ```
 
+    Args:
+        message: A log to stdout.
+        log_start: Whether to print also the beginning.
 
-    :param message: a log to stdout
-    :param log_start: whether to print also the beginning
+    Yields:
+        None
     """
 
     if log_start:
