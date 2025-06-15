@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for cell detection pipeline component
+Sub layout detection pipeline component
 """
 from __future__ import annotations
 
@@ -39,12 +39,12 @@ from .registry import pipeline_component_registry
 
 class DetectResultGenerator:
     """
-    Use:  `DetectResultGenerator` to refine raw detection results.
+    Use `DetectResultGenerator` to refine raw detection results.
 
     Certain pipeline components depend on, for example, at least one object being detected. If this is not the
-    case, the generator can generate a DetectResult with a default setting. If no object was discovered for a
-    category, a DetectResult with the dimensions of the original image is generated and added to the remaining
-    DetectResults.
+    case, the generator can generate a `DetectResult` with a default setting. If no object was discovered for a
+    category, a `DetectResult` with the dimensions of the original image is generated and added to the remaining
+    `DetectResults`.
     """
 
     def __init__(
@@ -55,11 +55,13 @@ class DetectResultGenerator:
         absolute_coords: bool = True,
     ) -> None:
         """
-        :param categories_name_as_key: The dict of all possible detection categories
-        :param group_categories: If you only want to generate only one DetectResult for a group of categories, provided
-                                 that the sum of the group is less than one, then you can pass a list of list for
-                                 grouping category ids.
-        :param absolute_coords: 'absolute_coords' value to be set in 'DetectionResult'
+        Args:
+            categories_name_as_key: The dict of all possible detection categories.
+            group_categories: If you only want to generate only one `DetectResult` for a group of categories, provided
+                that the sum of the group is less than one, then you can pass a list of list for grouping category ids.
+            exclude_category_names: List of category names to exclude from result generation.
+            absolute_coords: Value to be set in `DetectionResult` for `absolute_coords`.
+
         """
         self.categories_name_as_key = MappingProxyType(dict(categories_name_as_key.items()))
         self.width: Optional[int] = None
@@ -75,10 +77,16 @@ class DetectResultGenerator:
 
     def create_detection_result(self, detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
         """
-        Adds DetectResults for which no object was detected to the list.
+        Adds `DetectResults` for which no object was detected to the list.
 
-        :param detect_result_list: DetectResults of a previously run ObjectDetector
-        :return: refined list
+        Args:
+            detect_result_list: `DetectResults` of a previously run `ObjectDetector`.
+
+        Returns:
+            Refined list of `DetectionResult`.
+
+        Raises:
+            ValueError: If `width` and `height` are not initialized.
         """
 
         if self.width is None and self.height is None:
@@ -115,10 +123,16 @@ class DetectResultGenerator:
     @staticmethod
     def _detection_result_sanity_check(detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
         """
-        Go through each detect_result in the list and check if the box argument has sensible coordinates:
-        ulx >= 0 and lrx - ulx >= 0 (same for y coordinate). Remove the detection result if this condition is not
+        Go through each `detect_result` in the list and check if the `box` argument has sensible coordinates:
+        `ulx >= 0` and `lrx - ulx >= 0` (same for y coordinate). Remove the detection result if this condition is not
         satisfied. We need this check because if some detection results are not sane, we might end up with some
-        none existing categories.
+        non-existing categories.
+
+        Args:
+            detect_result_list: List of `DetectionResult` to check.
+
+        Returns:
+            List of `DetectionResult` with only valid boxes.
         """
         sane_detect_results = []
         for detect_result in detect_result_list:
@@ -143,19 +157,20 @@ class DetectResultGenerator:
 @pipeline_component_registry.register("SubImageLayoutService")
 class SubImageLayoutService(PipelineComponent):
     """
-    Component in which the selected ImageAnnotation can be selected with cropped images and presented to a detector.
+    Component in which the selected `ImageAnnotation` can be selected with cropped images and presented to a detector.
 
-    The detected DetectResults are transformed into ImageAnnotations and stored both in the cache of the parent image
+    The detected `DetectResults` are transformed into `ImageAnnotations` and stored both in the cache of the parent image
     and in the cache of the sub image.
 
     If no objects are discovered, artificial objects can be added by means of a refinement process.
 
-    **Example**
-
-            detect_result_generator = DetectResultGenerator(categories_items)
-            d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: LayoutType.row,
-            2: LayoutType.column})
-            item_component = SubImageLayoutService(d_items, LayoutType.table, detect_result_generator)
+    Example:
+        ```python
+        detect_result_generator = DetectResultGenerator(categories_items)
+        d_items = TPFrcnnDetector(item_config_path, item_weights_path, {1: LayoutType.row,
+        2: LayoutType.column})
+        item_component = SubImageLayoutService(d_items, LayoutType.table, detect_result_generator)
+        ```
     """
 
     def __init__(
@@ -167,18 +182,22 @@ class SubImageLayoutService(PipelineComponent):
         padder: Optional[PadTransform] = None,
     ):
         """
-        :param sub_image_detector: object detector.
-        :param sub_image_names: Category names of ImageAnnotations to be presented to the detector.
-                                Attention: The selected ImageAnnotations must have: attr:`image` and: attr:`image.image`
-                                not None.
-        :param service_ids: List of service ids to be used for filtering the ImageAnnotations. If None, all
-                            ImageAnnotations will be used.
-        :param detect_result_generator: 'DetectResultGenerator' instance. 'categories' attribute has to be the same as
-                                        the 'categories' attribute of the 'sub_image_detector'. The generator will be
-                                        responsible to create 'DetectionResult' for some categories, if they have not
-                                        been detected by 'sub_image_detector'.
-        :param padder: 'PadTransform' to pad an image before passing to a predictor. Will be also responsible for
-                        inverse coordinate transformation.
+        Args:
+            sub_image_detector: `ObjectDetector`.
+            sub_image_names: Category names of `ImageAnnotations` to be presented to the detector.
+                Attention: The selected `ImageAnnotations` must have `image` and `image.image` not None.
+            service_ids: List of service ids to be used for filtering the `ImageAnnotations`. If None, all
+                `ImageAnnotations` will be used.
+            detect_result_generator: `DetectResultGenerator` instance. `categories` attribute has to be the same as
+                the `categories` attribute of the `sub_image_detector`. The generator will be
+                responsible to create `DetectionResult` for some categories, if they have not
+                been detected by `sub_image_detector`.
+            padder: `PadTransform` to pad an image before passing to a predictor. Will be also responsible for
+                inverse coordinate transformation.
+
+        Raises:
+            ValueError: If the categories of the `detect_result_generator` do not match the categories of the
+                        `sub_image_detector`.
         """
 
         self.sub_image_name = (
@@ -203,10 +222,13 @@ class SubImageLayoutService(PipelineComponent):
 
     def serve(self, dp: Image) -> None:
         """
-        - Selection of ImageAnnotation to present to the detector.
-        - Invoke the detector
-        - Optionally invoke the DetectResultGenerator
-        - Generate ImageAnnotations and dump to parent image and sub image.
+        - Selection of `ImageAnnotation` to present to the detector.
+        - Invoke the detector.
+        - Optionally invoke the `DetectResultGenerator`.
+        - Generate `ImageAnnotations` and dump to parent image and sub image.
+
+        Args:
+            dp: `Image` to process.
         """
         sub_image_anns = dp.get_annotation(category_names=self.sub_image_name, service_ids=self.service_ids)
         for sub_image_ann in sub_image_anns:
@@ -255,13 +277,21 @@ class SubImageLayoutService(PipelineComponent):
         )
 
     def prepare_np_image(self, sub_image_ann: ImageAnnotation) -> PixelValues:
-        """Maybe crop and pad a np_array before passing it to the predictor.
+        """
+        Maybe crop and pad a `np_array` before passing it to the predictor.
 
-        Note that we currently assume to a two level hierachy of images, e.g. we can crop a sub-image from the base
-        image, e.g. the original input but we cannot crop a sub-image from an image which is itself a sub-image.
+        Note:
+            We currently assume a two level hierarchy of images, e.g. we can crop a sub-image from the base
+            image, e.g. the original input but we cannot crop a sub-image from an image which is itself a sub-image.
 
-        :param sub_image_ann: ImageAnnotation to be processed
-        :return: processed np_image
+        Args:
+            sub_image_ann: `ImageAnnotation` to be processed.
+
+        Returns:
+            Processed `np_image`.
+
+        Raises:
+            ValueError: If `sub_image_ann.image` is `None`.
         """
         if sub_image_ann.image is None:
             raise ValueError("sub_image_ann.image is None, but must be an datapoint.Image")

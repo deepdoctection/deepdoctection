@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Module with pdf processing tools
+Pdf processing tools
 """
+
 import os
 import platform
 import subprocess
@@ -57,17 +58,20 @@ __all__ = [
 
 def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
     """
-    Decrypting a pdf. As copying a pdf document removes the password that protects pdf, this method
-    generates a copy and decrypts the copy using qpdf. The result is saved as the original
-    document.
+    Decrypt a PDF file.
 
-    qpdf: <http://qpdf.sourceforge.net/>
+    As copying a PDF document removes the password that protects the PDF, this method generates a copy and decrypts the
+    copy using `qpdf`. The result is saved as the original document.
 
-    Note, that this is decryption does not work, if the pdf has a readable protection, in which case we do not
-    provide any solution.
+    Note:
+        This decryption does not work if the PDF has a readable protection, in which case no solution is provided.
+        `qpdf`: <http://qpdf.sourceforge.net/>
 
-    :param path: A path to the pdf file
-    :return: True if document has been successfully decrypted
+    Args:
+        path: A path to the PDF file.
+
+    Returns:
+        True if the document has been successfully decrypted.
     """
     if qpdf_available():
         path_base, file_name = os.path.split(path)
@@ -88,12 +92,20 @@ def decrypt_pdf_document(path: PathLikeOrStr) -> bool:
 
 def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
     """
-    Decrypting a pdf given as bytes. Under the hood, it saves the bytes to a temporary file and then calls
+    Decrypt a PDF given as bytes.
 
-    qpdf: <http://qpdf.sourceforge.net/>
+    Under the hood, it saves the bytes to a temporary file and then calls `decrypt_pdf_document`.
 
-    :param input_bytes: A bytes object representing the pdf file
-    :return: The decrypted bytes object
+    Note:
+        `qpdf`: <http://qpdf.sourceforge.net/>
+
+    Args:
+        input_bytes: A bytes object representing the PDF file.
+
+    Returns:
+        The decrypted bytes object.
+
+
     """
     with save_tmp_file(input_bytes, "pdf_") as (_, input_file_name):
         is_decrypted = decrypt_pdf_document(input_file_name)
@@ -107,11 +119,16 @@ def decrypt_pdf_document_from_bytes(input_bytes: bytes) -> bytes:
 
 def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader:
     """
-    Creates a file reader object from a pdf document. Will try to decrypt the document if it is
-    encrypted. (See `decrypt_pdf_document` to understand what is meant with "decrypt").
+    Create a file reader object from a PDF document.
 
-    :param path_or_bytes: A path to a pdf document
-    :return: A file reader object from which you can iterate through the document.
+    Will try to decrypt the document if it is encrypted. (See `decrypt_pdf_document` to understand what is meant with
+    "decrypt").
+
+    Args:
+        path_or_bytes: A path to a PDF document or bytes.
+
+    Returns:
+        A file reader object from which you can iterate through the document.
     """
 
     if isinstance(path_or_bytes, bytes):
@@ -153,39 +170,47 @@ def get_pdf_file_reader(path_or_bytes: Union[PathLikeOrStr, bytes]) -> PdfReader
 
 def get_pdf_file_writer() -> PdfWriter:
     """
-    `PdfWriter` instance
+    `PdfWriter` instance.
+
+    Returns:
+        A new `PdfWriter` instance.
     """
     return PdfWriter()
 
 
 class PDFStreamer:
     """
-    A class for streaming pdf documents as bytes objects. Build as a generator, it is possible to load the document
-    iteratively into memory. Uses py2pdf FileReader and FileWriter.
+    A class for streaming PDF documents as bytes objects.
 
-    **Example:**
+    Built as a generator, it is possible to load the document iteratively into memory. Uses `pypdf` `PdfReader` and
+    `PdfWriter`.
 
-             # Building a Dataflow with a PDFStreamer
-             df = dataflow.DataFromIterable(PDFStreamer(path=path))
-             df.reset_state()
+    Example:
+        ```python
+        df = dataflow.DataFromIterable(PDFStreamer(path=path))
+        df.reset_state()
+        for page in df:
+            ...
+        streamer = PDFStreamer(path=path)
+        pages = len(streamer)
+        random_int = random.sample(range(0, pages), 2)
+        for ran in random_int:
+            pdf_bytes = streamer[ran]
+        streamer.close()
+        ```
 
-             for page in df:
-                ... # do whatever you like
-
-             # Something else you can do:
-            streamer = PDFStreamer(path=path)
-            pages = len(streamer)  # get the number of pages
-            random_int = random.sample(range(0, pages), 2) # select some pages
-            for ran in random_int:
-                pdf_bytes = streamer[ran]   # get the page bytes directly
-
-            streamer.close() # Do not forget to close the streamer, otherwise the file will never be closed and might
-                             # cause memory leaks if you open many files.
+    Note:
+        Do not forget to close the streamer, otherwise the file will never be closed and might cause memory leaks if
+        you open many files.
     """
 
     def __init__(self, path_or_bytes: Union[PathLikeOrStr, bytes]) -> None:
         """
-        :param path_or_bytes: to a pdf.
+        Args:
+            path_or_bytes: Path to a PDF.
+
+        Returns:
+            None.
         """
         self.file_reader = get_pdf_file_reader(path_or_bytes)
         self.file_writer = PdfWriter()
@@ -256,10 +281,15 @@ def _input_to_cli_str(
 
 class PopplerError(RuntimeError):
     """
-    Poppler Error
+    Poppler Error.
     """
 
     def __init__(self, status: int, message: str) -> None:
+        """
+        Args:
+            status: Error status code.
+            message: Error message.
+        """
         super().__init__()
         self.status = status
         self.message = message
@@ -283,13 +313,20 @@ def pdf_to_np_array_poppler(
     pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None
 ) -> PixelValues:
     """
-    Convert a single pdf page from its byte representation to a numpy array. This function will save the pdf as to a tmp
-    file and then call poppler via `pdftoppm` resp. `pdftocairo` if the former is not available.
+    Convert a single PDF page from its byte representation to a numpy array using Poppler.
 
-    :param pdf_bytes: Bytes representing the PDF file
-    :param size: Size of the resulting image(s), uses (width, height) standard
-    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
-    :return: numpy array
+    This function will save the PDF as a temporary file and then call Poppler via `pdftoppm` or `pdftocairo`.
+
+    Raises:
+        ValueError: If neither `dpi` nor `size` is provided.
+
+    Args:
+        pdf_bytes: Bytes representing the PDF file.
+        size: Size of the resulting image(s), as (width, height).
+        dpi: Image quality in DPI/dots-per-inch.
+
+    Returns:
+        `np.array`.
     """
     if dpi is None and size is None:
         raise ValueError("Either dpi or size must be provided.")
@@ -302,11 +339,17 @@ def pdf_to_np_array_poppler(
 
 def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
     """
-    Convert a single pdf page from its byte representation to a numpy array using pdfium.
+    Convert a single PDF page from its byte representation to a numpy array using pdfium.
 
-    :param pdf_bytes: Bytes representing the PDF file
-    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
-    :return: numpy array
+    Args:
+        pdf_bytes: Bytes representing the PDF file.
+        dpi: Image quality in DPI/dots-per-inch.
+
+    Returns:
+        `np.array`.
+
+    Raises:
+        ValueError: If `dpi` is not provided.
     """
     if dpi is None:
         raise ValueError("dpi must be provided.")
@@ -316,13 +359,21 @@ def pdf_to_np_array_pdfmium(pdf_bytes: bytes, dpi: Optional[int] = None) -> Pixe
 
 def pdf_to_np_array(pdf_bytes: bytes, size: Optional[tuple[int, int]] = None, dpi: Optional[int] = None) -> PixelValues:
     """
-    Convert a single pdf page from its byte representation to a numpy array. This function will either use Poppler or
-    pdfium to render the pdf.
+    Convert a single PDF page from its byte representation to a `np.array`.
 
-    :param pdf_bytes: Bytes representing the PDF file
-    :param size: Size of the resulting image(s), uses (width, height) standard
-    :param dpi:  Image quality in DPI/dots-per-inch (default 200)
-    :return: numpy array
+    This function will either use Poppler or pdfium to render the PDF.
+
+    Args:
+        pdf_bytes: Bytes representing the PDF file.
+        size: Size of the resulting image(s), as (width, height).
+        dpi: Image quality in DPI/dots-per-inch.
+
+    Returns:
+        `np.array`.
+
+    Note:
+        If `USE_DD_PDFIUM` is set, `pdf_to_np_array_pdfmium` does not support the `size` parameter and will use
+        `dpi` instead.
     """
     if os.environ.get("USE_DD_PDFIUM", "False") in ENV_VARS_TRUE:
         if size is not None:
@@ -339,12 +390,18 @@ def split_pdf(
     pdf_path: PathLikeOrStr, output_dir: PathLikeOrStr, file_type: Literal["image", "pdf"], dpi: int = 200
 ) -> None:
     """
-    Split a pdf into single pages. The pages are saved as single pdf/png files in a subfolder of the output directory.
+    Split a PDF into single pages.
 
-    :param pdf_path: Path to the pdf file
-    :param output_dir: Path to the output directory
-    :param file_type: Type of the output file. Either "image" or "pdf"
-    :param dpi: Image quality in DPI/dots-per-inch (default
+    The pages are saved as single PDF or PNG files in a subfolder of the output directory.
+
+    Args:
+        pdf_path: Path to the PDF file.
+        output_dir: Path to the output directory.
+        file_type: Type of the output file. Either "image" or "pdf".
+        dpi: Image quality in DPI/dots-per-inch.
+
+    Returns:
+        None.
     """
     pdf_path = Path(pdf_path)
     filename = pdf_path.stem

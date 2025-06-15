@@ -8,8 +8,9 @@
 
 In this overview, we aim to take a closer look at the configuration and show how components can be activated and models 
 can be exchanged. The configuration options are extensive, and changes in some areas often require adjustments in others. 
-It is not possible to cover all configuration options in this context. For further details, we refer to the comments 
-in the source code.
+It is not possible to cover all configuration options in this context. 
+
+For further details, we refer to the [Config reference](../modules/deepdoctection.analyzer.md).
 
 ## How to change configuration
 
@@ -536,7 +537,4 @@ The `TextOrderService` can be configured using four key parameters:
     If set to `True`, orphan words are grouped into `line`s and included in the output, ensuring no text is lost. This 
     setting is often crucial and may need to be adjusted depending on your use case. We already covered this topic in 
     the [**More_on_parsing notebook**](Analyzer_More_On_Parsing.md)
-
-    For further details on layout parsing and text ordering, please refer to this [**section**]
-    (layout_parsing_structure.md).
 

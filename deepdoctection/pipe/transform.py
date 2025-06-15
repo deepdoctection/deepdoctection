@@ -16,8 +16,7 @@
 # limitations under the License.
 
 """
-Module for transform style pipeline components. These pipeline components are used for various transforming operations
-on images (e.g. deskew, de-noising or more general GAN like operations.
+Transform style pipeline components.
 """
 
 from __future__ import annotations
@@ -32,9 +31,10 @@ from .registry import pipeline_component_registry
 @pipeline_component_registry.register("SimpleTransformService")
 class SimpleTransformService(PipelineComponent):
     """
-    Pipeline component for transforming an image. The service is designed for applying transform predictors that
-    take an image as numpy array as input and return the same. The service itself will change the underlying metadata
-    like height and width of the returned transform.
+    Pipeline component for transforming an image.
+
+    The service is designed for applying transform predictors that take an image as numpy array as input and return
+    the same. The service itself will change the underlying metadata like height and width of the returned transform.
 
     This component is meant to be used at the very first stage of a pipeline. If components have already returned image
     annotations then this component will currently not re-calculate bounding boxes in terms of the transformed image.
@@ -43,8 +43,10 @@ class SimpleTransformService(PipelineComponent):
 
     def __init__(self, transform_predictor: ImageTransformer):
         """
+        Initializes a `SimpleTransformService`.
 
-        :param transform_predictor: image transformer
+        Args:
+            transform_predictor: Image transformer.
         """
         self.transform_predictor = transform_predictor
         super().__init__(self._get_name(transform_predictor.name), self.transform_predictor.model_id)

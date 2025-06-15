@@ -5,7 +5,7 @@
 
 Documents are everywhere: in business, administration, and private life. They are a foundational medium for storing and 
 communicating information. Well-crafted documents combine content, structure, and visual layout to guide the reader 
-#and highlight the most important data.
+and highlight the most important data.
 
 Machines, however, do not benefit from these human-centric features. Extracting structured information from documents 
 is inherently difficult due to diverse layouts, complex tables, figures, and handwritten or visually embedded 

@@ -2,7 +2,6 @@
 ::: deepdoctection.dataflow
     options:
         show_submodules: True
-        docstring_style: google
         filters:
             - "!DataFlowTerminated"
             - "!DataFlowResetStateNotCalled"
