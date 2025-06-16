@@ -64,7 +64,7 @@ _DEPS = [
     "scipy>=1.13.1",
     "termcolor>=1.1",
     "tabulate>=0.7.7",
-    "tqdm==4.64.0",
+    "tqdm>=4.64.0",
     # type-stubs
     "types-PyYAML>=6.0.12.12",
     "types-termcolor>=1.1.3",
