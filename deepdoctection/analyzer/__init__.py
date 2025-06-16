@@ -19,6 +19,6 @@
 # Configs, Factory functions and Pre-built pipelines
 """
 
+from .config import *
 from .dd import *
 from .factory import *
-from .config import *

@@ -94,7 +94,7 @@ class BaseTransform(ABC):
         The transformation that should be applied to the image.
 
         Raises:
-            NotImplementedError
+            NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -108,7 +108,7 @@ class BaseTransform(ABC):
         ```
 
         Raises:
-            NotImplementedError
+            NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -123,7 +123,7 @@ class BaseTransform(ABC):
         ```
 
         Raises:
-            NotImplementedError
+            NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -154,14 +154,14 @@ class ResizeTransform(BaseTransform):
         interp: str,
     ):
         """
-    Args:
-        h: Height.
-        w: Width.
-        new_h: Target height.
-        new_w: Target width.
-        interp: Interpolation method, that depends on the image processing library. Currently, it supports
-            `NEAREST`, `BOX`, `BILINEAR`, `BICUBIC` and `VIZ` for PIL or `INTER_NEAREST`, `INTER_LINEAR`,
-            `INTER_AREA` or `VIZ` for OpenCV.
+        Args:
+            h: Height.
+            w: Width.
+            new_h: Target height.
+            new_w: Target width.
+            interp: Interpolation method, that depends on the image processing library. Currently, it supports
+                `NEAREST`, `BOX`, `BILINEAR`, `BICUBIC` and `VIZ` for PIL or `INTER_NEAREST`, `INTER_LINEAR`,
+                `INTER_AREA` or `VIZ` for OpenCV.
         """
         self.h = h
         self.w = w

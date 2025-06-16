@@ -486,115 +486,176 @@ class Annotations:
         BoundingBox(absolute_coords=True, ulx=230.0, uly=70.0, width=8.0, height=5.0),
     ]  # global coordinates calculated depending on table annotation from fixture image_annotations
 
-    annotation_maps = {'51fca38d-b181-3ea2-9c97-7e265febcc86': [
-        AnnotationMap(image_annotation_id='51fca38d-b181-3ea2-9c97-7e265febcc86',
-                       sub_category_key=None,
-                       relationship_key=None,
-                       summary_key=None)],
-                       'e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad': [
-        AnnotationMap(image_annotation_id='51fca38d-b181-3ea2-9c97-7e265febcc86',
-                      sub_category_key=None,
-                      relationship_key= Relationships.CHILD,
-                      summary_key = None),
-        AnnotationMap(
-                      image_annotation_id='e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad',
-            sub_category_key=None,
-            relationship_key=None,
-            summary_key=None)],
-                       '44ef758d-92f5-3f57-b6a3-aa95b9606f70': [
-        AnnotationMap(image_annotation_id='51fca38d-b181-3ea2-9c97-7e265febcc86',
-                      sub_category_key=None,
-                      relationship_key= Relationships.CHILD,
-                      summary_key = None),
-                           AnnotationMap(
-        image_annotation_id='44ef758d-92f5-3f57-b6a3-aa95b9606f70',
-        sub_category_key=None,
-        relationship_key=None,
-        summary_key=None)],
-        'a94ba1d6-c5de-31c0-aa83-90673ad89f21': [
-        AnnotationMap(image_annotation_id='a94ba1d6-c5de-31c0-aa83-90673ad89f21',
-                      sub_category_key=None,
-                      relationship_key=None,
-                      summary_key=None)],
-        '1413d499-ce19-3a50-861c-7d8c5a7ba772': [
-        AnnotationMap(image_annotation_id='a94ba1d6-c5de-31c0-aa83-90673ad89f21',
-                      sub_category_key=None,
-                      relationship_key= Relationships.CHILD,
-                      summary_key = None),
+    annotation_maps = {
+        "51fca38d-b181-3ea2-9c97-7e265febcc86": [
             AnnotationMap(
-        image_annotation_id='1413d499-ce19-3a50-861c-7d8c5a7ba772',
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
                 sub_category_key=None,
                 relationship_key=None,
-        summary_key=None)],
-        'fd78767a-227d-3c17-83cb-586d24cb0c55': [
-        AnnotationMap(image_annotation_id='a94ba1d6-c5de-31c0-aa83-90673ad89f21',
-                      sub_category_key=None,
-                      relationship_key= Relationships.CHILD,
-                      summary_key = None),
+                summary_key=None,
+            )
+        ],
+        "e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad": [
             AnnotationMap(
-        image_annotation_id='fd78767a-227d-3c17-83cb-586d24cb0c55',
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
+                sub_category_key=None,
+                relationship_key=Relationships.CHILD,
+                summary_key=None,
+            ),
+            AnnotationMap(
+                image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
                 sub_category_key=None,
                 relationship_key=None,
-        summary_key=None)],
-        '113abb4b-aeef-332f-81fc-03ee9fcd780e': [
-        AnnotationMap(image_annotation_id='e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad',
-                      sub_category_key= WordType.CHARACTERS,
-        relationship_key = None,
-                      summary_key = None)],
-        'adac369e-796b-3663-b1bb-5aeb6d2961c6': [
-        AnnotationMap(image_annotation_id='e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad',
-                      sub_category_key= WordType.BLOCK,
-        relationship_key = None,
-                      summary_key = None)],
-        '7d13bac0-4aa3-398d-a182-254b60688f6b': [
-        AnnotationMap(image_annotation_id='e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad',
-                      sub_category_key= LayoutType.LINE,
-        relationship_key = None,
-                      summary_key = None)],
-        '9ab24d38-0948-3073-b5eb-066fdff3d014': [
-        AnnotationMap(image_annotation_id='44ef758d-92f5-3f57-b6a3-aa95b9606f70',
-                      sub_category_key= WordType.CHARACTERS,
-        relationship_key = None,
-                      summary_key = None)],
-        '8ff71a19-9f47-3549-a167-a7c5405f6a3c': [
-        AnnotationMap(image_annotation_id='44ef758d-92f5-3f57-b6a3-aa95b9606f70',
-                      sub_category_key= WordType.BLOCK,
-        relationship_key = None,
-                      summary_key = None)],
-        '96013c59-5d47-3a63-a7af-48e7bcc70c7e': [
-        AnnotationMap(image_annotation_id='44ef758d-92f5-3f57-b6a3-aa95b9606f70',
-                      sub_category_key= LayoutType.LINE,
-        relationship_key = None, summary_key = None)],
-        'a05595c9-abbf-3d2c-99ec-9ef18e8a3019': [
-        AnnotationMap(image_annotation_id='1413d499-ce19-3a50-861c-7d8c5a7ba772',
-                      sub_category_key= WordType.CHARACTERS,
-        relationship_key = None,
-                      summary_key = None)],
-        'fc2c6a35-0d4b-327a-8f81-593e4ebb0e2d': [
-        AnnotationMap(image_annotation_id='1413d499-ce19-3a50-861c-7d8c5a7ba772',
-                      sub_category_key= WordType.BLOCK,
-        relationship_key = None,
-                      summary_key = None)],
-        '0a51facd-ad6a-38ef-b7c6-6515ce4271fd': [
-        AnnotationMap(image_annotation_id='1413d499-ce19-3a50-861c-7d8c5a7ba772',
-                      sub_category_key= LayoutType.LINE,
-        relationship_key = None,
-                      summary_key = None)],
-        '273d86b3-8f63-3d39-abc9-5b9d928c3448': [
-        AnnotationMap(image_annotation_id='fd78767a-227d-3c17-83cb-586d24cb0c55',
-                      sub_category_key= WordType.CHARACTERS,
-        relationship_key = None,
-                      summary_key = None)],
-        '6ea53f7c-205d-38bc-8c21-76393352c34b': [
-        AnnotationMap(image_annotation_id='fd78767a-227d-3c17-83cb-586d24cb0c55',
-                      sub_category_key= WordType.BLOCK,
-        relationship_key = None,
-                      summary_key = None)],
-        '64728855-70aa-3af3-958a-ca34560dc51f': [
-        AnnotationMap(image_annotation_id='fd78767a-227d-3c17-83cb-586d24cb0c55',
-                      sub_category_key= LayoutType.LINE,
-        relationship_key = None,
-                      summary_key = None)]}
+                summary_key=None,
+            ),
+        ],
+        "44ef758d-92f5-3f57-b6a3-aa95b9606f70": [
+            AnnotationMap(
+                image_annotation_id="51fca38d-b181-3ea2-9c97-7e265febcc86",
+                sub_category_key=None,
+                relationship_key=Relationships.CHILD,
+                summary_key=None,
+            ),
+            AnnotationMap(
+                image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+                sub_category_key=None,
+                relationship_key=None,
+                summary_key=None,
+            ),
+        ],
+        "a94ba1d6-c5de-31c0-aa83-90673ad89f21": [
+            AnnotationMap(
+                image_annotation_id="a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+                sub_category_key=None,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "1413d499-ce19-3a50-861c-7d8c5a7ba772": [
+            AnnotationMap(
+                image_annotation_id="a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+                sub_category_key=None,
+                relationship_key=Relationships.CHILD,
+                summary_key=None,
+            ),
+            AnnotationMap(
+                image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
+                sub_category_key=None,
+                relationship_key=None,
+                summary_key=None,
+            ),
+        ],
+        "fd78767a-227d-3c17-83cb-586d24cb0c55": [
+            AnnotationMap(
+                image_annotation_id="a94ba1d6-c5de-31c0-aa83-90673ad89f21",
+                sub_category_key=None,
+                relationship_key=Relationships.CHILD,
+                summary_key=None,
+            ),
+            AnnotationMap(
+                image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
+                sub_category_key=None,
+                relationship_key=None,
+                summary_key=None,
+            ),
+        ],
+        "113abb4b-aeef-332f-81fc-03ee9fcd780e": [
+            AnnotationMap(
+                image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+                sub_category_key=WordType.CHARACTERS,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "adac369e-796b-3663-b1bb-5aeb6d2961c6": [
+            AnnotationMap(
+                image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+                sub_category_key=WordType.BLOCK,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "7d13bac0-4aa3-398d-a182-254b60688f6b": [
+            AnnotationMap(
+                image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
+                sub_category_key=LayoutType.LINE,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "9ab24d38-0948-3073-b5eb-066fdff3d014": [
+            AnnotationMap(
+                image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+                sub_category_key=WordType.CHARACTERS,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "8ff71a19-9f47-3549-a167-a7c5405f6a3c": [
+            AnnotationMap(
+                image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+                sub_category_key=WordType.BLOCK,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "96013c59-5d47-3a63-a7af-48e7bcc70c7e": [
+            AnnotationMap(
+                image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
+                sub_category_key=LayoutType.LINE,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "a05595c9-abbf-3d2c-99ec-9ef18e8a3019": [
+            AnnotationMap(
+                image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
+                sub_category_key=WordType.CHARACTERS,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "fc2c6a35-0d4b-327a-8f81-593e4ebb0e2d": [
+            AnnotationMap(
+                image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
+                sub_category_key=WordType.BLOCK,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "0a51facd-ad6a-38ef-b7c6-6515ce4271fd": [
+            AnnotationMap(
+                image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
+                sub_category_key=LayoutType.LINE,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "273d86b3-8f63-3d39-abc9-5b9d928c3448": [
+            AnnotationMap(
+                image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
+                sub_category_key=WordType.CHARACTERS,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "6ea53f7c-205d-38bc-8c21-76393352c34b": [
+            AnnotationMap(
+                image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
+                sub_category_key=WordType.BLOCK,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+        "64728855-70aa-3af3-958a-ca34560dc51f": [
+            AnnotationMap(
+                image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
+                sub_category_key=LayoutType.LINE,
+                relationship_key=None,
+                summary_key=None,
+            )
+        ],
+    }
 
     service_id_to_ann_id = {
         "test_service": ["51fca38d-b181-3ea2-9c97-7e265febcc86", "a94ba1d6-c5de-31c0-aa83-90673ad89f21"],

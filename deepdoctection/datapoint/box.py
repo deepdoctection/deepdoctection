@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## BoundingBox class and methods for bounding box operations
+`BoundingBox` class and methods for manipulating bounding boxes.
 """
 
 from __future__ import annotations
@@ -157,7 +157,7 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return np_iou(boxes1, boxes2)
 
 
-RELATIVE_COORD_SCALE_FACTOR = 10 ** 8
+RELATIVE_COORD_SCALE_FACTOR = 10**8
 
 
 @dataclass
@@ -522,8 +522,10 @@ class BoundingBox:
         return self
 
     def __str__(self) -> str:
-        return (f"Bounding Box(absolute_coords: {self.absolute_coords},"
-                f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry})")
+        return (
+            f"Bounding Box(absolute_coords: {self.absolute_coords},"
+            f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry})"
+        )
 
     def __repr__(self) -> str:
         return (

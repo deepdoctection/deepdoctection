@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-## **deep**doctection analyzer.
 
-- factory build_analyzer for a given config
+"""
+- factory `build_analyzer` for a given config
 - user factory with a reduced config setting
 """
 

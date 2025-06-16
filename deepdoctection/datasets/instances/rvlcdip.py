@@ -126,12 +126,13 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images.
 
         Args:
-            split: Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
-            max_datapoints: Will stop iterating after max_datapoints. Default: `None`
-            load_image: Will load the image for each datapoint. Default: `False`
+            kwargs:
+                split (str): Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                max_datapoints (int): Will stop iterating after max_datapoints. Default: `None`
+                load_image (bool): Will load the image for each datapoint. Default: `False`
 
         Returns:
-            dataflow
+            Dataflow
         """
 
         split = str(kwargs.get("split", "val"))

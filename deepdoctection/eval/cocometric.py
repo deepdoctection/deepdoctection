@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Metrics that require the COCOeval class.
+Metrics that require the `COCOeval` class.
 """
 from __future__ import annotations
 

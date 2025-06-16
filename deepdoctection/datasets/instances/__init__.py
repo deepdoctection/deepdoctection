@@ -16,9 +16,9 @@
 # limitations under the License.
 
 """
-## Dataset instances.
+Dataset samples for pre-training and fine-tuning models
 
-Place all datasets in a deepdoctection's cache
+Place all datasets in a **deep**doctection's cache
 
     deepdoctection
     ├── datasets

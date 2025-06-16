@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Datasets concept: Building training and evaluation datasets
+# Dataset concept: Building, training and evaluating datasets
 
 Simple framework inspired by <https://huggingface.co/docs/datasets/> for creating datasets.
 

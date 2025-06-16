@@ -73,7 +73,6 @@ def get_sequence_class_result(  # type: ignore
     return DatapointXfund().get_sequence_class_results()
 
 
-
 class TestHFLayoutLmTokenClassifier:
     """
     Test HFLayoutLmTokenClassifier

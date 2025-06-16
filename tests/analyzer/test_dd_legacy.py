@@ -26,6 +26,7 @@ from deepdoctection.datapoint import Page
 
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
+
 @mark.pt_legacy
 def test_legacy_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     """
@@ -157,8 +158,9 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=
-            ["USE_TABLE_SEGMENTATION=True",
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
+            "USE_TABLE_SEGMENTATION=True",
             "USE_OCR=True",
             "PT.LAYOUT.WEIGHTS=layout/d2_model_0829999_layout_inf_only.pt",
             "PT.ITEM.WEIGHTS=item/d2_model_1639999_item_inf_only.pt",
@@ -185,7 +187,9 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
             "LAYOUT_NMS_PAIRS.COMBINATIONS=None",
             "LAYOUT_NMS_PAIRS.THRESHOLDS=None",
             "LAYOUT_NMS_PAIRS.PRIORITY=None",
-            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt"])
+            "OCR.WEIGHTS.DOCTR_RECOGNITION.PT=doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -208,7 +212,6 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
     assert len(text_["words"]) in {555, 631}
     assert len(text_["ann_ids"]) in {555, 631}
-
 
 
 @mark.deprecated
@@ -275,9 +278,6 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_and_tables_correctly() -
     }
     assert page.height == 2339
     assert page.width == 1654
-
-
-
 
 
 @mark.deprecated

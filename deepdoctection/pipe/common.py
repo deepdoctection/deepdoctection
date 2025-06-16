@@ -400,8 +400,9 @@ class PageParsingService(PipelineComponent):
         self.floating_text_block_categories = tuple(
             (get_type(text_block) for text_block in floating_text_block_categories)
         )
-        self.residual_text_block_categories = tuple(get_type(text_block) for text_block in
-                                                    residual_text_block_categories)
+        self.residual_text_block_categories = tuple(
+            get_type(text_block) for text_block in residual_text_block_categories
+        )
         self.include_residual_text_container = include_residual_text_container
         self._init_sanity_checks()
         super().__init__(self.name)

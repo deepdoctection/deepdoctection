@@ -37,7 +37,7 @@ from ..utils.fs import (
     maybe_copy_config_to_cache,
 )
 from ..utils.logger import LoggingRecord, log_once, logger
-from ..utils.settings import  ObjectTypes, get_type
+from ..utils.settings import ObjectTypes, get_type
 from ..utils.types import PathLikeOrStr
 
 __all__ = ["ModelCatalog", "ModelDownloadManager", "print_model_infos", "ModelProfile"]

@@ -43,11 +43,7 @@ from .base import DataFlow
 from .common import FlattenData, JoinData, MapData
 from .custom import CacheData, CustomDataFromIterable, CustomDataFromList
 
-__all__ = ["SerializerJsonlines",
-           "SerializerFiles",
-           "SerializerCoco",
-           "SerializerPdfDoc",
-           "SerializerTabsepFiles"]
+__all__ = ["SerializerJsonlines", "SerializerFiles", "SerializerCoco", "SerializerPdfDoc", "SerializerTabsepFiles"]
 
 
 def _reset_df_and_get_length(df: DataFlow) -> int:
@@ -93,7 +89,7 @@ class FileClosingIterator:
         """
         Returns the iterator object itself.
 
-        Args:
+        Returns:
             FileClosingIterator: The instance of the class itself.
         """
         return self
@@ -190,7 +186,7 @@ class SerializerTabsepFiles:
     """
 
     @staticmethod
-    def load(path: PathLikeOrStr, max_datapoins: Optional[int] = None) -> CustomDataFromList:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> CustomDataFromList:
         """
         Args:
             path: a path to a .txt file.
@@ -202,7 +198,7 @@ class SerializerTabsepFiles:
 
         with open(path, "r", encoding="UTF-8") as file:
             file_list = file.readlines()
-        return CustomDataFromList(file_list, max_datapoints=max_datapoins)
+        return CustomDataFromList(file_list, max_datapoints=max_datapoints)
 
     @staticmethod
     def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:

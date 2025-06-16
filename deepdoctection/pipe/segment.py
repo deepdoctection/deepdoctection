@@ -914,14 +914,26 @@ class TableSegmentationService(PipelineComponent):
 
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
-                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
-                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
-                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells if
-                                   CellType.ROW_NUMBER in cell.sub_categories)
-                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells if
-                                   CellType.ROW_NUMBER in cell.sub_categories)
+                number_of_rows = max(
+                    cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                number_of_cols = max(
+                    cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                max_row_span = max(
+                    cell.get_sub_category(CellType.ROW_SPAN).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                max_col_span = max(
+                    cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
                 # TODO: the summaries should be sub categories of the underlying ann
                 self.dp_manager.set_summary_annotation(
                     TableType.NUMBER_OF_ROWS,
@@ -1031,28 +1043,28 @@ class PubtablesSegmentationService(PipelineComponent):
         stretch_rule: Literal["left", "equal"] = "left",
     ) -> None:
         """
-    Args:
-        segment_rule: Rule to assign spanning cells to row, columns resp. must be either `iou` or `ioa`.
-        threshold_rows: `iou`/`ioa` threshold for rows.
-        threshold_cols: `iou`/`ioa` threshold for columns.
-        tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of the
-                               adjacent row. Will do a similar shifting with columns.
-        remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
-        remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
-        table_name: Layout type table.
-        cell_names: Layout type of cells.
-        spanning_cell_names: Layout type of spanning cells.
-        item_names: Layout type of items (e.g. row and column).
-        sub_item_names: Layout type of sub items (e.g. row number and column number).
-        item_header_cell_names: Layout type of item header cells (e.g. `CellType.COLUMN_HEADER`, `CellType.ROW_HEADER`).
-                                Note that column header, resp. row header will be first assigned to rows, resp. columns
-                                and then transferred to cells.
-        item_header_thresholds: `iou`/`ioa` threshold for matching header cells with items. The first threshold
-                                corresponds to matching the first entry of `item_names`.
-        cell_to_image: If set to `True` it will create an `Image` for `LayoutType.cell`.
-        crop_cell_image: If set to `True` it will crop a numpy array image for `LayoutType.cell`. Requires
-                        `cell_to_image=True`.
-        stretch_rule: Check the description in `tile_tables_with_items_per_table`.
+        Args:
+            segment_rule: Rule to assign spanning cells to row, columns resp. must be either `iou` or `ioa`.
+            threshold_rows: `iou`/`ioa` threshold for rows.
+            threshold_cols: `iou`/`ioa` threshold for columns.
+            tile_table_with_items: Will shift the left edge of rows vertically to coincide with the right edge of the
+                                   adjacent row. Will do a similar shifting with columns.
+            remove_iou_threshold_rows: `iou` threshold for removing overlapping rows.
+            remove_iou_threshold_cols: `iou` threshold for removing overlapping columns.
+            table_name: Layout type table.
+            cell_names: Layout type of cells.
+            spanning_cell_names: Layout type of spanning cells.
+            item_names: Layout type of items (e.g. row and column).
+            sub_item_names: Layout type of sub items (e.g. row number and column number).
+            item_header_cell_names: Layout type of item header cells (e.g. `CellType.COLUMN_HEADER`, `CellType.ROW_HEADER`).
+                                    Note that column header, resp. row header will be first assigned to rows, resp. columns
+                                    and then transferred to cells.
+            item_header_thresholds: `iou`/`ioa` threshold for matching header cells with items. The first threshold
+                                    corresponds to matching the first entry of `item_names`.
+            cell_to_image: If set to `True` it will create an `Image` for `LayoutType.cell`.
+            crop_cell_image: If set to `True` it will crop a numpy array image for `LayoutType.cell`. Requires
+                            `cell_to_image=True`.
+            stretch_rule: Check the description in `tile_tables_with_items_per_table`.
         """
         self.segment_rule = segment_rule
         self.threshold_rows = threshold_rows
@@ -1208,14 +1220,26 @@ class PubtablesSegmentationService(PipelineComponent):
             if table.image:
                 cells = table.image.get_annotation(category_names=self.cell_names)
             if cells:
-                number_of_rows = max(cell.get_sub_category(CellType.ROW_NUMBER).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
-                number_of_cols = max(cell.get_sub_category(CellType.COLUMN_NUMBER).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
-                max_row_span = max(cell.get_sub_category(CellType.ROW_SPAN).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
-                max_col_span = max(cell.get_sub_category(CellType.COLUMN_SPAN).category_id for cell in cells if
-                                     CellType.ROW_NUMBER in cell.sub_categories)
+                number_of_rows = max(
+                    cell.get_sub_category(CellType.ROW_NUMBER).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                number_of_cols = max(
+                    cell.get_sub_category(CellType.COLUMN_NUMBER).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                max_row_span = max(
+                    cell.get_sub_category(CellType.ROW_SPAN).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
+                max_col_span = max(
+                    cell.get_sub_category(CellType.COLUMN_SPAN).category_id
+                    for cell in cells
+                    if CellType.ROW_NUMBER in cell.sub_categories
+                )
             else:
                 number_of_rows = 0
                 number_of_cols = 0

@@ -38,7 +38,7 @@ __all__ = ["timeout_manager", "save_tmp_file", "timed_operation"]
 
 
 @contextmanager
-def timeout_manager(proc, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
+def timeout_manager(proc: Any, seconds: Optional[int] = None) -> Iterator[str]:  # type: ignore
     """
     Manager for time handling while some process is being called.
 

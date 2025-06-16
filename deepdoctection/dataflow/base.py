@@ -87,7 +87,7 @@ class DataFlow:
             int: rough size of this dataflow.
 
         Raises:
-            `NotImplementedError` if this DataFlow doesn't have a size.
+            NotImplementedError: if this DataFlow doesn't have a size.
         """
         raise NotImplementedError
 

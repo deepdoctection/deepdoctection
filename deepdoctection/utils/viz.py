@@ -689,7 +689,6 @@ class VizPackageHandler:
         font_scale: float,
         rectangle_thickness: int,
     ) -> PixelValues:
-
         np_image = np_image.astype(np.uint8)
         x_0, y_0 = int(pos[0]), int(pos[1])
         # Compute text size.

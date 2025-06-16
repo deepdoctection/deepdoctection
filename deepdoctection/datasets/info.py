@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## General meta data or categories
+General meta-data or categories
 """
 
 from copy import copy
@@ -27,9 +27,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence, Union, no_type_che
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.utils import call_only_once
 
-__all__ = ["DatasetInfo",
-           "DatasetCategories",
-           "get_merged_categories"]
+__all__ = ["DatasetInfo", "DatasetCategories", "get_merged_categories"]
 
 
 @overload

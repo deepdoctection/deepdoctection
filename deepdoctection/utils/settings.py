@@ -337,7 +337,8 @@ def token_class_tag_to_token_class_with_tag(token: ObjectTypes, tag: ObjectTypes
         token: TokenClasses member.
         tag: BioTag member.
 
-    Returns: TokenClassWithTag member.
+    Returns:
+        TokenClassWithTag member.
 
     Raises:
         TypeError: If token is not of type TokenClasses or tag is not of type BioTag.

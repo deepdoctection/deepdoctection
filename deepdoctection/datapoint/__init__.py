@@ -24,9 +24,7 @@ simplifications:
 
 - Data of the training environment can be transported in the production environment (i.e. through pipelines)
   without further adjustments.
-
 - Datasets of different origins can be merged quickly, so that training data with greater variability arise.
-
 - Pipeline environment components can be executed one after the other without conversion measures.
 
 The disadvantage of carrying out any redundant transformations and thus experiencing a loss of performance is accepted.

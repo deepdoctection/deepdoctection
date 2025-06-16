@@ -304,7 +304,7 @@ def maybe_path_or_pdf(path: PathLikeOrStr) -> int:
 
     Returns:
         `1` if the path points to a directory, `2` if it points to a PDF document, `3` if it points to a PNG, JPG,
-         JPEG, or TIF image, or `0` otherwise.
+            JPEG, or TIF image, or `0` otherwise.
     """
 
     if os.path.isdir(path):

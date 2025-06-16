@@ -178,7 +178,7 @@ class RepeatedData(ProxyDataFlow):
     def __len__(self) -> int:
         """
         Raises:
-            `ValueError` when num == -1.
+            ValueError: when num == -1.
         """
         if self.num == -1:
             raise NotImplementedError("__len__() is unavailable for infinite dataflow")

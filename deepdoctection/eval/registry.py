@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-MetricRegistry
+MetricRegistry for registering and retrieving evaluation metrics
 """
 
 import catalogue  # type: ignore
@@ -31,7 +31,7 @@ def get_metric(name: str) -> MetricBase:
     Returns an instance of a metric with a given name.
 
     Args:
-        A metric name
+        name: A metric name
 
     Returns:
         A metric instance

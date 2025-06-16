@@ -79,7 +79,7 @@ class AttrDict:
         Raises:
             AttributeError: If the instance is frozen and `name` is not `_freezed`.
         """
-        if self._freezed and name!="_freezed":
+        if self._freezed and name != "_freezed":
             raise AttributeError(f"Config was freezed! Unknown config: {name}")
         super().__setattr__(name, value)
 

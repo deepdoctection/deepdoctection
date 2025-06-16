@@ -13,7 +13,7 @@
 # Apache 2.0 License for more details.
 
 """
-Tree distance similarity metric
+Tree distance similarity (TEDS) metric
 
 Taken from <https://github.com/ibm-aur-nlp/PubTabNet/blob/master/src/metric.py>
 """
