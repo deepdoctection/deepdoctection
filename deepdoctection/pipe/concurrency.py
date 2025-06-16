@@ -119,7 +119,8 @@ class MultiThreadPipelineComponent(PipelineComponent):
     ) -> None:
         """
         Args:
-            pipeline_components: List of identical `PipelineComponent`. Number of threads created is determined by `len`.
+            pipeline_components: List of identical `PipelineComponent`. Number of threads created is determined by
+                                 `len`.
             pre_proc_func: Function that reads and returns an image. Will execute before entering the pipe component.
             post_proc_func: Function that reads and returns an image. Will execute after entering the pipe component.
             max_datapoints: Maximum datapoints to process.

@@ -102,7 +102,8 @@ def image_to_hf_detr_training(
 @dataclass
 class DetrDataCollator:
     """
-    Data collator that will prepare a list of raw features to a `BatchFeature` that can be used to train a Detr or Tabletransformer model.
+    Data collator that will prepare a list of raw features to a `BatchFeature` that can be used to train a Detr or
+    Tabletransformer model.
 
     Args:
         feature_extractor: `DetrFeatureExtractor`

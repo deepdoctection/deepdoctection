@@ -108,8 +108,8 @@ def re_assign_cat_ids(
                                                            WordType.TAG:{ BioTag.INSIDE: 1,
                                                                           BioTag.OUTSIDE: 2,
                                                                           BioTag.BEGIN: 3}}}`
-            To re-assign the `category_id`s of an image summary, use the key 'default_type' for the default category, e.g.
-            `{DefaultType.DEFAULT_TYPE: {PageType.DOCUMENT_TYPE: {DocumentType.INVOICE:1,
+            To re-assign the `category_id`s of an image summary, use the key 'default_type' for the default category,
+             e.g. `{DefaultType.DEFAULT_TYPE: {PageType.DOCUMENT_TYPE: {DocumentType.INVOICE:1,
             DocumentType.BANK_STATEMENT:2}}}`
     Returns:
         Image

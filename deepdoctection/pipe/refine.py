@@ -44,7 +44,9 @@ __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, int], str]]:
     """
-    Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles. Each tile is assigned a list of cell ids that are occupied by the cell. No cells but one or more cells can be assigned per tile.
+    Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles.
+    Each tile is assigned a list of cell ids that are occupied by the cell. No cells but one or more cells can be
+    assigned per tile.
 
     Args:
         dp: `Image`
@@ -77,13 +79,16 @@ def connected_component_tiles(
     tile_to_cell_list: list[tuple[tuple[int, int], str]]
 ) -> tuple[list[set[tuple[int, int]]], DefaultDict[tuple[int, int], list[str]]]:
     """
-    Assigns bricks to their cell occupancy, inducing a graph with bricks as nodes and cell edges. Cells that lie on top of several bricks connect the underlying bricks. The graph generated is usually multiple connected. Determines the related components and the tile/cell ids assignment.
+    Assigns bricks to their cell occupancy, inducing a graph with bricks as nodes and cell edges. Cells that lie on
+    top of several bricks connect the underlying bricks. The graph generated is usually multiple connected. Determines
+    the related components and the tile/cell ids assignment.
 
     Args:
         tile_to_cell_list: List of tuples with tile position and cell ids.
 
     Returns:
-        A tuple containing a list of sets with tiles that belong to the same connected component and a dict with tiles as keys and assigned list of cell ids as values.
+        A tuple containing a list of sets with tiles that belong to the same connected component and a dict with tiles
+        as keys and assigned list of cell ids as values.
     """
     cell_to_tile_list = [(cell_position[1], cell_position[0]) for cell_position in tile_to_cell_list]
     cells = set(tup[0] for tup in cell_to_tile_list)

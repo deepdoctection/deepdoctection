@@ -1056,9 +1056,10 @@ class PubtablesSegmentationService(PipelineComponent):
             spanning_cell_names: Layout type of spanning cells.
             item_names: Layout type of items (e.g. row and column).
             sub_item_names: Layout type of sub items (e.g. row number and column number).
-            item_header_cell_names: Layout type of item header cells (e.g. `CellType.COLUMN_HEADER`, `CellType.ROW_HEADER`).
-                                    Note that column header, resp. row header will be first assigned to rows, resp. columns
-                                    and then transferred to cells.
+            item_header_cell_names: Layout type of item header cells (e.g. `CellType.COLUMN_HEADER`,
+                                    `CellType.ROW_HEADER`).
+                                    Note that column header, resp. row header will be first assigned to rows, resp.
+                                    columns and then transferred to cells.
             item_header_thresholds: `iou`/`ioa` threshold for matching header cells with items. The first threshold
                                     corresponds to matching the first entry of `item_names`.
             cell_to_image: If set to `True` it will create an `Image` for `LayoutType.cell`.

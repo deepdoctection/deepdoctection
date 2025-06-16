@@ -53,7 +53,8 @@ def image_to_tp_frcnn_training(
         category_names: A list of category names for training a model. Pass nothing to train with all annotations.
 
     Returns:
-        Dict with `image`, `gt_boxes`, `gt_labels` and `file_name`, provided there are some detected objects in the image.
+        Dict with `image`, `gt_boxes`, `gt_labels` and `file_name`, provided there are some detected objects in the
+        image.
 
     Example:
         ```python

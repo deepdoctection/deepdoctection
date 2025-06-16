@@ -472,7 +472,8 @@ def set_dl_env_vars() -> None:
     """
     Set the environment variables that steer the selection of the DL framework.
 
-    If both PyTorch and TensorFlow are available, PyTorch will be selected by default. For testing purposes, e.g. on Colab, you may find yourself with a pre-installed TensorFlow version. If you want to enforce PyTorch, you must set:
+    If both PyTorch and TensorFlow are available, PyTorch will be selected by default. For testing purposes, e.g. on
+    Colab, you may find yourself with a pre-installed TensorFlow version. If you want to enforce PyTorch, you must set:
 
     Example:
         ```python

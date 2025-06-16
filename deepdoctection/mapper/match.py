@@ -68,18 +68,18 @@ def match_anns_by_intersection(
         `[[2],[0]], [[1],[],[1]], [c_1,c_2], [p_1,p_2,p_3]`.
 
         For each child, the sum of all ioas with all parents sum up to 1. Hence, the ioa with one parent will in general
-        decrease if one child intersects with more parents. Take two children, one matching two parents with an ioa of 0.5 each,
-        while the second matches four parents with an ioa of 0.25 each. In this situation, it is difficult to assign
-        children according to a given threshold and one also has to take into account the number of parental intersections
-        for each child.
+        decrease if one child intersects with more parents. Take two children, one matching two parents with an ioa of
+        0.5 each, while the second matches four parents with an ioa of 0.25 each. In this situation, it is difficult to
+        assign children according to a given threshold and one also has to take into account the number of parental
+        intersections for each child.
 
         Note:
             Setting `use_weighted_intersections` to True will multiply each ioa with the number of intersections,
             making it easier to work with an absolute threshold.
 
         Note:
-            In some situations, you want to assign to each child at most one parent. Setting `max_parent_only` to True will
-            select the parent with the highest ioa. There is currently no implementation for iou.
+            In some situations, you want to assign to each child at most one parent. Setting `max_parent_only` to `True`
+            will select the parent with the highest ioa. There is currently no implementation for iou.
 
     Args:
         dp: Image datapoint.
@@ -88,12 +88,12 @@ def match_anns_by_intersection(
             threshold to the parental annotation.
         use_weighted_intersections: This is currently only implemented for matching_rule `ioa`. Instead of using
             the ioa_matrix, it will use a weighted ioa in order to take into account that intersections with more cells
-            will likely decrease the ioa value. By multiplying the ioa with the number of all intersections for each child,
-            this value calibrates the ioa.
+            will likely decrease the ioa value. By multiplying the ioa with the number of all intersections for each
+            child, this value calibrates the ioa.
         parent_ann_category_names: Single str or list of category names.
         child_ann_category_names: Single str or list of category names.
-        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candidates
-            which are not in the list.
+        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+            candidates which are not in the list.
         child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
             candidates which are not in the list.
         parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
@@ -184,8 +184,8 @@ def match_anns_by_distance(
         dp: Image datapoint.
         parent_ann_category_names: Single str or list of category names.
         child_ann_category_names: Single str or list of category names.
-        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent candidates
-            which are not in the list.
+        parent_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other parent
+            candidates which are not in the list.
         child_ann_ids: Additional filter condition. If some ids are selected, it will ignore all other children
             candidates which are not in the list.
         parent_ann_service_ids: Additional filter condition. If some ids are selected, it will ignore all other parent

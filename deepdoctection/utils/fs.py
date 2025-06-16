@@ -186,7 +186,8 @@ def load_image_from_file(
     path: PathLikeOrStr, type_id: Literal["np", "b64"] = "np"
 ) -> Optional[Union[B64Str, PixelValues]]:
     """
-    Loads an image from a file and returns either a base64-encoded string, a numpy array, or `None` if the file is not found or a conversion error occurs.
+    Loads an image from a file and returns either a base64-encoded string, a numpy array, or `None` if the file is not
+    found or a conversion error occurs.
 
     Example:
         ```python
@@ -220,7 +221,8 @@ def load_image_from_file(
 
 def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
     """
-    Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy array or passed directly to the `image` attribute of `Image`.
+    Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy
+    array or passed directly to the `image` attribute of `Image`.
 
     Example:
         ```python

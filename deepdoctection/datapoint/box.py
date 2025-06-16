@@ -597,7 +597,8 @@ def crop_box_from_image(
     np_image: PixelValues, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
 ) -> PixelValues:
     """
-    Crop a box (the crop_box) from a image given as `np.array`. Will floor the left  and ceil the right coordinate point.
+    Crop a box (the crop_box) from a image given as `np.array`. Will floor the left  and ceil the right coordinate
+    point.
 
     Args:
         np_image: Image to crop from.

@@ -95,7 +95,8 @@ def image_to_raw_layoutlm_features(
 
     Args:
         dp: `Image`.
-        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use this.
+        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use
+                      this.
         input_width: Max width of box coordinates. Transforms the image and all box coordinates accordingly.
         input_height: Target height of box coordinates. Transforms the image and all box coordinates accordingly.
         image_width: Some models (e.g. `Layoutlmv2`) assume box coordinates to be normalized to `input_width`, whereas
@@ -109,11 +110,12 @@ def image_to_raw_layoutlm_features(
         use_token_tag: Used only for `dataset_type="token_classification"`. If `True`, uses labels from subcategory
             `WordType.token_tag` (with `B,I,O` suffix), otherwise `WordType.token_class`.
         segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
-            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to have
-            a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
+            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to
+            have a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
 
     Returns:
-        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and `dataset_type`.
+        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and
+        `dataset_type`.
     """
 
     raw_features: RawLayoutLMFeatures = RawLayoutLMFeatures({})
@@ -435,9 +437,9 @@ def raw_features_to_layoutlm_features(
             `do_not_pad`.
         truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
             maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
-            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
-            If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
-            admissible input size).
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is
+            provided. If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model
+            maximum admissible input size).
         return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens can
             be returned as an additional batch element. In this case, the number of input batch samples will be smaller
             than the output batch samples.
@@ -601,7 +603,8 @@ class LayoutLMDataCollator:
             `do_not_pad`.
         truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
             maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
-            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is
+            provided.
             If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
             admissible input size).
         return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens can
@@ -610,8 +613,8 @@ class LayoutLMDataCollator:
         return_tensors: If `pt`, returns torch tensors. If not provided, batches will be lists of lists.
         sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding windows
             will be created with each window having `max_length` sequence input. When using
-            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
-            `sliding_window_stride` to the right.
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows
+             shifted `sliding_window_stride` to the right.
         max_batch_size: Maximum batch size.
         remove_bounding_box_features: If `True`, removes bounding box features.
     """
@@ -698,7 +701,8 @@ def image_to_layoutlm_features(
             `do_not_pad`.
         truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
             maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
-            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is
+            provided.
             If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
             admissible input size).
         return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens
@@ -719,8 +723,8 @@ def image_to_layoutlm_features(
         pixel_mean: (3,) array for `BGR` or `RGB` mean.
         pixel_std: (3,) array for `BGR` or `RGB` std.
         segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
-            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to have
-            a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
+            Choose a single or a sequence of layout segments to use their bounding boxes. The layout segments need to
+            have a child-relationship with words. If a word does not appear as child, it will use the word bounding box.
         sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding
             windows will be created with each window having `max_length` sequence input. When using
             `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
@@ -771,7 +775,8 @@ def image_to_raw_lm_features(
 
     Args:
         dp: `Image`.
-        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use this.
+        dataset_type: Either `SEQUENCE_CLASSIFICATION` or `TOKEN_CLASSIFICATION`. When using a built-in dataset use
+                      this.
         use_token_tag: Used only for `dataset_type="token_classification"`. If `True`, uses labels from subcategory
             `WordType.token_tag` (with `B,I,O` suffix), otherwise `WordType.token_class`.
         text_container: A `LayoutType` to get the text from. It will steer the output of `Layout.words`.
@@ -780,7 +785,8 @@ def image_to_raw_lm_features(
             incorporates all image annotations of category `word` when building text strings.
 
     Returns:
-        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and `dataset_type`.
+        Dictionary with the following arguments: `image_id`, `width`, `height`, `ann_ids`, `words`, `bbox`, and
+        `dataset_type`.
     """
 
     raw_features: RawLMFeatures = RawLMFeatures({})
@@ -854,7 +860,8 @@ def image_to_lm_features(
             `do_not_pad`.
         truncation: If `True`, truncates to a maximum length specified with the argument `max_length` or to the
             maximum acceptable input length for the model if that argument is not provided. Truncates token by token,
-            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is provided.
+            removing a token from the longest sequence in the pair if a pair of sequences (or a batch of pairs) is
+            provided.
             If `False`, no truncation (i.e., can output batch with sequence lengths greater than the model maximum
             admissible input size).
         return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows, the overflowing tokens
@@ -864,8 +871,8 @@ def image_to_lm_features(
             returned in list objects.
         sliding_window_stride: If the output of the tokenizer exceeds the `max_length` sequence length, sliding
             windows will be created with each window having `max_length` sequence input. When using
-            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows shifted
-            `sliding_window_stride` to the right.
+            `sliding_window_stride=0`, no strides will be created; otherwise, it will create slides with windows
+             shifted `sliding_window_stride` to the right.
         text_container: A `LayoutType` to get the text from. It will steer the output of `Layout.words`.
         floating_text_block_categories: A list of top-level layout objects.
         include_residual_text_container: Regards synthetic text line annotations as floating text blocks and therefore

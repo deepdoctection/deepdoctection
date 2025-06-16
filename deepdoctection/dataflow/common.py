@@ -119,7 +119,8 @@ class MapDataComponent(MapData):
     MapDataComponent applies a mapper/filter on a component of a datapoint.
 
     Notes:
-        1. This DataFlow itself does not modify the datapoints. Please ensure that `func` does not modify its arguments in-place unless it is safe.
+        1. This DataFlow itself does not modify the datapoints. Please ensure that `func` does not modify its arguments
+           in-place unless it is safe.
         2. If some datapoints are discarded, `len(MapDataComponent(ds, ..))` will be incorrect.
 
     Example:
@@ -154,7 +155,8 @@ class MapDataComponent(MapData):
 
 class RepeatedData(ProxyDataFlow):
     """
-    RepeatedData takes datapoints from another DataFlow and produces them until they are exhausted for a certain number of repetitions.
+    RepeatedData takes datapoints from another DataFlow and produces them until they are exhausted for a certain number
+    of repetitions.
 
     Example:
         ```python

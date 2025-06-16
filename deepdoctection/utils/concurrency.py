@@ -106,7 +106,8 @@ def mask_sigint() -> Generator[Any, None, None]:
     """
     Context manager to mask `SIGINT`.
 
-    If called in the main thread, returns a context where `SIGINT` is ignored, and yields `True`. Otherwise, yields `False`.
+    If called in the main thread, returns a context where `SIGINT` is ignored, and yields `True`. Otherwise, yields
+    `False`.
 
     Yields:
         `True` if called in the main thread, otherwise `False`.
