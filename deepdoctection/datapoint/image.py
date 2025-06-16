@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Dataclass Image
+Dataclass `Image`
 """
 from __future__ import annotations
 
@@ -469,8 +469,12 @@ class Image:
         """
 
         attributes = annotation.get_defining_attributes()
-        attributes_values = [str(getattr(annotation, attribute)) if attribute!="bounding_box"
-                             else getattr(annotation,"bounding_box").get_legacy_string() for attribute in attributes]
+        attributes_values = [
+            str(getattr(annotation, attribute))
+            if attribute != "bounding_box"
+            else getattr(annotation, "bounding_box").get_legacy_string()
+            for attribute in attributes
+        ]
         return get_uuid(*attributes_values, str(self.image_id))
 
     def remove(
@@ -802,8 +806,9 @@ class Image:
         return path_json
 
     def get_categories_from_current_state(self) -> set[str]:
-        """Returns:
-             All active dumped categories
+        """
+        Returns:
+            All active dumped categories
         """
         return {ann.category_name for ann in self.get_annotation()}
 

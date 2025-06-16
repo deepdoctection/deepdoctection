@@ -97,7 +97,6 @@ page = next(doc)
 ```
 
 
-
 ## Page
 
 For each iteration, i.e. for each page document we receive a `Page` object.  Let's also have a look on some top 
@@ -105,16 +104,22 @@ level information.
 
 
 ```python
-print(f" height: {page.height} \n width: {page.width} \n file_name: {page.file_name}")
-print(f"document_id: {page.document_id} \n image_id: {page.image_id}\n")                                                                             image_id}\n")
+print(f" height: {page.height}
+         width: {page.width}
+         file_name: {page.file_name}
+         document_id: {page.document_id}
+         image_id: {page.image_id}\n")
 ```
 
-     height: 2339 
+??? info "Output"
+
+     ```
+     height: 2339  
      width: 1654 
      file_name: sample_2.png 
      document_id: c1776412-857f-3102-af7c-1869139a278d 
      image_id: c1776412-857f-3102-af7c-1869139a278d
-    
+     ```
 
 !!! info 
 
@@ -236,7 +241,7 @@ segment, contain additional metadata.
 page.chunks[0]
 ```
 
-??? info "Chunks"
+??? info "Output"
 
     ```
     ('c1776412-857f-3102-af7c-1869139a278d',  # (1)
@@ -264,7 +269,7 @@ table = page.tables[0]
 table.get_attribute_names()
 ```
     
-??? info "Table attributes"
+??? info "Output"
 
     ```
     {'bbox',
@@ -395,7 +400,7 @@ print(f"column number: {cell.column_number} \n
       bounding_box: {cell.bounding_box}\n 
       text: {cell.text} \n 
       annotation_id: {cell.annotation_id}")
-                                                                                                            annotation_id}")
+      annotation_id}")
 ```
 
 ??? info "Output"
@@ -418,7 +423,7 @@ word = page.words[0]
 word.get_attribute_names()
 ```
 
-??? info "Word attributes"
+??? info "Output"
 
     {'bbox',
      'block',

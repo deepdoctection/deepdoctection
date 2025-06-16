@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Eval package.
+## Evalulation metrics and Evaluators
 
 Contains metrics (customized for special tasks), evaluators and Tensorpack callback
 """

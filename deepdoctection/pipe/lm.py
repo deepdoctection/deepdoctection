@@ -79,66 +79,66 @@ class LMTokenClassifierService(PipelineComponent):
         sliding_window_stride: int = 0,
     ) -> None:
         """
-            Pipeline component for token classification.
+        Pipeline component for token classification.
 
-            Example:
-                ```python
-                # setting up compulsory ocr service
-                tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
-                tess = TesseractOcrDetector(tesseract_config_path)
-                ocr_service = TextExtractionService(tess)
+        Example:
+            ```python
+            # setting up compulsory ocr service
+            tesseract_config_path = ModelCatalog.get_full_path_configs("/dd/conf_tesseract.yaml")
+            tess = TesseractOcrDetector(tesseract_config_path)
+            ocr_service = TextExtractionService(tess)
 
-                # hf tokenizer and token classifier
-                tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
-                layoutlm = HFLayoutLmTokenClassifier(categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
-                                                                   'E-header', 'E-question', 'I-answer', 'I-header',
-                                                                   'I-question', 'O', 'S-answer', 'S-header', 'S-question'])
+            # hf tokenizer and token classifier
+            tokenizer = LayoutLMTokenizerFast.from_pretrained("microsoft/layoutlm-base-uncased")
+            layoutlm = HFLayoutLmTokenClassifier(categories= ['B-answer', 'B-header', 'B-question', 'E-answer',
+                                                               'E-header', 'E-question', 'I-answer', 'I-header',
+                                                               'I-question', 'O', 'S-answer', 'S-header', 'S-question'])
 
-                # token classification service
-                layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm)
+            # token classification service
+            layoutlm_service = LMTokenClassifierService(tokenizer, layoutlm)
 
-                pipe = DoctectionPipe(pipeline_component_list=[ocr_service, layoutlm_service])
+            pipe = DoctectionPipe(pipeline_component_list=[ocr_service, layoutlm_service])
 
-                path = "path/to/some/form"
-                df = pipe.analyze(path=path)
+            path = "path/to/some/form"
+            df = pipe.analyze(path=path)
 
-                for dp in df:
-                    ...
-                ```
+            for dp in df:
+                ...
+            ```
 
-            Args:
-                tokenizer: `Token classifier`, typing allows currently anything. This will be changed in the future.
-                language_model: `language model token classifier`.
-                padding: A padding strategy to be passed to the `tokenizer`. Must be either `max_length`, `longest` or
-                        `do_not_pad`.
-                truncation: If `True` will truncate to a maximum length specified with the argument `max_length` or to
-                            the maximum acceptable input length for the model if that argument is not provided. This
-                            will truncate token by token, removing a token from the longest sequence in the pair if a
-                            pair of sequences (or a batch of pairs) is provided. If `False` then no truncation (i.e.,
-                            can output batch with sequence lengths greater than the model maximum admissible input
-                            size).
-                return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
-                                           can be returned as an additional batch element. Note that in this case, the
-                                           number of input batch samples will be smaller than the output batch samples.
-                use_other_as_default_category: When predicting token classes, it might be possible that some words
-                                               might not get sent to the model because they are categorized as not
-                                               eligible token (e.g. empty string). If set to `True` it will assign all
-                                               words without token the `BioTag.outside` token.
-                segment_positions: Using bounding boxes of segment instead of words improves model accuracy
-                                   significantly for models that have been trained on segments rather than words.
-                                   Choose a single or a sequence of layout segments to use their bounding boxes. Note,
-                                   that the layout segments need to have a child-relationship with words. If a word
-                                   does not appear as child, it will use the word bounding box.
-                sliding_window_stride: If the output of the `tokenizer` exceeds the `max_length` sequence length, a
-                                       sliding window will be created with each window having `max_length` sequence
-                                       input. When using `sliding_window_stride=0` no strides will be created,
-                                       otherwise it will create slides with windows shifted `sliding_window_stride` to
-                                       the right.
+        Args:
+            tokenizer: `Token classifier`, typing allows currently anything. This will be changed in the future.
+            language_model: `language model token classifier`.
+            padding: A padding strategy to be passed to the `tokenizer`. Must be either `max_length`, `longest` or
+                    `do_not_pad`.
+            truncation: If `True` will truncate to a maximum length specified with the argument `max_length` or to
+                        the maximum acceptable input length for the model if that argument is not provided. This
+                        will truncate token by token, removing a token from the longest sequence in the pair if a
+                        pair of sequences (or a batch of pairs) is provided. If `False` then no truncation (i.e.,
+                        can output batch with sequence lengths greater than the model maximum admissible input
+                        size).
+            return_overflowing_tokens: If a sequence (due to a truncation strategy) overflows the overflowing tokens
+                                       can be returned as an additional batch element. Note that in this case, the
+                                       number of input batch samples will be smaller than the output batch samples.
+            use_other_as_default_category: When predicting token classes, it might be possible that some words
+                                           might not get sent to the model because they are categorized as not
+                                           eligible token (e.g. empty string). If set to `True` it will assign all
+                                           words without token the `BioTag.outside` token.
+            segment_positions: Using bounding boxes of segment instead of words improves model accuracy
+                               significantly for models that have been trained on segments rather than words.
+                               Choose a single or a sequence of layout segments to use their bounding boxes. Note,
+                               that the layout segments need to have a child-relationship with words. If a word
+                               does not appear as child, it will use the word bounding box.
+            sliding_window_stride: If the output of the `tokenizer` exceeds the `max_length` sequence length, a
+                                   sliding window will be created with each window having `max_length` sequence
+                                   input. When using `sliding_window_stride=0` no strides will be created,
+                                   otherwise it will create slides with windows shifted `sliding_window_stride` to
+                                   the right.
 
-            Note:
-                If `use_other_as_default_category` is set, words without eligible tokens will be assigned the
-                `BioTag.outside` token.
-            """
+        Note:
+            If `use_other_as_default_category` is set, words without eligible tokens will be assigned the
+            `BioTag.outside` token.
+        """
         self.language_model = language_model
         self.padding = padding
         self.truncation = truncation

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Dataclass for annotations and derived classes.
+Dataclass for `Annotation`s and their sub-classes.
 """
 
 from __future__ import annotations
@@ -343,8 +343,7 @@ class CategoryAnnotation(Annotation):
 
         if self._annotation_id is not None:
             if annotation._annotation_id is None:  # pylint: disable=W0212
-                annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id,
-                                                                  *container_id_context)
+                annotation.annotation_id = self.set_annotation_id(annotation, self.annotation_id, *container_id_context)
         else:
             tmp_annotation_id = self.set_annotation_id(self)
             if annotation._annotation_id is None:  # pylint: disable=W0212

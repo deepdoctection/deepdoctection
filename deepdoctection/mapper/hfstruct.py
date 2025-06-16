@@ -120,8 +120,8 @@ class DetrDataCollator:
 
         Args:
             raw_features: A list of dicts with keys: `image` or `file_name`, `width`, `height`, and `annotations`.
-            `annotations` must be a list of dicts as well, where each dict element must contain annotation
-            information following `COCO` standard.
+                          `annotations` must be a list of dicts as well, where each dict element must contain
+                           annotation information following `COCO` standard.
 
         Returns:
             `BatchFeature`

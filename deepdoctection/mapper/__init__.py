@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Transformations for datapoints
+# Transformation functions for datapoints
 """
 from typing import Callable
 

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Conversion functions
+Conversion functions for images and pdfs
 """
 
 import base64

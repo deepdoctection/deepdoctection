@@ -21,7 +21,7 @@ Module for language detection pipeline component
 from typing import Optional, Sequence
 
 from ..datapoint.image import Image
-from ..datapoint.view import Page, ImageDefaults
+from ..datapoint.view import ImageDefaults, Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## DatasetRegistry
+`DatasetRegistry` for registering built-in and custom datasets
 """
 
 import inspect

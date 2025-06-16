@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Wrapping datasets into a PyTorch dataset framework.
+Wrapping datasets into a PyTorch dataset framework
 """
 
 

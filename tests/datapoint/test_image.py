@@ -179,9 +179,7 @@ class TestImage:
 
         # Assert
         assert test_image.image_id == get_uuid(image.loc + image.file_name)
-        assert (
-            cat.annotation_id == "c8c58404-62c3-3e66-b302-ebd3202a778d"
-        )
+        assert cat.annotation_id == "c8c58404-62c3-3e66-b302-ebd3202a778d"
         assert sub_cat_1.annotation_id == "ec31cfdf-c1aa-383e-99a8-7f80a7f29f05"
 
     @staticmethod

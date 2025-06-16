@@ -155,7 +155,7 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
 
         Returns:
             Dataflow
-            """
+        """
         split = str(kwargs.get("split", "val"))
         if split == "val":
             logger.info(LoggingRecord("Loading annotations for 'val' split from Pubtabnet will take some time."))

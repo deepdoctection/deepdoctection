@@ -97,9 +97,9 @@ class ImageLayoutService(PipelineComponent):
         Args:
             layout_detector: The object detector.
             to_image: Whether to generate an image for each detected block, e.g. populate `ImageAnnotation.image`.
-             Useful if you want to process only some blocks in a subsequent pipeline component.
+                Useful if you want to process only some blocks in a subsequent pipeline component.
             crop_image: Whether to crop the detected block according to its bounding box and populate the resulting sub
-             image to `ImageAnnotation.image.image`.
+                image to `ImageAnnotation.image.image`.
             padder: If not `None`, will apply the padder to the image before prediction and inverse apply the padder.
 
         Note:

@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Module for mapping annotations into standard Detectron2 dataset dict. Also providing some tools for W&B mapping and
-visualising
+Module for mapping annotations into standard Detectron2 dataset dict.
+
+Also providing some tools for W&B mapping and visualisation.
 """
 from __future__ import annotations
 

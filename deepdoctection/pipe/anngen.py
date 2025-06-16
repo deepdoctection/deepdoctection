@@ -109,7 +109,7 @@ class DatapointManager:
         Args:
             detect_result: A `DetectionResult`, generally coming from `ObjectDetector`.
             to_annotation_id: Dumps the created image annotation to `image` of the given `annotation_id`. Requires the
-            target annotation to have a non-None image.
+                              target annotation to have a non-None image.
             to_image: If True, will populate `image`.
             crop_image: Only makes sense if `to_image` is True and if a numpy array is stored in the original image.
                         Will generate `Image.image`.
@@ -387,9 +387,9 @@ class DatapointManager:
         Gets a single `ImageAnnotation`.
 
         Args:
-        annotation_id: The `annotation_id` of the annotation to retrieve.
+            annotation_id: The `annotation_id` of the annotation to retrieve.
 
         Returns:
-        The `ImageAnnotation` corresponding to the given `annotation_id`.
+            The `ImageAnnotation` corresponding to the given `annotation_id`.
         """
         return self._cache_anns[annotation_id]

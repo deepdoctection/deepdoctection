@@ -16,7 +16,8 @@
 # limitations under the License.
 
 """
-## Factory for building analyzers"""
+`ServiceFactory` for building analyzers
+"""
 
 
 from os import environ

@@ -584,31 +584,35 @@ cfg.PT.LAYOUT.PAD.LEFT = 0
 # LAYOUT_NMS_PAIRS.COMBINATIONS = [['table', 'title'], ['table', 'text']]
 # LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001, 0.01]
 # LAYOUT_NMS_PAIRS.PRIORITY = ['table', None]
-cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [[LayoutType.TABLE,LayoutType.TITLE],
-                                     [LayoutType.TABLE,LayoutType.TEXT],
-                                     [LayoutType.TABLE,LayoutType.KEY_VALUE_AREA],
-                                     [LayoutType.TABLE,LayoutType.LIST_ITEM],
-                                     [LayoutType.TABLE,LayoutType.LIST],
-                                     [LayoutType.TABLE,LayoutType.FIGURE],
-                                     [LayoutType.TITLE,LayoutType.TEXT],
-                                     [LayoutType.TEXT,LayoutType.KEY_VALUE_AREA],
-                                     [LayoutType.TEXT,LayoutType.LIST_ITEM],
-                                     [LayoutType.TEXT,LayoutType.CAPTION],
-                                     [LayoutType.KEY_VALUE_AREA,LayoutType.LIST_ITEM],
-                                     [LayoutType.FIGURE,LayoutType.CAPTION]]
-cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001,0.01,0.01,0.001,0.01,0.01,0.05,0.01,0.01,0.01,0.01,0.001]
-cfg.LAYOUT_NMS_PAIRS.PRIORITY = [LayoutType.TABLE,
-                                 LayoutType.TABLE,
-                                 LayoutType.TABLE,
-                                 LayoutType.TABLE,
-                                 LayoutType.TABLE,
-                                 LayoutType.TABLE,
-                                 LayoutType.TEXT,
-                                 LayoutType.TEXT,
-                                 None,
-                                 LayoutType.CAPTION,
-                                 LayoutType.KEY_VALUE_AREA,
-                                 LayoutType.FIGURE]
+cfg.LAYOUT_NMS_PAIRS.COMBINATIONS = [
+    [LayoutType.TABLE, LayoutType.TITLE],
+    [LayoutType.TABLE, LayoutType.TEXT],
+    [LayoutType.TABLE, LayoutType.KEY_VALUE_AREA],
+    [LayoutType.TABLE, LayoutType.LIST_ITEM],
+    [LayoutType.TABLE, LayoutType.LIST],
+    [LayoutType.TABLE, LayoutType.FIGURE],
+    [LayoutType.TITLE, LayoutType.TEXT],
+    [LayoutType.TEXT, LayoutType.KEY_VALUE_AREA],
+    [LayoutType.TEXT, LayoutType.LIST_ITEM],
+    [LayoutType.TEXT, LayoutType.CAPTION],
+    [LayoutType.KEY_VALUE_AREA, LayoutType.LIST_ITEM],
+    [LayoutType.FIGURE, LayoutType.CAPTION],
+]
+cfg.LAYOUT_NMS_PAIRS.THRESHOLDS = [0.001, 0.01, 0.01, 0.001, 0.01, 0.01, 0.05, 0.01, 0.01, 0.01, 0.01, 0.001]
+cfg.LAYOUT_NMS_PAIRS.PRIORITY = [
+    LayoutType.TABLE,
+    LayoutType.TABLE,
+    LayoutType.TABLE,
+    LayoutType.TABLE,
+    LayoutType.TABLE,
+    LayoutType.TABLE,
+    LayoutType.TEXT,
+    LayoutType.TEXT,
+    None,
+    LayoutType.CAPTION,
+    LayoutType.KEY_VALUE_AREA,
+    LayoutType.FIGURE,
+]
 
 # Relevant when LIB = TF. Specifies the item detection model (for rows and columns).
 # Currently, only the default model is supported.
@@ -635,7 +639,7 @@ cfg.PT.ITEM.WEIGHTS_TS = "item/d2_model_1639999_item_inf_only.ts"
 # For example, the model microsoft/table-transformer-structure-recognition/pytorch_model.bin
 # predicts not only rows and columns, but also tables. To prevent redundant outputs, use:
 # PT.ITEM.FILTER = ['table']
-cfg.PT.ITEM.FILTER = ['table']
+cfg.PT.ITEM.FILTER = ["table"]
 
 # Enables image padding for item detection. Required for models such as
 # microsoft/table-transformer-structure-recognition/pytorch_model.bin to optimize accuracy.
@@ -764,9 +768,11 @@ cfg.SEGMENTATION.PUBTABLES_SUB_ITEM_NAMES = [CellType.ROW_NUMBER, CellType.COLUM
 
 # Used in PubtablesSegmentationService.
 # Specifies which cells should be treated as header cells that need to be linked to row/column elements.
-cfg.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES = [CellType.COLUMN_HEADER,
-                                                     CellType.ROW_HEADER,
-                                                     CellType.PROJECTED_ROW_HEADER]
+cfg.SEGMENTATION.PUBTABLES_ITEM_HEADER_CELL_NAMES = [
+    CellType.COLUMN_HEADER,
+    CellType.ROW_HEADER,
+    CellType.PROJECTED_ROW_HEADER,
+]
 
 # Defines the threshold values for matching column/row header cells to their respective rows/columns
 # in the Table Transformer approach. The matching rule is defined in SEGMENTATION.ASSIGNMENT_RULE.
@@ -887,7 +893,7 @@ cfg.TEXT_ORDERING.PARAGRAPH_BREAK = 0.035
 
 # Specifies the parent layout categories in the link relationship.
 # These are the elements to which related components (e.g., captions) should be linked.
-cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE,LayoutType.TABLE]
+cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE, LayoutType.TABLE]
 
 # Specifies the child layout categories in the link relationship.
 # These are typically smaller or subordinate elements (e.g., captions).

@@ -390,14 +390,14 @@ class TextLineGenerator:
 
     def __init__(self, make_sub_lines: bool, paragraph_break: Optional[float] = None):
         """
-    Args:
-        make_sub_lines: Whether to build sub-lines from lines.
-        paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sub-lines will be
-        built. Relative coordinates are used to calculate the distance between two consecutive words. A reasonable
-        value is `0.035`.
+        Args:
+            make_sub_lines: Whether to build sub-lines from lines.
+            paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sub-lines
+                will be built. Relative coordinates are used to calculate the distance between two consecutive words.
+                A reasonable value is `0.035`.
 
-    Raises:
-        ValueError: If `make_sub_lines` is `True` and `paragraph_break` is `None`.
+        Raises:
+            ValueError: If `make_sub_lines` is `True` and `paragraph_break` is `None`.
         """
         if make_sub_lines and paragraph_break is None:
             raise ValueError("You must specify paragraph_break when setting make_sub_lines to True")
@@ -673,31 +673,31 @@ class TextOrderService(TextLineServiceMixin):
         paragraph_break: Optional[float] = 0.035,
     ):
         """
-    Args:
-        text_container: `Name` of an image annotation that has a CHARS sub-category. These annotations will be ordered
-                        within all text blocks.
-        text_block_categories: `Name` of image annotation that have a relation with text containers and where text
-                               containers need to be sorted. Defaults to `IMAGE_DEFAULTS["text_block_categories"]`.
-        floating_text_block_categories: Name of image annotation that belong to floating text. These annotations form
-                                        the highest hierarchy of text blocks that will be ordered to generate a
-                                        narrative output of text. Defaults to
-                                        `IMAGE_DEFAULTS["floating_text_block_categories"]`.
-        include_residual_text_container: Text containers with no parent text block (e.g., not matched with any parent
-                                         annotation in `MatchingService`) will not be assigned with a reading.
-                                         (Reading order will only be assigned to image annotations that are
-                                         `floating_text_block_categories` or text containers matched with text block
-                                         annotations.) Setting `include_residual_text_container=True` will build
-                                         synthetic text lines from text containers and regard these text lines as
-                                         floating text blocks.
-        starting_point_tolerance: Threshold to identify if two text blocks belong to one column. To check if two text
-                                  blocks belong to the same column, one condition says that x-coordinates of vertices
-                                  should not differ more than this threshold.
-        broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be in two
-                               different sub-lines (because they belong to two different text columns).
-        height_tolerance: Threshold to identify if two columns lying over each other belong together or need to be
-                          separated. Scaling factor of relative text block height.
-        paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sublines will be
-                         built.
+        Args:
+            text_container: `Name` of an image annotation that has a CHARS sub-category. These annotations will be ordered
+                            within all text blocks.
+            text_block_categories: `Name` of image annotation that have a relation with text containers and where text
+                                   containers need to be sorted. Defaults to `IMAGE_DEFAULTS["text_block_categories"]`.
+            floating_text_block_categories: Name of image annotation that belong to floating text. These annotations form
+                                            the highest hierarchy of text blocks that will be ordered to generate a
+                                            narrative output of text. Defaults to
+                                            `IMAGE_DEFAULTS["floating_text_block_categories"]`.
+            include_residual_text_container: Text containers with no parent text block (e.g., not matched with any parent
+                                             annotation in `MatchingService`) will not be assigned with a reading.
+                                             (Reading order will only be assigned to image annotations that are
+                                             `floating_text_block_categories` or text containers matched with text block
+                                             annotations.) Setting `include_residual_text_container=True` will build
+                                             synthetic text lines from text containers and regard these text lines as
+                                             floating text blocks.
+            starting_point_tolerance: Threshold to identify if two text blocks belong to one column. To check if two text
+                                      blocks belong to the same column, one condition says that x-coordinates of vertices
+                                      should not differ more than this threshold.
+            broken_line_tolerance: Threshold to identify if two consecutive words belonging to one line should be in two
+                                   different sub-lines (because they belong to two different text columns).
+            height_tolerance: Threshold to identify if two columns lying over each other belong together or need to be
+                              separated. Scaling factor of relative text block height.
+            paragraph_break: Threshold of two consecutive words. If distance is larger than threshold, two sublines will be
+                             built.
         """
         self.text_container = get_type(text_container)
         if isinstance(text_block_categories, (str, ObjectTypes)):

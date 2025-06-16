@@ -60,14 +60,14 @@ def _textract_to_detectresult(response: JsonDict, width: int, height: int, text_
     return all_results
 
 
-def predict_text(np_img: PixelValues, client, text_lines: bool) -> list[DetectionResult]:  # type: ignore
+def predict_text(np_img: PixelValues, client: boto3.client, text_lines: bool) -> list[DetectionResult]:  # type: ignore
     """
     Calls AWS Textract client (`detect_document_text`) and returns plain OCR results.
     AWS account required.
 
     Args:
-        client: botocore textract client
         np_img: Image in `np.array`.
+        client: botocore textract client
         text_lines: If `True`, it will return `DetectionResult`s of Text lines as well.
 
     Returns:

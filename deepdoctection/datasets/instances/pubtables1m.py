@@ -136,7 +136,7 @@ class Pubtables1MBuilder(DataFlowBaseBuilder):
 
         Returns:
             Dataflow
-            """
+        """
 
         if not lxml_available():
             raise ModuleNotFoundError("Pubtables1MBuilder.build requires lxml but it is not installed.")

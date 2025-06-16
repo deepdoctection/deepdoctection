@@ -16,14 +16,14 @@
 # limitations under the License.
 
 """
-## Subclasses for `ImageAnnotation` and `Image` objects for consumption
+Subclasses for `ImageAnnotation` and `Image` objects for consumption
 """
 
 from __future__ import annotations
 
 from copy import copy
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check, Dict
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Type, Union, no_type_check
 
 import numpy as np
 
@@ -180,9 +180,11 @@ class Word(ImageAnnotationBaseView):
     """
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = (set(WordType)
-                      .union(super().get_attribute_names())
-                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        attr_names = (
+            set(WordType)
+            .union(super().get_attribute_names())
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+        )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
 
@@ -235,13 +237,13 @@ class Layout(ImageAnnotationBaseView):
             A dict
 
             ```python
-             {"text": text string,
-              "text_list": list of single words,
-              "ann_ids": word annotation ids`,
-              "token_classes": token classes,
-              "token_tags": token tags,
-              "token_class_ids": token class ids,
-              "token_tag_ids": token tag ids}
+                {"text": text string,
+                "text_list": list of single words,
+                "ann_ids": word annotation ids`,
+                "token_classes": token classes,
+                "token_tags": token tags,
+                "token_class_ids": token class ids,
+                "token_tag_ids": token tag ids}
             ```
 
         """
@@ -284,9 +286,11 @@ class Layout(ImageAnnotationBaseView):
         }
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = ({"words", "text"}.union(super()
-                                       .get_attribute_names())
-                      .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK}))
+        attr_names = (
+            {"words", "text"}
+            .union(super().get_attribute_names())
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+        )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     def __len__(self) -> int:
@@ -547,9 +551,11 @@ class Table(Layout):
         return "".join(html_list)
 
     def get_attribute_names(self) -> set[str]:
-        attr_names = (set(TableType)
-                      .union(super().get_attribute_names())
-                      .union({"cells", "rows", "columns", "html", "csv", "text"}))
+        attr_names = (
+            set(TableType)
+            .union(super().get_attribute_names())
+            .union({"cells", "rows", "columns", "html", "csv", "text"})
+        )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @property
@@ -646,7 +652,6 @@ class Table(Layout):
             return super().get_ordered_words()
 
 
-
 @dataclass
 class ImageDefaults:
     """ImageDefaults"""
@@ -658,7 +663,6 @@ class ImageDefaults:
             LayoutType.TITLE,
             LayoutType.LIST,
             LayoutType.KEY_VALUE_AREA,
-
         )
     )
     TEXT_BLOCK_CATEGORIES: Tuple[Union[LayoutType, CellType], ...] = field(
@@ -678,12 +682,16 @@ class ImageDefaults:
             LayoutType.CELL,
         )
     )
-    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(default_factory=lambda: (LayoutType.PAGE_HEADER,
-                                                                                            LayoutType.PAGE_FOOTER,
-                                                                                            LayoutType.MARK,
-                                                                                            LayoutType.PAGE_NUMBER,))
+    RESIDUAL_TEXT_BLOCK_CATEGORIES: Tuple[LayoutType, ...] = field(
+        default_factory=lambda: (
+            LayoutType.PAGE_HEADER,
+            LayoutType.PAGE_FOOTER,
+            LayoutType.MARK,
+            LayoutType.PAGE_NUMBER,
+        )
+    )
     IMAGE_ANNOTATION_TO_LAYOUTS: Dict[ObjectTypes, Type[Union[Layout, Table, Word]]] = field(
-        default_factory=lambda: { # type: ignore
+        default_factory=lambda: {  # type: ignore
             **{i: Layout for i in LayoutType if (i not in {LayoutType.TABLE, LayoutType.WORD, LayoutType.CELL})},
             LayoutType.TABLE: Table,
             LayoutType.TABLE_ROTATED: Table,
@@ -1002,13 +1010,13 @@ class Page(Image):
     def text_(self) -> Text_:
         """
         Returns:
-             A dict
+            A dict
 
-             ```python
-             {"text": text string,
-              "text_list": list of single words,
-              "annotation_ids": word annotation ids}
-             ```
+            ```python
+                {"text": text string,
+                 "text_list": list of single words,
+                 "annotation_ids": word annotation ids}
+         ```
         """
         block_with_order = self._order("layouts")
         text: list[str] = []
@@ -1296,7 +1304,7 @@ class Page(Image):
         Returns:
             A set of registered attributes.
         """
-        attr_names= set(PageType).union(cls._attribute_names)
+        attr_names = set(PageType).union(cls._attribute_names)
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
     @classmethod
@@ -1339,7 +1347,7 @@ class Page(Image):
             highest_hierarchy_only: If `True` it will remove all image attributes of `ImageAnnotation`s
             path: Path to save the `.json` file to. If `None` results will be saved in the folder of the original
                   document.
-        :param dry: Will run dry, i.e. without saving anything but returning the dict
+            dry: Will run dry, i.e. without saving anything but returning the dict
 
         Returns:
             optional dict

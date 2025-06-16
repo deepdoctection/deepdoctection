@@ -82,7 +82,6 @@ def test_dd_tf_analyzer_builds_and_process_image_layout_correctly() -> None:
     assert page.width == 1654
 
 
-
 @mark.pt_deps
 def test_dd_analyzer_with_tatr() -> None:
     """
@@ -132,7 +131,7 @@ def test_dd_analyzer_with_tatr() -> None:
     page = output[0]
     assert isinstance(page, Page)
     # 9 for d2 and 10 for tp model
-    assert len(page.layouts)==0
+    assert len(page.layouts) == 0
     assert len(page.tables) == 1
     assert len(page.tables[0].cells) in {12, 14}  # type: ignore
 
@@ -268,12 +267,13 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
 
-    assert len(page.layouts) in {11,12}
-    assert {layout.category_name.value for layout in page.layouts} == {'list', 'text', 'title'}  # type: ignore
+    assert len(page.layouts) in {11, 12}
+    assert {layout.category_name.value for layout in page.layouts} == {"list", "text", "title"}  # type: ignore
 
     assert len(page.tables) == 1
     assert page.height == 2339
     assert page.width == 1654
+
 
 @mark.pt_deps
 def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> None:
@@ -299,19 +299,22 @@ def test_dd_analyzer_builds_and_process_image_layout_and_tables_correctly() -> N
     page = output[0]
     assert isinstance(page, Page)
 
-    assert len(page.layouts) in {11,12}
-    assert {layout.category_name.value for layout in page.layouts} == {'list', 'text', 'title'} # type: ignore
+    assert len(page.layouts) in {11, 12}
+    assert {layout.category_name.value for layout in page.layouts} == {"list", "text", "title"}  # type: ignore
 
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
-    assert page.tables[0].html in {'<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>'
-                                   '</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>'
-                                   '</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>',
-                                   '<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'
-                                   '</td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td>'
-                                   '</td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td>'
-                                   '</td><td></td></tr></table>'}
+    assert page.tables[0].html in {
+        "<table><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
+        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td>"
+        "</tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table>",
+        "<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>"
+        "</td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td>"
+        "</td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td>"
+        "</td><td></td></tr></table>",
+    }
     assert page.height == 2339
     assert page.width == 1654
+
 
 @mark.pt_deps
 def test_dd_analyzer_builds_and_process_image_correctly() -> None:
@@ -320,11 +323,13 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     """
 
     # Arrange
-    analyzer = get_dd_analyzer(config_overwrite=[
+    analyzer = get_dd_analyzer(
+        config_overwrite=[
             "USE_LAYOUT=True",
             "USE_TABLE_SEGMENTATION=True",
             "USE_OCR=True",
-        ])
+        ]
+    )
 
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
@@ -335,28 +340,30 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     page = output[0]
     assert isinstance(page, Page)
 
-    assert len(page.layouts) in {13,17}
-    assert {layout.category_name.value for layout in page.layouts} == {'line', 'list', 'text', 'title'} # type: ignore
+    assert len(page.layouts) in {13, 17}
+    assert {layout.category_name.value for layout in page.layouts} == {"line", "list", "text", "title"}  # type: ignore
     print(page.tables[0].html)
     assert len(page.tables[0].cells) in {14, 15, 16}  # type: ignore
-    assert page.tables[0].html in {'<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td></td></tr><tr><td>'
-                                   'Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td><td>'
-                                   'EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>'
-                                   '</tr><tr><td>davon: Carried Interest</td><td></td></tr><tr><td>Gesamtvergutung'
-                                   ' fur Senior Management</td><td>EUR 1.468.434</td></tr><tr><td>fûr sonstige'
-                                   ' Risikotrâger</td><td>EUR 324.229</td></tr><tr><td>fur Mitarbeiter mit'
-                                   ' Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>',
-                                   '<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>'
-                                   'Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td>'
-                                   '<td>EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>'
-                                   '</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergutung'
-                                   ' fur Senior Management</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergutung fûr'
-                                   ' sonstige Risikotrâger</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergutung fur'
-                                   ' Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>'}
+    assert page.tables[0].html in {
+        "<table><tr><td>Jahresdurchschnitt der Mitarbeiterzahl</td><td></td></tr><tr><td>"
+        "Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td><td>"
+        "EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>"
+        "</tr><tr><td>davon: Carried Interest</td><td></td></tr><tr><td>Gesamtvergutung"
+        " fur Senior Management</td><td>EUR 1.468.434</td></tr><tr><td>fûr sonstige"
+        " Risikotrâger</td><td>EUR 324.229</td></tr><tr><td>fur Mitarbeiter mit"
+        " Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>",
+        "<table><tr><td colspan=2>97a6168f-e18b-3273-a8ca-b2d73ca08e50</td></tr><tr><td>"
+        "Gesamtvergutung?</td><td>EUR 15.315. .952</td></tr><tr><td>Fixe Vergutung</td>"
+        "<td>EUR 13.151.856</td></tr><tr><td>Variable Vergutung</td><td>EUR 2.164.096</td>"
+        "</tr><tr><td>davon: Carried Interest</td><td>EURO</td></tr><tr><td>Gesamtvergutung"
+        " fur Senior Management</td><td>EUR 1.468.434</td></tr><tr><td>Gesamtvergutung fûr"
+        " sonstige Risikotrâger</td><td>EUR 324.229</td></tr><tr><td>Gesamtvergutung fur"
+        " Mitarbeiter mit Kontrollfunktionen</td><td>EUR 554.046</td></tr></table>",
+    }
     assert page.height == 2339
     assert page.width == 1654
     assert len(page.text) in {4301, 4809}
     text_ = page.text_
     assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {558,612}
+    assert len(text_["words"]) in {558, 612}
     assert len(text_["ann_ids"]) in {558, 612}

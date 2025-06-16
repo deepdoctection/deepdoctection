@@ -422,9 +422,9 @@ class Pipeline(ABC):
         Collects meta annotations from all pipeline components and summarizes the returned results.
 
         Returns:
-            Meta annotations with information about image annotations (list), sub categories
-            (dict with category names and generated sub categories), relationships (dict with category
-             names and generated relationships) as well as summaries (list with sub categories).
+            Meta annotations with information about image annotations (list), sub categories (dict with category
+            names and generated sub categories), relationships (dict with category names and generated relationships)
+            as well as summaries (list with sub categories).
         """
         image_annotations: list[ObjectTypes] = []
         sub_categories = defaultdict(set)

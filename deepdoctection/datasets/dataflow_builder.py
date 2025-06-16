@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for DataFlowBaseBuilder class.
+Module for `DataFlowBaseBuilder` class.
 """
 
 from abc import ABC, abstractmethod
@@ -78,7 +78,7 @@ class DataFlowBaseBuilder(ABC):
     def get_split(self, key: str) -> str:
         """
         Args:
-            split value
+            key: split value
         """
         return self._splits[key]
 

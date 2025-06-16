@@ -66,7 +66,6 @@ def coco_to_image(
         A coarse mapping must be provided when `coarse_sub_cat_name` has been passed.
     """
 
-
     if coarse_sub_cat_name and coarse_mapping is None:
         raise ValueError("A coarse mapping must be provided when coarse_sub_cat_name have been passed")
 

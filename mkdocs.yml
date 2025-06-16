@@ -20,8 +20,9 @@ theme:
     - content.code.annotate
     - header.autohide
     - content.tabs.link
+    - announce.dismiss
   icon:
-    annotation: material/alpha-i-circle
+    annotation: material/plus-circle
     admonition:
       note: fontawesome/solid/exclamation
       info: fontawesome/solid/circle-info
@@ -32,6 +33,8 @@ theme:
 extra_css:
   - assets/styles/custom.css
 markdown_extensions:
+  - toc:
+      permalink: true
   - tables
   - pymdownx.highlight:
       anchor_linenums: true

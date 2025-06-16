@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-EvalCallback in Tensorpack
+`EvalCallback` in Tensorpack
 """
 
 from __future__ import annotations

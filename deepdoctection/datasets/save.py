@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-## Saving samples from a DataFlow
+Saving samples from a DataFlow
 """
 
 import json
