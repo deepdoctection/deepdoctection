@@ -48,7 +48,8 @@ def prodigy_to_image(
         categories_name_as_key: A dict of categories, e.g. `DatasetCategories.get_categories(name_as_key=True)`.
         load_image: If `True`, it will load image to `Image.image`.
         fake_score: If `dp` does not contain a score, a fake score with uniform random variables in (0,1) will be added.
-        path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file of the datapoint can be found.
+        path_reference_ds: A path to a reference-dataset. It must point to the basedir where the file of the datapoint
+                           can be found.
         accept_only_answer: Filter every datapoint that has the answer `reject` or `ignore`.
         category_name_mapping: Map incoming category names, e.g. `{"source_name":"target_name"}`.
 
@@ -151,7 +152,8 @@ def prodigy_to_image(
 @curry
 def image_to_prodigy(dp: Image, category_names: Optional[Sequence[ObjectTypes]] = None) -> JsonDict:
     """
-    Transforms the normalized image representation of datasets into the format for visualizing the annotation components in Prodigy.
+    Transforms the normalized image representation of datasets into the format for visualizing the annotation
+    components in Prodigy.
 
     Args:
         dp: An `Image`.

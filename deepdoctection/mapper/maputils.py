@@ -50,7 +50,8 @@ class MappingContextManager:
         """
         Args:
             dp_name: A name for the datapoint to be mapped.
-            filter_level: Indicates if the `MappingContextManager` is used on datapoint level, annotation level etc. `filter_level` will only be used for logging.
+            filter_level: Indicates if the `MappingContextManager` is used on datapoint level, annotation level etc.
+                          `filter_level` will only be used for logging.
 
         Note:
             Use this context manager to catch and log exceptions during mapping.

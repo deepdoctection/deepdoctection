@@ -50,7 +50,8 @@ def _collect_from_kwargs(
             `max_datapoints`.
 
     Returns:
-        Tuple containing `path`, `file_type`, `shuffle`, `max_datapoints`, `doc_path`, `dataset_dataflow`, and `b_bytes`.
+        Tuple containing `path`, `file_type`, `shuffle`, `max_datapoints`, `doc_path`, `dataset_dataflow`, and
+        `b_bytes`.
 
     Raises:
         ValueError: If neither `path` nor `dataset_dataflow` is provided, or if required arguments are missing.
@@ -356,8 +357,8 @@ class DoctectionPipe(Pipeline):
         Args:
             `kwargs:
                  dataset_dataflow (Dataflow):` Transfer a dataflow of a dataset via its dataflow builder
-                 path (TypeOrStr):` A path to a directory in which either image documents or pdf files are located. It is
-                               assumed that the pdf documents consist of only one page. If there are multiple pages,
+                 path (TypeOrStr):` A path to a directory in which either image documents or pdf files are located. It
+                               is assumed that the pdf documents consist of only one page. If there are multiple pages,
                                only the first page is processed through the pipeline.
                                Alternatively, a path to a pdf document with multiple pages.
                  bytes:` A bytes object of an image

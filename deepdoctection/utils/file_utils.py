@@ -833,8 +833,8 @@ def set_mp_spawn() -> None:
     Sets the multiprocessing method to "spawn".
 
     Note:
-        "spawn/forkserver" is safer than the default "fork" method and produces more deterministic behavior and memory saving.
-        However, its limitation is that you cannot pass a lambda function to subprocesses.
+        "spawn/forkserver" is safer than the default "fork" method and produces more deterministic behavior and memory
+        saving. However, its limitation is that you cannot pass a lambda function to subprocesses.
     """
 
     if not _S.mp_context_set:

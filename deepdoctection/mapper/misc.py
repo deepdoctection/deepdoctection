@@ -188,12 +188,14 @@ def maybe_ann_to_sub_image(
     dp: Image, category_names_sub_image: Union[str, list[str]], category_names: Union[str, list[str]], add_summary: bool
 ) -> Image:
     """
-    Assigns to sub image with given category names all annotations with given category names whose bounding box lies within the bounding box of the sub image.
+    Assigns to sub image with given category names all annotations with given category names whose bounding box lies
+    within the bounding box of the sub image.
 
     Args:
         dp: `Image`.
         category_names_sub_image: A single or a list of category names that will form a sub image.
-        category_names: A single or a list of category names that may be assigned to a sub image, conditioned on the bounding box lying within the sub image.
+        category_names: A single or a list of category names that may be assigned to a sub image, conditioned on the
+                        bounding box lying within the sub image.
         add_summary: If `True`, will add the whole summary annotation to the sub image.
 
     Returns:

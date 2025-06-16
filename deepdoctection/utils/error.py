@@ -45,8 +45,8 @@ class DataFlowTerminatedError(BaseException):
     """
     An exception indicating that the `DataFlow` is unable to produce any more data.
 
-    This exception is raised when something wrong happens so that calling `__iter__` cannot give a valid iterator anymore.
-    In most `DataFlow` this will never be raised.
+    This exception is raised when something wrong happens so that calling `__iter__` cannot give a valid iterator
+    anymore. In most `DataFlow` this will never be raised.
     """
 
 

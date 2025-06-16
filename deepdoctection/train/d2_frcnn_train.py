@@ -112,7 +112,7 @@ class WandbWriter(EventWriter):
     ):
         """
         Args:
-            project: W\&B Project name.
+            project: W&B Project name.
             repo: Repository name.
             config: The project level configuration object.
             window_size: The scalars will be median-smoothed by this window size.
@@ -347,7 +347,8 @@ def train_d2_faster_rcnn(
     Args:
         path_config_yaml: Path to a Detectron2 config file.
         dataset_train: The dataset to use for training.
-        path_weights: Path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if an empty string is passed.
+        path_weights: Path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
+                      an empty string is passed.
         config_overwrite: List of arguments if some configs from the .yaml file should be replaced.
         log_dir: Path to log dir. Will default to `train_log/frcnn`.
         build_train_config: Dataflow build setting.

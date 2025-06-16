@@ -51,7 +51,8 @@ def coco_to_image(
         categories: A dict of categories, e.g. `DatasetCategories.get_categories`.
         load_image: If `True`, it will load image to `Image.image`.
         filter_empty_image: Will return `None` if datapoint has no annotations.
-        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in `(0,1)` will be added.
+        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in `(0,1)` will be
+                    added.
         coarse_mapping: A mapping to map categories into broader categories. Note that the coarser categories must
                         already be included in the original mapping.
         coarse_sub_cat_name: A name to be provided as sub category key for a coarse mapping.

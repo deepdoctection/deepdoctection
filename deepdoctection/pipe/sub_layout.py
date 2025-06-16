@@ -159,8 +159,8 @@ class SubImageLayoutService(PipelineComponent):
     """
     Component in which the selected `ImageAnnotation` can be selected with cropped images and presented to a detector.
 
-    The detected `DetectResults` are transformed into `ImageAnnotations` and stored both in the cache of the parent image
-    and in the cache of the sub image.
+    The detected `DetectResults` are transformed into `ImageAnnotations` and stored both in the cache of the parent
+    image and in the cache of the sub image.
 
     If no objects are discovered, artificial objects can be added by means of a refinement process.
 

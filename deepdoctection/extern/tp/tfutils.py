@@ -93,7 +93,8 @@ def get_tf_device(device: Optional[Union[str, tf.device]] = None) -> tf.device:
     Selects a device on which to load a model. The selection follows a cascade of priorities:
 
     - If a `device` string is provided, it is used. If the string is "cuda" or "GPU", the first GPU is used.
-    - If the environment variable `USE_CUDA` is set, a GPU is used. If more GPUs are available it will use the first one.
+    - If the environment variable `USE_CUDA` is set, a GPU is used. If more GPUs are available it will use the first
+      one.
 
     Args:
         device: Device string.

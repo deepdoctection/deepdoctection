@@ -43,7 +43,8 @@ def batched_nms(boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, i
 
     Note:
         `Fp16` does not have enough range for batched NMS, so `float()` is used.
-        Torchvision already has a strategy to decide whether to use coordinate trick or for loop to implement `batched_nms`.
+        Torchvision already has a strategy to decide whether to use coordinate trick or for loop to implement
+        `batched_nms`.
     """
     assert boxes.shape[-1] == 4
     # Note: Torchvision already has a strategy (https://github.com/pytorch/vision/issues/1311)
