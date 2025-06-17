@@ -102,7 +102,7 @@ alt="text" width="40%">
 
 ## Requirements
 
-![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/requirements_deepdoctection_220525.png)
+![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/install_01.png)
 
 - Linux or macOS. Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available.
 - Python >= 3.9
