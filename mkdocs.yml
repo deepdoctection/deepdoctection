@@ -55,7 +55,7 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.emoji:
       emoji_index: !!python/name:pymdownx.emoji.twemoji
-      emoji_generator: !!python/name:pymdownx.emoji.to_sv
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
 
 
 nav:
