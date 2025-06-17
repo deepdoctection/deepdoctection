@@ -1,58 +1,59 @@
+
 name: build_push_pypi
 
-on:
-  workflow_dispatch:
-  push:
-    tags:
-      - "v*"  # Reacting on tags (z. B. v1.2.3)
+#on:
+#  workflow_dispatch:
+#  push:
+#    tags:
+#      - "v*"  # Reacting on tags (z. B. v1.2.3)
 
-jobs:
-  build_and_upload:
-    name: build_push_pypi_package
-    runs-on: ubuntu-latest
+#jobs:
+#  build_and_upload:
+#    name: build_push_pypi_package
+#    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: "3.9"
 
-      - name: Install dependencies
-        run: pip install setuptools wheel twine
+#      - name: Install dependencies
+#        run: pip install setuptools wheel twine
 
-      - name: Remove "source-pt" dependency from setup.py
-        run: |
-          sed -i '/"source-pt": source_pt_deps,/d' setup.py
+#      - name: Remove "source-pt" dependency from setup.py
+#        run: |
+#          sed -i '/"source-pt": source_pt_deps,/d' setup.py
 
-      - name: Extract version from git tag
-        run: echo "__version__ = '${GITHUB_REF#refs/tags/v}'" > deepdoctection/__init__.py
+#      - name: Extract version from git tag
+#        run: echo "__version__ = '${GITHUB_REF#refs/tags/v}'" > deepdoctection/__init__.py
 
-      - name: Build package
-        run: package_actions  # Nutzt dein Makefile für das Packaging
+#      - name: Build package
+#        run: package_actions  # Nutzt dein Makefile für das Packaging
 
-      - name: Upload to PyPI
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload dist/* -u __token__ -p $PYPI_TOKEN
+#      - name: Upload to PyPI
+#        env:
+#          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+#        run: twine upload dist/* -u __token__ -p $PYPI_TOKEN
 
-      - name: Restore original setup.py
-        run: git restore setup.py
+#      - name: Restore original setup.py
+#        run: git restore setup.py
 
-      - name: Commit and push version update
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add deepdoctection/__init__.py
-          git commit -m "Set version for release"
-          git push origin HEAD:main
+#      - name: Commit and push version update
+#        run: |
+#          git config --global user.name "github-actions"
+#          git config --global user.email "actions@github.com"
+#          git add deepdoctection/__init__.py
+#          git commit -m "Set version for release"
+#          git push origin HEAD:main
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref }}
-          name: "Release ${{ github.ref_name }}"
-          draft: false
-          prerelease: false
+#      - name: Create GitHub Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: ${{ github.ref }}
+#          name: "Release ${{ github.ref_name }}"
+#          draft: false
+#          prerelease: false
