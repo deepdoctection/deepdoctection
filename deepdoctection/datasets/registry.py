@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Module for DatasetRegistry
+`DatasetRegistry` for registering built-in and custom datasets
 """
+
 import inspect
 
 import catalogue  # type: ignore
@@ -36,17 +37,22 @@ def get_dataset(name: str) -> DatasetBase:
     """
     Returns an instance of a dataset with a given name. This instance can be used to customize the dataflow output
 
-    **Example:**
+    Example:
 
-            dataset = get_dataset("some_name")
-            dataset.dataflow.categories.filter_categories(["cat1","cat2"])
-            df = dataset.dataflow.build(split="train")
+        ```python
+        dataset = get_dataset("some_name")
+        dataset.dataflow.categories.filter_categories(["cat1","cat2"])
+        df = dataset.dataflow.build(split="train")
 
-            for dp in df:
-                # do something
+        for dp in df:
+            # do something
+        ```
 
-    :param name: A dataset name
-    :return: An instance of a dataset
+    Args:
+        name: A dataset name
+
+    Returns:
+        An instance of a dataset
     """
     ds = dataset_registry.get(name)
     if inspect.isclass(ds):
@@ -58,8 +64,9 @@ def print_dataset_infos(add_license: bool = True, add_info: bool = True) -> None
     """
     Prints a table with all registered datasets and some basic information (name, license and optionally description)
 
-    :param add_license: Whether to add the license type of the dataset
-    :param add_info: Whether to add a description of the dataset
+    Args:
+        add_license: Whether to add the license type of the dataset
+        add_info: Whether to add a description of the dataset
     """
 
     data = dataset_registry.get_all()

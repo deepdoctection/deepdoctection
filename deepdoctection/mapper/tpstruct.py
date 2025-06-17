@@ -42,14 +42,24 @@ def image_to_tp_frcnn_training(
     category_names: Optional[Union[TypeOrStr, Sequence[TypeOrStr]]] = None,
 ) -> Optional[JsonDict]:
     """
-    Maps an image to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection. Note, that the returned
-    dict will not suffice for training as gt for RPN and anchors still need to be created.
+    Maps an `Image` to a dict to be consumed by Tensorpack Faster-RCNN bounding box detection.
 
-    :param dp: Image
-    :param add_mask: True is not implemented (yet).
-    :param category_names: A list of category names for training a model. Pass nothing to train with all annotations
-    :return: Dict with `image`, `gt_boxes`, `gt_labels` and `file_name`, provided there are some detected objects in the
-             image
+    Note:
+        The returned dict will not suffice for training as ground truth for RPN and anchors still need to be created.
+
+    Args:
+        dp: `Image`.
+        add_mask: `True` is not implemented.
+        category_names: A list of category names for training a model. Pass nothing to train with all annotations.
+
+    Returns:
+        Dict with `image`, `gt_boxes`, `gt_labels` and `file_name`, provided there are some detected objects in the
+        image.
+
+    Example:
+        ```python
+        image_to_tp_frcnn_training(dp)
+        ```
     """
 
     output: JsonDict = {}
@@ -83,15 +93,24 @@ def tf_nms_image_annotations(
     anns: Sequence[ImageAnnotation], threshold: float, image_id: Optional[str] = None, prio: str = ""
 ) -> Sequence[str]:
     """
-    Processing given image annotations through NMS. This is useful, if you want to supress some specific image
-    annotation, e.g. given by name or returned through different predictors. This is the tf version, for pt check
-    `mapper.d2struct`
+    Processes given `ImageAnnotation` through `NMS`.
 
-    :param anns: A sequence of ImageAnnotations. All annotations will be treated as if they belong to one category
-    :param threshold: NMS threshold
-    :param image_id: id in order to get the embedding bounding box
-    :param prio: If an annotation has prio, it will overwrite its given score to 1 so that it will never be suppressed
-    :return: A list of annotation_ids that belong to the given input sequence and that survive the NMS process
+    This is useful if you want to suppress some specific image annotation, e.g., given by name or returned through
+     different predictors. This is the TensorFlow version; for PyTorch, check `mapper.d2struct`.
+
+    Args:
+        anns: A sequence of `ImageAnnotation`. All annotations will be treated as if they belong to one category.
+        threshold: NMS threshold.
+        image_id: ID in order to get the embedding bounding box.
+        prio: If an annotation has `prio`, it will overwrite its given score to 1 so that it will never be suppressed.
+
+    Returns:
+        A list of `annotation_id` that belong to the given input sequence and that survive the NMS process.
+
+    Example:
+        ```python
+        tf_nms_image_annotations(anns, threshold)
+        ```
     """
     if len(anns) == 1:
         return [anns[0].annotation_id]
@@ -122,8 +141,9 @@ def tf_nms_image_annotations(
     ann_ids = np.array([ann.annotation_id for ann in anns], dtype="object")
 
     # Get boxes for non-priority annotations
-    boxes = convert_to_tensor([ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box
-                               is not None])
+    boxes = convert_to_tensor(
+        [ann.get_bounding_box(image_id).to_list(mode="xyxy") for ann in anns if ann.bounding_box is not None]
+    )
 
     scores = convert_to_tensor([priority_to_confidence(ann, prio) for ann in anns])
     class_mask = convert_to_tensor(len(boxes), dtype=uint8)

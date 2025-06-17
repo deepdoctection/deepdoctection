@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Deepdoctection wrappers for fasttext language detection models
+Wrappers for fasttext language detection models
 """
+
 from __future__ import annotations
 
 import os
@@ -39,12 +40,13 @@ with try_import() as import_guard:
 
 class FasttextLangDetectorMixin(LanguageDetector, ABC):
     """
-    Base class for Fasttext language detection implementation. This class only implements the basic wrapper functions.
+    Base class for `Fasttext` language detection implementation. This class only implements the basic wrapper functions.
     """
 
     def __init__(self, categories: Mapping[int, TypeOrStr], categories_orig: Mapping[str, TypeOrStr]) -> None:
         """
-        :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
+        Args:
+            categories: A `dict` with the model output label and value. We use as convention the `ISO 639-2` language
         """
         self.categories = ModelCategories(init_categories=categories)
         self.categories_orig = MappingProxyType({cat_orig: get_type(cat) for cat_orig, cat in categories_orig.items()})
@@ -52,8 +54,12 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
     def output_to_detection_result(self, output: Union[tuple[Any, Any]]) -> DetectionResult:
         """
         Generating `DetectionResult` from model output
-        :param output: FastText model output
-        :return: `DetectionResult` filled with `text` and `score`
+
+        Args:
+            output: `FastText` model output
+
+        Returns:
+            `DetectionResult` filled with `text` and `score`
         """
         return DetectionResult(text=self.categories_orig[output[0][0]], score=output[1][0])
 
@@ -68,30 +74,30 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
     Fasttext language detector wrapper. Two models provided in the fasttext library can be used to identify languages.
     The background to the models can be found in the works:
 
-    [1] Joulin A, Grave E, Bojanowski P, Mikolov T, Bag of Tricks for Efficient Text Classification
-
-    [2] Joulin A, Grave E, Bojanowski P, Douze M, Jégou H, Mikolov T, FastText.zip: Compressing text classification
+    Info:
+        [1] Joulin A, Grave E, Bojanowski P, Mikolov T, Bag of Tricks for Efficient Text Classification
+        [2] Joulin A, Grave E, Bojanowski P, Douze M, Jégou H, Mikolov T, FastText.zip: Compressing text classification
         models
 
-    The models are distributed under the Creative Commons Attribution-Share-Alike License 3.0.
-    (<https://creativecommons.org/licenses/by-sa/3.0/>)
+    When loading the models via the `ModelCatalog`, the original and unmodified models are used.
 
-    When loading the models via the ModelCatalog, the original and unmodified models are used.
-
+    Example:
+        ```python
         path_weights = ModelCatalog.get_full_path_weights("fasttext/lid.176.bin")
         profile = ModelCatalog.get_profile("fasttext/lid.176.bin")
         lang_detector = FasttextLangDetector(path_weights,profile.categories)
         detection_result = lang_detector.predict("some text in some language")
-
+        ```
     """
 
     def __init__(
         self, path_weights: PathLikeOrStr, categories: Mapping[int, TypeOrStr], categories_orig: Mapping[str, TypeOrStr]
     ):
         """
-        :param path_weights: path to model weights
-        :param categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
-                           code.
+        Args:
+            path_weights: path to model weights
+            categories: A dict with the model output label and value. We use as convention the ISO 639-2 language
+                        code.
         """
         super().__init__(categories, categories_orig)
 
@@ -117,6 +123,8 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
     def get_wrapped_model(path_weights: PathLikeOrStr) -> Any:
         """
         Get the wrapped model
-        :param path_weights: path to model weights
+
+        Args:
+            path_weights: path to model weights
         """
         return load_model(os.fspath(path_weights))

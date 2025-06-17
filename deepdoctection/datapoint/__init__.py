@@ -16,17 +16,15 @@
 # limitations under the License.
 
 """
-This package everything that is related to the **core data model**.
+# Core data model for single pages
 
-A **fundamental architectural decision** in the deep doctection framework is to convert all data, be it those from
-datasets or the predictions from the pipelines, into a **standardized format**. This procedure leads to the following
+A fundamental architectural decision in the **deep**doctection framework is to convert all data, be it those from
+datasets or the predictions from the pipelines, into a standardized format. This procedure leads to the following
 simplifications:
 
-- Data of the training environment can be transported in the production environment (i.e. through the pipelines)
+- Data of the training environment can be transported in the production environment (i.e. through pipelines)
   without further adjustments.
-
 - Datasets of different origins can be merged quickly, so that training data with greater variability arise.
-
 - Pipeline environment components can be executed one after the other without conversion measures.
 
 The disadvantage of carrying out any redundant transformations and thus experiencing a loss of performance is accepted.

@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Conversion functions associated to functionalities of datapoint classes
+Conversion functions for images and pdfs
 """
+
 import base64
 import copy
 from dataclasses import fields, is_dataclass
@@ -47,12 +48,13 @@ __all__ = [
 
 def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
     """
-    custom func: as_dict to use instead of `dataclasses.asdict` . It also checks if a dataclass has a
-    'remove_keys' and will remove all attributes that are returned. Ensures that private attributes are not taken
-    into account when generating a dict.
+    Args:
+        custom func: as_dict to use instead of `dataclasses.asdict` . It also checks if a dataclass has a
+                     'remove_keys' and will remove all attributes that are returned. Ensures that private attributes
+                     are not taken into account when generating a `dict`.
 
-    :param obj: Object to convert into a dict.
-    :param dict_factory: A factory to generate the dict.
+        obj: Object to convert into a dict.
+        dict_factory: A factory to generate the dict.
     """
 
     if is_dataclass(obj):
@@ -79,10 +81,13 @@ def as_dict(obj: Any, dict_factory) -> Union[Any]:  # type: ignore
 
 def convert_b64_to_np_array(image: str) -> PixelValues:
     """
-    Converts an image in base4 string encoding representation to a numpy array of shape (width,height,channel).
+    Converts an image in base4 string encoding representation to a `np.array` of shape `(width,height,channel)`.
 
-    :param image: An image as base64 string.
-    :return: numpy array.
+    Args:
+        image: An image as `base64` string.
+
+    Returns:
+        numpy array.
     """
 
     return viz_handler.convert_b64_to_np(image).astype(uint8)
@@ -92,8 +97,11 @@ def convert_np_array_to_b64(np_image: PixelValues) -> str:
     """
     Converts an image from numpy array into a base64 string encoding representation
 
-    :param np_image: An image as numpy array.
-    :return: An image as base64 string.
+    Args:
+        np_image: An image as numpy array.
+
+    Returns:
+        An image as `base64` string.
     """
     return viz_handler.convert_np_to_b64(np_image)
 
@@ -103,18 +111,24 @@ def convert_np_array_to_b64_b(np_image: PixelValues) -> bytes:
     """
     Converts an image from numpy array into a base64 bytes encoding representation
 
-    :param np_image: An image as numpy array.
-    :return: An image as base64 bytes.
+    Args:
+        np_image: An image as numpy array.
+
+    Returns:
+        An image as `base64` bytes.
     """
     return viz_handler.encode(np_image)
 
 
 def convert_bytes_to_np_array(image_bytes: bytes) -> PixelValues:
     """
-    Converts an image in bytes to a numpy array
+    Converts an image in `bytes` to a `np.array`
 
-    :param image_bytes: An image as bytes.
-    :return: numpy array.
+    Args:
+        image_bytes: An image as bytes.
+
+    Returns:
+        numpy array.
     """
     return viz_handler.convert_bytes_to_np(image_bytes)
 
@@ -122,15 +136,20 @@ def convert_bytes_to_np_array(image_bytes: bytes) -> PixelValues:
 @deprecated("Use convert_pdf_bytes_to_np_array_v2", "2022-02-23")
 def convert_pdf_bytes_to_np_array(pdf_bytes: bytes, dpi: Optional[int] = None) -> PixelValues:
     """
-    Converts a pdf passed as bytes into a numpy array. Note, that this method expects poppler to be installed.
-    Please check the installation guides at https://poppler.freedesktop.org/ . If no value for dpi is provided
-    the output size will be determined by the mediaBox of the pdf file ready. Note, that the image size will be in
-    this case rather small.
+    Converts a pdf passed as bytes into a `np.array`. Note, that this method expects poppler to be installed.
+    Please check the installation guides at <https://poppler.freedesktop.org/> . If no value for `dpi` is provided
+    the output size will be determined by the mediaBox of the pdf file ready.
 
-    :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
-                      `utils.fs.load_bytes_from_pdf_file`
-    :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
-    :return: Image as numpy array.
+    Note:
+        The image size will be in this case rather small.
+
+    Args:
+        pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
+                   `utils.fs.load_bytes_from_pdf_file`
+        dpi: The dpi value of the resulting output image. For high resolution set `dpi=300`.
+
+    Returns:
+        Image as numpy array.
     """
     from pdf2image import convert_from_bytes  # type: ignore # pylint: disable=C0415, E0401
 
@@ -159,20 +178,28 @@ def convert_pdf_bytes_to_np_array_v2(
     pdf_bytes: bytes, dpi: Optional[int] = None, width: Optional[int] = None, height: Optional[int] = None
 ) -> PixelValues:
     """
-    Converts a pdf passed as bytes into a numpy array. We use poppler or pdfmium to convert the pdf to an image.
-    If both is available you can steer the selection of the render engine with environment variables:
+    Converts a pdf passed as bytes into a numpy array. We use poppler or `pdfmium` to convert the pdf to an image.
 
-    USE_DD_POPPLER: Set to 1, "TRUE", "True" to use poppler
-    USE_DD_PDFIUM: Set to 1, "TRUE", "True" to use pdfium
+    Note:
+        If both is available you can steer the selection of the render engine with environment variables:
 
-    :param pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
-                      `utils.fs.load_bytes_from_pdf_file`
-    :param dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
-    :param width: The width of the resulting output image. This option does only work when using Poppler as
-    PDF renderer
-    :param height: The height of the resulting output image. This option does only work when using Poppler as
-    PDF renderer
-    :return: Image as numpy array.
+        ```
+        # Set the environment variable to use poppler
+        USE_DD_POPPLER="1" or  ("TRUE", "True")
+        USE_DD_PDFIUM="0" or anything that is not ("1", "TRUE", "True")
+        ```
+
+    Args:
+        pdf_bytes: A pdf as bytes object. A byte representation can from a pdf file can be generated e.g. with
+                   `utils.fs.load_bytes_from_pdf_file`
+        dpi: The dpi value of the resulting output image. For high resolution set dpi=300.
+        width: The width of the resulting output image. This option does only work when using Poppler as
+               PDF renderer
+        height: The height of the resulting output image. This option does only work when using Poppler as
+                PDF renderer
+
+    Returns:
+        Image as numpy array.
     """
 
     if dpi is None:

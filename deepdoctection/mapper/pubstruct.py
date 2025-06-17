@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for mapping annotations in pubtabnet style structure
+Mapping annotations from Pubtabnet structure to Image structure.
 """
 import itertools
 import os
@@ -103,13 +103,16 @@ def _end_of_header(html: Sequence[str]) -> int:
 
 def tile_table(row_spans: Sequence[Sequence[int]], col_spans: Sequence[Sequence[int]]) -> list[list[int]]:
     """
-    Tiles a table according the row and column span scheme. A table can be represented as a list of list, where each
-    inner list has the same length. Each cell with a cell id can be located according to their row and column spans in
-    that scheme
+    Tiles a table according to the row and column span scheme. A table can be represented as a list of lists, where
+    each inner list has the same length. Each cell with a cell id can be located according to their row and column
+    spans in that scheme.
 
-    :param row_spans: A list of list of row spans
-    :param col_spans: A list of list of column spans
-    :return: A list of list of the tiling of the table, indicating the precise place of each cell.
+    Args:
+        row_spans: A list of lists of row spans.
+        col_spans: A list of lists of column spans.
+
+    Returns:
+        A list of lists of the tiling of the table, indicating the precise place of each cell.
     """
     number_of_cols = sum(col_spans[0])
     number_of_rows = len(col_spans)
@@ -255,8 +258,11 @@ def row_col_cell_ids(tiling: list[list[int]]) -> list[tuple[int, int, int]]:
     """
     Infers absolute rows and columns for every cell from the tiling of a table.
 
-    :param tiling: A list of list of tiling of a table as returned from the `_tile_table`
-    :return: A list of 3-tuples with row number, column number and cell id.
+    Args:
+        tiling: A list of lists of tiling of a table as returned from the `_tile_table`.
+
+    Returns:
+        A list of `3-tuples` with row number, column number, and cell id.
     """
     indices = sorted(
         [(i + 1, j + 1, cell_id) for i, row in enumerate(tiling) for j, cell_id in enumerate(row)], key=lambda x: x[2]
@@ -269,14 +275,15 @@ def row_col_cell_ids(tiling: list[list[int]]) -> list[tuple[int, int, int]]:
 
 def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[ObjectTypes, int]) -> Image:
     """
-    Generating an image, that resembles the output of an analyzer. The layout of the image is table spanning
-    the full page, i.e. there is one table image annotation. Moreover, the table annotation has an image, with cells
-    as image annotations.
+    Generating an image that resembles the output of an analyzer. The layout of the image is a table spanning the full
+    page, i.e. there is one table image annotation. Moreover, the table annotation has an image, with cells as image
+    annotations.
 
-    :param dp: Image
-    :param html: list with html tags
-    :param categories_name_as_key: category dictionary with all possible annotations
-    :return: Image
+    Args:
+        dp: Image html: List with html tags. categories_name_as_key: Category dictionary with all possible annotations.
+
+    Returns:
+        Image
     """
     image = Image(file_name=dp.file_name, location=dp.location, external_id=dp.image_id + "image")
     image.image = dp.image
@@ -313,12 +320,13 @@ def embedding_in_image(dp: Image, html: list[str], categories_name_as_key: dict[
 
 def nth_index(iterable: Iterable[str], value: str, n: int) -> Optional[int]:
     """
-    Returns the position of the n-th string value in an iterable, e.g. a list
+    Returns the position of the n-th string value in an iterable, e.g. a list.
 
-    :param iterable: e.g. list
-    :param value: any value
-    :param n: n-th value
-    :return: position if n-th value exists else None
+    Args:
+        iterable: e.g. list value: Any value `n`: `n-th` value
+
+    Returns:
+        Position if `n-th` value exists else `None`.
     """
     matches = (idx for idx, val in enumerate(iterable) if val == value)
     return next(itertools.islice(matches, n - 1, n), None)
@@ -338,19 +346,21 @@ def pub_to_image_uncur(  # pylint: disable=R0914
     Map a datapoint of annotation structure as given in the Pubtabnet dataset to an Image structure.
     <https://github.com/ibm-aur-nlp/PubTabNet>
 
-    :param dp: A datapoint in serialized Pubtabnet format.
-    :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
-    :param load_image: If `True` it will load image to `Image.image`
-    :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
+    Args:
+        dp: A datapoint in serialized Pubtabnet format.
+        categories_name_as_key: A dict of categories, e.g. `DatasetCategories.get_categories(name_as_key=True)`
+        load_image: If `True` it will load image to `Image.image`
+        fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
                        will be added.
-    :param rows_and_cols: If set to `True`, synthetic "ITEM" ImageAnnotations will be added.  Each item has a
-                          sub-category "row_col" that is equal to "ROW" or "COL".
-    :param dd_pipe_like: This will generate an image identical to the output of the dd analyzer (e.g. table and words
+        rows_and_cols: If set to `True`, synthetic `ITEM` ImageAnnotations will be added.  Each item has a
+                          sub-category "row_col" that is equal to `ROW` or `COL`.
+        dd_pipe_like: This will generate an image identical to the output of the dd analyzer (e.g. table and words
                          annotations as well as sub annotations and relationships will be generated)
-    :param is_fintabnet: Set `True`, if this mapping is used for generating fintabnet datapoints.
-    :param pubtables_like: Set `True`, the area covering the table will be tiled with non overlapping rows and columns
+        is_fintabnet: Set `True`, if this mapping is used for generating Fintabnet datapoints.
+        pubtables_like: Set `True`, the area covering the table will be tiled with non overlapping rows and columns
                            without leaving empty space
-    :return: Image
+    Returns:
+        Image
     """
 
     if dd_pipe_like:

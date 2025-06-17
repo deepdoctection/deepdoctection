@@ -34,11 +34,14 @@ def delete_keys_from_dict(
     dictionary: Union[dict[Any, Any], MutableMapping], keys: Union[str, list[str], set[str]]  # type: ignore
 ) -> dict[Any, Any]:
     """
-    Removing key/value pairs from dictionary. Works for nested dicts as well.
+    Removes key/value pairs from a `dictionary`. Works for nested dictionaries as well.
 
-    :param dictionary: A input dictionary
-    :param keys: A single or list of keys
-    :return: The modified dictionary with listed keys removed
+    Args:
+        dictionary: An input dictionary.
+        keys: A single key or a list of keys.
+
+    Returns:
+        The modified dictionary with the specified keys removed.
     """
 
     if isinstance(keys, str):
@@ -64,16 +67,26 @@ def delete_keys_from_dict(
 
 def split_string(input_string: str) -> list[str]:
     """
-    Takes a string, splits between commas and returns a list with split components as list elements
+    Splits an `input_string` by commas and returns a list of the split components.
 
-    :param input_string: input
+    Args:
+        input_string: The input string.
+
+    Returns:
+        A list of string components.
     """
     return input_string.split(",")
 
 
 def string_to_dict(input_string: str) -> dict[str, str]:
     """
-    Takes a string of a form `key1=val1,key2=val2` and returns the corresponding dict
+    Converts an `input_string` of the form `key1=val1,key2=val2` into a dictionary.
+
+    Args:
+        input_string: The input string.
+
+    Returns:
+        The corresponding dictionary.
     """
     items_list = input_string.split(",")
     output_dict = {}
@@ -85,10 +98,13 @@ def string_to_dict(input_string: str) -> dict[str, str]:
 
 def to_bool(inputs: Union[str, bool, int]) -> bool:
     """
-    Convert a string "True" or "False" to its boolean value
+    Converts a string "True" or "False" to its boolean value.
 
-    :param inputs: Input string
-    :return: boolean value
+    Args:
+        inputs: Input string, boolean, or integer.
+
+    Returns:
+        The boolean value.
     """
     if isinstance(inputs, bool):
         return inputs
@@ -103,9 +119,17 @@ def to_bool(inputs: Union[str, bool, int]) -> bool:
 
 def call_only_once(func: Callable[..., Any]) -> Callable[..., Any]:
     """
-    Decorate a method or property of a class, so that this method can only
-    be called once for every instance.
-    Calling it more than once will result in exception.
+    Decorates a method or property of a class so that it can only be called once for every instance.
+    Calling it more than once will result in an exception.
+
+    Args:
+        func: The method or property to decorate.
+
+    Returns:
+        The decorated function.
+
+    Note:
+        Use `call_only_once` only on methods or properties.
     """
 
     @functools.wraps(func)
@@ -135,10 +159,13 @@ def call_only_once(func: Callable[..., Any]) -> Callable[..., Any]:
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/utils.py
 def get_rng(obj: Any = None) -> np.random.RandomState:
     """
-    Get a good RNG seeded with time, pid and the object.
+    Gets a good random number generator seeded with time, process id, and the object.
 
-    :param obj: some object to use to generate random seed.
-    :return: np.random.RandomState: the RNG.
+    Args:
+        obj: Some object to use to generate the random seed.
+
+    Returns:
+        The random number generator.
     """
     seed = (id(obj) + os.getpid() + int(datetime.now().strftime("%Y%m%d%H%M%S%f"))) % 4294967295
     return np.random.RandomState(seed)
@@ -146,11 +173,14 @@ def get_rng(obj: Any = None) -> np.random.RandomState:
 
 def is_file_extension(file_name: PathLikeOrStr, extension: Union[str, Sequence[str]]) -> bool:
     """
-    Check if a given file name has a given extension
+    Checks if a given `file_name` has a given `extension`.
 
-    :param file_name: the file name, either full along with path or as stand alone
-    :param extension: the extension of the file. Must add a dot (.)
-    :return: True/False
+    Args:
+        file_name: The file name, either full path or standalone.
+        extension: The extension of the file. Must include a dot (e.g., `.txt`).
+
+    Returns:
+        True if the file has the given extension, False otherwise.
     """
     if isinstance(extension, str):
         return os.path.splitext(file_name)[-1].lower() == extension
@@ -159,20 +189,23 @@ def is_file_extension(file_name: PathLikeOrStr, extension: Union[str, Sequence[s
 
 def partition_list(base_list: list[str], stop_value: str) -> list[list[str]]:
     """
-    Partitions a list of strings into sublists, where each sublist starts with the first occurrence of the stop value.
-    Consecutive stop values are grouped together in the same sublist.
+    Partitions a list of strings into sublists, where each sublist starts with the first occurrence of the `stop_value`.
+    Consecutive `stop_value` elements are grouped together in the same sublist.
 
-    :param base_list: The list of strings to be partitioned.
-    :param stop_value: The string value that indicates the start of a new partition.
-    :return: A list of lists, where each sublist is a partition of the original list.
+    Args:
+        base_list: The list of strings to be partitioned.
+        stop_value: The string value that indicates the start of a new partition.
 
-    ** Example:**
+    Returns:
+        A list of lists, where each sublist is a partition of the original list.
 
+    Example:
+        ```python
         strings = ['a', 'a', 'c', 'c', 'b', 'd', 'c', 'c', 'a', 'b', 'a', 'b', 'a', 'a']
         stop_string = 'a'
         partition_list(strings, stop_string)
-
-       # Output [['a', 'a', 'c', 'c', 'b', 'd', 'c', 'c'], ['a', 'b'], ['a', 'b'], ['a', 'a']]
+        # Output: [['a', 'a', 'c', 'c', 'b', 'd', 'c', 'c'], ['a', 'b'], ['a', 'b'], ['a', 'a']]
+        ```
     """
 
     partitions = []

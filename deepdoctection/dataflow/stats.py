@@ -18,6 +18,7 @@
 """
 Dataflows for calculating statistical values of the underlying dataset
 """
+
 from typing import Any, Optional, Union
 
 import numpy as np
@@ -32,14 +33,20 @@ class MeanFromDataFlow(ProxyDataFlow):
     """
     Get the mean of some dataflow. Takes a component from a dataflow and calculates iteratively the mean.
 
-    **Example:**
+    Example:
+        ```python
+        df: some dataflow
+        MeanFromDataFlow(df).start() # If you want to put MeanFromDataFlow at the end of a dataflow
 
-            df: some dataflow
-            MeanFromDataFlow(df).start() if you want to put MeanFromDataFlow at the end of a dataflow
-            df: some dataflow
-            df = MeanFromDataFlow(df)
+        or
+
+        df: some dataflow
+        df = MeanFromDataFlow(df)
 
         is also possible. Testing with the progress bar will stop once the requested size has been reached.
+        ```
+
+
     """
 
     def __init__(
@@ -50,16 +57,18 @@ class MeanFromDataFlow(ProxyDataFlow):
         max_datapoints: Optional[int] = None,
     ):
         """
-        :param df: the dataflow to test
-        :param axis: The axis along which to calculate the mean. It will always calculate the mean along
-                     the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
-                     use
+        Args:
+            df: the dataflow to test
+            axis: The axis along which to calculate the mean. It will always calculate the mean along
+                  the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
+                  use
+                      ```python
+                      MeanFromDataFlow(df,key="image",axis=(0,1,2)).start()
+                      ```
 
-                         MeanFromDataFlow(df,key="image",axis=(0,1,2)).start()
-
-        :param key: The datapoint key giving the values to evaluate the mean. If None it tries to use
-                    the whole datapoint.
-        :param max_datapoints: Will stop considering datapoints with index>max_datapoints.
+            key: The datapoint key giving the values to evaluate the mean. If None it tries to use
+                 the whole datapoint.
+            max_datapoints: Will stop considering datapoints with index>max_datapoints.
         """
 
         super().__init__(df)
@@ -149,17 +158,19 @@ class StdFromDataFlow(ProxyDataFlow):
     Gets the standard deviation of some dataflow. Takes a component from a dataflow and calculates iteratively
     the standard deviation.
 
-    **Example:**
-
-            df= ...
-            StdFromDataFlow(df).start()
+    Example:
+        ```python
+        df= ...
+        StdFromDataFlow(df).start()
 
         if you want to put  StdFromDataFlow at the end of a dataflow
 
-            df: some dataflow
-            df = StdFromDataFlow(df)
+        df: some dataflow
+        df = StdFromDataFlow(df)
 
         is also possible. The testing with the progress bar will stop once the requested size has been reached.
+        ```
+
     """
 
     def __init__(
@@ -170,16 +181,18 @@ class StdFromDataFlow(ProxyDataFlow):
         max_datapoints: Optional[int] = None,
     ):
         """
-        :param df: the dataflow to test
-        :param axis: The axis along which to calculate the mean. It will always calculate the std along
+        Args:
+            df: the dataflow to test
+            axis: The axis along which to calculate the mean. It will always calculate the std along
                      the dataflow length axis, which is the 0th axis. E.g. for calculating the mean of an image dataset
                      use
-
+                         ```python
                          StdFromDataFlow(df,key="image",axis=(0,1,2)).start()
+                         ```
 
-        :param key: The datapoint key giving the values to evaluate the std. If None it tries to use
-                    the whole datapoint.
-        :param max_datapoints: Will stop considering datapoints with index>max_datapoints.
+            key: The datapoint key giving the values to evaluate the std. If None it tries to use
+                 the whole datapoint.
+            max_datapoints: Will stop considering datapoints with index>max_datapoints.
         """
 
         super().__init__(df)
@@ -266,6 +279,6 @@ class StdFromDataFlow(ProxyDataFlow):
             var = (ex2 - (ex * ex) / n) / (n - 1)
             self.std = np.sqrt(var)
 
-        logger.info(LoggingRecord(f"Standard deviation from  {n} datapoints along axis {self.axis}: {self.std}"))
+        logger.info(LoggingRecord(f"Standard deviation from {n} datapoints along axis {self.axis}: {self.std}"))
 
         return self.std

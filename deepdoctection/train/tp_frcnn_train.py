@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for training Tensorpack `GeneralizedRCNN`
+Training Tensorpack's `GeneralizedRCNN`
 """
 
 import os
@@ -75,6 +75,9 @@ __all__ = ["train_faster_rcnn"]
 class LoadAugmentAddAnchors:
     """
     A helper class for default mapping `load_augment_add_anchors`.
+
+    Args:
+        config: An `AttrDict` configuration for TP FRCNN.
     """
 
     def __init__(self, config: AttrDict) -> None:
@@ -89,9 +92,15 @@ def load_augment_add_anchors(dp: JsonDict, config: AttrDict) -> Optional[JsonDic
     Transforming an image before entering the graph. This function bundles all the necessary steps to feed
     the network for training.
 
-    :param dp: A dict with 'file_name', 'gt_boxes', 'gt_labels' and optional 'image'
-    :param config: An `AttrDict` with a TP frcnn config
-    :return: An dict with all necessary keys for feeding the graph
+    Args:
+        dp: A dict with `file_name`, `gt_boxes`, `gt_labels` and optional `image`.
+        config: An `AttrDict` with a TP frcnn config.
+
+    Returns:
+        A dict with all necessary keys for feeding the graph.
+
+    Note:
+        If `image` is not in `dp`, it will be loaded from `file_name`.
     """
     cfg = config
     if "image" not in dp:
@@ -124,14 +133,20 @@ def get_train_dataflow(
     dataset: DatasetBase, config: AttrDict, use_multi_proc_for_train: bool, **build_train_kwargs: str
 ) -> DataFlow:
     """
-    Return a dataflow for training TP Frcnn. The returned dataflow depends on the dataset and the configuration of
+    Return a dataflow for training TP FRCNN. The returned dataflow depends on the dataset and the configuration of
     the model, as the augmentation is part of the data preparation.
 
-    :param dataset: A dataset for object detection
-    :param config: An `AttrDict` with a TP Frcnn config
-    :param use_multi_proc_for_train: If set to `True` will use multi processes for augmenting
-    :param build_train_kwargs: build configuration of the dataflow.
-    :return: A dataflow
+    Args:
+        dataset: A dataset for object detection.
+        config: An `AttrDict` with a TP FRCNN config.
+        use_multi_proc_for_train: If set to `True` will use multi processes for augmenting.
+        build_train_kwargs: Build configuration of the dataflow.
+
+    Returns:
+        A dataflow.
+
+    Note:
+        If `use_multi_proc_for_train` is `True`, multi-processing will be used for augmentation.
     """
 
     set_mp_spawn()
@@ -202,23 +217,35 @@ def train_faster_rcnn(
     Train Faster-RCNN from Scratch or fine-tune a model using Tensorpack's training API. Observe the training with
     Tensorpack callbacks and evaluate the training progress with a validation data set after certain training intervals.
 
-    Tensorpack provides a training API under TF1. Training runs under a TF2 installation if TF2 behavior is deactivated.
+    Info:
+        Tensorpack provides a training API under TF1. Training runs under a TF2 installation if TF2 behavior is
+        deactivated.
 
-    :param path_config_yaml: path to TP config file. Check the
-                             [deepdoctection.extern.tp.tpfrcnn.config.config][] for various settings.
-    :param dataset_train: the dataset to use for training.
-    :param path_weights: path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
-                         nothing is passed.
-    :param config_overwrite: Pass a list of arguments if some configs from the .yaml file should be replaced. Use the
-                             list convention, e.g. ['TRAIN.STEPS_PER_EPOCH=500', 'OUTPUT.RESULT_SCORE_THRESH=0.4']
-    :param log_dir: Path to log dir. Will default to TRAIN.LOG_DIR
-    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
-    :param dataset_val: the dataset to use for validation.
-    :param build_val_config: same as 'build_train_config' but for validation
-    :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
-                        metric setting pass a metric explicitly.
-    :param metric: A metric to choose for validation.
-    :param pipeline_component_name: A pipeline component to use for validation.
+    Args:
+        path_config_yaml: Path to TP config file. Check the `deepdoctection.extern.tp.tpfrcnn.config.config` for various
+                          settings.
+        dataset_train: The dataset to use for training.
+        path_weights: Path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
+                      nothing is passed.
+        config_overwrite: Pass a list of arguments if some configs from the .yaml file should be replaced. Use the list
+                          convention, e.g. `[`TRAIN.STEPS_PER_EPOCH=500`, `OUTPUT.RESULT_SCORE_THRESH=0.4`]`.
+        log_dir: Path to log dir. Will default to `TRAIN.LOG_DIR`.
+        build_train_config: Dataflow build setting. Use list convention setting, e.g. `[`max_datapoints=1000`]`.
+        dataset_val: The dataset to use for validation.
+        build_val_config: Same as `build_train_config` but for validation.
+        metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom metric
+                     setting pass a metric explicitly.
+        metric: A metric to choose for validation.
+        pipeline_component_name: A pipeline component to use for validation.
+
+    Example:
+        ```python
+        train_faster_rcnn(
+            path_config_yaml="config.yaml",
+            dataset_train=my_train_dataset,
+            path_weights="weights.ckpt"
+        )
+        ```
     """
 
     assert disable_tfv2()  # TP works only in Graph mode
@@ -241,9 +268,10 @@ def train_faster_rcnn(
     config_overwrite.append(log_dir)
 
     config = set_config_by_yaml(path_config_yaml)
-
+    config.freeze(False)
     if config_overwrite:
         config.update_args(config_overwrite)
+    config.freeze(True)
 
     categories = dataset_train.dataflow.categories.get_categories(filtered=True)
     model_frcnn_config(config, categories, False)

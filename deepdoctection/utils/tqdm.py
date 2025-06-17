@@ -32,8 +32,10 @@ def get_tqdm_default_kwargs(
     **kwargs: Optional[Union[str, int, float]]
 ) -> Dict[str, Union[str, float, bool, int, None]]:
     """
-    Return default arguments to be used with tqdm.
-    :param kwargs: extra arguments to be used.
+    Return default arguments to be used with `tqdm`.
+
+    Args:
+        kwargs: extra arguments to be used.
     """
 
     return {
@@ -49,10 +51,13 @@ def get_tqdm_default_kwargs(
 
 def get_tqdm(total: Optional[Union[int, float]] = None, **kwargs: Union[str, int, float]) -> TqdmType:
     """
-    Get tqdm progress bar with some default options to have consistent style.
+    Get `tqdm` progress bar with some default options to have consistent style.
 
-    :param total:  The number of expected iterations.
-    :return: A tqdm instance
+    Args:
+        total:  The number of expected iterations.
+
+    Returns:
+        A `tqdm` instance
     """
 
     default_tqdm_setting = get_tqdm_default_kwargs(total=total)

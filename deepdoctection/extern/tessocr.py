@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Tesseract OCR engine for text extraction
+Tesseract OCR engine
 """
 from __future__ import annotations
 
@@ -115,7 +115,8 @@ def _run_tesseract(tesseract_args: list[str]) -> None:
 
 def get_tesseract_version() -> Version:
     """
-    Returns Version object of the Tesseract version
+    Returns:
+        Version of the installed tesseract engine.
     """
     try:
         output = subprocess.check_output(
@@ -142,10 +143,12 @@ def get_tesseract_version() -> Version:
 
 def image_to_angle(image: PixelValues) -> Mapping[str, str]:
     """
-    Generating a tmp file and running tesseract to get the orientation of the image.
+    Generating a tmp file and running Tesseract to get the orientation of the image.
 
-    :param image: Image in np.array.
-    :return: A dictionary with keys 'Orientation in degrees' and 'Orientation confidence'.
+     Args:
+        image: Image an `np.array`
+    Returns:
+        A dict with keys 'Orientation in degrees' and 'Orientation confidence'.
     """
     with save_tmp_file(image, "tess_") as (tmp_name, input_file_name):
         _run_tesseract(_input_to_cli_str("osd", "--psm 0", 0, input_file_name, tmp_name))
@@ -159,7 +162,7 @@ def image_to_angle(image: PixelValues) -> Mapping[str, str]:
 
 def image_to_dict(image: PixelValues, lang: str, config: str) -> dict[str, list[Union[str, int, float]]]:
     """
-    This is more or less pytesseract.image_to_data with a dict as returned value.
+    This is more or less `pytesseract.image_to_data` with a dict as returned value.
     What happens under the hood is:
 
     - saving an image file
@@ -167,13 +170,17 @@ def image_to_dict(image: PixelValues, lang: str, config: str) -> dict[str, list[
     - saving a temp .tsv file with predicted results
     - reading the .tsv file and returning the results as dict.
 
-    Requires Tesseract 3.05+
+    Note:
+        Requires Tesseract or 3.05 or higher
 
-    :param image: Image in np.array.
-    :param lang: String of language
-    :param config: string of configs
-    :return: Dictionary with keys 'left', 'top', 'width', 'height' (bounding box coords), 'conf' (confidence), 'text'
-             (captured text), 'block_num' (block number) and 'lin_num' (line number).
+    Args:
+        image: Image in np.array.
+        lang: String of language
+        config: string of configs
+
+    Returns:
+        Dictionary with keys `left`, `top`, `width`, `height` (bounding box coords), `conf` (confidence), `text`
+        (captured text), `block_num` (block number) and `lin_num` (line number).
     """
 
     with save_tmp_file(image, "tess_") as (tmp_name, input_file_name):
@@ -213,10 +220,14 @@ def image_to_dict(image: PixelValues, lang: str, config: str) -> dict[str, list[
 
 def tesseract_line_to_detectresult(detect_result_list: list[DetectionResult]) -> list[DetectionResult]:
     """
-    Generating text line DetectionResult based on Tesseract word grouping. It generates line bounding boxes from
+    Generating text line `DetectionResult`s based on Tesseract word grouping. It generates line bounding boxes from
     word bounding boxes.
-    :param detect_result_list: A list of detection result
-    :return: An extended list of detection result
+
+    Args:
+        detect_result_list: A list of `DetectionResult`s
+
+    Returns:
+        An extended list of `DetectionResult`s
     """
 
     line_detect_result: list[DetectionResult] = []
@@ -247,15 +258,18 @@ def tesseract_line_to_detectresult(detect_result_list: list[DetectionResult]) ->
 
 def predict_text(np_img: PixelValues, supported_languages: str, text_lines: bool, config: str) -> list[DetectionResult]:
     """
-    Calls tesseract directly with some given configs. Requires Tesseract to be installed.
+    Calls Tesseract directly with some given configs. Requires Tesseract to be installed.
 
-    :param np_img: Image in np.array.
-    :param supported_languages: To improve ocr extraction quality it is helpful to pre-select the language of the
-                                detected text, if this in known in advance. Combinations are possible, e.g. "deu",
-                                "fr+eng".
-    :param text_lines: If True, it will return DetectionResults of Text lines as well.
-    :param config: The config parameter passing to Tesseract. Consult also https://guides.nyu.edu/tesseract/usage
-    :return: A list of tesseract extractions wrapped in DetectionResult
+    Args:
+        np_img: Image in `np.array`.
+        supported_languages: To improve OCR extraction quality it is helpful to pre-select the language of the
+                             detected text, if this in known in advance. Combinations are possible, e.g. `deu`,
+                             `fr+eng`.
+        text_lines: If `True`, it will return `DetectionResult`s of text lines as well.
+        config: The config parameter passing to Tesseract. Consult also <https://guides.nyu.edu/tesseract/usage>
+
+    Returns:
+        A list of Tesseract extractions wrapped in `DetectionResult`
     """
 
     results = image_to_dict(np_img, supported_languages, config)
@@ -290,31 +304,37 @@ def predict_rotation(np_img: PixelValues) -> Mapping[str, str]:
     """
     Predicts the rotation of an image using the Tesseract OCR engine.
 
-    :param np_img: numpy array of the image
-    :return: A dictionary with keys 'Orientation in degrees' and 'Orientation confidence'
+    Args:
+        np_img: numpy array of the image
+
+    Returns:
+        A dictionary with keys 'Orientation in degrees' and 'Orientation confidence'
     """
     return image_to_angle(np_img)
 
 
 class TesseractOcrDetector(ObjectDetector):
     """
-    Text object detector based on Tesseracts OCR engine. Note that tesseract has to be installed separately.
+    Text object detector based on Tesseracts OCR engine.
 
-    The current Tesseract release is 4.1.1. A version 5.xx can be integrated via direct installation at
-    https://github.com/tesseract-ocr/tesseract. Building from source is necessary here.
+    Note:
+        Tesseract has to be installed separately. <https://tesseract-ocr.github.io/>
 
-    Documentation can be found here: https://tesseract-ocr.github.io/
+    All configuration options that are available via pytesseract can be added to the configuration file:
+    <https://pypi.org/project/pytesseract/.>
 
-    All configuration options that are available via pytesseract can be given via the configuration. The best overview
-    can be found at https://pypi.org/project/pytesseract/.
-
+    Example:
+        ```python
         tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
         ocr_detector = TesseractOcrDetector(tesseract_config_path)
 
         detection_result = ocr_detector.predict(bgr_image_as_np_array)
+        ```
 
     To use it within a pipeline
 
+    Example:
+        ```python
         tesseract_config_path = ModelCatalog.get_full_path_configs("dd/conf_tesseract.yaml")
         ocr_detector = TesseractOcrDetector(tesseract_config_path)
 
@@ -325,6 +345,7 @@ class TesseractOcrDetector(ObjectDetector):
 
         for dp in df:
             ...
+        ```
     """
 
     def __init__(
@@ -333,11 +354,12 @@ class TesseractOcrDetector(ObjectDetector):
         config_overwrite: Optional[list[str]] = None,
     ):
         """
-        Set up the configuration which is stored in a yaml-file, that need to be passed through.
+        Set up the configuration which is stored in a `.yaml` file, that need to be passed through.
 
-        :param path_yaml: The path to the yaml config
-        :param config_overwrite: Overwrite config parameters defined by the yaml file with new values.
-                                 E.g. ["oem=14"]
+        Args:
+            path_yaml: The path to the yaml config
+            config_overwrite: Overwrite config parameters defined by the yaml file with new values.
+                              E.g. `["oem=14"]`
         """
         self.name = self.get_name()
         self.model_id = self.get_model_id()
@@ -362,8 +384,11 @@ class TesseractOcrDetector(ObjectDetector):
         """
         Transfer of a numpy array and call of pytesseract. Return of the detection results.
 
-        :param np_img: image as numpy array
-        :return: A list of DetectionResult
+        Args:
+            np_img: image as `np.array`
+
+        Returns:
+            A list of `DetectionResult`
         """
 
         return predict_text(
@@ -386,7 +411,10 @@ class TesseractOcrDetector(ObjectDetector):
     def set_language(self, language: ObjectTypes) -> None:
         """
         Pass a language to change the model selection. For runtime language selection.
-        :param language: `Languages`
+
+        Args:
+            language: One of the following: `fre`,`dut`,`chi`,`cze`,`per`,`gre`,`mac`,`rum`,`arm`,
+                      `geo`,`war`,`glg`,`slv`,`alb`,`nn`.
         """
         self.config.LANGUAGES = _LANG_CODE_TO_TESS_LANG_CODE.get(language, language.value)
 
@@ -398,13 +426,11 @@ class TesseractOcrDetector(ObjectDetector):
 
 class TesseractRotationTransformer(ImageTransformer):
     """
-    The `TesseractRotationTransformer` class is a specialized image transformer that is designed to handle image
-    rotation in the context of Optical Character Recognition (OCR) tasks. It inherits from the `ImageTransformer`
-    base class and implements methods for predicting and applying rotation transformations to images.
+    The `TesseractRotationTransformer` is designed to handle image rotations.. It inherits from the `ImageTransformer`
+    base class and implements methods for predicting and applying rotation transformations.
 
     The `predict` method determines the angle of the rotated image. It can only handle angles that are multiples of 90
-    degrees.
-    This method uses the Tesseract OCR engine to predict the rotation angle of an image.
+    degrees. This method uses the Tesseract OCR engine to predict the rotation angle of an image.
 
     The `transform` method applies the predicted rotation to the image, effectively rotating the image backwards.
     This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
@@ -412,10 +438,12 @@ class TesseractRotationTransformer(ImageTransformer):
     This class can be particularly useful in OCR tasks where the orientation of the text in the image matters.
     The class also provides methods for cloning itself and for getting the requirements of the Tesseract OCR system.
 
-    **Example:**
-                    transformer = TesseractRotationTransformer()
-                    detection_result = transformer.predict(np_img)
-                    rotated_image = transformer.transform(np_img, detection_result)
+    Example:
+        ```python
+        transformer = TesseractRotationTransformer()
+        detection_result = transformer.predict(np_img)
+        rotated_image = transformer.transform(np_img, detection_result)
+        ```
     """
 
     def __init__(self) -> None:
@@ -428,9 +456,12 @@ class TesseractRotationTransformer(ImageTransformer):
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
 
-        :param np_img: The input image as a numpy array.
-        :param specification: A `DetectionResult` object containing the predicted rotation angle.
-        :return: The rotated image as a numpy array.
+        Args:
+            np_img: The input image as a numpy array.
+            specification: A `DetectionResult` object containing the predicted rotation angle.
+
+        Returns:
+            The rotated image as a numpy array.
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 
@@ -439,8 +470,10 @@ class TesseractRotationTransformer(ImageTransformer):
         Determines the angle of the rotated image. It can only handle angles that are multiples of 90 degrees.
         This method uses the Tesseract OCR engine to predict the rotation angle of an image.
 
-        :param np_img: The input image as a numpy array.
-        :return: A `DetectionResult` object containing the predicted rotation angle and confidence.
+        Args:
+            np_img: The input image as a numpy array.
+        Returns:
+            A `DetectionResult` object containing the predicted rotation angle and confidence.
         """
         output_dict = predict_rotation(np_img)
         return DetectionResult(

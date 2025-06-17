@@ -16,7 +16,10 @@
 # limitations under the License.
 
 """
-Module for training Huggingface implementation of LayoutLm
+Fine-tuning Huggingface implementation of LayoutLm.
+
+This module provides functions and classes for fine-tuning LayoutLM models for sequence or token classification using
+the Huggingface Trainer and custom evaluation. It supports LayoutLM, LayoutLMv2, LayoutLMv3, and LayoutXLM models.
 """
 from __future__ import annotations
 
@@ -85,11 +88,14 @@ with try_import() as wb_import_guard:
 
 def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetType) -> tuple[Any, Any, Any]:
     """
-    Get the model architecture, model wrapper and config class for a given model type and dataset type.
+    Gets the model architecture, model wrapper, and config class for a given `model_type` and `dataset_type`.
 
-    :param model_type: The model type
-    :param dataset_type: The dataset type
-    :return: Tuple of model architecture, model wrapper and config class
+    Args:
+        model_type: The model type.
+        dataset_type: The dataset type.
+
+    Returns:
+        Tuple of model architecture, model wrapper, and config class.
     """
     return {
         ("layoutlm", DatasetType.SEQUENCE_CLASSIFICATION): (
@@ -141,19 +147,28 @@ def get_model_architectures_and_configs(model_type: str, dataset_type: DatasetTy
 
 
 def maybe_remove_bounding_box_features(model_type: str) -> bool:
-    """Listing of models that do not need bounding box features."""
+    """
+    Lists models that do not need bounding box features.
+
+    Args:
+        model_type: The model type.
+
+    Returns:
+        Whether the model does not need bounding box features.
+    """
     return {"xlm-roberta": True}.get(model_type, False)
 
 
 class LayoutLMTrainer(Trainer):
     """
-    Huggingface Trainer for training Transformer models with a custom evaluate method in order
-    to use dd Evaluator. Train setting is not defined in the trainer itself but in config setting as
-    defined in `TrainingArguments`. Please check the Transformer documentation
+    Huggingface Trainer for training Transformer models with a custom evaluate method to use the Deepdoctection
+    Evaluator.
 
-    <https://huggingface.co/docs/transformers/main_classes/trainer>
+    Train settings are not defined in the trainer itself but in the config setting as defined in `TrainingArguments`.
+    Please check the Transformer documentation for custom training settings.
 
-    for custom training setting.
+    Info:
+        https://huggingface.co/docs/transformers/main_classes/trainer
     """
 
     def __init__(
@@ -164,6 +179,16 @@ class LayoutLMTrainer(Trainer):
         train_dataset: DatasetAdapter,
         eval_dataset: Optional[DatasetBase] = None,
     ):
+        """
+        Initializes the `LayoutLMTrainer`.
+
+        Args:
+            model: The model to train.
+            args: Training arguments.
+            data_collator: Data collator for batching.
+            train_dataset: Training dataset.
+            eval_dataset: Optional evaluation dataset.
+        """
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None
         super().__init__(model, args, data_collator, train_dataset, eval_dataset=eval_dataset)
@@ -177,14 +202,15 @@ class LayoutLMTrainer(Trainer):
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
-        Setup of evaluator before starting training. During training, predictors will be replaced by current
+        Sets up the evaluator before starting training. During training, predictors will be replaced by current
         checkpoints.
 
-        :param dataset_val: dataset on which to run evaluation
-        :param pipeline_component: pipeline component to plug into the evaluator
-        :param metric: A metric class
-        :param run: WandB run
-        :param build_eval_kwargs:
+        Args:
+            dataset_val: Dataset on which to run evaluation.
+            pipeline_component: Pipeline component to plug into the evaluator.
+            metric: A metric class.
+            run: WandB run.
+            **build_eval_kwargs: Additional keyword arguments for evaluation.
         """
 
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
@@ -201,6 +227,14 @@ class LayoutLMTrainer(Trainer):
     ) -> dict[str, float]:
         """
         Overwritten method from `Trainer`. Arguments will not be used.
+
+        Args:
+            eval_dataset: Not used.
+            ignore_keys: Not used.
+            metric_key_prefix: Not used.
+
+        Returns:
+            Evaluation scores as a dictionary.
         """
         if self.evaluator is None:
             raise ValueError("Evaluator not set up. Please use `setup_evaluator` before running evaluation")
@@ -266,28 +300,32 @@ def train_hf_layoutlm(
     LayoutXLM. Training similar but different models like LILT <https://arxiv.org/abs/2202.13669> can be done by
     changing a few lines of code regarding the selection of the tokenizer.
 
-    The theoretical foundation can be taken from
+    Info:
+        The theoretical foundation can be taken from <https://arxiv.org/abs/1912.13318>.
 
-    <https://arxiv.org/abs/1912.13318>
-
-    This is not the pre-training script.
+        This is not the pre-training script.
 
     In order to remain within the framework of this library, the base and uncased LayoutLM model must be downloaded
     from the HF-hub in a first step for fine-tuning.  Models are available for this, which are registered in the
     ModelCatalog. It is possible to choose one of the following options:
 
-        "microsoft/layoutlm-base-uncased/pytorch_model.bin"
-        "microsoft/layoutlmv2-base-uncased/pytorch_model.bin"
-        "microsoft/layoutxlm-base/pytorch_model.bin"
-        "microsoft/layoutlmv3-base/pytorch_model.bin"
 
-     and
+        `microsoft/layoutlm-base-uncased/pytorch_model.bin`
+        `microsoft/layoutlmv2-base-uncased/pytorch_model.bin`
+        `microsoft/layoutxlm-base/pytorch_model.bin`
+        `microsoft/layoutlmv3-base/pytorch_model.bin`
+        `microsoft/layoutlm-large-uncased/pytorch_model.bin`
+        `SCUT-DLVCLab/lilt-roberta-en-base/pytorch_model.bin`
 
-         "microsoft/layoutlm-large-uncased/pytorch_model.bin"
 
-    (You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download yourself.)
+    Note:
+        You can also choose the large versions of LayoutLMv2 and LayoutXLM but you need to organize the download
+        yourself.
 
+    Example:
+        ```python
         ModelDownloadManager.maybe_download_weights_and_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
+        ```
 
     The corresponding cased models are currently not available, but this is only to keep the model selection small.
 
@@ -296,30 +334,31 @@ def train_hf_layoutlm(
     How does the model selection work?
 
     The base model is selected by the transferred config file and the weights. Depending on the dataset type
-    ("SEQUENCE_CLASSIFICATION" or "TOKEN_CLASSIFICATION"), the complete model is then put together by placing a suitable
-    top layer on the base model.
+    `("SEQUENCE_CLASSIFICATION" or "TOKEN_CLASSIFICATION")`, the complete model is then put together by placing a
+    suitable top layer on the base model.
 
-    :param path_config_json: Absolute path to HF config file, e.g.
-                             ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")
-    :param dataset_train: Dataset to use for training. Only datasets of type "SEQUENCE_CLASSIFICATION" or
+    Args:
+        path_config_json: Absolute path to HF config file, e.g.
+                             `ModelCatalog.get_full_path_configs("microsoft/layoutlm-base-uncased/pytorch_model.bin")`
+        dataset_train: Dataset to use for training. Only datasets of type "SEQUENCE_CLASSIFICATION" or
                           "TOKEN_CLASSIFICATION" are supported.
-    :param path_weights: path to a checkpoint for further fine-tuning
-    :param config_overwrite: Pass a list of arguments if some configs from `TrainingArguments` should be replaced. Check
-                             https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments
+        path_weights: path to a checkpoint for further fine-tuning
+        config_overwrite: Pass a list of arguments if some configs from `TrainingArguments` should be replaced. Check
+                             <https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments>
                              for the full training default setting.
-    :param log_dir: Path to log dir. Will default to `train_log/layoutlm`
-    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
-    :param dataset_val: Dataset to use for validation. Dataset type must be the same as type of `dataset_train`
-    :param build_val_config: same as `build_train_config` but for validation
-    :param metric: A metric to choose for validation.
-    :param pipeline_component_name: A pipeline component name to use for validation (e.g. LMSequenceClassifierService or
+        log_dir: Path to log dir. Will default to `train_log/layoutlm`
+        build_train_config: dataflow build setting. Again, use list convention setting, e.g. `['max_datapoints=1000']`
+        dataset_val: Dataset to use for validation. Dataset type must be the same as type of `dataset_train`
+        build_val_config: same as `build_train_config` but for validation
+        metric: A metric to choose for validation.
+        pipeline_component_name: A pipeline component name to use for validation (e.g. `LMSequenceClassifierService` or
                                     LMTokenClassifierService.
-    :param use_xlm_tokenizer: This is only necessary if you pass weights of layoutxlm. The config cannot distinguish
-                              between Layoutlmv2 and Layoutxlm, so you need to pass this info explicitly.
-    :param use_token_tag: Will only be used for dataset_type="token_classification". If use_token_tag=True, will use
+        use_xlm_tokenizer: This is only necessary if you pass weights of LayoutXLM. The config cannot distinguish
+                              between Layoutlmv2 and LayoutXLM, so you need to pass this info explicitly.
+        use_token_tag: Will only be used for `dataset_type="token_classification"`. If `use_token_tag=True`, will use
                           labels from sub category `WordType.token_tag` (with `B,I,O` suffix), otherwise
                           `WordType.token_class`.
-    :param segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
+        segment_positions: Using bounding boxes of segment instead of words improves model accuracy significantly.
                               Choose a single or a sequence of layout segments to use their bounding boxes. Note, that
                               the layout segments need to have a child-relationship with words. If a word does not
                               appear as child, it will use the word bounding box.

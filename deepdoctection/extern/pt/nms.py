@@ -30,7 +30,21 @@ with try_import() as import_guard:
 # Copy & paste from https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/nms.py
 def batched_nms(boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float) -> torch.Tensor:
     """
-    Same as torchvision.ops.boxes.batched_nms, but with float().
+    Same as `torchvision.ops.boxes.batched_nms`, but with `float()`.
+
+    Args:
+        boxes: A `torch.Tensor` of shape (N, 4) containing bounding boxes.
+        scores: A `torch.Tensor` of shape (N,) containing scores for each box.
+        idxs: A `torch.Tensor` of shape (N,) containing the class indices for each box.
+        iou_threshold: A float representing the IoU threshold for suppression.
+
+    Returns:
+        A `torch.Tensor` containing the indices of the boxes to keep.
+
+    Note:
+        `Fp16` does not have enough range for batched NMS, so `float()` is used.
+        Torchvision already has a strategy to decide whether to use coordinate trick or for loop to implement
+        `batched_nms`.
     """
     assert boxes.shape[-1] == 4
     # Note: Torchvision already has a strategy (https://github.com/pytorch/vision/issues/1311)

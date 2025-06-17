@@ -48,18 +48,23 @@ def _to_detect_result(word: dict[str, str], class_name: ObjectTypes) -> Detectio
 
 class PdfPlumberTextDetector(PdfMiner):
     """
-    Text miner based on the pdfminer.six engine. To convert pdfminers result, especially group character to get word
-    level results we use pdfplumber.
+    Text miner based on the `pdfminer.six` engine. To convert `pdfminers` result, especially group character to get word
+    level results we use `pdfplumber`.
 
+    Example:
+        ```python
         pdf_plumber = PdfPlumberTextDetector()
         df = SerializerPdfDoc.load("path/to/document.pdf")
         df.reset_state()
 
         for dp in df:
             detection_results = pdf_plumber.predict(dp["pdf_bytes"])
+        ```
 
     To use it in a more integrated way:
 
+    Example:
+        ```python
         pdf_plumber = PdfPlumberTextDetector()
         text_extract = TextExtractionService(pdf_plumber)
 
@@ -70,7 +75,7 @@ class PdfPlumberTextDetector(PdfMiner):
 
         for dp in df:
             ...
-
+        ```
     """
 
     def __init__(self, x_tolerance: int = 3, y_tolerance: int = 3) -> None:
@@ -83,10 +88,13 @@ class PdfPlumberTextDetector(PdfMiner):
 
     def predict(self, pdf_bytes: bytes) -> list[DetectionResult]:
         """
-        Call pdfminer.six and returns detected text as detection results
+        Call `pdfminer.six` and returns detected text as `DetectionResult`
 
-        :param pdf_bytes: bytes of a single pdf page
-        :return: A list of DetectionResult
+        Args:
+            pdf_bytes: bytes of a single pdf page
+
+        Returns:
+            A list of `DetectionResult`
         """
 
         with save_tmp_file(pdf_bytes, "pdf_") as (tmp_name, _):
@@ -104,8 +112,12 @@ class PdfPlumberTextDetector(PdfMiner):
     def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Get the width and height of the full page
-        :param pdf_bytes: pdf_bytes generating the pdf
-        :return: width and height
+
+        Args:
+            pdf_bytes: `pdf_bytes` generating the pdf
+
+        Returns:
+            `(width,height)`
         """
 
         if self._pdf_bytes == pdf_bytes and self._page is not None:
@@ -126,15 +138,20 @@ class Pdfmium2TextDetector(PdfMiner):
     """
     Text miner based on the pypdfium2 engine. It will return text on text line level and not on word level
 
+    Example:
+        ```python
         pdfmium2 = Pdfmium2TextDetector()
         df = SerializerPdfDoc.load("path/to/document.pdf")
         df.reset_state()
 
         for dp in df:
             detection_results = pdfmium2.predict(dp["pdf_bytes"])
+        ```
 
     To use it in a more integrated way:
 
+    Example:
+        ```python
         pdfmium2 = Pdfmium2TextDetector()
         text_extract = TextExtractionService(pdfmium2)
 
@@ -144,6 +161,7 @@ class Pdfmium2TextDetector(PdfMiner):
         df.reset_state()
         for dp in df:
             ...
+        ```
 
     """
 
@@ -157,8 +175,11 @@ class Pdfmium2TextDetector(PdfMiner):
         """
         Call pypdfium2 and returns detected text as detection results
 
-        :param pdf_bytes: bytes of a single pdf page
-        :return: A list of DetectionResult
+        Args:
+            pdf_bytes: bytes of a single pdf page
+
+        Returns:
+            A list of `DetectionResult`
         """
 
         pdf = PdfDocument(pdf_bytes)
@@ -188,8 +209,12 @@ class Pdfmium2TextDetector(PdfMiner):
     def get_width_height(self, pdf_bytes: bytes) -> tuple[float, float]:
         """
         Get the width and height of the full page
-        :param pdf_bytes: pdf_bytes generating the pdf
-        :return: width and height
+
+        Args:
+            pdf_bytes: `pdf_bytes` generating the pdf
+
+        Returns:
+            `(width,height)`
         """
 
         if self._pdf_bytes == pdf_bytes and self._page is not None:

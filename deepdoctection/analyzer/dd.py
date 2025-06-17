@@ -15,12 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
-Module for **deep**doctection analyzer.
-
--factory build_analyzer for a given config
-
--user factory with a reduced config setting
+- factory `build_analyzer` for a given config
+- user factory with a reduced config setting
 """
 
 from __future__ import annotations
@@ -32,12 +30,12 @@ from ..extern.pt.ptutils import get_torch_device
 from ..extern.tp.tfutils import disable_tp_layer_logging, get_tf_device
 from ..pipe.doctectionpipe import DoctectionPipe
 from ..utils.env_info import ENV_VARS_TRUE
-from ..utils.file_utils import tensorpack_available, detectron2_available
+from ..utils.file_utils import detectron2_available, tensorpack_available
 from ..utils.fs import get_configs_dir_path, get_package_path, maybe_copy_config_to_cache
 from ..utils.logger import LoggingRecord, logger
 from ..utils.metacfg import set_config_by_yaml
 from ..utils.types import PathLikeOrStr
-from ._config import cfg
+from .config import cfg
 from .factory import ServiceFactory
 
 __all__ = [
@@ -47,32 +45,6 @@ __all__ = [
 
 _DD_ONE = "deepdoctection/configs/conf_dd_one.yaml"
 _TESSERACT = "deepdoctection/configs/conf_tesseract.yaml"
-_MODEL_CHOICES = {
-    "layout": [
-        "layout/d2_model_0829999_layout_inf_only.pt",
-        "xrf_layout/model_final_inf_only.pt",
-        "microsoft/table-transformer-detection/pytorch_model.bin",
-    ],
-    "segmentation": [
-        "item/model-1620000_inf_only.data-00000-of-00001",
-        "xrf_item/model_final_inf_only.pt",
-        "microsoft/table-transformer-structure-recognition/pytorch_model.bin",
-        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin",
-    ],
-    "ocr": ["Tesseract", "DocTr", "Textract"],
-    "doctr_word": ["doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt"],
-    "doctr_recognition": [
-        "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt",
-        "doctr/crnn_vgg16_bn/pt/pytorch_model.bin",
-    ],
-    "llm": ["gpt-3.5-turbo", "gpt-4"],
-    "segmentation_choices": {
-        "item/model-1620000_inf_only.data-00000-of-00001": "cell/model-1800000_inf_only.data-00000-of-00001",
-        "xrf_item/model_final_inf_only.pt": "xrf_cell/model_final_inf_only.pt",
-        "microsoft/table-transformer-structure-recognition/pytorch_model.bin": None,
-        "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin": None,
-    },
-}
 
 
 def config_sanity_checks() -> None:
@@ -89,32 +61,35 @@ def config_sanity_checks() -> None:
 
 def get_dd_analyzer(
     reset_config_file: bool = True,
+    load_default_config_file: bool = False,
     config_overwrite: Optional[list[str]] = None,
     path_config_file: Optional[PathLikeOrStr] = None,
 ) -> DoctectionPipe:
     """
     Factory function for creating the built-in **deep**doctection analyzer.
 
-    The Standard Analyzer is a pipeline that comprises the following analysis components:
+    Info:
+        The Standard Analyzer is a pipeline that comprises the following analysis components:
 
-    - Document layout analysis
+        - Rotation
+        - Document layout analysis
+        - Table segmentation
+        - Text extraction/OCR
+        - Reading order
+        - Layout linking
 
-    - Table segmentation
+    Args:
+        reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
+            resetting all configurations if set to `True`.
+        load_default_config_file: This will load the default config file from the `.cache` directory if set to `True`.
+            If set to `False`, the config file will be ignored.
+        config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml`
+            configuration with highest priority, e.g. `["USE_TABLE_SEGMENTATION=False", "USE_OCR=False",
+            "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]`.
+        path_config_file: Path to a custom config file. Can be outside of the `.cache` directory.
 
-    - Text extraction/OCR
-
-    - Reading order
-
-    We refer to the various notebooks and docs for running an analyzer and changing the configs.
-
-    :param reset_config_file: This will copy the `.yaml` file with default variables to the `.cache` and therefore
-                              resetting all configurations if set to `True`.
-    :param config_overwrite: Passing a list of string arguments and values to overwrite the `.yaml` configuration with
-                             highest priority, e.g. ["USE_TABLE_SEGMENTATION=False",
-                                                     "USE_OCR=False",
-                                                     "TF.LAYOUT.WEIGHTS=my_fancy_pytorch_model"]
-    :param path_config_file: Path to a custom config file. Can be outside of the .cache directory.
-    :return: A DoctectionPipe instance with given configs
+    Returns:
+        DoctectionPipe: A `DoctectionPipe` instance with given configs.
     """
     config_overwrite = [] if config_overwrite is None else config_overwrite
     if os.environ.get("DD_USE_TF", "0") in ENV_VARS_TRUE:
@@ -131,25 +106,24 @@ def get_dd_analyzer(
     )
     maybe_copy_config_to_cache(get_package_path(), get_configs_dir_path() / "dd", _TESSERACT)
 
-    # Set up of the configuration and logging
-    file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
     cfg.freeze(freezed=False)
-    cfg.overwrite_config(file_cfg)
-
-    cfg.freeze(freezed=False)
+    if load_default_config_file:
+        # Set up of the configuration and logging
+        file_cfg = set_config_by_yaml(dd_one_config_path if not path_config_file else path_config_file)
+        cfg.overwrite_config(file_cfg)
     cfg.LANGUAGE = None
     cfg.LIB = lib
     cfg.DEVICE = device
     if not detectron2_available() or cfg.PT.LAYOUT.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.LAYOUT=False
+        cfg.PT.ENFORCE_WEIGHTS.LAYOUT = False
     if not detectron2_available() or cfg.PT.ITEM.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.ITEM=False
+        cfg.PT.ENFORCE_WEIGHTS.ITEM = False
     if not detectron2_available() or cfg.PT.CELL.WEIGHTS is None:
-        cfg.PT.ENFORCE_WEIGHTS.CELL=False
-    cfg.freeze()
+        cfg.PT.ENFORCE_WEIGHTS.CELL = False
 
     if config_overwrite:
         cfg.update_args(config_overwrite)
+    cfg.freeze()
 
     config_sanity_checks()
     logger.info(LoggingRecord(f"Config: \n {str(cfg)}", cfg.to_dict()))  # type: ignore

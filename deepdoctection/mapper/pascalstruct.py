@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for mapping annotations in iiitar13k style structure
+Mapping for PASCAL VOC dataset structure to `Image` format.
 """
 
 import os
@@ -41,17 +41,18 @@ def pascal_voc_dict_to_image(
     category_name_mapping: Optional[dict[str, str]] = None,
 ) -> Optional[Image]:
     """
-    Map a dataset in a structure equivalent to iiitar13k annotation style to image format
+    Maps a dataset in a structure equivalent to the PASCAL VOC annotation style to the `Image` format.
 
-    :param dp: a datapoint in serialized iiitar13k format. Note that another conversion from xml to
-               a dict structure is required.
-    :param categories_name_as_key: A dict of categories, e.g. DatasetCategories.get_categories(name_as_key=True)
-    :param load_image: If 'True' it will load image to attr: Image.image
-    :param filter_empty_image: Will return None, if datapoint has no annotations
-    :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
-                       will be added.
-    :param category_name_mapping: Map incoming category names, e.g. {"source_name":"target_name"}
-    :return: Image
+    Args:
+        dp: A datapoint in PASCAL VOC format. Note that another conversion from XML to a dict structure is required.
+        categories_name_as_key: A dict of categories, e.g. `DatasetCategories.get_categories(name_as_key=True)`.
+        load_image: If `True`, it will load the image to the attribute `Image.image`.
+        filter_empty_image: Will return `None` if the datapoint has no annotations.
+        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in (0,1) will be added.
+        category_name_mapping: Map incoming category names, e.g. `{"source_name": "target_name"}`.
+
+    Returns:
+        `Image` or `None`.
     """
 
     anns = dp.get("objects", [])

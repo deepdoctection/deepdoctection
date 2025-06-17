@@ -50,8 +50,11 @@ __all__ = [
 
 def box_to_point4(boxes: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
     """
-    :param boxes: nx4
-    :return: (nx4)x2
+    Args:
+        boxes: nx4
+
+    Returns:
+        (nx4)x2
     """
     box = boxes[:, [0, 1, 2, 3, 0, 3, 2, 1]]
     box = box.reshape((-1, 2))
@@ -60,8 +63,11 @@ def box_to_point4(boxes: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
 
 def point4_to_box(points: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
     """
-    :param points: (nx4)x2
-    :return: nx4 boxes (x1y1x2y2)
+    Args:
+        points: (nx4)x2
+
+    Returns:
+        nx4 boxes (`x1y1x2y2`)
     """
     points = points.reshape((-1, 4, 2))
     min_xy = points.min(axis=1)  # nx2
@@ -72,32 +78,52 @@ def point4_to_box(points: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
 class BaseTransform(ABC):
     """
     A deterministic image transformation. This class is also the place to provide a default implementation to any
-    `apply_xxx` method. The current default is to raise NotImplementedError in any such methods.
-    All subclasses should implement `apply_image`. The image should be of type uint8 in range [0, 255], or
+    `apply_xxx` method. The current default is to raise `NotImplementedError` in any such methods.
+    All subclasses should implement `apply_image`. The image should be of type `uint8` in range [0, 255], or
     floating point images in range [0, 1] or [0, 255]. Some subclasses may implement `apply_coords`, when applicable.
     It should take and return a numpy array of Nx2, where each row is the (x, y) coordinate.
     The implementation of each method may choose to modify its input data in-place for efficient transformation.
+
+    Note:
+        All subclasses should implement `apply_image`. Some may implement `apply_coords`.
     """
 
     @abstractmethod
     def apply_image(self, img: PixelValues) -> PixelValues:
-        """The transformation that should be applied to the image"""
+        """
+        The transformation that should be applied to the image.
+
+        Raises:
+            NotImplementedError:
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates. Coords are supposed to to be passed as like
+        """
+        Transformation that should be applied to coordinates. Coords are supposed to be passed as like
 
+        ```python
         np.array([[ulx_0,uly_0,lrx_0,lry_0],[ulx_1,uly_1,lrx_1,lry_1],...])
+        ```
+
+        Raises:
+            NotImplementedError:
         """
         raise NotImplementedError()
 
     @abstractmethod
     def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Inverse transformation going back from coordinates of transformed image to original image. Coords are
-        supposed to to be passed as like
+        """
+        Inverse transformation going back from coordinates of transformed image to original image. Coords are
+        supposed to be passed as like
 
-            np.array([[ulx_0,uly_0,lrx_0,lry_0],[ulx_1,uly_1,lrx_1,lry_1],...])
+        ```python
+        np.array([[ulx_0,uly_0,lrx_0,lry_0],[ulx_1,uly_1,lrx_1,lry_1],...])
+        ```
+
+        Raises:
+            NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -115,6 +141,8 @@ class BaseTransform(ABC):
 class ResizeTransform(BaseTransform):
     """
     Resize the image.
+
+
     """
 
     def __init__(
@@ -126,12 +154,14 @@ class ResizeTransform(BaseTransform):
         interp: str,
     ):
         """
-        :param h: height
-        :param w: width
-        :param new_h: target height
-        :param new_w: target width
-        :param interp: interpolation method, that depends on the image processing library. Currently, it supports
-           NEAREST, BOX, BILINEAR, BICUBIC and VIZ for PIL or INTER_NEAREST, INTER_LINEAR, INTER_AREA or VIZ for OpenCV
+        Args:
+            h: Height.
+            w: Width.
+            new_h: Target height.
+            new_w: Target width.
+            interp: Interpolation method, that depends on the image processing library. Currently, it supports
+                `NEAREST`, `BOX`, `BILINEAR`, `BICUBIC` and `VIZ` for PIL or `INTER_NEAREST`, `INTER_LINEAR`,
+                `INTER_AREA` or `VIZ` for OpenCV.
         """
         self.h = h
         self.w = w
@@ -140,6 +170,18 @@ class ResizeTransform(BaseTransform):
         self.interp = interp
 
     def apply_image(self, img: PixelValues) -> PixelValues:
+        """
+        Apply the resize transformation to the image.
+
+        Args:
+            img: Image to be resized.
+
+        Returns:
+            Resized image.
+
+        Raises:
+            AssertionError: If the input image shape does not match the expected height and width.
+        """
         assert img.shape[:2] == (self.h, self.w)
         ret = viz_handler.resize(img, self.new_w, self.new_h, self.interp)
         if img.ndim == 3 and ret.ndim == 2:
@@ -147,14 +189,30 @@ class ResizeTransform(BaseTransform):
         return ret
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates. Coords are supposed to to be passed as
-        np array of points"""
+        """
+        Transformation that should be applied to coordinates. Coords are supposed to be passed as
+        numpy array of points.
+
+        Args:
+            coords: Coordinates to be transformed.
+
+        Returns:
+            Transformed coordinates.
+        """
         coords[:, 0] = coords[:, 0] * (self.new_w * 1.0 / self.w)
         coords[:, 1] = coords[:, 1] * (self.new_h * 1.0 / self.h)
         return coords
 
     def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Inverse transformation going back from coordinates of resized image to original image"""
+        """
+        Inverse transformation going back from coordinates of resized image to original image.
+
+        Args:
+            coords: Coordinates to be inversely transformed.
+
+        Returns:
+            Inversely transformed coordinates.
+        """
         coords[:, 0] = coords[:, 0] * (self.w * 1.0 / self.new_w)
         coords[:, 1] = coords[:, 1] * (self.h * 1.0 / self.new_h)
         return coords
@@ -172,8 +230,10 @@ class InferenceResize:
 
     def __init__(self, short_edge_length: int, max_size: int, interp: str = "VIZ") -> None:
         """
-        :param short_edge_length: a [min, max] interval from which to sample the shortest edge length.
-        :param max_size: maximum allowed longest edge length.
+        Args:
+            short_edge_length: A [min, max] interval from which to sample the shortest edge length.
+            max_size: Maximum allowed longest edge length.
+            interp: Interpolation method.
         """
         self.short_edge_length = short_edge_length
         self.max_size = max_size
@@ -181,7 +241,13 @@ class InferenceResize:
 
     def get_transform(self, img: PixelValues) -> ResizeTransform:
         """
-        get transform
+        Get the `ResizeTransform` for the image.
+
+        Args:
+            img: Image to be transformed.
+
+        Returns:
+            `ResizeTransform` object.
         """
         h, w = img.shape[:2]
         new_w: Union[int, float]
@@ -208,22 +274,31 @@ def normalize_image(
     """
     Preprocess pixel values of an image by rescaling.
 
-    :param image: image as np.array
-    :param pixel_mean: (3,) array
-    :param pixel_std: (3,) array
+    Args:
+        image: Image as numpy array.
+        pixel_mean: (3,) array.
+        pixel_std: (3,) array.
+
+    Returns:
+        Normalized image.
     """
     return (image - pixel_mean) * (1.0 / pixel_std)
 
 
 def pad_image(image: PixelValues, top: int, right: int, bottom: int, left: int) -> PixelValues:
-    """Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
-    currently supported
+    """
+    Pad an image with white color and with given top/bottom/right/left pixel values. Only white padding is
+    currently supported.
 
-    :param image: image as np.array
-    :param top: Top pixel value to pad
-    :param right: Right pixel value to pad
-    :param bottom: Bottom pixel value to pad
-    :param left: Left pixel value to pad
+    Args:
+        image: Image as numpy array.
+        top: Top pixel value to pad.
+        right: Right pixel value to pad.
+        bottom: Bottom pixel value to pad.
+        left: Left pixel value to pad.
+
+    Returns:
+        Padded image.
     """
     return np.pad(image, ((top, bottom), (left, right), (0, 0)), "constant", constant_values=255)
 
@@ -241,11 +316,15 @@ class PadTransform(BaseTransform):
         pad_left: int,
     ):
         """
-        :param pad_top: padding top image side
-        :param pad_right: padding right image side
-        :param pad_bottom: padding bottom image side
-        :param pad_left: padding left image side
+        A transform for padding images left/right/top/bottom-wise.
+
+        Args:
+            pad_top: Padding top image side.
+            pad_right: Padding right image side.
+            pad_bottom: Padding bottom image side.
+            pad_left: Padding left image side.
         """
+
         self.pad_top = pad_top
         self.pad_right = pad_right
         self.pad_bottom = pad_bottom
@@ -254,13 +333,29 @@ class PadTransform(BaseTransform):
         self.image_height: Optional[int] = None
 
     def apply_image(self, img: PixelValues) -> PixelValues:
-        """Apply padding to image"""
+        """
+        Apply padding to image.
+
+        Args:
+            img: Image to be padded.
+
+        Returns:
+            Padded image.
+        """
         self.image_width = img.shape[1]
         self.image_height = img.shape[0]
         return pad_image(img, self.pad_top, self.pad_right, self.pad_bottom, self.pad_left)
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates"""
+        """
+        Transformation that should be applied to coordinates.
+
+        Args:
+            coords: Coordinates to be transformed.
+
+        Returns:
+            Transformed coordinates.
+        """
         coords[:, 0] = coords[:, 0] + self.pad_left
         coords[:, 1] = coords[:, 1] + self.pad_top
         coords[:, 2] = coords[:, 2] + self.pad_left
@@ -268,7 +363,18 @@ class PadTransform(BaseTransform):
         return coords
 
     def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Inverse transformation going back from coordinates of padded image to original image"""
+        """
+        Inverse transformation going back from coordinates of padded image to original image.
+
+        Args:
+            coords: Coordinates to be inversely transformed.
+
+        Returns:
+            Inversely transformed coordinates.
+
+        Raises:
+            ValueError: If `image_width` and `image_height` are not initialized.
+        """
         if self.image_height is None or self.image_width is None:
             raise ValueError("Initialize image_width and image_height first")
         coords[:, 0] = np.maximum(coords[:, 0] - self.pad_left, np.zeros(coords[:, 0].shape))
@@ -298,21 +404,40 @@ class RotationTransform(BaseTransform):
 
     def __init__(self, angle: Literal[90, 180, 270, 360]):
         """
-        :param angle: angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
-        :param mode: coordinate format - "xyxy" (bounding box), "xywh" (width/height), "poly" (polygon points)
+        Args:
+            angle: Angle to rotate the image. Must be one of 90, 180, 270, or 360 degrees.
         """
         self.angle = angle
         self.image_width: Optional[int] = None
         self.image_height: Optional[int] = None
 
     def apply_image(self, img: PixelValues) -> PixelValues:
-        """Apply rotation to image"""
+        """
+        Apply rotation to image.
+
+        Args:
+            img: Image to be rotated.
+
+        Returns:
+            Rotated image.
+        """
         self.image_width = img.shape[1]
         self.image_height = img.shape[0]
         return viz_handler.rotate_image(img, self.angle)
 
     def apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Transformation that should be applied to coordinates"""
+        """
+        Transformation that should be applied to coordinates.
+
+        Args:
+            coords: Coordinates to be transformed.
+
+        Returns:
+            Transformed coordinates.
+
+        Raises:
+            ValueError: If `image_width` and `image_height` are not initialized.
+        """
         if self.image_width is None or self.image_height is None:
             raise ValueError("Initialize image_width and image_height first")
 
@@ -332,7 +457,18 @@ class RotationTransform(BaseTransform):
         return coords
 
     def inverse_apply_coords(self, coords: npt.NDArray[float32]) -> npt.NDArray[float32]:
-        """Inverse transformation going back from coordinates of rotated image to original image"""
+        """
+        Inverse transformation going back from coordinates of rotated image to original image.
+
+        Args:
+            coords: Coordinates to be inversely transformed.
+
+        Returns:
+            Inversely transformed coordinates.
+
+        Raises:
+            ValueError: If `image_width` and `image_height` are not initialized.
+        """
         if self.image_width is None or self.image_height is None:
             raise ValueError("Initialize image_width and image_height first")
 

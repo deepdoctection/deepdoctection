@@ -123,16 +123,16 @@ class RvlcdipBuilder(DataFlowBaseBuilder):
 
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
-        Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
-        of the dataflow:
+        Returns a dataflow from which you can stream datapoints of images.
 
-        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+        Args:
+            kwargs:
+                split (str): Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                max_datapoints (int): Will stop iterating after max_datapoints. Default: `None`
+                load_image (bool): Will load the image for each datapoint. Default: `False`
 
-        max_datapoints: Will stop iterating after max_datapoints. Default: `None`
-
-        load_image: Will load the image for each datapoint.  Default: `False`
-
-        :return: dataflow
+        Returns:
+            Dataflow
         """
 
         split = str(kwargs.get("split", "val"))

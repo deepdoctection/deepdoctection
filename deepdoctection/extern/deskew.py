@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-jdeskew estimator and rotator to deskew images: <https://github.com/phamquiluan/jdeskew>
+Jdeskew estimator and rotator: <https://github.com/phamquiluan/jdeskew>
 """
+
 from __future__ import annotations
 
 from lazy_imports import try_import
@@ -47,14 +48,19 @@ class Jdeskewer(ImageTransformer):
         """
         Rotation of the image according to the angle determined by the jdeskew estimator.
 
-        **Example**:
-                    jdeskew_predictor = Jdeskewer()
-                    detection_result = jdeskew_predictor.predict(np_image)
-                    jdeskew_predictor.transform(np_image, DetectionResult(angle=5.0))
+        Example:
+            ```python
+            jdeskew_predictor = Jdeskewer()
+            detection_result = jdeskew_predictor.predict(np_image)
+            jdeskew_predictor.transform(np_image, DetectionResult(angle=5.0))
+            ```
 
-        :param np_img: image as numpy array
-        :param specification: DetectionResult with angle value
-        :return: image rotated by the angle
+        Args:
+            np_img: image as `np.array`
+            specification: `DetectionResult` with angle value
+
+        Returns:
+            image rotated by the angle
         """
         if abs(specification.angle) > self.min_angle_rotation:  # type: ignore
             return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
@@ -64,8 +70,11 @@ class Jdeskewer(ImageTransformer):
         """
         Predict the angle of the image to deskew it.
 
-        :param np_img: image as numpy array
-        :return: DetectionResult with angle value
+        Args:
+            np_img: image as `np.array`
+
+        Returns:
+            `DetectionResult` with angle value
         """
         return DetectionResult(angle=round(float(get_angle(np_img)), 4))
 

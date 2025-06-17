@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Wrappers for models of external libraries as well as implementation of the Cascade-RCNN model of Tensorpack.
+# Wrappers for models of external libraries
 """
 
 from .base import *

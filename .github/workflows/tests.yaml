@@ -21,95 +21,77 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { name: '3.9-basic-tf',
+          - { name: '3.9-basic',
               python: '3.9',
               pip: '24.0',
               os: ubuntu-22.04,
-              dll: tensorflow-cpu==2.11,
+              dll: ,
+              tesseract: false,
               detectron2: false,
               extras: ,
-              test: test,
               test_cases: test-basic }
-          - { name: '3.9-basic-pt',
+          - { name: '3.9-pt-legacy',
               python: '3.9',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
+              tesseract: true,
               detectron2: false,
               extras: ,
-              test: test,
-              test_cases: test-basic-pt }
-          - { name: '3.9-tf',
-              python: '3.9',
-              pip: '24.0',
-              os: ubuntu-22.04,
-              dll: tensorflow-cpu==2.11,
-              detectron2: false,
-              extras: tf,
-              test: test,
-              test_cases: test-tf }
+              test_cases: test-pt-legacy}
           - { name: '3.9-pt',
               python: '3.9',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu',
+              tesseract: true,
               detectron2: true,
               extras: pt,
-              test: test,
               test_cases: test-pt }
-          - { name: '3.10-basic-tf',
-              python: '3.10',
+          - { name: '3.9-tf',
+              python: '3.9',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: tensorflow-cpu==2.11,
+              tesseract: true,
               detectron2: false,
-              extras: ,
-              test: test,
-              test_cases: test-basic }
-          - { name: '3.10-basic-pt',
-              python: '3.10',
-              pip: '24.0',
-              os: ubuntu-22.04,
-              dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
-              detectron2: false,
-              extras: ,
-              test: test,
-              test_cases: test-basic-pt }
+              extras: tf,
+              test_cases: test-tf }
           - { name: '3.10-tf',
               python: '3.10',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: tensorflow-cpu==2.11,
+              tesseract: true,
               detectron2: false,
               extras: tf,
-              test: test,
               test_cases: test-tf }
           - { name: '3.10-pt',
               python: '3.10',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              tesseract: true,
               detectron2: true,
               extras: pt,
-              test: test,
               test_cases: test-pt }
           - { name: '3.11-pt',
               python: '3.11',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              tesseract: true,
               detectron2: true,
               extras: pt,
-              test: test,
               test_cases: test-pt }
           - { name: '3.12-pt',
               python: '3.12',
               pip: '24.0',
               os: ubuntu-22.04,
               dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+              tesseract: true,
               detectron2: true,
               extras: pt,
-              test: test,
               test_cases: test-pt }
 
     steps:
@@ -132,12 +114,17 @@ jobs:
         # See https://pre-commit.com/#github-actions-example
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
 
-      - name: Install tesseract and poppler
+      - name: Install Poppler
         run: sudo apt-get -y update &&
-             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu &&
-             sudo apt-get install poppler-utils
+          sudo apt-get install poppler-utils
+
+      - name: Install tesseract
+        if: matrix.tesseract
+        run: sudo apt-get -y update &&
+             sudo apt-get install -y tesseract-ocr tesseract-ocr-deu
 
       - name: Install DL library
+        if: matrix.dll
         run: pip install ${{ matrix.dll }}
 
       - name: cd
@@ -145,18 +132,18 @@ jobs:
 
       - name: Install detectron2
         if: matrix.detectron2
-        run: pip install --no-build-isolation detectron2@git+https://github.com/facebookresearch/detectron2.git
+        run: pip install --no-build-isolation detectron2@git+https://github.com/deepdoctection/detectron2.git
 
-      - name: Test deepdoctection package installation
-        if: matrix.extras == ''
-        run: pip install "."
-
-      - name: Test deepdoctection with extras package installation
-        if: matrix.extras!= ''
-        run:  pip install ".[${{ matrix.extras }}]"
+      - name: Install deepdoctection package
+        run: |
+          if [ "${{ matrix.extras }}" = "" ]; then
+            pip install "."
+          else
+            pip install ".[${{ matrix.extras }}]"
+          fi
 
       - name: Install test suite
-        run: pip install ".[${{ matrix.test }}]"
+        run: pip install ".[test]"
 
       - name: Run tests
         run: make ${{ matrix.test_cases }}

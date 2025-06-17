@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Implementation of BoundingBox class and related methods
+`BoundingBox` class and methods for manipulating bounding boxes.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -43,12 +44,14 @@ with try_import() as import_guard:
 
 def coco_iou(box_a: npt.NDArray[float32], box_b: npt.NDArray[float32]) -> npt.NDArray[float32]:
     """
-    Calculate iou for two arrays of bounding boxes in xyxy format
+    Calculate iou for two arrays of bounding boxes in `xyxy` format
 
-    :param box_a: Array of shape Nx4
-    :param box_b: Array of shape Mx4
+    Args:
+        box_a: Array of shape Nx4
+        box_b: Array of shape Mx4
 
-    :return: Array of shape NxM
+    Returns:
+        Array of shape NxM
     """
 
     def to_xywh(box: npt.NDArray[float32]) -> npt.NDArray[float32]:
@@ -69,9 +72,11 @@ def area(boxes: npt.NDArray[float32]) -> npt.NDArray[float32]:
     """
     Computes area of boxes.
 
-    :param boxes: numpy array with shape [N, 4] holding N boxes in xyxy format
+    Args:
+        boxes: numpy array with shape [N, 4] holding N boxes in xyxy format
 
-    :return: a numpy array with shape [N*1] representing box areas
+    Returns:
+        A numpy array with shape `[N*1]` representing box areas
     """
     return np.array((boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]), dtype=float32)
 
@@ -83,10 +88,12 @@ def intersection(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> 
     """
     Compute pairwise intersection areas between boxes.
 
-    :param boxes1: a numpy array with shape [N, 4] holding N boxes in xyxy format
-    :param  boxes2: a numpy array with shape [M, 4] holding M boxes in xyxy format
+    Args:
+        boxes1: A `np.array` with shape `[N, 4]` holding `N` boxes in `xyxy` format
+        boxes2: A `np.array` with shape `[M, 4]` holding `M` boxes in `xyxy` format
 
-    :return: a numpy array with shape [N*M] representing pairwise intersection area
+    Returns:
+        A `np.array` with shape `[N*M]` representing pairwise intersection area
     """
     [y_min1, x_min1, y_max1, x_max1] = np.split(boxes1, 4, axis=1)  # pylint: disable=W0632
     [y_min2, x_min2, y_max2, x_max2] = np.split(boxes2, 4, axis=1)  # pylint: disable=W0632
@@ -111,10 +118,12 @@ def np_iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.ND
     """
     Computes pairwise intersection-over-union between box collections.
 
-    :param  boxes1: a numpy array with shape [N, 4] holding N boxes in xyxy format.
-    :param  boxes2: a numpy array with shape [M, 4] holding M boxes in xyxy format.
+    Args:
+        boxes1: a numpy array with shape [N, 4] holding N boxes in xyxy format.
+        boxes2: a numpy array with shape [M, 4] holding M boxes in xyxy format.
 
-    :return:  a numpy array with shape [N, M] representing pairwise iou scores.
+    Returns:
+        A `np.array` with shape `[N, M]` representing pairwise iou scores.
     """
     intersect = intersection(boxes1, boxes2)
     area1 = area(boxes1)
@@ -126,16 +135,21 @@ def np_iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.ND
 
 def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArray[float32]:
     """
-    Computes pairwise intersection-over-union between box collections. The method will be chosen based on what
-    is installed:
+    Computes pairwise intersection-over-union between box collections.
 
-    - If pycocotools is installed it will choose pycocotools.mask.iou which is a cython implementation and much faster
-    - Otherwise it will use the numpy implementation as fallback
+    Note:
+        The method will be chosen based on what is installed:
 
-    :param boxes1:  a numpy array with shape [N, 4] holding N boxes in xyxy format.
-    :param boxes2:  a numpy array with shape [N, 4] holding N boxes in xyxy format.
+        - If `pycocotools` is installed it will choose `pycocotools.mask.iou` which is a `C++` implementation
+          and much faster
+        - Otherwise it will use the numpy implementation as fallback
 
-    :return: a numpy array with shape [N, M] representing pairwise iou scores.
+    Args:
+        boxes1:  A `np.array` with shape `[N, 4]` holding `N` boxes in `xyxy` format.
+        boxes2:  A np.array with shape `[N, 4]` holding `N` boxes in `xyxy` format.
+
+    Returns:
+        A `np.array` with shape `[N, M]` representing pairwise iou scores.
     """
 
     if cocotools_available():
@@ -143,7 +157,7 @@ def iou(boxes1: npt.NDArray[float32], boxes2: npt.NDArray[float32]) -> npt.NDArr
     return np_iou(boxes1, boxes2)
 
 
-RELATIVE_COORD_CONVERTER = 10**8
+RELATIVE_COORD_SCALE_FACTOR = 10**8
 
 
 @dataclass
@@ -152,18 +166,31 @@ class BoundingBox:
     Rectangular bounding box that stores coordinates and allows different representations.
 
     This implementation differs from the previous version by using internal integer storage with precision scaling
-    for both absolute and relative coordinates. Coordinates are stored internally as integers (_ulx, _uly, etc.)
-    with relative coordinates multiplied by RELATIVE_COORD_CONVERTER (10^8) for precision. Properties (ulx, uly, etc.)
+    for both absolute and relative coordinates. Coordinates are stored internally as integers `(_ulx, _uly, etc.)`
+    with relative coordinates multiplied by `RELATIVE_COORD_CONVERTER` for precision. Properties `(ulx, uly, etc.)`
     handle the conversion between internal storage and exposed values.
 
-    You can define an instance by passing:
-    - Upper left point (ulx, uly) + width and height, OR
-    - Upper left point (ulx, uly) + lower right point (lrx, lry)
+    Note:
+        You can define an instance by passing:
 
-    Notes:
-    - When absolute_coords=True, coordinates will be rounded to integers
-    - When absolute_coords=False, coordinates must be between 0 and 1
-    - The box is validated on initialization to ensure coordinates are valid
+        - Upper left point `(ulx, uly) + width` and height, OR
+        - Upper left point `(ulx, uly) + lower right point (lrx, lry)`
+
+    Note:
+        - When `absolute_coords=True`, coordinates will be rounded to integers
+        - When `absolute_coords=False`, coordinates must be between 0 and 1
+        - The box is validated on initialization to ensure coordinates are valid
+
+    Attributes:
+        absolute_coords: Whether the coordinates are absolute pixel values (`True`) or normalized
+                                `[0,1]` values (`False`).
+        _ulx: Upper-left x-coordinate, stored as an integer.
+        _uly: Upper-left y-coordinate, stored as an integer.
+        _lrx: Lower-right x-coordinate, stored as an integer.
+        _lry: Lower-right y-coordinate, stored as an integer.
+        _height: Height of the bounding box, stored as an integer.
+        _width: Width of the bounding box, stored as an integer.
+
     """
 
     absolute_coords: bool
@@ -185,23 +212,25 @@ class BoundingBox:
         height: BoxCoordinate = 0,
     ):
         """
-        Initialize a BoundingBox instance with the specified coordinates.
+        Initialize a BoundingBox instance with specified coordinates.
 
-        This initializer supports two ways of defining a bounding box:
-        1. Using upper-left coordinates (ulx, uly) with width and height
-        2. Using upper-left (ulx, uly) and lower-right (lrx, lry) coordinates
+        Note:
+             This initializer supports two ways of defining a bounding box:
+             - Using upper-left coordinates (ulx, uly) with width and height
+             - Using upper-left (ulx, uly) and lower-right (lrx, lry) coordinates
 
-        When absolute_coords is True, coordinates are stored as integers.
-        When absolute_coords is False, coordinates are stored as scaled integers
-        (original float values * RELATIVE_COORD_CONVERTER) for precision.
+             When `absolute_coords=True`, coordinates are stored as integers.
+             When `absolute_coords=False`, coordinates are stored as scaled integers
+             (original `float values * RELATIVE_COORD_SCALE_FACTOR`) for precision.
 
-        :param absolute_coords: Whether coordinates are absolute pixels (True) or normalized [0,1] values (False)
-        :param ulx: Upper-left x-coordinate (float or int)
-        :param uly: Upper-left y-coordinate (float or int)
-        :param lrx: Lower-right x-coordinate (float or int), default 0
-        :param lry: Lower-right y-coordinate (float or int), default 0
-        :param width: Width of the bounding box (float or int), default 0
-        :param height: Height of the bounding box (float or int), default 0
+        Args:
+            absolute_coords: Whether coordinates are absolute pixels (`True`) or normalized `[0,1]` values (`False`)
+            ulx: Upper-left `x`-coordinate (`float` or `int`)
+            uly: Upper-left `y`-coordinate (`float` or `int`)
+            lrx: Lower-right `x`-coordinate (`float` or `int`), default 0
+            lry: Lower-right `y`-coordinate (`float` or `int`), default 0
+            width: Width of the bounding box (`float` or `int`), default 0
+            height: Height of the bounding box (`float` or `int`), default 0
         """
         self.absolute_coords = absolute_coords
         if absolute_coords:
@@ -214,14 +243,14 @@ class BoundingBox:
                 self._width = round(width)
                 self._height = round(height)
         else:
-            self._ulx = round(ulx * RELATIVE_COORD_CONVERTER)
-            self._uly = round(uly * RELATIVE_COORD_CONVERTER)
+            self._ulx = round(ulx * RELATIVE_COORD_SCALE_FACTOR)
+            self._uly = round(uly * RELATIVE_COORD_SCALE_FACTOR)
             if lrx and lry:
-                self._lrx = round(lrx * RELATIVE_COORD_CONVERTER)
-                self._lry = round(lry * RELATIVE_COORD_CONVERTER)
+                self._lrx = round(lrx * RELATIVE_COORD_SCALE_FACTOR)
+                self._lry = round(lry * RELATIVE_COORD_SCALE_FACTOR)
             if width and height:
-                self._width = round(width * RELATIVE_COORD_CONVERTER)
-                self._height = round(height * RELATIVE_COORD_CONVERTER)
+                self._width = round(width * RELATIVE_COORD_SCALE_FACTOR)
+                self._height = round(height * RELATIVE_COORD_SCALE_FACTOR)
         if not self._width and not self._height:
             self._width = self._lrx - self._ulx
             self._height = self._lry - self._uly
@@ -265,67 +294,67 @@ class BoundingBox:
     @property
     def ulx(self) -> BoxCoordinate:
         """ulx property"""
-        return self._ulx / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._ulx
+        return self._ulx / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._ulx
 
     @ulx.setter
     def ulx(self, value: BoxCoordinate) -> None:
         """ulx setter"""
-        self._ulx = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._ulx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._width = self._lrx - self._ulx
 
     @property
     def uly(self) -> BoxCoordinate:
         """uly property"""
-        return self._uly / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._uly
+        return self._uly / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._uly
 
     @uly.setter
     def uly(self, value: BoxCoordinate) -> None:
         """uly setter"""
-        self._uly = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._uly = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._height = self._lry - self._uly
 
     @property
     def lrx(self) -> BoxCoordinate:
         """lrx property"""
-        return self._lrx / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._lrx
+        return self._lrx / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lrx
 
     @lrx.setter
     def lrx(self, value: BoxCoordinate) -> None:
         """lrx setter"""
-        self._lrx = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._lrx = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._width = self._lrx - self._ulx
 
     @property
     def lry(self) -> BoxCoordinate:
         """lry property"""
-        return self._lry / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._lry
+        return self._lry / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._lry
 
     @lry.setter
     def lry(self, value: BoxCoordinate) -> None:
         """lry setter"""
-        self._lry = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._lry = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._height = self._lry - self._uly
 
     @property
     def width(self) -> BoxCoordinate:
         """width property"""
-        return self._width / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._width
+        return self._width / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._width
 
     @width.setter
     def width(self, value: BoxCoordinate) -> None:
         """width setter"""
-        self._width = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._width = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._lrx = self._ulx + self._width
 
     @property
     def height(self) -> BoxCoordinate:
         """height property"""
-        return self._height / RELATIVE_COORD_CONVERTER if not self.absolute_coords else self._height
+        return self._height / RELATIVE_COORD_SCALE_FACTOR if not self.absolute_coords else self._height
 
     @height.setter
     def height(self, value: BoxCoordinate) -> None:
         """height setter"""
-        self._height = round(value * RELATIVE_COORD_CONVERTER) if not self.absolute_coords else round(value)
+        self._height = round(value * RELATIVE_COORD_SCALE_FACTOR) if not self.absolute_coords else round(value)
         self._lry = self._uly + self._height
 
     @property
@@ -358,15 +387,18 @@ class BoundingBox:
         """
         Returns the coordinates as numpy array.
 
-        :param mode: Mode for coordinate arrangement:
-                     "xyxy" for upper left/lower right point representation,
-                     "xywh" for upper left and width/height representation or
-                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+        Args:
+            mode: Mode for coordinate arrangement:
+                     `xyxy` for upper left/lower right point representation,
+                     `xywh` for upper left and width/height representation or
+                     `poly` for full eight coordinate polygon representation. `x,y` coordinates will be
                       returned in counter-clockwise order.
 
-        :param scale_x: rescale the x coordinate. Defaults to 1
-        :param scale_y: rescale the y coordinate. Defaults to 1
-        :return: box coordinates
+            scale_x: rescale the `x` coordinate. Defaults to `1`
+            scale_y: rescale the `y` coordinate. Defaults to `1`
+
+        Returns:
+            box coordinates
         """
         np_box_scale = np.array([scale_x, scale_y, scale_x, scale_y], dtype=np.float32)
         np_poly_scale = np.array(
@@ -386,15 +418,18 @@ class BoundingBox:
         """
         Returns the coordinates as list
 
-        :param mode:  Mode for coordinate arrangement:
-                     "xyxy" for upper left/lower right point representation,
-                     "xywh" for upper left and width/height representation or
-                     "poly" for full eight coordinate polygon representation. x,y coordinates will be
+        Args:
+            mode:  Mode for coordinate arrangement:
+                     `xyxy` for upper left/lower right point representation,
+                     `xywh` for upper left and width/height representation or
+                     `poly` for full eight coordinate polygon representation. `x,y` coordinates will be
                       returned in counter-clockwise order.
 
-        :param scale_x: rescale the x coordinate. Defaults to 1
-        :param scale_y: rescale the y coordinate. Defaults to 1
-        :return: box coordinates
+            scale_x: rescale the x coordinate. Defaults to 1
+            scale_y: rescale the y coordinate. Defaults to 1
+
+        Returns:
+            box coordinates
         """
         assert mode in ("xyxy", "xywh", "poly"), "Not a valid mode"
         if mode == "xyxy":
@@ -458,11 +493,13 @@ class BoundingBox:
         Transforms bounding box coordinates into absolute or relative coords. Internally, a new bounding box will be
         created. Changing coordinates requires width and height of the whole image.
 
-        :param image_width: The horizontal image size
-        :param image_height: The vertical image size
-        :param absolute_coords: Whether to recalculate into absolute coordinates.
+        Args:
+            image_width: The horizontal image size
+            image_height: The vertical image size
+            absolute_coords: Whether to recalculate into absolute coordinates.
 
-        :return: Either a list or np.array.
+        Returns:
+            Either a `list` or `np.array`.
         """
         if absolute_coords != self.absolute_coords:
             if self.absolute_coords:
@@ -485,13 +522,20 @@ class BoundingBox:
         return self
 
     def __str__(self) -> str:
-        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
+        return (
+            f"Bounding Box(absolute_coords: {self.absolute_coords},"
+            f"ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry})"
+        )
 
     def __repr__(self) -> str:
         return (
             f"BoundingBox(absolute_coords={self.absolute_coords}, ulx={self.ulx}, uly={self.uly}, lrx={self.lrx},"
             f" lry={self.lry}, width={self.width}, height={self.height})"
         )
+
+    def get_legacy_string(self) -> str:
+        """Legacy string representation of the bounding box. Do not use"""
+        return f"Bounding Box ulx: {self.ulx}, uly: {self.uly}, lrx: {self.lrx}, lry: {self.lry}"
 
     @staticmethod
     def remove_keys() -> list[str]:
@@ -514,19 +558,24 @@ def intersection_box(
     box_1: BoundingBox, box_2: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
 ) -> BoundingBox:
     """
-    Returns the intersection bounding box of two boxes. Will raise a `ValueError` if the intersection is empty.
+    Returns the intersection bounding box of two boxes.
     If coords are absolute, it will floor the lower and ceil the upper coord to ensure the resulting box has same
     coordinates as the box induces from `crop_box_from_image`
 
-    :param box_1: bounding box
-    :param box_2: bounding box
-    :param width: Total width of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
+    Args:
+        box_1: bounding box
+        box_2: bounding box
+        width: Total width of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
                   and `box_2` are not equal.
-    :param height: Total height of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
+        height: Total height of image. This optional parameter is needed if the value of `absolute_coords` of `box_1`
                    and `box_2` are not equal.
 
-    :return: bounding box. Will have same `absolute_coords` as `box_2`, if absolute_coords of `box_1` and `box_2` are
-             not equal
+    Returns:
+        bounding box. Will have same `absolute_coords` as `box_2`, if `absolute_coords` of `box_1` and `box_2` are
+             not equal#
+
+    Raises:
+        ValueError: If the intersection is empty, i.e. if the boxes do not overlap.
     """
 
     if box_1.absolute_coords != box_2.absolute_coords:
@@ -548,17 +597,18 @@ def crop_box_from_image(
     np_image: PixelValues, crop_box: BoundingBox, width: Optional[float] = None, height: Optional[float] = None
 ) -> PixelValues:
     """
-    Crop a box (the crop_box) from a np_image. Will floor the left  and ceil the right coordinate point.
+    Crop a box (the crop_box) from a image given as `np.array`. Will floor the left  and ceil the right coordinate
+    point.
 
-    :param np_image: Image to crop from.
-    :param crop_box: Bounding box to crop.
-    :param width: Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
-                  False
+    Args:
+        np_image: Image to crop from.
+        crop_box: Bounding box to crop.
+        width: Total width of image. This optional parameter is needed if the value of `absolute_coords` of
+               `crop_box` is `False`.
+        height: Total width of image. This optional parameter is needed if the value of `absolute_coords` of
+                `crop_box` is `False`.
 
-    :param height:Total width of image. This optional parameter is needed if the value of absolute_coords of crop_box is
-                  False
-
-    :return: A numpy array cropped according to the bounding box.
+    :return: A `np.array` cropped according to the bounding box.
     """
     if not crop_box.absolute_coords:
         assert (
@@ -579,13 +629,16 @@ def crop_box_from_image(
 def local_to_global_coords(local_box: BoundingBox, embedding_box: BoundingBox) -> BoundingBox:
     """
     Transform coords in terms of a cropped image into global coords. The local box coords are given in terms of the
-    embedding box. The global coords will be determined by transforming the upper left point (which is (0,0) in
+    embedding box. The global coords will be determined by transforming the upper left point (which is `(0,0)` in
     local terms) into the upper left point given by the embedding box. This will shift the ul point of the
-    local box to ul + embedding_box.ul
+    local box to `ul + embedding_box.ul`
 
-    :param local_box: bounding box with coords in terms of an embedding (e.g. local coordinates)
-    :param embedding_box: bounding box of the embedding.
-    :return: bounding box with local box transformed to absolute coords
+    Args:
+        local_box: bounding box with coords in terms of an embedding (e.g. local coordinates)
+        embedding_box: bounding box of the embedding.
+
+    Returns:
+        Bounding box with local box transformed to absolute coords
     """
 
     assert local_box.absolute_coords and embedding_box.absolute_coords, (
@@ -614,11 +667,14 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
     Transforming global bounding box coords into the coordinate system given by the embedding box. The transformation
     requires that the global bounding box coordinates lie completely within the rectangle of the embedding box.
     The transformation results from a shift of all coordinates given by the shift of the upper left point of the
-    embedding box into (0,0).
+    embedding box into `(0,0)`.
 
-    :param global_box: The bounding box to be embedded
-    :param embedding_box: The embedding box. Must cover the global box completely.
-    :return: Bounding box of the embedded box in local coordinates.
+    Args:
+        global_box: The bounding box to be embedded
+        embedding_box: The embedding box. Must cover the global box completely.
+
+    Returns:
+        Bounding box of the embedded box in local coordinates.
     """
 
     assert global_box.absolute_coords and embedding_box.absolute_coords, (
@@ -639,7 +695,9 @@ def global_to_local_coords(global_box: BoundingBox, embedding_box: BoundingBox) 
 def merge_boxes(*boxes: BoundingBox) -> BoundingBox:
     """
     Generating the smallest box containing an arbitrary tuple/list of boxes.
-    :param boxes: An arbitrary tuple/list of bounding boxes `BoundingBox`.
+
+    Args:
+        boxes: An arbitrary tuple/list of bounding boxes `BoundingBox`.
     """
     absolute_coords = boxes[0].absolute_coords
     assert all(box.absolute_coords == absolute_coords for box in boxes), "all boxes must have same absolute_coords"
@@ -660,22 +718,21 @@ def rescale_coords(
     scaled_total_height: float,
 ) -> BoundingBox:
     """
-    Generating a bounding box with scaled coordinates. Will rescale x coordinate with factor
+    Generating a bounding box with scaled coordinates. Will rescale `x` coordinate with factor
+    `*(current_total_width/scaled_total_width)`, resp. `y` coordinate with factor
+    `* (current_total_height/scaled_total_height)`,
 
-    * (current_total_width/scaled_total_width),
+    while not changing anything if `absolute_coords` is set to `False`.
 
-    resp. y coordinate with factor
+    Args:
+        box: BoudingBox to rescale
+        current_total_width: absolute coords of width of image
+        current_total_height: absolute coords of height of image
+        scaled_total_width:  absolute width of rescaled image
+        scaled_total_height: absolute height of rescaled image
 
-    * (current_total_height/scaled_total_height),
-
-    while not changing anything if `absolute_coords` is set to False.
-
-    :param box: BoudingBox to rescale
-    :param current_total_width: absolute coords of width of image
-    :param current_total_height: absolute coords of height of image
-    :param scaled_total_width:  absolute width of rescaled image
-    :param scaled_total_height: absolute height of rescaled image
-    :return: rescaled BoundingBox
+    Returns:
+        rescaled `BoundingBox`
     """
 
     if not box.absolute_coords:
@@ -694,12 +751,15 @@ def rescale_coords(
 
 def intersection_boxes(boxes_1: Sequence[BoundingBox], boxes_2: Sequence[BoundingBox]) -> Sequence[BoundingBox]:
     """
-    The multiple version of 'intersection_box': Given two lists of m and n bounding boxes, it will calculate the
-    pairwise intersection of both groups. There will be at most mxn intersection boxes.
+    The multiple version of `intersection_box`: Given two lists of `m` and `n` bounding boxes, it will calculate the
+    pairwise intersection of both groups. There will be at most `mxn` intersection boxes.
 
-    :param boxes_1: sequence of m BoundingBox
-    :param boxes_2: sequence of n BoundingBox
-    :return: list of at most mxn BoundingBox
+    Args:
+        boxes_1: sequence of m BoundingBox
+        boxes_2: sequence of n BoundingBox
+
+    Returns:
+        list of at most mxn BoundingBox
     """
     if not boxes_1 and boxes_2:
         return boxes_2

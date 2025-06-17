@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for training Detectron2 `GeneralizedRCNN`
+Training Detectron2 `GeneralizedRCNN`
 """
 from __future__ import annotations
 
@@ -111,10 +111,12 @@ class WandbWriter(EventWriter):
         **kwargs: Any,
     ):
         """
-        :param project: W&B Project name
-        :param config: the project level configuration object
-        :param window_size: the scalars will be median-smoothed by this window size
-        :param kwargs: other arguments passed to `wandb.init(...)`
+        Args:
+            project: W&B Project name.
+            repo: Repository name.
+            config: The project level configuration object.
+            window_size: The scalars will be median-smoothed by this window size.
+            **kwargs: Other arguments passed to `wandb.init(...)`.
         """
         if config is None:
             config = {}
@@ -137,8 +139,10 @@ class WandbWriter(EventWriter):
 
 class D2Trainer(DefaultTrainer):
     """
-    Detectron2 `DefaultTrainer` with some custom method for handling datasets and running evaluation. The setting is
-    made to train standard models in detectron2.
+    Detectron2 `DefaultTrainer` with some custom method for handling datasets and running evaluation.
+
+    Info:
+        The setting is made to train standard models in Detectron2.
     """
 
     def __init__(self, cfg: CfgNode, torch_dataset: IterableDataset[Any], mapper: DatasetMapper) -> None:
@@ -150,10 +154,16 @@ class D2Trainer(DefaultTrainer):
 
     def build_hooks(self) -> list[HookBase]:
         """
-        Overwritten from DefaultTrainer. This ensures that the EvalHook is being called before the writer and
-        all metrics are being written to JSON, Tensorboard etc.
+        Builds the list of hooks for training.
 
-        :return: list[HookBase]
+        Note:
+            This ensures that the `EvalHook` is being called before the writer and all metrics are being written to
+            JSON, Tensorboard etc.
+
+        Returns:
+            List of `HookBase` objects.
+
+
         """
         cfg = self.cfg.clone()
         cfg.defrost()
@@ -203,10 +213,12 @@ class D2Trainer(DefaultTrainer):
     def build_writers(self) -> list[EventWriter]:
         """
         Build a list of writers to be using `default_writers()`.
-        If you'd like a different list of writers, you can overwrite it in
-        your trainer.
 
-        :return: A list of `EventWriter` objects.
+        Note:
+            If you'd like a different list of writers, you can overwrite it in your trainer.
+
+        Returns:
+            A list of `EventWriter` objects.
         """
         writers_list = default_writers(self.cfg.OUTPUT_DIR, self.max_iter)
         if self.cfg.WANDB.USE_WANDB:
@@ -220,10 +232,13 @@ class D2Trainer(DefaultTrainer):
 
     def build_train_loader(self, cfg: CfgNode) -> DataLoader[Any]:  # pylint: disable=W0221
         """
-        Overwritten method from `DefaultTrainer`.
+        Builds the data loader for training.
 
-        :param cfg: Configuration
-        :return: The data loader for a given dataset adapter, mapper.
+        Args:
+            cfg: Configuration.
+
+        Returns:
+            The data loader for a given dataset adapter and mapper.
         """
         return build_detection_train_loader(
             dataset=self.dataset, mapper=self.mapper, total_batch_size=cfg.SOLVER.IMS_PER_BATCH
@@ -231,10 +246,13 @@ class D2Trainer(DefaultTrainer):
 
     def eval_with_dd_evaluator(self, **build_eval_kwargs: str) -> Union[list[dict[str, Any]], dict[str, Any]]:
         """
-        Running the Evaluator. This method will be called from the `EvalHook`
+        Runs the evaluator. This method will be called from the `EvalHook`.
 
-        :param build_eval_kwargs: dataflow eval config kwargs of the underlying dataset
-        :return: A dict of evaluation results
+        Args:
+            **build_eval_kwargs: Dataflow eval config kwargs of the underlying dataset.
+
+        Returns:
+            A dict or list of dicts with evaluation results.
         """
         assert self.evaluator is not None
         assert self.evaluator.pipe_component is not None
@@ -251,13 +269,16 @@ class D2Trainer(DefaultTrainer):
         build_val_dict: Optional[Mapping[str, str]] = None,
     ) -> None:
         """
-        Setup of evaluator before starting training. During training, predictors will be replaced by current
-        checkpoints.
+        Setup of evaluator before starting training.
 
-        :param dataset_val: dataset on which to run evaluation
-        :param pipeline_component: pipeline component to plug into the evaluator
-        :param metric: A metric class
-        :param build_val_dict: evaluation dataflow build config
+        Note:
+            During training, predictors will be replaced by current checkpoints.
+
+        Args:
+            dataset_val: Dataset on which to run evaluation.
+            pipeline_component: Pipeline component to plug into the evaluator.
+            metric: A metric class or instance.
+            build_val_dict: Evaluation dataflow build config.
         """
         if wandb_available():
             run = wandb.run if wandb.run is not None else None
@@ -295,50 +316,47 @@ def train_d2_faster_rcnn(
     pipeline_component_name: Optional[str] = None,
 ) -> None:
     """
-    Adaptation of <https://github.com/facebookresearch/detectron2/blob/main/tools/train_net.py> for training Detectron2
-    standard models
+    Adaptation of https://github.com/facebookresearch/detectron2/blob/main/tools/train_net.py for training Detectron2
+    standard models.
 
-    Train Detectron2 from scratch or fine-tune a model using this API. Compared to Tensorpack this framework trains much
-    faster, e.g. <https://detectron2.readthedocs.io/en/latest/notes/benchmarks.html> .
+    Trains Detectron2 from scratch or fine-tunes a model using this API.
 
-    This training script is devoted to the case where one cluster with one GPU is available. To run on several machines
-    with more than one GPU use `detectron2.engine.launch` .
+    Info:
+        This training script is devoted to the case where one cluster with one GPU is available. To run on several
+        machines with more than one GPU use `detectron2.engine.launch`.
 
-        if __name__ == "__main__":
+    Example:
+        ```python
+        launch(train_d2_faster_rcnn,
+               num_gpus,
+               num_machines,
+               machine_rank,
+               dist_url,
+               args=(path_config_yaml,
+                     path_weights,
+                     config_overwrite,
+                     log_dir,
+                     build_train_config,
+                     dataset_val,
+                     build_val_config,
+                     metric_name,
+                     metric,
+                     pipeline_component_name),)
+        ```
 
-                launch(train_d2_faster_rcnn,
-                       num_gpus,
-                       num_machines,
-                       machine_rank,
-                       dist_url,
-                       args=(path_config_yaml,
-                             path_weights,
-                             config_overwrite,
-                             log_dir,
-                             build_train_config,
-                             dataset_val,
-                             build_val_config,
-                             metric_name,
-                             metric,
-                             pipeline_component_name),)
-
-
-    :param path_config_yaml: path to a D2 config file. Check
-                             https://github.com/facebookresearch/detectron2/blob/main/detectron2/config/defaults.py
-                             for various settings.
-    :param dataset_train: the dataset to use for training.
-    :param path_weights: path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
-                         an empty string is passed
-    :param config_overwrite: Pass a list of arguments if some configs from the .yaml file should be replaced. Use the
-                             list convention, e.g. ['TRAIN.STEPS_PER_EPOCH=500', 'OUTPUT.RESULT_SCORE_THRESH=0.4']
-    :param log_dir: Path to log dir. Will default to `train_log/frcnn`
-    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
-    :param dataset_val: the dataset to use for validation.
-    :param build_val_config: same as `build_train_config` but for validation
-    :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
-                        metric setting, pass a metric explicitly.
-    :param metric: A metric to choose for validation.
-    :param pipeline_component_name: A pipeline component name to use for validation.
+    Args:
+        path_config_yaml: Path to a Detectron2 config file.
+        dataset_train: The dataset to use for training.
+        path_weights: Path to a checkpoint, if you want to continue training or fine-tune. Will train from scratch if
+                      an empty string is passed.
+        config_overwrite: List of arguments if some configs from the .yaml file should be replaced.
+        log_dir: Path to log dir. Will default to `train_log/frcnn`.
+        build_train_config: Dataflow build setting.
+        dataset_val: The dataset to use for validation.
+        build_val_config: Same as `build_train_config` but for validation.
+        metric_name: A metric name to choose for validation.
+        metric: A metric to choose for validation.
+        pipeline_component_name: A pipeline component name to use for validation.
     """
 
     assert cuda.device_count() > 0, "Has to train with GPU!"

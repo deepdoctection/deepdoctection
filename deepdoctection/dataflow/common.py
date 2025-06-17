@@ -6,10 +6,9 @@
 
 
 """
-Some DataFlow classes for transforming and processing datapoints. Many classes have been taken from
-
-<https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
+Some DataFlows  for transforming and processing datapoints
 """
+
 import itertools
 from copy import copy
 from typing import Any, Callable, Iterator, Union
@@ -25,9 +24,10 @@ class TestDataSpeed(ProxyDataFlow):
 
     def __init__(self, df: DataFlow, size: int = 5000, warmup: int = 0) -> None:
         """
-        :param df: the DataFlow to test.
-        :param size: number of datapoints to fetch.
-        :param warmup: warmup iterations
+        Args:
+            df: The DataFlow to test.
+            size: Number of datapoints to fetch.
+            warmup: Warmup iterations.
         """
         super().__init__(df)
         self.test_size = int(size)
@@ -63,16 +63,16 @@ class TestDataSpeed(ProxyDataFlow):
 
 class FlattenData(ProxyDataFlow):
     """
-    Flatten an iterator within a datapoint. Will flatten the datapoint if it is a list or a tuple.
+    FlattenData flattens an iterator within a datapoint. Will flatten the datapoint if it is a list or a tuple.
 
-    **Example:**
+    Example:
+        ```python
+        dp_1 = ['a','b']
+        dp_2 = ['c','d']
 
-            dp_1 = ['a','b']
-            dp_2 = ['c','d']
-
-        will yield
-
-            ['a'], ['b'], ['c'], ['d'].
+        yields:
+            ['a'], ['b'], ['c'], ['d']
+        ```
     """
 
     def __iter__(self) -> Any:
@@ -84,23 +84,25 @@ class FlattenData(ProxyDataFlow):
 
 class MapData(ProxyDataFlow):
     """
-    Apply a mapper/filter on the datapoints of a DataFlow.
-    Note:
-        1. Please make sure func doesn't modify its arguments in place,
-           unless you're certain it's safe.
-        2. If you discard some datapoints, `len(MapData(ds))` will be incorrect.
+    MapData applies a mapper/filter on the datapoints of a DataFlow.
 
-    **Example:**
+    Notes:
+        1. Please ensure that `func` does not modify its arguments in-place unless it is safe.
+        2. If some datapoints are discarded, `len(MapData(ds))` will be incorrect.
 
-            df = ... # some dataflow each datapoint is [img, label]
-            ds = MapData(ds, lambda dp: [dp[0] * 255, dp[1]])
+    Example:
+        ```python
+        df = ... # a DataFlow where each datapoint is [img, label]
+        ds = MapData(ds, lambda dp: [dp[0] * 255, dp[1]])
+        ```
     """
 
     def __init__(self, df: DataFlow, func: Callable[[Any], Any]) -> None:
         """
-        :param df: input DataFlow
-        :param func: takes a datapoint and returns a new
-               datapoint. Return None to discard/skip this datapoint.
+        Args:
+            df: input DataFlow
+            func: takes a datapoint and returns a new
+                  datapoint. Return None to discard/skip this datapoint.
         """
         super().__init__(df)
         self.func = func
@@ -114,27 +116,27 @@ class MapData(ProxyDataFlow):
 
 class MapDataComponent(MapData):
     """
-    Apply a mapper/filter on a datapoint component.
+    MapDataComponent applies a mapper/filter on a component of a datapoint.
 
-    Note:
-        1. This dataflow itself doesn't modify the datapoints.
-           But please make sure func doesn't modify its arguments in place,
-           unless you're certain it's safe.
-        2. If you discard some datapoints, ``len(MapDataComponent(ds, ..))`` will be incorrect.
+    Notes:
+        1. This DataFlow itself does not modify the datapoints. Please ensure that `func` does not modify its arguments
+           in-place unless it is safe.
+        2. If some datapoints are discarded, `len(MapDataComponent(ds, ..))` will be incorrect.
 
-
-    **Example:**
-
-            df = ... # some dataflow each datapoint is [img, label]
-            ds = MapDataComponent(ds, lambda img: img * 255, 0)  # map the 0th component
+    Example:
+        ```python
+        df = ... # a DataFlow where each datapoint is [img, label]
+        ds = MapDataComponent(ds, lambda img: img * 255, 0)  # maps the 0th component
+        ```
     """
 
     def __init__(self, df: DataFlow, func: Callable[[Any], Any], index: Union[int, str] = 0) -> None:
         """
-        :param df: input DataFlow which produces either list or dict.
-            func (TYPE -> TYPE|None): takes ``dp[index]``, returns a new value for ``dp[index]``.
+        Args:
+            df: input DataFlow which produces either list or dict.
+                func (TYPE -> TYPE|None): takes ``dp[index]``, returns a new value for ``dp[index]``.
                 Return None to discard/skip this datapoint.
-        :param index: index or key of the component.
+            index: index or key of the component.
         """
         self._index = index
         self._func = func
@@ -152,16 +154,21 @@ class MapDataComponent(MapData):
 
 
 class RepeatedData(ProxyDataFlow):
-    """Take data points from another DataFlow and produce them until
-    it's exhausted for certain amount of times. i.e.:
-    `dp1`, `dp2`, .... `dpn`, `dp1`, `dp2`, ....`dpn`.
+    """
+    RepeatedData takes datapoints from another DataFlow and produces them until they are exhausted for a certain number
+    of repetitions.
+
+    Example:
+        ```python
+        dp1, dp2, .... dpn, dp1, dp2, ....dpn
+        ```
     """
 
     def __init__(self, df: DataFlow, num: int) -> None:
         """
-        :param df: input DataFlow
-        :param num: number of times to repeat ds.
-                Set to -1 to repeat ``ds`` infinite times.
+        Args:
+            df: Input DataFlow.
+            num: Number of repetitions of the DataFlow. Set `-1` to repeat the DataFlow infinitely.
         """
         self.num = num
         if self.num != -1:
@@ -173,7 +180,7 @@ class RepeatedData(ProxyDataFlow):
     def __len__(self) -> int:
         """
         Raises:
-            `ValueError` when num == -1.
+            ValueError: when num == -1.
         """
         if self.num == -1:
             raise NotImplementedError("__len__() is unavailable for infinite dataflow")
@@ -190,20 +197,23 @@ class RepeatedData(ProxyDataFlow):
 
 class ConcatData(DataFlow):
     """
-    Concatenate several DataFlow.
-    Produce datapoints from each DataFlow and start the next when one
-    DataFlow is exhausted. Use this dataflow to process several .pdf in one step.
+    ConcatData concatenates multiple DataFlows. Produces datapoints from each DataFlow and starts the next when one
+    DataFlow is exhausted. Use this DataFlow to process multiple .pdf files in one step.
 
-    **Example:**
+    Example:
+        ```python
+        df_1 = analyzer.analyze(path="path/to/pdf_1.pdf")
+        df_2 = analyzer.analyze(path="path/to/pdf_2.pdf")
+        df = ConcatData([df_1, df_2])
+        ```
 
-           df_1 = analyzer.analyze(path=path/to/pdf_1.pdf")
-           df_2 = analyzer.analyze(path=path/to/pdf_2.pdf")
-           df = ConcatData([df_1,df_2])
+
     """
 
     def __init__(self, df_lists: list[DataFlow]) -> None:
         """
-        :param df_lists: a list of DataFlow.
+        Args:
+            df_lists: A list of DataFlows.
         """
         self.df_lists = df_lists
 
@@ -221,28 +231,31 @@ class ConcatData(DataFlow):
 
 class JoinData(DataFlow):
     """
-    Join the components from each DataFlow. See below for its behavior.
-    Note that you can't join a DataFlow that produces lists with one that produces dicts.
+    JoinData joins the components from each DataFlow. See below for its behavior. It is not possible to join a DataFlow
+    that produces lists with one that produces dictionaries.
 
-    **Example:**
-
+    Example:
+        ```python
         df1 produces: [[c1], [c2]]
         df2 produces: [[c3], [c4]]
         joined: [[c1, c3], [c2, c4]]
 
-        df1 produces: {"a":c1, "b":c2}
-        df2 produces: {"c":c3}
-        joined: {"a":c1, "b":c2, "c":c3}
+        df1 produces: {"a": c1, "b": c2}
+        df2 produces: {"c": c3}
+        joined: {"a": c1, "b": c2, "c": c3}
+        ```
 
-    `JoinData` will stop once the first Dataflow throws a StopIteration
+    `JoinData` stops once the first DataFlow raises a `StopIteration`.
+
+
     """
 
     def __init__(self, df_lists: list[DataFlow]) -> None:
         """
-        :param df_lists: a list of DataFlow. When these dataflows have different sizes, JoinData will stop when any
-                        of them is exhausted.
-                        The list could contain the same DataFlow instance more than once,
-                        but note that in that case `__iter__` will then also be called many times.
+        Args:
+            df_lists: A list of DataFlows. If these DataFlows have different sizes, `JoinData` stops when one of them is
+                      exhausted. The list can contain the same DataFlow instance multiple times, but note that in this
+                      case `__iter__` will also be called multiple times.
         """
         self.df_lists = df_lists
 
@@ -275,18 +288,26 @@ class JoinData(DataFlow):
 
 class BatchData(ProxyDataFlow):
     """
-    Stack datapoints into batches. It produces datapoints of the same number of components as `df`, but
+    BatchData stacks datapoints into batches. It produces datapoints with the same number of components as `df`, but
     each datapoint is now a list of datapoints.
+
+    Example:
+        ```python
+        df produces: [[c1], [c2], [c3], [c4]]
+        batch_size = 2
+        yields: [[c1, c2], [c3, c4]]
+        ```
+
     """
 
     def __init__(self, df: DataFlow, batch_size: int, remainder: bool = False) -> None:
         """
-        :param df: A dataflow
-        :param batch_size: batch size
-        :param remainder: When the remaining datapoints in ``df`` is not enough to form a batch, whether or not to
-                          also produce the remaining data as a smaller batch.
-                          If set to `False`, all produced datapoints are guaranteed to have the same batch size.
-                          If set to `True`, `len(ds)` must be accurate.
+        Args:
+            df: A DataFlow.
+            batch_size: Batch size.
+            remainder: If the remaining datapoints in `df` are not enough to form a batch, whether to produce the
+                       remaining data as a smaller batch. If set to `False`, all produced datapoints are guaranteed to
+                       have the same batch size. If set to `True`, `len(ds)` must be accurate.
         """
         super().__init__(df)
         if not remainder:

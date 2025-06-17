@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Some utility functions for multi threading purposes
+Functions for multi/threading purposes
 """
 
 import multiprocessing as mp
@@ -35,12 +35,17 @@ from .types import QueueType
 # taken from https://github.com/tensorpack/dataflow/blob/master/dataflow/utils/concurrency.py
 class StoppableThread(threading.Thread):
     """
-    A thread that has a 'stop' event.
+    A thread that has a `stop` event.
+
+    This class extends `threading.Thread` and provides a mechanism to stop the thread gracefully.
     """
 
     def __init__(self, evt: Optional[threading.Event] = None) -> None:
         """
-        :param evt: if None, will create one.
+        Initializes a `StoppableThread`.
+
+        Args:
+            evt: An optional `threading.Event`. If `None`, a new event will be created.
         """
         super().__init__()
         if evt is None:
@@ -48,17 +53,30 @@ class StoppableThread(threading.Thread):
         self._stop_evt = evt
 
     def stop(self) -> None:
-        """Stop the thread"""
+        """
+        Stop the thread.
+
+        Sets the internal stop event, signaling the thread to stop.
+        """
         self._stop_evt.set()
 
     def stopped(self) -> bool:
         """
-        :param bool: whether the thread is stopped or not
+        Check whether the thread is stopped.
+
+        Returns:
+            Whether the thread is stopped or not.
         """
         return self._stop_evt.is_set()
 
     def queue_put_stoppable(self, q: QueueType, obj: Any) -> None:
-        """Put obj to queue, but will give up when the thread is stopped"""
+        """
+        Put `obj` to queue `q`, but will give up when the thread is stopped.
+
+        Args:
+            q: The queue to put the object into.
+            obj: The object to put into the queue.
+        """
         while not self.stopped():
             try:
                 q.put(obj, timeout=5)
@@ -67,7 +85,15 @@ class StoppableThread(threading.Thread):
                 pass
 
     def queue_get_stoppable(self, q: QueueType) -> Any:
-        """Take obj from queue, but will give up when the thread is stopped"""
+        """
+        Take an object from queue `q`, but will give up when the thread is stopped.
+
+        Args:
+            q: The queue to get the object from.
+
+        Returns:
+            The object taken from the queue.
+        """
         while not self.stopped():
             try:
                 return q.get(timeout=5)
@@ -77,9 +103,14 @@ class StoppableThread(threading.Thread):
 
 @contextmanager
 def mask_sigint() -> Generator[Any, None, None]:
-    """[Any,None,None
-    :return: If called in main thread, returns a context where ``SIGINT`` is ignored, and yield True.
-             Otherwise, yield False.
+    """
+    Context manager to mask `SIGINT`.
+
+    If called in the main thread, returns a context where `SIGINT` is ignored, and yields `True`. Otherwise, yields
+    `False`.
+
+    Yields:
+        `True` if called in the main thread, otherwise `False`.
     """
     if threading.current_thread() == threading.main_thread():
         sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -91,9 +122,15 @@ def mask_sigint() -> Generator[Any, None, None]:
 
 def enable_death_signal(_warn: bool = True) -> None:
     """
-    Set the "death signal" of the current process, so that
-    the current process will be cleaned with guarantee
-    in case the parent dies accidentally.
+    Set the "death signal" of the current process.
+
+    Ensures that the current process will be cleaned up if the parent process dies accidentally.
+
+    Args:
+        _warn: If `True`, logs a warning if `prctl` is not available.
+
+    Note:
+        Only works on Linux systems. Requires the `python-prctl` package.
     """
     if platform.system() != "Linux":
         return
@@ -118,11 +155,17 @@ def enable_death_signal(_warn: bool = True) -> None:
 @no_type_check
 def start_proc_mask_signal(proc):
     """
-    Start process(es) with SIGINT ignored.
+    Start process(es) with `SIGINT` ignored.
 
-    :param proc: (mp.Process or list)
+    The signal mask is only applied when called from the main thread.
 
-    The signal mask is only applied when called from main thread.
+    Note:
+        Starting a process with the 'fork' method is efficient but not safe and may cause deadlock or crash.
+        Use 'forkserver' or 'spawn' method instead if you run into such issues.
+        See <https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods> on how to set them.
+
+    Args:
+        proc: A `mp.Process` or a list of `mp.Process` instances.
     """
     if not isinstance(proc, list):
         proc = [proc]

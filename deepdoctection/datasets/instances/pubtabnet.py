@@ -109,7 +109,7 @@ _SUB_CATEGORIES = {
 @dataset_registry.register("pubtabnet")
 class Pubtabnet(_BuiltInDataset):
     """
-    Pubtabnet
+    `Pubtabnet`
     """
 
     _name = _NAME
@@ -143,20 +143,18 @@ class PubtabnetBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+        Args:
+            kwargs:
+                (split) Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (rows_and_cols) Will add 'item' image annotations that represent rows or columns of a
+                                table. Default: `True`
+                (fake_score) Will add a fake score so that annotations look like predictions. Default: `False`
+                (dd_pipe_like) If `True`, sets `load_image` to `True`. Default: `False`
 
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `rows_and_cols:` Will add a 'item' image annotations that either represent a row or a column of a table.
-                         Note, that the type of the item (i.e. being a row or a column) can be inferred from the
-                         sub category added. Note further, that 'ITEM' are not originally part of the annotations
-                         and are inferred from cell positions and their associated table semantic. Default: `True`
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: dataflow
+        Returns:
+            Dataflow
         """
         split = str(kwargs.get("split", "val"))
         if split == "val":

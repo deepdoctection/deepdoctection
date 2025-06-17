@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for PipeRegistry
+Pipeline component registry
 """
 
 import catalogue  # type: ignore

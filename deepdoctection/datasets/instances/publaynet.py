@@ -73,7 +73,7 @@ _INIT_CATEGORIES = [LayoutType.TEXT, LayoutType.TITLE, LayoutType.LIST, LayoutTy
 @dataset_registry.register("publaynet")
 class Publaynet(_BuiltInDataset):
     """
-    Publaynet
+    `Publaynet`
     """
 
     _name = _NAME
@@ -107,15 +107,15 @@ class PublaynetBuilder(DataFlowBaseBuilder):
         Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
         of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`,`val` or `test`. Default: `val`
+        Args:
+            kwargs:
+                (split) Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (fake_score) Will add a fake score so that annotations look like predictions. Default: `False`
 
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: dataflow
+        Returns:
+            Dataflow
         """
         split = str(kwargs.get("split", "val"))
         max_datapoints = kwargs.get("max_datapoints")

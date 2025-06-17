@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for mapping annotations to and from xfund data structure
+Module for mapping annotations to and from Xfund data structure
 """
 
 import os
@@ -50,18 +50,25 @@ def xfund_to_image(
     ner_token_to_id_mapping: Mapping[ObjectTypes, Mapping[ObjectTypes, Mapping[ObjectTypes, int]]],
 ) -> Optional[Image]:
     """
-    Map a datapoint of annotation structure as given as from xfund or funsd dataset in to an Image structure
+    Maps a datapoint of annotation structure as given from Xfund or Funsd dataset into an `Image` structure.
 
-    :param dp: A datapoint in dict structure as returned from the xfund or funsd dataset. Each datapoint must coincide
-               with exactly one image sample.
-    :param load_image: If 'True' it will load image to attr:`Image.image`
-    :param fake_score: If dp does not contain a score, a fake score with uniform random variables in (0,1)
-                       will be added.
-    :param categories_dict_name_as_key:
-    :param token_class_names_mapping: A dictionary, mapping original label names to normalized category names
-    :param ner_token_to_id_mapping: A dictionary, mapping token classes with bio tags (i.e. token tags) into their
-                                    category ids.
-    :return: Image
+    Args:
+        dp: A datapoint in dict structure as returned from the Xfund or Funsd dataset. Each datapoint must coincide
+            with exactly one image sample.
+        load_image: If `True`, it will load image to `Image.image`.
+        fake_score: If `dp` does not contain a score, a fake score with uniform random variables in `(0,1)` will be
+                    added.
+        categories_dict_name_as_key: A mapping from `ObjectTypes` to `int` for `category_id`s.
+        token_class_names_mapping: A dictionary mapping original label names to normalized category names.
+        ner_token_to_id_mapping: A dictionary mapping token classes with bio tags (i.e. token tags) into their
+                                 category ids.
+
+    Returns:
+        `Image` or `None` if the image path is not found or an error occurs during mapping.
+
+    Note:
+        This function is intended for mapping xfund or funsd dataset annotation structures to the internal `Image`
+        representation for further processing.
     """
 
     img = dp.get("img")
