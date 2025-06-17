@@ -5,7 +5,7 @@
 # Licensed under the Apache License, Version 2.0 (the "License")
 
 """
-This file replaces relevant parts of the Dataflow package. Most of the code has been taken from
+Most of the code has been taken from
 
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/base.py>
 """
@@ -44,12 +44,12 @@ class DataFlow:
     @abstractmethod
     def __iter__(self) -> Iterator[Any]:
         """
-        * A dataflow is an iterable. The `__iter__` method should yield a list or dict each time.
+        - A dataflow is an iterable. The `__iter__` method should yield a list or dict each time.
           Note that dict is **partially** supported at the moment: certain dataflow does not support dict.
-        * The `__iter__` method can be either finite (will stop iteration) or infinite
+        - The `__iter__` method can be either finite (will stop iteration) or infinite
           (will not stop iteration). For a finite dataflow, `__iter__` can be called
           again immediately after the previous call returned.
-        * For many dataflow, the `__iter__` method is non-reentrant, which means for a dataflow
+        - For many dataflow, the `__iter__` method is non-reentrant, which means for a dataflow
           instance ``df``, `df.__iter__` cannot be called before the previous
           `df.__iter__` call has finished (iteration has stopped).
           When a dataflow is non-reentrant, `df.__iter__` should throw an exception if
@@ -62,18 +62,18 @@ class DataFlow:
 
     def __len__(self) -> int:
         """
-        * A dataflow can optionally implement `__len__`. If not implemented, it will
+        - A dataflow can optionally implement `__len__`. If not implemented, it will
           throw `NotImplementedError`.
-        * It returns an integer representing the size of the dataflow.
+        - It returns an integer representing the size of the dataflow.
           The return value **may not be accurate or meaningful** at all.
           When saying the length is "accurate", it means that
           `__iter__` will always yield this many of datapoints before it stops iteration.
-        * There could be many reasons why `__len__` is inaccurate.
+        - There could be many reasons why `__len__` is inaccurate.
           For example, some dataflow has dynamic size, if it throws away datapoints on the fly.
           Some dataflow mixes the datapoints between consecutive passes over
           the dataset, due to parallelism and buffering.
           In this case it does not make sense to stop the iteration anywhere.
-        * Due to the above reasons, the length is only a rough guidance.
+        - Due to the above reasons, the length is only a rough guidance.
           And it's up to the user how to interpret it.
           Inside tensorpack it's only used in these places:
           + A default ``steps_per_epoch`` in training, but you probably want to customize
@@ -82,28 +82,30 @@ class DataFlow:
           + Used by `InferenceRunner` to get the number of iterations in inference.
             In this case users are **responsible** for making sure that `__len__` is "accurate".
             This is to guarantee that inference is run on a fixed set of images.
+
         Returns:
             int: rough size of this dataflow.
+
         Raises:
-            `NotImplementedError` if this DataFlow doesn't have a size.
+            NotImplementedError: if this DataFlow doesn't have a size.
         """
         raise NotImplementedError
 
     def reset_state(self) -> None:
         """
-        * The caller must guarantee that `reset_state` should be called **once and only once**
+        - The caller must guarantee that `reset_state` should be called **once and only once**
           by the **process that uses the dataflow** before `__iter__` is called.
           The caller thread of this method should stay alive to keep this dataflow alive.
-        * It is meant for certain initialization that involves processes,
+        - It is meant for certain initialization that involves processes,
           e.g., initialize random number generators (RNG), create worker processes.
           Because it's very common to use RNG in data processing,
           developers of dataflow can also subclass `RNGDataFlow` to have easier access to
           a properly-initialized RNG.
-        * A dataflow is not fork-safe after `reset_state` is called (because this will violate the guarantee).
+        - A dataflow is not fork-safe after `reset_state` is called (because this will violate the guarantee).
           There are a few other dataflows that are not fork-safe anytime, which will be mentioned in the docs.
-        * You should take the responsibility and follow the above guarantee if you're the caller of a dataflow yourself
+        - You should take the responsibility and follow the above guarantee if you're the caller of a dataflow yourself
           (either when you're using dataflow outside tensorpack, or if you're writing a wrapper dataflow).
-        * Tensorpack's built-in forking dataflows (`MultiProcessRunner`, `MultiProcessMapData`, etc)
+        - Tensorpack's built-in forking dataflows (`MultiProcessRunner`, `MultiProcessMapData`, etc)
           and other component that uses dataflows (`InputSource`)
           already take care of the responsibility of calling this method.
         """
@@ -131,15 +133,31 @@ class ProxyDataFlow(DataFlow):
 
     def __init__(self, df: DataFlow) -> None:
         """
-        :param df: DataFlow to proxy.
+        Initializes the ProxyDataFlow.
+
+        Args:
+            df: DataFlow to proxy.
         """
         self.df = df
 
     def reset_state(self) -> None:
+        """Resets the state of the proxied DataFlow."""
         self.df.reset_state()
 
     def __len__(self) -> int:
+        """
+        Returns the size of the proxied DataFlow.
+
+        Returns:
+            int: Size of the proxied DataFlow.
+        """
         return self.df.__len__()
 
     def __iter__(self) -> Iterator[Any]:
+        """
+        Iterates over the proxied DataFlow.
+
+        Returns:
+            Iterator[Any]: Iterator of the proxied DataFlow.
+        """
         return self.df.__iter__()

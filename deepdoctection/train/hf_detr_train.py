@@ -16,8 +16,7 @@
 # limitations under the License.
 
 """
-Module for training Hugging Face Detr implementation. Note, that this scripts only trans Tabletransformer like Detr
-models that are a slightly different from the plain Detr model that are provided by the transformer library.
+Fine-tuning Hugging Face Detr implementation.
 """
 from __future__ import annotations
 
@@ -50,6 +49,7 @@ with try_import() as pt_import_guard:
 with try_import() as hf_import_guard:
     from transformers import (
         AutoFeatureExtractor,
+        DeformableDetrForObjectDetection,
         IntervalStrategy,
         PretrainedConfig,
         PreTrainedModel,
@@ -65,12 +65,11 @@ with try_import() as wb_import_guard:
 class DetrDerivedTrainer(Trainer):
     """
     Huggingface Trainer for training Transformer models with a custom evaluate method in order
-    to use dd Evaluator. Train setting is not defined in the trainer itself but in config setting as
-    defined in `TrainingArguments`. Please check the Transformer documentation
+    to use dd Evaluator.
 
-    <https://huggingface.co/docs/transformers/main_classes/trainer>
-
-    for custom training setting.
+    Train setting is not defined in the trainer itself but in config setting as defined in `TrainingArguments`.
+    Please check the Transformer documentation: https://huggingface.co/docs/transformers/main_classes/trainer for
+    custom training setting.
     """
 
     def __init__(
@@ -81,6 +80,16 @@ class DetrDerivedTrainer(Trainer):
         train_dataset: DatasetAdapter,
         eval_dataset: Optional[DatasetBase] = None,
     ):
+        """
+        Initializes `DetrDerivedTrainer`.
+
+        Args:
+            model: Model to be trained, either `PreTrainedModel` or `nn.Module`.
+            args: Training arguments.
+            data_collator: Data collator for Detr.
+            train_dataset: Training dataset.
+            eval_dataset: Optional evaluation dataset.
+        """
         self.evaluator: Optional[Evaluator] = None
         self.build_eval_kwargs: Optional[dict[str, Any]] = None
         super().__init__(model, args, data_collator, train_dataset, eval_dataset=eval_dataset)
@@ -94,14 +103,16 @@ class DetrDerivedTrainer(Trainer):
         **build_eval_kwargs: Union[str, int],
     ) -> None:
         """
-        Setup of evaluator before starting training. During training, predictors will be replaced by current
-        checkpoints.
+        Setup of evaluator before starting training.
 
-        :param dataset_val: dataset on which to run evaluation
-        :param pipeline_component: pipeline component to plug into the evaluator
-        :param metric: A metric class
-        :param run: WandB run
-        :param build_eval_kwargs:
+        During training, predictors will be replaced by current checkpoints.
+
+        Args:
+            dataset_val: Dataset on which to run evaluation.
+            pipeline_component: Pipeline component to plug into the evaluator.
+            metric: A metric class.
+            run: WandB run.
+            **build_eval_kwargs: Additional keyword arguments for evaluation.
         """
 
         self.evaluator = Evaluator(dataset_val, pipeline_component, metric, num_threads=1, run=run)
@@ -152,29 +163,32 @@ def train_hf_detr(
 ) -> None:
     """
     Train Tabletransformer from scratch or fine-tune using an adaptation of the transformer trainer.
+
     Allowing experiments by using different config settings.
 
-    :param path_config_json: path to a Tabletransformer config file
-    :param dataset_train: dataset to use for training
-    :param path_weights: path to a checkpoint, if you want to resume training or fine-tune. Will train from scratch if
-                         an empty string is passed
-    :param path_feature_extractor_config_json: path to a feature extractor config file. In many situations you can use
-                                               the standard config file:
+    Args:
+        path_config_json: Path to a Tabletransformer config file.
+        dataset_train: Dataset to use for training.
+        path_weights: Path to a checkpoint, if you want to resume training or fine-tune. Will train from scratch if an
+                      empty string is passed.
+        path_feature_extractor_config_json: Path to a feature extractor config file. In many situations you can use the
+                                            standard config file:
+            Example:
+                ```python
+                ModelCatalog.get_full_path_preprocessor_configs
+                ("microsoft/table-transformer-detection/pytorch_model.bin")
+                ```
 
-                                                   ModelCatalog.
-                                                   get_full_path_preprocessor_configs
-                                                   ("microsoft/table-transformer-detection/pytorch_model.bin")
-
-    :param config_overwrite: Pass a list of arguments if some configs from the .json file are supposed to be replaced.
-                             Use the list convention, e.g. ['per_device_train_batch_size=4']
-    :param log_dir: Will default to 'train_log/detr'
-    :param build_train_config: dataflow build setting. Again, use list convention setting, e.g. ['max_datapoints=1000']
-    :param dataset_val: the dataset to use for validation
-    :param build_val_config: same as `build_train_config` but for dataflow validation
-    :param metric_name: A metric name to choose for validation. Will use the default setting. If you want a custom
-                        metric setting, pass a metric explicitly.
-    :param metric: A metric to choose for validation
-    :param pipeline_component_name: A pipeline component name to use for validation
+        config_overwrite: Pass a list of arguments if some configs from the .json file are supposed to be replaced.
+                          Use the list convention, e.g. `['per_device_train_batch_size=4']`.
+        log_dir: Will default to `train_log/detr`.
+        build_train_config: Dataflow build setting. Again, use list convention setting, e.g. `['max_datapoints=1000']`.
+        dataset_val: The dataset to use for validation.
+        build_val_config: Same as `build_train_config` but for dataflow validation.
+        metric_name: A metric name to choose for validation. Will use the default setting.
+                     If you want a custom metric setting, pass a metric explicitly.
+        metric: A metric to choose for validation.
+        pipeline_component_name: A pipeline component name to use for validation.
     """
 
     build_train_dict: dict[str, str] = {}
@@ -275,11 +289,29 @@ def train_hf_detr(
     config.use_timm_backbone = True
 
     if path_weights != "":
-        model = TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
-        )
+        if "TableTransformerForObjectDetection" in config.architectures:
+            model = TableTransformerForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=path_weights, config=config, ignore_mismatched_sizes=True
+            )
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
     else:
-        model = TableTransformerForObjectDetection(config)
+        if "TableTransformerForObjectDetection" in config.architectures:
+            model = TableTransformerForObjectDetection(config)
+        elif "DeformableDetrForObjectDetection" in config.architectures:
+            model = DeformableDetrForObjectDetection(config)
+        else:
+            raise ValueError(
+                f"Model architecture {config.architectures} not eligible. Please use either "
+                "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
+            )
 
     feature_extractor = AutoFeatureExtractor.from_pretrained(
         pretrained_model_name_or_path=path_feature_extractor_config_json

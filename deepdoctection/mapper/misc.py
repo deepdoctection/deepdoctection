@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for small mapping functions
+Small mapping functions
 """
 
 from __future__ import annotations
@@ -45,14 +45,19 @@ def to_image(
     height: Optional[int] = None,
 ) -> Optional[Image]:
     """
-    Mapping an input from `dataflow.SerializerFiles` or similar to an Image
+    Maps an input from `dataflow.SerializerFiles` or similar to an `Image`.
 
-    :param dp: Image
-    :param dpi: dot per inch definition for pdf resolution when converting to numpy array
-    :param width: target width of the image. This option does only work when using Poppler as PDF renderer
-    :param height: target width of the image. This option does only work when using Poppler as PDF renderer
-    :param height: target height of the image
-    :return: Image
+    Args:
+        dp: Image.
+        dpi: Dot per inch definition for PDF resolution when converting to `np.array`.
+        width: Target width of the image. This option only works when using Poppler as PDF renderer.
+        height: Target height of the image. This option only works when using Poppler as PDF renderer.
+
+    Returns:
+        Image
+
+    Raises:
+        TypeError: If `dp` is not of the expected type for converting to image.
     """
 
     file_name: Optional[str]
@@ -101,10 +106,13 @@ def to_image(
 
 def maybe_load_image(dp: Image) -> Image:
     """
-    If `image` is None will load the image.
+    If `image` is `None`, loads the image.
 
-    :param dp: An Image
-    :return: Image with attr: image not None
+    Args:
+        dp: An `Image`.
+
+    Returns:
+        Image with attribute `image` not `None`.
     """
 
     if dp.image is None:
@@ -116,10 +124,13 @@ def maybe_load_image(dp: Image) -> Image:
 
 def maybe_remove_image(dp: Image) -> Image:
     """
-    Remove `image` if a location is provided.
+    Removes `image` if a location is provided.
 
-    :param dp: An Image
-    :return: Image with None attr: image
+    Args:
+        dp: An `Image`.
+
+    Returns:
+        Image with attribute `image` set to `None`.
     """
 
     if dp.location is not None:
@@ -130,11 +141,14 @@ def maybe_remove_image(dp: Image) -> Image:
 @curry
 def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[str, Sequence[str]]] = None) -> Image:
     """
-    Removes image from image annotation for some category names
+    Removes `image` from image annotation for some `category_name`s.
 
-    :param dp: An Image
-    :param category_names: category names
-    :return: Image with image attributes from image annotations removed
+    Args:
+        dp: An `Image`.
+        category_names: Category names.
+
+    Returns:
+        Image with `image` attributes from image annotations removed.
     """
     if category_names is None:
         category_names = []
@@ -151,12 +165,15 @@ def maybe_remove_image_from_category(dp: Image, category_names: Optional[Union[s
 
 def image_ann_to_image(dp: Image, category_names: Union[str, list[str]], crop_image: bool = True) -> Image:
     """
-    Adds `image` to annotations with given category names
+    Adds `image` to annotations with given category names.
 
-    :param dp: Image
-    :param category_names: A single or a list of category names
-    :param crop_image: Will add numpy array to `image.image`
-    :return: Image
+    Args:
+        dp: `Image`.
+        category_names: A single or a list of category names.
+        crop_image: If `True`, will add `np.array` to `image.image`.
+
+    Returns:
+        Image
     """
 
     img_anns = dp.get_annotation(category_names=category_names)
@@ -171,15 +188,18 @@ def maybe_ann_to_sub_image(
     dp: Image, category_names_sub_image: Union[str, list[str]], category_names: Union[str, list[str]], add_summary: bool
 ) -> Image:
     """
-    Assigns to sub image with given category names all annotations with given category names whose bounding box lie
+    Assigns to sub image with given category names all annotations with given category names whose bounding box lies
     within the bounding box of the sub image.
 
-    :param dp: Image
-    :param category_names_sub_image: A single or a list of category names that will form a sub image.
-    :param category_names: A single or a list of category names that will may be assigned to a sub image, conditioned
-                           on the bounding box lying within the sub image.
-    :param add_summary: will add the whole summary annotation to the sub image
-    :return: Image
+    Args:
+        dp: `Image`.
+        category_names_sub_image: A single or a list of category names that will form a sub image.
+        category_names: A single or a list of category names that may be assigned to a sub image, conditioned on the
+                        bounding box lying within the sub image.
+        add_summary: If `True`, will add the whole summary annotation to the sub image.
+
+    Returns:
+        Image
     """
 
     anns = dp.get_annotation(category_names=category_names_sub_image)
@@ -194,19 +214,23 @@ def maybe_ann_to_sub_image(
 @curry
 def xml_to_dict(dp: JsonDict, xslt_obj: etree.XSLT) -> JsonDict:
     """
-    Convert a xml object into a dict using a xsl style sheet.
+    Converts an XML object into a dict using an XSL style sheet.
 
-    **Example:**
+    Example:
+        ```python
+        with open(path_xslt) as xsl_file:
+            xslt_file = xsl_file.read().encode('utf-8')
+        xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
+        xslt_obj = etree.XSLT(xml_obj)
+        df = MapData(df, xml_to_dict(xslt_obj))
+        ```
 
-            with open(path_xslt) as xsl_file:
-                xslt_file = xsl_file.read().encode('utf-8')
-            xml_obj = etree.XML(xslt_file, parser=etree.XMLParser(encoding='utf-8'))
-            xslt_obj = etree.XSLT(xml_obj)
-            df = MapData(df, xml_to_dict(xslt_obj))
+    Args:
+        dp: String representing the XML.
+        xslt_obj: XSLT object to parse the string.
 
-    :param dp: string representing the xml
-    :param xslt_obj: xslt object to parse the string
-    :return: parsed xml
+    Returns:
+        Parsed XML as a dict.
     """
 
     output = str(xslt_obj(dp["xml"]))

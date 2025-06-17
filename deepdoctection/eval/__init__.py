@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Init file for eval package. Contains metrics (customized for special tasks), evaluators and tensorpack related callbacks
-for training.
+## Evalulation metrics and Evaluators
+
+Contains metrics (customized for special tasks), evaluators and Tensorpack callback
 """
 
 from .accmetric import *

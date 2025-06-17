@@ -32,7 +32,7 @@ from urllib.request import urlretrieve
 from .develop import deprecated
 from .logger import LoggingRecord, logger
 from .pdf_utils import get_pdf_file_reader, get_pdf_file_writer
-from .settings import CONFIGS, DATASET_DIR, MODEL_DIR, PATH
+from .settings import CACHE_DIR, CONFIGS, DATASET_DIR, MODEL_DIR, PATH
 from .tqdm import get_tqdm
 from .types import B64, B64Str, JsonDict, PathLikeOrStr, PixelValues
 from .utils import is_file_extension
@@ -48,6 +48,7 @@ __all__ = [
     "load_json",
     "sub_path",
     "get_package_path",
+    "get_cache_dir_path",
     "get_configs_dir_path",
     "get_weights_dir_path",
     "get_dataset_dir_path",
@@ -57,7 +58,19 @@ __all__ = [
 
 def sizeof_fmt(num: float, suffix: str = "B") -> str:
     """
-    Converting bytes number into human-readable
+    Converts a number of bytes into a human-readable string.
+
+    Example:
+        ```python
+        sizeof_fmt(1024)
+        ```
+
+    Args:
+        num: The number of bytes.
+        suffix: The suffix to use (default is `B`).
+
+    Returns:
+        A human-readable string representation of the byte size.
     """
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(num) < 1024.0:
@@ -70,9 +83,18 @@ def sizeof_fmt(num: float, suffix: str = "B") -> str:
 # Licensed under the Apache License, Version 2.0 (the "License")
 def mkdir_p(dir_name: PathLikeOrStr) -> None:
     """
-    Like "mkdir -p", make a dir recursively, but do nothing if the dir exists
+    Creates a directory recursively, similar to `mkdir -p`. Does nothing if the directory already exists.
 
-    :param dir_name: name of dir
+    Example:
+        ```python
+        mkdir_p('/tmp/mydir')
+        ```
+
+    Args:
+        dir_name: The name of the directory to create.
+
+    Returns:
+        None
     """
     assert dir_name is not None
     if dir_name == "" or os.path.isdir(dir_name):
@@ -90,7 +112,21 @@ def download(
     url: str, directory: PathLikeOrStr, file_name: Optional[str] = None, expect_size: Optional[int] = None
 ) -> str:
     """
-    Download URL to a directory. Will figure out the filename automatically from URL, if not given.
+    Downloads a file from a URL to a directory. Determines the filename from the URL if not provided.
+
+    Example:
+        ```python
+        download('http://example.com/file.txt', '/tmp')
+        ```
+
+    Args:
+        url: The URL to download from.
+        directory: The directory to save the file in.
+        file_name: The name of the file (optional).
+        expect_size: The expected size of the file in bytes (optional).
+
+    Returns:
+        The path to the downloaded file.
     """
     mkdir_p(directory)
     if file_name is None:
@@ -150,12 +186,20 @@ def load_image_from_file(
     path: PathLikeOrStr, type_id: Literal["np", "b64"] = "np"
 ) -> Optional[Union[B64Str, PixelValues]]:
     """
-    Loads an image from path and passes back an encoded base64 string, a numpy array or None if file is not found
-    or a conversion error occurs.
+    Loads an image from a file and returns either a base64-encoded string, a numpy array, or `None` if the file is not
+    found or a conversion error occurs.
 
-    :param path: A path to the image.
-    :param type_id:  "np" or "b64".
-    :return: image of desired representation
+    Example:
+        ```python
+        load_image_from_file('image.png', type_id='b64')
+        ```
+
+    Args:
+        path: The path to the image.
+        type_id: The type of output, either `np` for numpy array or `b64` for base64 string.
+
+    Returns:
+        The image in the desired representation or `None`.
     """
     image: Optional[Union[str, PixelValues]] = None
     path = path.as_posix() if isinstance(path, Path) else path
@@ -177,12 +221,21 @@ def load_image_from_file(
 
 def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
     """
-    Loads a pdf file with one single page and passes back a bytes' representation of this file. Can be converted into
-    a numpy or directly passed to the attr: image of Image.
+    Loads a PDF file with a single page and returns a bytes representation of this file. Can be converted into a numpy
+    array or passed directly to the `image` attribute of `Image`.
 
-    :param path: A path to a pdf file. If more pages are available, it will take the first page.
-    :param page_number: If a document has less than page_number it will raise an `IndexError`
-    :return: A bytes' representation of the file, width and height
+    Example:
+        ```python
+        load_bytes_from_pdf_file('document.pdf', page_number=0)
+        ```
+
+    Args:
+        path: The path to a PDF file. If more pages are available, it will take the first page.
+        page_number: The page number to load. Raises `IndexError` if the document has fewer pages.
+
+    Returns:
+        A bytes representation of the file.
+
     """
 
     assert is_file_extension(path, [".pdf"]), f"type not allowed: {path}"
@@ -197,7 +250,10 @@ def load_bytes_from_pdf_file(path: PathLikeOrStr, page_number: int = 0) -> B64:
 
 class LoadImageFunc(Protocol):
     """
-    Protocol for typing load_image_from_file
+    Protocol for typing `load_image_from_file`.
+
+    Info:
+        This protocol defines the call signature for image loading functions.
     """
 
     def __call__(self, path: PathLikeOrStr) -> Optional[PixelValues]:
@@ -208,10 +264,21 @@ def get_load_image_func(
     path: PathLikeOrStr,
 ) -> Union[LoadImageFunc, Callable[[PathLikeOrStr], B64]]:
     """
-    Return the loading function according to its file extension.
+    Returns the loading function according to the file extension.
 
-    :param path: Path to a file
-    :return: The function loading the file (and converting to its desired format)
+    Example:
+        ```python
+        get_load_image_func('image.png')
+        ```
+
+    Args:
+        path: The path to a file.
+
+    Returns:
+        The function that loads the file and converts it to the desired format.
+
+    Raises:
+        NotImplementedError: If the file extension is not supported.
     """
 
     assert is_file_extension(path, [".png", ".jpeg", ".jpg", ".pdf", ".tif"]), f"image type not allowed: " f"{path}"
@@ -227,12 +294,19 @@ def get_load_image_func(
 
 def maybe_path_or_pdf(path: PathLikeOrStr) -> int:
     """
-    Checks if the path points to a directory, a pdf document or a single image. Returns 1 if the path points to a
-    directory, 2 if the path points to a pdf doc and 3 if path points to either a PNG, JPG or JPEG or 0 if none of the
-    previous is true.
+    Checks if the path points to a directory, a PDF document, or a single image.
 
-    :param path: A path
-    :return: A value of 0,1,2,3
+    Example:
+        ```python
+        maybe_path_or_pdf('/path/to/file.pdf')
+        ```
+
+    Args:
+        path: The path to check.
+
+    Returns:
+        `1` if the path points to a directory, `2` if it points to a PDF document, `3` if it points to a PNG, JPG,
+            JPEG, or TIF image, or `0` otherwise.
     """
 
     if os.path.isdir(path):
@@ -247,10 +321,18 @@ def maybe_path_or_pdf(path: PathLikeOrStr) -> int:
 
 def load_json(path_ann: PathLikeOrStr) -> JsonDict:
     """
-    Loading json file
+    Loads a JSON file.
 
-    :param path_ann: path
-    :return: dict
+    Example:
+        ```python
+        load_json('annotations.json')
+        ```
+
+    Args:
+        path_ann: The path to the JSON file.
+
+    Returns:
+        The loaded JSON as a dictionary.
     """
     with open(path_ann, "r", encoding="utf-8") as file:
         json_dict = json.loads(file.read())
@@ -259,28 +341,50 @@ def load_json(path_ann: PathLikeOrStr) -> JsonDict:
 
 def get_package_path() -> Path:
     """
-    :return: full base path of this package
+    Returns the full base path of this package.
+
+    Returns:
+        The base path of the package.
     """
     return PATH
 
 
+def get_cache_dir_path() -> Path:
+    """
+    Returns the full base path to the cache directory.
+
+    Returns:
+        The base path to the cache directory.
+    """
+    return CACHE_DIR
+
+
 def get_weights_dir_path() -> Path:
     """
-    :return: full base path to the model dir
+    Returns the full base path to the model directory.
+
+    Returns:
+        The base path to the model directory.
     """
     return MODEL_DIR
 
 
 def get_configs_dir_path() -> Path:
     """
-    :return: full base path to the configs dir
+    Returns the full base path to the configs directory.
+
+    Returns:
+        The base path to the configs directory.
     """
     return CONFIGS
 
 
 def get_dataset_dir_path() -> Path:
     """
-    :return: full base path to the dataset dir
+    Returns the full base path to the dataset directory.
+
+    Returns:
+        The base path to the dataset directory.
     """
     return DATASET_DIR
 
@@ -289,13 +393,21 @@ def maybe_copy_config_to_cache(
     package_path: PathLikeOrStr, configs_dir_path: PathLikeOrStr, file_name: str, force_copy: bool = True
 ) -> str:
     """
-    Initial copying of various files
-    :param package_path: base path to directory of source file `file_name`
-    :param configs_dir_path: base path to target directory
-    :param file_name: file to copy
-    :param force_copy: If file is already in target directory, will re-copy the file
+    Copies a file from the source directory to the target directory.
 
-    :return: path to the copied file_name
+    Example:
+        ```python
+        maybe_copy_config_to_cache('/src', '/dst', 'config.yaml')
+        ```
+
+    Args:
+        package_path: The base path to the source directory of the file.
+        configs_dir_path: The base path to the target directory.
+        file_name: The name of the file to copy.
+        force_copy: If `True`, will re-copy the file even if it already exists in the target directory.
+
+    Returns:
+        The path to the copied file.
     """
 
     absolute_path_source = os.path.join(package_path, file_name)
@@ -309,14 +421,21 @@ def maybe_copy_config_to_cache(
 @deprecated("Use pathlib operations instead", "2022-06-08")
 def sub_path(anchor_dir: PathLikeOrStr, *paths: PathLikeOrStr) -> PathLikeOrStr:
     """
-    Generate a path from the anchor directory and various paths args.
+    Generates a path from the anchor directory and additional path arguments.
 
-        sub_path(/path/to,"dir1","dir2")
+    Example:
+        ```python
+        sub_path('/path/to', 'dir1', 'dir2')
+        ```
 
-    will return `/path/to/dir1/dir2`
+    Args:
+        anchor_dir: The anchor directory.
+        *paths: Additional directories to add to the path.
 
-    :param anchor_dir: anchor directory
-    :param paths: args of directories that should be added to path
-    :return: sub_path
+    Returns:
+        The generated sub-path.
+
+    Note:
+        Deprecated. Use pathlib operations instead.
     """
     return os.path.join(os.path.dirname(os.path.abspath(anchor_dir)), *paths)

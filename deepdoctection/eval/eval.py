@@ -65,26 +65,28 @@ class Evaluator:
     erasing process and after that passing the predictor. Predicted and gt datapoints will be converted into the
     required metric input format and dumped into lists. Both lists will be passed to `MetricBase.get_distance`.
 
-    **Example:**
-
+    Note:
         You can evaluate the predictor on a subset of categories by filtering the ground truth dataset. When using
         the coco metric all predicted objects that are not in the set of filtered objects will be not taken into
         account.
 
-            publaynet = get_dataset("publaynet")
-            publaynet.dataflow.categories.filter_categories(categories=["TEXT","TITLE"])
-            coco_metric = metric_registry.get("coco")
-            profile = ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt")
-            path_weights = ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
-            path_config_yaml= ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
+    Example:
+        ```python
+        publaynet = get_dataset("publaynet")
+        publaynet.dataflow.categories.filter_categories(categories=["TEXT","TITLE"])
+        coco_metric = metric_registry.get("coco")
+        profile = ModelCatalog.get_profile("layout/d2_model_0829999_layout_inf_only.pt")
+        path_weights = ModelCatalog.get_full_path_weights("layout/d2_model_0829999_layout_inf_only.pt")
+        path_config_yaml= ModelCatalog.get_full_path_configs("layout/d2_model_0829999_layout_inf_only.pt")
 
-            layout_detector = D2FrcnnDetector(path_config_yaml, path_weights, profile.categories)
-            layout_service = ImageLayoutService(layout_detector)
-            evaluator = Evaluator(publaynet, layout_service, coco_metric)
+        layout_detector = D2FrcnnDetector(path_config_yaml, path_weights, profile.categories)
+        layout_service = ImageLayoutService(layout_detector)
+        evaluator = Evaluator(publaynet, layout_service, coco_metric)
 
-            output = evaluator.run(max_datapoints=10)
+        output = evaluator.run(max_datapoints=10)
+        ```
 
-    For another example check the script in :ref:`Evaluation of table recognition`
+    For another example check the script in `Evaluation` of table recognition`
     """
 
     def __init__(
@@ -98,9 +100,10 @@ class Evaluator:
         """
         Evaluating a pipeline component on a dataset with a given metric.
 
-        :param dataset: dataset
-        :param component_or_pipeline: A pipeline component with predictor and annotation factory.
-        :param metric: metric
+        Args:
+            dataset: dataset
+            component_or_pipeline: A pipeline component with predictor and annotation factory.
+            metric: metric
         """
 
         self.dataset = dataset
@@ -191,11 +194,13 @@ class Evaluator:
         """
         Start evaluation process and return the results.
 
-        :param output_as_dict: Return result in a list or dict.
-        :param dataflow_build_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split",
-                                      "build_mode", "max_datapoints" etc.
+        Args:
+            output_as_dict: Return result in a list or dict.
+            dataflow_build_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. `split`,
+                                  `build_mode`, `max_datapoints` etc.
 
-        :return: dict with metric results.
+        Returns:
+            dict with metric results.
         """
 
         df_gt = self.dataset.dataflow.build(**dataflow_build_kwargs)
@@ -279,12 +284,15 @@ class Evaluator:
         Visualize ground truth and prediction datapoint. Given a dataflow config it will run predictions per sample
         and concat the prediction image (with predicted bounding boxes) with ground truth image.
 
-        :param interactive: If set to True will open an interactive image, otherwise it will return a numpy array that
-                            can be displayed differently (e.g. matplotlib). Note that, if the interactive mode is being
-                            used, more than one sample can be iteratively be displayed.
-        :param kwargs: Dataflow configs for displaying specific image splits and visualisation configs:
-                       `show_tables`, `show_layouts`, `show_table_structure`, `show_words`
-        :return: Image as numpy array
+        Args:
+            interactive: If set to True will open an interactive image, otherwise it will return a `np.array` that
+                        can be displayed differently (e.g. `matplotlib`). Note that, if the interactive mode is being
+                        used, more than one sample can be iteratively be displayed.
+            kwargs: Dataflow configs for displaying specific image splits and visualisation configs:
+                   `show_tables`, `show_layouts`, `show_table_structure`, `show_words`
+
+        Returns:
+            Image as `np.array`
         """
 
         show_tables = kwargs.pop("show_tables", True)
@@ -349,13 +357,15 @@ class WandbTableAgent:
     """
     A class that creates a W&B table of sample predictions and sends them to the W&B server.
 
+    Example:
+        ```python
         df ... # some dataflow
         agent = WandbTableAgent(myrun,"MY_DATASET",50,{"1":"FOO"})
         for dp in df:
             agent.dump(dp)
 
         agent.log()
-
+        ```
     """
 
     def __init__(
@@ -368,16 +378,17 @@ class WandbTableAgent:
         cat_to_sub_cat: Optional[Mapping[TypeOrStr, TypeOrStr]] = None,
     ):
         """
-        :param wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
-                          **kwargs)` to generate a `run`.
-        :param dataset_name: name for tracking
-        :param num_samples: When dumping images to a table it will stop adding samples after `num_samples` instances
-        :param categories: dict of all possible categories
-        :param sub_categories:  dict of sub categories. If provided, these categories will define the classes for the
-                                table
-        :param cat_to_sub_cat: dict of category to sub category keys. Suppose your category `foo` has a sub category
-                               defined by the key `sub_foo`. The range sub category values must then be given by
-                               `sub_categories` and to extract the sub category values one must pass `{"foo": "sub_foo"}
+        Args:
+            wandb_run: An `wandb.run` instance for tracking. Use `run=wandb.init(project=project, config=config,
+                      **kwargs)` to generate a `run`.
+            dataset_name: name for tracking
+            num_samples: When dumping images to a table it will stop adding samples after `num_samples` instances
+            categories: dict of all possible categories
+            sub_categories: dict of sub categories. If provided, these categories will define the classes for the
+                            table
+            cat_to_sub_cat: dict of category to sub category keys. Suppose your category `foo` has a sub category
+                           defined by the key `sub_foo`. The range sub category values must then be given by
+                           `sub_categories` and to extract the sub category values one must pass `{"foo": "sub_foo"}`
         """
 
         self.dataset_name = dataset_name
@@ -400,8 +411,11 @@ class WandbTableAgent:
         Dump image to a table. Add this while iterating over samples. After `num_samples` it will stop appending samples
         to the table
 
-        :param dp: datapoint image
-        :return: same as input
+        Args:
+            dp: `Image` instance
+
+        Returns:
+            `Image` instance
         """
         if self.num_samples > self._counter:
             dp = maybe_load_image(dp)
@@ -421,9 +435,10 @@ class WandbTableAgent:
 
     def _build_table(self) -> Table:
         """
-        Builds wandb.Table object for logging evaluation
+        Builds `wandb.Table` instance for logging evaluation
 
-        returns: Table object to log evaluation
+        Returns:
+            Table object to log evaluation
         """
         return Table(columns=self._table_cols, data=self._table_rows)
 

@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for the base class of datasets.
+DatasetBase, MergeDatasets and CustomDataset
 """
 from __future__ import annotations
 
@@ -42,9 +42,9 @@ from .info import DatasetCategories, DatasetInfo, get_merged_categories
 
 class DatasetBase(ABC):
     """
-    Base class for a dataset. Requires to implementing `_categories` `_info` and `_builder` by
-    yourself. These methods must return a DatasetCategories, a DatasetInfo and a DataFlow_Builder instance, which
-    together give a complete description of the dataset. Compare some specific dataset cards in the :mod:`instance` .
+    Base class for a dataset. Requires to implement `_categories`, `_info` and `_builder` by
+    yourself. These methods must return a `DatasetCategories`, a `DatasetInfo` and a `DataFlow_Builder` instance, which
+    together give a complete description of the dataset. Compare some specific dataset cards in the `instance`.
     """
 
     def __init__(self) -> None:
@@ -65,21 +65,21 @@ class DatasetBase(ABC):
     @property
     def dataset_info(self) -> DatasetInfo:
         """
-        dataset_info
+        `dataset_info`
         """
         return self._dataset_info
 
     @property
     def dataflow(self) -> DataFlowBaseBuilder:
         """
-        dataflow
+        `dataflow`
         """
         return self._dataflow_builder
 
     @abstractmethod
     def _categories(self) -> DatasetCategories:
         """
-        Construct the DatasetCategory object.
+        Construct the `DatasetCategory` object.
         """
 
         raise NotImplementedError()
@@ -88,7 +88,7 @@ class DatasetBase(ABC):
     @abstractmethod
     def _info(cls) -> DatasetInfo:
         """
-        Construct the DatasetInfo object.
+        Construct the `DatasetInfo` object.
         """
 
         raise NotImplementedError()
@@ -96,7 +96,7 @@ class DatasetBase(ABC):
     @abstractmethod
     def _builder(self) -> DataFlowBaseBuilder:
         """
-        Construct the DataFlowBaseBuilder object. It needs to be implemented in the derived class.
+        Construct the `DataFlowBaseBuilder` object. It needs to be implemented in the derived class.
         """
 
         raise NotImplementedError()
@@ -113,7 +113,7 @@ class DatasetBase(ABC):
     @staticmethod
     def is_built_in() -> bool:
         """
-        Returns flag to indicate if dataset is custom or built int.
+        Returns flag to indicate if dataset is custom or built-in.
         """
         return False
 
@@ -140,9 +140,10 @@ class SplitDataFlow(DataFlowBaseBuilder):
 
     def __init__(self, train: list[Image], val: list[Image], test: Optional[list[Image]]):
         """
-        :param train: Cached train split
-        :param val: Cached val split
-        :param test: Cached test split
+        Args:
+            train: Cached `train` split
+            val: Cached `val` split
+            test: Cached `test` split
         """
         super().__init__(location="")
         self.split_cache: dict[str, list[Image]]
@@ -154,8 +155,12 @@ class SplitDataFlow(DataFlowBaseBuilder):
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
         Dataflow builder for merged split datasets
-        :param kwargs: Only split and max_datapoints arguments will be considered.
-        :return: Dataflow
+
+        Args:
+            kwargs: Only split and max_datapoints arguments will be considered.
+
+        Returns:
+            Dataflow
         """
 
         split = kwargs.get("split", "train")
@@ -175,44 +180,49 @@ class MergeDataset(DatasetBase):
     guarantee flexibility it is possible to pass customized dataflows explicitly to maybe reduce the dataflow size from
     one dataset or to use different splits from different datasets.
 
-    When yielding datapoint from :build(), note that one dataset will pass all its samples successively which
-    might reduce randomness for training, especially when using datasets from the same domain. Buffering all datasets
-    (without loading heavy components like images) is therefore possible and the merged dataset can be shuffled.
+    Note:
+        When yielding datapoints from `build` dataflows, note that one dataset will pass all its samples successively
+        which might reduce randomness for training. Buffering all datasets (without loading heavy components like
+        images) is therefore possible and the merged dataset can be shuffled.
 
-    When the datasets are buffered are split functionality can divide the buffered samples into an train, val and test
-    set.
+        When the datasets that are buffered are split functionality one can divide the buffered samples into an `train`,
+        `val` and `test` set.
 
     While the selection of categories is given by the union of all categories of all datasets, sub categories need to
     be handled with care: Only sub categories for one specific category are available provided that every dataset has
     this sub category available for this specific category. The range of sub category values again is defined as the
     range of all values from all datasets.
 
-    **Example:**
+    Example:
 
-            dataset_1 = get_dataset("dataset_1")
-            dataset_2 = get_dataset("dataset_2")
+        ```python
+        dataset_1 = get_dataset("dataset_1")
+        dataset_2 = get_dataset("dataset_2")
 
-            union_dataset = MergeDataset(dataset_1,dataset_2)
-            union_dataset.buffer_datasets(split="train")     # will cache the train split of dataset_1 and dataset_2
-            merge.split_datasets(ratio=0.1, add_test=False)  # will create a new split of the union.
+        union_dataset = MergeDataset(dataset_1,dataset_2)
+        union_dataset.buffer_datasets(split="train")     # will cache the train split of dataset_1 and dataset_2
+        merge.split_datasets(ratio=0.1, add_test=False)  # will create a new split of the union.
+        ```
 
+    Example:
 
-    **Example:**
+        ```python
+        dataset_1 = get_dataset("dataset_1")
+        dataset_2 = get_dataset("dataset_2")
 
-            dataset_1 = get_dataset("dataset_1")
-            dataset_2 = get_dataset("dataset_2")
+        df_1 = dataset_1.dataflow.build(max_datapoints=20)  # handle separate dataflow configs ...
+        df_2 = dataset_1.dataflow.build(max_datapoints=30)
 
-            df_1 = dataset_1.dataflow.build(max_datapoints=20)  # handle separate dataflow configs ...
-            df_2 = dataset_1.dataflow.build(max_datapoints=30)
-
-            union_dataset = MergeDataset(dataset_1,dataset_2)
-            union_dataset.explicit_dataflows(df_1,df_2)   # ... and pass them explicitly. Filtering is another
-                                                          # possibility
+        union_dataset = MergeDataset(dataset_1,dataset_2)
+        union_dataset.explicit_dataflows(df_1,df_2)   # ... and pass them explicitly. Filtering is another
+                                                      # possibility
+        ```
     """
 
     def __init__(self, *datasets: DatasetBase):
         """
-        :param datasets: An arbitrary number of datasets
+        Args:
+            datasets: An arbitrary number of datasets
         """
         self.datasets = datasets
         self.dataflows: Optional[tuple[DataFlow, ...]] = None
@@ -244,12 +254,17 @@ class MergeDataset(DatasetBase):
             def build(self, **kwargs: Union[str, int]) -> DataFlow:
                 """
                 Building the dataflow of merged datasets. No argument will affect the stream if the dataflows have
-                been explicitly passed. Otherwise, all kwargs will be passed to all dataflows. Note that each dataflow
-                will iterate until it is exhausted. To guarantee randomness across different datasets cache all
-                datapoints and shuffle them afterwards (e.g. use :buffer_dataset() ).
+                been explicitly passed. Otherwise, all kwargs will be passed to all dataflows.
 
-                :param kwargs: arguments for :build()
-                :return: Dataflow
+                Note:
+                    Note that each dataflow will iterate until it is exhausted. To guarantee randomness across
+                    different datasets cache all datapoints and shuffle them afterwards (e.g. use `buffer_dataset()`).
+
+                Args:
+                    kwargs: arguments for `build()`
+
+                Return:
+                    `Dataflow`
                 """
                 df_list = []
                 if self.dataflows is not None:
@@ -272,7 +287,8 @@ class MergeDataset(DatasetBase):
         Pass explicit dataflows for each dataset. Using several dataflow configurations for one dataset is possible as
         well. However, the number of dataflow must exceed the number of merged datasets.
 
-        :param dataflows: An arbitrary number of dataflows
+        Args:
+            dataflows args: An arbitrary number of dataflows
         """
         self.dataflows = dataflows
         if len(self.datasets) > len(self.dataflows):
@@ -286,19 +302,23 @@ class MergeDataset(DatasetBase):
         """
         Buffer datasets with given configs. If dataflows are passed explicitly it will cache their streamed output.
 
-        :param kwargs: arguments for :build()
-        :return: Dataflow
+        Args:
+            kwargs: arguments for `build()`
+
+        Returns:
+            Dataflow
         """
         df = self.dataflow.build(**kwargs)
         self.datapoint_list = CacheData(df, shuffle=True).get_cache()
 
     def split_datasets(self, ratio: float = 0.1, add_test: bool = True) -> None:
         """
-        Split cached datasets into train/val(/test).
+        Split cached datasets into `train`/`val`(/`test`).
 
-        :param ratio: 1-ratio will be assigned to the train split. The remaining bit will be assigned to val and test
-                      split.
-        :param add_test: Add a test split
+        Args:
+            ratio: 1-ratio will be assigned to the train split. The remaining bit will be assigned to val and test
+                   split.
+            add_test: Add a test split
         """
         assert self.datapoint_list is not None, "Datasets need to be buffered before splitting"
         number_datapoints = len(self.datapoint_list)
@@ -332,7 +352,8 @@ class MergeDataset(DatasetBase):
         To reproduce a dataset split at a later stage, get a summary of the by having a dict of list with split and
         the image ids contained in the split.
 
-        :return: E.g. `{"train": ['ab','ac'],"val":['bc','bd']}`
+        Returns:
+            A dict with keys `train`, `val` and `test`: `{"train": ['ab','ac'],"val":['bc','bd']}`
         """
         if isinstance(self._dataflow_builder, SplitDataFlow):
             return {
@@ -345,8 +366,11 @@ class MergeDataset(DatasetBase):
         self, split_dict: Mapping[str, Sequence[str]], **dataflow_build_kwargs: Union[str, int]
     ) -> None:
         """
-        Reproducing a dataset split from a dataset or a dataflow by a dict of list of image ids.
+        Reproducing a dataset split from a dataset or a dataflow by a dict of list of `image_id`s.
 
+        Example:
+
+            ```python
             merge = dd.MergeDataset(doclaynet)
             merge.explicit_dataflows(df_doc)
             merge.buffer_datasets()
@@ -357,8 +381,10 @@ class MergeDataset(DatasetBase):
             df_doc_2 = doclaynet.dataflow.build(split="train", max_datapoints=4000)
             merge_2.explicit_dataflows(df_doc_2)
             merge_2.create_split_by_id(out)   # merge_2 now has the same split as merge
+            ```
 
-        :param split_dict: e.g. `{"train":['ab','ac',...],"val":['bc'],"test":[]}`
+        Args:
+            split_dict: e.g. `{"train":['ab','ac',...],"val":['bc'],"test":[]}`
         """
 
         if set(split_dict.keys()) != {"train", "val", "test"}:
@@ -399,33 +425,41 @@ class CustomDataset(DatasetBase):
         description: Optional[str] = None,
     ):
         """
-        :param name: Name of the dataset. It will not be used in the code, however it might be helpful, if several
+
+        Args:
+            name: Name of the dataset. It will not be used in the code, however it might be helpful, if several
                      custom datasets are in use.
-        :param dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describe
+            dataset_type: Datasets need to be characterized by one of the `enum` members `DatasetType` that describe
                      the machine learning task the dataset is built for. You can get all registered types with
 
-                            types = dd.object_types_registry.get("DatasetType")
-                            print({t for t in types})
+                     ```python
+                     types = dd.object_types_registry.get("DatasetType")
+                     print({t for t in types})
+                     ```
 
-        :param location: Datasets should be stored a sub folder of name `location` in the local cache
+            location: Datasets should be stored a sub folder of name `location` in the local cache
                          `get_dataset_dir_path()`. There are good reasons to use `name`.
-        :param init_categories: A list of all available categories in this dataset. You must use a list as the order
-                                of the categories must always be preserved: they determine the category id that in turn
-                                will be used for model training.
-        :param dataflow_builder: A subclass of `DataFlowBaseBuilder`. Do not instantiate the class by yourself.
-        :param init_sub_categories: A dict mapping main categories to sub categories, if there are any available.
-                                    Suppose an object `LayoutType.cell` has two additional information in the annotation
-                                    file: `CellType.header, CellType.body`. You can then write:
+            init_categories: A list of all available categories in this dataset. You must use a list as the order
+                             of the categories must always be preserved: they determine the category id that in turn
+                             will be used for model training.
+            dataflow_builder: A subclass of `DataFlowBaseBuilder`. Do not instantiate the class by yourself.
+            init_sub_categories: A dict mapping main categories to sub categories, if there are any available.
+                                 Suppose an object `LayoutType.cell` has two additional information in the annotation
+                                 file: `CellType.header, CellType.body`. You can then write:
 
-                                        {LayoutType.cell: {CellType.header: [CellType.header, CellType.body]}
+                                 ```python
+                                 {LayoutType.cell: {CellType.header: [CellType.header, CellType.body]}
+                                 ```
 
-                                    This setting assumes that later in the mapping the `ImageAnnotation` with
-                                    `category_name=LayoutType.cell` will have a sub category of key `CellType.header`
-                                    and one of the two values `CellType.header, CellType.body`
-        :param annotation_files: A mapping to one or more annotation files, e.g.
+                                 This setting assumes that later in the mapping the `ImageAnnotation` with
+                                 `category_name=LayoutType.cell` will have a sub category of key `CellType.header`
+                                 and one of the two values `CellType.header, CellType.body`.
+            annotation_files: A mapping to one or more annotation files, e.g.
 
-                                       annotation_file = {"train": "train_file.json", "test": "test_file.json"}
-        :param description: A description of the dataset.
+                                 ```python
+                                 annotation_file = {"train": "train_file.json", "test": "test_file.json"}
+                                 ```
+            description: A description of the dataset.
         """
 
         self.name = name
@@ -467,13 +501,16 @@ class CustomDataset(DatasetBase):
         """
         This static method creates a CustomDataset instance from a dataset card.
 
-        A dataset card is a JSON file that contains metadata about the dataset such as its name, type, location,
-        initial categories, initial sub categories, and annotation files. The dataflow_builder parameter is a class
-        that inherits from DataFlowBaseBuilder and is used to build the dataflow for the dataset.
+        A dataset card is a `JSON` file that contains metadata about the dataset such as its `name`, `dataset_type`,
+        `location`, initial categories, initial sub categories, and annotation files. The dataflow_builder parameter is
+        a class that inherits from DataFlowBaseBuilder and is used to build the dataflow for the dataset.
 
-        :param file_path: The path to the dataset card (JSON file).
-        :param dataflow_builder: The class used to build the dataflow for the dataset.
-        :return: A CustomDataset instance created from the dataset card.
+        Args:
+            file_path: The path to the dataset card (`JSON` file).
+            dataflow_builder: The class used to build the dataflow for the dataset.
+
+        Returns:
+            A CustomDataset instance created from the dataset card.
         """
 
         with open(file_path, "r", encoding="UTF-8") as file:
@@ -496,9 +533,8 @@ class CustomDataset(DatasetBase):
 
     def as_dict(self) -> Mapping[str, Any]:
         """
-        Return the meta-data of the dataset as a dictionary.
-
-        :return: A dictionary containing the meta-data of the dataset.
+        Return:
+           The meta-data of the dataset as a dictionary.
         """
         return {
             "name": self.name,
@@ -519,9 +555,10 @@ class CustomDataset(DatasetBase):
 
     def save_dataset_card(self, file_path: str) -> None:
         """
-        Save the dataset card to a JSON file.
+        Save the dataset card to a `JSON` file.
 
-        :param file_path: file_path
+        Args:
+            file_path: file_path
         """
         with open(file_path, "w", encoding="UTF-8") as file:
             json.dump(self.as_dict(), file, indent=4)

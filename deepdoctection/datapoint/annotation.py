@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Dataclass for annotations and their derived classes.
+Dataclass for `Annotation`s and their sub-classes.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -88,20 +89,23 @@ class Annotation(ABC):
     value is to set an external id, which in turn creates an annotation id as a function of this.
     An annotation id can only be explicitly set, provided the value is a md5 hash.
 
-    Note that otherwise ids will be generated automatically if the annotation object is dumped in a parent container,
-    either an image or annotation (e.g. sub-category). If no id is supplied, the annotation id is created depending
-    on the defining attributes (key and value pairs) as specified in the return value of
-    `get_defining_attributes`.
+    Note:
+         Ids will be generated automatically if the annotation object is dumped in a parent container,
+         either an image or an annotation (e.g. sub-category). If no id is supplied, the `annotation_id` is created
+         depending on the defining attributes (key and value pairs) as specified in the return value of
+         `get_defining_attributes`.
 
-    `active`: Always set to `True`. You can change the value using `deactivate` .
+    Attributes:
+        active: Always set to `True`. You can change the value using `deactivate` .
 
-    `external_id`: A string or integer value for generating an annotation id. Note, that the resulting annotation
-    id will not depend on the defining attributes.
+        external_id: A string or integer value for generating an annotation id. Note, that the resulting annotation
+                     id will not depend on the defining attributes.
 
-    `_annotation_id`: Unique id for annotations. Will always be given as string representation of a md5-hash.
-    `service_id`: Service that generated the annotation. This will be the name of a pipeline component
-    `model_id`: Model that generated the annotation. This will be the name of particular model
-    `session_id`: Session id for the annotation. This will be the id of the session in which the annotation was created.
+        _annotation_id: Unique id for annotations. Will always be given as string representation of a md5-hash.
+        service_id: Service that generated the annotation. This will be the name of a pipeline component
+        model_id: Model that generated the annotation. This will be the name of a model in a component
+        session_id: Session id for the annotation. This will be the id of the session in which the annotation was
+                    created.
     """
 
     active: bool = field(default=True, init=False, repr=True)
@@ -114,7 +118,7 @@ class Annotation(ABC):
     def __post_init__(self) -> None:
         """
         Will check, if the external id provided is an uuid. If not will use the external id as seed for defining an
-        uuid.
+        `uuid`.
         """
 
         if self.external_id is not None:
@@ -128,7 +132,7 @@ class Annotation(ABC):
     @property
     def annotation_id(self) -> str:
         """
-        annotation_id
+        `annotation_id`
         """
         if self._annotation_id:
             return self._annotation_id
@@ -137,7 +141,7 @@ class Annotation(ABC):
     @annotation_id.setter
     def annotation_id(self, input_id: str) -> None:
         """
-        annotation_id setter
+        `annotation_id` setter
         """
         if self._annotation_id is not None:
             raise AnnotationError("Annotation_id already defined and cannot be reset")
@@ -155,7 +159,8 @@ class Annotation(ABC):
         describe the annotation object. If you do not provide an external id, only the defining attributes will be used
         for generating the annotation id.
 
-        :return: A list of attributes.
+        Returns:
+            A list of attributes.
         """
         raise NotImplementedError()
 
@@ -171,9 +176,12 @@ class Annotation(ABC):
         Defines the `annotation_id` by attributes of the annotation class as well as by external parameters given by a
         tuple or list of container id contexts.
 
-        :param annotation: The annotation instance for which the id should be generated.
-        :param container_id_context: A tuple/list of strings on which you want the resulting annotation id to depend on.
-        :return: A uuid that uniquely characterizes the annotation.
+        Args:
+            annotation: The annotation instance for which the id should be generated.
+            container_id_context: A tuple/list of strings on which you want the resulting annotation id to depend on.
+
+        Returns:
+            A uuid that uniquely characterizes the annotation.
         """
         for container_id in container_id_context:
             if container_id is not None:
@@ -187,7 +195,8 @@ class Annotation(ABC):
         Returning the full dataclass as dict. Uses the custom `convert.as_dict` to disregard attributes defined by
         `remove_keys`.
 
-        :return: A custom dict.
+        Returns:
+            A custom dict.
         """
 
         img_dict = as_dict(self, dict_factory=dict)
@@ -206,9 +215,11 @@ class Annotation(ABC):
         """
         Method to initialize a derived class from dict.
 
-        :param kwargs: dict with `Annotation` attributes
+        Args:
+            kwargs: dict with `Annotation` attributes
 
-        :return: Annotation instance
+        Returns:
+            Annotation instance
         """
         raise NotImplementedError()
 
@@ -218,7 +229,8 @@ class Annotation(ABC):
         """
         Similar to `get_defining_attributes` but for `state_id`
 
-        :return: A list of attributes.
+        Returns:
+            A list of attributes.
         """
         raise NotImplementedError()
 
@@ -228,7 +240,8 @@ class Annotation(ABC):
         Different to `annotation_id` this id does depend on every defined state attributes and might therefore change
         over time.
 
-        :return: Annotation state instance
+        Returns:
+            Annotation state instance
         """
         container_ids = []
         attributes = self.get_state_attributes()
@@ -270,20 +283,18 @@ class CategoryAnnotation(Annotation):
     `dump_relationship`. If a key is already available as a sub-category, it must be explicitly removed using the
     `remove_sub_category` before replacing the sub-category.
 
-    Note that subcategories are only accepted as category annotations. Relationships, on the other hand, are only
-    managed by passing the annotation id.
+    Note:
+        Sub categories are only accepted as category annotations. Relationships, on the other hand, are only
+        managed by passing the `annotation_id`.
 
-    `category_name`: String will be used for selecting specific annotations. Use upper case strings.
-
-    `category_id`: When setting a value will accept strings and ints. Will be stored as string.
-
-    `score`: Score of a prediction.
-
-    `sub_categories`: Do not access the dict directly. Rather use the access `get_sub_category` resp.
-    `dump_sub_category`.
-
-    `relationships`: Do not access the dict directly either. Use `get_relationship` or
-    `dump_relationship` instead.
+    Attributes:
+        category_name: String will be used for selecting specific annotations. Use upper case strings.
+        category_id: When setting a value will accept strings and ints. Will be stored as string.
+        score: Score of a prediction.
+        sub_categories: Do not access the dict directly. Rather use the access `get_sub_category` resp.
+                        `dump_sub_category`.
+        relationships: Do not access the dict directly either. Use `get_relationship` or
+                       `dump_relationship` instead.
     """
 
     category_name: TypeOrStr = field(default=DefaultType.DEFAULT_TYPE)
@@ -295,7 +306,7 @@ class CategoryAnnotation(Annotation):
 
     @property  # type: ignore
     def category_name(self) -> ObjectTypes:
-        """category name"""
+        """`category_name`"""
         return self._category_name
 
     @category_name.setter
@@ -312,13 +323,14 @@ class CategoryAnnotation(Annotation):
         self, sub_category_name: TypeOrStr, annotation: CategoryAnnotation, *container_id_context: Optional[str]
     ) -> None:
         """
-        Storage of sub-categories. As sub-categories usually only depend on very few attributes and the parent
+        Storage of sub categories. As sub categories usually only depend on very few attributes and the parent
         category cannot yet be stored in a comprehensive container, it is possible to include a context of the
         annotation id in order to ensure that the sub-category annotation id is unambiguously created.
 
-        :param sub_category_name: key for defining the sub category.
-        :param annotation: Annotation instance to dump
-        :param container_id_context: Tuple/list of context ids.
+        Args:
+            sub_category_name: key for defining the sub category.
+            annotation: Annotation instance to dump
+            container_id_context: Tuple/list of context ids.
         """
 
         if sub_category_name in self.sub_categories:
@@ -344,9 +356,11 @@ class CategoryAnnotation(Annotation):
         """
         Return a sub category by its key.
 
-        :param sub_category_name: The key of the sub-category.
+        Args:
+            sub_category_name: The key of the sub-category.
 
-        :return: sub category as CategoryAnnotation
+        Returns:
+            sub category as `CategoryAnnotation`
         """
         return self.sub_categories[sub_category_name]
 
@@ -355,7 +369,8 @@ class CategoryAnnotation(Annotation):
         Removes a sub category with a given key. Necessary to call, when you want to replace an already dumped sub
         category.
 
-        :param key: A key to a sub category.
+        Args:
+            key: A key to a sub category.
         """
 
         if key in self.sub_categories:
@@ -363,11 +378,14 @@ class CategoryAnnotation(Annotation):
 
     def dump_relationship(self, key: TypeOrStr, annotation_id: str) -> None:
         """
-        Dumps an `annotation_id` to a given key, in order to store relations between annotations. Note, that the
-        referenced annotation must be stored elsewhere.
+        Dumps an `annotation_id` to a given key, in order to store relations between annotations.
 
-        :param key: The key, where to place the annotation id.
-        :param annotation_id: An annotation id
+        Note:
+            The referenced annotation must be stored elsewhere.
+
+        Args:
+            key: The key, where to place the `annotation_id`.
+            annotation_id: The `annotation_id` to dump
         """
         if not is_uuid_like(annotation_id):
             raise UUIDError("Annotation_id must be uuid")
@@ -382,8 +400,11 @@ class CategoryAnnotation(Annotation):
         """
         Returns a list of annotation ids stored with a given relationship key.
 
-        :param key: The key for the required relationship.
-        :return: Get a (possibly) empty list of annotation ids.
+        Args:
+            key: The key for the required relationship.
+
+        Returns:
+            A (possibly) empty list of `annotation_id`s.
         """
         if key in self.relationships:
             return self.relationships[key]
@@ -394,9 +415,10 @@ class CategoryAnnotation(Annotation):
         Remove relationship by some given keys and ids. If no annotation ids are provided all relationship according
         to the key will be removed.
 
-        :param key: A relationship key.
-        :param annotation_ids: A single annotation_id or a list. Will remove only the relation with given
-                               annotation_ids, provided not None is passed as argument.
+        Args:
+            key: A relationship key.
+            annotation_ids: A single annotation_id or a list. Will remove only the relation with given
+                            `annotation_ids`, provided not None is passed as argument.
         """
 
         if annotation_ids is not None:
@@ -419,7 +441,8 @@ class CategoryAnnotation(Annotation):
         """
         A list of attributes to suspend from as_dict creation.
 
-        :return: list of attributes.
+        Returns:
+            list of attributes.
         """
         return ["_category_name"]
 
@@ -441,11 +464,12 @@ class ImageAnnotation(CategoryAnnotation):
     generating an image from the annotation and then saving it there. Compare with the method `image.Image.
     image_ann_to_image`, which naturally populates this attribute.
 
-    `bounding_box`: Regarding the coordinate system, if you have to define a prediction, use the system of the
-    image where the object has been detected.
+    Attributes:
+        bounding_box: Regarding the coordinate system, if you have to define a prediction, use the system of the
+                      image where the object has been detected.
 
-    `image`: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
-    `Image.image_ann_to_image`.
+        image: Image, defined by the bounding box and cropped from its parent image. Populate this attribute with
+               `Image.image_ann_to_image`.
     """
 
     bounding_box: Optional[BoundingBox] = field(default=None)
@@ -467,7 +491,13 @@ class ImageAnnotation(CategoryAnnotation):
 
     def get_bounding_box(self, image_id: Optional[str] = None) -> BoundingBox:
         """Get bounding from image embeddings or, if not available or if `image_id` is not provided,
-        from `bounding_box`. Raises `ValueError` if no bounding box is available."""
+        from `bounding_box`.
+
+        Returns:
+            BoundingBox: A bounding box of the annotation.
+
+        Raises:
+            ValueError: If no bounding box is available."""
         if self.image and image_id:
             box = self.image.get_embedding(image_id)
         else:
@@ -477,16 +507,23 @@ class ImageAnnotation(CategoryAnnotation):
         raise AnnotationError(f"bounding_box has not been initialized for {self.annotation_id}")
 
     def get_summary(self, key: ObjectTypes) -> CategoryAnnotation:
-        """Get summary sub categories from `image`. Raises `ValueError` if `key` is not available"""
+        """Get summary sub categories from `image`.
+
+        Returns:
+            CategoryAnnotation: A summary sub category of the image.
+
+        Raises:
+            ValueError: If `key` is not available"""
+
         if self.image:
             return self.image.summary.get_sub_category(key)
         raise AnnotationError(f"Summary does not exist for {self.annotation_id} and key: {key}")
 
     def get_annotation_map(self) -> defaultdict[str, list[AnnotationMap]]:
         """
-        Returns a defaultdict with annotation ids as keys and a list of AnnotationMap instances as values for all sub
-         categories, relationships and image summaries.
-        :return: defaultdict with annotation ids as keys and a list of AnnotationMap instances as values.
+        Returns:
+             A `defaultdict` with `annotation_id`s as keys and a list of `AnnotationMap` instances as values for all
+             sub categories, relationships and image summaries.
         """
         annotation_id_dict = defaultdict(list)
         annotation_id_dict[self.annotation_id].append(AnnotationMap(image_annotation_id=self.annotation_id))
@@ -515,7 +552,8 @@ class ContainerAnnotation(CategoryAnnotation):
     A dataclass for transporting values along with categorical attributes. Use these types of annotations as special
     types of sub categories.
 
-     value: Attribute to store the value. Use strings.
+    Attributes:
+        value: Attribute to store the value. Use strings.
     """
 
     value: Optional[Union[list[str], str]] = field(default=None)

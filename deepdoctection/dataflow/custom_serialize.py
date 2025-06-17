@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Methods that convert incoming data to dataflows.
+Classes to load data and produce dataflows
 """
 
 from __future__ import annotations
@@ -63,13 +63,14 @@ class FileClosingIterator:
     reading the data from it. It is used in the context of reading data from a file
     in a streaming manner, where the data is not loaded into memory all at once.
 
-    **Example:**
-
+    Example:
+        ```python
         file = open(path, "r")
         iterator = Reader(file)
         closing_iterator = FileClosingIterator(file, iter(iterator))
 
-        df = CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints) # set up a dataflow
+        df = CustomDataFromIterable(closing_iterator, max_datapoints=max_datapoints)
+        ```
 
     """
 
@@ -77,8 +78,9 @@ class FileClosingIterator:
         """
         Initializes the FileClosingIterator with a file object and its iterator.
 
-        :param file_obj (TextIO): The file object to read data from.
-        :param     iterator (Iterator): The actual iterator of the file object.
+        Args:
+            file_obj: The file object to read data from.
+            iterator: The actual iterator of the file object.
         """
         self.file_obj = file_obj
         self.iterator = iterator
@@ -87,7 +89,8 @@ class FileClosingIterator:
         """
         Returns the iterator object itself.
 
-        :return:  FileClosingIterator: The instance of the class itself.
+        Returns:
+            FileClosingIterator: The instance of the class itself.
         """
         return self
 
@@ -96,7 +99,8 @@ class FileClosingIterator:
         Returns the next item from the file object's iterator.
         Closes the file object if the iteration is finished.
 
-        :return: The next item from the file object's iterator.
+        Returns:
+            The next item from the file object's iterator.
 
         Raises:
             StopIteration: If there are no more items to return.
@@ -110,23 +114,27 @@ class FileClosingIterator:
 
 class SerializerJsonlines:
     """
-    Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of JSON objects to a .jsonl file.
+    Serialize a dataflow from a jsonlines file. Alternatively, save a dataflow of `JSON` objects to a `.jsonl` file.
 
-    **Example:**
+    Example:
+        ```python
+          df = SerializerJsonlines.load("path/to/file.jsonl")
+          df.reset_state()
 
-            df = SerializerJsonlines.load("path/to/file.jsonl")
-            df.reset_state()
-            for dp in df:
-               ... # is a dict
+          for dp in df:
+              ... # is a dict
+        ```
     """
 
     @staticmethod
     def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> CustomDataFromIterable:
         """
-        :param path: a path to a .jsonl file.
-        :param max_datapoints: Will stop the iteration once max_datapoints have been streamed
+        Args:
+            path: a path to a .jsonl file.
+            max_datapoints: Will stop the iteration once max_datapoints have been streamed
 
-        :return: dataflow to iterate from
+        Returns:
+            Dataflow to iterate from
         """
         file = open(path, "r")  # pylint: disable=W1514,R1732
         iterator = Reader(file)
@@ -136,14 +144,15 @@ class SerializerJsonlines:
     @staticmethod
     def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:
         """
-        Writes a dataflow iteratively to a .jsonl file. Every datapoint must be a dict where all items are serializable.
-        As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
-        unexpectedly large file
+        Writes a dataflow iteratively to a `.jsonl` file. Every datapoint must be a dict where all items are
+        serializable. As the length of the dataflow cannot be determined in every case max_datapoint prevents
+        generating an unexpectedly large file
 
-        :param df: The dataflow to write from.
-        :param path: The path, the .jsonl file to write to.
-        :param file_name: name of the target file.
-        :param max_datapoints: maximum number of datapoint to consider writing to a file.
+        Args:
+            df: The dataflow to write from.
+            path: The path, the .jsonl file to write to.
+            file_name: name of the target file.
+            max_datapoints: maximum number of datapoint to consider writing to a file.
         """
 
         if not os.path.isdir(path):
@@ -166,27 +175,30 @@ class SerializerJsonlines:
 class SerializerTabsepFiles:
     """
     Serialize a dataflow from a tab separated text file. Alternatively, save a dataflow of plain text
-    to a .txt file.
+    to a `.txt` file.
 
-    **Example**:
-
-            df = SerializerTabsepFiles.load("path/to/file.txt")
+    Example:
+        ```python
+        df = SerializerTabsepFiles.load("path/to/file.txt")
 
         will yield each text line of the file.
+        ```
     """
 
     @staticmethod
-    def load(path: PathLikeOrStr, max_datapoins: Optional[int] = None) -> CustomDataFromList:
+    def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> CustomDataFromList:
         """
-        :param path: a path to a .txt file.
-        :param max_datapoins: Will stop the iteration once max_datapoints have been streamed
+        Args:
+            path: a path to a .txt file.
+            max_datapoints: Will stop the iteration once max_datapoints have been streamed
 
-        :return: dataflow to iterate from
+        Returns:
+            Dataflow to iterate from
         """
 
         with open(path, "r", encoding="UTF-8") as file:
             file_list = file.readlines()
-        return CustomDataFromList(file_list, max_datapoints=max_datapoins)
+        return CustomDataFromList(file_list, max_datapoints=max_datapoints)
 
     @staticmethod
     def save(df: DataFlow, path: PathLikeOrStr, file_name: str, max_datapoints: Optional[int] = None) -> None:
@@ -195,10 +207,11 @@ class SerializerTabsepFiles:
         As the length of the dataflow cannot be determined in every case max_datapoint prevents generating an
         unexpectedly large file
 
-        :param df: The dataflow to write from.
-        :param path: The path, the .txt file to write to.
-        :param file_name: name of the target file.
-        :param max_datapoints: maximum number of datapoint to consider writing to a file.
+        Args:
+            df: The dataflow to write from.
+            path: The path, the .txt file to write to.
+            file_name: Name of the target file.
+            max_datapoints: Maximum number of datapoint to consider writing to a file.
         """
 
         if not os.path.isdir(path):
@@ -220,6 +233,13 @@ class SerializerFiles:
     """
     Serialize files from a directory and all subdirectories. Only one file type can be serialized. Once specified, all
     other types will be filtered out.
+
+    Example:
+        ```python
+        df = SerializerFiles.load("path/to/dir",file_type=".pdf")
+
+        will yield absolute paths to all `.pdf` files in the directory and all subdirectories.
+        ```
     """
 
     @staticmethod
@@ -234,12 +254,15 @@ class SerializerFiles:
         Generates a dataflow where a datapoint consists of a string of names of files with respect to some file type.
         If you want to load the files you need to do this in a following step by yourself.
 
-        :param path: A path to some base directory. Will inspect all subdirectories, as well
-        :param file_type: A file type (suffix) to look out for (single str or list of stings)
-        :param max_datapoints: Stop iteration after passing max_datapoints
-        :param shuffle: Shuffle the files, so that the order of appearance in dataflow is random.
-        :param sort: If set to "True" it will sort all selected files by its string
-        :return: dataflow to iterate from
+        Args:
+            path: A path to some base directory. Will inspect all subdirectories, as well
+            file_type: A file type (suffix) to look out for (single str or list of stings)
+            max_datapoints: Stop iteration after passing max_datapoints
+            shuffle: Shuffle the files, so that the order of appearance in dataflow is random.
+            sort: If set to `True` it will sort all selected files by its string
+
+        Returns:
+            Dataflow to iterate from
         """
         df: DataFlow
         df1: DataFlow
@@ -286,10 +309,11 @@ class SerializerFiles:
 
 class CocoParser:
     """
-    A simplified version of the Microsoft COCO helper class for reading  annotations. It currently supports only
+    A simplified version of the COCO helper class for reading  annotations. It currently supports only
     bounding box annotations
 
-    :param annotation_file: location of annotation file
+    Args:
+        annotation_file: Location of annotation file
     """
 
     def __init__(self, annotation_file: Optional[PathLikeOrStr] = None) -> None:
@@ -358,14 +382,16 @@ class CocoParser:
         is_crowd: Optional[bool] = None,
     ) -> Sequence[int]:
         """
-        Get ann ids that satisfy given filter conditions. default skips that filter
+        Get annotation ids that satisfy given filter conditions. default skips that filter
 
-        :param img_ids: get anns for given imgs
-        :param cat_ids: get anns for given cats
-        :param area_range: get anns for given area range (e.g. [0 inf])
-        :param is_crowd: get anns for given crowd label (False or True)
+        Args:
+            img_ids: get anns for given imgs
+            cat_ids: get anns for given cats
+            area_range: get anns for given area range (e.g. [0 inf])
+            is_crowd: get anns for given crowd label (False or True)
 
-        :return: ids: integer array of ann ids
+        Returns:
+            ids: integer array of ann ids
         """
 
         if img_ids is None:
@@ -403,13 +429,15 @@ class CocoParser:
         category_ids: Optional[Union[int, Sequence[int]]] = None,
     ) -> Sequence[int]:
         """
-        Filtering parameters. default skips that filter.
+        Filtering parameters. Default does not filter anything.
 
-        :param category_names: get cats for given cat names
-        :param super_category_names: get cats for given super category names
-        :param category_ids: get cats for given cat ids
+        Args:
+            category_names: get cats for given cat names
+            super_category_names: get cats for given super category names
+            category_ids: get cats for given cat ids
 
-        :return: ids: integer array of cat ids
+        Returns:
+            ids: integer array of cat ids
         """
 
         if category_names is None:
@@ -441,12 +469,14 @@ class CocoParser:
         self, img_ids: Optional[Union[int, Sequence[int]]] = None, cat_ids: Optional[Union[int, Sequence[int]]] = None
     ) -> Sequence[int]:
         """
-        Get img ids that satisfy given filter conditions.
+        Get image ids that satisfy given filter conditions.
 
-        :param img_ids: get imgs for given ids
-        :param cat_ids: get imgs with all given cats
+        Args:
+            img_ids: get imgs for given ids
+            cat_ids: get imgs with all given cats
 
-        :return: ids: integer array of img ids
+        Returns:
+            ids: integer array of img ids
         """
 
         if img_ids is None:
@@ -472,9 +502,11 @@ class CocoParser:
         """
         Load anns with the specified ids.
 
-        :param ids: integer ids specifying anns
+        Args:
+            ids: integer ids specifying anns
 
-        :return: anns: loaded ann objects
+        Returns:
+            anns: loaded ann objects
         """
         if ids is None:
             ids = []
@@ -486,9 +518,11 @@ class CocoParser:
         """
         Load cats with the specified ids.
 
-        :param ids: integer ids specifying cats
+        Args:
+            ids: integer ids specifying cats
 
-        :return: cats: loaded cat objects
+        Returns:
+            cats: loaded cat objects
         """
         if ids is None:
             ids = []
@@ -500,9 +534,11 @@ class CocoParser:
         """
         Load anns with the specified ids.
 
-        :param ids: integer ids specifying img
+        Args:
+            ids: integer ids specifying img
 
-        :return: imgs: loaded img objects
+        Returns:
+            imgs: loaded img objects
         """
         if ids is None:
             ids = []
@@ -513,31 +549,34 @@ class CocoParser:
 
 class SerializerCoco:
     """
-    Class for serializing annotation files in Coco format. Coco comes in JSON format which is a priori not
+    Class for serializing annotation files in COCO format. COCO comes in `JSON` format which is a priori not
     serialized. This class implements only the very basic methods to generate a dataflow. It wraps the coco class
-    from pycocotools and assembles annotations that belong to the image. Note, that the conversion into the core
-    `Image` has to be done by yourself.
+    from `pycocotools` and assembles annotations that belong to the image.
+
+    Note:
+        Conversion into the core `Image` has to be done by yourself.
+
+    Example:
+        ```python
+        df = SerializerCoco.load("path/to/annotations.json")
+        df.reset_state()
+        for dp in df:
+            # {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
+        ```
+
     """
 
     @staticmethod
     def load(path: PathLikeOrStr, max_datapoints: Optional[int] = None) -> DataFlow:
         """
-        Loads a .json file and generates a dataflow.
+        Loads a `.json` file and generates a dataflow.
 
-        **Example:**
+        Args:
+            max_datapoints: Will stop the iteration once max_datapoints have been streamed.
+            path: a path to a .json file.
 
-                {'images':[img1,img2,...], 'annotations':[ann1,ann2,...],...}
-
-            it will generate a dataflow with datapoints
-
-
-                {'image':{'id',...},'annotations':[{'id':…,'bbox':...}]}
-
-            for each image id. We use the type hint CocoDatapointDict to describe this dictionary
-
-        :param max_datapoints: Will stop the iteration once max_datapoints have been streamed.
-        :param path: a path to a .json file.
-        :return: dataflow to iterate from
+        Returns:
+            dataflow to iterate from
         """
         if not os.path.isfile(path):
             raise FileNotFoundError(path)
@@ -570,13 +609,15 @@ class SerializerPdfDoc:
     """
     Serialize a pdf document with an arbitrary number of pages.
 
-    **Example:**
-
-            df = SerializerPdfDoc.load("path/to/document.pdf")
+    Example:
+        ```python
+        df = SerializerPdfDoc.load("path/to/document.pdf")
 
         will yield datapoints:
 
-            {"path": "path/to/document.pdf", "file_name" document_page_1.pdf, "pdf_bytes": b"some-bytes"}
+        {"path": "path/to/document.pdf", "file_name" document_page_1.pdf, "pdf_bytes": b"some-bytes"}
+        ```
+
     """
 
     @staticmethod
@@ -584,10 +625,13 @@ class SerializerPdfDoc:
         """
         Loads the document page wise and returns a dataflow accordingly.
 
-        :param path: Path to the pdf document.
-        :param max_datapoints: The maximum number of pages to stream.
-        :return: A dict with structure {"path":... ,"file_name": ..., "pdf_bytes": ...}. The file name is a
-                 concatenation of the physical file name and the current page number.
+        Args:
+            path: Path to the pdf document.
+            max_datapoints: The maximum number of pages to stream.
+
+        Returns:
+            A dict with structure `{"path":... ,"file_name": ..., "pdf_bytes": ...}`. The file name is a
+            concatenation of the physical file name and the current page number.
         """
 
         file_name = os.path.split(path)[1]

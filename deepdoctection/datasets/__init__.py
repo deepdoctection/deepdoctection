@@ -16,14 +16,10 @@
 # limitations under the License.
 
 """
-Simple framework inspired by
+# Dataset concept: Building, training and evaluating datasets
 
-<https://huggingface.co/docs/datasets/>
+Simple framework inspired by <https://huggingface.co/docs/datasets/> for creating datasets.
 
-for creating datasets.
-
-Create an info card, a DataFlowBaseBuilder derived instance, possibly a category card and a
-DatasetBase derived instance to create a data set.
 """
 
 from .adapter import *

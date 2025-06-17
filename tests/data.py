@@ -559,7 +559,7 @@ class Annotations:
                 summary_key=None,
             ),
         ],
-        "e49567ad-0275-3fc2-84e6-7805b3a0f36e": [
+        "113abb4b-aeef-332f-81fc-03ee9fcd780e": [
             AnnotationMap(
                 image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
                 sub_category_key=WordType.CHARACTERS,
@@ -567,7 +567,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "b925d809-f7ce-3541-a4b4-683c2aeb271d": [
+        "adac369e-796b-3663-b1bb-5aeb6d2961c6": [
             AnnotationMap(
                 image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
                 sub_category_key=WordType.BLOCK,
@@ -575,7 +575,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "94baa93b-60e2-3b6a-9a8c-977ff7144834": [
+        "7d13bac0-4aa3-398d-a182-254b60688f6b": [
             AnnotationMap(
                 image_annotation_id="e9c4b3e7-0b2c-3d45-89f3-db6e3ef864ad",
                 sub_category_key=LayoutType.LINE,
@@ -583,7 +583,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "fa8b414a-b387-3fd4-ad2d-1bc23aee36fe": [
+        "9ab24d38-0948-3073-b5eb-066fdff3d014": [
             AnnotationMap(
                 image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
                 sub_category_key=WordType.CHARACTERS,
@@ -591,7 +591,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "0e43a874-5e17-3bfe-8d7b-98c8c1e97ae3": [
+        "8ff71a19-9f47-3549-a167-a7c5405f6a3c": [
             AnnotationMap(
                 image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
                 sub_category_key=WordType.BLOCK,
@@ -599,7 +599,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "ff6d6b2e-8204-33ba-bd46-8f8c2ebd056c": [
+        "96013c59-5d47-3a63-a7af-48e7bcc70c7e": [
             AnnotationMap(
                 image_annotation_id="44ef758d-92f5-3f57-b6a3-aa95b9606f70",
                 sub_category_key=LayoutType.LINE,
@@ -607,7 +607,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "46d85a90-54af-3260-8bd5-d0aa97bb5715": [
+        "a05595c9-abbf-3d2c-99ec-9ef18e8a3019": [
             AnnotationMap(
                 image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
                 sub_category_key=WordType.CHARACTERS,
@@ -615,7 +615,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "ee376a25-d4a2-372e-a4b3-a25861e8f233": [
+        "fc2c6a35-0d4b-327a-8f81-593e4ebb0e2d": [
             AnnotationMap(
                 image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
                 sub_category_key=WordType.BLOCK,
@@ -623,7 +623,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "a11e7202-8de0-35da-ac09-9f21a15ca746": [
+        "0a51facd-ad6a-38ef-b7c6-6515ce4271fd": [
             AnnotationMap(
                 image_annotation_id="1413d499-ce19-3a50-861c-7d8c5a7ba772",
                 sub_category_key=LayoutType.LINE,
@@ -631,7 +631,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "f2d3ee22-4773-3461-8a6f-edbcac7d1183": [
+        "273d86b3-8f63-3d39-abc9-5b9d928c3448": [
             AnnotationMap(
                 image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
                 sub_category_key=WordType.CHARACTERS,
@@ -639,7 +639,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "69286743-eef7-3ae9-bbd4-c5fa220d0175": [
+        "6ea53f7c-205d-38bc-8c21-76393352c34b": [
             AnnotationMap(
                 image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
                 sub_category_key=WordType.BLOCK,
@@ -647,7 +647,7 @@ class Annotations:
                 summary_key=None,
             )
         ],
-        "635a5fc1-dcfd-31a7-b7b4-1ced6555fcec": [
+        "64728855-70aa-3af3-958a-ca34560dc51f": [
             AnnotationMap(
                 image_annotation_id="fd78767a-227d-3c17-83cb-586d24cb0c55",
                 sub_category_key=LayoutType.LINE,

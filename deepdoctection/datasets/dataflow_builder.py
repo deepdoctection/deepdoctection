@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for DataFlowBaseBuilder class.
+Module for `DataFlowBaseBuilder` class.
 """
 
 from abc import ABC, abstractmethod
@@ -48,8 +48,9 @@ class DataFlowBaseBuilder(ABC):
         annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None,
     ):
         """
-        :param location: Relative path of the physical dataset.
-        :param annotation_files: Dict of annotation files e.g. depending on the split.
+        Args:
+            location: Relative path of the physical dataset.
+            annotation_files: Dict of annotation files e.g. depending on the split.
         """
         self.location = location
         if annotation_files is None:
@@ -61,7 +62,7 @@ class DataFlowBaseBuilder(ABC):
     @property
     def categories(self) -> DatasetCategories:
         """
-        categories
+        `categories`
         """
         if self._categories is not None:
             return self._categories
@@ -70,27 +71,28 @@ class DataFlowBaseBuilder(ABC):
     @categories.setter
     def categories(self, categories: DatasetCategories) -> None:
         """
-        categories setter
+        `categories` setter
         """
         self._categories = categories
 
     def get_split(self, key: str) -> str:
         """
-        split value
+        Args:
+            key: split value
         """
         return self._splits[key]
 
     @property
     def splits(self) -> Mapping[str, str]:
         """
-        splits
+        `splits`
         """
         return self._splits
 
     @splits.setter
     def splits(self, splits: Mapping[str, str]) -> None:
         """
-        set splits
+        `splits` setter
         """
         self._splits = splits
 
@@ -98,7 +100,8 @@ class DataFlowBaseBuilder(ABC):
         """
         Get the absolute path to the locally physically stored dataset.
 
-        :return: local workdir
+        Returns:
+            local workdir
         """
         return Path(get_dataset_dir_path()) / self.location
 
@@ -107,13 +110,16 @@ class DataFlowBaseBuilder(ABC):
         """
         Consult the docstring w.r.t `DataFlowBaseBuilder`.
 
-        :param kwargs: A custom set of arguments/values
-        :return: dataflow
+        Args:
+            kwargs: A custom set of arguments/values
+
+        Returns:
+            dataflow
         """
         raise NotImplementedError()
 
     def get_annotation_file(self, split: str) -> str:
-        """Get single annotation file."""
+        """Get single annotation file"""
         split_file = self.annotation_files[split]
         if isinstance(split_file, str):
             return split_file

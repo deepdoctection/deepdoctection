@@ -358,6 +358,7 @@ _IMPORT_STRUCTURE = {
         "FileExtensionError",
         "sub_path",
         "get_package_path",
+        "get_cache_dir_path",
         "get_configs_dir_path",
         "get_weights_dir_path",
         "get_dataset_dir_path",

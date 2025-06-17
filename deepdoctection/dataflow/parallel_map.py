@@ -9,7 +9,6 @@ Replaces relevant parts of the Dataflow package. Most of the functions have been
 
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel.py>
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/parallel_map.py>
-
 """
 
 import atexit
@@ -163,18 +162,19 @@ class MultiThreadMapData(_ParallelMapData):
     The semantics of this class is **identical** to `MapData` except for the ordering.
     Threads run in parallel and can take different time to run the
     mapping function. Therefore, the order of datapoints won't be preserved.
-    When ``strict=True``, ``MultiThreadMapData(df, ...)``
-    is guaranteed to produce the exact set of data as ``MapData(df, ...)``,
-    if both are iterated until ``StopIteration``. But the produced data will have different ordering.
-    The behavior of strict mode is undefined if the given dataflow ``df`` is infinite.
-    When ``strict=False``, the data that's produced by ``MultiThreadMapData(df, ...)``
-    is a reordering of the data produced by ``RepeatedData(MapData(df, ...), -1)``.
-    In other words, first pass of ``MultiThreadMapData.__iter__`` may contain
-    datapoints from the second pass of ``df.__iter__``.
+    When `strict=True`, `MultiThreadMapData(df, ...)`
+    is guaranteed to produce the exact set of data as `MapData(df, ...)`,
+    if both are iterated until `StopIteration`. But the produced data will have different ordering.
+    The behavior of strict mode is undefined if the given dataflow `df` is infinite.
+    When `strict=False`, the data that's produced by `MultiThreadMapData(df, ...)`
+    is a re-ordering of the data produced by `RepeatedData(MapData(df, ...), -1)`.
+    In other words, first pass of `MultiThreadMapData.__iter__` may contain
+    datapoints from the second pass of `df.__iter__`.
+
     Note:
         1. You should avoid starting many threads in your main process to reduce GIL contention.
            The threads will only start in the process which calls `reset_state()`.
-           Therefore you can use ``MultiProcessRunnerZMQ(MultiThreadMapData(...), 1)``
+           Therefore you can use `MultiProcessRunnerZMQ(MultiThreadMapData(...), 1)`
            to reduce GIL contention.
     """
 
@@ -215,12 +215,13 @@ class MultiThreadMapData(_ParallelMapData):
         strict: bool = False,
     ):
         """
-        :param df: the dataflow to map
-        :param num_thread: number of threads to use
-        :param map_func: datapoint -> datapoint | None. Return None to
-                         discard/skip the datapoint.
-        :param buffer_size: number of datapoints in the buffer
-        :param strict: use "strict mode", see notes above.
+        Args:
+            df: the dataflow to map
+            num_thread: number of threads to use
+            map_func: datapoint -> datapoint | None. Return None to
+                      discard/skip the datapoint.
+            buffer_size: number of datapoints in the buffer
+            strict: use "strict mode", see notes above.
         """
         if strict:
             # In strict mode, buffer size cannot be larger than the total number of datapoints
@@ -290,7 +291,7 @@ class _MultiProcessZMQDataFlow(DataFlow, ABC):
 
     def reset_state(self) -> Any:
         """
-        All forked dataflows should only be reset **once and only once** in spawned processes.
+        All forked dataflows should only be reset once and only once in spawned processes.
         Subclasses should call this method with super.
         """
         assert not self._reset_done, "reset_state() was called twice! This violates the API of DataFlow!"
@@ -338,17 +339,17 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
     """
     Same as `MapData`, but start processes to run the mapping function,
     and communicate with ZeroMQ pipe.
-    The semantics of this class is **identical** to `MapData` except for the ordering.
+    The semantics of this class is identical to `MapData` except for the ordering.
     Processes run in parallel and can take different time to run the
     mapping function. Therefore, the order of datapoints won't be preserved.
-    When ``strict=True``, ``MultiProcessMapData(df, ...)``
-    is guaranteed to produce the exact set of data as ``MapData(df, ...)``,
-    if both are iterated until ``StopIteration``. But the produced data will have different ordering.
-    The behavior of strict mode is undefined if the given dataflow ``df`` is infinite.
-    When ``strict=False``, the data that's produced by ``MultiProcessMapData(df, ...)``
-    is a reordering of the data produced by ``RepeatedData(MapData(df, ...), -1)``.
-    In other words, first pass of ``MultiProcessMapData.__iter__`` may contain
-    datapoints from the second pass of ``df.__iter__``.
+    When `strict=True`, `MultiProcessMapData(df, ...)`
+    is guaranteed to produce the exact set of data as `MapData(df, ...)`,
+    if both are iterated until `StopIteration`. But the produced data will have different ordering.
+    The behavior of strict mode is undefined if the given dataflow `df` is infinite.
+    When `strict=False`, the data that's produced by `MultiProcessMapData(df, ...)`
+    is a reordering of the data produced by `RepeatedData(MapData(df, ...), -1)`.
+    In other words, first pass of `MultiProcessMapData.__iter__` may contain
+    datapoints from the second pass of `df.__iter__`.
     """
 
     class _Worker(mp.Process):
@@ -384,11 +385,12 @@ class MultiProcessMapData(_ParallelMapData, _MultiProcessZMQDataFlow):
         strict: bool = False,
     ) -> None:
         """
-        :param df: the dataflow to map
-        :param num_proc: number of threads to use
-        :param map_func: datapoint -> datapoint | None. Return None to
-        :param buffer_size: number of datapoints in the buffer
-        :param strict: use "strict mode", see notes above.
+        Args:
+            df: the dataflow to map
+            num_proc: number of threads to use
+            map_func: datapoint -> datapoint | None. Return None to
+            buffer_size: number of datapoints in the buffer
+            strict: use "strict mode", see notes above.
         """
         if strict:
             # In strict mode, buffer size cannot be larger than the total number of datapoints

@@ -1,0 +1,11 @@
+/* custom.css */
+.md-button {
+  display: inline-block;
+  width: 230px; /* Einheitliche Breite */
+  text-align: center;
+  height: 50px;
+  /* background-color: #007BFF;  Optional: Hintergrundfarbe */
+  color: white; /* Optional: Textfarbe */
+  border-radius: 5px; /* Optional: Abgerundete Ecken */
+  text-decoration: none; /* Entfernt Unterstreichung */
+}

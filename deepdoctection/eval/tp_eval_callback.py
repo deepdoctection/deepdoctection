@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for EvalCallback in Tensorpack
+`EvalCallback` in Tensorpack
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ __all__ = ["EvalCallback"]
 
 class EvalCallback(Callback):  # pylint: disable=R0903
     """
-    A callback that runs evaluation once a while. It supports evaluation on any pipeline component.
+    A callback that runs evaluation once in a while. It supports evaluation on any pipeline component.
     """
 
     _chief_only = False
@@ -71,17 +71,18 @@ class EvalCallback(Callback):  # pylint: disable=R0903
         **build_eval_kwargs: str,
     ) -> None:
         """
-        :param dataset: dataset
-        :param category_names: String or list of category names
-        :param sub_categories: Dict of categories/sub-categories or categories/list of sub-categories. See also
+        Args:
+            dataset: dataset
+            category_names: String or list of category names
+            sub_categories: Dict of categories/sub-categories or categories/list of sub-categories. See also
                                `eval.Evaluator`
-        :param metric: metric
-        :param pipeline_component: Pipeline component with a detector.
-        :param in_names: Specify tensor input names.
-                         E.g. `extern.tp.tpfrcnn.GeneralizedRCNN.get_inference_tensor_names`
-        :param out_names: Specify tensor output names.
-        :param build_eval_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. "split",
-                                  "build_mode", "max_datapoints" etc.
+            metric: metric
+            pipeline_component: Pipeline component with a detector.
+            in_names: Specify tensor input names.
+                      E.g. `extern.tp.tpfrcnn.GeneralizedRCNN.get_inference_tensor_names`
+            out_names: Specify tensor output names.
+            build_eval_kwargs: Pass the necessary arguments in order to build the dataflow, e.g. `split`,
+                               `build_mode`, `max_datapoints` etc.
         """
         self.dataset_name = dataset.dataset_info.name
         self.build_eval_kwargs = build_eval_kwargs

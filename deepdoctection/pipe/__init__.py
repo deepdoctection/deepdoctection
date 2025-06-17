@@ -16,8 +16,7 @@
 # limitations under the License.
 
 """
-Contains pipeline components that can be plugged into each other and predictors that are invoked by their
- respective component.
+# Pipeline components and pipelines
 """
 
 from .anngen import *

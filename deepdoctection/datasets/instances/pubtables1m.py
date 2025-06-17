@@ -119,23 +119,23 @@ class Pubtables1MDet(_BuiltInDataset):
 
 class Pubtables1MBuilder(DataFlowBaseBuilder):
     """
-    Pubtables1M dataflow builder
+    `Pubtables1M` dataflow builder
     """
 
     def build(self, **kwargs: Union[str, int]) -> DataFlow:
         """
-        Returns a dataflow from which you can stream datapoints of images. The following arguments affect the return
-        values of the dataflow:
+        Returns a dataflow from which you can stream datapoints of images. The following arguments affect the returns
+        of the dataflow:
 
-        `split:` Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+        Args:
+            kwargs:
+                (split) Split of the dataset. Can be `train`, `val` or `test`. Default: `val`
+                (max_datapoints) Will stop iterating after `max_datapoints`. Default: `None`
+                (load_image) Will load the image for each datapoint. Default: `False`
+                (fake_score) Will add a fake score so that annotations look like predictions. Default: `False`
 
-        `max_datapoints:` Will stop iterating after max_datapoints. Default: `None`
-
-        `load_image:` Will load the image for each datapoint.  Default: `False`
-
-        `fake_score:` Will add a fake score so that annotations look like predictions
-
-        :return: dataflow
+        Returns:
+            Dataflow
         """
 
         if not lxml_available():

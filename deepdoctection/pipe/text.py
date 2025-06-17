@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for text extraction pipeline component
+Text extraction pipeline component
 """
 
 from __future__ import annotations
@@ -40,29 +40,30 @@ __all__ = ["TextExtractionService"]
 @pipeline_component_registry.register("TextExtractionService")
 class TextExtractionService(PipelineComponent):
     """
-    Pipeline component for extracting text. Any detector can be selected, provided that it can evaluate a
-    numpy array as an image.
+    Text extraction pipeline component.
 
-    Text extraction can either be carried out over the entire image or over selected regions of interests (ROIs).
-    ROIs are layout components that have been determined by means of a pipeline component that has been run through
-    beforehand. ROI extraction is particularly suitable when an OCR component is selected as the detector and the
-    document has a complex structure. Instead of transferring the entire image, only the ROIs are transferred to
-    the detector. Since the ROI has a simpler structure than the entire document page, it can significantly improve
-    the OCR results.
+    This component is responsible for extracting text from images or selected regions of interest (ROIs) using a
+    specified detector. The detector must be able to evaluate a numpy array as an image.
 
-    Text components (currently only words) are attached to the image as image annotations. A relation is assigned in
-    relation to text and ROI or in relation to text and the entire image. When selecting ROIs, only the selected
-    categories are taken into account during processing. ROIs that are not selected are not presented to the
-    detector.
+    Text extraction can be performed on the entire image or on selected ROIs, which are layout components determined by
+    a previously run pipeline component. ROI extraction is particularly useful when using an OCR component as the
+    detector and the document has a complex structure. By transferring only the ROIs to the detector, OCR results can
+    be significantly improved due to the simpler structure of the ROI compared to the entire document page.
 
-        textract_predictor = TextractOcrDetector()
-        text_extract = TextExtractionService(textract_predictor)
+    Text components (currently only words) are attached to the image as image annotations. A relation is assigned
+    between text and ROI or between text and the entire image. When selecting ROIs, only the selected categories are
+    processed. ROIs that are not selected are not presented to the detector.
 
-        pipe = DoctectionPipe([text_extract])
-        df = pipe.analyze(path="path/to/document.pdf")
+    Example:
+    ```python
+    textract_predictor = TextractOcrDetector()
+    text_extract = TextExtractionService(textract_predictor)
 
-        for dp in df:
-            ...
+    pipe = DoctectionPipe([text_extract])
+    df = pipe.analyze(path="path/to/document.pdf")
+
+    for dp in df:
+        ...
     """
 
     def __init__(
@@ -72,12 +73,18 @@ class TextExtractionService(PipelineComponent):
         run_time_ocr_language_selection: bool = False,
     ):
         """
-        :param text_extract_detector: ObjectDetector
-        :param extract_from_roi: one or more category names for roi selection
-        :param run_time_ocr_language_selection: Only available for `TesseractOcrDetector` as this framework has
-                                                multiple language selections. Also requires that a language detection
-                                                pipeline component ran before. It will select the expert language OCR
-                                                model based on the determined language.
+        Args:
+            text_extract_detector: The detector used for text extraction.
+            extract_from_roi: One or more category names for ROI selection.
+            run_time_ocr_language_selection: If True, enables runtime OCR language selection. Only available for
+                                             `TesseractOcrDetector` as this framework supports multiple languages.
+                                              Requires a language detection pipeline component to have run before.
+                                              Selects the expert language OCR model based on the determined language.
+
+        Raises:
+            TypeError: If predicting from a cropped image and the detector is not an `ObjectDetector` or
+                       `TextRecognizer`.
+            TypeError: If `run_time_ocr_language_selection` is True and the detector is not a `TesseractOcrDetector`.
         """
 
         if extract_from_roi is None:
@@ -140,11 +147,17 @@ class TextExtractionService(PipelineComponent):
 
     def get_text_rois(self, dp: Image) -> Sequence[Union[Image, ImageAnnotation, list[ImageAnnotation]]]:
         """
-        Return image rois based on selected categories. As this selection makes only sense for specific text extractors
-        (e.g. those who do proper OCR and do not mine from text from native pdfs) it will do some sanity checks.
-        It is possible that a preceding text extractor dumped text before. If the predictor must not extract text as
-        well `get_text_rois` will return an empty list.
-        :return: list of ImageAnnotation or Image
+        Returns image ROIs based on selected categories.
+
+        This selection is only meaningful for specific text extractors (e.g., those performing OCR and not mining text
+        from native PDFs). Performs sanity checks. If a preceding text extractor has already dumped text, and the
+        predictor should not extract text as well, returns an empty list.
+
+        Args:
+            dp: The `Image` to process.
+
+        Returns:
+            A list of `ImageAnnotation` or `Image`.
         """
 
         if self.extract_from_category:
@@ -157,11 +170,17 @@ class TextExtractionService(PipelineComponent):
         self, text_roi: Union[Image, ImageAnnotation, list[ImageAnnotation]]
     ) -> Optional[Union[bytes, PixelValues, list[tuple[str, PixelValues]], int]]:
         """
-        Return raw input for a given `text_roi`. This can be a numpy array or pdf bytes and depends on the chosen
+        Returns raw input for a given `text_roi`. The input can be a numpy array or PDF bytes, depending on the chosen
         predictor.
 
-        :param text_roi: `Image` or `ImageAnnotation`
-        :return: pdf bytes or numpy array
+        Args:
+            text_roi: The `Image`, `ImageAnnotation`, or list of `ImageAnnotation` to process.
+
+        Returns:
+            PDF bytes, numpy array, or other predictor-specific input.
+
+        Raises:
+            ImageError: If required image data is missing or if `text_roi` is not an `Image` when required.
         """
 
         if isinstance(text_roi, ImageAnnotation):

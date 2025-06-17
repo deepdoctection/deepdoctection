@@ -31,6 +31,7 @@ Backbone settings
 
 **BACKBONE**
 
+```python
 .BOTTLENECK: Resnet oder resnext_32xd4
 
 .FREEZE_AFFINE: Do not train affine parameters inside norm layers
@@ -44,23 +45,26 @@ Backbone settings
 .TF_PAD_MODE: Use a base model with TF-preferred padding mode, which may pad more pixels on right or bottom
 than top/left. See https://github.com/tensorflow/tensorflow/issues/18213. Using either one should probably give the same
 performance.
-
+```
 
 **CASCADE**
 
+```python
 .BBOX_REG_WEIGHTS: Bounding box regression weights
 
 .IOUS: Iou levels
-
+```
 
 **DATA**
 
+```python
 .TRAIN_NUM_WORKERS: Number of threads to use when parallelizing the pre-processing (e.g. augmenting, adding anchors,
 RPN gt-labelling,...)
-
+```
 
 **FPN**
 
+```
 .ANCHOR_STRIDES: Strides for each FPN level. Must be the same length as ANCHOR_SIZES
 
 .CASCADE: Use Cascade RCNN
@@ -78,9 +82,11 @@ RPN gt-labelling,...)
 .NUM_CHANNEL: Number of channels
 
 .PROPOSAL_MODE: Choices: 'Level', 'Joint'
+```
 
 **FRCNN**
 
+```python
 .BATCH_PER_IM: Number of total proposals selected. Will divide into fg and bg by given ratio
 
 .BBOX_REG_WEIGHTS: Bounding box regression weights
@@ -90,15 +96,19 @@ RPN gt-labelling,...)
 .FG_THRESH: Threshold how to divide fg and bg selection
 
 .MODE_MASK: Whether to train mask head
+```
 
 **MRCNN**
 
+```python
 .ACCURATE_PASTE: Slightly more aligned results, but very slow on numpy
 
 .HEAD_DIM: Head dimension
+```
 
 **PREPROC**
 
+```python
 .MAX_SIZE: Maximum edge size
 
 .PIXEL_MEAN: Pixel mean (on the training data set)
@@ -108,10 +118,11 @@ RPN gt-labelling,...)
 .SHORT_EDGE_SIZE: Size to resize the image to (inference), while not exceeding max size
 
 .TRAIN_SHORT_EDGE_SIZE: The size to resize the image to (training), while not exceeding max size. [min, max] to sample
-from
+```
 
 **RPN**
 
+```python
 .ANCHOR_RATIOS: Anchor ratios
 
 .ANCHOR_SIZES: Anchor sizes
@@ -144,9 +155,11 @@ to a value larger than 1.0 will disable the feature. It is disabled by default b
 .TRAIN_POST_NMS_TOPK: Number of proposals after carrying out nms (training)
 
 .POST_NMS_TOPK: Number of proposals after carrying out nms (inference)
+```
 
 **OUTPUT**
 
+```python
 .FRCNN_NMS_THRESH: Nms threshold for output. nms being performed per class prediction
 
 .RESULTS_PER_IM: Number of output detection results
@@ -154,11 +167,13 @@ to a value larger than 1.0 will disable the feature. It is disabled by default b
 .RESULT_SCORE_THRESH: Threshold for detection result
 
 .NMS_THRESH_CLASS_AGNOSTIC: Nms threshold for output. nms being performed over all class predictions
+```
 
 TRAINER: options: 'horovod', 'replicated'. Note that Horovod trainer is not available when TF2 is installed
 
 **TRAIN**
 
+```python
 .LR_SCHEDULE: "1x" schedule in detectron.  LR_SCHEDULE means equivalent steps when the total batch size is 8.
                It can be either a string like "3x" that refers to standard convention, or a list of int.
                LR_SCHEDULE=3x is the same as LR_SCHEDULE=[420000, 500000, 540000], which
@@ -184,6 +199,7 @@ TRAINER: options: 'horovod', 'replicated'. Note that Horovod trainer is not avai
 .STARTING_EPOCH: Starting epoch. Useful when restarting training.
 
 .LOG_DIR: Log dir
+```
 
 """
 

@@ -41,14 +41,20 @@ _TF_ERR_MSG = f"Tensorflow must be installed. {_GENERIC_ERR_MSG}"
 
 def tf_available() -> bool:
     """
-    Returns True if TF is installed
+    Returns whether TensorFlow is installed.
+
+    Returns:
+        bool: True if TensorFlow is installed, False otherwise.
     """
     return bool(_TF_AVAILABLE)
 
 
 def get_tf_version() -> str:
     """
-    Determine the TF version which is installed
+    Determines the installed TensorFlow version.
+
+    Returns:
+        str: The installed TensorFlow version, or `0.0` if not installed.
     """
     tf_version = "0.0"
     if tf_available():
@@ -76,7 +82,10 @@ def get_tf_version() -> str:
 
 def get_tensorflow_requirement() -> Requirement:
     """
-    Returns Tensorflow requirement
+    Returns the TensorFlow requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
 
     tf_requirement_satisfied = False
@@ -100,14 +109,20 @@ _TF_ADDONS_ERR_MSG = (
 
 def tf_addons_available() -> bool:
     """
-    Returns True if tensorflow addons is installed
+    Returns whether `tensorflow_addons` is installed.
+
+    Returns:
+        bool: `True` if `tensorflow_addons` is installed, False otherwise.
     """
     return bool(_TF_ADDONS_AVAILABLE)
 
 
 def get_tf_addons_requirements() -> Requirement:
     """
-    Returns Tensorflow Addons requirement
+    Returns the `tensorflow_addons` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "tensorflow-addons", tf_addons_available(), _TF_ADDONS_ERR_MSG
 
@@ -118,14 +133,20 @@ _TP_ERR_MSG = f"Tensorpack must be installed. {_GENERIC_ERR_MSG}"
 
 def tensorpack_available() -> bool:
     """
-    Returns True if Tensorpack is installed
+    Returns whether `tensorpack` is installed.
+
+    Returns:
+        bool: `True` if `tensorpack` is installed, False otherwise.
     """
     return bool(_TP_AVAILABLE)
 
 
 def get_tensorpack_requirement() -> Requirement:
     """
-    Returns Tensorpack requirement
+    Returns the `tensorpack` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "tensorpack", tensorpack_available(), _TP_ERR_MSG
 
@@ -137,14 +158,20 @@ _PYTORCH_ERR_MSG = f"Pytorch must be installed. {_GENERIC_ERR_MSG}"
 
 def pytorch_available() -> bool:
     """
-    Returns True if Pytorch is installed
+    Returns whether PyTorch is installed.
+
+    Returns:
+        bool: True if PyTorch is installed, False otherwise.
     """
     return bool(_PYTORCH_AVAILABLE)
 
 
 def get_pytorch_requirement() -> Requirement:
     """
-    Returns HF Pytorch requirement
+    Returns the PyTorch requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "torch", pytorch_available(), _PYTORCH_ERR_MSG
 
@@ -156,14 +183,20 @@ _LXML_ERR_MSG = f"lxml must be installed. {_GENERIC_ERR_MSG}"
 
 def lxml_available() -> bool:
     """
-    Returns True if lxml is installed
+    Returns whether `lxml` is installed.
+
+    Returns:
+        bool: True if `lxml` is installed, `False` otherwise.
     """
     return bool(_LXML_AVAILABLE)
 
 
 def get_lxml_requirement() -> Requirement:
     """
-    Returns lxml requirement
+    Returns the `lxml` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "lxml", lxml_available(), _LXML_ERR_MSG
 
@@ -175,14 +208,20 @@ _APTED_ERR_MSG = f"apted must be installed. {_GENERIC_ERR_MSG}"
 
 def apted_available() -> bool:
     """
-    Returns True if apted available
+    Returns whether `apted` is available.
+
+    Returns:
+        bool: `True` if `apted` is available, False otherwise.
     """
     return bool(_APTED_AVAILABLE)
 
 
 def get_apted_requirement() -> Requirement:
     """
-    Returns APTED requirement
+    Returns the `apted` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "apted", apted_available(), _TRANSFORMERS_ERR_MSG
 
@@ -194,14 +233,20 @@ _DISTANCE_ERR_MSG = f"distance must be installed. {_GENERIC_ERR_MSG}"
 
 def distance_available() -> bool:
     """
-    Returns True if apted available
+    Returns whether `distance` is available.
+
+    Returns:
+        bool: `True` if `distance` is available, False otherwise.
     """
     return bool(_DISTANCE_AVAILABLE)
 
 
 def get_distance_requirement() -> Requirement:
     """
-    Returns distance requirement
+    Returns the `distance` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "distance", distance_available(), _DISTANCE_ERR_MSG
 
@@ -213,14 +258,20 @@ _TRANSFORMERS_ERR_MSG = f"transformers must be installed. {_GENERIC_ERR_MSG}"
 
 def transformers_available() -> bool:
     """
-    Returns True if HF Transformers is installed
+    Returns whether HuggingFace Transformers is installed.
+
+    Returns:
+        bool: `True` if Transformers is installed, False otherwise.
     """
     return bool(_TRANSFORMERS_AVAILABLE)
 
 
 def get_transformers_requirement() -> Requirement:
     """
-    Returns HF Transformers requirement
+    Returns the HuggingFace Transformers requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "transformers", transformers_available(), _TRANSFORMERS_ERR_MSG
 
@@ -235,14 +286,20 @@ _DETECTRON2_ERR_MSG = (
 
 def detectron2_available() -> bool:
     """
-    Returns True if Detectron2 is installed
+    Returns whether `detectron2` is installed.
+
+    Returns:
+        bool: True if `detectron2` is installed, False otherwise.
     """
     return bool(_DETECTRON2_AVAILABLE)
 
 
 def get_detectron2_requirement() -> Requirement:
     """
-    Returns Detectron2 requirement
+    Returns the `detectron2` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "detectron2", detectron2_available(), _DETECTRON2_ERR_MSG
 
@@ -258,10 +315,14 @@ _TESS_ERR_MSG = (
 
 
 def set_tesseract_path(tesseract_path: PathLikeOrStr) -> None:
-    """Set the Tesseract path. If you have tesseract installed in Anaconda,
-       you can use this function to set tesseract path.
+    """
+    Sets the Tesseract path.
 
-    :param tesseract_path: Tesseract installation path.
+        Note:
+        If you have Tesseract installed in Anaconda, you can use this function to set the Tesseract path.
+
+    Args:
+        tesseract_path: The Tesseract installation path.
     """
 
     global _TESS_AVAILABLE  # pylint: disable=W0603
@@ -286,7 +347,13 @@ def tesseract_available() -> bool:
 
 def get_tesseract_version() -> Union[int, version.Version]:
     """
-    Returns Version object of the Tesseract version. We need at least Tesseract 3.05
+    Returns the version of the installed Tesseract.
+
+    Returns:
+        int or packaging.version.Version: The Tesseract version if installed and `>= 4.0`, otherwise `0`.
+
+    Note:
+        The minimum required version is `3.05`.
     """
     try:
         output = subprocess.check_output(
@@ -311,7 +378,13 @@ def get_tesseract_version() -> Union[int, version.Version]:
 
 def get_tesseract_requirement() -> Requirement:
     """
-    Returns Tesseract requirement. The minimum version must be 3.05
+    Returns the Tesseract requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
+
+    Note:
+        The minimum required version is `3.05`.
     """
     if get_tesseract_version():
         return "tesseract", True, _TESS_ERR_MSG
@@ -326,21 +399,30 @@ _POPPLER_ERR_MSG = "Poppler cannot be found. Please check that Poppler is instal
 
 def pdf_to_ppm_available() -> bool:
     """
-    Returns True if pdftoppm is installed
+    Returns whether `pdftoppm` is installed.
+
+    Returns:
+        bool: True if `pdftoppm` is installed, False otherwise.
     """
     return bool(_PDF_TO_PPM_AVAILABLE)
 
 
 def pdf_to_cairo_available() -> bool:
     """
-    Returns True if pdftocairo is installed
+    Returns whether `pdftocairo` is installed.
+
+    Returns:
+        bool: `True` if `pdftocairo` is installed, `False` otherwise.
     """
     return bool(_PDF_TO_CAIRO_AVAILABLE)
 
 
 def get_poppler_version() -> Union[int, version.Version]:
     """
-    Returns Version object of the Poppler version. We need at least Tesseract 3.05
+    Returns the version of the installed Poppler utility.
+
+    Returns:
+        int or packaging.version.Version: The Poppler version if installed, otherwise 0.
     """
 
     if pdf_to_ppm_available():
@@ -367,7 +449,10 @@ def get_poppler_version() -> Union[int, version.Version]:
 
 def get_poppler_requirement() -> Requirement:
     """
-    Returns Poppler requirement. The minimum version is not required in our setting
+    Returns the Poppler requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     if get_poppler_version():
         return "poppler", True, _POPPLER_ERR_MSG
@@ -381,14 +466,20 @@ _PDFPLUMBER_ERR_MSG = f"pdfplumber must be installed. {_GENERIC_ERR_MSG}"
 
 def pdfplumber_available() -> bool:
     """
-    Returns True if pdfplumber is installed
+    Returns whether `pdfplumber` is installed.
+
+    Returns:
+        bool: `True` if `pdfplumber` is installed, False otherwise.
     """
     return bool(_PDFPLUMBER_AVAILABLE)
 
 
 def get_pdfplumber_requirement() -> Requirement:
     """
-    Returns pdfplumber requirement.
+    Returns the `pdfplumber` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "pdfplumber", pdfplumber_available(), _PDFPLUMBER_ERR_MSG
 
@@ -400,14 +491,20 @@ _COCOTOOLS_ERR_MSG = f"pycocotools must be installed. {_GENERIC_ERR_MSG}"
 
 def cocotools_available() -> bool:
     """
-    Returns True if pycocotools is installed
+    Returns whether `pycocotools` is installed.
+
+    Returns:
+        bool: `True` if `pycocotools` is installed, `False` otherwise.
     """
     return bool(_COCOTOOLS_AVAILABLE)
 
 
 def get_cocotools_requirement() -> Requirement:
     """
-    Returns cocotools requirement.
+    Returns the `pycocotools` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "pycocotools", cocotools_available(), _COCOTOOLS_ERR_MSG
 
@@ -418,7 +515,10 @@ _SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
 
 def scipy_available() -> bool:
     """
-    Returns True if scipy is installed
+    Returns whether `scipy` is installed.
+
+    Returns:
+        bool: `True` if `scipy` is installed, `False` otherwise.
     """
     return bool(_SCIPY_AVAILABLE)
 
@@ -430,14 +530,20 @@ _JDESKEW_ERR_MSG = f"jdeskew must be installed. {_GENERIC_ERR_MSG}"
 
 def jdeskew_available() -> bool:
     """
-    Returns True if jdeskew is installed
+    Returns whether `jdeskew` is installed.
+
+    Returns:
+        bool: `True` if `jdeskew` is installed, `False` otherwise.
     """
     return bool(_JDESKEW_AVAILABLE)
 
 
 def get_jdeskew_requirement() -> Requirement:
     """
-    Returns jdeskew requirement.
+    Returns the `jdeskew` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "jdeskew", jdeskew_available(), _JDESKEW_ERR_MSG
 
@@ -449,14 +555,20 @@ _SKLEARN_ERR_MSG = f"scikit-learn must be installed. {_GENERIC_ERR_MSG}"
 
 def sklearn_available() -> bool:
     """
-    Returns True if sklearn is installed
+    Returns whether `sklearn` is installed.
+
+    Returns:
+        bool: `True` if `sklearn` is installed, `False` otherwise.
     """
     return bool(_SKLEARN_AVAILABLE)
 
 
 def get_sklearn_requirement() -> Requirement:
     """
-    Returns sklearn requirement.
+    Returns the `sklearn` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "sklearn", sklearn_available(), _SKLEARN_ERR_MSG
 
@@ -467,7 +579,10 @@ _QPDF_AVAILABLE = which("qpdf") is not None
 
 def qpdf_available() -> bool:
     """
-    Returns True if qpdf is installed
+    Returns whether `qpdf` is installed.
+
+    Returns:
+        bool: `True` if `qpdf` is installed, `False` otherwise.
     """
     return bool(_QPDF_AVAILABLE)
 
@@ -482,7 +597,10 @@ _AWS_ERR_MSG = "AWS CLI must be installed https://docs.aws.amazon.com/cli/latest
 
 def boto3_available() -> bool:
     """
-    Returns True if Boto3 is installed
+    Returns whether `boto3` is installed.
+
+    Returns:
+        bool: `True` if `boto3` is installed, `False` otherwise.
     """
 
     return bool(_BOTO3_AVAILABLE)
@@ -490,21 +608,30 @@ def boto3_available() -> bool:
 
 def get_boto3_requirement() -> Requirement:
     """
-    Return Boto3 requirement
+    Returns the `boto3` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "boto3", boto3_available(), _BOTO3_ERR_MSG
 
 
 def aws_available() -> bool:
     """
-    Returns True if AWS CLI is installed
+    Returns whether AWS CLI is installed.
+
+    Returns:
+        bool: `True` if AWS CLI is installed, `False` otherwise.
     """
     return bool(_AWS_CLI_AVAILABLE)
 
 
 def get_aws_requirement() -> Requirement:
     """
-    Return AWS CLI requirement
+    Returns the AWS CLI requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "aws", aws_available(), _AWS_ERR_MSG
 
@@ -516,14 +643,24 @@ _DOCTR_ERR_MSG = f"DocTr must be installed. {_GENERIC_ERR_MSG}"
 
 def doctr_available() -> bool:
     """
-    Returns True if doctr is installed
+    Returns whether `doctr` is installed.
+
+    Returns:
+        bool: `True` if `doctr` is installed, `False` otherwise.
     """
     return bool(_DOCTR_AVAILABLE)
 
 
 def get_doctr_requirement() -> Requirement:
     """
-    Return Doctr requirement
+    Returns the `doctr` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
+
+    Note:
+        On macOS, if `poppler` is not available, this function will recursively check the requirement.
+        It is not yet known how to check whether `pango`, `gdk-pixbuf`, and `libffi` are installed.
     """
     if sys.platform == "darwin":
         if not get_poppler_version():
@@ -542,14 +679,20 @@ _FASTTEXT_ERR_MSG = f"fasttext must be installed. {_GENERIC_ERR_MSG}"
 
 def fasttext_available() -> bool:
     """
-    Returns True if fasttext is installed
+    Returns whether `fasttext` is installed.
+
+    Returns:
+        bool: `True` if `fasttext` is installed, False otherwise.
     """
     return bool(_FASTTEXT_AVAILABLE)
 
 
 def get_fasttext_requirement() -> Requirement:
     """
-    Return Fasttext requirement
+    Returns the `fasttext` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "fasttext", fasttext_available(), _FASTTEXT_ERR_MSG
 
@@ -561,14 +704,20 @@ _WANDB_ERR_MSG = f"WandB must be installed. {_GENERIC_ERR_MSG}"
 
 def wandb_available() -> bool:
     """
-    Returns True if W&B package wandb is installed
+    Returns whether the W&B package `wandb` is installed.
+
+    Returns:
+        bool: `True` if `wandb` is installed, `False` otherwise.
     """
     return bool(_WANDB_AVAILABLE)
 
 
 def get_wandb_requirement() -> Requirement:
     """
-    Return WandB requirement
+    Returns the W&B requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "wandb", wandb_available(), _WANDB_ERR_MSG
 
@@ -585,14 +734,20 @@ _CV2_ERR_MSG = f"OpenCV must be installed. {_GENERIC_ERR_MSG}"
 
 def opencv_available() -> bool:
     """
-    Returns True if OpenCV is installed
+    Returns whether OpenCV is installed.
+
+    Returns:
+        bool: `True` if OpenCV is installed, `False` otherwise.
     """
     return bool(_CV2_AVAILABLE)
 
 
 def get_opencv_requirement() -> Requirement:
     """
-    Return OpenCV requirement
+    Returns the OpenCV requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "opencv", opencv_available(), _CV2_ERR_MSG
 
@@ -604,14 +759,20 @@ _PILLOW_ERR_MSG = f"pillow must be installed. {_GENERIC_ERR_MSG}"
 
 def pillow_available() -> bool:
     """
-    Returns True if Pillow is installed
+    Returns whether Pillow is installed.
+
+    Returns:
+        bool: `True` if Pillow is installed, False otherwise.
     """
     return bool(_PILLOW_AVAILABLE)
 
 
 def get_pillow_requirement() -> Requirement:
     """
-    Return OpenCV requirement
+    Returns the Pillow requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "pillow", pillow_available(), _PILLOW_ERR_MSG
 
@@ -623,14 +784,20 @@ _PYPDFIUM2_ERR_MSG = f"pypdfium2 must be installed. {_GENERIC_ERR_MSG}"
 
 def pypdfium2_available() -> bool:
     """
-    Returns True if pypdfium2 is installed
+    Returns whether `pypdfium2` is installed.
+
+    Returns:
+        bool: `True` if `pypdfium2` is installed, `False` otherwise.
     """
     return bool(_PYPDFIUM2_AVAILABLE)
 
 
 def get_pypdfium2_requirement() -> Requirement:
     """
-    Return pypdfium2 requirement
+    Returns the `pypdfium2` requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "pypdfium2", pypdfium2_available(), _PYPDFIUM2_ERR_MSG
 
@@ -642,7 +809,10 @@ _SPACY_ERR_MSG = f"SpaCy must be installed. {_GENERIC_ERR_MSG}"
 
 def spacy_available() -> bool:
     """
-    Returns True if SpaCy is installed
+    Returns whether SpaCy is installed.
+
+    Returns:
+        bool: True if SpaCy is installed, False otherwise.
     """
 
     return bool(_SPACY_AVAILABLE)
@@ -650,20 +820,21 @@ def spacy_available() -> bool:
 
 def get_spacy_requirement() -> Requirement:
     """
-    Return SpaCy requirement
+    Returns the SpaCy requirement.
+
+    Returns:
+        tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "spacy", spacy_available(), _SPACY_ERR_MSG
 
 
 def set_mp_spawn() -> None:
     """
-    Sets multiprocessing method to "spawn".
+    Sets the multiprocessing method to "spawn".
 
-    from https://github.com/tensorpack/tensorpack/blob/master/examples/FasterRCNN/train.py:
-
-          "spawn/forkserver" is safer than the default "fork" method and
-          produce more deterministic behavior & memory saving
-          However its limitation is you cannot pass a lambda function to subprocesses.
+    Note:
+        "spawn/forkserver" is safer than the default "fork" method and produces more deterministic behavior and memory
+        saving. However, its limitation is that you cannot pass a lambda function to subprocesses.
     """
 
     if not _S.mp_context_set:
@@ -679,10 +850,23 @@ def set_mp_spawn() -> None:
 class _LazyModule(ModuleType):
     """
     Module class that surfaces all objects but only performs associated imports when the objects are requested.
+
+
+    Note:
+        This class is needed for autocompletion in an IDE.
     """
 
     @no_type_check
     def __init__(self, name, module_file, import_structure, module_spec=None, extra_objects=None):
+        """
+            Args:
+        name: The name of the module.
+        module_file: The file path of the module.
+        import_structure: The import structure dictionary.
+        module_spec: The module specification.
+        extra_objects: Additional objects to include.
+
+        """
         super().__init__(name)
         self._modules = set(import_structure.keys())
         self._class_to_module = {}

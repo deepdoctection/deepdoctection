@@ -73,13 +73,6 @@ def get_sequence_class_result(  # type: ignore
     return DatapointXfund().get_sequence_class_results()
 
 
-# def get_mock_patch(name: str) -> MagicMock:
-#    """Generating a mock object with a specific name"""
-#    mock = MagicMock()
-#    mock.__class__.__name__ = name
-#    return mock
-
-
 class TestHFLayoutLmTokenClassifier:
     """
     Test HFLayoutLmTokenClassifier

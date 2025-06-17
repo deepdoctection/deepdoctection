@@ -16,8 +16,7 @@
 # limitations under the License.
 
 """
-Adding some functionality to dataflow classes (e.g. monkey patching, inheritance ...). Some ideas have been taken
-from
+Some custom dataflow classes. Some ideas have been taken from
 
 <https://github.com/tensorpack/dataflow/blob/master/dataflow/dataflow/common.py>
 """
@@ -40,18 +39,22 @@ class CacheData(ProxyDataFlow):
     Completely cache the first pass of a DataFlow in memory,
     and produce from the cache thereafter.
 
-    NOTE: The user should not stop the iterator before it has reached the end.
-    Otherwise, the cache may be incomplete.
+    Note:
+        The user should not stop the iterator before it has reached the end.
+        Otherwise, the cache may be incomplete.
 
-    **Example:**
+    Example:
+        ```python
+        df_list = CacheData(df).get_cache() # Buffers the whole dataflow and return a list of all datapoints
+        ```
 
-            df_list = CacheData(df).get_cache()   # buffers the whole dataflow and return a list of all datapoints
     """
 
     def __init__(self, df: DataFlow, shuffle: bool = False) -> None:
         """
-        :param df: input DataFlow.
-        :param shuffle: whether to shuffle the cache before yielding from it.
+        Args:
+            df: input DataFlow.
+            shuffle: whether to shuffle the cache before yielding from it.
         """
         self.shuffle = shuffle
         self.buffer: list[Any] = []
@@ -80,9 +83,10 @@ class CacheData(ProxyDataFlow):
 
     def get_cache(self) -> list[Any]:
         """
-        get the cache of the whole dataflow as a list
+        Get the cache of the whole dataflow as a list.
 
-        :return: list of datapoints
+        Returns:
+            list of datapoints
         """
         self.reset_state()
         with get_tqdm() as status_bar:
@@ -95,21 +99,22 @@ class CacheData(ProxyDataFlow):
 
 class CustomDataFromList(DataFromList):
     """
-    Wraps a list of datapoints to a dataflow. Compared to `Tensorpack.DataFlow.DataFromList` implementation you
-    can specify a number of datapoints after that the iteration stops. You can also pass a rebalance function that
-    filters on that list.
+    Wraps a list of datapoints to a dataflow. Compared to `Tensorpack.DataFlow.DataFromList`
+    implementation you can specify a number of datapoints after that the iteration stops.
+    You can also pass a re-balance function that filters on that list.
 
-    **Example:**
+    Example:
 
-                def filter_first(lst):
-                    return lst.pop(0)
+        ```python
+        def filter_first(lst):
+            return lst.pop(0)
 
-                df = CustomDataFromList(lst=[["a","b"],["c","d"]],rebalance_func=filter_first)
-                df.reset_state()
+        df = CustomDataFromList(lst=[["a","b"],["c","d"]], rebalance_func=filter_first)
+        df.reset_state()
 
         will yield:
-
             ["c","d"]
+        ```
 
     """
 
@@ -121,13 +126,14 @@ class CustomDataFromList(DataFromList):
         rebalance_func: Optional[Callable[[list[Any]], list[Any]]] = None,
     ):
         """
-        :param lst: the input list. Each element represents a datapoint.
-        :param shuffle: Whether to shuffle the list before streaming.
-        :param max_datapoints: The maximum number of datapoints to return before stopping the iteration.
-                               If None it streams the whole dataflow.
-        :param rebalance_func: A func that inputs a list and outputs a list. Useful, if you want to filter the passed
-                               list and re-balance the sample. Only the output list of the re-balancing function will be
-                               considered.
+        Args:
+            lst: The input list. Each element represents a datapoint.
+            shuffle: Whether to shuffle the list before streaming.
+            max_datapoints: The maximum number of datapoints to return before stopping the iteration.
+                            If None it streams the whole dataflow.
+            rebalance_func: A func that inputs a list and outputs a list. Useful, if you want to filter the passed
+                            list and re-balance the sample. Only the output list of the re-balancing function will be
+                            considered.
         """
         super().__init__(lst, shuffle)
         self.max_datapoints = max_datapoints
@@ -176,9 +182,10 @@ class CustomDataFromIterable(DataFromIterable):
 
     def __init__(self, iterable: Iterable[Any], max_datapoints: Optional[int] = None):
         """
-        :param iterable: An iterable object
-        :param max_datapoints: The maximum number of datapoints to stream. If None it iterates through the whole
-                               dataflow.
+        Args:
+            iterable: An iterable object
+            max_datapoints: The maximum number of datapoints to stream. If None it iterates through the whole
+                            dataflow.
         """
         super().__init__(iterable)
         self.max_datapoints = max_datapoints

@@ -16,14 +16,15 @@
 # limitations under the License.
 
 """
-HF Detr model for object detection.
+HF Detr and DeformableDetr models.
 """
+
 from __future__ import annotations
 
 import os
 from abc import ABC
 from pathlib import Path
-from typing import Literal, Mapping, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Literal, Mapping, Optional, Sequence, Union
 
 from lazy_imports import try_import
 
@@ -39,12 +40,16 @@ with try_import() as pt_import_guard:
 
 with try_import() as tr_import_guard:
     from transformers import (  # pylint: disable=W0611
-        AutoFeatureExtractor,
-        DetrFeatureExtractor,
-        DetrImageProcessor,
+        DeformableDetrForObjectDetection,
+        DeformableDetrImageProcessorFast,
+        DetrImageProcessorFast,
         PretrainedConfig,
         TableTransformerForObjectDetection,
     )
+
+    if TYPE_CHECKING:
+        EligibleDetrModel = Union[TableTransformerForObjectDetection, DeformableDetrForObjectDetection]
+        DetrImageProcessor = Union[DetrImageProcessorFast, DeformableDetrImageProcessorFast]
 
 
 def _detr_post_processing(
@@ -55,24 +60,27 @@ def _detr_post_processing(
 
 def detr_predict_image(
     np_img: PixelValues,
-    predictor: TableTransformerForObjectDetection,
+    predictor: EligibleDetrModel,
     feature_extractor: DetrImageProcessor,
     device: torch.device,
     threshold: float,
     nms_threshold: float,
 ) -> list[DetectionResult]:
     """
-    Calling predictor. Before doing that, tensors must be transferred to the device where the model is loaded. After
-    running prediction it will present prediction in DetectionResult format-
+    Calling predictor. Before, tensors must be transferred to the device where the model is loaded.
 
-    :param np_img: image as numpy array
-    :param predictor: TableTransformerForObjectDetection
-    :param feature_extractor: feature extractor
-    :param device: device where the model is loaded
-    :param threshold: Will filter all predictions with confidence score less threshold
-    :param nms_threshold: Threshold to perform NMS on prediction outputs. (Note, that NMS does not belong to canonical
-                          Detr inference processing)
+    Args:
+        np_img: Image as `np.array`.
+        predictor: `TableTransformerForObjectDetection` instance.
+        feature_extractor: Feature extractor instance.
+        device: Device where the model is loaded.
+        threshold: Will filter all predictions with confidence score less threshold.
+        nms_threshold: Threshold to perform NMS on prediction outputs.
+                       Note:
+                           NMS does not belong to canonical Detr inference processing.
 
+    Returns:
+        List of `DetectionResult` after running prediction.
     """
     target_sizes = [np_img.shape[:2]]
     inputs = feature_extractor(images=np_img, return_tensors="pt")
@@ -101,10 +109,10 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
 
     def __init__(self, categories: Mapping[int, TypeOrStr], filter_categories: Optional[Sequence[TypeOrStr]] = None):
         """
-
-        :param categories: A dict with key (indices) and values (category names).
-        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
-                                  be filtered. Pass a list of category names that must not be returned
+        Args:
+            categories: A dict with key (indices) and values (category names).
+            filter_categories: The model might return objects that are not supposed to be predicted and that should
+                               be filtered. Pass a list of category names that must not be returned.
         """
         self.categories = ModelCategories(init_categories=categories)
         if filter_categories:
@@ -112,10 +120,13 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
 
     def _map_category_names(self, detection_results: list[DetectionResult]) -> list[DetectionResult]:
         """
-        Populating category names to detection results. Will also filter categories
+        Populating category names to `DetectionResult`. Will also filter categories.
 
-        :param detection_results: list of detection results
-        :return: List of detection results with attribute class_name populated
+        Args:
+            detection_results: List of `DetectionResult`s.
+
+        Returns:
+            List of `DetectionResult`s with `class_name`.
         """
         filtered_detection_result: list[DetectionResult] = []
         shifted_categories = self.categories.shift_category_ids(shift_by=-1)
@@ -132,24 +143,39 @@ class HFDetrDerivedDetectorMixin(ObjectDetector, ABC):
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr) -> str:
-        """Returns the name of the model"""
+        """
+        Returns the name of the model.
+
+        Args:
+            path_weights: Path to the model weights.
+
+        Returns:
+            Model name string.
+        """
         return "Transformers_Tatr_" + "_".join(Path(path_weights).parts[-2:])
 
     def get_category_names(self) -> tuple[ObjectTypes, ...]:
+        """
+        Returns:
+            Tuple of `category_name`s.
+        """
         return self.categories.get_categories(as_dict=False)
 
 
 class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
     """
-    Model wrapper for TableTransformerForObjectDetection that again is based on
-
-    https://github.com/microsoft/table-transformer .
+    Model wrapper for `TableTransformerForObjectDetection` that again is based on
+    <https://github.com/microsoft/table-transformer>.
 
     The wrapper can be used to load pre-trained models for table detection and table structure recognition. Running Detr
-    models trained from scratch on custom datasets is possible as well. Note, that this wrapper will load
-    `TableTransformerForObjectDetection` that is slightly different compared to `DetrForObjectDetection` that can be
-    found in the transformer library as well.
+    models trained from scratch on custom datasets is possible as well.
 
+    Note:
+        This wrapper will load `TableTransformerForObjectDetection` that is slightly different compared to
+        `DetrForObjectDetection` that can be found in the transformer library as well.
+
+    Example:
+        ```python
         config_path = ModelCatalog.
         get_full_path_configs("microsoft/table-transformer-structure-recognition/pytorch_model.bin")
         weights_path = ModelDownloadManager.
@@ -162,6 +188,7 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         detr_predictor = HFDetrDerivedDetector(config_path,weights_path,feature_extractor_config_path,categories)
 
         detection_result = detr_predictor.predict(bgr_image_np_array)
+        ```
     """
 
     def __init__(
@@ -175,13 +202,15 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
     ):
         """
         Set up the predictor.
-        :param path_config_json: The path to the json config.
-        :param path_weights: The path to the model checkpoint.
-        :param path_feature_extractor_config_json: The path to the feature extractor config.
-        :param categories: A dict with key (indices) and values (category names).
-        :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
-        :param filter_categories: The model might return objects that are not supposed to be predicted and that should
-                                  be filtered. Pass a list of category names that must not be returned
+
+        Args:
+            path_config_json: The path to the json config.
+            path_weights: The path to the model checkpoint.
+            path_feature_extractor_config_json: The path to the feature extractor config.
+            categories: A dict with key (indices) and values (category names).
+            device: "cpu" or "cuda". If not specified will auto select depending on what is available.
+            filter_categories: The model might return objects that are not supposed to be predicted and that should
+                              be filtered. Pass a list of category names that must not be returned.
         """
         super().__init__(categories, filter_categories)
 
@@ -195,12 +224,21 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         self.config = self.get_config(path_config_json)
 
         self.hf_detr_predictor = self.get_model(self.path_weights, self.config)
-        self.feature_extractor = self.get_pre_processor(self.path_feature_extractor_config)
+        self.feature_extractor = self.get_pre_processor(self.path_feature_extractor_config, self.config)
 
         self.device = get_torch_device(device)
         self.hf_detr_predictor.to(self.device)
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
+        """
+        Predicts objects in an image.
+
+        Args:
+            np_img: Image as `np.array`.
+
+        Returns:
+            List of `DetectionResult`.
+        """
         results = detr_predict_image(
             np_img,
             self.hf_detr_predictor,
@@ -212,36 +250,71 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         return self._map_category_names(results)
 
     @staticmethod
-    def get_model(path_weights: PathLikeOrStr, config: PretrainedConfig) -> TableTransformerForObjectDetection:
+    def get_model(path_weights: PathLikeOrStr, config: PretrainedConfig) -> EligibleDetrModel:
         """
-        Builds the Detr model
+        Builds the Detr model.
 
-        :param path_weights: The path to the model checkpoint.
-        :param config: `PretrainedConfig`
-        :return: TableTransformerForObjectDetection instance
+        Args:
+            path_weights: The path to the model checkpoint.
+            config: `PretrainedConfig` instance.
+
+        Returns:
+            `TableTransformerForObjectDetection` instance.
+
+        Raises:
+            ValueError: If model architecture is not eligible.
         """
-        return TableTransformerForObjectDetection.from_pretrained(
-            pretrained_model_name_or_path=os.fspath(path_weights), config=config
+        if "TableTransformerForObjectDetection" in config.architectures:
+            return TableTransformerForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
+        if "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrForObjectDetection.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_weights), config=config
+            )
+        raise ValueError(
+            f"Model architecture {config.architectures} not eligible. Please use either "
+            "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
         )
 
     @staticmethod
-    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr) -> DetrImageProcessor:
+    def get_pre_processor(path_feature_extractor_config: PathLikeOrStr, config: PretrainedConfig) -> DetrImageProcessor:
         """
-        Builds the feature extractor
+        Builds the feature extractor.
 
-        :return: DetrFeatureExtractor
+        Args:
+            path_feature_extractor_config: Path to feature extractor config.
+            config: Model configuration.
+
+        Returns:
+            `DetrImageProcessor` instance.
+
+        Raises:
+            ValueError: If model architecture is not eligible.
         """
-        return DetrImageProcessor.from_pretrained(
-            pretrained_model_name_or_path=os.fspath(path_feature_extractor_config)
+        if "TableTransformerForObjectDetection" in config.architectures:
+            return DetrImageProcessorFast.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
+            )
+        if "DeformableDetrForObjectDetection" in config.architectures:
+            return DeformableDetrImageProcessorFast.from_pretrained(
+                pretrained_model_name_or_path=os.fspath(path_feature_extractor_config),
+            )
+        raise ValueError(
+            f"Model architecture {config.architectures} not eligible. Please use either "
+            "TableTransformerForObjectDetection or DeformableDetrForObjectDetection."
         )
 
     @staticmethod
     def get_config(path_config: PathLikeOrStr) -> PretrainedConfig:
         """
-        Builds the config
+        Builds the config.
 
-        :param path_config: The path to the json config.
-        :return: PretrainedConfig instance
+        Args:
+            path_config: The path to the config.
+
+        Returns:
+            `PretrainedConfig` instance.
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=os.fspath(path_config))
         config.use_timm_backbone = True
@@ -270,17 +343,21 @@ class HFDetrDerivedDetector(HFDetrDerivedDetectorMixin):
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
     ) -> TableTransformerForObjectDetection:
         """
-        Get the wrapped model
+        Get the wrapped model.
 
-        :param path_config_json: The path to the json config.
-        :param path_weights: The path to the model checkpoint.
-        :param device: "cpu" or "cuda". If not specified will auto select depending on what is available
-        :return: TableTransformerForObjectDetection instance
+        Args:
+            path_config_json: The path to the json config.
+            path_weights: The path to the model checkpoint.
+            device: "cpu" or "cuda". If not specified will auto select depending on what is available.
+
+        Returns:
+            `TableTransformerForObjectDetection` instance.
         """
         config = HFDetrDerivedDetector.get_config(path_config_json)
         hf_detr_predictor = HFDetrDerivedDetector.get_model(path_weights, config)
         device = get_torch_device(device)
-        return hf_detr_predictor.to(device)
+        hf_detr_predictor.to(device)
+        return hf_detr_predictor
 
     def clear_model(self) -> None:
         self.hf_detr_predictor = None

@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Deepdoctection wrappers for DocTr OCR text line detection and text recognition models
+Wrappers for DocTr text line detection and text recognition models
 """
+
 from __future__ import annotations
 
 import os
@@ -106,13 +107,16 @@ def doctr_predict_text_lines(
     np_img: PixelValues, predictor: DetectionPredictor, device: Union[torch.device, tf.device], lib: Literal["TF", "PT"]
 ) -> list[DetectionResult]:
     """
-    Generating text line DetectionResult based on Doctr DetectionPredictor.
+    Generating text line `DetectionResult` based on DocTr `DetectionPredictor`.
 
-    :param np_img: Image in np.array.
-    :param predictor: `doctr.models.detection.predictor.DetectionPredictor`
-    :param device: Will only be used in tensorflow settings. Either /gpu:0 or /cpu:0
-    :param lib: "TF" or "PT"
-    :return: A list of text line detection results (without text).
+    Args:
+        np_img: Image in `np.array`
+        predictor: `doctr.models.detection.predictor.DetectionPredictor`
+        device: Will only be used in Tensorflow settings. Either `/gpu:0` or `/cpu:0`
+        lib: "TF" or "PT"
+
+    Returns:
+        A list of text line `DetectionResult` (without text)
     """
     if lib == "TF":
         with device:
@@ -137,15 +141,18 @@ def doctr_predict_text(
     lib: Literal["TF", "PT"],
 ) -> list[DetectionResult]:
     """
-    Calls Doctr text recognition model on a batch of numpy arrays (text lines predicted from a text line detector) and
-    returns the recognized text as DetectionResult
+    Calls DocTr text recognition model on a batch of `np.array`s (text lines predicted from a text line detector) and
+    returns the recognized text as `DetectionResult`
 
-    :param inputs: list of tuples containing the annotation_id of the input image and the numpy array of the cropped
-                   text line
-    :param predictor: `doctr.models.detection.predictor.RecognitionPredictor`
-    :param device: Will only be used in tensorflow settings. Either /gpu:0 or /cpu:0
-    :param lib: "TF" or "PT"
-    :return: A list of DetectionResult containing recognized text.
+    Args:
+        inputs: list of tuples containing the `annotation_id` of the input image and the `np.array` of the cropped
+                text line
+        predictor: `doctr.models.detection.predictor.RecognitionPredictor`
+        device: Will only be used in Tensorflow settings. Either `/gpu:0` or `/cpu:0`
+        lib: "TF" or "PT"
+
+    Returns:
+        A list of `DetectionResult` containing recognized text
     """
 
     uuids, images = list(zip(*inputs))
@@ -163,7 +170,7 @@ def doctr_predict_text(
 
 
 class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
-    """Base class for Doctr textline detector. This class only implements the basic wrapper functions"""
+    """Base class for DocTr text line detector. This class only implements the basic wrapper functions"""
 
     def __init__(self, categories: Mapping[int, TypeOrStr], lib: Optional[Literal["PT", "TF"]] = None):
         self.categories = ModelCategories(init_categories=categories)
@@ -174,12 +181,26 @@ class DoctrTextlineDetectorMixin(ObjectDetector, ABC):
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
-        """Returns the name of the model"""
+        """
+        Returns the name of the model
+
+        Args:
+            path_weights: Path to the model weights
+            architecture: Architecture name
+
+        Returns:
+            The name of the model as string
+        """
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
     @staticmethod
     def auto_select_lib() -> Literal["PT", "TF"]:
-        """Auto select the DL library from the installed and from environment variables"""
+        """
+        Auto select the DL library from the installed and from environment variables
+
+        Returns:
+            Either "PT" or "TF" based on environment variables
+        """
         return auto_select_lib_for_doctr()
 
 
@@ -194,28 +215,28 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
     Some other pre-trained models exist that have not been registered in `ModelCatalog`. Please check the DocTr library
     and organize the download of the pre-trained model by yourself.
 
-    **Example:**
+    Example:
+        ```python
+        path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
+        /db_resnet50-ac60cadc.pt")
+        # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
 
-                 path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
-                 /db_resnet50-ac60cadc.pt")
-                 # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
+        categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+        det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
+        layout = ImageLayoutService(det,to_image=True, crop_image=True)
 
-                 categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
-                 det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
-                 layout = ImageLayoutService(det,to_image=True, crop_image=True)
+        path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
+        /pt/crnn_vgg16_bn-9762b0b0.pt")
+        rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+        text = TextExtractionService(rec, extract_from_roi="word")
 
-                 path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
-                 /pt/crnn_vgg16_bn-9762b0b0.pt")
-                 rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
-                 text = TextExtractionService(rec, extract_from_roi="word")
+        analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
 
-                 analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
+        path = "/path/to/image_dir"
+        df = analyzer.analyze(path = path)
 
-                 path = "/path/to/image_dir"
-                 df = analyzer.analyze(path = path)
-
-                 for dp in df:
-                     ...
+        for dp in df:
+        ...
     """
 
     def __init__(
@@ -227,13 +248,14 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         lib: Optional[Literal["PT", "TF"]] = None,
     ) -> None:
         """
-        :param architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
-        "db_mobilenet_v3_large". The full list can be found here:
-        https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20
-        :param path_weights: Path to the weights of the model
-        :param categories: A dict with the model output label and value
-        :param device: "cpu" or "cuda" or any tf.device or torch.device. The device must be compatible with the dll
-        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
+        Args:
+            architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
+                          "db_mobilenet_v3_large". The full list can be found here:
+                          <https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20>
+            path_weights: Path to the weights of the model
+            categories: A dict with the model output label and value
+            device: "cpu" or "cuda" or any tf.device or torch.device. The device must be compatible with the dll
+            lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
         """
         super().__init__(categories, lib)
         self.architecture = architecture
@@ -253,8 +275,11 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         """
         Prediction per image.
 
-        :param np_img: image as numpy array
-        :return: A list of DetectionResult
+        Args:
+            np_img: image as `np.array`
+
+        Returns:
+            A list of `DetectionResult`
         """
         return doctr_predict_text_lines(np_img, self.doctr_predictor, self.device, self.lib)
 
@@ -284,17 +309,17 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         """
         Get the inner (wrapped) model.
 
-        :param architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
-        "db_mobilenet_v3_large". The full list can be found here:
-        https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20
-        :param path_weights: Path to the weights of the model
-        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used. Make sure,
-                    these variables are set. If not, use
+        Args:
+            architecture: DocTR supports various text line detection models, e.g. "db_resnet50",
+                          "db_mobilenet_v3_large". The full list can be found here:
+                          <https://github.com/mindee/doctr/blob/main/doctr/models/detection/zoo.py#L20>
+            path_weights: Path to the weights of the model
+            device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+            lib: "TF" or "PT" or `None`. If `None`, env variables `USE_TENSORFLOW`, `USE_PYTORCH` will be used. Make
+                 sure, these variables are set. If not, use `deepdoctection.utils.env_info.auto_select_lib_and_device`
 
-                        deepdoctection.utils.env_info.auto_select_lib_and_device
-
-        :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
+        Returns:
+            Inner model which is a `nn.Module` in PyTorch or a `tf.keras.Model` in Tensorflow
         """
         doctr_predictor = detection_predictor(arch=architecture, pretrained=False, pretrained_backbone=False)
         DoctrTextlineDetector.load_model(path_weights, doctr_predictor, device, lib)
@@ -306,7 +331,7 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
 
 class DoctrTextRecognizer(TextRecognizer):
     """
-    A deepdoctection wrapper of DocTr text recognition predictor. The base class is a TextRecognizer that takes
+    A deepdoctection wrapper of DocTr text recognition predictor. The base class is a `TextRecognizer` that takes
     a batch of sub images (e.g. text lines from a text detector) and returns a list with text spotted in the sub images.
     DocTr supports several text recognition models but provides only a subset of pre-trained models.
 
@@ -314,30 +339,30 @@ class DoctrTextRecognizer(TextRecognizer):
     described in “An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to
     Scene Text Recognition”. It can be used in either Tensorflow or PyTorch.
 
-    For more details please check the official DocTr documentation by Mindee: https://mindee.github.io/doctr/
+    For more details please check the official DocTr documentation by Mindee: <https://mindee.github.io/doctr/>
 
-    **Example:**
+    Example:
+        ```python
+         path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
+         /db_resnet50-ac60cadc.pt")
+         # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
 
-                 path_weights_tl = ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt
-                 /db_resnet50-ac60cadc.pt")
-                 # Use "doctr/db_resnet50/tf/db_resnet50-adcafc63.zip" for Tensorflow
+         categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+         det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
+         layout = ImageLayoutService(det,to_image=True, crop_image=True)
 
-                 categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
-                 det = DoctrTextlineDetector("db_resnet50",path_weights_tl,categories,"cpu")
-                 layout = ImageLayoutService(det,to_image=True, crop_image=True)
+         path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
+         /pt/crnn_vgg16_bn-9762b0b0.pt")
+         rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+         text = TextExtractionService(rec, extract_from_roi="word")
 
-                 path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/crnn_vgg16_bn
-                 /pt/crnn_vgg16_bn-9762b0b0.pt")
-                 rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
-                 text = TextExtractionService(rec, extract_from_roi="word")
+         analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
 
-                 analyzer = DoctectionPipe(pipeline_component_list=[layout,text])
+         path = "/path/to/image_dir"
+         df = analyzer.analyze(path = path)
 
-                 path = "/path/to/image_dir"
-                 df = analyzer.analyze(path = path)
-
-                 for dp in df:
-                     ...
+         for dp in df:
+         ...
     """
 
     def __init__(
@@ -349,14 +374,15 @@ class DoctrTextRecognizer(TextRecognizer):
         path_config_json: Optional[PathLikeOrStr] = None,
     ) -> None:
         """
-        :param architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
-        "crnn_mobilenet_v3_small". The full list can be found here:
-        https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16.
-        :param path_weights: Path to the weights of the model
-        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
-        :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
-        a model trained on custom vocab.
+        Args:
+            architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
+                          "crnn_mobilenet_v3_small". The full list can be found here:
+                          <https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16>.
+            path_weights: Path to the weights of the model
+            device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+            lib: "TF" or "PT" or `None`. If `None`, env variables `USE_TENSORFLOW`, `USE_PYTORCH` will be used.
+            path_config_json: Path to a `JSON` file containing the configuration of the model. Useful, if you have
+                              a model trained on custom vocab.
         """
 
         self.lib = lib if lib is not None else self.auto_select_lib()
@@ -383,8 +409,11 @@ class DoctrTextRecognizer(TextRecognizer):
         """
         Prediction on a batch of text lines
 
-        :param images: list of tuples with the annotation_id of the sub image and a numpy array
-        :return: A list of DetectionResult
+        Args:
+            images: list of tuples with the `annotation_id` of the sub image and a `np.array`
+
+        Returns:
+            A list of `DetectionResult`
         """
         if images:
             return doctr_predict_text(images, self.doctr_predictor, self.device, self.lib)
@@ -456,15 +485,18 @@ class DoctrTextRecognizer(TextRecognizer):
         """
         Get the inner (wrapped) model.
 
-        :param architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
-        "crnn_mobilenet_v3_small". The full list can be found here:
-        https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16.
-        :param path_weights: Path to the weights of the model
-        :param device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
-        :param lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
-        :param path_config_json: Path to a json file containing the configuration of the model. Useful, if you have
-        a model trained on custom vocab.
-        :return: Inner model which is a "nn.Module" in PyTorch or a "tf.keras.Model" in Tensorflow
+        Args:
+            architecture: DocTR supports various text recognition models, e.g. "crnn_vgg16_bn",
+                          "crnn_mobilenet_v3_small". The full list can be found here:
+                          <https://github.com/mindee/doctr/blob/main/doctr/models/recognition/zoo.py#L16>.
+            path_weights: Path to the weights of the model
+            device: "cpu" or "cuda". Will default to "cuda" if the required hardware is available.
+            lib: "TF" or "PT" or None. If None, env variables USE_TENSORFLOW, USE_PYTORCH will be used.
+            path_config_json: Path to a `JSON` file containing the configuration of the model. Useful, if you have
+                              a model trained on custom vocab.
+
+        Returns:
+            Inner model which is a `nn.Module` in PyTorch or a `tf.keras.Model` in Tensorflow
         """
         doctr_predictor = DoctrTextRecognizer.build_model(architecture, lib, path_config_json)
         DoctrTextRecognizer.load_model(path_weights, doctr_predictor, device, lib)
@@ -472,12 +504,26 @@ class DoctrTextRecognizer(TextRecognizer):
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
-        """Returns the name of the model"""
+        """
+        Returns the name of the model
+
+        Args:
+            path_weights: Path to the model weights
+            architecture: Architecture name
+
+        Returns:
+            The name of the model as string
+        """
         return f"doctr_{architecture}" + "_".join(Path(path_weights).parts[-2:])
 
     @staticmethod
     def auto_select_lib() -> Literal["PT", "TF"]:
-        """Auto select the DL library from the installed and from environment variables"""
+        """
+        Auto select the DL library from the installed and from environment variables
+
+        Returns:
+            Either "PT" or "TF" based on environment variables
+        """
         return auto_select_lib_for_doctr()
 
     def clear_model(self) -> None:
@@ -500,17 +546,19 @@ class DocTrRotationTransformer(ImageTransformer):
     This class can be particularly useful in OCR tasks where the orientation of the text in the image matters.
     The class also provides methods for cloning itself and for getting the requirements of the OCR system.
 
-    **Example:**
-                    transformer = DocTrRotationTransformer()
-                    detection_result = transformer.predict(np_img)
-                    rotated_image = transformer.transform(np_img, detection_result)
+    Example:
+        ```python
+        transformer = DocTrRotationTransformer()
+        detection_result = transformer.predict(np_img)
+        rotated_image = transformer.transform(np_img, detection_result)
+        ```
     """
 
     def __init__(self, number_contours: int = 50, ratio_threshold_for_lines: float = 5):
         """
-
-        :param number_contours: the number of contours used for the orientation estimation
-        :param ratio_threshold_for_lines: this is the ratio w/h used to discriminates lines
+        Args:
+            number_contours: the number of contours used for the orientation estimation
+            ratio_threshold_for_lines: this is the ratio w/h used to discriminates lines
         """
         self.number_contours = number_contours
         self.ratio_threshold_for_lines = ratio_threshold_for_lines
@@ -522,9 +570,12 @@ class DocTrRotationTransformer(ImageTransformer):
         Applies the predicted rotation to the image, effectively rotating the image backwards.
         This method uses either the Pillow library or OpenCV for the rotation operation, depending on the configuration.
 
-        :param np_img: The input image as a numpy array.
-        :param specification: A `DetectionResult` object containing the predicted rotation angle.
-        :return: The rotated image as a numpy array.
+        Args:
+            np_img: The input image as a `np.array`
+            specification: A `DetectionResult` object containing the predicted rotation angle
+
+        Returns:
+            The rotated image as a `np.array`
         """
         return viz_handler.rotate_image(np_img, specification.angle)  # type: ignore
 

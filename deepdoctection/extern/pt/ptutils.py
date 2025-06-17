@@ -33,19 +33,23 @@ with try_import() as import_guard:
 
 def get_torch_device(device: Optional[Union[str, torch.device]] = None) -> torch.device:
     """
-    Selecting a device on which to load a model. The selection follows a cascade of priorities:
+    Select a device on which to load a model. The selection follows a cascade of priorities:
 
-    - If a device string is provided, it is used.
-    - If the environment variable "USE_CUDA" is set, a GPU is used. If more GPUs are available, it will use all of them
-      unless something else is specified by CUDA_VISIBLE_DEVICES:
+    If a device string is provided, it is used. If the environment variable `USE_CUDA` is set, a GPU is used.
+    If more GPUs are available, it will use all of them unless something else is specified by `CUDA_VISIBLE_DEVICES`.
 
-          https://stackoverflow.com/questions/54216920/how-to-use-multiple-gpus-in-pytorch
+    See: <https://stackoverflow.com/questions/54216920/how-to-use-multiple-gpus-in-pytorch>
 
-    - If an MPS device is available, it is used.
-    - Otherwise, the CPU is used.
+    If an MPS device is available, it is used. Otherwise, the CPU is used.
 
-    :param device: Device either as string or torch.device
-    :return: Tensorflow device
+    Args:
+        device: Device either as string or torch.device.
+
+    Returns:
+        torch.device: The selected device.
+
+    Note:
+        The function checks the environment variables `USE_CUDA` and `USE_MPS` to determine device preference.
     """
     if device is not None:
         if isinstance(device, torch.device):

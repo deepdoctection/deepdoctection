@@ -16,8 +16,9 @@
 # limitations under the License.
 
 """
-Package for pre-built pipelines
+# Configs, Factory functions and Pre-built pipelines
 """
 
+from .config import *
 from .dd import *
 from .factory import *

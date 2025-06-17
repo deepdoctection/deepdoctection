@@ -16,7 +16,7 @@
 # limitations under the License.
 
 """
-Module for metrics that require the COCOeval class.
+Metrics that require the `COCOeval` class.
 """
 from __future__ import annotations
 
@@ -65,8 +65,7 @@ _F1_DEFAULTS = [
 _MAX_DET_INDEX = [2, 2, 2, 2, 2, 2, 0, 1, 2, 2, 2, 2]
 
 """
-The following function is taken from
-https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py
+Taken from <https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py>
 """
 
 
@@ -236,10 +235,11 @@ class CocoMetric(MetricBase):
     @classmethod
     def get_summary_default_parameters(cls) -> list[JsonDict]:
         """
-        Returns default parameters of evaluation results. May differ from other CocoMetric classes.
+        Get default parameters of evaluation results. May differ from other `CocoMetric` classes.
 
-        :return: List of dict with default configuration, e.g. setting of average precision, iou threshold,
-                 area range and maximum detections.
+        Returns:
+            List of dict with default configuration, e.g. setting of average precision, iou threshold,
+            area range and maximum detections.
         """
         if cls._f1_score:
             for el, idx in zip(_F1_DEFAULTS, [2, 2]):
@@ -267,12 +267,14 @@ class CocoMetric(MetricBase):
         """
         Setting params for different coco metric modes.
 
-        :param max_detections: The maximum number of detections to consider
-        :param area_range: The area range to classify objects as "all", "small", "medium" and "large"
-        :param f1_score: Will use f1 score setting with default iouThr 0.9. To be more precise it does not calculate
-                         the f1 score but the precision and recall for a given iou threshold. Use the harmonic mean to
-                         get the ultimate f1 score.
-        :param f1_iou: Use with f1_score True and reset the f1 iou threshold
+        Args:
+            max_detections: The maximum number of detections to consider
+            area_range: The area range to classify objects as `all`, `small`, `medium` and `large`
+            f1_score: Will use F1-score setting with default `iouThr=0.9`. To be more precise it does not calculate
+                      the F1-score but the precision and recall for a given `iou` threshold. Use the harmonic mean to
+                      get the ultimate F1-score.
+            f1_iou: Use with `f1_score=True` and reset the f1 iou threshold
+                    per_category: Whether to calculate metrics per category
         """
         if max_detections is not None:
             assert len(max_detections) == 3, max_detections

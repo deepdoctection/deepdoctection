@@ -1,18 +1,69 @@
 DEVICE: null
 LANGUAGE: null
 LAYOUT_LINK:
-  CHILD_CATEGORIES: []
-  PARENTAL_CATEGORIES: []
+  CHILD_CATEGORIES:
+    - caption
+  PARENTAL_CATEGORIES:
+    - figure
+    - table
 LAYOUT_NMS_PAIRS:
-  COMBINATIONS: null
-  PRIORITY: null
-  THRESHOLDS: null
+  COMBINATIONS:
+  - - table
+    - title
+  - - table
+    - text
+  - - table
+    - key_value_area
+  - - table
+    - list_item
+  - - table
+    - list
+  - - table
+    - figure
+  - - title
+    - text
+  - - text
+    - key_value_area
+  - - text
+    - list_item
+  - - text
+    - caption
+  - - key_value_area
+    - list_item
+  - - figure
+    - caption
+  PRIORITY:
+  - table
+  - table
+  - table
+  - table
+  - table
+  - table
+  - text
+  - text
+  - null
+  - caption
+  - key_value_area
+  - figure
+  THRESHOLDS:
+  - 0.001
+  - 0.01
+  - 0.01
+  - 0.001
+  - 0.01
+  - 0.01
+  - 0.05
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.01
+  - 0.001
 LIB: null
 OCR:
   CONFIG:
     TESSERACT: dd/conf_tesseract.yaml
-  USE_DOCTR: false
-  USE_TESSERACT: true
+  USE_DOCTR: true
+  USE_TESSERACT: false
   USE_TEXTRACT: false
   WEIGHTS:
     DOCTR_RECOGNITION:
@@ -27,29 +78,41 @@ PDF_MINER:
 PT:
   CELL:
     FILTER: null
-    WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
-    WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
-  ITEM:
-    FILTER: null
     PAD:
       BOTTOM: 60
       LEFT: 60
       RIGHT: 60
       TOP: 60
-    WEIGHTS: item/d2_model_1639999_item_inf_only.pt
+    PADDING: false
+    WEIGHTS: cell/d2_model_1849999_cell_inf_only.pt
+    WEIGHTS_TS: cell/d2_model_1849999_cell_inf_only.ts
+  ENFORCE_WEIGHTS:
+    CELL: true
+    ITEM: true
+    LAYOUT: true
+  ITEM:
+    FILTER:
+    - table
+    PAD:
+      BOTTOM: 60
+      LEFT: 60
+      RIGHT: 60
+      TOP: 60
+    PADDING: false
+    WEIGHTS: deepdoctection/tatr_tab_struct_v2/pytorch_model.bin
     WEIGHTS_TS: item/d2_model_1639999_item_inf_only.ts
   LAYOUT:
     FILTER: null
     PAD:
-      BOTTOM: 60
-      LEFT: 60
-      RIGHT: 60
-      TOP: 60
-    WEIGHTS: layout/d2_model_0829999_layout_inf_only.pt
+      BOTTOM: 0
+      LEFT: 0
+      RIGHT: 0
+      TOP: 0
+    PADDING: false
+    WEIGHTS: Aryn/deformable-detr-DocLayNet/model.safetensors
     WEIGHTS_TS: layout/d2_model_0829999_layout_inf_only.ts
 SEGMENTATION:
   ASSIGNMENT_RULE: ioa
-  CELL_CATEGORY_ID: 12
   CELL_NAMES:
   - header
   - body
@@ -59,30 +122,24 @@ SEGMENTATION:
   - row
   - column
   PUBTABLES_CELL_NAMES:
-  - spanning
-  - row_header
-  - column_header
-  - projected_row_header
   - cell
+  PUBTABLES_ITEM_HEADER_CELL_NAMES:
+  - column_header
+  - row_header
+  - projected_row_header
+  PUBTABLES_ITEM_HEADER_THRESHOLDS:
+  - 0.6
+  - 0.0001
   PUBTABLES_ITEM_NAMES:
   - row
   - column
   PUBTABLES_SPANNING_CELL_NAMES:
   - spanning
-  - row_header
-  - column_header
-  - projected_row_header
   PUBTABLES_SUB_ITEM_NAMES:
   - row_number
   - column_number
-  PUBTABLES_ITEM_HEADER_CELL_NAMES:
-    - column_header
-    - row_header
-  PUBTABLES_ITEM_HEADER_THRESHOLDS:
-    - 0.6
-    - 0.0001
-  REMOVE_IOU_THRESHOLD_COLS: 0.001
-  REMOVE_IOU_THRESHOLD_ROWS: 0.001
+  REMOVE_IOU_THRESHOLD_COLS: 0.2
+  REMOVE_IOU_THRESHOLD_ROWS: 0.2
   STRETCH_RULE: equal
   SUB_ITEM_NAMES:
   - row_number
@@ -96,22 +153,29 @@ TEXT_ORDERING:
   FLOATING_TEXT_BLOCK_CATEGORIES:
   - text
   - title
-  - figure
   - list
+  - key_value_area
   HEIGHT_TOLERANCE: 2.0
-  INCLUDE_RESIDUAL_TEXT_CONTAINER: false
+  INCLUDE_RESIDUAL_TEXT_CONTAINER: true
   PARAGRAPH_BREAK: 0.035
   STARTING_POINT_TOLERANCE: 0.005
   TEXT_BLOCK_CATEGORIES:
   - text
   - title
+  - list_item
   - list
-  - cell
+  - caption
+  - page_header
+  - page_footer
+  - page_number
+  - mark
+  - key_value_area
   - figure
   - column_header
   - projected_row_header
   - spanning
   - row_header
+  - cell
 TF:
   CELL:
     FILTER: null
@@ -124,22 +188,14 @@ TF:
     WEIGHTS: layout/model-800000_inf_only.data-00000-of-00001
 USE_LAYOUT: true
 USE_LAYOUT_LINK: false
-USE_LAYOUT_NMS: false
+USE_LAYOUT_NMS: true
+USE_LINE_MATCHER: false
 USE_OCR: true
 USE_PDF_MINER: false
 USE_ROTATOR: false
-USE_TABLE_REFINEMENT: true
+USE_TABLE_REFINEMENT: false
 USE_TABLE_SEGMENTATION: true
 WORD_MATCHING:
   MAX_PARENT_ONLY: true
-  PARENTAL_CATEGORIES:
-  - text
-  - title
-  - list
-  - cell
-  - column_header
-  - projected_row_header
-  - spanning
-  - row_header
   RULE: ioa
-  THRESHOLD: 0.6
+  THRESHOLD: 0.3

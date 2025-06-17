@@ -48,9 +48,13 @@ class MappingContextManager:
         self, dp_name: Optional[str] = None, filter_level: str = "image", **kwargs: dict[str, Optional[str]]
     ) -> None:
         """
-        :param dp_name: A name for the datapoint to be mapped
-        :param filter_level: Indicates if the `MappingContextManager` is use on datapoint level,
-                             annotation level etc. Filter level will only be used for logging
+        Args:
+            dp_name: A name for the datapoint to be mapped.
+            filter_level: Indicates if the `MappingContextManager` is used on datapoint level, annotation level etc.
+                          `filter_level` will only be used for logging.
+
+        Note:
+            Use this context manager to catch and log exceptions during mapping.
         """
         self.dp_name = dp_name if dp_name is not None else ""
         self.filter_level = filter_level
@@ -59,7 +63,10 @@ class MappingContextManager:
 
     def __enter__(self) -> MappingContextManager:
         """
-        context enter
+        Context enter.
+
+        Returns:
+            The `MappingContextManager` instance.
         """
         return self
 
@@ -70,7 +77,15 @@ class MappingContextManager:
         exc_tb: Optional[TracebackType],
     ) -> Optional[bool]:
         """
-        context exit
+        Context exit.
+
+        Args:
+            exc_type: The exception type.
+            exc_val: The exception value.
+            exc_tb: The traceback object.
+
+        Returns:
+            `True` if the exception was handled, otherwise `None`.
         """
         if (
             exc_type
@@ -121,9 +136,10 @@ class DefaultMapper:
 
     def __init__(self, func: Callable[[DP, S], T], *args: Any, **kwargs: Any) -> None:
         """
-        :param func: A mapping function
-        :param args: Default args to pass to the function
-        :param kwargs: Default kwargs to pass to the function
+        Args:
+            func: A mapping function
+            args: Default `args` to pass to the function
+            kwargs: Default `kwargs` to pass to the function
         """
         self.func = func
         self.argument_args = args
@@ -131,34 +147,42 @@ class DefaultMapper:
 
     def __call__(self, dp: Any) -> Any:
         """
-        :param dp: datapoint within a dataflow
-        :return: The return value of the invoked function with default arguments.
+        Call the wrapped function with the given datapoint and default arguments.
+
+        Args:
+            dp: Datapoint within a dataflow.
+
+        Returns:
+            The return value of the invoked function with default arguments.
         """
         return self.func(dp, *self.argument_args, **self.argument_kwargs)
 
 
 def curry(func: Callable[..., T]) -> Callable[..., Callable[[DP], T]]:
     """
-    Decorator for converting functions that maps
+    Decorator for converting functions that map
 
-        dps: Union[JsonDict,Image]  -> Union[JsonDict,Image]
+    ```python
+    dps: Union[JsonDict, Image] -> Union[JsonDict, Image]
+    ```
 
-    to `DefaultMapper`s. They will be initialized with all arguments except dp and can be called later with only the
+    to `DefaultMapper`s. They will be initialized with all arguments except `dp` and can be called later with only the
     datapoint as argument. This setting is useful when incorporating the function within a dataflow.
 
-    **Example:**
-
-            @curry
-            def json_to_image(dp, config_arg_1, config_arg_2,...) -> Image:
+    Example:
+        ```python
+        @curry
+        def json_to_image(dp, config_arg_1, config_arg_2, ...) -> Image:
             ...
+        df = ...
+        df = MapData(df, json_to_image(config_arg_1=val_1, config_arg_2=val_2))
+        ```
 
-        can be applied like:
+    Args:
+        func: A callable [[`Image`], [Any]] -> [`Image`]
 
-            df = ...
-            df = MapData(df,json_to_image(config_arg_1=val_1,config_arg_2=val_2))
-
-    :param func: A callable [[`Image`],[Any]] -> [`Image`]
-    :return: A DefaultMapper
+    Returns:
+        A `DefaultMapper`.
     """
 
     @functools.wraps(func)
@@ -170,10 +194,13 @@ def curry(func: Callable[..., T]) -> Callable[..., Callable[[DP], T]]:
 
 def maybe_get_fake_score(add_fake_score: bool) -> Optional[float]:
     """
-    Returns a fake score, if add_fake_score = True. Will otherwise return None
+    Returns a fake score, if `add_fake_score` is `True`. Will otherwise return `None`.
 
-    :param add_fake_score: boolean
-    :return: A uniform random variable in (0,1)
+    Args:
+        add_fake_score: Boolean.
+
+    Returns:
+        A uniform random variable in `(0,1)` or `None`.
     """
     if add_fake_score:
         return np.random.uniform(0.0, 1.0, 1)[0]
@@ -182,20 +209,24 @@ def maybe_get_fake_score(add_fake_score: bool) -> Optional[float]:
 
 class LabelSummarizer:
     """
-    A class for generating label statistics. Useful, when mapping and generating a SummaryAnnotation.
+    A class for generating label statistics. Useful when mapping and generating a `SummaryAnnotation`.
 
-        summarizer = LabelSummarizer({"1": "label_1","2":"label_2"})
-
+    Example:
+        ```python
+        summarizer = LabelSummarizer({"1": "label_1", "2": "label_2"})
         for dp in some_dataflow:
             summarizer.dump(dp["label_id"])
-
         summarizer.print_summary_histogram()
+        ```
 
+    Args:
+        categories: A dict of categories as given as in `categories.get_categories()`.
     """
 
     def __init__(self, categories: Mapping[int, ObjectTypes]) -> None:
         """
-        :param categories: A dict of categories as given as in categories.get_categories().
+        Args:
+            categories: A dict of categories as given as in `categories.get_categories()`.
         """
         self.categories = categories
         cat_numbers = len(self.categories.keys())
@@ -204,16 +235,20 @@ class LabelSummarizer:
 
     def dump(self, item: Union[Sequence[Union[str, int]], str, int]) -> None:
         """
-        Dump a category number
+        Dump a category number.
 
-        :param item: A category number.
+        Args:
+            item: A category number.
         """
         np_item = np.asarray(item, dtype="int8")
         self.summary += np.histogram(np_item, bins=self.hist_bins)[0]
 
     def get_summary(self) -> dict[int, int]:
         """
-        Get a dictionary with category ids and the number dumped
+        Get a dictionary with category ids and the number dumped.
+
+        Returns:
+            A dictionary mapping category ids to counts.
         """
         return dict(list(zip(self.categories.keys(), self.summary.tolist())))
 
@@ -221,7 +256,8 @@ class LabelSummarizer:
         """
         Prints a summary from all dumps.
 
-        :param dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
+        Args:
+            dd_logic: Follow dd category convention when printing histogram (last background bucket omitted).
         """
         if dd_logic:
             data = list(itertools.chain(*[[self.categories[i].value, v] for i, v in enumerate(self.summary, 1)]))

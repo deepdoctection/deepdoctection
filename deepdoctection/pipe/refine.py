@@ -16,8 +16,8 @@
 # limitations under the License.
 
 """
-Module for refining methods of table segmentation. The refining methods lead ultimately to a table structure which
-enables html table representations
+Refining methods for table segmentation. The refining methods lead ultimately to a table structure which enables
+HTML table representations.
 """
 from __future__ import annotations
 
@@ -44,14 +44,16 @@ __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
 
 def tiles_to_cells(dp: Image, table: ImageAnnotation) -> list[tuple[tuple[int, int], str]]:
     """
-    Creation of a table parquet: A table is divided into a tile parquet with the (number of rows) x
-    (the number of columns) tiles.
+    Creates a table parquet by dividing a table into a tile parquet with the number of rows x number of columns tiles.
     Each tile is assigned a list of cell ids that are occupied by the cell. No cells but one or more cells can be
     assigned per tile.
 
-    :param dp: Image
-    :param table: Table image annotation
-    :return: Image
+    Args:
+        dp: `Image`
+        table: `ImageAnnotation`
+
+    Returns:
+        A list of tuples with tile positions and cell annotation ids.
     """
 
     cell_ann_ids = table.get_relationship(Relationships.CHILD)
@@ -77,13 +79,16 @@ def connected_component_tiles(
     tile_to_cell_list: list[tuple[tuple[int, int], str]]
 ) -> tuple[list[set[tuple[int, int]]], DefaultDict[tuple[int, int], list[str]]]:
     """
-    The assignment of bricks to their cell occupancy induces a graph, with bricks as corners and cell edges. Cells that
-    lie on top of several bricks connect the underlying bricks. The graph generated according to this procedure is
-    usually multiple connected. The related components and the tile/cell ids assignment are determined.
+    Assigns bricks to their cell occupancy, inducing a graph with bricks as nodes and cell edges. Cells that lie on
+    top of several bricks connect the underlying bricks. The graph generated is usually multiple connected. Determines
+    the related components and the tile/cell ids assignment.
 
-    :param tile_to_cell_list: list of tuples with tile position and cell ids
-    :return: list of set with tiles that belong to the same connected component and a dict with tiles as keys and
-             assigned list of cell ids as values.
+    Args:
+        tile_to_cell_list: List of tuples with tile position and cell ids.
+
+    Returns:
+        A tuple containing a list of sets with tiles that belong to the same connected component and a dict with tiles
+        as keys and assigned list of cell ids as values.
     """
     cell_to_tile_list = [(cell_position[1], cell_position[0]) for cell_position in tile_to_cell_list]
     cells = set(tup[0] for tup in cell_to_tile_list)
@@ -164,13 +169,14 @@ def _merge_components(reduced_connected_tiles: list[set[tuple[int, int]]]) -> li
 
 def generate_rectangle_tiling(connected_components_tiles: list[set[tuple[int, int]]]) -> list[set[tuple[int, int]]]:
     """
-    The determined connected components imply that all cells have to be combined which are above a connected component.
-    In addition, however, it must also be taken into account that cells must be rectangular. This means that related
-    components have to be combined whose combined cells above do not create a rectangular tiling. All tiles are combined
-    in such a way that all cells above them combine to form a rectangular scheme.
+    Combines connected components so that all cells above them form a rectangular scheme. Ensures that all tiles are
+    combined in such a way that all cells above them combine to form a rectangular tiling.
 
-    :param connected_components_tiles: list of set with tiles that belong to the same connected component
-    :return: list of sets with tiles, the cells on top of which together form a rectangular scheme
+    Args:
+        connected_components_tiles: List of sets with tiles that belong to the same connected component.
+
+    Returns:
+        List of sets with tiles, the cells on top of which together form a rectangular scheme.
     """
     rectangle_tiling: list[set[tuple[int, int]]] = []
     inputs = connected_components_tiles
@@ -187,11 +193,14 @@ def rectangle_cells(
     rectangle_tiling: list[set[tuple[int, int]]], tile_to_cell_dict: DefaultDict[tuple[int, int], list[str]]
 ) -> list[set[str]]:
     """
-    All cells are determined that are located above combined connected components and form a rectangular scheme.
+    Determines all cells that are located above combined connected components and form a rectangular scheme.
 
-    :param rectangle_tiling: list of sets with tiles, the cells on top of which together form a rectangular scheme
-    :param tile_to_cell_dict: Dict with tiles as keys and assigned list of cell ids as values.
-    :return: list of set of cell ids that form a rectangular scheme
+    Args:
+        rectangle_tiling: List of sets with tiles, the cells on top of which together form a rectangular scheme.
+        tile_to_cell_dict: Dict with tiles as keys and assigned list of cell ids as values.
+
+    Returns:
+        List of sets of cell ids that form a rectangular scheme.
     """
     rectangle_tiling_cells: list[set[str]] = []
     for rect_tiling_component in rectangle_tiling:
@@ -214,7 +223,14 @@ def _html_cell(
     cell_position: Union[tuple[int, int, int, int], tuple[()]], position_filled_list: list[tuple[int, int]]
 ) -> list[str]:
     """
-    Html table cell string generation
+    Generates an HTML table cell string.
+
+    Args:
+        cell_position: Cell position tuple or empty tuple.
+        position_filled_list: List of filled positions.
+
+    Returns:
+        List of HTML strings representing the cell.
     """
     html = ["<td"]
     if not cell_position:
@@ -246,7 +262,17 @@ def _html_row(
     row_ann_id_list: list[str],
 ) -> list[str]:
     """
-    Html table row string generation
+    Generates an HTML table row string.
+
+    Args:
+        row_list: List of cell position tuples for the row.
+        position_filled_list: List of filled positions.
+        this_row: The current row number.
+        number_of_cols: The total number of columns.
+        row_ann_id_list: List of annotation ids for the row.
+
+    Returns:
+        List of HTML strings representing the row.
     """
     html = ["<tr>"]
     for idx in range(1, number_of_cols + 1):
@@ -282,7 +308,16 @@ def _html_table(
     number_of_cols: int,
 ) -> list[str]:
     """
-    Html table string generation
+    Generates an HTML table string.
+
+    Args:
+        table_list: List of tuples with row number and list of cell position tuples.
+        cells_ann_list: List of tuples with row number and list of annotation ids.
+        number_of_rows: The total number of rows.
+        number_of_cols: The total number of columns.
+
+    Returns:
+        List of HTML strings representing the table.
     """
     html = ["<table>"]
     position_filled: list[tuple[int, int]] = []
@@ -297,14 +332,21 @@ def _html_table(
 
 def generate_html_string(table: ImageAnnotation, cell_names: Sequence[ObjectTypes]) -> list[str]:
     """
-    Takes the table segmentation by using table cells row number, column numbers etc. and generates a html
-    representation.
+    Generates an HTML representation of a table using table segmentation by row number, column number, etc.
 
-    :param table: An annotation that has a not None image and fully segmented cell annotation.
-    :param cell_names: List of cell names that are used for the table segmentation. Note: It must be ensured that
-                      that all cells have a row number, column number, row span and column span and that the dissection
-                      by rows and columns is completely covered by cells.
-    :return: HTML representation of the table
+    Note:
+        It must be ensured that all cells have a row number, column number, row span, and column span, and that the
+        dissection by rows and columns is completely covered by cells.
+
+    Args:
+        table: An annotation that has a not None image and fully segmented cell annotation.
+        cell_names: List of cell names that are used for the table segmentation.
+
+    Returns:
+        HTML representation of the table.
+
+    Raises:
+        `ImageError`: If `table.image` is None.
     """
     if table.image is None:
         raise ImageError("table.image cannot be None")
@@ -355,12 +397,11 @@ class TableSegmentationRefinementService(PipelineComponent):
     | C3   C3  |
     +----------+
 
-    The first two cells have the same column assignment via the segmentation and must therefore be merged.
-    Note that the number of rows and columns does not change in the refinement process. What changes is just the number
-    of cells.
+    The first two cells have the same column assignment via the segmentation and must therefore be merged. Note that
+    the number of rows and columns does not change in the refinement process. What changes is just the number of cells.
 
-    Furthermore, when merging, it must be ensured that the combined cells still have a rectangular shape.
-    This is also guaranteed in the refining process.
+    Furthermore, when merging, it must be ensured that the combined cells still have a rectangular shape. This is also
+    guaranteed in the refining process.
 
     +----------+
     | C1 |  C2 |
@@ -368,32 +409,39 @@ class TableSegmentationRefinementService(PipelineComponent):
     | C3 |  C3 |
     +----------+
 
-    The table consists of one row and two columns. The upper cells belong together with the lower cell.
-    However, this means that all cells must be merged with one another so that the table only consists of one cell
-    after the refinement process.
+    The table consists of one row and two columns. The upper cells belong together with the lower cell. However, this
+    means that all cells must be merged with one another so that the table only consists of one cell after the
+    refinement process.
 
-    **Example**
+    Example:
+        ```python
+        layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
+        cell = SubImageLayoutService(cell_detector, "TABLE")
+        row_col = SubImageLayoutService(row_col_detector, "TABLE")
+        table_segmentation = TableSegmentationService("ioa",0.9,0.8,True,0.0001,0.0001)
+        table_segmentation_refinement = TableSegmentationRefinementService()
 
-            layout = ImageLayoutService(layout_detector, to_image=True, crop_image=True)
-            cell = SubImageLayoutService(cell_detector, "TABLE")
-            row_col = SubImageLayoutService(row_col_detector, "TABLE")
-            table_segmentation = TableSegmentationService("ioa",0.9,0.8,True,0.0001,0.0001)
-            table_segmentation_refinement = TableSegmentationRefinementService()
+        table_recognition_pipe = DoctectionPipe([layout,
+                                                 cell,
+                                                 row_col,
+                                                 table_segmentation,
+                                                 table_segmentation_refinement])
+        df = pipe.analyze(path="path/to/document.pdf")
 
-            table_recognition_pipe = DoctectionPipe([layout,
-                                                     cell,
-                                                     row_col,
-                                                     table_segmentation,
-                                                     table_segmentation_refinement])
-            df = pipe.analyze(path="path/to/document.pdf")
-
-            for dp in df:
-                ...
-
+        for dp in df:
+            ...
+        ```
     """
 
-    def __init__(self, table_name: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]) -> None:
-        self.table_name = table_name
+    def __init__(self, table_names: Sequence[ObjectTypes], cell_names: Sequence[ObjectTypes]) -> None:
+        """
+        Initializes the `TableSegmentationRefinementService`.
+
+        Args:
+            table_names: Sequence of table object types.
+            cell_names: Sequence of cell object types.
+        """
+        self.table_name = table_names
         self.cell_names = cell_names
         super().__init__("table_segment_refine")
 
