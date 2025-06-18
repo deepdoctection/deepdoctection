@@ -10,7 +10,7 @@ by the user.
 
 - Linux or macOS. Windows is not supported but there is a [Dockerfile](https://github.com/deepdoctection/deepdoctection/tree/master/docker/pytorch-cpu-jupyter) available.
 - Python >= 3.9
-- 1.13 <= PyTorch  **or** 2.11 <= Tensorflow < 2.16. For lower Tensorflow versions the code will only run on a GPU. 
+- 2.2 <= PyTorch  **or** 2.11 <= Tensorflow < 2.16. For lower Tensorflow versions the code will only run on a GPU. 
   Tensorflow support will be stopped from Python 3.11 onwards.
 - To fine-tune models, a GPU is recommended.
 
