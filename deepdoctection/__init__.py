@@ -25,11 +25,11 @@ from .utils.logger import LoggingRecord, logger
 
 # pylint: enable=wrong-import-position
 
-__version__ = "0.43"
+__version__ = "0.43.1"
 
 _IMPORT_STRUCTURE = {
     "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory"],
-    "configs": [],
+    "configs": ["update_cfg_from_defaults"],
     "dataflow": [
         "DataFlowTerminated",
         "DataFlowResetStateNotCalled",
@@ -98,6 +98,7 @@ _IMPORT_STRUCTURE = {
         "List",
         "Cell",
         "Table",
+        "IMAGE_DEFAULTS",
         "Page",
     ],
     "datasets": [
