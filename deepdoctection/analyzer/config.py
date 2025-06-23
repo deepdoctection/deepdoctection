@@ -917,5 +917,3 @@ def update_cfg_from_defaults() -> None:
 
     # Re-freeze the configuration
     cfg.freeze()
-
-    return
