@@ -201,8 +201,7 @@ pip install ".[tf]" # or "pip install -e .[tf]"
 
 ### Running a Docker container from Docker hub
 
-Pre-existing Docker images can be downloaded from the [Docker hub](https://hub.docker.
-com/r/deepdoctection/deepdoctection).
+Pre-existing Docker images can be downloaded from the [Docker hub](https://hub.docker.com/r/deepdoctection/deepdoctection).
 
 ```
 docker pull deepdoctection/deepdoctection:<release_tag> 
