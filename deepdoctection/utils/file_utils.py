@@ -12,7 +12,6 @@ import importlib.util
 import multiprocessing as mp
 import string
 import subprocess
-import sys
 from os import environ, path
 from shutil import which
 from types import ModuleType
@@ -22,7 +21,6 @@ import importlib_metadata
 from packaging import version
 
 from .error import DependencyError
-from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
 from .types import PathLikeOrStr, Requirement
 
