@@ -269,7 +269,10 @@ class DoctrTextlineDetector(DoctrTextlineDetectorMixin):
         if self.lib == "PT":
             self.device = get_torch_device(device)
 
-        self.doctr_predictor = self.get_wrapped_model(self.architecture, self.path_weights, self.device, self.lib)
+        self.doctr_predictor = self.get_wrapped_model(self.architecture,
+                                                      self.path_weights,
+                                                      self.device,
+                                                      self.lib)
 
     def predict(self, np_img: PixelValues) -> list[DetectionResult]:
         """
@@ -424,7 +427,7 @@ class DoctrTextRecognizer(TextRecognizer):
         return _get_doctr_requirements()
 
     def clone(self) -> DoctrTextRecognizer:
-        return self.__class__(self.architecture, self.path_weights, self.device, self.lib)
+        return self.__class__(self.architecture, self.path_weights, self.device, self.lib, self.path_config_json)
 
     @staticmethod
     def load_model(
