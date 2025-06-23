@@ -738,10 +738,8 @@ class TextOrderService(TextLineServiceMixin):
                 text_block_anns.extend(residual_text_container_anns)
         for text_block_ann in text_block_anns:
             self.order_text_in_text_block(text_block_ann)
-        floating_text_block_anns_to_order = [
-            ann for ann in text_block_anns if ann.category_name in self.floating_text_block_categories
-        ]
-        self.order_blocks(floating_text_block_anns_to_order)
+        floating_text_block_anns = dp.get_annotation(category_names=self.floating_text_block_categories)
+        self.order_blocks(floating_text_block_anns)
         self._create_columns()
 
     def _create_columns(self) -> None:
@@ -803,9 +801,14 @@ class TextOrderService(TextLineServiceMixin):
         if self.include_residual_text_container:
             add_category.append(LayoutType.LINE)
 
-        assert set(self.floating_text_block_categories) <= set(
+        if set(self.floating_text_block_categories) <= set(
             self.text_block_categories + tuple(add_category)
-        ), "floating_text_block_categories must be a subset of text_block_categories"
+        ):
+            logger.warning("In most cases floating_text_block_categories must be a subset of text_block_categories. "
+                           "Adding categories to floating_text_block_categories, that do not belong to "
+                           "text_block_categories makes only sense for categories set have CHILD relationships with"
+                           " annotations that belong to text_block_categories.")
+
 
     def get_meta_annotation(self) -> MetaAnnotation:
         add_category = [self.text_container]

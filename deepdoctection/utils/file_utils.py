@@ -662,13 +662,6 @@ def get_doctr_requirement() -> Requirement:
         On macOS, if `poppler` is not available, this function will recursively check the requirement.
         It is not yet known how to check whether `pango`, `gdk-pixbuf`, and `libffi` are installed.
     """
-    if sys.platform == "darwin":
-        if not get_poppler_version():
-            return get_doctr_requirement()
-        # don't know yet how to check whether pango gdk-pixbuf libffi are installed
-        logger.info(
-            LoggingRecord("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
-        )
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 
