@@ -902,3 +902,18 @@ cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
 # Freezes the configuration to make it immutable.
 # This prevents accidental modification at runtime.
 cfg.freeze()
+
+def update_cfg_from_defaults() -> None:
+    """
+    Update the configuration with current values from IMAGE_DEFAULTS.
+    """
+    cfg.freeze(False)
+
+    # Update all dependent fields from IMAGE_DEFAULTS
+    cfg.TEXT_CONTAINER = IMAGE_DEFAULTS.TEXT_CONTAINER
+    cfg.WORD_MATCHING.PARENTAL_CATEGORIES = IMAGE_DEFAULTS.TEXT_BLOCK_CATEGORIES
+    cfg.TEXT_ORDERING.TEXT_BLOCK_CATEGORIES = IMAGE_DEFAULTS.TEXT_BLOCK_CATEGORIES
+    cfg.TEXT_ORDERING.FLOATING_TEXT_BLOCK_CATEGORIES = IMAGE_DEFAULTS.FLOATING_TEXT_BLOCK_CATEGORIES
+
+    # Re-freeze the configuration
+    cfg.freeze()

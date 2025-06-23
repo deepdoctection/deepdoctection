@@ -12,7 +12,6 @@ import importlib.util
 import multiprocessing as mp
 import string
 import subprocess
-import sys
 from os import environ, path
 from shutil import which
 from types import ModuleType
@@ -22,7 +21,6 @@ import importlib_metadata
 from packaging import version
 
 from .error import DependencyError
-from .logger import LoggingRecord, logger
 from .metacfg import AttrDict
 from .types import PathLikeOrStr, Requirement
 
@@ -662,13 +660,6 @@ def get_doctr_requirement() -> Requirement:
         On macOS, if `poppler` is not available, this function will recursively check the requirement.
         It is not yet known how to check whether `pango`, `gdk-pixbuf`, and `libffi` are installed.
     """
-    if sys.platform == "darwin":
-        if not get_poppler_version():
-            return get_doctr_requirement()
-        # don't know yet how to check whether pango gdk-pixbuf libffi are installed
-        logger.info(
-            LoggingRecord("package requires weasyprint. Check that poppler pango gdk-pixbuf libffi are installed")
-        )
     return "doctr", doctr_available(), _DOCTR_ERR_MSG
 
 
