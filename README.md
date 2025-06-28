@@ -49,7 +49,7 @@ Check the demo of a document layout analysis pipeline with OCR on 🤗
 - Fine-tuning and evaluation tools.
 - Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
 
-Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb)
+Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Get_Started.ipynb)
 for an easy start.
 
 Check the [**release notes**](https://github.com/deepdoctection/deepdoctection/releases) for recent updates.
