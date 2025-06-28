@@ -66,7 +66,7 @@ isort:
 lint:
 	pylint deepdoctection tests tests_d2
 
-package: check-venv
+package:
 	@echo "--> Generating package"
 	pip install --upgrade build
 	$(PYTHON) -m build
