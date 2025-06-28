@@ -28,15 +28,5 @@ jobs:
 
       - name: Upload to PyPI
         env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          if [ -z "$PYPI_TOKEN" ]; then
-          echo "PYPI_TOKEN is not set properly"
-          exit 1
-          fi
-          twine upload dist/* -u "__token__" -p "$PYPI_TOKEN"
-
-      - name: Upload to PyPI
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/* --verbose -u __token__ -p "$PYPI_TOKEN"
