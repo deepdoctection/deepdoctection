@@ -1,11 +1,8 @@
-
 name: build_push_pypi
 
 on:
-  workflow_dispatch:
-  push:
-    tags:
-      - "v*"  # Reacting on tags (z. B. v1.2.3)
+  release:
+    types: [published]
 
 jobs:
   build_and_upload:
@@ -24,30 +21,27 @@ jobs:
       - name: Install dependencies
         run: pip install setuptools wheel twine
 
-
-      - name: Extract version from git tag
-        run: echo "__version__ = '${GITHUB_REF#refs/tags/v}'" > deepdoctection/__init__.py
+      - name: Verify version matches
+        run: |
+          # Get tag version (without the 'v' prefix)
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          # Get package version
+          PACKAGE_VERSION=$(python -c "import deepdoctection; print(deepdoctection.__version__)")
+          echo "Tag version: $TAG_VERSION"
+          echo "Package version: $PACKAGE_VERSION"
+          
+          # Check if versions match
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Error: Version mismatch!"
+            echo "Tag version ($TAG_VERSION) doesn't match package version ($PACKAGE_VERSION)"
+            exit 1
+          fi
+          echo "Version check passed: $PACKAGE_VERSION"
 
       - name: Build package
-        run: make package  # Nutzt dein Makefile für das Packaging
+        run: make package
 
-  #    - name: Upload to PyPI
-  #      env:
-  #        PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-  #      run: twine upload dist/* -u __token__ -p $PYPI_TOKEN
-
-  #    - name: Commit and push version update
-  #      run: |
-  #        git config --global user.name "github-actions"
-  #        git config --global user.email "actions@github.com"
-  #        git add deepdoctection/__init__.py
-  #        git commit -m "Set version for release"
-  #        git push origin HEAD:main
-
-  #    - name: Create GitHub Release
-  #      uses: softprops/action-gh-release@v2
-  #      with:
-  #        tag_name: ${{ github.ref }}
-  #        name: "Release ${{ github.ref_name }}"
-  #        draft: false
-  #        prerelease: false
+      - name: Upload to PyPI
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/* -u __token__ -p $PYPI_TOKEN
