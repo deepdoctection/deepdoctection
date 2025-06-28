@@ -80,6 +80,7 @@ class SummaryType(ObjectTypes):
 
     SUMMARY = "summary"
     DOCUMENT_SUMMARY = "document_summary"
+    DOCUMENT_MAPPING = "document_mapping"
 
 
 @object_types_registry.register("DocumentType")
