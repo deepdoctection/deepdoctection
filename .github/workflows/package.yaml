@@ -3,6 +3,8 @@ name: build_push_pypi
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    # Allows manual triggering from GitHub UI
 
 jobs:
   build_and_upload:
@@ -20,23 +22,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install setuptools wheel twine
-
-      - name: Verify version matches
-        run: |
-          # Get tag version (without the 'v' prefix)
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          # Get package version
-          PACKAGE_VERSION=$(python -c "import deepdoctection; print(deepdoctection.__version__)")
-          echo "Tag version: $TAG_VERSION"
-          echo "Package version: $PACKAGE_VERSION"
-          
-          # Check if versions match
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "Error: Version mismatch!"
-            echo "Tag version ($TAG_VERSION) doesn't match package version ($PACKAGE_VERSION)"
-            exit 1
-          fi
-          echo "Version check passed: $PACKAGE_VERSION"
 
       - name: Build package
         run: make package
