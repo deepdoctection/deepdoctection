@@ -773,6 +773,7 @@ class Page(Image):
         "figures",
         "residual_layouts",
         "document_summary",
+        "document_mapping",
     }
     include_residual_text_container: bool = True
 
