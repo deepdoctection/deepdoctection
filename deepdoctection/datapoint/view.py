@@ -183,7 +183,7 @@ class Word(ImageAnnotationBaseView):
         attr_names = (
             set(WordType)
             .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK})
         )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
