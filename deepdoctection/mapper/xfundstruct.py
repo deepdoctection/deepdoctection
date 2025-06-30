@@ -200,7 +200,7 @@ def xfund_to_image(
                 ann_ids.extend(entity_id_to_ann_id[linked_entity])
             for ann_id in ann_ids:
                 if ann_id != word.annotation_id:
-                    word.dump_relationship(Relationships.SEMANTIC_ENTITY_LINK, ann_id)
+                    word.dump_relationship(Relationships.LINK, ann_id)
 
     if mapping_context.context_error:
         return None
