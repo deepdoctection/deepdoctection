@@ -231,6 +231,7 @@ class Relationships(ObjectTypes):
     READING_ORDER = "reading_order"
     LINK = "link"
     LAYOUT_LINK = "layout_link"
+    SUCCESSOR = "successor"
 
 
 @object_types_registry.register("Languages")
