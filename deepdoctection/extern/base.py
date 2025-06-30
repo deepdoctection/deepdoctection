@@ -502,6 +502,7 @@ class TokenClassResult:
        semantic_name: semantic name
        bio_tag: bio tag
        score: prediction score
+       successor_uuid: uuid of the next token in the sequence
     """
 
     uuid: str
@@ -512,6 +513,7 @@ class TokenClassResult:
     bio_tag: ObjectTypes = DefaultType.DEFAULT_TYPE
     score: Optional[float] = None
     token_id: Optional[int] = None
+    successor_uuid: Optional[str] = None
 
 
 @dataclass

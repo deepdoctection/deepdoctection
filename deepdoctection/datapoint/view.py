@@ -183,7 +183,7 @@ class Word(ImageAnnotationBaseView):
         attr_names = (
             set(WordType)
             .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK})
+            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK})
         )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
@@ -1390,19 +1390,32 @@ class Page(Image):
             include_residual_text_container=include_residual_text_container,
         )
 
-    def get_token(self) -> list[Mapping[str, str]]:
+    def get_entities(self) -> list[Mapping[str, str]]:
         """
         Returns:
-             A list of tuples with word and non default token tags
+             A list of dicts with the following structure:
+
+            ```python
+            {
+                "word": str,  # word characters
+                "entity": str, # token tag
+                "annotation_id": str, # annotation id of the word
+                "successor_annotation_id": Optional[str] # annotation_id of the successor word, if any
+            }
+            ```
+
         """
         block_with_order = self._order("layouts")
         all_words = []
         for block in block_with_order:
             all_words.extend(block.get_ordered_words())  # type: ignore
         return [
-            {"word": word.CHARACTERS, "entity": word.TOKEN_TAG}
+            {"word": word.characters,
+             "entity": word.token_tag.value,
+             "annotation_id": word.annotation_id,
+             "successor_annotation_id": word.successor[0].annotation_id if word.successor else None}
             for word in all_words
-            if word.TOKEN_TAG not in (TokenClasses.OTHER, None)
+            if word.token_tag not in (TokenClasses.OTHER, None)
         ]
 
     def __copy__(self) -> Page:
