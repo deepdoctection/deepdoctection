@@ -479,8 +479,8 @@ class Image:
 
     def remove(
         self,
-        annotation_ids: Optional[Union[str, list[str]]] = None,
-        service_ids: Optional[Union[str, list[str]]] = None,
+        annotation_ids: Optional[Union[str, Sequence[str]]] = None,
+        service_ids: Optional[Union[str, Sequence[str]]] = None,
     ) -> None:
         """
         Instead of removing consider deactivating annotations.

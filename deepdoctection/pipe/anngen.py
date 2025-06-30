@@ -19,7 +19,7 @@
 Datapoint manager
 """
 from dataclasses import asdict
-from typing import Optional, Union
+from typing import Optional, Union, Sequence
 
 import numpy as np
 
@@ -371,6 +371,19 @@ class DatapointManager:
         if annotation_context.context_error:
             return None
         return ann.annotation_id
+
+    def remove_annotations(self, annotation_ids: Sequence[str]) -> None:
+        """
+        Removes the annotation by the given `annotation_id`.
+
+        Args:
+            annotation_ids: The `annotation_id` to remove.
+        """
+        self.assert_datapoint_passed()
+        self.datapoint.remove(annotation_ids)
+        for ann_id in annotation_ids:
+            if ann_id in self._cache_anns:
+                self._cache_anns.pop(ann_id)
 
     def deactivate_annotation(self, annotation_id: str) -> None:
         """
