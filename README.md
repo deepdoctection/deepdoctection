@@ -30,7 +30,45 @@ Version `v.0.43` includes a significant redesign of the Analyzer's default confi
 It also provides a framework for training, evaluating and inferencing Document AI models.
 
 Check the demo of a document layout analysis pipeline with OCR on 🤗
-[**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection).
+[**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) or use the gradio client. 
+
+```
+pip install gradio_client   # requires Python >= 3.10 
+```
+
+To process a single image:
+
+```python
+from gradio_client import Client, handle_file
+
+if __name__ == "__main__":
+
+    client = Client("deepdoctection/deepdoctection")
+    result = client.predict(
+        img=handle_file('/local_path/to/dir/file_name.jpeg'),  # accepts image files, e.g. JPEG, PNG
+        pdf=None,   
+        max_datapoints = 2,
+        api_name = "/analyze_image"
+    )
+    print(result)
+```
+
+To process a PDF document:
+
+```python
+from gradio_client import Client, handle_file
+
+if __name__ == "__main__":
+
+    client = Client("deepdoctection/deepdoctection")
+    result = client.predict(
+        img=None,
+        pdf=handle_file("/local_path/to/dir/your_doc.pdf"),
+        max_datapoints = 2, # increase to process up to 9 pages
+        api_name = "/analyze_image"
+    )
+    print(result)
+```
 
 # Overview
 
