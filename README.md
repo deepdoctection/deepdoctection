@@ -25,9 +25,35 @@ Version `v.0.43` includes a significant redesign of the Analyzer's default confi
 </p>
 
 
-
 **deep**doctection is a Python library that orchestrates Scan and PDF document layout analysis and extraction for RAG.
 It also provides a framework for training, evaluating and inferencing Document AI models.
+
+# Overview
+
+- Document layout analysis and table recognition in PyTorch with 
+[**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2) and 
+[**Transformers**](https://github.com/huggingface/transformers)
+  or Tensorflow and [**Tensorpack**](https://github.com/tensorpack),
+- OCR with support of [**Tesseract**](https://github.com/tesseract-ocr/tesseract), [**DocTr**](https://github.com/mindee/doctr) and 
+  [**AWS Textract**](https://aws.amazon.com/textract/),
+- Document and token classification with the [**LayoutLM**](https://github.com/microsoft/unilm) family,
+  [**LiLT**](https://github.com/jpWang/LiLT) and selected
+  [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
+- Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
+- Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
+- Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew).
+- Fine-tuning and evaluation tools.
+- Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
+
+Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Get_Started.ipynb)
+for an easy start.
+
+Check the [**release notes**](https://github.com/deepdoctection/deepdoctection/releases) for recent updates.
+
+
+----------------------------------------------------------------------------------------
+
+# Hugging Face Space Demo
 
 Check the demo of a document layout analysis pipeline with OCR on 🤗
 [**Hugging Face spaces**](https://huggingface.co/spaces/deepdoctection/deepdoctection) or use the gradio client. 
@@ -70,27 +96,7 @@ if __name__ == "__main__":
     print(result)
 ```
 
-# Overview
-
-- Document layout analysis and table recognition in PyTorch with 
-[**Detectron2**](https://github.com/facebookresearch/detectron2/tree/main/detectron2) and 
-[**Transformers**](https://github.com/huggingface/transformers)
-  or Tensorflow and [**Tensorpack**](https://github.com/tensorpack),
-- OCR with support of [**Tesseract**](https://github.com/tesseract-ocr/tesseract), [**DocTr**](https://github.com/mindee/doctr) and 
-  [**AWS Textract**](https://aws.amazon.com/textract/),
-- Document and token classification with the [**LayoutLM**](https://github.com/microsoft/unilm) family,
-  [**LiLT**](https://github.com/jpWang/LiLT) and selected
-  [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
-- Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
-- Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
-- Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew).
-- Fine-tuning and evaluation tools.
-- Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
-
-Have a look at the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Analyzer_Get_Started.ipynb)
-for an easy start.
-
-Check the [**release notes**](https://github.com/deepdoctection/deepdoctection/releases) for recent updates.
+--------------------------------------------------------------------------------------------------------
 
 # Example
 
@@ -137,8 +143,9 @@ alt="text" width="40%">
 </p>
 
 
+-----------------------------------------------------------------------------------------
 
-## Requirements
+# Requirements
 
 ![requirements](https://github.com/deepdoctection/deepdoctection/raw/master/docs/tutorials/_imgs/install_01.png)
 
@@ -157,11 +164,13 @@ alt="text" width="40%">
 | DocTr | ✅ | ❌ | ✅ |
 | LayoutLM (v1, v2, v3, XLM) via Transformers | ✅ | ❌ | ❌ |
 
-## Installation
+------------------------------------------------------------------------------------------
+
+# Installation
 
 We recommend using a virtual environment.
 
-#### Get started installation
+## Get started installation
 
 For a simple setup which is enough to parse documents with the default setting, install the following:
 
@@ -183,7 +192,7 @@ pip install deepdoctection
 
 Both setups are sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb).
 
-#### Full installation
+### Full installation
 
 The following installation will give you ALL models available within the Deep Learning framework as well as all models
 that are independent of Tensorflow/PyTorch.
@@ -213,7 +222,7 @@ pip install deepdoctection[tf]
 For further information, please consult the [**full installation instructions**](https://deepdoctection.readthedocs.io/en/latest/install/).
 
 
-### Installation from source
+## Installation from source
 
 Download the repository or clone via
 
@@ -236,8 +245,7 @@ pip install ".[tf]" # or "pip install -e .[tf]"
 ```
 
 
-
-### Running a Docker container from Docker hub
+## Running a Docker container from Docker hub
 
 Pre-existing Docker images can be downloaded from the [Docker hub](https://hub.docker.com/r/deepdoctection/deepdoctection).
 
@@ -255,16 +263,18 @@ docker compose up -d
 
 will start the container. There is no endpoint exposed, though.
 
-## Credits
+-----------------------------------------------------------------------------------------------
+
+# Credits
 
 We thank all libraries that provide high quality code and pre-trained models. Without, it would have been impossible
 to develop this framework.
 
 
-## If you like **deep**doctection ...
+# If you like **deep**doctection ...
 
 ...you can easily support the project by making it more visible. Leaving a star or a recommendation will help.
 
-## License
+# License
 
 Distributed under the Apache 2.0 License. Check [LICENSE](https://github.com/deepdoctection/deepdoctection/blob/master/LICENSE) for additional information.
