@@ -801,14 +801,13 @@ class TextOrderService(TextLineServiceMixin):
         if self.include_residual_text_container:
             add_category.append(LayoutType.LINE)
 
-        if set(self.floating_text_block_categories) <= set(
-            self.text_block_categories + tuple(add_category)
-        ):
-            logger.warning("In most cases floating_text_block_categories must be a subset of text_block_categories. "
-                           "Adding categories to floating_text_block_categories, that do not belong to "
-                           "text_block_categories makes only sense for categories set have CHILD relationships with"
-                           " annotations that belong to text_block_categories.")
-
+        if set(self.floating_text_block_categories) <= set(self.text_block_categories + tuple(add_category)):
+            logger.warning(
+                "In most cases floating_text_block_categories must be a subset of text_block_categories. "
+                "Adding categories to floating_text_block_categories, that do not belong to "
+                "text_block_categories makes only sense for categories set have CHILD relationships with"
+                " annotations that belong to text_block_categories."
+            )
 
     def get_meta_annotation(self) -> MetaAnnotation:
         add_category = [self.text_container]

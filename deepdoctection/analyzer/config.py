@@ -903,6 +903,7 @@ cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
 # This prevents accidental modification at runtime.
 cfg.freeze()
 
+
 def update_cfg_from_defaults() -> None:
     """
     Update the configuration with current values from IMAGE_DEFAULTS.

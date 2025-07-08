@@ -786,7 +786,7 @@ class Page(Image):
         "residual_layouts",
         "document_summary",
         "document_mapping",
-        "b64_image"
+        "b64_image",
     }
     include_residual_text_container: bool = True
 
@@ -1225,7 +1225,6 @@ class Page(Image):
 
         if show_figures and not debug_kwargs:
             for item in self.figures:
-
                 box_stack.append(self._ann_viz_bbox(item))
                 category_names_list.append(item.category_name.value)
 
@@ -1435,10 +1434,12 @@ class Page(Image):
         for block in block_with_order:
             all_words.extend(block.get_ordered_words())  # type: ignore
         return [
-            {"word": word.characters,
-             "entity": word.token_tag.value,
-             "annotation_id": word.annotation_id,
-             "successor_annotation_id": word.successor[0].annotation_id if word.successor else None}
+            {
+                "word": word.characters,
+                "entity": word.token_tag.value,
+                "annotation_id": word.annotation_id,
+                "successor_annotation_id": word.successor[0].annotation_id if word.successor else None,
+            }
             for word in all_words
             if word.token_tag not in (TokenClasses.OTHER, None)
         ]
