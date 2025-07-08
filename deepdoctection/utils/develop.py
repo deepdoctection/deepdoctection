@@ -71,7 +71,6 @@ def log_deprecated(name: str, text: str, eos: str = "", max_num_warnings: Option
     logger.info(LoggingRecord(f"[Deprecated] {info_msg}"))
 
 
-
 def deprecated(
     text: str = "", eos: str = "", max_num_warnings: Optional[int] = None
 ) -> Callable[[Callable[..., T]], Callable[..., T]]:

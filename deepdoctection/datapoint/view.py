@@ -73,6 +73,18 @@ class ImageAnnotationBaseView(ImageAnnotation):
     base_page: Page
 
     @property
+    def b64_image(self) -> Optional[str]:
+        """
+        Returns:
+            The base64 encoded image of the page if available, otherwise None.
+        """
+
+        if self.image is not None:
+            if self.image.image is not None:
+                return viz_handler.convert_np_to_b64(self.image.image)
+        return None
+
+    @property
     def bbox(self) -> list[float]:
         """
         Get the bounding box as list and in absolute `xyxy`-coordinates of the base page.
@@ -157,7 +169,7 @@ class ImageAnnotationBaseView(ImageAnnotation):
         """
 
         # sub categories and summary sub categories are valid attribute names
-        attr_names = {"bbox", "np_image"}.union({cat.value for cat in self.sub_categories})
+        attr_names = {"bbox", "np_image", "b64_image"}.union({cat.value for cat in self.sub_categories})
         if self.image:
             attr_names = attr_names.union({cat.value for cat in self.image.summary.sub_categories.keys()})
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
@@ -774,6 +786,7 @@ class Page(Image):
         "residual_layouts",
         "document_summary",
         "document_mapping",
+        "b64_image",
     }
     include_residual_text_container: bool = True
 
@@ -901,6 +914,17 @@ class Page(Image):
             - not columns
         """
         return self.get_annotation(category_names=self.residual_text_block_categories)
+
+    @property
+    def b64_image(self) -> Optional[str]:
+        """
+        Returns:
+            The base64 encoded image of the page if available, otherwise None.
+        """
+
+        if self.image_orig.image is not None:
+            return viz_handler.convert_np_to_b64(self.image_orig.image)
+        return None
 
     @classmethod
     def from_image(
@@ -1410,10 +1434,12 @@ class Page(Image):
         for block in block_with_order:
             all_words.extend(block.get_ordered_words())  # type: ignore
         return [
-            {"word": word.characters,
-             "entity": word.token_tag.value,
-             "annotation_id": word.annotation_id,
-             "successor_annotation_id": word.successor[0].annotation_id if word.successor else None}
+            {
+                "word": word.characters,
+                "entity": word.token_tag.value,
+                "annotation_id": word.annotation_id,
+                "successor_annotation_id": word.successor[0].annotation_id if word.successor else None,
+            }
             for word in all_words
             if word.token_tag not in (TokenClasses.OTHER, None)
         ]
