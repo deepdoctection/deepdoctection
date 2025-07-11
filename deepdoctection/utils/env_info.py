@@ -462,7 +462,11 @@ def pt_info(data: KeyValEnvInfos) -> KeyValEnvInfos:
                 data.append(("torchvision arch flags", msg))
             except (ImportError, AttributeError):
                 data.append(("torchvision._C", "Not found"))
+<<<<<<< Updated upstream
     except (AttributeError, ModuleNotFoundError):
+=======
+    except (ModuleNotFoundError,AttributeError):
+>>>>>>> Stashed changes
         data.append(("torchvision", "unknown"))
 
     return data
