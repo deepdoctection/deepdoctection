@@ -484,7 +484,7 @@ class CustomDataset(DatasetBase):
         return DatasetInfo(
             name=self.name,
             type=self.type,
-            description=self.description if self.description is not None else "",
+            short_description=self.description if self.description is not None else "",
             license="",
             url="",
             splits={},
