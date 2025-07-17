@@ -178,7 +178,7 @@ For a simple setup which is enough to parse documents with the default setting, 
 
 ```
 pip install transformers
-pip install python-doctr
+pip install python-doctr==0.9.0
 pip install deepdoctection
 ```
 
@@ -186,7 +186,7 @@ pip install deepdoctection
 
 ```
 pip install tensorpack
-pip install python-doctr
+pip install python-doctr==0.9.0
 pip install deepdoctection
 ```
 

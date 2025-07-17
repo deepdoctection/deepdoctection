@@ -59,7 +59,7 @@ We recommend using a virtual environment. You can install **deep**doctection fro
 
 ```
 pip install transformers
-pip install python-doctr
+pip install python-doctr==0.9.0
 pip install deepdoctection
 ```
 
@@ -67,7 +67,7 @@ pip install deepdoctection
 
 ```
 pip install tensorpack
-pip install python-doctr
+pip install python-doctr==0.9.0
 pip install deepdoctection
 ```
 
