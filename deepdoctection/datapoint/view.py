@@ -195,10 +195,9 @@ class Word(ImageAnnotationBaseView):
         attr_names = (
             set(WordType)
             .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER,
-                    Relationships.LAYOUT_LINK,
-                    Relationships.LINK,
-                    Relationships.SUCCESSOR})
+            .union(
+                {Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR}
+            )
         )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
@@ -388,7 +387,7 @@ class Table(Layout):
             A list of a table cells.
         """
         cell_anns: list[Cell] = []
-        for row_number in range(1, self.number_of_rows +1):
+        for row_number in range(1, self.number_of_rows + 1):
             cell_anns.extend(self.row(row_number))  # type: ignore
 
         return cell_anns
