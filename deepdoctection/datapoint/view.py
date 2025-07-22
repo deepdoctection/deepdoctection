@@ -590,6 +590,10 @@ class Table(Layout):
 
     @property
     def csv_(self) -> list[list[list[Text_]]]:
+        """
+        Returns:
+            A csv-style representation of a table as list of lists of cell.text_.
+        """
         cells = self.cells
         table_list = [[[] for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
