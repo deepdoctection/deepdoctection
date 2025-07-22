@@ -629,7 +629,7 @@ cfg.PT.ENFORCE_WEIGHTS.ITEM = True
 
 # Specifies the PyTorch model weights for item detection.
 # Use either .pt or .safetensors files.
-cfg.PT.ITEM.WEIGHTS = "deepdoctection/tatr_tab_struct_v2/pytorch_model.bin"
+cfg.PT.ITEM.WEIGHTS = "deepdoctection/tatr_tab_struct_v2/model.safetensors"
 
 # Specifies the TorchScript model for item detection.
 # Use .ts files for deployment without model implementation dependencies.
