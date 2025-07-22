@@ -195,7 +195,9 @@ class Word(ImageAnnotationBaseView):
         attr_names = (
             set(WordType)
             .union(super().get_attribute_names())
-            .union({Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK})
+            .union(
+                {Relationships.READING_ORDER, Relationships.LAYOUT_LINK, Relationships.LINK, Relationships.SUCCESSOR}
+            )
         )
         return {attr_name.value if isinstance(attr_name, ObjectTypes) else attr_name for attr_name in attr_names}
 
@@ -384,16 +386,10 @@ class Table(Layout):
         Returns:
             A list of a table cells.
         """
-        all_relation_ids = self.get_relationship(Relationships.CHILD)
-        cell_anns: list[Cell] = self.base_page.get_annotation(  # type: ignore
-            annotation_ids=all_relation_ids,
-            category_names=[
-                LayoutType.CELL,
-                CellType.HEADER,
-                CellType.BODY,
-                CellType.SPANNING,
-            ],
-        )
+        cell_anns: list[Cell] = []
+        for row_number in range(1, self.number_of_rows + 1):  # type: ignore
+            cell_anns.extend(self.row(row_number))  # type: ignore
+
         return cell_anns
 
     @property
@@ -592,6 +588,16 @@ class Table(Layout):
             )
         return table_list
 
+    @property
+    def csv_(self) -> list[list[list[Text_]]]:
+        cells = self.cells
+        table_list = [[[] for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
+        for cell in cells:
+            table_list[cell.row_number - 1][cell.column_number - 1].append(cell.text_)  # type: ignore
+        return table_list
+
+
+
     def __str__(self) -> str:
         out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out
@@ -599,7 +605,13 @@ class Table(Layout):
     @property
     def text(self) -> str:
         try:
-            return str(self)
+            cells = self.cells
+            if not cells:
+                return super().text
+            text_list: list[str] = []
+            for cell in cells:
+                text_list.append(cell.text)
+            return " ".join(text_list)
         except (TypeError, AnnotationError):
             return super().text
 
@@ -616,7 +628,7 @@ class Table(Layout):
         token_class_ids: list[str] = []
         token_tag_ids: list[str] = []
         for cell in cells:
-            text.extend(cell.text_["text"])
+            text.append(cell.text_["text"])
             words.extend(cell.text_["words"])
             ann_ids.extend(cell.text_["ann_ids"])
             token_classes.extend(cell.text_["token_classes"])
