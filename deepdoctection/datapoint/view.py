@@ -588,6 +588,16 @@ class Table(Layout):
             )
         return table_list
 
+    @property
+    def csv_(self):
+        cells = self.cells
+        table_list = [[[] for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
+        for cell in cells:
+            table_list[cell.row_number - 1][cell.column_number - 1].append(cell.text_)
+        return table_list
+
+
+
     def __str__(self) -> str:
         out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out

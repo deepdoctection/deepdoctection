@@ -306,7 +306,7 @@ class ModelCatalog:
 
 # Loading default profiles
 dd_profile_path = maybe_copy_config_to_cache(
-    get_package_path(), get_cache_dir_path(), "deepdoctection/configs/profiles.jsonl", False
+    get_package_path(), get_cache_dir_path(), "deepdoctection/configs/profiles.jsonl", True
 )
 ModelCatalog.load_profiles_from_file(dd_profile_path)
 # Additional profiles can be added
