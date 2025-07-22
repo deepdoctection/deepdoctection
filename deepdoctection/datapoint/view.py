@@ -387,7 +387,7 @@ class Table(Layout):
             A list of a table cells.
         """
         cell_anns: list[Cell] = []
-        for row_number in range(1, self.number_of_rows + 1):
+        for row_number in range(1, self.number_of_rows + 1):  # type: ignore
             cell_anns.extend(self.row(row_number))  # type: ignore
 
         return cell_anns
@@ -589,11 +589,11 @@ class Table(Layout):
         return table_list
 
     @property
-    def csv_(self):
+    def csv_(self) -> list[list[list[Text_]]]:
         cells = self.cells
         table_list = [[[] for _ in range(self.number_of_columns)] for _ in range(self.number_of_rows)]  # type: ignore
         for cell in cells:
-            table_list[cell.row_number - 1][cell.column_number - 1].append(cell.text_)
+            table_list[cell.row_number - 1][cell.column_number - 1].append(cell.text_)  # type: ignore
         return table_list
 
 
