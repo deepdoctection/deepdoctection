@@ -23,7 +23,6 @@ from pytest import mark
 
 from deepdoctection.analyzer import get_dd_analyzer
 from deepdoctection.datapoint import Page
-from deepdoctection.utils import CellType, DefaultType, LayoutType, Relationships, WordType
 
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
