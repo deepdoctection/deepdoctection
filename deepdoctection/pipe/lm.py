@@ -23,11 +23,11 @@ from __future__ import annotations
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import SequenceClassResult
 from ..mapper.laylmstruct import image_to_layoutlm_features, image_to_lm_features
 from ..utils.settings import BioTag, LayoutType, ObjectTypes, PageType, TokenClasses, WordType
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 if TYPE_CHECKING:
@@ -246,7 +246,17 @@ class LMTokenClassifierService(PipelineComponent):
     def get_meta_annotation(self) -> MetaAnnotation:
         return MetaAnnotation(
             image_annotations=(),
-            sub_categories={LayoutType.WORD: {WordType.TOKEN_CLASS, WordType.TAG, WordType.TOKEN_TAG}},
+            sub_categories={
+                LayoutType.WORD: {
+                    WordType.TOKEN_CLASS: set(self.language_model.categories.categories_semantics)  # type: ignore
+                    if self.language_model.categories.categories_semantics
+                    else [],
+                    WordType.TAG: set(self.language_model.categories.categories_bio)  # type: ignore
+                    if self.language_model.categories.categories_bio
+                    else [],
+                    WordType.TOKEN_TAG: set(self.language_model.categories.get_categories(as_dict=False)),
+                }
+            },
             relationships={},
             summaries=(),
         )

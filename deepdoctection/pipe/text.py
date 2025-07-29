@@ -25,13 +25,13 @@ from copy import deepcopy
 from typing import Optional, Sequence, Union
 
 from ..datapoint.annotation import ImageAnnotation
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner, TextRecognizer
 from ..extern.tessocr import TesseractOcrDetector
 from ..utils.error import ImageError
 from ..utils.settings import ObjectTypes, PageType, TypeOrStr, WordType, get_type
 from ..utils.types import PixelValues
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 __all__ = ["TextExtractionService"]
@@ -202,16 +202,21 @@ class TextExtractionService(PipelineComponent):
         return 1
 
     def get_meta_annotation(self) -> MetaAnnotation:
-        sub_cat_dict: dict[ObjectTypes, set[ObjectTypes]]
+        sub_cat_dict: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]]
         if self.extract_from_category:
-            sub_cat_dict = {category: {WordType.CHARACTERS} for category in self.extract_from_category}
+            sub_cat_dict = {
+                category: {WordType.CHARACTERS: {WordType.CHARACTERS}} for category in self.extract_from_category
+            }
         else:
             if not isinstance(self.predictor, (ObjectDetector, PdfMiner)):
                 raise TypeError(
                     f"self.predictor must be of type ObjectDetector or PdfMiner but is of type "
                     f"{type(self.predictor)}"
                 )
-            sub_cat_dict = {category: {WordType.CHARACTERS} for category in self.predictor.get_category_names()}
+            sub_cat_dict = {
+                category: {WordType.CHARACTERS: {WordType.CHARACTERS}}
+                for category in self.predictor.get_category_names()
+            }
         return MetaAnnotation(
             image_annotations=self.predictor.get_category_names()
             if isinstance(self.predictor, (ObjectDetector, PdfMiner))

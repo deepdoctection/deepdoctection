@@ -20,12 +20,12 @@ Module for language detection pipeline component
 """
 from typing import Optional, Sequence
 
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import ImageDefaults, Page
 from ..extern.base import LanguageDetector, ObjectDetector
 from ..utils.error import ImageError
 from ..utils.settings import PageType, TypeOrStr, get_type
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 
