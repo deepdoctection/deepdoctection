@@ -22,7 +22,8 @@ Testing module analyzer.dd. This test case requires a GPU and should be consider
 from pytest import mark
 
 from deepdoctection.analyzer import get_dd_analyzer
-from deepdoctection.datapoint import Page
+from deepdoctection.datapoint import Page, MetaAnnotation
+from deepdoctection.utils import DefaultType, LayoutType, CellType, Relationships
 
 from ..test_utils import collect_datapoint_from_dataflow, get_integration_test_path
 
@@ -261,8 +262,24 @@ def test_dd_analyzer_builds_and_process_image_layout_correctly() -> None:
     # Act
     df = analyzer.analyze(path=get_integration_test_path())
     output = collect_datapoint_from_dataflow(df)
+    meta_annotations = analyzer.get_meta_annotation()
 
     # Assert
+    assert meta_annotations == MetaAnnotation(image_annotations=(DefaultType.DEFAULT_TYPE,
+                                                                 LayoutType.CAPTION,
+                                                                 LayoutType.TEXT,
+                                                                 LayoutType.TITLE,
+                                                                 LayoutType.FOOTNOTE,
+                                                                 LayoutType.FORMULA,
+                                                                 LayoutType.LIST_ITEM,
+                                                                 LayoutType.PAGE_FOOTER,
+                                                                 LayoutType.PAGE_HEADER,
+                                                                 LayoutType.FIGURE,
+                                                                 LayoutType.SECTION_HEADER,
+                                                                 LayoutType.TABLE),
+                                              sub_categories={},
+                                              relationships={},
+                                              summaries=())
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)
@@ -332,10 +349,108 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
     )
 
     # Act
+    meta_annotations = analyzer.get_meta_annotation()
     df = analyzer.analyze(path=get_integration_test_path())
     output = collect_datapoint_from_dataflow(df)
 
     # Assert
+    assert meta_annotations == MetaAnnotation(image_annotations=(DefaultType.DEFAULT_TYPE,
+                                                                 LayoutType.CAPTION,
+                                                                 LayoutType.TEXT,
+                                                                 LayoutType.TITLE,
+                                                                 LayoutType.FOOTNOTE,
+                                                                 LayoutType.FORMULA,
+                                                                 LayoutType.LIST_ITEM,
+                                                                 LayoutType.PAGE_FOOTER,
+                                                                 LayoutType.PAGE_HEADER,
+                                                                 LayoutType.FIGURE,
+                                                                 LayoutType.SECTION_HEADER,
+                                                                 LayoutType.TABLE,
+                                                                 LayoutType.COLUMN,
+                                                                 LayoutType.ROW,
+                                                                 CellType.COLUMN_HEADER,
+                                                                 CellType.PROJECTED_ROW_HEADER,
+                                                                 CellType.SPANNING,
+                                                                 LayoutType.WORD,
+                                                                 LayoutType.LINE),
+                                              sub_categories={LayoutType.CELL:
+                                                                  {CellType.ROW_NUMBER:
+                                                                       {CellType.ROW_NUMBER},
+                                                                   CellType.COLUMN_NUMBER:
+                                                                       {CellType.COLUMN_NUMBER},
+                                                                   CellType.ROW_SPAN:
+                                                                       {CellType.ROW_SPAN},
+                                                                   CellType.COLUMN_SPAN:
+                                                                       {CellType.COLUMN_SPAN}},
+                                                              CellType.SPANNING:
+                                                                  {CellType.ROW_NUMBER:
+                                                                       {CellType.ROW_NUMBER},
+                                                                   CellType.COLUMN_NUMBER:
+                                                                       {CellType.COLUMN_NUMBER},
+                                                                   CellType.ROW_SPAN:
+                                                                       {CellType.ROW_SPAN},
+                                                                   CellType.COLUMN_SPAN:
+                                                                       {CellType.COLUMN_SPAN}},
+                                                              CellType.ROW_HEADER:
+                                                                  {CellType.ROW_NUMBER:
+                                                                       {CellType.ROW_NUMBER},
+                                                                   CellType.COLUMN_NUMBER:
+                                                                       {CellType.COLUMN_NUMBER},
+                                                                   CellType.ROW_SPAN:
+                                                                       {CellType.ROW_SPAN},
+                                                                   CellType.COLUMN_SPAN:
+                                                                       {CellType.COLUMN_SPAN}},
+                                                              CellType.COLUMN_HEADER:
+                                                                  {CellType.ROW_NUMBER:
+                                                                       {CellType.ROW_NUMBER},
+                                                                   CellType.COLUMN_NUMBER:
+                                                                       {CellType.COLUMN_NUMBER},
+                                                                   CellType.ROW_SPAN:
+                                                                       {CellType.ROW_SPAN},
+                                                                   CellType.COLUMN_SPAN:
+                                                                       {CellType.COLUMN_SPAN}},
+                                                              CellType.PROJECTED_ROW_HEADER:
+                                                                  {CellType.ROW_NUMBER:
+                                                                       {CellType.ROW_NUMBER},
+                                                                   CellType.COLUMN_NUMBER:
+                                                                       {CellType.COLUMN_NUMBER},
+                                                                   CellType.ROW_SPAN:
+                                                                       {CellType.ROW_SPAN},
+                                                                   CellType.COLUMN_SPAN:
+                                                                       {CellType.COLUMN_SPAN}},
+                                                              LayoutType.ROW: {CellType.ROW_NUMBER:
+                                                                                   {CellType.ROW_NUMBER}},
+                                                              LayoutType.COLUMN: {CellType.COLUMN_NUMBER:
+                                                                                      {CellType.COLUMN_NUMBER}},
+                                                              LayoutType.WORD: {Relationships.READING_ORDER:
+                                                                                    {Relationships.READING_ORDER}},
+                                                              LayoutType.TEXT: {Relationships.READING_ORDER:
+                                                                                    {Relationships.READING_ORDER}},
+                                                              LayoutType.TITLE: {Relationships.READING_ORDER:
+                                                                                     {Relationships.READING_ORDER}},
+                                                              LayoutType.LIST: {Relationships.READING_ORDER:
+                                                                                    {Relationships.READING_ORDER}},
+                                                              LayoutType.KEY_VALUE_AREA:
+                                                                  {Relationships.READING_ORDER:
+                                                                       {Relationships.READING_ORDER}},
+                                                              LayoutType.LINE: {Relationships.READING_ORDER:
+                                                                                    {Relationships.READING_ORDER}}},
+                                              relationships={LayoutType.TABLE: {Relationships.CHILD},
+                                                             LayoutType.TABLE_ROTATED: {Relationships.CHILD},
+                                                             LayoutType.TEXT: {Relationships.CHILD},
+                                                             LayoutType.TITLE: {Relationships.CHILD},
+                                                             LayoutType.LIST_ITEM: {Relationships.CHILD},
+                                                             LayoutType.LIST: {Relationships.CHILD},
+                                                             LayoutType.CAPTION: {Relationships.CHILD},
+                                                             LayoutType.PAGE_HEADER: {Relationships.CHILD},
+                                                             LayoutType.PAGE_FOOTER: {Relationships.CHILD},
+                                                             LayoutType.PAGE_NUMBER: {Relationships.CHILD},
+                                                             LayoutType.MARK: {Relationships.CHILD},
+                                                             LayoutType.KEY_VALUE_AREA: {Relationships.CHILD},
+                                                             LayoutType.FIGURE: {Relationships.CHILD},
+                                                             CellType.SPANNING: {Relationships.CHILD},
+                                                             LayoutType.CELL: {Relationships.CHILD}},
+                                              summaries=())
     assert len(output) == 1
     page = output[0]
     assert isinstance(page, Page)

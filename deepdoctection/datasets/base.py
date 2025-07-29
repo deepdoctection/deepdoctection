@@ -25,6 +25,7 @@ import os
 import pprint
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from dataclasses import asdict, dataclass, field
 from inspect import signature
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence, Type, Union
@@ -32,7 +33,7 @@ from typing import Any, Mapping, Optional, Sequence, Type, Union
 import numpy as np
 
 from ..dataflow import CacheData, ConcatData, CustomDataFromList, DataFlow
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import DatasetType, ObjectTypes, TypeOrStr, get_type
 from ..utils.types import PathLikeOrStr
@@ -405,6 +406,134 @@ class MergeDataset(DatasetBase):
         self._dataflow_builder.categories = self._categories()
 
 
+@dataclass
+class DatasetCard:
+    name: str
+    dataset_type: ObjectTypes
+    location: Path
+    init_categories: list[ObjectTypes] = field(default_factory=list)
+    init_sub_categories: Mapping[ObjectTypes, dict[ObjectTypes, list[ObjectTypes]]] = field(
+        default_factory=dict
+    )
+    annotation_files: Optional[Mapping[str, Union[str, Sequence[str]]]] = None
+    description: str = field(default="")
+    service_id_to_meta_annotation: dict[str, MetaAnnotation] = field(default_factory=dict)
+
+    def save_dataset_card(self, file_path: Union[str, Path]) -> None:
+        """Save the DatasetCard instance as a JSON file."""
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(self.as_dict(), f, indent=4)
+
+    @staticmethod
+    def load_dataset_card(file_path: Union[str, Path]) -> DatasetCard:
+        """Load a DatasetCard instance from a JSON file."""
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            service_id_to_meta_annotation = {}
+            if "service_id_to_meta_annotation" in data:
+                for service_id, meta_ann_dict in data.pop("service_id_to_meta_annotation").items():
+                    meta_ann_dict["image_annotations"] = tuple([get_type(cat) for cat in
+                                                                meta_ann_dict["image_annotations"]])
+                    meta_ann_dict["sub_categories"] =  {get_type(cat): { get_type(sub_cat): set({get_type(value) for
+                                                                                                  value in values})
+                                                               for sub_cat, values in sub_cats.items()} for cat, sub_cats
+                                                        in meta_ann_dict["sub_categories"].items()}
+                    meta_ann_dict["relationships"] = {get_type(key): set({get_type(value) for value in values})
+                                                      for key, values in meta_ann_dict["relationships"].items()}
+                    meta_ann_dict["summaries"] = tuple([get_type(val) for val in meta_ann_dict["summaries"]])
+                    service_id_to_meta_annotation[service_id] = MetaAnnotation(**meta_ann_dict)
+                data["service_id_to_meta_annotation"] = service_id_to_meta_annotation
+        return DatasetCard(**data)
+
+    def as_dict(self, keep_object_types: bool =False) -> dict:
+        """Convert the DatasetCard to a dictionary."""
+        if keep_object_types:
+            return {
+            "name": self.name,
+            "dataset_type": self.dataset_type,
+            "location": self.location.as_posix(),
+            "init_categories": self.init_categories,
+            "init_sub_categories": self.init_sub_categories,
+            "annotation_files": self.annotation_files,
+            "description": self.description,
+            "service_id_to_meta_annotation": {
+                key: val.as_dict() for key, val in self.service_id_to_meta_annotation.items()
+            },
+            }
+        return {
+            "name": self.name,
+            "dataset_type": self.dataset_type.value,
+            "location": self.location.as_posix(),
+            "init_categories": [cat.value for cat in self.init_categories],
+            "init_sub_categories": {cat.value: { sub_cat.value: list({value.value for value in values})
+                                                     for sub_cat, values in sub_cats.items()} for cat, sub_cats
+                                                     in self.init_sub_categories.items()},
+            "annotation_files": self.annotation_files,
+            "description": self.description,
+            "service_id_to_meta_annotation": {
+                key: val.as_dict() for key, val in self.service_id_to_meta_annotation.items()
+            },
+        }
+
+    def update_from_pipeline(self, meta_annotations: MetaAnnotation,
+                             service_id_to_meta_annotation: Mapping[str, MetaAnnotation]) -> None:
+        for category in meta_annotations.image_annotations:
+            if category not in self.init_categories:
+                self.init_categories.append(category)
+        for cat, sub_cats in meta_annotations.sub_categories.items():
+            if cat not in self.init_sub_categories:
+                self.init_sub_categories[cat] = {}
+            for sub_cat, values in sub_cats.items():
+                if sub_cat not in self.init_sub_categories[cat]:
+                    self.init_sub_categories[cat][sub_cat] = []
+                for value in values:
+                    if value not in self.init_sub_categories[cat][sub_cat]:
+                        self.init_sub_categories[cat][sub_cat].append(value)
+
+        for service_id, meta_annotation in service_id_to_meta_annotation.items():
+            if service_id not in self.service_id_to_meta_annotation:
+                self.service_id_to_meta_annotation[service_id] = meta_annotation
+
+    def __post_init__(self) -> None:
+        """
+        Perform internal consistency checks ensuring `init_categories` and
+        `init_sub_categories` align with `service_id_to_meta_annotation`.
+        """
+        self.dataset_type = get_type(self.dataset_type)
+        self.location = Path(self.location)
+        self.init_categories = [get_type(cat) for cat in self.init_categories]
+        self.init_sub_categories = {
+            get_type(outer_key): {
+                get_type(inner_key): [get_type(value) for value in inner_values]
+                for inner_key, inner_values in outer_value.items()
+            }
+            for outer_key, outer_value in self.init_sub_categories.items()
+        }
+
+        if self.service_id_to_meta_annotation is None:
+            return
+
+        # Check compatibility of image_annotations with init_categories
+        for service_id, meta_annotation in self.service_id_to_meta_annotation.items():
+            for annotation in meta_annotation.image_annotations:
+                if annotation not in self.init_categories:
+                    raise ValueError(
+                        f"Image annotation '{annotation}' in service ID '{service_id}' is not "
+                        f"present in `init_categories`."
+                    )
+
+            # Check compatibility of sub_categories
+            for cat, sub_cats in meta_annotation.sub_categories.items():
+                if not (
+                    cat in self.init_sub_categories
+                    and all(sub_cat in self.init_sub_categories[cat] for sub_cat in sub_cats)
+                ):
+                    raise ValueError(
+                        f"Sub-categories for category '{cat}' in service ID '{service_id}' "
+                        f"do not match with `init_sub_categories`."
+                    )
+
+
 class CustomDataset(DatasetBase):
     """
     A simple dataset interface that implements the boilerplate code and reduces complexity by merely leaving
@@ -512,53 +641,7 @@ class CustomDataset(DatasetBase):
         Returns:
             A CustomDataset instance created from the dataset card.
         """
-
-        with open(file_path, "r", encoding="UTF-8") as file:
-            meta_data = json.load(file)
-        meta_data["dataset_type"] = get_type(meta_data["dataset_type"])
-        meta_data["location"] = Path(meta_data["location"])
-        meta_data["init_categories"] = [get_type(cat) for cat in meta_data["init_categories"]]
-        meta_data["init_sub_categories"] = (
-            {
-                get_type(cat): {
-                    get_type(sub_cat_key): [get_type(sub_cat_value) for sub_cat_value in sub_cat_values]
-                    for sub_cat_key, sub_cat_values in sub_cats.items()
-                }
-                for cat, sub_cats in meta_data["init_sub_categories"].items()
-            }
-            if meta_data["init_sub_categories"] is not None
-            else None
-        )
-        return CustomDataset(**meta_data, dataflow_builder=dataflow_builder)
-
-    def as_dict(self) -> Mapping[str, Any]:
-        """
-        Return:
-           The meta-data of the dataset as a dictionary.
-        """
-        return {
-            "name": self.name,
-            "dataset_type": self.type,
-            "location": str(self.location),
-            "annotation_files": self.annotation_files,
-            "init_categories": [cat.value for cat in self.init_categories],
-            "init_sub_categories": {
-                cat.value: {
-                    sub_cat_key.value: [sub_cat_value.value for sub_cat_value in sub_cat_values]
-                    for sub_cat_key, sub_cat_values in sub_cats.items()
-                }
-                for cat, sub_cats in self.init_sub_categories.items()
-            }
-            if self.init_sub_categories is not None
-            else None,
-        }
-
-    def save_dataset_card(self, file_path: str) -> None:
-        """
-        Save the dataset card to a `JSON` file.
-
-        Args:
-            file_path: file_path
-        """
-        with open(file_path, "w", encoding="UTF-8") as file:
-            json.dump(self.as_dict(), file, indent=4)
+        dataset_card = DatasetCard.load_dataset_card(file_path)
+        dataset_card_as_dict = dataset_card.as_dict(True)
+        dataset_card_as_dict.pop("service_id_to_meta_annotation")
+        return CustomDataset(**dataset_card_as_dict, dataflow_builder=dataflow_builder)

@@ -28,12 +28,12 @@ import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import crop_box_from_image
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult, ObjectDetector, PdfMiner
 from ..utils.settings import ObjectTypes, Relationships, TypeOrStr, get_type
 from ..utils.transform import PadTransform
 from ..utils.types import PixelValues
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 

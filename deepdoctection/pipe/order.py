@@ -31,11 +31,11 @@ import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox, merge_boxes
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..extern.base import DetectionResult
 from ..extern.tp.tpfrcnn.utils.np_box_ops import ioa as np_ioa
-from ..pipe.base import MetaAnnotation, PipelineComponent
+from ..pipe.base import PipelineComponent
 from ..pipe.registry import pipeline_component_registry
 from ..utils.logger import LoggingRecord, logger
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
@@ -611,8 +611,8 @@ class TextLineService(TextLineServiceMixin):
         """
         return MetaAnnotation(
             image_annotations=(LayoutType.LINE,),
-            sub_categories={LayoutType.LINE: {Relationships.CHILD}},
-            relationships={},
+            sub_categories={},
+            relationships={LayoutType.LINE: {Relationships.CHILD}},
             summaries=(),
         )
 
@@ -818,7 +818,11 @@ class TextOrderService(TextLineServiceMixin):
         anns_with_reading_order = list(copy(self.floating_text_block_categories)) + add_category
         return MetaAnnotation(
             image_annotations=tuple(image_annotations),
-            sub_categories={category: {Relationships.READING_ORDER} for category in anns_with_reading_order},
+            sub_categories={
+                category: {Relationships.READING_ORDER: {Relationships.READING_ORDER}}
+                for category in anns_with_reading_order
+            }
+            | {self.text_container: {Relationships.READING_ORDER: {Relationships.READING_ORDER}}},
             relationships={},
             summaries=(),
         )
