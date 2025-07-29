@@ -407,6 +407,7 @@ class MergeDataset(DatasetBase):
 
 
 class DatasetCardDict(TypedDict):
+    """DatasetCardDict"""
     name: str
     dataset_type: Union[str, Any]
     location: str
@@ -701,7 +702,7 @@ class CustomDataset(DatasetBase):
         """
         dataset_card = DatasetCard.load_dataset_card(file_path)
         dataset_card_as_dict = dataset_card.as_dict(True)
-        dataset_card_as_dict.pop("service_id_to_meta_annotation")  # type: ignore
-        return CustomDataset(
-            **dataset_card_as_dict, dataflow_builder=dataflow_builder  # type: ignore  # pylint: disable=E1123
+        dataset_card_as_dict.pop("service_id_to_meta_annotation")  # type: ignore  # pylint: disable=E1123
+        return CustomDataset(  # pylint: disable=E1123
+            **dataset_card_as_dict, dataflow_builder=dataflow_builder  # type: ignore
         )
