@@ -408,23 +408,23 @@ class Pipeline(ABC):
         """
         image_annotations: list[ObjectTypes] = []
         sub_categories: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]] = {}
-        relationships = defaultdict(set)
+        relationships = defaultdict(set[ObjectTypes])  # type: ignore
         summaries: list[ObjectTypes] = []
         for component in self.pipe_component_list:
             meta_anns = component.get_meta_annotation()
             image_annotations.extend(meta_anns.image_annotations)
             for key, value in meta_anns.sub_categories.items():
-                sub_dict =  meta_anns.sub_categories[key]
+                sub_dict = meta_anns.sub_categories[key]
                 for sub_cat, sub_cat_value in value.items():
                     if sub_cat in sub_dict:
-                        sub_dict[sub_cat].update(sub_cat_value)  # type: ignore
+                        sub_dict[sub_cat].update(sub_cat_value)
                     else:
-                        sub_dict[sub_cat] = {sub_cat_value}
+                        sub_dict[sub_cat] = {sub_cat_value}  # type: ignore
                 if key in sub_categories:
                     sub_categories[key].update(sub_dict)
                 else:
                     sub_categories[key] = sub_dict
-            for key, value in meta_anns.relationships.items():
+            for key, value in meta_anns.relationships.items():  # type: ignore
                 relationships[key].update(value)
             summaries.extend(meta_anns.summaries)
         return MetaAnnotation(
