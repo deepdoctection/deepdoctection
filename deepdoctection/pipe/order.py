@@ -818,7 +818,7 @@ class TextOrderService(TextLineServiceMixin):
         anns_with_reading_order = list(copy(self.floating_text_block_categories)) + add_category
         return MetaAnnotation(
             image_annotations=tuple(image_annotations),
-            sub_categories={
+            sub_categories={  # type: ignore
                 category: {Relationships.READING_ORDER: {Relationships.READING_ORDER}}
                 for category in anns_with_reading_order
             }

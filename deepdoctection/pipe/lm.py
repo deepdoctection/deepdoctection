@@ -248,10 +248,10 @@ class LMTokenClassifierService(PipelineComponent):
             image_annotations=(),
             sub_categories={
                 LayoutType.WORD: {
-                    WordType.TOKEN_CLASS: set(self.language_model.categories.categories_semantics)
+                    WordType.TOKEN_CLASS: set(self.language_model.categories.categories_semantics)  # type: ignore
                     if self.language_model.categories.categories_semantics
                     else [],
-                    WordType.TAG: set(self.language_model.categories.categories_bio)
+                    WordType.TAG: set(self.language_model.categories.categories_bio)  # type: ignore
                     if self.language_model.categories.categories_bio
                     else [],
                     WordType.TOKEN_TAG: set(self.language_model.categories.get_categories(as_dict=False)),

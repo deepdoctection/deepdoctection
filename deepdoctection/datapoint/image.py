@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from os import environ, fspath
 from pathlib import Path
-from typing import Any, Optional, Sequence, Union, no_type_check
+from typing import Any, Optional, Sequence, TypedDict, Union, no_type_check
 
 import numpy as np
 from numpy import uint8
@@ -38,6 +38,13 @@ from ..utils.types import ImageDict, PathLikeOrStr, PixelValues
 from .annotation import Annotation, AnnotationMap, BoundingBox, CategoryAnnotation, ImageAnnotation
 from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
+
+
+class MetaAnnotationDict(TypedDict):
+    image_annotations: list[str]
+    sub_categories: dict[str, dict[str, list[str]]]
+    relationships: dict[str, list[str]]
+    summaries: list[str]
 
 
 @dataclass(frozen=True)
@@ -59,7 +66,7 @@ class MetaAnnotation:
     relationships: dict[ObjectTypes, set[ObjectTypes]] = field(default_factory=dict)
     summaries: tuple[ObjectTypes, ...] = field(default=())
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> MetaAnnotationDict:
         """
         Returns the MetaAnnotation as a dictionary, with all `ObjectTypes` converted to strings.
 
@@ -72,12 +79,12 @@ class MetaAnnotation:
                 outer_key.value: {
                     inner_key.value: [val.value for val in inner_values]
                     for inner_key, inner_values in outer_value.items()
-                } for outer_key, outer_value in self.sub_categories.items()
+                }
+                for outer_key, outer_value in self.sub_categories.items()
             },
             "relationships": {key.value: [val.value for val in values] for key, values in self.relationships.items()},
             "summaries": [obj.value for obj in self.summaries],
         }
-
 
 
 @dataclass
