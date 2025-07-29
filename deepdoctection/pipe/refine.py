@@ -31,12 +31,12 @@ import networkx as nx  # type: ignore
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import merge_boxes
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, get_type
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 __all__ = ["TableSegmentationRefinementService", "generate_html_string"]
@@ -537,12 +537,12 @@ class TableSegmentationRefinementService(PipelineComponent):
             image_annotations=(),
             sub_categories={
                 LayoutType.CELL: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
-                LayoutType.TABLE: {TableType.HTML},
+                LayoutType.TABLE: {TableType.HTML: {TableType.HTML}},
             },
             relationships={},
             summaries=(),

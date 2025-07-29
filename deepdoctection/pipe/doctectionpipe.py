@@ -25,7 +25,7 @@ from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
 from ..dataflow import CustomDataFromIterable, DataFlow, DataFromList, MapData
 from ..dataflow.custom_serialize import SerializerFiles, SerializerPdfDoc
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import IMAGE_DEFAULTS
 from ..mapper.maputils import curry
 from ..mapper.misc import to_image

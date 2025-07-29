@@ -29,13 +29,13 @@ import numpy as np
 
 from ..datapoint.annotation import ImageAnnotation
 from ..datapoint.box import BoundingBox, global_to_local_coords, intersection_box, intersection_boxes, iou, merge_boxes
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import DetectionResult
 from ..mapper.maputils import MappingContextManager
 from ..mapper.match import match_anns_by_intersection
 from ..utils.error import ImageError
 from ..utils.settings import CellType, LayoutType, ObjectTypes, Relationships, TableType, TypeOrStr, get_type
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .refine import generate_html_string
 from .registry import pipeline_component_registry
 
@@ -974,13 +974,13 @@ class TableSegmentationService(PipelineComponent):
             image_annotations=(),
             sub_categories={
                 LayoutType.CELL: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
-                LayoutType.ROW: {CellType.ROW_NUMBER},
-                LayoutType.COLUMN: {CellType.COLUMN_NUMBER},
+                LayoutType.ROW: {CellType.ROW_NUMBER: {CellType.ROW_NUMBER}},
+                LayoutType.COLUMN: {CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER}},
             },
             relationships={},
             summaries=(),
@@ -1314,37 +1314,37 @@ class PubtablesSegmentationService(PipelineComponent):
             image_annotations=(),
             sub_categories={
                 LayoutType.CELL: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
                 CellType.SPANNING: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
                 CellType.ROW_HEADER: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
                 CellType.COLUMN_HEADER: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
                 CellType.PROJECTED_ROW_HEADER: {
-                    CellType.ROW_NUMBER,
-                    CellType.COLUMN_NUMBER,
-                    CellType.ROW_SPAN,
-                    CellType.COLUMN_SPAN,
+                    CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
+                    CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER},
+                    CellType.ROW_SPAN: {CellType.ROW_SPAN},
+                    CellType.COLUMN_SPAN: {CellType.COLUMN_SPAN},
                 },
-                LayoutType.ROW: {CellType.ROW_NUMBER},
-                LayoutType.COLUMN: {CellType.COLUMN_NUMBER},
+                LayoutType.ROW: {CellType.ROW_NUMBER: {CellType.ROW_NUMBER}},
+                LayoutType.COLUMN: {CellType.COLUMN_NUMBER: {CellType.COLUMN_NUMBER}},
             },
             relationships={},
             summaries=(),

@@ -40,6 +40,46 @@ from .box import crop_box_from_image, global_to_local_coords, intersection_box
 from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, convert_pdf_bytes_to_np_array_v2
 
 
+@dataclass(frozen=True)
+class MetaAnnotation:
+    """
+    An immutable dataclass that stores information about what `Image` are being
+    modified through a pipeline component.
+
+    Attributes:
+        image_annotations: Tuple of `ObjectTypes` representing image annotations.
+        sub_categories: Dictionary mapping `ObjectTypes` to dicts of `ObjectTypes` to sets of `ObjectTypes`
+        for sub-categories.
+        relationships: Dictionary mapping `ObjectTypes` to sets of `ObjectTypes` for relationships.
+        summaries: Tuple of `ObjectTypes` representing summaries.
+    """
+
+    image_annotations: tuple[ObjectTypes, ...] = field(default=())
+    sub_categories: dict[ObjectTypes, dict[ObjectTypes, set[ObjectTypes]]] = field(default_factory=dict)
+    relationships: dict[ObjectTypes, set[ObjectTypes]] = field(default_factory=dict)
+    summaries: tuple[ObjectTypes, ...] = field(default=())
+
+    def as_dict(self) -> dict:
+        """
+        Returns the MetaAnnotation as a dictionary, with all `ObjectTypes` converted to strings.
+
+        Returns:
+            A dictionary representation of the MetaAnnotation where all `ObjectTypes` are converted to strings.
+        """
+        return {
+            "image_annotations": [obj.value for obj in self.image_annotations],
+            "sub_categories": {
+                outer_key.value: {
+                    inner_key.value: [val.value for val in inner_values]
+                    for inner_key, inner_values in outer_value.items()
+                } for outer_key, outer_value in self.sub_categories.items()
+            },
+            "relationships": {key.value: [val.value for val in values] for key, values in self.relationships.items()},
+            "summaries": [obj.value for obj in self.summaries],
+        }
+
+
+
 @dataclass
 class Image:
     """

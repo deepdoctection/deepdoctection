@@ -22,9 +22,9 @@ Transform style pipeline components.
 from __future__ import annotations
 
 from .. import DetectionResult
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import ImageTransformer
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 
@@ -83,8 +83,6 @@ class SimpleTransformService(PipelineComponent):
             for detect_result in output_detect_results:
                 ann = dp.get_annotation(annotation_ids=detect_result.uuid)[0]
                 transformed_ann_id = self.dp_manager.set_image_annotation(detect_result)
-                if transformed_ann_id is None:
-                    print("here")
                 transformed_ann = self.dp_manager.datapoint.get_annotation(annotation_ids=transformed_ann_id)[0]
 
                 for key, sub_ann in ann.sub_categories.items():

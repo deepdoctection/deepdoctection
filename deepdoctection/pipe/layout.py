@@ -24,13 +24,13 @@ from typing import Optional, Sequence, Union
 
 import numpy as np
 
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..extern.base import ObjectDetector, PdfMiner
 from ..mapper.misc import curry
 from ..utils.error import ImageError
 from ..utils.settings import ObjectTypes
 from ..utils.transform import PadTransform
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 

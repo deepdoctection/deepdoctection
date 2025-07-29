@@ -29,11 +29,11 @@ from typing import Callable, Optional, Sequence, Union
 import tqdm
 
 from ..dataflow import DataFlow, MapData
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..utils.context import timed_operation
 from ..utils.tqdm import get_tqdm
 from ..utils.types import QueueType, TqdmType
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .common import ImageParsingService, PageParsingService
 from .registry import pipeline_component_registry
 

@@ -600,8 +600,6 @@ class Table(Layout):
             table_list[cell.row_number - 1][cell.column_number - 1].append(cell.text_)  # type: ignore
         return table_list
 
-
-
     def __str__(self) -> str:
         out = " ".join([" ".join(row + ["\n"]) for row in self.csv])
         return out
