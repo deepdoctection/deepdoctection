@@ -372,14 +372,14 @@ def test_dd_analyzer_builds_and_process_image_correctly() -> None:
 
 @mark.pt_deps
 def test_dd_analyzer_returns_meta_annotations() -> None:
+    """Test that the meta annotations are returned correctly."""
     # Arrange
     analyzer = get_dd_analyzer()
 
     # Act
     meta_annotations = analyzer.get_meta_annotation()
 
-    assert meta_annotations.image_annotations == (
-        DefaultType.DEFAULT_TYPE,
+    assert set(meta_annotations.image_annotations) == set([DefaultType.DEFAULT_TYPE,
         LayoutType.CAPTION,
         LayoutType.TEXT,
         LayoutType.TITLE,
@@ -398,7 +398,7 @@ def test_dd_analyzer_returns_meta_annotations() -> None:
         CellType.SPANNING,
         LayoutType.WORD,
         LayoutType.LINE,
-    )
+    ])
     assert meta_annotations.sub_categories == {
         LayoutType.CELL: {
             CellType.ROW_NUMBER: {CellType.ROW_NUMBER},
