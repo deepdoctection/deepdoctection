@@ -28,13 +28,13 @@ from typing import Literal, Mapping, Optional, Sequence, Union
 import numpy as np
 
 from ..dataflow import DataFlow, MapData
-from ..datapoint.image import Image
+from ..datapoint.image import Image, MetaAnnotation
 from ..datapoint.view import IMAGE_DEFAULTS, Page
 from ..extern.base import DetectionResult
 from ..mapper.match import match_anns_by_distance, match_anns_by_intersection
 from ..mapper.misc import to_image
 from ..utils.settings import LayoutType, ObjectTypes, Relationships, TypeOrStr, get_type
-from .base import MetaAnnotation, PipelineComponent
+from .base import PipelineComponent
 from .registry import pipeline_component_registry
 
 if os.environ.get("DD_USE_TORCH"):
