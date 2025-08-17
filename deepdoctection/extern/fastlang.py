@@ -29,7 +29,8 @@ from typing import Any, Mapping, Union
 
 from lazy_imports import try_import
 
-from ..utils.file_utils import Requirement, get_fasttext_requirement
+from ..utils.develop import deprecated
+from ..utils.file_utils import Requirement, get_fasttext_requirement, get_numpy_v1_requirement
 from ..utils.settings import TypeOrStr, get_type
 from ..utils.types import PathLikeOrStr
 from .base import DetectionResult, LanguageDetector, ModelCategories
@@ -69,6 +70,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         return "fasttext_" + "_".join(Path(path_weights).parts[-2:])
 
 
+@deprecated("As FastText archived, it will be deprecated in the near future.", "2025-08-17")
 class FasttextLangDetector(FasttextLangDetectorMixin):
     """
     Fasttext language detector wrapper. Two models provided in the fasttext library can be used to identify languages.
@@ -114,7 +116,7 @@ class FasttextLangDetector(FasttextLangDetectorMixin):
 
     @classmethod
     def get_requirements(cls) -> list[Requirement]:
-        return [get_fasttext_requirement()]
+        return [get_numpy_v1_requirement(), get_fasttext_requirement()]
 
     def clone(self) -> FasttextLangDetector:
         return self.__class__(self.path_weights, self.categories.get_categories(), self.categories_orig)
