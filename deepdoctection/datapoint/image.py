@@ -42,6 +42,7 @@ from .convert import as_dict, convert_b64_to_np_array, convert_np_array_to_b64, 
 
 class MetaAnnotationDict(TypedDict):
     """MetaAnnotationDict"""
+
     image_annotations: list[str]
     sub_categories: dict[str, dict[str, list[str]]]
     relationships: dict[str, list[str]]

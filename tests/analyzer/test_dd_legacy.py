@@ -209,9 +209,9 @@ def test_legacy_dd_analyzer_builds_and_process_image_correctly() -> None:
     # first number for tp model, second for pt model
     assert len(page.text) in {4343, 4345, 4346, 5042}
     text_ = page.text_
-    assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {555, 631}
-    assert len(text_["ann_ids"]) in {555, 631}
+    assert text_.text == page._make_text(line_break=False)  # pylint: disable=W0212
+    assert len(text_.words) in {555, 631}
+    assert len(text_.ann_ids) in {555, 631}
 
 
 @mark.deprecated
@@ -327,6 +327,6 @@ def test_dd_tf_analyzer_builds_and_process_image_correctly() -> None:
     # first number for tp model, second for pt model
     assert len(page.text) in {4290, 5042, 5043, 5044, 5045, 5153}
     text_ = page.text_
-    assert text_["text"] == page._make_text(line_break=False)  # pylint: disable=W0212
-    assert len(text_["words"]) in {529}
-    assert len(text_["ann_ids"]) in {529}
+    assert text_.text == page._make_text(line_break=False)  # pylint: disable=W0212
+    assert len(text_.words) in {529}
+    assert len(text_.ann_ids) in {529}

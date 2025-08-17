@@ -18,6 +18,7 @@ from types import ModuleType
 from typing import Any, Union, no_type_check
 
 import importlib_metadata
+import numpy as np
 from packaging import version
 
 from .error import DependencyError
@@ -247,6 +248,39 @@ def get_distance_requirement() -> Requirement:
         tuple: A tuple containing the package name, whether the requirement is satisfied, and an error message.
     """
     return "distance", distance_available(), _DISTANCE_ERR_MSG
+
+
+_NUMPY_V1_ERR_MSG = "numpy v1 must be installed."
+
+
+def numpy_v1_available() -> bool:
+    """
+    Check if the installed NumPy version is version 1.
+
+    This helper function determines whether the currently installed version
+    of NumPy is version 1 by inspecting its major version number.
+
+    Returns:
+        True if the installed NumPy version is 1, otherwise False
+    """
+    major_version = np.__version__.split('.', maxsplit=1)[0]
+    print(f"major version: {major_version}")
+    if major_version in (1, "1"):
+        return True
+    return False
+
+
+def get_numpy_v1_requirement() -> Requirement:
+    """
+    Retrieves the requirement details for numpy version 1.
+
+    Returns:
+        A tuple containing three elements:
+            - The requirement name for numpy version 1.
+            - A Boolean value indicating whether numpy version 1 is available.
+            - An error message in case numpy version 1 is not available.
+    """
+    return "numpy v1", numpy_v1_available(), _NUMPY_V1_ERR_MSG
 
 
 # Transformers
