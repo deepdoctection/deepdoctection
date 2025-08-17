@@ -264,6 +264,7 @@ def numpy_v1_available() -> bool:
         True if the installed NumPy version is 1, otherwise False
     """
     major_version = np.__version__.split('.', maxsplit=1)[0]
+    print(f"major version: {major_version})
     if major_version == 1:
         return True
     return False
