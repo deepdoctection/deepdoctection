@@ -464,9 +464,9 @@ class Table(Layout):
             A list of a table cells.
         """
         cell_anns: list[Cell] = []
-        for row_number in range(1, self.number_of_rows + 1):  # type: ignore
-            cell_anns.extend(self.row(row_number))  # type: ignore
-
+        if self.number_of_rows:
+            for row_number in range(1, self.number_of_rows + 1):  # type: ignore
+                cell_anns.extend(self.row(row_number))  # type: ignore
         return cell_anns
 
     @property
