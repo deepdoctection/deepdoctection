@@ -319,29 +319,32 @@ class Layout(ImageAnnotationBaseView):
                 token_tag_ann_ids,
                 token_classes_ids,
                 token_tag_ids,
-            ) = map(list, zip(
-                *[
-                    (
-                        word.characters,
-                        word.annotation_id,
-                        word.token_class,
-                        word.get_sub_category(WordType.TOKEN_CLASS).annotation_id
-                        if WordType.TOKEN_CLASS in word.sub_categories
-                        else None,
-                        word.token_tag,
-                        word.get_sub_category(WordType.TOKEN_TAG).annotation_id
-                        if WordType.TOKEN_TAG in word.sub_categories
-                        else None,
-                        word.get_sub_category(WordType.TOKEN_CLASS).category_id
-                        if WordType.TOKEN_CLASS in word.sub_categories
-                        else None,
-                        word.get_sub_category(WordType.TOKEN_TAG).category_id
-                        if WordType.TOKEN_TAG in word.sub_categories
-                        else None,
-                    )
-                    for word in words
-                ]
-            ))
+            ) = map(
+                list,
+                zip(
+                    *[
+                        (
+                            word.characters,
+                            word.annotation_id,
+                            word.token_class,
+                            word.get_sub_category(WordType.TOKEN_CLASS).annotation_id
+                            if WordType.TOKEN_CLASS in word.sub_categories
+                            else None,
+                            word.token_tag,
+                            word.get_sub_category(WordType.TOKEN_TAG).annotation_id
+                            if WordType.TOKEN_TAG in word.sub_categories
+                            else None,
+                            word.get_sub_category(WordType.TOKEN_CLASS).category_id
+                            if WordType.TOKEN_CLASS in word.sub_categories
+                            else None,
+                            word.get_sub_category(WordType.TOKEN_TAG).category_id
+                            if WordType.TOKEN_TAG in word.sub_categories
+                            else None,
+                        )
+                        for word in words
+                    ]
+                ),
+            )
         else:
             (
                 characters,
@@ -364,17 +367,16 @@ class Layout(ImageAnnotationBaseView):
             )
 
         return Text_(
-            text=" ".join(characters), # type: ignore
-            words=characters, # type: ignore
-            ann_ids=ann_ids, # type: ignore
-            token_classes=token_classes, # type: ignore
-            token_class_ann_ids=token_class_ann_ids, # type: ignore
-            token_tags=token_tags, # type: ignore
-            token_tag_ann_ids=token_tag_ann_ids, # type: ignore
-            token_class_ids=token_classes_ids, # type: ignore
-            token_tag_ids=token_tag_ids, # type: ignore
+            text=" ".join(characters),  # type: ignore
+            words=characters,  # type: ignore
+            ann_ids=ann_ids,  # type: ignore
+            token_classes=token_classes,  # type: ignore
+            token_class_ann_ids=token_class_ann_ids,  # type: ignore
+            token_tags=token_tags,  # type: ignore
+            token_tag_ann_ids=token_tag_ann_ids,  # type: ignore
+            token_class_ids=token_classes_ids,  # type: ignore
+            token_tag_ids=token_tag_ids,  # type: ignore
         )
-
 
     def get_attribute_names(self) -> set[str]:
         attr_names = (
@@ -730,7 +732,6 @@ class Table(Layout):
             token_class_ids=token_class_ids,
             token_tag_ids=token_tag_ids,
         )
-
 
     @property
     def words(self) -> list[ImageAnnotationBaseView]:
@@ -1174,7 +1175,6 @@ class Page(Image):
             token_class_ids=token_class_ids,
             token_tag_ids=token_tag_ann_ids,
         )
-
 
     def get_layout_context(self, annotation_id: str, context_size: int = 3) -> list[ImageAnnotationBaseView]:
         """
