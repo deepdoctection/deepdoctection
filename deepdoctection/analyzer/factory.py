@@ -19,9 +19,10 @@
 `ServiceFactory` for building analyzers
 """
 
+from __future__ import annotations
 
 from os import environ
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 from lazy_imports import try_import
 
@@ -38,8 +39,6 @@ from ..extern.hflayoutlm import (
     HFLayoutLmv3TokenClassifier,
     HFLiltSequenceClassifier,
     HFLiltTokenClassifier,
-    LayoutSequenceModels,
-    LayoutTokenModels,
     get_tokenizer_from_model_class,
 )
 from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier, LmSequenceModels, LmTokenModels
@@ -75,6 +74,9 @@ from ..utils.transform import PadTransform
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore
+
+if TYPE_CHECKING:
+    from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
 
 
 __all__ = [
