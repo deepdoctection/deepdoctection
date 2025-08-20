@@ -22,7 +22,7 @@
 from __future__ import annotations
 
 from os import environ
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from lazy_imports import try_import
 
@@ -70,7 +70,6 @@ from ..utils.fs import get_configs_dir_path
 from ..utils.metacfg import AttrDict
 from ..utils.settings import CellType, LayoutType, Relationships
 from ..utils.transform import PadTransform
-
 
 with try_import() as image_guard:
     from botocore.config import Config  # type: ignore

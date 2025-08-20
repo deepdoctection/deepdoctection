@@ -20,6 +20,7 @@ Module for token classification pipeline
 """
 from __future__ import annotations
 
+import inspect
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Sequence, Union
 
@@ -272,6 +273,8 @@ class LMTokenClassifierService(PipelineComponent):
                 f"You want to use {type(self.tokenizer)} but you should use {tokenizer_class_name} "
                 f"in this framework"
             )
+        func_params = inspect.signature(self.mapping_to_lm_input_func).parameters
+        self.required_kwargs = {k: v for k, v in self.required_kwargs.items() if k in func_params}
 
     @staticmethod
     def image_to_features_func(mapping_str: str) -> Callable[..., Callable[[Image], Optional[Any]]]:

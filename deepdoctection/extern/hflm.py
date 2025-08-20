@@ -294,7 +294,7 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
         categories_bio: Optional[Sequence[TypeOrStr]] = None,
         categories: Optional[Mapping[int, TypeOrStr]] = None,
         device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
-        use_xlm_tokenizer: bool = False,
+        use_xlm_tokenizer: bool = True,
     ):
         """
         Args:
