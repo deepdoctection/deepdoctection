@@ -41,7 +41,7 @@ from ..extern.hflayoutlm import (
     HFLiltTokenClassifier,
     get_tokenizer_from_model_class,
 )
-from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier, LmSequenceModels, LmTokenModels
+from ..extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
 from ..extern.model import ModelCatalog, ModelDownloadManager
 from ..extern.pdftext import PdfPlumberTextDetector
 from ..extern.tessocr import TesseractOcrDetector, TesseractRotationTransformer
@@ -77,6 +77,7 @@ with try_import() as image_guard:
 
 if TYPE_CHECKING:
     from ..extern.hflayoutlm import LayoutSequenceModels, LayoutTokenModels
+    from ..extern.hflm import LmSequenceModels, LmTokenModels
 
 
 __all__ = [
