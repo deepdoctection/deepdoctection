@@ -594,6 +594,8 @@ class HFLmLanguageDetector(LanguageDetector):
         self.model = self.get_wrapped_model(path_config_json, path_weights)
         self.model.to(self.device)
         self.tokenizer = XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base")
+        self.name = self.get_name(path_weights, "bert-like-language-detection")
+        self.model_id = self.get_model_id()
 
     def predict(self, text_string: str) -> DetectionResult:
         """
@@ -668,7 +670,20 @@ class HFLmLanguageDetector(LanguageDetector):
                               self.device,
                               self.use_xlm_tokenizer)
 
+    @staticmethod
+    def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
+        """
+        Returns the name of the model
+
+        Args:
+            path_weights: Path to model weights
+            architecture: Architecture name
+
+        Returns:
+            str: Model name
+        """
+        return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
+
 if TYPE_CHECKING:
     LmTokenModels: TypeAlias = Union[HFLmTokenClassifier,]
-
     LmSequenceModels: TypeAlias = Union[HFLmSequenceClassifier,]
