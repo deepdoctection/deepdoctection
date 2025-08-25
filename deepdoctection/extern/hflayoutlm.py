@@ -126,6 +126,9 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
         ("XLMRobertaForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained(
             "FacebookAI/xlm-roberta-base"
         ),
+        ("XLMRobertaForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained(
+            "FacebookAI/xlm-roberta-base"
+        ),
     }[(model_class, use_xlm_tokenizer)]
 
 

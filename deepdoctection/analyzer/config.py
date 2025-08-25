@@ -520,6 +520,13 @@ cfg.USE_LAYOUT_LINK = False
 # (e.g., by grouping orphan text containers). Only applicable if list items were previously grouped.
 cfg.USE_LINE_MATCHER = False
 
+# Enables a sequence classification pipeline component, e.g. a LayoutLM or a Bert-like model.
+cfg.USE_LM_SEQUENCE_CLASS = False
+
+# Enables a token classification pipeline component, e.g. a LayoutLM or Bert-like model
+cfg.USE_LM_TOKEN_CLASS = False
+
+
 # Relevant when LIB = TF. Specifies the layout detection model.
 # This model should detect multiple or single objects across an entire page.
 # Currently, only one default model is supported.
@@ -898,6 +905,40 @@ cfg.LAYOUT_LINK.PARENTAL_CATEGORIES = [LayoutType.FIGURE, LayoutType.TABLE]
 # Specifies the child layout categories in the link relationship.
 # These are typically smaller or subordinate elements (e.g., captions).
 cfg.LAYOUT_LINK.CHILD_CATEGORIES = [LayoutType.CAPTION]
+
+
+# Weights configuration for sequence classifier. This will be a fine-tuned version of a LayoutLM, LayoutLMv2,
+# LayoutXLM, LayoutLMv3, LiLT or Roberta base model for sequence classification.
+cfg.LM_SEQUENCE_CLASS.WEIGHTS = None
+
+# When predicting document classes, it might be possible that some pages are empty or do not contain any text, in
+# which case the model will be unable to predict anything. If set to `True` it will
+# assign images with no features the category `TokenClasses.OTHER`.
+cfg.LM_SEQUENCE_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY = False
+
+# Weights configuration for sequence classifier. This will be a fine-tuned version of a LayoutLM, LayoutLMv2,
+# LayoutXLM, LayoutLMv3, LiLT or Roberta base model for token classification.
+cfg.LM_TOKEN_CLASS.WEIGHTS = None
+
+# When predicting token classes, it might be possible that some words might not get sent to the model because they are
+# categorized as not eligible token (e.g. empty string). If set to `True` it will assign all words without token
+# as `TokenClasses.OTHER`.
+cfg.LM_TOKEN_CLASS.USE_OTHER_AS_DEFAULT_CATEGORY = False
+
+# Using bounding boxes of segments instead of words might improve model accuracy
+# for models that have been trained on segments rather than words (e.g. LiLT, LayoutLMv3).
+# Choose a single or a sequence of layout segments to use their bounding boxes. Note,
+# that the layout segments need to have a child-relationship with words. If a word
+# does not appear as child, it will use the word bounding box.
+cfg.LM_TOKEN_CLASS.SEGMENT_POSITIONS = None
+
+# If the output of the `tokenizer` exceeds the `max_length` sequence length, a
+# sliding window will be created with each window having `max_length` sequence
+# input. When using `SLIDING_WINDOW_STRIDE=0` no strides will be created,
+# otherwise it will create slides with windows shifted `SLIDING_WINDOW_STRIDE` to
+# the right.
+cfg.LM_TOKEN_CLASS.SLIDING_WINDOW_STRIDE = 0
+
 
 # Freezes the configuration to make it immutable.
 # This prevents accidental modification at runtime.
