@@ -108,6 +108,7 @@ class DocumentType(ObjectTypes):
     GOVERNMENT_TENDERS = "government_tenders"
     MANUALS = "manuals"
     PATENTS = "patents"
+    BANK_STATEMENT = "bank_statement"
 
 
 @object_types_registry.register("LayoutType")
