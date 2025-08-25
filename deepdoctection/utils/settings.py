@@ -296,6 +296,7 @@ class Languages(ObjectTypes):
     BOSNIAN = "bos"
     NORWEGIAN_NOVOSIBIRSK = "nno"
     URDU = "urd"
+    SWAHILI = "swa"
     NOT_DEFINED = "nn"
 
 

@@ -109,7 +109,7 @@ class LanguageDetectionService(PipelineComponent):
             text = " ".join((result.text for result in detect_result_list if result.text is not None))
         predict_result = self.predictor.predict(text)
         self.dp_manager.set_summary_annotation(
-            PageType.LANGUAGE, PageType.LANGUAGE, 1, predict_result.text, predict_result.score
+            PageType.LANGUAGE, PageType.LANGUAGE, 1, predict_result.class_name, predict_result.score
         )
 
     def clone(self) -> PipelineComponent:
