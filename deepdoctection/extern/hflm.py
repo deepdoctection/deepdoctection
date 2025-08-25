@@ -39,6 +39,8 @@ from .base import (
     NerModelCategories,
     SequenceClassResult,
     TokenClassResult,
+    LanguageDetector,
+    DetectionResult,
 )
 from .hflayoutlm import get_tokenizer_from_model_class
 from .pt.ptutils import get_torch_device
@@ -47,8 +49,11 @@ with try_import() as pt_import_guard:
     import torch
     import torch.nn.functional as F
 
-with try_import() as tr_import_guard:
-    from transformers import PretrainedConfig, XLMRobertaForSequenceClassification, XLMRobertaForTokenClassification
+with (try_import() as tr_import_guard):
+    from transformers import (PretrainedConfig,
+                              XLMRobertaForSequenceClassification,
+                              XLMRobertaForTokenClassification,
+                              XLMRobertaTokenizerFast)
 
 
 def predict_token_classes(
@@ -562,6 +567,106 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
     def clear_model(self) -> None:
         self.model = None
 
+
+class HFLmLanguageDetector(LanguageDetector):
+    """
+    Language detector using HuggingFace's `XLMRobertaForSequenceClassification`.
+
+    This class wraps a multilingual sequence classification model (XLMRobertaForSequenceClassification)
+    for language detection tasks. Input text is tokenized and truncated/padded to a maximum length of 512 tokens.
+    The prediction returns a `DetectionResult` containing the detected language code and its confidence score.
+    """
+
+    def __init__(
+        self,
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr,
+        categories: Mapping[int, TypeOrStr],
+        device: Optional[Union[Literal["cpu", "cuda"], torch.device]] = None,
+        use_xlm_tokenizer: bool = True,
+    ):
+        super().__init__()
+        self.path_config = Path(path_config_json)
+        self.path_weights = Path(path_weights)
+        self.categories = ModelCategories(init_categories=categories)
+        self.device = get_torch_device(device)
+        self.use_xlm_tokenizer = use_xlm_tokenizer
+        self.model = self.get_wrapped_model(path_config_json, path_weights)
+        self.model.to(self.device)
+        self.tokenizer = XLMRobertaTokenizerFast.from_pretrained("xlm-roberta-base")
+
+    def predict(self, text_string: str) -> DetectionResult:
+        """
+        Predict the language of the input sequence.
+
+        Args:
+            text_string: The input text sequence to classify.
+
+        Returns:
+            DetectionResult: The detected language and its confidence score.
+        """
+        encoding = self.tokenizer(
+            text_string,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=512,
+        )
+        input_ids = encoding["input_ids"].to(self.device)
+        attention_mask = encoding["attention_mask"].to(self.device)
+        token_type_ids = encoding.get("token_type_ids")
+        if token_type_ids is not None:
+            token_type_ids = token_type_ids.to(self.device)
+        else:
+            token_type_ids = torch.zeros_like(input_ids)
+
+        self.model.eval()
+        with torch.no_grad():
+            outputs = self.model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                token_type_ids=token_type_ids,
+            )
+            probs = torch.softmax(outputs.logits, dim=-1)
+            score, class_id = torch.max(probs, dim=-1)
+            class_id = class_id.item() + 1
+            lang = self.categories.categories[class_id]
+            return DetectionResult(class_name=lang, score=float(score.item()))
+
+    def clear_model(self) -> None:
+        self.model = None
+
+    @classmethod
+    def get_requirements(cls) -> list[Requirement]:
+        return [get_pytorch_requirement(), get_transformers_requirement()]
+
+    @staticmethod
+    def get_wrapped_model(
+        path_config_json: PathLikeOrStr,
+        path_weights: PathLikeOrStr
+    ) -> XLMRobertaForSequenceClassification:
+        """
+        Get the inner (wrapped) model.
+
+        Args:
+            path_config_json: path to .json config file
+            path_weights: path to model artifact
+
+        Returns:
+            `XLMRobertaForSequenceClassification`
+        """
+        config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
+        return XLMRobertaForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path_weights,
+            config=config
+        )
+
+    def clone(self) -> HFLmLanguageDetector:
+        return self.__class__(self.path_config,
+                              self.path_weights,
+                              self.categories.get_categories(),
+                              self.device,
+                              self.use_xlm_tokenizer)
 
 if TYPE_CHECKING:
     LmTokenModels: TypeAlias = Union[HFLmTokenClassifier,]
