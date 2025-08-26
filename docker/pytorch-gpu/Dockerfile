@@ -23,4 +23,5 @@ RUN [ ${#PYTORCH} -gt 0 ] && VERSION='torch=='$PYTORCH'.*' ||  VERSION='torch'; 
 RUN [ ${#TORCH_VISION} -gt 0 ] && VERSION='torchvision=='$TORCH_VISION'.*' ||  VERSION='torchvision'; python3 -m pip install --no-cache-dir -U $VERSION --extra-index-url https://download.pytorch.org/whl/$CUDA
 
 RUN python3 -m pip install -U pip setuptools==69.5.1
-RUN python3 -m pip install --no-cache-dir ".[source-pt]"
+RUN python3 -m pip install --no-cache-dir --no-build-isolation 'detectron2 @ git+https://github.com/deepdoctection/detectron2.git'
+RUN python3 -m pip install --no-cache-dir ".[pt]"

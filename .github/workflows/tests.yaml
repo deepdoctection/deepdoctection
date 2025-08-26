@@ -93,6 +93,15 @@ jobs:
               detectron2: true,
               extras: pt,
               test_cases: test-pt }
+          #- { name: '3.13-pt',
+          #    python: '3.13',
+          #    pip: '24.0',
+          #    os: ubuntu-24.04,
+          #    dll: 'torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu',
+          #    tesseract: true,
+          #    detectron2: true,
+          #    extras: pt,
+          #    test_cases: test-pt }
 
     steps:
       - uses: actions/checkout@v3

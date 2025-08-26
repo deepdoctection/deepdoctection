@@ -56,7 +56,7 @@ _DEPS = [
     "packaging>=20.0",
     "Pillow>=10.0.0",
     "pycocotools>=2.0.2",
-    "pypdf>=3.16.0",
+    "pypdf>=6.0.0",
     "pypdfium2>=4.30.0",
     "python-prctl",
     "pyyaml>=6.0.1",

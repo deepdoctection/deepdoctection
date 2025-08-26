@@ -126,10 +126,13 @@ def get_tokenizer_from_model_class(model_class: str, use_xlm_tokenizer: bool) ->
         ("XLMRobertaForSequenceClassification", True): XLMRobertaTokenizerFast.from_pretrained(
             "FacebookAI/xlm-roberta-base"
         ),
+        ("XLMRobertaForTokenClassification", True): XLMRobertaTokenizerFast.from_pretrained(
+            "FacebookAI/xlm-roberta-base"
+        ),
     }[(model_class, use_xlm_tokenizer)]
 
 
-def predict_token_classes(
+def predict_token_classes_from_layoutlm(
     uuids: list[list[str]],
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
@@ -192,7 +195,7 @@ def predict_token_classes(
     return all_token_classes
 
 
-def predict_sequence_classes(
+def predict_sequence_classes_from_layoutlm(
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
     token_type_ids: torch.Tensor,
@@ -462,7 +465,7 @@ class HFLayoutLmTokenClassifier(HFLayoutLmTokenClassifierBase):
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
-        results = predict_token_classes(
+        results = predict_token_classes_from_layoutlm(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
         )
 
@@ -586,7 +589,7 @@ class HFLayoutLmv2TokenClassifier(HFLayoutLmTokenClassifierBase):
             images = images.to(self.device)
         else:
             raise ValueError(f"images must be list but is {type(images)}")
-        results = predict_token_classes(
+        results = predict_token_classes_from_layoutlm(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, images
         )
 
@@ -710,7 +713,7 @@ class HFLayoutLmv3TokenClassifier(HFLayoutLmTokenClassifierBase):
             images = images.to(self.device)
         else:
             raise ValueError(f"images must be list but is {type(images)}")
-        results = predict_token_classes(
+        results = predict_token_classes_from_layoutlm(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, images
         )
 
@@ -909,7 +912,7 @@ class HFLayoutLmSequenceClassifier(HFLayoutLmSequenceClassifierBase):
         """
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
-        result = predict_sequence_classes(
+        result = predict_sequence_classes_from_layoutlm(
             input_ids,
             attention_mask,
             token_type_ids,
@@ -1021,7 +1024,12 @@ class HFLayoutLmv2SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         else:
             raise ValueError(f"images must be list but is {type(images)}")
 
-        result = predict_sequence_classes(input_ids, attention_mask, token_type_ids, boxes, self.model, images)
+        result = predict_sequence_classes_from_layoutlm(input_ids,
+                                                        attention_mask,
+                                                        token_type_ids,
+                                                        boxes,
+                                                        self.model,
+                                                        images)
 
         result.class_id += 1
         result.class_name = self.categories.categories[result.class_id]
@@ -1115,7 +1123,12 @@ class HFLayoutLmv3SequenceClassifier(HFLayoutLmSequenceClassifierBase):
         else:
             raise ValueError(f"images must be list but is {type(images)}")
 
-        result = predict_sequence_classes(input_ids, attention_mask, token_type_ids, boxes, self.model, images)
+        result = predict_sequence_classes_from_layoutlm(input_ids,
+                                                        attention_mask,
+                                                        token_type_ids,
+                                                        boxes,
+                                                        self.model,
+                                                        images)
 
         result.class_id += 1
         result.class_name = self.categories.categories[result.class_id]
@@ -1245,7 +1258,7 @@ class HFLiltTokenClassifier(HFLayoutLmTokenClassifierBase):
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, boxes, tokens = self._validate_encodings(**encodings)
 
-        results = predict_token_classes(
+        results = predict_token_classes_from_layoutlm(
             ann_ids, input_ids, attention_mask, token_type_ids, boxes, tokens, self.model, None
         )
 
@@ -1323,7 +1336,7 @@ class HFLiltSequenceClassifier(HFLayoutLmSequenceClassifierBase):
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids, boxes = self._validate_encodings(**encodings)
 
-        result = predict_sequence_classes(
+        result = predict_sequence_classes_from_layoutlm(
             input_ids,
             attention_mask,
             token_type_ids,

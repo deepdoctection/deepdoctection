@@ -806,17 +806,17 @@ def image_to_raw_lm_features(
     raw_features["image_id"] = page.image_id
     raw_features["width"] = page.width
     raw_features["height"] = page.height
-    raw_features["ann_ids"] = text_["ann_ids"]
-    raw_features["words"] = text_["words"]
+    raw_features["ann_ids"] = text_.ann_ids
+    raw_features["words"] = text_.words
     # We use a dummy bounding box for all bounding boxes so that we can pass the raw features to
     # raw_features_to_layoutlm_features
-    raw_features["bbox"] = [_CLS_BOX] * len(text_["words"])
+    raw_features["bbox"] = [_CLS_BOX] * len(text_.words)
     raw_features["dataset_type"] = dataset_type
 
-    if use_token_tag and text_["token_tags"]:
-        raw_features["labels"] = text_["token_tags"]
-    elif text_["token_classes"]:
-        raw_features["labels"] = text_["token_classes"]
+    if use_token_tag and text_.token_tags:
+        raw_features["labels"] = text_.token_tags
+    elif text_.token_classes:
+        raw_features["labels"] = text_.token_classes
     elif page.document_type is not None:
         document_type_id = page.image_orig.summary.get_sub_category(PageType.DOCUMENT_TYPE).category_id - 1
         raw_features["labels"] = [document_type_id]

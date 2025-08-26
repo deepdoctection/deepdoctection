@@ -28,8 +28,7 @@ from .utils.logger import LoggingRecord, logger
 __version__ = "0.45.0"
 
 _IMPORT_STRUCTURE = {
-    "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory"],
-    "configs": ["update_cfg_from_defaults"],
+    "analyzer": ["config_sanity_checks", "get_dd_analyzer", "ServiceFactory", "update_cfg_from_defaults"],
     "dataflow": [
         "DataFlowTerminated",
         "DataFlowResetStateNotCalled",
@@ -186,7 +185,9 @@ _IMPORT_STRUCTURE = {
         "HFLayoutLmv3SequenceClassifier",
         "HFLiltTokenClassifier",
         "HFLiltSequenceClassifier",
+        "HFLmTokenClassifier",
         "HFLmSequenceClassifier",
+        "HFLmLanguageDetector",
         "ModelProfile",
         "ModelCatalog",
         "print_model_infos",
@@ -315,6 +316,8 @@ _IMPORT_STRUCTURE = {
         "get_apted_requirement",
         "distance_available",
         "get_distance_requirement",
+        "numpy_v1_available",
+        "get_numpy_v1_requirement",
         "transformers_available",
         "get_transformers_requirement",
         "detectron2_available",
