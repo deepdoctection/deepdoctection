@@ -110,7 +110,7 @@ pip install deepdoctection[tf]
       requires an AWS account.
     - **Pdfplumber**, a PDF text miner based on Pdfminer.six
     - **Fasttext**, a library for efficient learning of word representations and sentence classification. Used for language
-      recognition only.
+      recognition only. The **Fasttext** is in archive mode and will be removed in a future version.
     - **Jdeskew**, a library for automatic deskewing of images.
     - **Transformers**, a library for state-of-the-art NLP models. 
     - **DocTr**, an OCR library as alternative to Tesseract
