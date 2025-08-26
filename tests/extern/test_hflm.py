@@ -26,9 +26,10 @@ from unittest.mock import MagicMock, patch
 from pytest import mark
 
 from deepdoctection.extern.base import SequenceClassResult, TokenClassResult
-from deepdoctection.extern.hflm import HFLmSequenceClassifier, HFLmTokenClassifier
+from deepdoctection.extern.hflm import HFLmLanguageDetector, HFLmSequenceClassifier, HFLmTokenClassifier
+from deepdoctection.extern.model import ModelCatalog, ModelDownloadManager
 from deepdoctection.utils.file_utils import pytorch_available
-from deepdoctection.utils.settings import BioTag, TokenClasses, get_type
+from deepdoctection.utils.settings import BioTag, Languages, TokenClasses, get_type
 from deepdoctection.utils.types import JsonDict
 
 from ..mapper.data import DatapointXfund
@@ -69,7 +70,8 @@ class TestHFLmSequenceClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflm.predict_sequence_classes", MagicMock(side_effect=get_sequence_class_result))
+    @patch("deepdoctection.extern.hflm.predict_sequence_classes_from_lm",
+           MagicMock(side_effect=get_sequence_class_result))
     def test_hf_layout_lm_predicts_sequence_class(
         layoutlm_input_for_predictor: JsonDict,
     ) -> None:
@@ -105,7 +107,7 @@ class TestHFLmTokenClassifier:
 
     @staticmethod
     @mark.pt_deps
-    @patch("deepdoctection.extern.hflm.predict_token_classes", MagicMock(side_effect=get_token_class_results))
+    @patch("deepdoctection.extern.hflm.predict_token_classes_from_lm", MagicMock(side_effect=get_token_class_results))
     def test_hf_lm_predicts_token(
         layoutlm_input_for_predictor: JsonDict,
         token_class_names: List[str],
@@ -143,3 +145,31 @@ class TestHFLmTokenClassifier:
         assert len(results) == 18
         class_names = [res.class_name for res in results]
         assert class_names == token_class_names
+
+
+class TestHFLmLanguageDetector:
+    """
+    Test HFLmLanguageDetector
+    """
+
+    @staticmethod
+    @mark.pt_deps
+    def test_hf_lm_predicts_language() -> None:
+        """
+        HFLmLanguageDetector calls predict
+        """
+
+        # Arrange
+        ModelDownloadManager.maybe_download_weights_and_configs(
+            "papluca/xlm-roberta-base-language-detection/model.safetensors"
+        )
+        profile = ModelCatalog.get_profile("papluca/xlm-roberta-base-language-detection/model.safetensors")
+        weights = ModelCatalog.get_full_path_weights("papluca/xlm-roberta-base-language-detection/model.safetensors")
+        configs = ModelCatalog.get_full_path_configs("papluca/xlm-roberta-base-language-detection/model.safetensors")
+        detector = HFLmLanguageDetector(configs, weights, profile.categories)  # type: ignore
+
+        # Act
+        result = detector.predict("Das ist ein Test")
+
+        # Assert
+        assert result.class_name == Languages.GERMAN

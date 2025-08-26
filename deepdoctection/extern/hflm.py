@@ -33,14 +33,14 @@ from ..utils.file_utils import get_pytorch_requirement, get_transformers_require
 from ..utils.settings import TypeOrStr
 from ..utils.types import JsonDict, PathLikeOrStr, Requirement
 from .base import (
+    DetectionResult,
+    LanguageDetector,
     LMSequenceClassifier,
     LMTokenClassifier,
     ModelCategories,
     NerModelCategories,
     SequenceClassResult,
     TokenClassResult,
-    LanguageDetector,
-    DetectionResult,
 )
 from .hflayoutlm import get_tokenizer_from_model_class
 from .pt.ptutils import get_torch_device
@@ -49,14 +49,16 @@ with try_import() as pt_import_guard:
     import torch
     import torch.nn.functional as F
 
-with (try_import() as tr_import_guard):
-    from transformers import (PretrainedConfig,
-                              XLMRobertaForSequenceClassification,
-                              XLMRobertaForTokenClassification,
-                              XLMRobertaTokenizerFast)
+with try_import() as tr_import_guard:
+    from transformers import (
+        PretrainedConfig,
+        XLMRobertaForSequenceClassification,
+        XLMRobertaForTokenClassification,
+        XLMRobertaTokenizerFast,
+    )
 
 
-def predict_token_classes(
+def predict_token_classes_from_lm(
     uuids: list[list[str]],
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
@@ -100,7 +102,7 @@ def predict_token_classes(
     return all_token_classes
 
 
-def predict_sequence_classes(
+def predict_sequence_classes_from_lm(
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
     token_type_ids: torch.Tensor,
@@ -343,7 +345,7 @@ class HFLmTokenClassifier(HFLmTokenClassifierBase):
         """
 
         ann_ids, _, input_ids, attention_mask, token_type_ids, tokens = self._validate_encodings(**encodings)
-        results = predict_token_classes(ann_ids, input_ids, attention_mask, token_type_ids, tokens, self.model)
+        results = predict_token_classes_from_lm(ann_ids, input_ids, attention_mask, token_type_ids, tokens, self.model)
         return self._map_category_names(results)
 
     @staticmethod
@@ -523,7 +525,7 @@ class HFLmSequenceClassifier(HFLmSequenceClassifierBase):
     def predict(self, **encodings: Union[list[list[str]], torch.Tensor]) -> SequenceClassResult:
         input_ids, attention_mask, token_type_ids = self._validate_encodings(**encodings)
 
-        result = predict_sequence_classes(
+        result = predict_sequence_classes_from_lm(
             input_ids,
             attention_mask,
             token_type_ids,
@@ -630,10 +632,11 @@ class HFLmLanguageDetector(LanguageDetector):
                 token_type_ids=token_type_ids,
             )
             probs = torch.softmax(outputs.logits, dim=-1)
-            score, class_id = torch.max(probs, dim=-1)
-            class_id = class_id.item() + 1
+            score, class_id_tensor = torch.max(probs, dim=-1)
+            class_id = int(class_id_tensor.item() + 1)
             lang = self.categories.categories[class_id]
-            return DetectionResult(class_name=lang, score=float(score.item()))
+
+        return DetectionResult(class_name=lang, score=float(score.item()))
 
     def clear_model(self) -> None:
         self.model = None
@@ -644,8 +647,7 @@ class HFLmLanguageDetector(LanguageDetector):
 
     @staticmethod
     def get_wrapped_model(
-        path_config_json: PathLikeOrStr,
-        path_weights: PathLikeOrStr
+        path_config_json: PathLikeOrStr, path_weights: PathLikeOrStr
     ) -> XLMRobertaForSequenceClassification:
         """
         Get the inner (wrapped) model.
@@ -659,16 +661,13 @@ class HFLmLanguageDetector(LanguageDetector):
         """
         config = PretrainedConfig.from_pretrained(pretrained_model_name_or_path=path_config_json)
         return XLMRobertaForSequenceClassification.from_pretrained(
-            pretrained_model_name_or_path=path_weights,
-            config=config
+            pretrained_model_name_or_path=path_weights, config=config
         )
 
     def clone(self) -> HFLmLanguageDetector:
-        return self.__class__(self.path_config,
-                              self.path_weights,
-                              self.categories.get_categories(),
-                              self.device,
-                              self.use_xlm_tokenizer)
+        return self.__class__(
+            self.path_config, self.path_weights, self.categories.get_categories(), self.device, self.use_xlm_tokenizer
+        )
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr, architecture: str) -> str:
@@ -683,6 +682,7 @@ class HFLmLanguageDetector(LanguageDetector):
             str: Model name
         """
         return f"Transformers_{architecture}_" + "_".join(Path(path_weights).parts[-2:])
+
 
 if TYPE_CHECKING:
     LmTokenModels: TypeAlias = Union[HFLmTokenClassifier,]
