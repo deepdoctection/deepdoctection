@@ -70,7 +70,6 @@ AnnotationDict: TypeAlias = dict[str, Any]
 ImageDict: TypeAlias = dict[str, Any]
 
 # We use these types for output types of the Page object
-Text_: TypeAlias = dict[str, Any]
 HTML: TypeAlias = str
 csv: TypeAlias = list[list[str]]
 Chunks: TypeAlias = list[tuple[str, str, int, str, str, str, str]]

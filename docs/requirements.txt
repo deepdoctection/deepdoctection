@@ -162,7 +162,7 @@ pymdown-extensions==9.9
     #   mkdocstrings
 pyparsing==3.0.9
     # via packaging
-pypdf==3.17.3
+pypdf==6.0.0
     # via deepdoctection (setup.py)
 pypdfium2==4.30.0
     # via
