@@ -39,6 +39,7 @@ from deepdoctection.extern.base import DetectionResult, SequenceClassResult, Tok
 from deepdoctection.utils.fs import get_package_path
 from deepdoctection.utils.settings import (
     CellType,
+    Languages,
     LayoutType,
     ObjectTypes,
     Relationships,
@@ -515,7 +516,7 @@ def fixture_text_lines() -> List[Tuple[str, PixelValues]]:
 @fixture(name="language_detect_result")
 def fixture_language_detect_result() -> DetectionResult:
     """fixture language_detect_result"""
-    return DetectionResult(text="eng", score=0.9876)
+    return DetectionResult(class_name=Languages.ENGLISH, score=0.9876)
 
 
 @fixture(name="annotation_maps")
