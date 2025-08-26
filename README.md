@@ -40,7 +40,8 @@ It also provides a framework for training, evaluating and inferencing Document A
   [**LiLT**](https://github.com/jpWang/LiLT) and selected
   [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
 - Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
-- Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
+- Language detection with `papluca/xlm-roberta-base-language-detection`. [**fastText**](https://github.com/facebookresearch/fastText) is still available but
+  but will be removed in a future version.
 - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew).
 - Fine-tuning and evaluation tools.
 - Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
