@@ -36,7 +36,7 @@ from ..utils.types import PathLikeOrStr
 from .base import DetectionResult, LanguageDetector, ModelCategories
 
 with try_import() as import_guard:
-    from fasttext import load_model  # type: ignore
+    from fasttext import load_model  # type: ignore # pylint: disable=E0401
 
 
 class FasttextLangDetectorMixin(LanguageDetector, ABC):
