@@ -26,6 +26,7 @@ from .doctrocr import *
 from .fastlang import *
 from .hfdetr import *
 from .hflayoutlm import *
+from .hflm import *
 from .model import *
 from .pdftext import *
 from .tessocr import *

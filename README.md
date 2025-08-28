@@ -40,7 +40,8 @@ It also provides a framework for training, evaluating and inferencing Document A
   [**LiLT**](https://github.com/jpWang/LiLT) and selected
   [**Bert**](https://huggingface.co/docs/transformers/model_doc/xlm-roberta)-style including features like sliding windows.
 - Text mining for native PDFs with [**pdfplumber**](https://github.com/jsvine/pdfplumber),
-- Language detection with [**fastText**](https://github.com/facebookresearch/fastText),
+- Language detection with `papluca/xlm-roberta-base-language-detection`. [**fastText**](https://github.com/facebookresearch/fastText) is still available but
+  but will be removed in a future version.
 - Deskewing and rotating images with [**jdeskew**](https://github.com/phamquiluan/jdeskew).
 - Fine-tuning and evaluation tools.
 - Lot's of [tutorials](https://github.com/deepdoctection/notebooks)
@@ -151,7 +152,7 @@ alt="text" width="40%">
 
 - Linux or macOS. Windows is not supported but there is a [Dockerfile](./docker/pytorch-cpu-jupyter/Dockerfile) available.
 - Python >= 3.9
-- 2.2 \<= PyTorch **or** 2.11 \<= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
+- 2.6 \<= PyTorch **or** 2.11 \<= Tensorflow < 2.16. (For lower Tensorflow versions the code will only run on a GPU).
   Tensorflow support will be stopped from Python 3.11 onwards.
 - To fine-tune models, a GPU is recommended.
 
@@ -178,7 +179,7 @@ For a simple setup which is enough to parse documents with the default setting, 
 
 ```
 pip install transformers
-pip install python-doctr==0.9.0
+pip install python-doctr==0.10.0 # If you use Python 3.10 or higher you can use the latest version.
 pip install deepdoctection
 ```
 
@@ -186,8 +187,9 @@ pip install deepdoctection
 
 ```
 pip install tensorpack
-pip install python-doctr==0.9.0
 pip install deepdoctection
+pip install "numpy>=1.21,<2.0" --upgrade --force-reinstall  # because TF 2.11 does not support numpy 2.0 
+pip install "python-doctr==0.9.0"
 ```
 
 Both setups are sufficient to run the [**introduction notebook**](https://github.com/deepdoctection/notebooks/blob/main/Get_Started.ipynb).
