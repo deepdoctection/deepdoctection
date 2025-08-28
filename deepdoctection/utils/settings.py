@@ -108,6 +108,7 @@ class DocumentType(ObjectTypes):
     GOVERNMENT_TENDERS = "government_tenders"
     MANUALS = "manuals"
     PATENTS = "patents"
+    BANK_STATEMENT = "bank_statement"
 
 
 @object_types_registry.register("LayoutType")
@@ -296,6 +297,7 @@ class Languages(ObjectTypes):
     BOSNIAN = "bos"
     NORWEGIAN_NOVOSIBIRSK = "nno"
     URDU = "urd"
+    SWAHILI = "swa"
     NOT_DEFINED = "nn"
 
 

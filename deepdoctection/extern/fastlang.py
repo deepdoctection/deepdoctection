@@ -36,7 +36,7 @@ from ..utils.types import PathLikeOrStr
 from .base import DetectionResult, LanguageDetector, ModelCategories
 
 with try_import() as import_guard:
-    from fasttext import load_model  # type: ignore
+    from fasttext import load_model  # type: ignore # pylint: disable=E0401
 
 
 class FasttextLangDetectorMixin(LanguageDetector, ABC):
@@ -62,7 +62,7 @@ class FasttextLangDetectorMixin(LanguageDetector, ABC):
         Returns:
             `DetectionResult` filled with `text` and `score`
         """
-        return DetectionResult(text=self.categories_orig[output[0][0]], score=output[1][0])
+        return DetectionResult(class_name=self.categories_orig[output[0][0]], score=output[1][0])
 
     @staticmethod
     def get_name(path_weights: PathLikeOrStr) -> str:
