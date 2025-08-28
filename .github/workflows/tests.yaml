@@ -29,7 +29,8 @@ jobs:
               tesseract: false,
               detectron2: false,
               extras: ,
-              test_cases: test-basic }
+              test_cases: test-basic,
+              requires_np_1: false }
           - { name: '3.9-pt-legacy',
               python: '3.9',
               pip: '24.0',
@@ -38,7 +39,8 @@ jobs:
               tesseract: true,
               detectron2: false,
               extras: ,
-              test_cases: test-pt-legacy}
+              test_cases: test-pt-legacy,
+              requires_np_1: false }
           - { name: '3.9-pt',
               python: '3.9',
               pip: '24.0',
@@ -47,25 +49,28 @@ jobs:
               tesseract: true,
               detectron2: true,
               extras: pt,
-              test_cases: test-pt }
+              test_cases: test-pt,
+              requires_np_1: false }
           - { name: '3.9-tf',
               python: '3.9',
               pip: '24.0',
               os: ubuntu-22.04,
-              dll: tensorflow-cpu==2.18.*,
+              dll: tensorflow-cpu==2.11,
               tesseract: true,
               detectron2: false,
               extras: tf,
-              test_cases: test-tf }
+              test_cases: test-tf,
+              requires_np_1: true }
           - { name: '3.10-tf',
               python: '3.10',
               pip: '24.0',
               os: ubuntu-22.04,
-              dll: tensorflow==2.18.*,
+              dll: tensorflow-cpu==2.11,
               tesseract: true,
               detectron2: false,
               extras: tf,
-              test_cases: test-tf }
+              test_cases: test-tf,
+              requires_np_1: true }
           - { name: '3.10-pt',
               python: '3.10',
               pip: '24.0',
@@ -74,7 +79,8 @@ jobs:
               tesseract: true,
               detectron2: true,
               extras: pt,
-              test_cases: test-pt }
+              test_cases: test-pt,
+              requires_np_1: false }
           - { name: '3.11-pt',
               python: '3.11',
               pip: '24.0',
@@ -83,7 +89,8 @@ jobs:
               tesseract: true,
               detectron2: true,
               extras: pt,
-              test_cases: test-pt }
+              test_cases: test-pt,
+              requires_np_1: false }
           - { name: '3.12-pt',
               python: '3.12',
               pip: '24.0',
@@ -92,7 +99,8 @@ jobs:
               tesseract: true,
               detectron2: true,
               extras: pt,
-              test_cases: test-pt }
+              test_cases: test-pt,
+              requires_np_1: false }
           #- { name: '3.13-pt',
           #    python: '3.13',
           #    pip: '24.0',
@@ -101,7 +109,8 @@ jobs:
           #    tesseract: true,
           #    detectron2: true,
           #    extras: pt,
-          #    test_cases: test-pt }
+          #    test_cases: test-pt,
+          #    requires_np_1: false }
 
     steps:
       - uses: actions/checkout@v3
@@ -153,6 +162,10 @@ jobs:
 
       - name: Install test suite
         run: pip install ".[test]"
+
+      - name: Downgrade NumPy for TF (requires_np_1)
+        if: matrix.requires_np_1
+        run: python3 -m pip install "numpy>=1.21,<2.0" --upgrade --force-reinstall
 
       - name: Run tests
         run: make ${{ matrix.test_cases }}
